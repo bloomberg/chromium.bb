@@ -15,9 +15,9 @@ namespace blink {
 void ClipDisplayItem::replay(GraphicsContext& context)
 {
     context.save();
-    context.clipRect(m_clipRect, NotAntiAliased, m_operation);
+    context.clipRect(m_clipRect, NotAntiAliased, SkRegion::kIntersect_Op);
     for (FloatRoundedRect roundedRect : m_roundedRectClips)
-        context.clipRoundedRect(roundedRect, m_operation);
+        context.clipRoundedRect(roundedRect, SkRegion::kIntersect_Op);
 }
 
 void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
@@ -38,7 +38,6 @@ void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
         skRoundedRect.setRectRadii(m_roundedRectClips[i].rect(), skRadii);
         webRoundedRects[i] = skRoundedRect;
     }
-    // FIXME: needs to include the SkRegion::Op
     list->appendClipItem(m_clipRect, webRoundedRects);
 }
 

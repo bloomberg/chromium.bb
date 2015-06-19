@@ -18,15 +18,14 @@ namespace blink {
 class PLATFORM_EXPORT ClipDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(ClipDisplayItem);
 public:
-    static PassOwnPtr<ClipDisplayItem> create(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
+    static PassOwnPtr<ClipDisplayItem> create(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect)
     {
-        return adoptPtr(new ClipDisplayItem(client, type, clipRect, operation));
+        return adoptPtr(new ClipDisplayItem(client, type, clipRect));
     }
 
-    ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, SkRegion::Op operation = SkRegion::kIntersect_Op)
+    ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect)
         : PairedBeginDisplayItem(client, type)
         , m_clipRect(clipRect)
-        , m_operation(operation)
     {
         ASSERT(isClipType(type));
     }
@@ -42,7 +41,6 @@ private:
 #endif
     IntRect m_clipRect;
     Vector<FloatRoundedRect> m_roundedRectClips;
-    SkRegion::Op m_operation;
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public PairedEndDisplayItem {
