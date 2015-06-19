@@ -126,7 +126,8 @@ TEST(array_for_each)
 {
 	static const int elements[] = { 77, 12, 45192, 53280, 334455 };
 	struct wl_array array;
-	int *p, i;
+	int *p;
+	int i;
 
 	wl_array_init(&array);
 	for (i = 0; i < 5; i++) {
@@ -136,8 +137,10 @@ TEST(array_for_each)
 	}
 
 	i = 0;
-	wl_array_for_each(p, &array)
-		assert(*p == elements[i++]);
+	wl_array_for_each(p, &array) {
+		assert(*p == elements[i]);
+		i++;
+	}
 	assert(i == 5);
 
 	wl_array_release(&array);
