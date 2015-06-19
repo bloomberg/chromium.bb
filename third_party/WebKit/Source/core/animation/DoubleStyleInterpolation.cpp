@@ -102,7 +102,7 @@ bool extractMotionRotation(const CSSValue& value, float* rotation, MotionRotatio
         } else if (primitiveValue->getValueID() == CSSValueReverse) {
             *rotationType = MotionRotationAuto;
             *rotation += 180;
-        } else if (primitiveValue->isAngle() || primitiveValue->primitiveType() == CSSPrimitiveValue::CSS_DEG) {
+        } else if (primitiveValue->isAngle()) {
             *rotation += primitiveValue->computeDegrees();
         } else {
             return false;
