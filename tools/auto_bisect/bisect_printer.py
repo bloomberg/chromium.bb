@@ -20,7 +20,7 @@ RESULTS_BANNER = """
 Status: %(status)s
 
 Test Command: %(command)s
-Test Metric: %(metrics)s
+Test Metric: %(metric)s
 Relative Change: %(change)s
 Estimated Confidence: %(confidence).02f%%
 Retested CL with revert: %(retest)s"""
@@ -296,45 +296,33 @@ class BisectPrinter(object):
     self._PrintTestedCommitsEntry(
         bisect_results.retest_results_reverted, '', '', '')
 
-  @staticmethod
-  def _ConfidenceLevelStatus(bisect_results):
-    if not bisect_results.confidence:
-      return None
-    confidence_status = 'Successful with %(level)s confidence%(warning)s.'
-    if bisect_results.confidence >= bisect_utils.HIGH_CONFIDENCE:
-      level = 'high'
-    else:
-      level = 'low'
-    warning = ' and warnings'
-    if not bisect_results.warnings:
-      warning = ''
-    return confidence_status % {'level': level, 'warning': warning}
-
   def _PrintBanner(self, bisect_results):
     if self.opts.bisect_mode == bisect_utils.BISECT_MODE_RETURN_CODE:
-      metrics = 'N/A'
+      metric = 'N/A'
       change = 'Yes'
     else:
-      metrics = '/'.join(self.opts.metric)
+      metric = '/'.join(self.opts.metric)
       change = '%.02f%% (+/-%.02f%%)' % (
           bisect_results.regression_size, bisect_results.regression_std_err)
-
-    if bisect_results.culprit_revisions and bisect_results.confidence:
-      status = self._ConfidenceLevelStatus(bisect_results)
-    else:
-      status = 'Failure, could not reproduce.'
-      change = 'Bisect could not reproduce a change.'
-
-    retest_text = 'Yes' if bisect_results.retest_results_tot else 'No'
+    if not bisect_results.culprit_revisions:
+      change = 'No significant change reproduced.'
 
     print RESULTS_BANNER % {
-        'status': status,
+        'status': self._StatusMessage(bisect_results),
         'command': self.opts.command,
-        'metrics': metrics,
+        'metric': metric,
         'change': change,
         'confidence': bisect_results.confidence,
-        'retest': retest_text,
+        'retest': 'Yes' if bisect_results.retest_results_tot else 'No',
     }
+
+  @staticmethod
+  def _StatusMessage(bisect_results):
+    if bisect_results.confidence >= bisect_utils.HIGH_CONFIDENCE:
+      return 'Positive: Reproduced a change.'
+    elif bisect_results.culprit_revisions:
+      return 'Negative: Found possible suspect(s), but with low confidence.'
+    return 'Negative: Did not reproduce a change.'
 
   @staticmethod
   def _PrintWarnings(warnings):
