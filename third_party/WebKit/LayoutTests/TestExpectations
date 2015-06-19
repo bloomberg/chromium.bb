@@ -1798,6 +1798,11 @@ crbug.com/493939 [ XP ] http/tests/security/cross-origin-css.html [ Timeout Pass
 
 crbug.com/321237 [ Mac ] fast/text/international/bidi-neutral-run.html [ Pass Crash NeedsManualRebaseline ]
 
+# Temporary disable waiting for V8 roll
+crbug.com/502437 inspector-protocol/runtime/runtime-getProperties.html [ NeedsManualRebaseline ]
+crbug.com/502437 inspector/editor/text-editor-indent-autodetection.html [ NeedsManualRebaseline ]
+crbug.com/502437 inspector/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
+
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
 crbug.com/321237 [ Mac ] fast/dom/shadow/shadow-insertion-point-rendering-multiple-shadow-roots.html [ ImageOnlyFailure ]
