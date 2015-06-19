@@ -112,7 +112,7 @@ remoting.V2AppLauncher.prototype.launch = function(opt_launchArgs) {
           var state = values[START_FULLSCREEN] ? 'fullscreen' : 'normal';
           chrome.app.window.create(url, {
               'width': 800,
-              'height': 600,
+              'height': 634,
               'frame': 'none',
               'id': String(getNextWindowId()),
               'state': state

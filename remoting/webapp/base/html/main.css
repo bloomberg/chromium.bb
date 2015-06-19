@@ -374,6 +374,7 @@ section {
 .editbox-label {
   line-height: 29px;
   font-weight: bold;
+  margin-right: 6px;
 }
 
 .error-state {
