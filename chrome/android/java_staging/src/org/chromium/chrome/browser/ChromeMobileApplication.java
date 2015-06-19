@@ -126,8 +126,9 @@ public class ChromeMobileApplication extends ChromiumApplication {
         }
     }
 
-    private static final String[] CHROME_MANDATORY_PAKS = {"en-US.pak", "resources.pak",
-            "chrome_100_percent.pak", "natives_blob.bin", "snapshot_blob.bin"};
+    private static final String[] CHROME_MANDATORY_PAKS = {
+        "en-US.pak", "resources.pak", "chrome_100_percent.pak",
+    };
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static final String DEV_TOOLS_SERVER_SOCKET_PREFIX = "chrome";
     private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";

@@ -17,8 +17,6 @@ public class ContentBrowserTestsApplication extends BaseChromiumApplication {
 
     private static final String[] MANDATORY_PAK_FILES = new String[] {
         "content_shell.pak",
-        "natives_blob.bin",
-        "snapshot_blob.bin"
     };
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 

@@ -89,8 +89,8 @@
     'additional_res_packages': [],
     'additional_bundled_libs%': [],
     'is_test_apk%': 0,
-    # Allow icu data to be loaded directly from the .apk.
-    'extensions_to_not_compress%': 'dat',
+    # Allow icu data and v8 snapshots to be loaded directly from the .apk.
+    'extensions_to_not_compress%': 'dat,bin',
     'resource_input_paths': [],
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',

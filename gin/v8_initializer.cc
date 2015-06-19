@@ -19,6 +19,9 @@
 #include "crypto/sha2.h"
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if defined(OS_ANDROID)
+#include "base/android/apk_assets.h"
+#endif
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #endif  // OS_MACOSX
@@ -50,29 +53,20 @@ base::PlatformFile g_snapshot_pf = kInvalidPlatformFile;
 base::MemoryMappedFile::Region g_natives_region;
 base::MemoryMappedFile::Region g_snapshot_region;
 
-#if !defined(OS_MACOSX)
-const int kV8SnapshotBasePathKey =
-#if defined(OS_ANDROID)
-    base::DIR_ANDROID_APP_DATA;
-#elif defined(OS_POSIX)
-    base::DIR_EXE;
-#elif defined(OS_WIN)
-    base::DIR_MODULE;
-#endif  // OS_ANDROID
-#endif  // !OS_MACOSX
-
 const char kNativesFileName[] = "natives_blob.bin";
 const char kSnapshotFileName[] = "snapshot_blob.bin";
-
-// Constants for snapshot loading retries taken from:
-//   https://support.microsoft.com/en-us/kb/316609.
-const int kMaxOpenAttempts = 5;
-const int kOpenRetryDelayMillis = 250;
 
 void GetV8FilePath(const char* file_name, base::FilePath* path_out) {
 #if !defined(OS_MACOSX)
   base::FilePath data_path;
-  PathService::Get(kV8SnapshotBasePathKey, &data_path);
+#if defined(OS_ANDROID)
+  // This is the path within the .apk.
+  data_path = base::FilePath(FILE_PATH_LITERAL("assets"));
+#elif defined(OS_POSIX)
+  PathService::Get(base::DIR_EXE, &data_path);
+#elif defined(OS_WIN)
+  PathService::Get(base::DIR_MODULE, &data_path);
+#endif
   DCHECK(!data_path.empty());
 
   *path_out = data_path.AppendASCII(file_name);
@@ -109,9 +103,18 @@ base::PlatformFile OpenV8File(const char* file_name,
     FAILED_OTHER,
     MAX_VALUE
   };
-
   base::FilePath path;
   GetV8FilePath(file_name, &path);
+
+#if defined(OS_ANDROID)
+  base::File file(base::android::OpenApkAsset(path.value(), region_out));
+  OpenV8FileResult result = file.IsValid() ? OpenV8FileResult::OPENED
+                                           : OpenV8FileResult::FAILED_OTHER;
+#else
+  // Re-try logic here is motivated by http://crbug.com/479537
+  // for A/V on Windows (https://support.microsoft.com/en-us/kb/316609).
+  const int kMaxOpenAttempts = 5;
+  const int kOpenRetryDelayMillis = 250;
 
   OpenV8FileResult result = OpenV8FileResult::FAILED_IN_USE;
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
@@ -146,6 +149,7 @@ base::PlatformFile OpenV8File(const char* file_name,
           base::TimeDelta::FromMilliseconds(kOpenRetryDelayMillis));
     }
   }
+#endif  // defined(OS_ANDROID)
 
   UMA_HISTOGRAM_ENUMERATION("V8.Initializer.OpenV8File.Result",
                             result,

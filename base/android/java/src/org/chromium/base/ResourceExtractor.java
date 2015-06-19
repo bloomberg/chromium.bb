@@ -309,6 +309,7 @@ public class ResourceExtractor {
      *     required, pass a single empty string.
      */
     public static void setMandatoryPaksToExtract(String... mandatoryPaks) {
+        // TODO(agrieve): Remove the need to call this once all files are loaded from the apk.
         assert (sInstance == null || sInstance.mExtractTask == null)
                 : "Must be called before startExtractingResources is called";
         sMandatoryPaks = mandatoryPaks;
@@ -346,8 +347,6 @@ public class ResourceExtractor {
         } catch (IOException e) {
             Log.w(LOGTAG, "Exception while accessing assets: " + e.getMessage(), e);
         }
-        pakAndSnapshotFileAssets.add("natives_blob.bin");
-        pakAndSnapshotFileAssets.add("snapshot_blob.bin");
         setMandatoryPaksToExtract(pakAndSnapshotFileAssets.toArray(
                 new String[pakAndSnapshotFileAssets.size()]));
     }

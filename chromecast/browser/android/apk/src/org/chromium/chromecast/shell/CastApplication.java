@@ -26,8 +26,6 @@ public class CastApplication extends ContentApplication {
 
     private static final String[] MANDATORY_PAK_FILES = new String[] {
         "cast_shell.pak",
-        "natives_blob.bin",
-        "snapshot_blob.bin"
     };
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cast_shell";
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/castshell-command-line";

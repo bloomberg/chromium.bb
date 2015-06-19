@@ -16,15 +16,8 @@ import org.chromium.content.app.ContentApplication;
 public class ContentShellApplication extends ContentApplication {
 
     public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
-    /**
-     *  V8's initial snapshot used to be statically linked to the binary, but
-     *  now it's loaded from external files. Therefore we need to install such
-     *  snapshots (natives_blob.bin and snapshot.bin) along with pak files.
-     */
     private static final String[] MANDATORY_PAK_FILES = new String[] {
         "content_shell.pak",
-        "natives_blob.bin",
-        "snapshot_blob.bin"
     };
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 
