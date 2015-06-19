@@ -78,17 +78,25 @@ static inline bool dispatchSelectStart(Node* node)
     return node->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
 }
 
-static VisibleSelection expandSelectionToRespectUserSelectAll(Node* targetNode, const VisibleSelection& selection)
+template <typename Strategy>
+VisibleSelection expandSelectionToRespectUserSelectAllAlgorithm(Node* targetNode, const VisibleSelection& selection)
 {
-    Node* rootUserSelectAll = Position::rootUserSelectAllForNode(targetNode);
+    using PositionType = typename Strategy::PositionType;
+
+    Node* rootUserSelectAll = PositionType::rootUserSelectAllForNode(targetNode);
     if (!rootUserSelectAll)
         return selection;
 
     VisibleSelection newSelection(selection);
-    newSelection.setBase(positionBeforeNode(rootUserSelectAll).upstream(CanCrossEditingBoundary));
-    newSelection.setExtent(positionAfterNode(rootUserSelectAll).downstream(CanCrossEditingBoundary));
+    newSelection.setBase(PositionType::beforeNode(rootUserSelectAll).upstream(CanCrossEditingBoundary));
+    newSelection.setExtent(PositionType::afterNode(rootUserSelectAll).downstream(CanCrossEditingBoundary));
 
     return newSelection;
+}
+
+static VisibleSelection expandSelectionToRespectUserSelectAll(Node* targetNode, const VisibleSelection& selection)
+{
+    return expandSelectionToRespectUserSelectAllAlgorithm<VisibleSelection::InDOMTree>(targetNode, selection);
 }
 
 bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node* targetNode, const VisibleSelection& selection, TextGranularity granularity)
