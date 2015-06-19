@@ -536,8 +536,10 @@ bool CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerConfiguration()
             m_graphicsLayer->setContentsToPlatformLayer(context->platformLayer());
         layerConfigChanged = true;
     }
-    if (layoutObject->isLayoutPart())
-        layerConfigChanged = DeprecatedPaintLayerCompositor::parentFrameContentLayers(toLayoutPart(layoutObject));
+    if (layoutObject->isLayoutPart()) {
+        if (DeprecatedPaintLayerCompositor::parentFrameContentLayers(toLayoutPart(layoutObject)))
+            layerConfigChanged = true;
+    }
 
     // Changes to either the internal hierarchy or the mask layer have an impact
     // on painting phases, so we need to update when either are updated.
