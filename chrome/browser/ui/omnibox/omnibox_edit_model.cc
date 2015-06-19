@@ -670,8 +670,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
         ChromeAutocompleteSchemeClassifier(profile_));
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
-            input_.text(), input_.canonicalized_url(), false));
-
+            input_, input_.canonicalized_url(), false));
 
     if (url_match.destination_url.is_valid()) {
       // We have a valid URL, we use this newly generated AutocompleteMatch.
@@ -750,11 +749,17 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   base::string16 input_text(pasted_text);
   if (input_text.empty())
       input_text = user_input_in_progress_ ? user_text_ : permanent_text_;
+  // Create a dummy AutocompleteInput for use in calling SuggestExactInput()
+  // to create an alternate navigational match.
+  AutocompleteInput alternate_input(
+      input_text, base::string16::npos, std::string(), delegate_->GetURL(),
+      ClassifyPage(), false, false, true, true, false,
+      ChromeAutocompleteSchemeClassifier(profile_));
   scoped_ptr<OmniboxNavigationObserver> observer(
       new OmniboxNavigationObserver(
           profile_, input_text, match,
           autocomplete_controller()->history_url_provider()->SuggestExactInput(
-              input_text, alternate_nav_url,
+              alternate_input, alternate_nav_url,
               AutocompleteInput::HasHTTPScheme(input_text))));
 
   base::TimeDelta elapsed_time_since_last_change_to_default_match(

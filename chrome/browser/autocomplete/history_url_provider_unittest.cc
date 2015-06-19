@@ -947,7 +947,7 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
         false, true, true, false,
         ChromeAutocompleteSchemeClassifier(profile_.get()));
     AutocompleteMatch match(autocomplete_->SuggestExactInput(
-        input.text(), input.canonicalized_url(), test_cases[i].trim_http));
+        input, input.canonicalized_url(), test_cases[i].trim_http));
     EXPECT_EQ(ASCIIToUTF16(test_cases[i].contents), match.contents);
     for (size_t match_index = 0; match_index < match.contents_class.size();
          ++match_index) {

@@ -310,6 +310,17 @@ class OmniboxFieldTrial {
   static bool HQPAlsoDoHUPLikeScoring();
 
   // ---------------------------------------------------------
+  // For the PreventUWYTDefaultForNonURLInputs experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns true if HistoryURL provider should prohibit the URL-what-you-
+  // typed match from being the legal default match for non-URL inputs.
+  // If this behavior is active, some code in AutocompleteInput::Parse() also
+  // gets disabled; this code is unnecessary given the not-allowed-to-be-
+  // default constraint.  Returns false if the experiment isn't active.
+  static bool PreventUWYTDefaultForNonURLInputs();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -330,6 +341,7 @@ class OmniboxFieldTrial {
   static const char kHQPFixFrequencyScoringBugsRule[];
   static const char kHQPNumTitleWordsRule[];
   static const char kHQPAlsoDoHUPLikeScoringRule[];
+  static const char kPreventUWYTDefaultForNonURLInputsRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

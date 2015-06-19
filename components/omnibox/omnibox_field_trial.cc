@@ -390,6 +390,12 @@ bool OmniboxFieldTrial::HQPAlsoDoHUPLikeScoring() {
       kHQPAlsoDoHUPLikeScoringRule) == "true";
 }
 
+bool OmniboxFieldTrial::PreventUWYTDefaultForNonURLInputs() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kPreventUWYTDefaultForNonURLInputsRule) == "true";
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -417,6 +423,8 @@ const char OmniboxFieldTrial::kHQPFixFrequencyScoringBugsRule[] =
 const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
+const char OmniboxFieldTrial::kPreventUWYTDefaultForNonURLInputsRule[] =
+    "PreventUWYTDefaultForNonURLInputs";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

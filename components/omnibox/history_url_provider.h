@@ -197,14 +197,15 @@ class HistoryURLProvider : public HistoryProvider {
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
 
-  // Returns a match representing a navigation to |destination_url| given user
-  // input of |text|.  |trim_http| controls whether the match's |fill_into_edit|
-  // and |contents| should have any HTTP scheme stripped off, and should not be
-  // set to true if |text| contains an http prefix.
+  // Returns a match representing a navigation to |destination_url|, highlighted
+  // appropriately against |input|.  |trim_http| controls whether the match's
+  // |fill_into_edit| and |contents| should have any HTTP stripped off, and
+  // should not be set to true if the user's original input contains an http
+  // prefix.
   // NOTES: This does not set the relevance of the returned match, as different
   //        callers want different behavior. Callers must set this manually.
   //        This function should only be called on the UI thread.
-  AutocompleteMatch SuggestExactInput(const base::string16& text,
+  AutocompleteMatch SuggestExactInput(const AutocompleteInput& input,
                                       const GURL& destination_url,
                                       bool trim_http);
 
