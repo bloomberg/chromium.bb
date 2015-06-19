@@ -1723,9 +1723,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_BOOKMARKS_FOLDER_EMPTY" desc="Text explaining that the currently selected bookmarks folder is empty.">
         No bookmarks here
       </message>
-      <message name="IDS_CONTEXTMENU_EDIT_BOOKMARK" desc="Context menu action to edit a bookmark. [CHAR-LIMIT=30]">
-        Edit bookmark
-      </message>
       <message name="IDS_CONTEXTMENU_DELETE_BOOKMARK" desc="Context menu action to delete a bookmark. [CHAR-LIMIT=30]">
         Delete bookmark
       </message>
@@ -1791,9 +1788,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_LIST_TOGGLE" desc="Button text for switching between list mode and grid mode [CHAR-LIMIT=32]">
         Toggle between list and grid mode
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_EDIT_BOOKMARKS" desc="Button text for editing bookmarks action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
-        Edit bookmarks
-      </message>
       <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_MOVE" desc="Button text for bookmark move action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
         Move bookmarks
       </message>
@@ -1803,20 +1797,11 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_CLOSE" desc="Button text for closing the current enhanced bookmark dialog on the enhanced bookmark action bar [CHAR-LIMIT=32]">
         Close dialog
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_DESCRIPTION_HINT" desc="Hint text to prompt users to input descriptions and notes for a bookmark. [CHAR-LIMIT=32]">
-        Enter a note
-      </message>
       <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DRAWER_TOGGLE_BTN_OPEN" desc="Content description for the button to show the navigation drawer.">
         Open navigation drawer
       </message>
       <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
         Close navigation drawer
-      </message>
-      <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DETAIL_VIEW" desc="Content description for the screen that allows the user to edit a bookmark.">
-        Edit bookmark
-      </message>
-      <message name="IDS_ENHANCED_BOOKMARK_DETAIL_TRANSITION_NAME" translateable="false" >
-        EnhancedBookmarkDetailActivity.CardTransition
       </message>
 
       <!-- Find in page -->
@@ -1848,7 +1833,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ADD_BOOKMARK" desc='Title of the "Add Bookmark" form dialog. [CHAR-LIMIT=30]'>
         Add bookmark
       </message>
-      <message name="IDS_EDIT_BOOKMARK" desc='Title of the "Edit Bookmark" form dialog. [CHAR-LIMIT=30]'>
+      <message name="IDS_EDIT_BOOKMARK" desc='The string prompting the user to edit the content of a bookmark. [CHAR-LIMIT=30]'>
         Edit bookmark
       </message>
       <message name="IDS_ADD_FOLDER" desc='Title of the "Add Folderk" form dialog. [CHAR-LIMIT=30]'>

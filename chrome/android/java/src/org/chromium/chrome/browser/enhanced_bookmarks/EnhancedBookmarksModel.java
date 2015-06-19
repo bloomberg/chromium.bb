@@ -283,20 +283,6 @@ public class EnhancedBookmarksModel {
     }
 
     /**
-     * @see EnhancedBookmarksBridge#getBookmarkDescription(BookmarkId)
-     */
-    public String getBookmarkDescription(BookmarkId id) {
-        return mEnhancedBookmarksBridge.getBookmarkDescription(id);
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#setBookmarkDescription(BookmarkId, String)
-     */
-    public void setBookmarkDescription(BookmarkId id, String description) {
-        mEnhancedBookmarksBridge.setBookmarkDescription(id, description);
-    }
-
-    /**
      * @see EnhancedBookmarksBridge#salientImageForUrl(String, SalientImageCallback)
      */
     public boolean salientImageForUrl(String url, SalientImageCallback callback) {

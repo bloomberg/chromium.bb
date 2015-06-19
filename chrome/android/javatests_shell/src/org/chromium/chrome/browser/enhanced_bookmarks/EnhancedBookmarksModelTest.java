@@ -100,23 +100,19 @@ public class EnhancedBookmarksModelTest extends ChromeShellTestBase{
 
         mBookmarksModel.setBookmarkTitle(bookmarkA, "auri");
         mBookmarksModel.setBookmarkUrl(bookmarkA, "http://auri.org/");
-        mBookmarksModel.setBookmarkDescription(bookmarkA, "auri");
-        verifyBookmark(bookmarkA, "auri", "http://auri.org/", false, mDesktopNode, "auri");
+        verifyBookmark(bookmarkA, "auri", "http://auri.org/", false, mDesktopNode);
 
         mBookmarksModel.setBookmarkTitle(bookmarkB, "lauri");
         mBookmarksModel.setBookmarkUrl(bookmarkB, "http://lauri.org/");
-        mBookmarksModel.setBookmarkDescription(bookmarkB, "lauri");
-        verifyBookmark(bookmarkB, "lauri", "http://lauri.org/", false, mMobileNode, "lauri");
+        verifyBookmark(bookmarkB, "lauri", "http://lauri.org/", false, mMobileNode);
 
         mBookmarksModel.setBookmarkTitle(bookmarkC, "mauri");
         mBookmarksModel.setBookmarkUrl(bookmarkC, "http://mauri.org/");
-        mBookmarksModel.setBookmarkDescription(bookmarkC, "mauri");
-        verifyBookmark(bookmarkC, "mauri", "http://mauri.org/", false, mOtherNode, "mauri");
+        verifyBookmark(bookmarkC, "mauri", "http://mauri.org/", false, mOtherNode);
 
         mBookmarksModel.setBookmarkTitle(bookmarkD, "kauri");
         mBookmarksModel.setBookmarkUrl(bookmarkD, "http://kauri.org/");
-        mBookmarksModel.setBookmarkDescription(bookmarkD, "kauri");
-        verifyBookmark(bookmarkD, "kauri", "http://kauri.org/", false, folderA, "kauri");
+        verifyBookmark(bookmarkD, "kauri", "http://kauri.org/", false, folderA);
     }
 
     @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
@@ -177,40 +173,38 @@ public class EnhancedBookmarksModelTest extends ChromeShellTestBase{
     @Feature({"Bookmark"})
     public void testAddBookmarksAndFolders() {
         BookmarkId bookmarkA = mBookmarksModel.addBookmark(mDesktopNode, 0, "a", "http://a.com");
-        verifyBookmark(bookmarkA, "a", "http://a.com/", false, mDesktopNode, "");
+        verifyBookmark(bookmarkA, "a", "http://a.com/", false, mDesktopNode);
 
         BookmarkId bookmarkB = mBookmarksModel.addBookmark(mOtherNode, 0, "b", "http://b.com");
-        verifyBookmark(bookmarkB, "b", "http://b.com/", false, mOtherNode, "");
+        verifyBookmark(bookmarkB, "b", "http://b.com/", false, mOtherNode);
 
         BookmarkId bookmarkC = mBookmarksModel.addBookmark(mMobileNode, 0, "c", "http://c.com");
-        verifyBookmark(bookmarkC, "c", "http://c.com/", false, mMobileNode, "");
+        verifyBookmark(bookmarkC, "c", "http://c.com/", false, mMobileNode);
 
         BookmarkId folderA = mBookmarksModel.addFolder(mOtherNode, 0, "fa");
-        verifyBookmark(folderA, "fa", null, true, mOtherNode, "");
+        verifyBookmark(folderA, "fa", null, true, mOtherNode);
 
         BookmarkId folderB = mBookmarksModel.addFolder(mDesktopNode, 0, "fb");
-        verifyBookmark(folderB, "fb", null, true, mDesktopNode, "");
+        verifyBookmark(folderB, "fb", null, true, mDesktopNode);
 
         BookmarkId folderC = mBookmarksModel.addFolder(mMobileNode, 0, "fc");
-        verifyBookmark(folderC, "fc", null, true, mMobileNode, "");
+        verifyBookmark(folderC, "fc", null, true, mMobileNode);
 
         BookmarkId bookmarkAA = mBookmarksModel.addBookmark(folderA, 0, "aa", "http://aa.com");
-        verifyBookmark(bookmarkAA, "aa", "http://aa.com/", false, folderA, "");
+        verifyBookmark(bookmarkAA, "aa", "http://aa.com/", false, folderA);
 
         BookmarkId folderAA = mBookmarksModel.addFolder(folderA, 0, "faa");
-        verifyBookmark(folderAA, "faa", null, true, folderA, "");
+        verifyBookmark(folderAA, "faa", null, true, folderA);
     }
 
     private void verifyBookmark(BookmarkId idToVerify, String expectedTitle,
-            String expectedUrl, boolean isFolder, BookmarkId expectedParent,
-            String expectedDescription) {
+            String expectedUrl, boolean isFolder, BookmarkId expectedParent) {
         assertNotNull(idToVerify);
         BookmarkItem item = mBookmarksModel.getBookmarkById(idToVerify);
         assertEquals(expectedTitle, item.getTitle());
         assertEquals(isFolder, item.isFolder());
         if (!isFolder) assertEquals(expectedUrl, item.getUrl());
         assertEquals(expectedParent, item.getParentId());
-        assertEquals(expectedDescription, mBookmarksModel.getBookmarkDescription(idToVerify));
     }
 
     /**

@@ -93,25 +93,6 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
-     * Get descriptions of a given bookmark.
-     * @param id The id of the bookmark to look at.
-     * @return Description of the bookmark. If given a partner bookmark, this method will return an
-     *         empty list.
-     */
-    public String getBookmarkDescription(BookmarkId id) {
-        return nativeGetBookmarkDescription(mNativeEnhancedBookmarksBridge, id.getId(),
-                id.getType());
-    }
-
-    /**
-     * Sets the description of the given bookmark.
-     */
-    public void setBookmarkDescription(BookmarkId id, String description) {
-        nativeSetBookmarkDescription(mNativeEnhancedBookmarksBridge, id.getId(), id.getType(),
-                description);
-    }
-
-    /**
      * Request bookmark salient image for the given URL. Please refer to
      * |BookmarkImageService::SalientImageForUrl|.
      * @return True if this method is executed synchronously. False if
@@ -185,10 +166,6 @@ public final class EnhancedBookmarksBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeEnhancedBookmarksBridge);
-    private native String nativeGetBookmarkDescription(long nativeEnhancedBookmarksBridge, long id,
-            int type);
-    private native void nativeSetBookmarkDescription(long nativeEnhancedBookmarksBridge, long id,
-            int type, String description);
     private native BookmarkId nativeAddFolder(long nativeEnhancedBookmarksBridge, BookmarkId parent,
             int index, String title);
     private native void nativeMoveBookmark(long nativeEnhancedBookmarksBridge,

@@ -808,7 +808,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         EnhancedBookmarkUtils.addBookmarkAndShowSnackbar(bookmarkModel,
                                 tabToBookmark, getSnackbarManager(), ChromeActivity.this);
                     } else {
-                        EnhancedBookmarkUtils.startDetailActivity(ChromeActivity.this,
+                        EnhancedBookmarkUtils.startEditActivity(ChromeActivity.this,
                                 new BookmarkId(bookmarkId, BookmarkType.NORMAL));
                     }
                     bookmarkModel.removeModelObserver(this);

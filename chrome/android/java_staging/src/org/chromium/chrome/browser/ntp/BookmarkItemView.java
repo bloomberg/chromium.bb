@@ -219,9 +219,9 @@ class BookmarkItemView extends AppCompatTextView implements OnCreateContextMenuL
                      R.string.contextmenu_open_in_incognito_tab).setOnMenuItemClickListener(this);
         }
         if (mIsEditable && !mManager.isIncognito()) {
-            menu.add(Menu.NONE, ID_EDIT, Menu.NONE, mIsFolder
-                    ? R.string.contextmenu_edit_folder : R.string.contextmenu_edit_bookmark)
-                            .setOnMenuItemClickListener(this);
+            menu.add(Menu.NONE, ID_EDIT, Menu.NONE,
+                    mIsFolder ? R.string.contextmenu_edit_folder : R.string.edit_bookmark)
+                    .setOnMenuItemClickListener(this);
             menu.add(Menu.NONE, ID_DELETE, Menu.NONE, mIsFolder
                     ? R.string.contextmenu_delete_folder : R.string.contextmenu_delete_bookmark)
                             .setOnMenuItemClickListener(this);

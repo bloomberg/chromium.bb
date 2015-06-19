@@ -86,8 +86,8 @@ public class EnhancedBookmarkUtils {
                 @SuppressWarnings("unchecked")
                 Pair<EnhancedBookmarksModel, BookmarkId> pair = (Pair<
                         EnhancedBookmarksModel, BookmarkId>) actionData;
-                // Show detail page with the name of parent folder highlighted.
-                startDetailActivity(activity, enhancedId);
+                // Show edit activity with the name of parent folder highlighted.
+                startEditActivity(activity, enhancedId);
                 pair.first.destroy();
             }
         };
@@ -113,9 +113,9 @@ public class EnhancedBookmarkUtils {
         return true;
     }
 
-    public static void startDetailActivity(Context context, BookmarkId bookmarkId) {
-        Intent intent = new Intent(context, EnhancedBookmarkDetailActivity.class);
-        intent.putExtra(EnhancedBookmarkDetailActivity.INTENT_BOOKMARK_ID, bookmarkId.toString());
+    public static void startEditActivity(Context context, BookmarkId bookmarkId) {
+        Intent intent = new Intent(context, EnhancedBookmarkEditActivity.class);
+        intent.putExtra(EnhancedBookmarkEditActivity.INTENT_BOOKMARK_ID, bookmarkId.toString());
         context.startActivity(intent);
     }
 

@@ -29,17 +29,6 @@ class EnhancedBookmarksBridge {
 
   void FetchImageForTab(JNIEnv* env, jobject obj, jobject j_web_contents);
 
-  base::android::ScopedJavaLocalRef<jstring> GetBookmarkDescription(
-      JNIEnv* env,
-      jobject obj,
-      jlong id,
-      jint type);
-  void SetBookmarkDescription(JNIEnv* env,
-                              jobject obj,
-                              jlong id,
-                              jint type,
-                              jstring description);
-
   base::android::ScopedJavaLocalRef<jobject> AddFolder(JNIEnv* env,
                                                        jobject obj,
                                                        jobject j_parent_id_obj,

@@ -95,36 +95,6 @@ void EnhancedBookmarksBridge::FetchImageForTab(JNIEnv* env,
       web_contents, web_contents->GetURL(), true);
 }
 
-ScopedJavaLocalRef<jstring> EnhancedBookmarksBridge::GetBookmarkDescription(
-    JNIEnv* env, jobject obj, jlong id, jint type) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-  if (type != BookmarkType::BOOKMARK_TYPE_NORMAL) {
-    return base::android::ConvertUTF8ToJavaString(env, std::string());
-  }
-
-  const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
-      enhanced_bookmark_model_->bookmark_model(), static_cast<int64>(id));
-
-  return node ? base::android::ConvertUTF8ToJavaString(
-                    env, enhanced_bookmark_model_->GetDescription(node))
-              : ScopedJavaLocalRef<jstring>();
-}
-
-void EnhancedBookmarksBridge::SetBookmarkDescription(JNIEnv* env,
-                                                     jobject obj,
-                                                     jlong id,
-                                                     jint type,
-                                                     jstring description) {
-  DCHECK(enhanced_bookmark_model_->loaded());
-  DCHECK_EQ(type, BookmarkType::BOOKMARK_TYPE_NORMAL);
-
-  const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
-      enhanced_bookmark_model_->bookmark_model(), static_cast<int64>(id));
-
-  enhanced_bookmark_model_->SetDescription(
-      node, base::android::ConvertJavaStringToUTF8(env, description));
-}
-
 ScopedJavaLocalRef<jobject> EnhancedBookmarksBridge::AddFolder(JNIEnv* env,
     jobject obj,
     jobject j_parent_id_obj,

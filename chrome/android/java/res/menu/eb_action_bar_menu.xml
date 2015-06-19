@@ -30,7 +30,7 @@
         <item
             android:id="@+id/selection_mode_edit_menu_id"
             android:icon="@drawable/eb_edit_active"
-            android:title="@string/enhanced_bookmark_action_bar_edit_bookmarks"
+            android:title="@string/edit_bookmark"
             chrome:showAsAction="ifRoom"/>
         <item
             android:id="@+id/selection_mode_move_menu_id"

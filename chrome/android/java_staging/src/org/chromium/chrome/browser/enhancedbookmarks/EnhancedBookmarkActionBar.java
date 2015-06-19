@@ -97,7 +97,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
                 EnhancedBookmarkAddEditFolderActivity.startEditFolderActivity(getContext(),
                         item.getId());
             } else {
-                mDelegate.startDetailActivity(item.getId(), null);
+                EnhancedBookmarkUtils.startEditActivity(getContext(), item.getId());
             }
             return true;
         } else if (menuItem.getItemId() == R.id.selection_mode_move_menu_id) {

@@ -4,11 +4,7 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityOptions;
-import android.content.Intent;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -30,7 +26,6 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -424,22 +419,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     @Override
     public DrawerLayout getDrawerLayout() {
         return mDrawer;
-    }
-
-    @Override
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void startDetailActivity(BookmarkId bookmarkId, View view) {
-        Intent intent = new Intent(mActivity, EnhancedBookmarkDetailActivity.class);
-        intent.putExtra(EnhancedBookmarkDetailActivity.INTENT_BOOKMARK_ID, bookmarkId.toString());
-        // Shared element animation is disabled on tablet because of bad quality.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || view == null
-                || DeviceFormFactor.isTablet(mActivity)) {
-            mActivity.startActivity(intent);
-        } else {
-            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(mActivity, view,
-                    mActivity.getString(R.string.enhanced_bookmark_detail_transition_name));
-            mActivity.startActivity(intent, options.toBundle());
-        }
     }
 
     @Override

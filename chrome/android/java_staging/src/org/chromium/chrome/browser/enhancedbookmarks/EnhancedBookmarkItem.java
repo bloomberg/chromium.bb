@@ -180,7 +180,7 @@ abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookm
                     if (position == 0) {
                         setChecked(mDelegate.toggleSelectionForBookmark(mBookmarkId));
                     } else if (position == 1) {
-                        mDelegate.startDetailActivity(mBookmarkId, mSalientImageView);
+                        EnhancedBookmarkUtils.startEditActivity(getContext(), mBookmarkId);
                     } else if (position == 2) {
                         EnhancedBookmarkFolderSelectActivity.startFolderSelectActivity(getContext(),
                                 mBookmarkId);

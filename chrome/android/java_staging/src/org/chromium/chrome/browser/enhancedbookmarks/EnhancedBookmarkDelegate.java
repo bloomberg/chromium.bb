@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
-import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
-import android.view.View;
 
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
@@ -109,16 +107,6 @@ interface EnhancedBookmarkDelegate {
      *                       {@link LaunchLocation} values
      */
     void openBookmark(BookmarkId bookmark, int launchLocation);
-
-    /**
-     * Starts detail activity with shared element animation. On Lollipop and later devices, shows a
-     * shared image animation. On earlier devices, opens the activity using the standard Activity
-     * transition.
-     * @param bookmarkId The bookmark that the detail activity shows.
-     * @param view The view to share for activity transition animation. If null, no transition is
-     *            displayed.
-     */
-    void startDetailActivity(BookmarkId bookmarkId, @Nullable View view);
 
     /**
      * Closes the EnhancedBookmark Activity on Phone. Does nothing on tablet.

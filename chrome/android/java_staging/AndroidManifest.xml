@@ -279,8 +279,9 @@ by a child template that "extends" this file.
             android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>
-        <activity android:name="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDetailActivity"
+        <activity android:name="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkEditActivity"
             android:theme="@style/EnhancedBookmarkDialogWhite"
+            android:label="@string/edit_bookmark"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>
         <activity android:name="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkAddEditFolderActivity"
