@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/common/host_discardable_shared_memory_manager.h"
+
+#include "content/public/common/child_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -67,7 +69,8 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, AllocateForChild) {
 
   base::SharedMemoryHandle shared_handle;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, 0, &shared_handle);
+      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
+      kDataSize, 0, &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);
@@ -88,7 +91,8 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
 
   base::SharedMemoryHandle shared_handle1;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, 1, &shared_handle1);
+      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
+      kDataSize, 1, &shared_handle1);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle1));
 
   TestDiscardableSharedMemory memory1(shared_handle1);
@@ -97,7 +101,8 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
 
   base::SharedMemoryHandle shared_handle2;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, 2, &shared_handle2);
+      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
+      kDataSize, 2, &shared_handle2);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle2));
 
   TestDiscardableSharedMemory memory2(shared_handle2);
@@ -152,7 +157,8 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
 
   base::SharedMemoryHandle shared_handle;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, 0, &shared_handle);
+      base::GetCurrentProcessHandle(), ChildProcessHost::kInvalidUniqueID,
+      kDataSize, 0, &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);

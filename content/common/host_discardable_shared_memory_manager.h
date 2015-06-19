@@ -41,19 +41,20 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   // A valid shared memory handle is returned on success.
   void AllocateLockedDiscardableSharedMemoryForChild(
       base::ProcessHandle process_handle,
+      int child_process_id,
       size_t size,
       DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
 
   // Call this to notify the manager that child process associated with
-  // |process_handle| has deleted discardable memory segment with |id|.
+  // |child_process_id| has deleted discardable memory segment with |id|.
   void ChildDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
-                                           base::ProcessHandle process_handle);
+                                           int child_process_id);
 
   // Call this to notify the manager that child process associated with
-  // |process_handle| has been removed. The manager will use this to release
+  // |child_process_id| has been removed. The manager will use this to release
   // memory segments allocated for child process to the OS.
-  void ProcessRemoved(base::ProcessHandle process_handle);
+  void ProcessRemoved(int child_process_id);
 
   // The maximum number of bytes of memory that may be allocated. This will
   // cause memory usage to be reduced if currently above |limit|.
@@ -90,11 +91,12 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
 
   void AllocateLockedDiscardableSharedMemory(
       base::ProcessHandle process_handle,
+      int client_process_id,
       size_t size,
       DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
   void DeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
-                                      base::ProcessHandle process_handle);
+                                      int client_process_id);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
   void ReduceMemoryUsageUntilWithinMemoryLimit();
@@ -109,7 +111,7 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   base::Lock lock_;
   typedef base::hash_map<DiscardableSharedMemoryId,
                          scoped_refptr<MemorySegment>> MemorySegmentMap;
-  typedef base::hash_map<base::ProcessHandle, MemorySegmentMap> ProcessMap;
+  typedef base::hash_map<int, MemorySegmentMap> ProcessMap;
   ProcessMap processes_;
   // Note: The elements in |segments_| are arranged in such a way that they form
   // a heap. The LRU memory segment always first.
