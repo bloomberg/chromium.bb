@@ -24,6 +24,8 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   history::URLDatabase* GetInMemoryDatabase() override;
   TemplateURLService* GetTemplateURLService() override;
   const SearchTermsData& GetSearchTermsData() override;
+  scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
+  scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
   std::string GetAcceptLanguages() override;
   bool IsOffTheRecord() override;
   bool SearchSuggestEnabled() override;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/shortcuts_provider.h"
+#include "components/omnibox/shortcuts_provider.h"
 
 #include <algorithm>
 #include <cmath>
@@ -18,16 +18,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/history_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
@@ -51,13 +46,12 @@ class DestinationURLEqualsURL {
 
 const int ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance = 1199;
 
-ShortcutsProvider::ShortcutsProvider(Profile* profile)
+ShortcutsProvider::ShortcutsProvider(AutocompleteProviderClient* client)
     : AutocompleteProvider(AutocompleteProvider::TYPE_SHORTCUTS),
-      profile_(profile),
-      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
+      client_(client),
+      languages_(client_->GetAcceptLanguages()),
       initialized_(false) {
-  scoped_refptr<ShortcutsBackend> backend =
-      ShortcutsBackendFactory::GetForProfile(profile_);
+  scoped_refptr<ShortcutsBackend> backend = client_->GetShortcutsBackend();
   if (backend.get()) {
     backend->AddObserver(this);
     if (backend->initialized())
@@ -95,7 +89,7 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   // When a user deletes a match, he probably means for the URL to disappear out
   // of history entirely. So nuke all shortcuts that map to this URL.
   scoped_refptr<ShortcutsBackend> backend =
-      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+      client_->GetShortcutsBackendIfExists();
   if (backend.get())  // Can be NULL in Incognito.
     backend->DeleteShortcutsWithURL(url);
 
@@ -106,16 +100,14 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   // Delete the match from the history DB. This will eventually result in a
   // second call to DeleteShortcutsWithURL(), which is harmless.
-  history::HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
+  history::HistoryService* const history_service = client_->GetHistoryService();
   DCHECK(history_service);
   history_service->DeleteURL(url);
 }
 
 ShortcutsProvider::~ShortcutsProvider() {
   scoped_refptr<ShortcutsBackend> backend =
-      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+      client_->GetShortcutsBackendIfExists();
   if (backend.get())
     backend->RemoveObserver(this);
 }
@@ -126,7 +118,7 @@ void ShortcutsProvider::OnShortcutsLoaded() {
 
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   scoped_refptr<ShortcutsBackend> backend =
-      ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+      client_->GetShortcutsBackendIfExists();
   if (!backend.get())
     return;
   // Get the URLs from the shortcuts database with keys that partially or
@@ -138,8 +130,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
       input.current_page_classification(), &max_relevance))
     max_relevance = kShortcutsProviderDefaultMaxRelevance;
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
   const base::string16 fixed_up_input(FixupUserInput(input).second);
   for (ShortcutsBackend::ShortcutMap::const_iterator it =
            FindFirstMatch(term_string, backend.get());
@@ -234,9 +225,8 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
           match.inline_autocompletion.empty();
     }
   }
-  match.EnsureUWYTIsAllowedToBeDefault(
-      input.canonicalized_url(),
-      TemplateURLServiceFactory::GetForProfile(profile_));
+  match.EnsureUWYTIsAllowedToBeDefault(input.canonicalized_url(),
+                                       client_->GetTemplateURLService());
 
   // Try to mark pieces of the contents and description as matches if they
   // appear in |input.text()|.

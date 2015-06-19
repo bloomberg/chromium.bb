@@ -86,6 +86,8 @@
         'omnibox/shortcuts_backend.h',
         'omnibox/shortcuts_database.cc',
         'omnibox/shortcuts_database.h',
+        'omnibox/shortcuts_provider.cc',
+        'omnibox/shortcuts_provider.h',
         'omnibox/suggestion_answer.cc',
         'omnibox/suggestion_answer.h',
         'omnibox/url_index_private_data.cc',

@@ -53,6 +53,8 @@ static_library("omnibox") {
     "shortcuts_backend.h",
     "shortcuts_database.cc",
     "shortcuts_database.h",
+    "shortcuts_provider.cc",
+    "shortcuts_provider.h",
     "suggestion_answer.cc",
     "suggestion_answer.h",
     "url_index_private_data.cc",

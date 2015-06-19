@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_SHORTCUTS_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_SHORTCUTS_PROVIDER_H_
 
 #include <map>
 #include <set>
@@ -13,7 +13,7 @@
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/shortcuts_backend.h"
 
-class Profile;
+class AutocompleteProviderClient;
 class ShortcutsProviderTest;
 
 // Provider of recently autocompleted links. Provides autocomplete suggestions
@@ -24,7 +24,7 @@ class ShortcutsProvider
     : public AutocompleteProvider,
       public ShortcutsBackend::ShortcutsBackendObserver {
  public:
-  explicit ShortcutsProvider(Profile* profile);
+  explicit ShortcutsProvider(AutocompleteProviderClient* client);
 
   // Performs the autocompletion synchronously. Since no asynch completion is
   // performed |minimal_changes| is ignored.
@@ -103,9 +103,9 @@ class ShortcutsProvider
   // The default max relevance unless overridden by a field trial.
   static const int kShortcutsProviderDefaultMaxRelevance;
 
-  Profile* profile_;
+  AutocompleteProviderClient* client_;
   std::string languages_;
   bool initialized_;
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_SHORTCUTS_PROVIDER_H_

@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -63,6 +64,16 @@ TemplateURLService* ChromeAutocompleteProviderClient::GetTemplateURLService() {
 
 const SearchTermsData& ChromeAutocompleteProviderClient::GetSearchTermsData() {
   return search_terms_data_;
+}
+
+scoped_refptr<ShortcutsBackend>
+ChromeAutocompleteProviderClient::GetShortcutsBackend() {
+  return ShortcutsBackendFactory::GetForProfile(profile_);
+}
+
+scoped_refptr<ShortcutsBackend>
+ChromeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
+  return ShortcutsBackendFactory::GetForProfileIfExists(profile_);
 }
 
 std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() {

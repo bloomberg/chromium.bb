@@ -16,7 +16,6 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/builtin_provider.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
-#include "chrome/browser/autocomplete/shortcuts_provider.h"
 #include "chrome/browser/autocomplete/zero_suggest_provider.h"
 #include "components/omnibox/bookmark_provider.h"
 #include "components/omnibox/history_quick_provider.h"
@@ -24,6 +23,7 @@
 #include "components/omnibox/keyword_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/search_provider.h"
+#include "components/omnibox/shortcuts_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "grit/components_strings.h"
@@ -213,7 +213,7 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(search_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
-    providers_.push_back(new ShortcutsProvider(profile));
+    providers_.push_back(new ShortcutsProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
     zero_suggest_provider_ = ZeroSuggestProvider::Create(
         provider_client_.get(), this, template_url_service, profile);

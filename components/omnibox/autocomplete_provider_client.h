@@ -5,14 +5,17 @@
 #ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 #define COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/shortcuts_backend.h"
 
 class AutocompleteController;
 struct AutocompleteMatch;
 class AutocompleteSchemeClassifier;
 class GURL;
+class ShortcutsBackend;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -41,6 +44,8 @@ class AutocompleteProviderClient {
   virtual history::URLDatabase* GetInMemoryDatabase() = 0;
   virtual TemplateURLService* GetTemplateURLService() = 0;
   virtual const SearchTermsData& GetSearchTermsData() = 0;
+  virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackend() = 0;
+  virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() = 0;
 
   // The value to use for Accept-Languages HTTP header when making an HTTP
   // request.

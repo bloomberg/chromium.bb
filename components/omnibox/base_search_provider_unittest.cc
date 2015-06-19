@@ -32,6 +32,15 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   MOCK_METHOD0(GetInMemoryDatabase, history::URLDatabase*());
   MOCK_METHOD0(GetTemplateURLService, TemplateURLService*());
   MOCK_METHOD0(GetSearchTermsData, const SearchTermsData&());
+
+  // Can't mock scoped_refptr :\.
+  scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override {
+    return nullptr;
+  }
+  scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override {
+    return nullptr;
+  }
+
   MOCK_METHOD0(GetAcceptLanguages, std::string());
   MOCK_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(SearchSuggestEnabled, bool());

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/shortcuts_provider.h"
+#include "components/omnibox/shortcuts_provider.h"
 
 #include <math.h>
 
@@ -17,6 +17,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -288,6 +289,7 @@ class ShortcutsProviderTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   TestingProfile profile_;
+  ChromeAutocompleteProviderClient client_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
@@ -297,7 +299,8 @@ class ShortcutsProviderTest : public testing::Test {
 
 ShortcutsProviderTest::ShortcutsProviderTest()
     : ui_thread_(content::BrowserThread::UI, &message_loop_),
-      file_thread_(content::BrowserThread::FILE, &message_loop_) {
+      file_thread_(content::BrowserThread::FILE, &message_loop_),
+      client_(&profile_) {
 }
 
 void ShortcutsProviderTest::SetUp() {
@@ -306,7 +309,7 @@ void ShortcutsProviderTest::SetUp() {
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
   ASSERT_TRUE(backend_.get());
   ASSERT_TRUE(profile_.CreateHistoryService(true, false));
-  provider_ = new ShortcutsProvider(&profile_);
+  provider_ = new ShortcutsProvider(&client_);
   FillData(shortcut_test_db, arraysize(shortcut_test_db));
 }
 
