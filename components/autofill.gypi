@@ -294,17 +294,27 @@
           'includes': [ '../build/protoc.gypi' ]
         },
        {
-         # GN version: //components/autofill/content/browser:test_support
+         # GN version: //components/autofill/content/browser/wallet:test_support
+         # GN version: //components/autofill/content/renderer:test_support
          'target_name': 'autofill_content_test_support',
          'type': 'static_library',
          'dependencies': [
-            '../testing/gmock.gyp:gmock',
+           'autofill_content_browser',
+           'autofill_content_renderer',
+           '../base/base.gyp:base',
+           '../ipc/ipc.gyp:ipc',
+           '../skia/skia.gyp:skia',
+           '../testing/gmock.gyp:gmock',
          ],
          'sources': [
            'autofill/content/browser/wallet/mock_wallet_client.cc',
            'autofill/content/browser/wallet/mock_wallet_client.h',
            'autofill/content/browser/wallet/wallet_test_util.cc',
            'autofill/content/browser/wallet/wallet_test_util.h',
+           'autofill/content/renderer/test_password_autofill_agent.cc',
+           'autofill/content/renderer/test_password_autofill_agent.h',
+           'autofill/content/renderer/test_password_generation_agent.cc',
+           'autofill/content/renderer/test_password_generation_agent.h',
          ],
          'include_dirs': [ '..' ],
        },

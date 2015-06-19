@@ -42,3 +42,20 @@ static_library("renderer") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_password_autofill_agent.cc",
+    "test_password_autofill_agent.h",
+    "test_password_generation_agent.cc",
+    "test_password_generation_agent.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/autofill/content/renderer",
+    "//ipc",
+    "//skia",
+  ]
+}

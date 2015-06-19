@@ -4,10 +4,6 @@
 {
   'variables': {
     'chrome_unit_tests_sources': [
-      '../components/autofill/content/renderer/test_password_autofill_agent.cc',
-      '../components/autofill/content/renderer/test_password_autofill_agent.h',
-      '../components/autofill/content/renderer/test_password_generation_agent.cc',
-      '../components/autofill/content/renderer/test_password_generation_agent.h',
       # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
       # dependency is needed to make commit bots run unit_tests on
       # histograms.xml changes.

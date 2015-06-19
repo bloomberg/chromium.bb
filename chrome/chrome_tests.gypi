@@ -24,10 +24,6 @@
       # The list of sources which is only used by chrome browser tests.
       '../apps/app_restore_service_browsertest.cc',
       '../apps/load_and_launch_browsertest.cc',
-      '../components/autofill/content/renderer/test_password_autofill_agent.cc',
-      '../components/autofill/content/renderer/test_password_autofill_agent.h',
-      '../components/autofill/content/renderer/test_password_generation_agent.cc',
-      '../components/autofill/content/renderer/test_password_generation_agent.h',
       # TODO(rockot): Remove this once extensions_browsertests exists.
       '../extensions/browser/api/app_window/app_window_apitest.cc',
       '../extensions/browser/api/bluetooth/bluetooth_apitest.cc',
@@ -1231,10 +1227,6 @@
       'test/chromedriver/net/websocket.h',
     ],
     'performance_browser_tests_sources': [
-      '../components/autofill/content/renderer/test_password_autofill_agent.cc',
-      '../components/autofill/content/renderer/test_password_autofill_agent.h',
-      '../components/autofill/content/renderer/test_password_generation_agent.cc',
-      '../components/autofill/content/renderer/test_password_generation_agent.h',
       'app/chrome_command_ids.h',
       'app/chrome_dll.rc',
       'app/chrome_dll_resource.h',
@@ -2508,6 +2500,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
+        '../components/components.gyp:autofill_content_test_support',
         '../media/cast/cast.gyp:cast_test_utility',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
