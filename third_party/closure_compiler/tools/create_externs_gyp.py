@@ -21,7 +21,6 @@ _EXTERNS_TEMPLATE = """
 #    NOTE: THIS FILE IS GENERATED. DO NOT EDIT IT!     #
 # Instead, run create_externs_gyp.py to regenerate it. #
 ########################################################
-
 {
   'targets': [
     %s,
@@ -32,10 +31,7 @@ _EXTERNS_TEMPLATE = """
 _TARGET_TEMPLATE = """
     {
       'target_name': '%s',
-      'type': 'none',
-      'all_dependent_settings': {
-        'sources+': ['%s'],
-      },
+      'includes': '../externs.gyp',
     }"""
 
 
@@ -43,7 +39,7 @@ def CreateExternsGyp():
   externs_dir = os.path.join(os.path.dirname(__file__), "..", "externs")
   externs_files = [f for f in os.listdir(externs_dir) if f.endswith('.js')]
   externs_files.sort()
-  targets = [_TARGET_TEMPLATE % (f[:-3], f) for f in externs_files]
+  targets = [_TARGET_TEMPLATE % f[:-3] for f in externs_files]
   return _EXTERNS_TEMPLATE % (date.today().year, ",".join(targets).strip())
 
 
