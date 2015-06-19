@@ -24,7 +24,7 @@ namespace {
 // MIME types
 const char kTextHtml[] = "text/html";
 const char kTextXml[] = "text/xml";
-const char xAppRssXml[] = "application/rss+xml";
+const char kAppRssXml[] = "application/rss+xml";
 const char kAppXml[] = "application/xml";
 const char kAppJson[] = "application/json";
 const char kTextJson[] = "text/json";
@@ -74,7 +74,7 @@ CrossSiteDocumentMimeType CrossSiteDocumentClassifier::GetCanonicalMimeType(
   }
 
   if (base::LowerCaseEqualsASCII(mime_type, kTextXml) ||
-      base::LowerCaseEqualsASCII(mime_type, xAppRssXml) ||
+      base::LowerCaseEqualsASCII(mime_type, kAppRssXml) ||
       base::LowerCaseEqualsASCII(mime_type, kAppXml)) {
     return CROSS_SITE_DOCUMENT_MIME_TYPE_XML;
   }
@@ -150,7 +150,7 @@ bool CrossSiteDocumentClassifier::SniffForHTML(StringPiece data) {
   // process, we should do single-thread checking here for the static
   // initializer.
   static const StringPiece kHtmlSignatures[] = {
-      StringPiece("<!DOCTYPE html"),  // HTML5 spec
+      StringPiece("<!doctype html"),  // HTML5 spec
       StringPiece("<script"),         // HTML5 spec, Mozilla
       StringPiece("<html"),           // HTML5 spec, Mozilla
       StringPiece("<head"),           // HTML5 spec, Mozilla
@@ -165,8 +165,7 @@ bool CrossSiteDocumentClassifier::SniffForHTML(StringPiece data) {
       StringPiece("<b"),              // Mozilla
       StringPiece("<body"),           // Mozilla
       StringPiece("<br"),             // Mozilla
-      StringPiece("<p"),              // Mozilla
-      StringPiece("<?xml")            // Mozilla
+      StringPiece("<p")               // Mozilla
   };
 
   while (data.length() > 0) {

@@ -57,11 +57,11 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
     } else if (MatchPattern(resource_name, "*.txt")) {
       bucket = "Plain";
       mime_type = 3;
-      if (MatchPattern(resource_name, "json.*")) {
+      if (MatchPattern(resource_name, "json*")) {
         bucket += ".JSON";
-      } else if (MatchPattern(resource_name, "html.*")) {
+      } else if (MatchPattern(resource_name, "html*")) {
         bucket += ".HTML";
-      } else if (MatchPattern(resource_name, "xml.*")) {
+      } else if (MatchPattern(resource_name, "xml*")) {
         bucket += ".XML";
       }
     } else {
@@ -172,16 +172,20 @@ IN_PROC_BROWSER_TEST_F(SiteIsolationStatsGathererBrowserTest,
   FetchHistogramsFromChildProcesses();
 
   // The following are files under content/test/data/site_isolation. All
-  // should be disallowed for XHR under the document blocking policy.
-  // TODO(nick): xml.txt is logged under HTML, not XML. Not sure if this is a
-  // bug with the logging or the test expectation.
-  const char* blocked_resources[] = {"valid.html",
-                                     "comment_valid.html",
-                                     "valid.xml",
-                                     "valid.json",
-                                     "html.txt",
-                                     /* "xml.txt", */  // Broken, see above.
-                                     "json.txt"};
+  // should be disallowed for cross site XHR under the document blocking policy.
+  const char* blocked_resources[] = {
+      "comment_valid.html",
+      "html.txt",
+      "html4_dtd.html",
+      "html4_dtd.txt",
+      "html5_dtd.html",
+      "html5_dtd.txt",
+      "json.txt",
+      "valid.html",
+      "valid.json",
+      "valid.xml",
+      "xml.txt",
+  };
 
   for (const char* resource : blocked_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
