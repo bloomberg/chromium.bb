@@ -45,20 +45,21 @@ SizeSpecificPartitionAllocator<3328> Partitions::m_objectModelAllocator;
 SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
 HistogramEnumerationFunction Partitions::m_histogramEnumeration = nullptr;
 
-void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
+void Partitions::initialize()
 {
-    static int lock = 0;
-    // Guard against two threads hitting here in parallel.
-    spinLockLock(&lock);
     if (!s_initialized) {
         m_fastMallocAllocator.init();
         m_bufferAllocator.init();
         m_objectModelAllocator.init();
         m_layoutAllocator.init();
-        m_histogramEnumeration = histogramEnumeration;
         s_initialized = true;
     }
-    spinLockUnlock(&lock);
+}
+
+void Partitions::setHistogramEnumeration(HistogramEnumerationFunction histogramEnumeration)
+{
+    ASSERT(!m_histogramEnumeration);
+    m_histogramEnumeration = histogramEnumeration;
 }
 
 void Partitions::shutdown()

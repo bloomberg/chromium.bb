@@ -39,7 +39,11 @@ namespace WTF {
 
 class WTF_EXPORT Partitions {
 public:
-    static void initialize(HistogramEnumerationFunction = nullptr);
+    static void initialize();
+    // TODO(bashi): Remove this function and make initialize() take
+    // HistogramEnumerationFunction when we can make sure that WTF::initialize()
+    // is called before using this class.
+    static void setHistogramEnumeration(HistogramEnumerationFunction);
     static void shutdown();
     ALWAYS_INLINE static PartitionRootGeneric* bufferPartition()
     {

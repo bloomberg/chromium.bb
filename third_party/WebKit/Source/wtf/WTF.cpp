@@ -53,7 +53,8 @@ void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncr
     setCurrentTimeFunction(currentTimeFunction);
     setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
     setSystemTraceTimeFunction(systemTraceTimeFunction);
-    Partitions::initialize(histogramEnumerationFunction);
+    Partitions::initialize();
+    Partitions::setHistogramEnumeration(histogramEnumerationFunction);
     ArrayBufferContents::setAdjustAmoutOfExternalAllocatedMemoryFunction(adjustAmountOfExternalAllocatedMemoryFunction);
     initializeThreading();
 }
