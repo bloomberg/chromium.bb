@@ -814,7 +814,9 @@ public class DocumentActivity extends ChromeActivity {
             RecordUserAction.record("MobileMenuOpenTabs");
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();
-            getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            if (getContextualSearchManager() != null) {
+                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
             } else {

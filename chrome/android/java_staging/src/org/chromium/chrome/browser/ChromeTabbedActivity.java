@@ -966,7 +966,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             RecordUserAction.record("MobileMenuCloseAllTabs");
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();
-            getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            if (getContextualSearchManager() != null) {
+                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
             } else {
