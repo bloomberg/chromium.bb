@@ -4,12 +4,17 @@
 
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/shortcuts_backend.h"
 #include "chrome/browser/autocomplete/shortcuts_extensions_manager.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 #if defined(ENABLE_EXTENSIONS)
@@ -55,6 +60,7 @@ ShortcutsBackendFactory::ShortcutsBackendFactory()
         "ShortcutsBackend",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
 ShortcutsBackendFactory::~ShortcutsBackendFactory() {}
@@ -82,8 +88,14 @@ void ShortcutsBackendFactory::BrowserContextShutdown(
 scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
     Profile* profile,
     bool suppress_db) {
-  scoped_refptr<ShortcutsBackend> backend(
-      new ShortcutsBackend(profile, suppress_db));
+  scoped_refptr<ShortcutsBackend> backend(new ShortcutsBackend(
+      TemplateURLServiceFactory::GetForProfile(profile),
+      make_scoped_ptr(new UIThreadSearchTermsData(profile)),
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS),
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::DB),
+      profile->GetPath().Append(chrome::kShortcutsDatabaseName), suppress_db));
 #if defined(ENABLE_EXTENSIONS)
   ShortcutsExtensionsManager* extensions_manager =
       new ShortcutsExtensionsManager(profile);

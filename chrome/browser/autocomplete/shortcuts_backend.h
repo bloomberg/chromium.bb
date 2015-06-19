@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -22,11 +23,13 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/shortcuts_database.h"
+#include "components/search_engines/search_terms_data.h"
 #include "url/gurl.h"
 
-class Profile;
+class TemplateURLService;
 
 namespace history {
+class HistoryService;
 class ShortcutsDatabase;
 };  // namespace history
 
@@ -38,10 +41,14 @@ class ShortcutsBackend : public RefcountedKeyedService,
   typedef std::multimap<base::string16, const ShortcutsDatabase::Shortcut>
       ShortcutMap;
 
-  // |profile| is necessary for profile notifications only and can be NULL in
-  // unit-tests. For unit testing, set |suppress_db| to true to prevent creation
+  // For unit testing, set |suppress_db| to true to prevent creation
   // of the database, in which case all operations are performed in memory only.
-  ShortcutsBackend(Profile* profile, bool suppress_db);
+  ShortcutsBackend(TemplateURLService* template_url_service,
+                   scoped_ptr<SearchTermsData> search_terms_data,
+                   history::HistoryService* history_service,
+                   scoped_refptr<base::SequencedTaskRunner> db_runner,
+                   base::FilePath database_path,
+                   bool suppress_db);
 
   // The interface is guaranteed to be called on the thread AddObserver()
   // was called.
@@ -98,7 +105,8 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   static ShortcutsDatabase::Shortcut::MatchCore MatchToMatchCore(
       const AutocompleteMatch& match,
-      Profile* profile);
+      TemplateURLService* template_url_service,
+      SearchTermsData* search_terms_data);
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
@@ -134,7 +142,9 @@ class ShortcutsBackend : public RefcountedKeyedService,
   // Deletes all of the shortcuts.
   bool DeleteAllShortcuts();
 
-  Profile* profile_;
+  TemplateURLService* template_url_service_;
+  scoped_ptr<SearchTermsData> search_terms_data_;
+
   CurrentState current_state_;
   base::ObserverList<ShortcutsBackendObserver> observer_list_;
   scoped_refptr<ShortcutsDatabase> db_;
@@ -151,6 +161,9 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
+
+  scoped_refptr<base::SequencedTaskRunner> main_runner_;
+  scoped_refptr<base::SequencedTaskRunner> db_runner_;
 
   // For some unit-test only.
   bool no_db_access_;
