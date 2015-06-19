@@ -18,7 +18,6 @@
           'common/presentation/presentation_service.mojom',
           'common/process_control.mojom',
           'common/render_frame_setup.mojom',
-          'common/vr_service.mojom',
 
           # NOTE: Sources duplicated in
           # //content/public/common/BUILD.gn:mojo_bindings.

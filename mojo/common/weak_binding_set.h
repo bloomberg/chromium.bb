@@ -42,8 +42,6 @@ class WeakBindingSet : public ErrorHandler {
     bindings_.clear();
   }
 
-  bool empty() const { return bindings_.empty(); }
-
  private:
   // ErrorHandler implementation.
   void OnConnectionError() override {

@@ -114,7 +114,6 @@ struct RequestNavigationParams;
 struct ResourceResponseHead;
 struct StartNavigationParams;
 struct StreamOverrideParameters;
-class VRDispatcher;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -530,10 +529,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool exitFullscreen();
   virtual blink::WebPermissionClient* permissionClient();
   virtual blink::WebAppBannerClient* appBannerClient();
-
-#if defined(ENABLE_WEBVR)
-  blink::WebVRClient* webVRClient() override;
-#endif
 
   // WebMediaPlayerDelegate implementation:
   void DidPlay(blink::WebMediaPlayer* player) override;
@@ -976,11 +971,6 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_ptr<PermissionDispatcher> permission_client_;
 
   scoped_ptr<blink::WebAppBannerClient> app_banner_client_;
-
-#if defined(ENABLE_WEBVR)
-  // The VR dispatcher attached to the frame, lazily initialized.
-  scoped_ptr<VRDispatcher> vr_dispatcher_;
-#endif
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // The external popup for the currently showing select popup.

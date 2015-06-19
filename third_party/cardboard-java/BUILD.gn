@@ -5,9 +5,9 @@
 import("//build/config/android/rules.gni")
 
 # GYP: //third_party/cardboard-java/cardboard.gyp:cardboard_jar
-android_java_prebuilt("cardboard-java") {
+java_prebuilt("cardboard-java") {
   jar_path = "src/CardboardSample/libs/cardboard.jar"
   deps = [
-    "//third_party/android_protobuf:protobuf_nano_javalib",
+    "//third_party/android_protobuf/android_protobuf.gyp:protobuf_nano_javalib",
   ]
 }

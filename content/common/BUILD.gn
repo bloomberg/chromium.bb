@@ -492,7 +492,6 @@ mojom("mojo_bindings") {
     "presentation/presentation_service.mojom",
     "process_control.mojom",
     "render_frame_setup.mojom",
-    "vr_service.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

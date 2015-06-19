@@ -186,10 +186,6 @@
 #include "media/renderers/default_renderer_factory.h"
 #endif
 
-#if defined(ENABLE_WEBVR)
-#include "content/renderer/vr/vr_dispatcher.h"
-#endif
-
 using blink::WebContextMenuData;
 using blink::WebData;
 using blink::WebDataSource;
@@ -3741,15 +3737,6 @@ blink::WebAppBannerClient* RenderFrameImpl::appBannerClient() {
 
   return app_banner_client_.get();
 }
-
-#if defined(ENABLE_WEBVR)
-blink::WebVRClient* RenderFrameImpl::webVRClient() {
-  if (!vr_dispatcher_)
-    vr_dispatcher_.reset(new VRDispatcher(GetServiceRegistry()));
-
-  return vr_dispatcher_.get();
-}
-#endif
 
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {
   Send(new FrameHostMsg_MediaPlayingNotification(
