@@ -1425,7 +1425,6 @@ crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-3
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
 
-crbug.com/502051 virtual/antialiasedtext/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
 crbug.com/502051 fast/text/ellipsis-platform-font-change.html [ NeedsManualRebaseline ]
 
 crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
