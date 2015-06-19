@@ -406,6 +406,10 @@ class MetricsService : public base::HistogramFlattener {
   // i.e., histograms with the |kUmaStabilityHistogramFlag| flag set.
   void RecordCurrentStabilityHistograms();
 
+  // Skips staged upload and discards the log. Used in case of unsuccessful
+  // upload or intentional sampling of logs.
+  void SkipAndDiscardUpload();
+
   // Manager for the various in-flight logs.
   MetricsLogManager log_manager_;
 

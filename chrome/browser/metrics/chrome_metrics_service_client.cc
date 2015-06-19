@@ -95,7 +95,9 @@ const int kStandardUploadIntervalSeconds = 30 * 60;  // Thirty minutes.
 // experimental group for enabled cellular uploads.
 bool IsCellularLogicEnabled() {
   if (variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                         "Enabled") != "true") {
+                                         "Enabled") != "true" ||
+      variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
+                                         "Optimize") == "false") {
     return false;
   }
 

@@ -136,6 +136,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -154,6 +155,7 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace metrics {
 
@@ -222,6 +224,21 @@ void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
   local_state->CommitPendingWrite();
 }
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+// Determines if current log should be sent based on sampling rate. Returns true
+// if the sampling rate is not set.
+bool ShouldUploadLog() {
+  std::string probability_str = variations::GetVariationParamValue(
+      "UMA_EnableCellularLogUpload", "Sample_Probability");
+  if (probability_str.empty())
+    return true;
+
+  int probability;
+  // In case specified sampling rate is invalid.
+  if (!base::StringToInt(probability_str, &probability))
+    return true;
+  return base::RandInt(1, 100) <= probability;
+}
 
 }  // namespace
 
@@ -933,6 +950,11 @@ void MetricsService::SendStagedLog() {
   DCHECK(!log_upload_in_progress_);
   log_upload_in_progress_ = true;
 
+  if (!ShouldUploadLog()) {
+    SkipAndDiscardUpload();
+    return;
+  }
+
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(
         base::Bind(&MetricsService::OnLogUploadComplete,
@@ -946,9 +968,7 @@ void MetricsService::SendStagedLog() {
   UMA_HISTOGRAM_BOOLEAN("UMA.UploadCreation", success);
   if (!success) {
     // Skip this upload and hope things work out next time.
-    log_manager_.DiscardStagedLog();
-    scheduler_->UploadCancelled();
-    log_upload_in_progress_ = false;
+    SkipAndDiscardUpload();
     return;
   }
 
@@ -1113,7 +1133,7 @@ void MetricsService::LogCleanShutdown() {
 
 bool MetricsService::ShouldLogEvents() {
   // We simply don't log events to UMA if there is a single incognito
-  // session visible. The problem is that we always notify using the orginal
+  // session visible. The problem is that we always notify using the original
   // profile in order to simplify notification processing.
   return !client_->IsOffTheRecordSessionActive();
 }
@@ -1127,6 +1147,12 @@ void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
 void MetricsService::RecordCurrentState(PrefService* pref) {
   pref->SetInt64(prefs::kStabilityLastTimestampSec,
                  base::Time::Now().ToTimeT());
+}
+
+void MetricsService::SkipAndDiscardUpload() {
+  log_manager_.DiscardStagedLog();
+  scheduler_->UploadCancelled();
+  log_upload_in_progress_ = false;
 }
 
 }  // namespace metrics
