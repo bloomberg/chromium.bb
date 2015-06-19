@@ -1584,6 +1584,7 @@ class Port(object):
             PhysicalTestSuite('scrollbars', ['--enable-slimming-paint']),
             PhysicalTestSuite('selection', ['--enable-slimming-paint']),
             PhysicalTestSuite('svg', ['--enable-slimming-paint']),
+            PhysicalTestSuite('tables', ['--enable-slimming-paint']),
             PhysicalTestSuite('transforms', ['--enable-slimming-paint']),
         ]
 
