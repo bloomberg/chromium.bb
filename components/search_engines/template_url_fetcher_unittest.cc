@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_fetcher.h"
@@ -90,15 +89,24 @@ class TemplateURLFetcherTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherTest);
 };
 
+bool GetTestDataDir(base::FilePath* dir) {
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, dir))
+    return false;
+  *dir = dir->AppendASCII("components")
+             .AppendASCII("test")
+             .AppendASCII("data")
+             .AppendASCII("search_engines");
+  return true;
+}
+
 TemplateURLFetcherTest::TemplateURLFetcherTest()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       callbacks_destroyed_(0),
       add_provider_called_(0),
       waiting_for_download_(false) {
-  base::FilePath src_dir;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
-  test_server_.ServeFilesFromDirectory(
-      src_dir.AppendASCII("chrome/test/data"));
+  base::FilePath test_data_dir;
+  CHECK(GetTestDataDir(&test_data_dir));
+  test_server_.ServeFilesFromDirectory(test_data_dir);
 }
 
 void TemplateURLFetcherTest::DestroyedCallback() {
@@ -119,10 +127,9 @@ void TemplateURLFetcherTest::StartDownload(
     const std::string& osdd_file_name,
     TemplateURLFetcher::ProviderType provider_type,
     bool check_that_file_exists) {
-
   if (check_that_file_exists) {
     base::FilePath osdd_full_path;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &osdd_full_path));
+    ASSERT_TRUE(GetTestDataDir(&osdd_full_path));
     osdd_full_path = osdd_full_path.AppendASCII(osdd_file_name);
     ASSERT_TRUE(base::PathExists(osdd_full_path));
     ASSERT_FALSE(base::DirectoryExists(osdd_full_path));
