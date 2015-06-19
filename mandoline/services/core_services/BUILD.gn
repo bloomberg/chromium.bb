@@ -50,6 +50,10 @@ if (is_android) {
   mojo_native_application("core_services") {
     deps = [
       ":sources",
+      "//third_party/icu:icudata",
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+      "//ui/resources:ui_test_pak",
     ]
     if (is_win) {
       copy("copy_files") {
