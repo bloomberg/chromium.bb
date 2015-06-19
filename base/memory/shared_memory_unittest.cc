@@ -360,12 +360,13 @@ TEST(SharedMemoryTest, ShareReadOnly) {
   // http://crbug.com/320865
   (void)handle;
 #elif defined(OS_POSIX)
-  EXPECT_EQ(O_RDONLY, fcntl(handle.fd, F_GETFL) & O_ACCMODE)
+  int handle_fd = SharedMemory::GetFdFromSharedMemoryHandle(handle);
+  EXPECT_EQ(O_RDONLY, fcntl(handle_fd, F_GETFL) & O_ACCMODE)
       << "The descriptor itself should be read-only.";
 
   errno = 0;
-  void* writable = mmap(
-      NULL, contents.size(), PROT_READ | PROT_WRITE, MAP_SHARED, handle.fd, 0);
+  void* writable = mmap(NULL, contents.size(), PROT_READ | PROT_WRITE,
+                        MAP_SHARED, handle_fd, 0);
   int mmap_errno = errno;
   EXPECT_EQ(MAP_FAILED, writable)
       << "It shouldn't be possible to re-mmap the descriptor writable.";
@@ -519,7 +520,8 @@ TEST(SharedMemoryTest, FilePermissionsAnonymous) {
 
   EXPECT_TRUE(shared_memory.Create(options));
 
-  int shm_fd = shared_memory.handle().fd;
+  int shm_fd =
+      SharedMemory::GetFdFromSharedMemoryHandle(shared_memory.handle());
   struct stat shm_stat;
   EXPECT_EQ(0, fstat(shm_fd, &shm_stat));
   // Neither the group, nor others should be able to read the shared memory
@@ -545,7 +547,8 @@ TEST(SharedMemoryTest, FilePermissionsNamed) {
   // Clean-up the backing file name immediately, we don't need it.
   EXPECT_TRUE(shared_memory.Delete(shared_mem_name));
 
-  int shm_fd = shared_memory.handle().fd;
+  int shm_fd =
+      SharedMemory::GetFdFromSharedMemoryHandle(shared_memory.handle());
   struct stat shm_stat;
   EXPECT_EQ(0, fstat(shm_fd, &shm_stat));
   // Neither the group, nor others should have been able to open the shared
