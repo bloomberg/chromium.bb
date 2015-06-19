@@ -483,8 +483,12 @@ QuicServerSession* QuicDispatcher::CreateQuicSession(
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
-  return new QuicTimeWaitListManager(
-      writer_.get(), this, helper_.get(), supported_versions());
+  // TODO(rjshade): The QuicTimeWaitListManager should take ownership of the
+  // per-connection packet writer.
+  time_wait_list_writer_.reset(
+      packet_writer_factory_->Create(writer_.get(), nullptr));
+  return new QuicTimeWaitListManager(time_wait_list_writer_.get(), this,
+                                     helper_.get(), supported_versions());
 }
 
 bool QuicDispatcher::HandlePacketForTimeWait(

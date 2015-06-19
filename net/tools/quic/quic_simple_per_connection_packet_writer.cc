@@ -52,7 +52,7 @@ void QuicSimplePerConnectionPacketWriter::SetWritable() {
 }
 
 void QuicSimplePerConnectionPacketWriter::OnWriteComplete(WriteResult result) {
-  if (result.status == WRITE_STATUS_ERROR) {
+  if (connection_ && result.status == WRITE_STATUS_ERROR) {
     connection_->OnWriteError(result.error_code);
   }
 }
