@@ -12,9 +12,13 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
+import android.provider.Settings;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.Layout;
 import android.text.Spannable;
@@ -552,6 +556,26 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         return messageBuilder;
     }
 
+    private String getAndroidPermissionForContentSetting(int contentSettingType) {
+        switch(contentSettingType) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+                return android.Manifest.permission.ACCESS_FINE_LOCATION;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return android.Manifest.permission.RECORD_AUDIO;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return android.Manifest.permission.CAMERA;
+            default:
+                return null;
+        }
+    }
+
+    private boolean hasAndroidPermission(int contentSettingType) {
+        String androidPermission = getAndroidPermissionForContentSetting(contentSettingType);
+        return androidPermission == null
+                || (mContext.checkPermission(androidPermission, Process.myPid(), Process.myUid())
+                           == PackageManager.PERMISSION_GRANTED);
+    }
+
     /**
      * Adds a new row for the given permission.
      *
@@ -618,6 +642,18 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         ImageView permissionIcon = (ImageView) permissionRow.findViewById(
                 R.id.website_settings_permission_icon);
         permissionIcon.setImageResource(getImageResourceForPermission(type));
+
+        if (!hasAndroidPermission(type) && currentSetting == ContentSetting.ALLOW) {
+            View permissionUnavailable = permissionRow.findViewById(
+                    R.id.website_settings_permission_unavailable_message);
+            permissionUnavailable.setVisibility(View.VISIBLE);
+
+            permissionIcon.setImageResource(R.drawable.deprecation_warning);
+            permissionIcon.setColorFilter(
+                    mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+
+            permissionRow.setOnClickListener(this);
+        }
 
         TextView permissionStatus = (TextView) permissionRow.findViewById(
                 R.id.website_settings_permission_status);
@@ -739,6 +775,16 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                     if (!mWebContents.isDestroyed()) {
                         ConnectionInfoPopup.show(mContext, mWebContents);
                     }
+                }
+            });
+        } else if (view.getId() == R.id.website_settings_permission_row) {
+            runAfterDismiss(new Runnable() {
+                @Override
+                public void run() {
+                    Intent settingsIntent =
+                            new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+                    mContext.startActivity(settingsIntent);
                 }
             });
         }

@@ -4,6 +4,7 @@
      found in the LICENSE file. -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/website_settings_permission_row"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="12dp" >
@@ -22,4 +23,16 @@
         android:layout_toEndOf="@id/website_settings_permission_icon"
         android:textColor="@color/website_settings_popup_text"
         android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/website_settings_permission_unavailable_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/website_settings_permission_status"
+        android:layout_toEndOf="@id/website_settings_permission_icon"
+        android:lineSpacingExtra="6dp"
+        android:text="@string/page_info_android_permission_blocked"
+        android:textColor="@color/website_settings_popup_text_link"
+        android:textSize="14sp"
+        android:visibility="gone" />
 </RelativeLayout>

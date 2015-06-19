@@ -1316,6 +1316,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_PAGE_INFO_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to describe a blocked permission. Eg: Location - Blocked">
         Blocked
       </message>
+      <message name="IDS_PAGE_INFO_ANDROID_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to indicate a permission has been blocked within Android settings">
+        Turned off in Android Settings
+      </message>
       <message name="IDS_PAGE_INFO_DETAILS_LINK" desc="The label of the link to open the detailed connection information popup from the page info bubble.">
         Details
       </message>
