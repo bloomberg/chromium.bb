@@ -9,6 +9,12 @@ namespace history {
 HistoryClient::HistoryClient() {
 }
 
+HistoryClient::~HistoryClient() {
+}
+
+void HistoryClient::Shutdown() {
+}
+
 void HistoryClient::BlockUntilBookmarksLoaded() {
 }
 

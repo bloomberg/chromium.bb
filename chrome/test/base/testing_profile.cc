@@ -25,7 +25,6 @@
 #include "chrome/browser/favicon/fallback_icon_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
-#include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
@@ -191,9 +190,9 @@ scoped_ptr<KeyedService> CreateTestDesktopNotificationService(
 scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return make_scoped_ptr(new history::HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile),
-      scoped_ptr<history::VisitDelegate>(
-          new history::ContentVisitDelegate(profile))));
+      make_scoped_ptr(new ChromeHistoryClient(
+          BookmarkModelFactory::GetForProfile(profile))),
+      make_scoped_ptr(new history::ContentVisitDelegate(profile))));
 }
 
 scoped_ptr<KeyedService> BuildInMemoryURLIndex(
@@ -229,13 +228,6 @@ scoped_ptr<KeyedService> BuildChromeBookmarkClient(
     content::BrowserContext* context) {
   return make_scoped_ptr(
       new ChromeBookmarkClient(static_cast<Profile*>(context)));
-}
-
-scoped_ptr<KeyedService> BuildChromeHistoryClient(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  return make_scoped_ptr(
-      new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile)));
 }
 
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
@@ -600,8 +592,6 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
-  ChromeHistoryClientFactory::GetInstance()->SetTestingFactory(
-      this, BuildChromeHistoryClient);
   ChromeBookmarkClientFactory::GetInstance()->SetTestingFactory(
       this, BuildChromeBookmarkClient);
   // This creates the BookmarkModel.

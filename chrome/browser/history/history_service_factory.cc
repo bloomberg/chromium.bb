@@ -9,7 +9,6 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
-#include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -67,8 +66,9 @@ void HistoryServiceFactory::ShutdownForProfile(Profile* profile) {
 
 HistoryServiceFactory::HistoryServiceFactory()
     : BrowserContextKeyedServiceFactory(
-          "HistoryService", BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ChromeHistoryClientFactory::GetInstance());
+          "HistoryService",
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(ChromeBookmarkClientFactory::GetInstance());
 }
 
@@ -80,9 +80,9 @@ KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_ptr<history::HistoryService> history_service(
       new history::HistoryService(
-          ChromeHistoryClientFactory::GetForProfile(profile),
-          scoped_ptr<history::VisitDelegate>(
-              new history::ContentVisitDelegate(profile))));
+          make_scoped_ptr(new ChromeHistoryClient(
+              BookmarkModelFactory::GetForProfile(profile))),
+          make_scoped_ptr(new history::ContentVisitDelegate(profile))));
   if (!history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {

@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "sql/init_status.h"
 #include "url/gurl.h"
 
@@ -30,9 +29,13 @@ struct URLAndTitle {
 
 // This class abstracts operations that depend on the embedder's environment,
 // e.g. Chrome.
-class HistoryClient : public KeyedService {
+class HistoryClient {
  public:
   HistoryClient();
+  virtual ~HistoryClient();
+
+  // Called before HistoryService is shutdown.
+  virtual void Shutdown();
 
   // Waits until the bookmarks have been loaded.
   //
@@ -75,7 +78,7 @@ class HistoryClient : public KeyedService {
   virtual void OnHistoryBackendDestroyed(HistoryBackend* history_backend,
                                          const base::FilePath& history_dir);
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(HistoryClient);
 };
 

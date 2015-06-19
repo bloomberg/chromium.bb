@@ -17,8 +17,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
-#include "chrome/browser/history/chrome_history_client_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -61,7 +61,8 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
 
   scoped_ptr<history::HistoryService> history_service(
       new history::HistoryService(
-          ChromeHistoryClientFactory::GetForProfile(profile),
+          make_scoped_ptr(new ChromeHistoryClient(
+              BookmarkModelFactory::GetForProfile(profile))),
           scoped_ptr<history::VisitDelegate>()));
   if (history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),

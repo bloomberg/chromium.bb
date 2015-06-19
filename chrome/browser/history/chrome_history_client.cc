@@ -34,22 +34,37 @@ base::FilePath GetAndroidCacheFileName(const base::FilePath& history_dir) {
 ChromeHistoryClient::ChromeHistoryClient(
     bookmarks::BookmarkModel* bookmark_model)
     : bookmark_model_(bookmark_model) {
-  DCHECK(bookmark_model_);
 }
 
 ChromeHistoryClient::~ChromeHistoryClient() {
 }
 
+void ChromeHistoryClient::Shutdown() {
+  // It's possible that bookmarks haven't loaded and history is waiting for
+  // bookmarks to complete loading. In such a situation history can't shutdown
+  // (meaning if we invoked HistoryService::Cleanup now, we would deadlock). To
+  // break the deadlock we tell BookmarkModel it's about to be deleted so that
+  // it can release the signal history is waiting on, allowing history to
+  // shutdown (HistoryService::Cleanup to complete). In such a scenario history
+  // sees an incorrect view of bookmarks, but it's better than a deadlock.
+  if (bookmark_model_)
+    bookmark_model_->Shutdown();
+}
+
 void ChromeHistoryClient::BlockUntilBookmarksLoaded() {
-  bookmark_model_->BlockTillLoaded();
+  if (bookmark_model_)
+    bookmark_model_->BlockTillLoaded();
 }
 
 bool ChromeHistoryClient::IsBookmarked(const GURL& url) {
-  return bookmark_model_->IsBookmarked(url);
+  return bookmark_model_ && bookmark_model_->IsBookmarked(url);
 }
 
 void ChromeHistoryClient::GetBookmarks(
     std::vector<history::URLAndTitle>* bookmarks) {
+  if (!bookmark_model_)
+    return;
+
   std::vector<bookmarks::BookmarkModel::URLAndTitle> bookmarks_url_and_title;
   bookmark_model_->GetBookmarks(&bookmarks_url_and_title);
 
@@ -81,17 +96,6 @@ bool ChromeHistoryClient::ShouldReportDatabaseError() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   return channel != chrome::VersionInfo::CHANNEL_STABLE &&
       channel != chrome::VersionInfo::CHANNEL_BETA;
-}
-
-void ChromeHistoryClient::Shutdown() {
-  // It's possible that bookmarks haven't loaded and history is waiting for
-  // bookmarks to complete loading. In such a situation history can't shutdown
-  // (meaning if we invoked HistoryService::Cleanup now, we would deadlock). To
-  // break the deadlock we tell BookmarkModel it's about to be deleted so that
-  // it can release the signal history is waiting on, allowing history to
-  // shutdown (HistoryService::Cleanup to complete). In such a scenario history
-  // sees an incorrect view of bookmarks, but it's better than a deadlock.
-  bookmark_model_->Shutdown();
 }
 
 #if defined(OS_ANDROID)

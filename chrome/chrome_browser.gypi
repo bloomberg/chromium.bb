@@ -1660,8 +1660,6 @@
       'browser/history/android/sqlite_cursor.h',
       'browser/history/chrome_history_client.cc',
       'browser/history/chrome_history_client.h',
-      'browser/history/chrome_history_client_factory.cc',
-      'browser/history/chrome_history_client_factory.h',
       'browser/history/history_service_factory.cc',
       'browser/history/history_service_factory.h',
       'browser/history/history_tab_helper.cc',

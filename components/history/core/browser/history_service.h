@@ -91,7 +91,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // null during testing, while |visit_delegate| may be null if the embedder use
   // another way to track visited links.
   HistoryService();
-  HistoryService(HistoryClient* history_client,
+  HistoryService(scoped_ptr<HistoryClient> history_client,
                  scoped_ptr<VisitDelegate> visit_delegate);
   ~HistoryService() override;
 
@@ -803,13 +803,12 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<InMemoryHistoryBackend> in_memory_backend_;
 
+  // The history client, may be null when testing.
+  scoped_ptr<HistoryClient> history_client_;
+
   // The history service will inform its VisitDelegate of URLs recorded and
   // removed from the history database. This may be null during testing.
   scoped_ptr<VisitDelegate> visit_delegate_;
-
-  // The history client, may be null when testing. The object should otherwise
-  // outlive |HistoryService|.
-  HistoryClient* history_client_;
 
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.

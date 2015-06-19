@@ -70,6 +70,10 @@ typedef base::Callback<void(const history::URLRow*,
 
 class HistoryClientMock : public history::HistoryClientFakeBookmarks {
  public:
+  explicit HistoryClientMock(const GURL& url_to_bookmark) {
+    AddBookmark(url_to_bookmark);
+  }
+
   MOCK_METHOD0(BlockUntilBookmarksLoaded, void());
 };
 
@@ -3336,10 +3340,10 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 
   // Add a URL.
   GURL url("http://www.google.com");
-  HistoryClientMock history_client;
-  history_client.AddBookmark(url);
+  scoped_ptr<HistoryClientMock> history_client(new HistoryClientMock(url));
+  HistoryClientMock* history_client_mock = history_client.get();
   scoped_ptr<HistoryService> service(new HistoryService(
-      &history_client, scoped_ptr<history::VisitDelegate>()));
+      history_client.Pass(), scoped_ptr<history::VisitDelegate>()));
   EXPECT_TRUE(
       service->Init(kAcceptLanguagesForTest,
                     TestHistoryDatabaseParamsForPath(scoped_temp_dir.path())));
@@ -3350,7 +3354,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.
-  EXPECT_CALL(history_client, BlockUntilBookmarksLoaded());
+  EXPECT_CALL(*history_client_mock, BlockUntilBookmarksLoaded());
   service->DeleteURL(url);
 }
 

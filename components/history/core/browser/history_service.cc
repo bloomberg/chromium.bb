@@ -185,11 +185,11 @@ HistoryService::HistoryService()
       weak_ptr_factory_(this) {
 }
 
-HistoryService::HistoryService(HistoryClient* history_client,
+HistoryService::HistoryService(scoped_ptr<HistoryClient> history_client,
                                scoped_ptr<VisitDelegate> visit_delegate)
     : thread_(new base::Thread(kHistoryThreadName)),
+      history_client_(history_client.Pass()),
       visit_delegate_(visit_delegate.Pass()),
-      history_client_(history_client),
       backend_loaded_(false),
       weak_ptr_factory_(this) {
 }
@@ -810,6 +810,10 @@ void HistoryService::Cleanup() {
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 
+  // Inform the HistoryClient that we are shuting down.
+  if (history_client_)
+    history_client_->Shutdown();
+
   // Unload the backend.
   if (history_backend_.get()) {
     // Get rid of the in-memory backend.
@@ -873,8 +877,7 @@ bool HistoryService::Init(
   scoped_refptr<HistoryBackend> backend(new HistoryBackend(
       new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
                           base::ThreadTaskRunnerHandle::Get()),
-      history_client_,
-      thread_->task_runner()));
+      history_client_.get(), thread_->task_runner()));
   history_backend_.swap(backend);
 
   ScheduleTask(PRIORITY_UI,

@@ -22,6 +22,7 @@ class ChromeHistoryClient : public history::HistoryClient {
   ~ChromeHistoryClient() override;
 
   // history::HistoryClient:
+  void Shutdown() override;
   void BlockUntilBookmarksLoaded() override;
   bool IsBookmarked(const GURL& url) override;
   void GetBookmarks(std::vector<history::URLAndTitle>* bookmarks) override;
@@ -38,11 +39,9 @@ class ChromeHistoryClient : public history::HistoryClient {
                                  const base::FilePath& history_dir) override;
 #endif
 
-  // KeyedService:
-  void Shutdown() override;
-
  private:
-  // The BookmarkModel, this should outlive ChromeHistoryClient.
+  // The BookmarkModel, this should outlive ChromeHistoryClient. May be null
+  // during testing.
   bookmarks::BookmarkModel* bookmark_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeHistoryClient);
