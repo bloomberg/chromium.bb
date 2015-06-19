@@ -601,7 +601,6 @@ crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ 
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
-crbug.com/320477 [ Debug ] inspector/sources/debugger-pause/debugger-pause-in-internal.html [ Pass Crash ]
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ ImageOnlyFailure ]
@@ -1810,3 +1809,6 @@ crbug.com/501659 fast/parser/xml-declaration-missing-ending-mark.html [ Failure 
 crbug.com/501659 svg/custom/bug78807.svg [ Failure ]
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
+
+# crbug.com/320477 [ Debug ] inspector/sources/debugger-pause/debugger-pause-in-internal.html [ Pass Crash ]
+crbug.com/502243 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
