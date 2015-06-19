@@ -92,21 +92,14 @@ void WebDatabaseObserverImpl::databaseClosed(
 void WebDatabaseObserverImpl::reportOpenDatabaseResult(
     const WebString& origin_identifier,
     const WebString& database_name,
-    int callsite, int websql_error, int sqlite_error) {
-  UMA_HISTOGRAM_WEBSQL_RESULT("OpenResult", callsite,
-                              websql_error, sqlite_error);
-  HandleSqliteError(origin_identifier, database_name, sqlite_error);
-}
-
-void WebDatabaseObserverImpl::reportOpenDatabaseResult(
-    const WebString& origin_identifier,
-    const WebString& database_name,
     int callsite,
     int websql_error,
     int sqlite_error,
     double call_time) {
-  reportOpenDatabaseResult(origin_identifier, database_name, callsite,
-                           websql_error, sqlite_error);
+  UMA_HISTOGRAM_WEBSQL_RESULT("OpenResult", callsite,
+                              websql_error, sqlite_error);
+  HandleSqliteError(origin_identifier, database_name, sqlite_error);
+
   if (websql_error == kWebSQLSuccess && sqlite_error == SQLITE_OK) {
     UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Success",
                         base::TimeDelta::FromSecondsD(call_time));
