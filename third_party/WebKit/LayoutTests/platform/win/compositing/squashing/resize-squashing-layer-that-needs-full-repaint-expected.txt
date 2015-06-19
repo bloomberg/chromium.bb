@@ -1,0 +1,37 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [500, 500]
+            },
+            {
+              "position": [55, 55],
+              "bounds": [500, 500],
+              "drawsContent": true,
+              "repaintRects": [
+                [55, 55, 500, 500],
+                [0, 0, 500, 500],
+                [0, 0, 50, 50]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow (positioned) DIV id='to-be-removed'",
+                "LayoutBlockFlow (positioned) DIV",
+                "LayoutBlockFlow (positioned) DIV"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

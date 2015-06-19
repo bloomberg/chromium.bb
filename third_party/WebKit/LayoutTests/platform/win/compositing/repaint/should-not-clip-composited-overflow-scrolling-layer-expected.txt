@@ -20,6 +20,17 @@
             [-2001, -1982, 883, 18],
             [-2001, -2000, 5001, 5000]
           ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow DIV id='content'",
+            "LayoutText #text",
+            "InlineTextBox 'Tests invalidation of scrolling layer. Passes if the repaint rect is not clipped,\n'",
+            "InlineTextBox 'and there is no red when the scrolling container is scrolled.'",
+            "LayoutBR BR",
+            "InlineTextBox '\n'",
+            "LayoutText #text",
+            "InlineTextBox 'Note for manual testing: must run with --enable-prefer-compositing-to-lcd-text\n'",
+            "InlineTextBox 'on non-high-dpi machines to enable composited scrolling.'"
+          ],
           "children": [
             {
               "bounds": [485, 485],
@@ -37,6 +48,17 @@
                     [-1, 18, 883, 18],
                     [-1, 0, 5001, 5000]
                   ],
+                  "paintInvalidationClients": [
+                    "LayoutBlockFlow DIV id='content'",
+                    "LayoutText #text",
+                    "InlineTextBox 'Tests invalidation of scrolling layer. Passes if the repaint rect is not clipped,\n'",
+                    "InlineTextBox 'and there is no red when the scrolling container is scrolled.'",
+                    "LayoutBR BR",
+                    "InlineTextBox '\n'",
+                    "LayoutText #text",
+                    "InlineTextBox 'Note for manual testing: must run with --enable-prefer-compositing-to-lcd-text\n'",
+                    "InlineTextBox 'on non-high-dpi machines to enable composited scrolling.'"
+                  ],
                   "children": [
                     {
 
@@ -53,6 +75,9 @@
                   "drawsContent": true,
                   "repaintRects": [
                     [0, 0, 485, 15]
+                  ],
+                  "paintInvalidationClients": [
+                    "##ALL##"
                   ]
                 },
                 {
@@ -61,6 +86,9 @@
                   "drawsContent": true,
                   "repaintRects": [
                     [0, 0, 15, 485]
+                  ],
+                  "paintInvalidationClients": [
+                    "##ALL##"
                   ]
                 },
                 {

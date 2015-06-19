@@ -1,0 +1,49 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [200, 200],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#D3D3D3"
+            },
+            {
+              "position": [50, 50],
+              "bounds": [200, 200],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 0, 200, 200]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow (positioned) DIV id='target'"
+              ]
+            }
+          ]
+        },
+        {
+          "position": [50, 50],
+          "bounds": [200, 200],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#ADD8E6",
+          "repaintRects": [
+            [0, 0, 200, 200]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV id='target'"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

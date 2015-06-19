@@ -14,6 +14,24 @@
         [20, 214, 202, 72],
         [10, 181, 138, 12],
         [10, 126, 228, 17]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "InlineTextBox 'findme'",
+        "LayoutText #text",
+        "InlineTextBox 'findme'",
+        "LayoutText #text",
+        "InlineTextBox 'findme'",
+        "LayoutText #text",
+        "InlineTextBox 'findme'",
+        "LayoutText #text",
+        "InlineTextBox 'findme'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Can you findme in this boring text?'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Findme in a typewriter!'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Findme on a path! Did you findme?'"
       ]
     }
   ]
