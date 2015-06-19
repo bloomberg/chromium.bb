@@ -86,6 +86,3 @@ LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 17)
 // reduction proxy.
 // TODO(rcs): Remove this flag as soon as http://crbug.com/339237 is resolved.
 LOAD_FLAG(BYPASS_DATA_REDUCTION_PROXY, 1 << 18)
-
-// Indicates the the request is an asynchronous revalidation.
-LOAD_FLAG(ASYNC_REVALIDATION, 1 << 19)

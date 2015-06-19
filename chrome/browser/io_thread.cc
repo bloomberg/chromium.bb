@@ -139,9 +139,6 @@ const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
 const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 
-// Field trial for Cache-Control: stale-while-revalidate directive.
-const char kStaleWhileRevalidateFieldTrialName[] = "StaleWhileRevalidate";
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -292,15 +289,6 @@ const std::string& GetVariationParam(
     return base::EmptyString();
 
   return it->second;
-}
-
-// Return true if stale-while-revalidate support should be enabled.
-bool IsStaleWhileRevalidateEnabled(const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kEnableStaleWhileRevalidate))
-    return true;
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kStaleWhileRevalidateFieldTrialName);
-  return group_name == "Enabled";
 }
 
 // Parse kUseSpdy command line flag options, which may contain the following:
@@ -481,7 +469,6 @@ SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
 IOThread::Globals::Globals()
     : system_request_context_leak_checker(this),
       ignore_certificate_errors(false),
-      use_stale_while_revalidate(false),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
       enable_user_alternate_protocol_ports(false) {
@@ -799,8 +786,6 @@ void IOThread::Init() {
   }
   if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     globals_->ignore_certificate_errors = true;
-  globals_->use_stale_while_revalidate =
-      IsStaleWhileRevalidateEnabled(command_line);
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
     globals_->testing_fixed_http_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
@@ -1117,7 +1102,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->network_delegate = globals.system_network_delegate.get();
   params->host_mapping_rules = globals.host_mapping_rules.get();
   params->ignore_certificate_errors = globals.ignore_certificate_errors;
-  params->use_stale_while_revalidate = globals.use_stale_while_revalidate;
   params->testing_fixed_http_port = globals.testing_fixed_http_port;
   params->testing_fixed_https_port = globals.testing_fixed_https_port;
   globals.enable_tcp_fast_open_for_ssl.CopyToIfSet(

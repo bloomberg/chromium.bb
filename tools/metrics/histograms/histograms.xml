@@ -13194,6 +13194,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="HttpCache.AsyncValidationDuration" units="milliseconds">
+  <obsolete>
+    Deprecated as of 3/2015.
+  </obsolete>
   <owner>ricea@chromium.org</owner>
   <summary>
     The time spent performing an asynchronous revalidation that was triggered by

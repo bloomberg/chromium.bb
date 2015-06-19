@@ -7283,52 +7283,6 @@ TEST_F(HttpCachePrefetchValidationTest, ValidateOnDelayedSecondPrefetch) {
   EXPECT_FALSE(TransactionRequiredNetwork(LOAD_NORMAL));
 }
 
-// Framework for tests of stale-while-revalidate related functionality.  With
-// the default settings (age=3601,stale-while-revalidate=7200,max-age=3600) it
-// will trigger the stale-while-revalidate asynchronous revalidation. Setting
-// |age_| to < 3600 will prevent any revalidation, and |age_| > 10800 will cause
-// synchronous revalidation.
-class HttpCacheStaleWhileRevalidateTest : public ::testing::Test {
- protected:
-  HttpCacheStaleWhileRevalidateTest()
-      : transaction_(kSimpleGET_Transaction),
-        age_(3601),
-        stale_while_revalidate_(7200),
-        validator_("Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT") {
-    cache_.http_cache()->set_use_stale_while_revalidate_for_testing(true);
-  }
-
-  // RunTransactionTest() with the arguments from this fixture.
-  void RunFixtureTransactionTest() {
-    std::string response_headers = base::StringPrintf(
-        "%s\n"
-        "Age: %d\n"
-        "Cache-Control: max-age=3600,stale-while-revalidate=%d\n",
-        validator_.c_str(),
-        age_,
-        stale_while_revalidate_);
-    transaction_.response_headers = response_headers.c_str();
-    RunTransactionTest(cache_.http_cache(), transaction_);
-    transaction_.response_headers = "";
-  }
-
-  // How many times this test has sent requests to the (fake) origin
-  // server. Every test case needs to make at least one request to initialise
-  // the cache.
-  int transaction_count() {
-    return cache_.network_layer()->transaction_count();
-  }
-
-  // How many times an existing cache entry was opened during the test case.
-  int open_count() { return cache_.disk_cache()->open_count(); }
-
-  MockHttpCache cache_;
-  ScopedMockTransaction transaction_;
-  int age_;
-  int stale_while_revalidate_;
-  std::string validator_;
-};
-
 static void CheckResourceFreshnessHeader(const HttpRequestInfo* request,
                                          std::string* response_status,
                                          std::string* response_headers,
@@ -7340,20 +7294,27 @@ static void CheckResourceFreshnessHeader(const HttpRequestInfo* request,
 
 // Verify that the Resource-Freshness header is sent on a revalidation if the
 // stale-while-revalidate directive was on the response.
-TEST_F(HttpCacheStaleWhileRevalidateTest, ResourceFreshnessHeaderSent) {
-  age_ = 10801;  // Outside the stale-while-revalidate window.
+TEST(HttpCache, ResourceFreshnessHeaderSent) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=3600,stale-while-revalidate=7200\n";
 
   // Write to the cache.
-  RunFixtureTransactionTest();
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
 
-  EXPECT_EQ(1, transaction_count());
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
 
   // Send the request again and check that Resource-Freshness header is added.
-  transaction_.handler = CheckResourceFreshnessHeader;
+  stale_while_revalidate_transaction.handler = CheckResourceFreshnessHeader;
 
-  RunFixtureTransactionTest();
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
 
-  EXPECT_EQ(2, transaction_count());
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
 }
 
 static void CheckResourceFreshnessAbsent(const HttpRequestInfo* request,
@@ -7365,421 +7326,27 @@ static void CheckResourceFreshnessAbsent(const HttpRequestInfo* request,
 
 // Verify that the Resource-Freshness header is not sent when
 // stale-while-revalidate is 0.
-TEST_F(HttpCacheStaleWhileRevalidateTest, ResourceFreshnessHeaderNotSent) {
-  age_ = 10801;
-  stale_while_revalidate_ = 0;
+TEST(HttpCache, ResourceFreshnessHeaderNotSent) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=3600,stale-while-revalidate=0\n";
 
   // Write to the cache.
-  RunFixtureTransactionTest();
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
 
-  EXPECT_EQ(1, transaction_count());
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
 
   // Send the request again and check that Resource-Freshness header is absent.
-  transaction_.handler = CheckResourceFreshnessAbsent;
+  stale_while_revalidate_transaction.handler = CheckResourceFreshnessAbsent;
 
-  RunFixtureTransactionTest();
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
 
-  EXPECT_EQ(2, transaction_count());
-}
-
-// Verify that when stale-while-revalidate applies the response is read from
-// cache.
-TEST_F(HttpCacheStaleWhileRevalidateTest, ReadFromCache) {
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(0, open_count());
-  EXPECT_EQ(1, transaction_count());
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, open_count());
-  EXPECT_EQ(1, transaction_count());
-}
-
-// Verify that when stale-while-revalidate applies an asynchronous request is
-// sent.
-TEST_F(HttpCacheStaleWhileRevalidateTest, AsyncRequestSent) {
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Let the async request execute.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, transaction_count());
-}
-
-// Verify that tearing down the HttpCache with an async revalidation in progress
-// does not break anything (this test is most likely to find problems when run
-// with a memory checker such as AddressSanitizer).
-TEST_F(HttpCacheStaleWhileRevalidateTest, AsyncTearDown) {
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-}
-
-static void CheckIfModifiedSinceHeader(const HttpRequestInfo* request,
-                                       std::string* response_status,
-                                       std::string* response_headers,
-                                       std::string* response_data) {
-  std::string value;
-  EXPECT_TRUE(request->extra_headers.GetHeader("If-Modified-Since", &value));
-  EXPECT_EQ("Sat, 18 Apr 2007 01:10:43 GMT", value);
-}
-
-// Verify that the async revalidation contains an If-Modified-Since header.
-TEST_F(HttpCacheStaleWhileRevalidateTest, AsyncRequestIfModifiedSince) {
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  transaction_.handler = CheckIfModifiedSinceHeader;
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-}
-
-static void CheckIfNoneMatchHeader(const HttpRequestInfo* request,
-                                   std::string* response_status,
-                                   std::string* response_headers,
-                                   std::string* response_data) {
-  std::string value;
-  EXPECT_TRUE(request->extra_headers.GetHeader("If-None-Match", &value));
-  EXPECT_EQ("\"40a1-1320-4f6adefa22a40\"", value);
-}
-
-// If the response had ETag rather than Last-Modified, then that is used to
-// conditionalise the response.
-TEST_F(HttpCacheStaleWhileRevalidateTest, AsyncRequestIfNoneMatch) {
-  validator_ = "Etag: \"40a1-1320-4f6adefa22a40\"";
-
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  transaction_.handler = CheckIfNoneMatchHeader;
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-}
-
-static void CheckResourceFreshnessHeaderPresent(const HttpRequestInfo* request,
-                                                std::string* response_status,
-                                                std::string* response_headers,
-                                                std::string* response_data) {
-  EXPECT_TRUE(request->extra_headers.HasHeader("Resource-Freshness"));
-}
-
-TEST_F(HttpCacheStaleWhileRevalidateTest, AsyncRequestHasResourceFreshness) {
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  transaction_.handler = CheckResourceFreshnessHeaderPresent;
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-}
-
-// Verify that when age > max-age + stale-while-revalidate stale results are
-// not returned.
-TEST_F(HttpCacheStaleWhileRevalidateTest, NotAppliedIfTooStale) {
-  age_ = 10801;
-
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(0, open_count());
-  EXPECT_EQ(1, transaction_count());
-
-  // Reading back reads from the network.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, open_count());
-  EXPECT_EQ(2, transaction_count());
-}
-
-// HEAD requests should be able to take advantage of stale-while-revalidate.
-TEST_F(HttpCacheStaleWhileRevalidateTest, WorksForHeadMethod) {
-  // Write to the cache. This has to be a GET request; HEAD requests don't
-  // create new cache entries.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(0, open_count());
-  EXPECT_EQ(1, transaction_count());
-
-  // Read back from the cache, and trigger an asynchronous HEAD request.
-  transaction_.method = "HEAD";
-  transaction_.data = "";
-
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, open_count());
-  EXPECT_EQ(1, transaction_count());
-
-  // Let the network request proceed.
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(2, transaction_count());
-}
-
-// POST requests should not use stale-while-revalidate.
-TEST_F(HttpCacheStaleWhileRevalidateTest, NotAppliedToPost) {
-  transaction_ = ScopedMockTransaction(kSimplePOST_Transaction);
-
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(0, open_count());
-  EXPECT_EQ(1, transaction_count());
-
-  // Reading back reads from the network.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(0, open_count());
-  EXPECT_EQ(2, transaction_count());
-}
-
-static void CheckUrlMatches(const HttpRequestInfo* request,
-                            std::string* response_status,
-                            std::string* response_headers,
-                            std::string* response_data) {
-  EXPECT_EQ("http://www.google.com/", request->url.spec());
-}
-
-// Async revalidation is issued to the original URL.
-TEST_F(HttpCacheStaleWhileRevalidateTest, AsyncRequestUrlMatches) {
-  transaction_.url = "http://www.google.com/";
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  transaction_.handler = CheckUrlMatches;
-
-  // Let the async request execute and perform the check.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, transaction_count());
-}
-
-class SyncLoadFlagTest : public HttpCacheStaleWhileRevalidateTest,
-                         public ::testing::WithParamInterface<int> {};
-
-// Flags which should always cause the request to be synchronous.
-TEST_P(SyncLoadFlagTest, MustBeSynchronous) {
-  transaction_.load_flags |= GetParam();
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Reading back reads from the network.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(2, transaction_count());
-}
-
-INSTANTIATE_TEST_CASE_P(HttpCacheStaleWhileRevalidate,
-                        SyncLoadFlagTest,
-                        ::testing::Values(LOAD_VALIDATE_CACHE,
-                                          LOAD_BYPASS_CACHE,
-                                          LOAD_DISABLE_CACHE));
-
-TEST_F(HttpCacheStaleWhileRevalidateTest,
-       PreferringCacheDoesNotTriggerAsyncRequest) {
-  transaction_.load_flags |= LOAD_PREFERRING_CACHE;
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Reading back reads from the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // If there was an async transaction created, it would run now.
-  base::RunLoop().RunUntilIdle();
-
-  // There was no async transaction.
-  EXPECT_EQ(1, transaction_count());
-}
-
-TEST_F(HttpCacheStaleWhileRevalidateTest, NotUsedWhenDisabled) {
-  cache_.http_cache()->set_use_stale_while_revalidate_for_testing(false);
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // A synchronous revalidation is performed.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(2, transaction_count());
-}
-
-TEST_F(HttpCacheStaleWhileRevalidateTest,
-       OnlyFromCacheDoesNotTriggerAsyncRequest) {
-  transaction_.load_flags |= LOAD_ONLY_FROM_CACHE;
-  transaction_.return_code = ERR_CACHE_MISS;
-
-  // Writing to the cache should fail, because we are avoiding the network.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(0, transaction_count());
-
-  base::RunLoop().RunUntilIdle();
-
-  // Still nothing.
-  EXPECT_EQ(0, transaction_count());
-}
-
-// A certificate error during an asynchronous fetch should cause the next fetch
-// to proceed synchronously.
-// TODO(ricea): In future, only certificate errors which require user
-// interaction should fail the asynchronous revalidation, and they should cause
-// the next revalidation to be synchronous rather than requiring a total
-// refetch. This test will need to be updated appropriately.
-TEST_F(HttpCacheStaleWhileRevalidateTest, CertificateErrorCausesRefetch) {
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Now read back. RunTransactionTestBase() expects to receive the network
-  // error back from the HttpCache::Transaction, but since the cache request
-  // will return OK we need to duplicate some of its implementation here.
-  transaction_.return_code = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
-  TestCompletionCallback callback;
-  scoped_ptr<HttpTransaction> trans;
-  int rv = cache_.http_cache()->CreateTransaction(DEFAULT_PRIORITY, &trans);
-  EXPECT_EQ(OK, rv);
-  ASSERT_TRUE(trans.get());
-
-  MockHttpRequest request(transaction_);
-  rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  ASSERT_EQ(ERR_IO_PENDING, rv);
-  ASSERT_EQ(OK, callback.WaitForResult());
-  ReadAndVerifyTransaction(trans.get(), transaction_);
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Allow the asynchronous fetch to run.
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(2, transaction_count());
-
-  // Now run the transaction again. It should run synchronously.
-  transaction_.return_code = OK;
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(3, transaction_count());
-}
-
-// Ensure that the response cached by the asynchronous request is not truncated,
-// even if the server is slow.
-TEST_F(HttpCacheStaleWhileRevalidateTest, EntireResponseCached) {
-  transaction_.test_mode = TEST_MODE_SLOW_READ;
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-
-  // Let the async request execute.
-  base::RunLoop().RunUntilIdle();
-
-  // The cache entry should still be complete.
-  transaction_.load_flags = LOAD_ONLY_FROM_CACHE;
-  RunFixtureTransactionTest();
-}
-
-// Verify that there are no race conditions in the completely synchronous case.
-TEST_F(HttpCacheStaleWhileRevalidateTest, SynchronousCaseWorks) {
-  transaction_.test_mode = TEST_MODE_SYNC_ALL;
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Let the async request execute.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, transaction_count());
-}
-
-static void CheckLoadFlagsAsyncRevalidation(const HttpRequestInfo* request,
-                                            std::string* response_status,
-                                            std::string* response_headers,
-                                            std::string* response_data) {
-  EXPECT_EQ(LOAD_ASYNC_REVALIDATION, request->load_flags);
-}
-
-// Check that the load flags on the async request are the same as the load flags
-// on the original request, plus LOAD_ASYNC_REVALIDATION.
-TEST_F(HttpCacheStaleWhileRevalidateTest, LoadFlagsAsyncRevalidation) {
-  transaction_.load_flags = LOAD_NORMAL;
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  transaction_.handler = CheckLoadFlagsAsyncRevalidation;
-  // Let the async request execute.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, transaction_count());
-}
-
-static void SimpleMockAuthHandler(const HttpRequestInfo* request,
-                                  std::string* response_status,
-                                  std::string* response_headers,
-                                  std::string* response_data) {
-  if (request->extra_headers.HasHeader("X-Require-Mock-Auth") &&
-      !request->extra_headers.HasHeader("Authorization")) {
-    response_status->assign("HTTP/1.1 401 Unauthorized");
-    response_headers->assign("WWW-Authenticate: Basic realm=\"mars\"\n");
-    return;
-  }
-  response_status->assign("HTTP/1.1 200 OK");
-}
-
-TEST_F(HttpCacheStaleWhileRevalidateTest, RestartForAuth) {
-  // Write to the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Now make the transaction require auth.
-  transaction_.request_headers = "X-Require-Mock-Auth: dummy\r\n\r\n";
-  transaction_.handler = SimpleMockAuthHandler;
-
-  // Read back from the cache.
-  RunFixtureTransactionTest();
-
-  EXPECT_EQ(1, transaction_count());
-
-  // Let the async request execute.
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(2, transaction_count());
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
 }
 
 // Tests that we allow multiple simultaneous, non-overlapping transactions to

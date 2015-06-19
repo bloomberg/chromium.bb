@@ -351,9 +351,6 @@ class HttpCache::Transaction : public HttpTransaction {
   // Fixes the response headers to match expectations for a HEAD request.
   void FixHeadersForHead();
 
-  // Launches an asynchronous revalidation based on this transaction.
-  void TriggerAsyncValidation();
-
   // Changes the response code of a range request to be 416 (Requested range not
   // satisfiable).
   void FailRangeRequest();

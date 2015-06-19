@@ -30,7 +30,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_delegate.h"
 #include "net/base/upload_data_stream.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/disk_based_cert_cache.h"
@@ -295,159 +294,6 @@ class HttpCache::QuicServerInfoFactoryAdaptor : public QuicServerInfoFactory {
 };
 
 //-----------------------------------------------------------------------------
-
-class HttpCache::AsyncValidation {
- public:
-  AsyncValidation(const HttpRequestInfo& original_request, HttpCache* cache)
-      : request_(original_request), cache_(cache) {}
-  ~AsyncValidation() {}
-
-  void Start(const BoundNetLog& net_log,
-             scoped_ptr<Transaction> transaction,
-             NetworkDelegate* network_delegate);
-
- private:
-  void OnStarted(int result);
-  void DoRead();
-  void OnRead(int result);
-
-  // Terminate this request with net error code |result|. Logs the transaction
-  // result and asks HttpCache to delete this object.
-  // If there was a client or server certificate error, it cannot be recovered
-  // asynchronously, so we need to prevent future attempts to asynchronously
-  // fetch the resource. In this case, the cache entry is doomed.
-  void Terminate(int result);
-
-  HttpRequestInfo request_;
-  scoped_refptr<IOBuffer> buf_;
-  CompletionCallback read_callback_;
-  scoped_ptr<Transaction> transaction_;
-  base::Time start_time_;
-
-  // The HttpCache object owns this object. This object is always deleted before
-  // the pointer to the cache becomes invalid.
-  HttpCache* cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncValidation);
-};
-
-void HttpCache::AsyncValidation::Start(const BoundNetLog& net_log,
-                                       scoped_ptr<Transaction> transaction,
-                                       NetworkDelegate* network_delegate) {
-  transaction_ = transaction.Pass();
-  if (network_delegate) {
-    // This code is necessary to enable async transactions to pass over the
-    // data-reduction proxy. This is a violation of the "once-and-only-once"
-    // principle, since it copies code from URLRequestHttpJob. We cannot use the
-    // original callback passed to HttpCache::Transaction by URLRequestHttpJob
-    // as it will only be valid as long as the URLRequestHttpJob object is
-    // alive, and that object will be deleted as soon as the synchronous request
-    // completes.
-    //
-    // This code is also an encapsulation violation. We are exploiting the fact
-    // that the |request| parameter to NotifyBeforeSendProxyHeaders() is never
-    // actually used for anything, and so can be NULL.
-    //
-    // TODO(ricea): Do this better.
-    transaction_->SetBeforeProxyHeadersSentCallback(
-        base::Bind(&NetworkDelegate::NotifyBeforeSendProxyHeaders,
-                   base::Unretained(network_delegate),
-                   static_cast<URLRequest*>(NULL)));
-    // The above use of base::Unretained is safe because the NetworkDelegate has
-    // to live at least as long as the HttpNetworkSession which has to live as
-    // least as long as the HttpNetworkLayer which has to live at least as long
-    // this HttpCache object.
-  }
-
-  DCHECK_EQ(0, request_.load_flags & LOAD_ASYNC_REVALIDATION);
-  request_.load_flags |= LOAD_ASYNC_REVALIDATION;
-  start_time_ = cache_->clock()->Now();
-  // This use of base::Unretained is safe because |transaction_| is owned by
-  // this object.
-  read_callback_ = base::Bind(&AsyncValidation::OnRead, base::Unretained(this));
-  // This use of base::Unretained is safe as above.
-  int rv = transaction_->Start(
-      &request_,
-      base::Bind(&AsyncValidation::OnStarted, base::Unretained(this)),
-      net_log);
-
-  if (rv == ERR_IO_PENDING)
-    return;
-
-  OnStarted(rv);
-}
-
-void HttpCache::AsyncValidation::OnStarted(int result) {
-  if (result != OK) {
-    DVLOG(1) << "Asynchronous transaction start failed for " << request_.url;
-    Terminate(result);
-    return;
-  }
-
-  while (transaction_->IsReadyToRestartForAuth()) {
-    // This code is based on URLRequestHttpJob::RestartTransactionWithAuth,
-    // however when we do this here cookies on the response will not be
-    // stored. Fortunately only a tiny number of sites set cookies on 401
-    // responses, and none of them use stale-while-revalidate.
-    result = transaction_->RestartWithAuth(
-        AuthCredentials(),
-        base::Bind(&AsyncValidation::OnStarted, base::Unretained(this)));
-    if (result == ERR_IO_PENDING)
-      return;
-    if (result != OK) {
-      DVLOG(1) << "Synchronous transaction restart with auth failed for "
-               << request_.url;
-      Terminate(result);
-      return;
-    }
-  }
-
-  DoRead();
-}
-
-void HttpCache::AsyncValidation::DoRead() {
-  const size_t kBufSize = 4096;
-  if (!buf_.get())
-    buf_ = new IOBuffer(kBufSize);
-
-  int rv = 0;
-  do {
-    rv = transaction_->Read(buf_.get(), kBufSize, read_callback_);
-  } while (rv > 0);
-
-  if (rv == ERR_IO_PENDING)
-    return;
-
-  OnRead(rv);
-}
-
-void HttpCache::AsyncValidation::OnRead(int result) {
-  if (result > 0) {
-    DoRead();
-    return;
-  }
-  Terminate(result);
-}
-
-void HttpCache::AsyncValidation::Terminate(int result) {
-  if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED || IsCertificateError(result)) {
-    // We should not attempt to access this resource asynchronously again until
-    // the certificate problem has been resolved.
-    // TODO(ricea): For ERR_SSL_CLIENT_AUTH_CERT_NEEDED, mark the entry as
-    // requiring synchronous revalidation rather than just deleting it. Other
-    // certificate errors cause the resource to be considered uncacheable
-    // anyway.
-    cache_->DoomEntry(transaction_->key(), transaction_.get());
-  }
-  base::TimeDelta duration = cache_->clock()->Now() - start_time_;
-  UMA_HISTOGRAM_TIMES("HttpCache.AsyncValidationDuration", duration);
-  transaction_->net_log().EndEventWithNetErrorCode(
-      NetLog::TYPE_ASYNC_REVALIDATION, result);
-  cache_->DeleteAsyncValidation(cache_->GenerateCacheKey(&request_));
-  // |this| is deleted.
-}
-
-//-----------------------------------------------------------------------------
 HttpCache::HttpCache(const HttpNetworkSession::Params& params,
                      BackendFactory* backend_factory)
     : net_log_(params.net_log),
@@ -455,7 +301,6 @@ HttpCache::HttpCache(const HttpNetworkSession::Params& params,
       building_backend_(false),
       bypass_lock_for_test_(false),
       fail_conditionalization_for_test_(false),
-      use_stale_while_revalidate_(params.use_stale_while_revalidate),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(new HttpNetworkSession(params))),
       clock_(new base::DefaultClock()),
@@ -473,7 +318,6 @@ HttpCache::HttpCache(HttpNetworkSession* session,
       building_backend_(false),
       bypass_lock_for_test_(false),
       fail_conditionalization_for_test_(false),
-      use_stale_while_revalidate_(session->params().use_stale_while_revalidate),
       mode_(NORMAL),
       network_layer_(new HttpNetworkLayer(session)),
       clock_(new base::DefaultClock()),
@@ -488,15 +332,11 @@ HttpCache::HttpCache(HttpTransactionFactory* network_layer,
       building_backend_(false),
       bypass_lock_for_test_(false),
       fail_conditionalization_for_test_(false),
-      use_stale_while_revalidate_(false),
       mode_(NORMAL),
       network_layer_(network_layer),
       clock_(new base::DefaultClock()),
       weak_factory_(this) {
   SetupQuicServerInfoFactory(network_layer_->GetSession());
-  HttpNetworkSession* session = network_layer_->GetSession();
-  if (session)
-    use_stale_while_revalidate_ = session->params().use_stale_while_revalidate;
 }
 
 HttpCache::~HttpCache() {
@@ -518,7 +358,6 @@ HttpCache::~HttpCache() {
   }
 
   STLDeleteElements(&doomed_entries_);
-  STLDeleteValues(&async_validations_);
 
   // Before deleting pending_ops_, we have to make sure that the disk cache is
   // done with said operations, or it will attempt to use deleted data.
@@ -1178,43 +1017,6 @@ void HttpCache::ProcessPendingQueue(ActiveEntry* entry) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&HttpCache::OnProcessPendingQueue, GetWeakPtr(), entry));
-}
-
-void HttpCache::PerformAsyncValidation(const HttpRequestInfo& original_request,
-                                       const BoundNetLog& net_log) {
-  DCHECK(use_stale_while_revalidate_);
-  std::string key = GenerateCacheKey(&original_request);
-  AsyncValidation* async_validation =
-      new AsyncValidation(original_request, this);
-  typedef AsyncValidationMap::value_type AsyncValidationKeyValue;
-  bool insert_ok =
-      async_validations_.insert(AsyncValidationKeyValue(key, async_validation))
-          .second;
-  if (!insert_ok) {
-    DVLOG(1) << "Harmless race condition detected on URL "
-             << original_request.url << "; discarding redundant revalidation.";
-    delete async_validation;
-    return;
-  }
-  HttpNetworkSession* network_session = GetSession();
-  NetworkDelegate* network_delegate = NULL;
-  if (network_session)
-    network_delegate = network_session->network_delegate();
-  scoped_ptr<HttpTransaction> transaction;
-  CreateTransaction(IDLE, &transaction);
-  scoped_ptr<Transaction> downcast_transaction(
-      static_cast<Transaction*>(transaction.release()));
-  async_validation->Start(
-      net_log, downcast_transaction.Pass(), network_delegate);
-  // |async_validation| may have been deleted here.
-}
-
-void HttpCache::DeleteAsyncValidation(const std::string& url) {
-  AsyncValidationMap::iterator it = async_validations_.find(url);
-  CHECK(it != async_validations_.end());  // security-critical invariant
-  AsyncValidation* async_validation = it->second;
-  async_validations_.erase(it);
-  delete async_validation;
 }
 
 void HttpCache::OnProcessPendingQueue(ActiveEntry* entry) {

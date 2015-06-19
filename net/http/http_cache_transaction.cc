@@ -176,18 +176,6 @@ void RecordNoStoreHeaderHistogram(int load_flags,
   }
 }
 
-scoped_ptr<base::Value> NetLogAsyncRevalidationInfoCallback(
-    const NetLog::Source& source,
-    const HttpRequestInfo* request,
-    NetLogCaptureMode capture_mode) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  source.AddToEventParameters(dict.get());
-
-  dict->SetString("url", request->url.possibly_invalid_spec());
-  dict->SetString("method", request->method);
-  return dict.Pass();
-}
-
 enum ExternallyConditionalizedType {
   EXTERNALLY_CONDITIONALIZED_CACHE_REQUIRES_VALIDATION,
   EXTERNALLY_CONDITIONALIZED_CACHE_USABLE,
@@ -2130,13 +2118,6 @@ int HttpCache::Transaction::BeginCacheValidation() {
 
   bool skip_validation = (required_validation == VALIDATION_NONE);
 
-  if (required_validation == VALIDATION_ASYNCHRONOUS &&
-      !(request_->method == "GET" && (truncated_ || partial_)) && cache_ &&
-      cache_->use_stale_while_revalidate()) {
-    TriggerAsyncValidation();
-    skip_validation = true;
-  }
-
   if (request_->method == "HEAD" &&
       (truncated_ || response_.headers->response_code() == 206)) {
     DCHECK(!partial_);
@@ -2165,7 +2146,6 @@ int HttpCache::Transaction::BeginCacheValidation() {
   }
 
   if (skip_validation) {
-    // TODO(ricea): Is this pattern okay for asynchronous revalidations?
     UpdateTransactionPattern(PATTERN_ENTRY_USED);
     return SetupEntryForRead();
   } else {
@@ -2345,7 +2325,7 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
     return VALIDATION_NONE;
   }
 
-  if (effective_load_flags_ & (LOAD_VALIDATE_CACHE | LOAD_ASYNC_REVALIDATION))
+  if (effective_load_flags_ & LOAD_VALIDATE_CACHE)
     return VALIDATION_SYNCHRONOUS;
 
   if (request_->method == "PUT" || request_->method == "DELETE")
@@ -2597,23 +2577,6 @@ void HttpCache::Transaction::FixHeadersForHead() {
     response_.headers->RemoveHeader("Content-Range");
     response_.headers->ReplaceStatusLine("HTTP/1.1 200 OK");
   }
-}
-
-void HttpCache::Transaction::TriggerAsyncValidation() {
-  DCHECK(!request_->upload_data_stream);
-  BoundNetLog async_revalidation_net_log(
-      BoundNetLog::Make(net_log_.net_log(), NetLog::SOURCE_ASYNC_REVALIDATION));
-  net_log_.AddEvent(
-      NetLog::TYPE_HTTP_CACHE_VALIDATE_RESOURCE_ASYNC,
-      async_revalidation_net_log.source().ToEventParametersCallback());
-  async_revalidation_net_log.BeginEvent(
-      NetLog::TYPE_ASYNC_REVALIDATION,
-      base::Bind(
-          &NetLogAsyncRevalidationInfoCallback, net_log_.source(), request_));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&HttpCache::PerformAsyncValidation,
-                            cache_,  // cache_ is a weak pointer.
-                            *request_, async_revalidation_net_log));
 }
 
 void HttpCache::Transaction::FailRangeRequest() {

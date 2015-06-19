@@ -82,7 +82,6 @@ var SourceEntry = (function() {
         // TODO(ricea): Remove SOCKET_STREAM after M41 is released.
         case EventSourceType.SOCKET_STREAM:
         case EventSourceType.HTTP_STREAM_JOB:
-        case EventSourceType.ASYNC_REVALIDATION:
           this.description_ = e.params.url;
           break;
         case EventSourceType.CONNECT_JOB:
