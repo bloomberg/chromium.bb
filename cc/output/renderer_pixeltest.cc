@@ -130,9 +130,8 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
   ResourceId resource = resource_provider->CreateResource(
       rect.size(), GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       RGBA_8888);
-  resource_provider->SetPixels(resource,
-                               reinterpret_cast<uint8_t*>(&pixels.front()),
-                               rect, rect, gfx::Vector2d());
+  resource_provider->CopyToResource(
+      resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   const gfx::PointF uv_top_left(0.0f, 0.0f);

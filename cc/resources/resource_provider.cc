@@ -18,7 +18,6 @@
 #include "cc/resources/platform_color.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "cc/resources/texture_uploader.h"
 #include "cc/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -60,10 +59,6 @@ class IdAllocator {
 };
 
 namespace {
-
-// Measured in seconds.
-const double kSoftwareUploadTickRate = 0.000250;
-const double kTextureUploadTickRate = 0.004;
 
 GLenum TextureToStorageFormat(ResourceFormat format) {
   GLenum storage_format = GL_RGBA8_OES;
@@ -418,7 +413,6 @@ ResourceProvider::~ResourceProvider() {
   if (default_resource_type_ != RESOURCE_TYPE_GL_TEXTURE) {
     // We are not in GL mode, but double check before returning.
     DCHECK(!gl);
-    DCHECK(!texture_uploader_);
     return;
   }
 
@@ -431,7 +425,6 @@ ResourceProvider::~ResourceProvider() {
   }
 #endif  // DCHECK_IS_ON()
 
-  texture_uploader_ = nullptr;
   texture_id_allocator_ = nullptr;
   buffer_id_allocator_ = nullptr;
   gl->Finish();
@@ -691,54 +684,6 @@ ResourceProvider::ResourceType ResourceProvider::GetResourceType(
   return GetResource(id)->type;
 }
 
-void ResourceProvider::SetPixels(ResourceId id,
-                                 const uint8_t* image,
-                                 const gfx::Rect& image_rect,
-                                 const gfx::Rect& source_rect,
-                                 const gfx::Vector2d& dest_offset) {
-  Resource* resource = GetResource(id);
-  DCHECK(!resource->locked_for_write);
-  DCHECK(!resource->lock_for_read_count);
-  DCHECK(resource->origin == Resource::INTERNAL);
-  DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(ReadLockFenceHasPassed(resource));
-  LazyAllocate(resource);
-
-  if (resource->type == RESOURCE_TYPE_GL_TEXTURE) {
-    DCHECK(resource->gl_id);
-    DCHECK(!resource->pending_set_pixels);
-    DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    DCHECK(texture_uploader_.get());
-    gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
-    texture_uploader_->Upload(image,
-                              image_rect,
-                              source_rect,
-                              dest_offset,
-                              resource->format,
-                              resource->size);
-  } else {
-    DCHECK_EQ(RESOURCE_TYPE_BITMAP, resource->type);
-    DCHECK(resource->allocated);
-    DCHECK_EQ(RGBA_8888, resource->format);
-    DCHECK(source_rect.x() >= image_rect.x());
-    DCHECK(source_rect.y() >= image_rect.y());
-    DCHECK(source_rect.right() <= image_rect.right());
-    DCHECK(source_rect.bottom() <= image_rect.bottom());
-    SkImageInfo source_info =
-        SkImageInfo::MakeN32Premul(source_rect.width(), source_rect.height());
-    size_t image_row_bytes = image_rect.width() * 4;
-    gfx::Vector2d source_offset = source_rect.origin() - image_rect.origin();
-    image += source_offset.y() * image_row_bytes + source_offset.x() * 4;
-
-    ScopedWriteLockSoftware lock(this, id);
-    SkCanvas dest(lock.sk_bitmap());
-    dest.writePixels(source_info, image, image_row_bytes, dest_offset.x(),
-                     dest_offset.y());
-  }
-}
-
 void ResourceProvider::CopyToResource(ResourceId id,
                                       const uint8_t* image,
                                       const gfx::Size& image_size) {
@@ -770,7 +715,6 @@ void ResourceProvider::CopyToResource(ResourceId id,
     DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    DCHECK(texture_uploader_.get());
     gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
 
     if (resource->format == ETC1) {
@@ -787,66 +731,6 @@ void ResourceProvider::CopyToResource(ResourceId id,
                         GLDataType(resource->format), image);
     }
   }
-}
-
-size_t ResourceProvider::NumBlockingUploads() {
-  if (!texture_uploader_)
-    return 0;
-
-  return texture_uploader_->NumBlockingUploads();
-}
-
-void ResourceProvider::MarkPendingUploadsAsNonBlocking() {
-  if (!texture_uploader_)
-    return;
-
-  texture_uploader_->MarkPendingUploadsAsNonBlocking();
-}
-
-size_t ResourceProvider::EstimatedUploadsPerTick() {
-  if (!texture_uploader_)
-    return 1u;
-
-  double textures_per_second = texture_uploader_->EstimatedTexturesPerSecond();
-  size_t textures_per_tick = floor(
-      kTextureUploadTickRate * textures_per_second);
-  return textures_per_tick ? textures_per_tick : 1u;
-}
-
-void ResourceProvider::FlushUploads() {
-  if (!texture_uploader_)
-    return;
-
-  texture_uploader_->Flush();
-}
-
-void ResourceProvider::ReleaseCachedData() {
-  if (!texture_uploader_)
-    return;
-
-  texture_uploader_->ReleaseCachedQueries();
-}
-
-base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
-    size_t uploads_per_tick) {
-  if (lost_output_surface_)
-    return base::TimeTicks();
-
-  // Software resource uploads happen on impl thread, so don't bother batching
-  // them up and trying to wait for them to complete.
-  if (!texture_uploader_) {
-    return base::TimeTicks::Now() +
-           base::TimeDelta::FromMicroseconds(
-               base::Time::kMicrosecondsPerSecond * kSoftwareUploadTickRate);
-  }
-
-  base::TimeDelta upload_one_texture_time =
-      base::TimeDelta::FromMicroseconds(
-          base::Time::kMicrosecondsPerSecond * kTextureUploadTickRate) /
-      uploads_per_tick;
-
-  size_t total_uploads = NumBlockingUploads() + uploads_per_tick;
-  return base::TimeTicks::Now() + upload_one_texture_time * total_uploads;
 }
 
 ResourceProvider::Resource* ResourceProvider::InsertResource(
@@ -1235,7 +1119,6 @@ void ResourceProvider::Initialize() {
     return;
   }
 
-  DCHECK(!texture_uploader_);
   DCHECK(!texture_id_allocator_);
   DCHECK(!buffer_id_allocator_);
 
@@ -1250,7 +1133,6 @@ void ResourceProvider::Initialize() {
   yuv_resource_format_ = caps.gpu.texture_rg ? RED_8 : LUMINANCE_8;
   use_sync_query_ = caps.gpu.sync_query;
 
-  texture_uploader_ = TextureUploader::Create(gl);
   max_texture_size_ = 0;  // Context expects cleared value.
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
   best_texture_format_ =

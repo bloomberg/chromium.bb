@@ -126,10 +126,8 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
         pixels = &swizzled[0];
       }
 
-      resource_provider->SetPixels(texture_copy_->id(), pixels,
-                                   gfx::Rect(texture_mailbox_.size_in_pixels()),
-                                   gfx::Rect(texture_mailbox_.size_in_pixels()),
-                                   gfx::Vector2d());
+      resource_provider->CopyToResource(texture_copy_->id(), pixels,
+                                        texture_mailbox_.size_in_pixels());
 
       valid_texture_copy_ = true;
     }

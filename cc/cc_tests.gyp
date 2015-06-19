@@ -92,7 +92,6 @@
       'resources/platform_color_unittest.cc',
       'resources/resource_provider_unittest.cc',
       'resources/scoped_resource_unittest.cc',
-      'resources/texture_uploader_unittest.cc',
       'resources/video_resource_updater_unittest.cc',
       'scheduler/begin_frame_source_unittest.cc',
       'scheduler/delay_based_time_source_unittest.cc',

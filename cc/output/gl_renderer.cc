@@ -2667,7 +2667,6 @@ void GLRenderer::EnforceMemoryPolicy() {
     TRACE_EVENT0("cc", "GLRenderer::EnforceMemoryPolicy dropping resources");
     ReleaseRenderPassTextures();
     DiscardBackbuffer();
-    resource_provider_->ReleaseCachedData();
     output_surface_->context_provider()->DeleteCachedResources();
     gl_->Flush();
   }

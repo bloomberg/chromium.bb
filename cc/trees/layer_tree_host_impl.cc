@@ -1596,10 +1596,6 @@ void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
 
   for (auto& it : video_frame_controllers_)
     it->DidDrawFrame();
-
-  // Once all layers have been drawn, pending texture uploads should no
-  // longer block future uploads.
-  resource_provider_->MarkPendingUploadsAsNonBlocking();
 }
 
 void LayerTreeHostImpl::FinishAllRendering() {

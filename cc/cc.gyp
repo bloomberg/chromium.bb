@@ -462,8 +462,6 @@
         'resources/single_release_callback_impl.h',
         'resources/texture_mailbox.cc',
         'resources/texture_mailbox.h',
-        'resources/texture_uploader.cc',
-        'resources/texture_uploader.h',
         'resources/transferable_resource.cc',
         'resources/transferable_resource.h',
         'resources/ui_resource_bitmap.cc',
