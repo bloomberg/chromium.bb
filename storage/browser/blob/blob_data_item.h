@@ -7,21 +7,37 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/data_element.h"
+
+namespace disk_cache {
+class Entry;
+}
 
 namespace storage {
 class BlobDataBuilder;
 class BlobStorageContext;
 
-// Ref counted blob item.  This class owns the backing data of the blob item.
-// The backing data is immutable, and cannot change after creation.
-// The purpose of this class is to allow the resource to stick around in the
-// snapshot even after the resource was swapped in the blob (either to disk or
-// to memory) by the BlobStorageContext.
+// Ref counted blob item. This class owns the backing data of the blob item. The
+// backing data is immutable, and cannot change after creation. The purpose of
+// this class is to allow the resource to stick around in the snapshot even
+// after the resource was swapped in the blob (either to disk or to memory) by
+// the BlobStorageContext.
 class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
  public:
+  // The DataHandle class is used to persist resources that are needed for
+  // reading this BlobDataItem. This object will stay around while any reads are
+  // pending. If all blobs with this item are deleted or the item is swapped for
+  // a different backend version (mem-to-disk or the reverse), then the item
+  // will be destructed after all pending reads are complete.
+  class STORAGE_EXPORT DataHandle : public base::RefCounted<DataHandle> {
+   protected:
+    virtual ~DataHandle() = 0;
+
+   private:
+    friend class base::RefCounted<DataHandle>;
+  };
+
   DataElement::Type type() const { return item_->type(); }
   const char* bytes() const { return item_->bytes(); }
   const base::FilePath& path() const { return item_->path(); }
@@ -35,6 +51,9 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   const DataElement& data_element() const { return *item_; }
   const DataElement* data_element_ptr() const { return item_.get(); }
 
+  disk_cache::Entry* disk_cache_entry() const { return disk_cache_entry_; }
+  int disk_cache_stream_index() const { return disk_cache_stream_index_; }
+
  private:
   friend class BlobDataBuilder;
   friend class BlobStorageContext;
@@ -42,16 +61,27 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
 
   BlobDataItem(scoped_ptr<DataElement> item);
   BlobDataItem(scoped_ptr<DataElement> item,
-               scoped_refptr<ShareableFileReference> file_handle);
+               const scoped_refptr<DataHandle>& data_handle);
+  BlobDataItem(scoped_ptr<DataElement> item,
+               const scoped_refptr<DataHandle>& data_handle,
+               disk_cache::Entry* entry,
+               int disk_cache_stream_index_);
   virtual ~BlobDataItem();
 
   scoped_ptr<DataElement> item_;
-  scoped_refptr<ShareableFileReference> file_handle_;
+  scoped_refptr<DataHandle> data_handle_;
+
+  // This naked pointer is safe because the scope is protected by the DataHandle
+  // instance for disk cache entries during the lifetime of this BlobDataItem.
+  disk_cache::Entry* disk_cache_entry_;
+  int disk_cache_stream_index_;  // For TYPE_DISK_CACHE_ENTRY.
 };
 
 #if defined(UNIT_TEST)
 inline bool operator==(const BlobDataItem& a, const BlobDataItem& b) {
-  return a.data_element() == b.data_element();
+  return a.disk_cache_entry() == b.disk_cache_entry() &&
+         a.disk_cache_stream_index() == b.disk_cache_stream_index() &&
+         a.data_element() == b.data_element();
 }
 
 inline bool operator!=(const BlobDataItem& a, const BlobDataItem& b) {

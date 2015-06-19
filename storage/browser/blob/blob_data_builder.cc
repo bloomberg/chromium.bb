@@ -5,6 +5,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 
 #include "base/time/time.h"
+#include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 
 namespace storage {
@@ -58,6 +59,18 @@ void BlobDataBuilder::AppendFileSystemFile(
   element->SetToFileSystemUrlRange(url, offset, length,
                                    expected_modification_time);
   items_.push_back(new BlobDataItem(element.Pass()));
+}
+
+void BlobDataBuilder::AppendDiskCacheEntry(
+    const scoped_refptr<DataHandle>& data_handle,
+    disk_cache::Entry* disk_cache_entry,
+    int disk_cache_stream_index) {
+  scoped_ptr<DataElement> element(new DataElement());
+  element->SetToDiskCacheEntryRange(
+      0U, disk_cache_entry->GetDataSize(disk_cache_stream_index));
+  items_.push_back(
+      new BlobDataItem(element.Pass(), data_handle, disk_cache_entry,
+                       disk_cache_stream_index));
 }
 
 }  // namespace storage

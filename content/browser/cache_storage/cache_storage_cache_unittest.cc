@@ -19,6 +19,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/test_completion_callback.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -375,10 +376,33 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   void CopyBody(storage::BlobDataHandle* blob_handle, std::string* output) {
+    *output = std::string();
     scoped_ptr<storage::BlobDataSnapshot> data = blob_handle->CreateSnapshot();
     const auto& items = data->items();
     for (const auto& item : items) {
-      output->append(item->bytes(), item->length());
+      switch (item->type()) {
+        case storage::DataElement::TYPE_BYTES: {
+          output->append(item->bytes(), item->length());
+          break;
+        }
+        case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+          disk_cache::Entry* entry = item->disk_cache_entry();
+          int32 body_size = entry->GetDataSize(item->disk_cache_stream_index());
+
+          scoped_refptr<net::IOBuffer> io_buffer = new net::IOBuffer(body_size);
+          net::TestCompletionCallback callback;
+          int rv =
+              entry->ReadData(item->disk_cache_stream_index(), 0,
+                              io_buffer.get(), body_size, callback.callback());
+          if (rv == net::ERR_IO_PENDING)
+            rv = callback.WaitForResult();
+          EXPECT_EQ(body_size, rv);
+          if (rv > 0)
+            output->append(io_buffer->data(), rv);
+          break;
+        }
+        default: { ADD_FAILURE() << "invalid response blob type"; } break;
+      }
     }
   }
 

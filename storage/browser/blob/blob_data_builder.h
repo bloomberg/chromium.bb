@@ -16,11 +16,17 @@
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/storage_browser_export.h"
 
+namespace disk_cache {
+class Entry;
+}
+
 namespace storage {
 class BlobStorageContext;
 
 class STORAGE_EXPORT BlobDataBuilder {
  public:
+  using DataHandle = BlobDataItem::DataHandle;
+
   explicit BlobDataBuilder(const std::string& uuid);
   ~BlobDataBuilder();
 
@@ -48,6 +54,10 @@ class STORAGE_EXPORT BlobDataBuilder {
                             uint64_t offset,
                             uint64_t length,
                             const base::Time& expected_modification_time);
+
+  void AppendDiskCacheEntry(const scoped_refptr<DataHandle>& data_handle,
+                            disk_cache::Entry* disk_cache_entry,
+                            int disk_cache_stream_index);
 
   void set_content_type(const std::string& content_type) {
     content_type_ = content_type;

@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_H_
 
 #include <map>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -19,10 +20,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace storage {
-class FileSystemContext;
-}
-
 namespace net {
 class DrainableIOBuffer;
 class IOBuffer;
@@ -31,6 +28,7 @@ class IOBuffer;
 namespace storage {
 
 class FileStreamReader;
+class FileSystemContext;
 
 // A request job that handles reading blob URLs.
 class STORAGE_EXPORT BlobURLRequestJob
@@ -71,10 +69,13 @@ class STORAGE_EXPORT BlobURLRequestJob
   void AdvanceItem();
   void AdvanceBytesRead(int result);
   bool ReadBytesItem(const BlobDataItem& item, int bytes_to_read);
-  bool ReadFileItem(FileStreamReader* reader, int bytes_to_read);
 
+  bool ReadFileItem(FileStreamReader* reader, int bytes_to_read);
   void DidReadFile(int chunk_number, int result);
   void DeleteCurrentFileReader();
+
+  bool ReadDiskCacheEntryItem(const BlobDataItem& item, int bytes_to_read);
+  void DidReadDiskCacheEntry(int result);
 
   int ComputeBytesToRead() const;
   int BytesReadCompleted();

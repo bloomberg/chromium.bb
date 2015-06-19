@@ -14,6 +14,9 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/fileapi/blob_storage_host.h"
+#include "net/base/io_buffer.h"
+#include "net/base/test_completion_callback.h"
+#include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
@@ -29,6 +32,45 @@ using storage::DataElement;
 
 namespace content {
 namespace {
+
+const int kTestDiskCacheStreamIndex = 0;
+
+// Our disk cache tests don't need a real data handle since the tests themselves
+// scope the disk cache and entries.
+class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
+ private:
+  ~EmptyDataHandle() override {}
+};
+
+scoped_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
+  scoped_ptr<disk_cache::Backend> cache;
+  net::TestCompletionCallback callback;
+  int rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
+                                          net::CACHE_BACKEND_DEFAULT,
+                                          base::FilePath(), 0,
+                                          false, nullptr, nullptr, &cache,
+                                          callback.callback());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+  return cache.Pass();
+}
+
+disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
+                                                const char* key,
+                                                const std::string& data) {
+  disk_cache::Entry* temp_entry = nullptr;
+  net::TestCompletionCallback callback;
+  int rv = cache->CreateEntry(key, &temp_entry, callback.callback());
+  if (callback.GetResult(rv) != net::OK)
+    return nullptr;
+  disk_cache::ScopedEntryPtr entry(temp_entry);
+
+  scoped_refptr<net::StringIOBuffer> iobuffer = new net::StringIOBuffer(data);
+  rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
+                        iobuffer->size(), callback.callback(), false);
+  EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
+  return entry.Pass();
+}
 
 void SetupBasicBlob(BlobStorageHost* host, const std::string& id) {
   EXPECT_TRUE(host->StartBuildingBlob(id));
@@ -262,9 +304,48 @@ TEST(BlobStorageContextTest, AddFinishedBlob_LargeOffset) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST(BlobStorageContextTest, BuildDiskCacheBlob) {
+  base::MessageLoop fake_io_message_loop;
+  scoped_refptr<BlobDataBuilder::DataHandle>
+      data_handle = new EmptyDataHandle();
+
+  {
+    scoped_ptr<BlobStorageContext> context(new BlobStorageContext);
+    BlobStorageHost host(context.get());
+
+    scoped_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
+    ASSERT_TRUE(cache);
+
+    const std::string kTestBlobData = "Test Blob Data";
+    disk_cache::ScopedEntryPtr entry =
+        CreateDiskCacheEntry(cache.get(), "test entry", kTestBlobData);
+
+    const std::string kId1Prime("id1.prime");
+    BlobDataBuilder canonicalized_blob_data(kId1Prime);
+    canonicalized_blob_data.AppendData(kTestBlobData.c_str());
+
+    const std::string kId1("id1");
+    BlobDataBuilder builder(kId1);
+
+    builder.AppendDiskCacheEntry(
+        data_handle, entry.get(), kTestDiskCacheStreamIndex);
+
+    scoped_ptr<BlobDataHandle> blob_data_handle =
+        context->AddFinishedBlob(&builder);
+    scoped_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
+    EXPECT_EQ(*data, builder);
+    EXPECT_FALSE(data_handle->HasOneRef())
+        << "Data handle was destructed while context and builder still exist.";
+  }
+  EXPECT_TRUE(data_handle->HasOneRef())
+      << "Data handle was not destructed along with blob storage context.";
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST(BlobStorageContextTest, CompoundBlobs) {
   const std::string kId1("id1");
   const std::string kId2("id2");
+  const std::string kId3("id3");
   const std::string kId2Prime("id2.prime");
 
   base::MessageLoop fake_io_message_loop;
@@ -285,6 +366,15 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   blob_data2.AppendBlob(kId1, 8, 100);
   blob_data2.AppendFile(base::FilePath(FILE_PATH_LITERAL("File2.txt")), 0, 20,
                         time2);
+
+  BlobDataBuilder blob_data3(kId3);
+  blob_data3.AppendData("Data4");
+  scoped_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
+  ASSERT_TRUE(cache);
+  disk_cache::ScopedEntryPtr disk_cache_entry =
+      CreateDiskCacheEntry(cache.get(), "another key", "Data5");
+  blob_data3.AppendDiskCacheEntry(new EmptyDataHandle(), disk_cache_entry.get(),
+                                  kTestDiskCacheStreamIndex);
 
   BlobDataBuilder canonicalized_blob_data2(kId2Prime);
   canonicalized_blob_data2.AppendData("Data3");
@@ -311,6 +401,12 @@ TEST(BlobStorageContextTest, CompoundBlobs) {
   ASSERT_TRUE(blob_data_handle);
   ASSERT_TRUE(data);
   EXPECT_EQ(*data, canonicalized_blob_data2);
+
+  // Test a blob referring to only data and a disk cache entry.
+  blob_data_handle = context.AddFinishedBlob(&blob_data3);
+  data = blob_data_handle->CreateSnapshot();
+  ASSERT_TRUE(blob_data_handle);
+  EXPECT_EQ(*data, blob_data3);
 
   blob_data_handle.reset();
   base::RunLoop().RunUntilIdle();

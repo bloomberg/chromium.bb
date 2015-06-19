@@ -56,11 +56,18 @@ void ParamTraits<storage::DataElement>::Write(Message* m, const param_type& p) {
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    default: {
-      DCHECK(p.type() == storage::DataElement::TYPE_BLOB);
+    case storage::DataElement::TYPE_BLOB: {
       WriteParam(m, p.blob_uuid());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
+      break;
+    }
+    case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+      NOTREACHED() << "Can't be sent by IPC.";
+      break;
+    }
+    case storage::DataElement::TYPE_UNKNOWN: {
+      NOTREACHED();
       break;
     }
   }
@@ -113,8 +120,7 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
                                  expected_modification_time);
       break;
     }
-    default: {
-      DCHECK(type == storage::DataElement::TYPE_BLOB);
+    case storage::DataElement::TYPE_BLOB: {
       std::string blob_uuid;
       uint64 offset, length;
       if (!ReadParam(m, iter, &blob_uuid))
@@ -124,6 +130,14 @@ bool ParamTraits<storage::DataElement>::Read(const Message* m,
       if (!ReadParam(m, iter, &length))
         return false;
       r->SetToBlobRange(blob_uuid, offset, length);
+      break;
+    }
+    case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+      NOTREACHED() << "Can't be sent by IPC.";
+      break;
+    }
+    case storage::DataElement::TYPE_UNKNOWN: {
+      NOTREACHED();
       break;
     }
   }

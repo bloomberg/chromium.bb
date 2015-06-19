@@ -5,8 +5,7 @@
 #ifndef STORAGE_BROWSER_BLOB_SHAREABLE_FILE_REFERENCE_H_
 #define STORAGE_BROWSER_BLOB_SHAREABLE_FILE_REFERENCE_H_
 
-#include <vector>
-
+#include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -16,8 +15,7 @@ namespace storage {
 // same path if it already exists in its internal map.
 // This class is non-thread-safe and all methods must be called on a single
 // thread.
-class STORAGE_EXPORT ShareableFileReference
-    : public base::RefCounted<ShareableFileReference> {
+class STORAGE_EXPORT ShareableFileReference : public BlobDataItem::DataHandle {
  public:
   typedef ScopedFile::ScopeOutCallback FinalReleaseCallback;
 
@@ -60,10 +58,8 @@ class STORAGE_EXPORT ShareableFileReference
   void AddFinalReleaseCallback(const FinalReleaseCallback& callback);
 
  private:
-  friend class base::RefCounted<ShareableFileReference>;
-
   ShareableFileReference(ScopedFile scoped_file);
-  ~ShareableFileReference();
+  ~ShareableFileReference() override;
 
   ScopedFile scoped_file_;
 

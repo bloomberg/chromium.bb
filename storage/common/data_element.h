@@ -27,6 +27,7 @@ class STORAGE_COMMON_EXPORT DataElement {
     TYPE_FILE,
     TYPE_BLOB,
     TYPE_FILE_FILESYSTEM,
+    TYPE_DISK_CACHE_ENTRY,
   };
 
   DataElement();
@@ -102,6 +103,9 @@ class STORAGE_COMMON_EXPORT DataElement {
                                uint64 offset, uint64 length,
                                const base::Time& expected_modification_time);
 
+  // Sets to TYPE_DISK_CACHE_ENTRY with range.
+  void SetToDiskCacheEntryRange(uint64 offset, uint64 length);
+
  private:
   Type type_;
   std::vector<char> buf_;  // For TYPE_BYTES.
@@ -130,6 +134,10 @@ inline bool operator==(const DataElement& a, const DataElement& b) {
       return a.blob_uuid() == b.blob_uuid();
     case DataElement::TYPE_FILE_FILESYSTEM:
       return a.filesystem_url() == b.filesystem_url();
+    case DataElement::TYPE_DISK_CACHE_ENTRY:
+      // We compare only length and offset; we trust the entry itself was
+      // compared at some higher level such as in BlobDataItem.
+      return true;
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();
       return false;

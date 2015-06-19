@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/internal_blob_data.h"
@@ -217,6 +218,10 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
               TimeFormatFriendlyDateAndTime(item.expected_modification_time())),
               out);
         }
+        break;
+      case DataElement::TYPE_DISK_CACHE_ENTRY:
+        AddHTMLListItem(kType, "disk cache entry", out);
+        AddHTMLListItem(kURL, item.disk_cache_entry()->GetKey(), out);
         break;
       case DataElement::TYPE_UNKNOWN:
         NOTREACHED();

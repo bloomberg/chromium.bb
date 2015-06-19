@@ -10,13 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "net/base/net_export.h"
 #include "net/base/upload_element_reader.h"
 
 namespace net {
 
-// An UploadElementReader implementation for bytes.
-// |data| should outlive this class because this class does not take the
-// ownership of the data.
+// An UploadElementReader implementation for bytes. The caller owns |bytes|,
+// and is responsible for ensuring it outlives the UploadBytesElementReader.
 class NET_EXPORT UploadBytesElementReader : public UploadElementReader {
  public:
   UploadBytesElementReader(const char* bytes, uint64_t length);

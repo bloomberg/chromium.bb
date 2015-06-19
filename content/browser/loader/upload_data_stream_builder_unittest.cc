@@ -18,7 +18,9 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
+#include "net/base/upload_disk_cache_entry_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
+#include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +32,45 @@ using storage::BlobStorageContext;
 
 namespace content {
 namespace {
+
+const int kTestDiskCacheStreamIndex = 0;
+
+// Our disk cache tests don't need a real data handle since the tests themselves
+// scope the disk cache and entries.
+class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
+ private:
+  ~EmptyDataHandle() override {}
+};
+
+scoped_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
+  scoped_ptr<disk_cache::Backend> cache;
+  net::TestCompletionCallback callback;
+  int rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
+                                          net::CACHE_BACKEND_DEFAULT,
+                                          base::FilePath(), 0,
+                                          false, nullptr, nullptr, &cache,
+                                          callback.callback());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+  return cache.Pass();
+}
+
+disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
+                                                const char* key,
+                                                const std::string& data) {
+  disk_cache::Entry* temp_entry = nullptr;
+  net::TestCompletionCallback callback;
+  int rv = cache->CreateEntry(key, &temp_entry, callback.callback());
+  if (callback.GetResult(rv) != net::OK)
+    return nullptr;
+  disk_cache::ScopedEntryPtr entry(temp_entry);
+
+  scoped_refptr<net::StringIOBuffer> iobuffer = new net::StringIOBuffer(data);
+  rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
+                        iobuffer->size(), callback.callback(), false);
+  EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
+  return entry.Pass();
+}
 
 bool AreElementsEqual(const net::UploadElementReader& reader,
                       const ResourceRequestBody::Element& element) {
@@ -50,6 +91,19 @@ bool AreElementsEqual(const net::UploadElementReader& reader,
           file_reader->range_length() == element.length() &&
           file_reader->expected_modification_time() ==
           element.expected_modification_time();
+      break;
+    }
+    case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY: {
+      // TODO(gavinp): Should we be comparing a higher level structure
+      // such as the BlobDataItem so that we can do stronger equality
+      // comparisons?
+      const net::UploadDiskCacheEntryElementReader* disk_cache_entry_reader =
+          reader.AsDiskCacheEntryReaderForTests();
+      return disk_cache_entry_reader &&
+          disk_cache_entry_reader->range_offset_for_tests() ==
+              static_cast<int>(element.offset()) &&
+          disk_cache_entry_reader->range_length_for_tests() ==
+              static_cast<int>(element.length());
       break;
     }
     default:
@@ -124,11 +178,27 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
     scoped_ptr<BlobDataHandle> handle2 =
         blob_storage_context.AddFinishedBlob(blob_data_builder.get());
 
+    const std::string blob_id2("id-2");
+    const std::string kDiskCacheData = "DiskCacheData";
+    scoped_ptr<disk_cache::Backend> disk_cache_backend =
+        CreateInMemoryDiskCache();
+    ASSERT_TRUE(disk_cache_backend);
+    disk_cache::ScopedEntryPtr disk_cache_entry =
+        CreateDiskCacheEntry(disk_cache_backend.get(), "a key", kDiskCacheData);
+    ASSERT_TRUE(disk_cache_entry);
+    blob_data_builder.reset(new BlobDataBuilder(blob_id2));
+    blob_data_builder->AppendDiskCacheEntry(
+        new EmptyDataHandle(), disk_cache_entry.get(),
+        kTestDiskCacheStreamIndex);
+    scoped_ptr<BlobDataHandle> handle3 =
+        blob_storage_context.AddFinishedBlob(blob_data_builder.get());
+
     // Setup upload data elements for comparison.
-    ResourceRequestBody::Element blob_element1, blob_element2;
+    ResourceRequestBody::Element blob_element1, blob_element2, blob_element3;
     blob_element1.SetToBytes(kBlobData.c_str(), kBlobData.size());
     blob_element2.SetToFilePathRange(
         base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
+    blob_element3.SetToDiskCacheEntryRange(0, kDiskCacheData.size());
 
     ResourceRequestBody::Element upload_element1, upload_element2;
     upload_element1.SetToBytes("Hello", 5);
@@ -180,6 +250,18 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         *(*upload->GetElementReaders())[0], blob_element1));
     EXPECT_TRUE(AreElementsEqual(
         *(*upload->GetElementReaders())[1], blob_element2));
+
+    // Test having one blob reference which refers to a disk cache entry.
+    request_body = new ResourceRequestBody();
+    request_body->AppendBlob(blob_id2);
+
+    upload = UploadDataStreamBuilder::Build(
+        request_body.get(), &blob_storage_context, nullptr,
+        base::ThreadTaskRunnerHandle::Get().get());
+    ASSERT_TRUE(upload->GetElementReaders());
+    ASSERT_EQ(1U, upload->GetElementReaders()->size());
+    EXPECT_TRUE(AreElementsEqual(
+        *(*upload->GetElementReaders())[0], blob_element3));
 
     // Test having one blob reference at the beginning.
     request_body = new ResourceRequestBody();

@@ -46,4 +46,10 @@ void DataElement::SetToFileSystemUrlRange(
   expected_modification_time_ = expected_modification_time;
 }
 
+void DataElement::SetToDiskCacheEntryRange(uint64 offset, uint64 length) {
+  type_ = TYPE_DISK_CACHE_ENTRY;
+  offset_ = offset;
+  length_ = length;
+}
+
 }  // namespace storage

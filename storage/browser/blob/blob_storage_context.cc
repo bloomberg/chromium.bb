@@ -16,6 +16,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -283,6 +284,9 @@ scoped_refptr<BlobDataItem> BlobStorageContext::AllocateBlobItem(
                               ipc_data.length());
       blob_item = new BlobDataItem(element.Pass());
       break;
+    case DataElement::TYPE_DISK_CACHE_ENTRY:  // This type can't be sent by IPC.
+      NOTREACHED();
+      break;
     default:
       NOTREACHED();
       break;
@@ -365,6 +369,13 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
       }
       break;
     }
+    case DataElement::TYPE_DISK_CACHE_ENTRY: {
+      UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.CacheEntry",
+                           (length - offset) / 1024);
+      target_blob_builder->AppendSharedBlobItem(
+          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      break;
+    }
     default:
       NOTREACHED();
       break;
@@ -440,7 +451,7 @@ bool BlobStorageContext::AppendBlob(
                                     item.expected_modification_time());
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
             target_blob_uuid,
-            new BlobDataItem(element.Pass(), item.file_handle_)));
+            new BlobDataItem(element.Pass(), item.data_handle_)));
       } break;
       case DataElement::TYPE_FILE_FILESYSTEM: {
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.FileSystem",
@@ -451,6 +462,16 @@ bool BlobStorageContext::AppendBlob(
                                          item.expected_modification_time());
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
             target_blob_uuid, new BlobDataItem(element.Pass())));
+      } break;
+      case DataElement::TYPE_DISK_CACHE_ENTRY: {
+        scoped_ptr<DataElement> element(new DataElement());
+        element->SetToDiskCacheEntryRange(item.offset() + offset,
+                                          new_length);
+        target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+            target_blob_uuid,
+            new BlobDataItem(element.Pass(), item.data_handle_,
+                             item.disk_cache_entry(),
+                             item.disk_cache_stream_index())));
       } break;
       default:
         CHECK(false) << "Illegal blob item type: " << item.type();

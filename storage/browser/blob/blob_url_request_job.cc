@@ -22,6 +22,7 @@
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -356,6 +357,8 @@ bool BlobURLRequestJob::ReadItem() {
   const BlobDataItem& item = *items.at(current_item_index_);
   if (item.type() == DataElement::TYPE_BYTES)
     return ReadBytesItem(item, bytes_to_read);
+  if (item.type() == DataElement::TYPE_DISK_CACHE_ENTRY)
+    return ReadDiskCacheEntryItem(item, bytes_to_read);
   if (!IsFileType(item.type())) {
     NOTREACHED();
     return false;
@@ -412,6 +415,8 @@ bool BlobURLRequestJob::ReadBytesItem(const BlobDataItem& item,
 
 bool BlobURLRequestJob::ReadFileItem(FileStreamReader* reader,
                                      int bytes_to_read) {
+  DCHECK(!GetStatus().is_io_pending())
+      << "Can't begin IO while another IO operation is pending.";
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
   DCHECK(reader);
   int chunk_number = current_file_chunk_number_++;
@@ -420,13 +425,9 @@ bool BlobURLRequestJob::ReadFileItem(FileStreamReader* reader,
   const int result =
       reader->Read(read_buf_.get(), bytes_to_read,
                    base::Bind(&BlobURLRequestJob::DidReadFile,
-                              base::Unretained(this), chunk_number));
+                              weak_factory_.GetWeakPtr(), chunk_number));
   if (result >= 0) {
-    // Data is immediately available.
-    if (GetStatus().is_io_pending())
-      DidReadFile(chunk_number, result);
-    else
-      AdvanceBytesRead(result);
+    AdvanceBytesRead(result);
     return true;
   }
   if (result == net::ERR_IO_PENDING)
@@ -437,22 +438,17 @@ bool BlobURLRequestJob::ReadFileItem(FileStreamReader* reader,
 }
 
 void BlobURLRequestJob::DidReadFile(int chunk_number, int result) {
+  DCHECK(GetStatus().is_io_pending())
+      << "Asynchronous IO completed while IO wasn't pending?";
   TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadFileItem", this, "uuid",
                          blob_data_->uuid());
   if (result <= 0) {
-    NotifyFailure(net::ERR_FAILED);
+    NotifyFailure(result);
     return;
   }
   SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
 
   AdvanceBytesRead(result);
-
-  // If the read buffer is completely filled, we're done.
-  if (!read_buf_->BytesRemaining()) {
-    int bytes_read = BytesReadCompleted();
-    NotifyReadComplete(bytes_read);
-    return;
-  }
 
   // Otherwise, continue the reading.
   int bytes_read = 0;
@@ -466,6 +462,43 @@ void BlobURLRequestJob::DeleteCurrentFileReader() {
     delete found->second;
     index_to_reader_.erase(found);
   }
+}
+
+bool BlobURLRequestJob::ReadDiskCacheEntryItem(const BlobDataItem& item,
+                                               int bytes_to_read) {
+  DCHECK(!GetStatus().is_io_pending())
+      << "Can't begin IO while another IO operation is pending.";
+  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
+
+  const int result = item.disk_cache_entry()->ReadData(
+      item.disk_cache_stream_index(), current_item_offset_, read_buf_.get(),
+      bytes_to_read, base::Bind(&BlobURLRequestJob::DidReadDiskCacheEntry,
+                                weak_factory_.GetWeakPtr()));
+  if (result >= 0) {
+    AdvanceBytesRead(result);
+    return true;
+  }
+  if (result == net::ERR_IO_PENDING)
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+  else
+    NotifyFailure(result);
+  return false;
+}
+
+void BlobURLRequestJob::DidReadDiskCacheEntry(int result) {
+  DCHECK(GetStatus().is_io_pending())
+      << "Asynchronous IO completed while IO wasn't pending?";
+  if (result <= 0) {
+    NotifyFailure(result);
+    return;
+  }
+  SetStatus(net::URLRequestStatus());
+
+  AdvanceBytesRead(result);
+
+  int bytes_read = 0;
+  if (ReadLoop(&bytes_read))
+    NotifyReadComplete(bytes_read);
 }
 
 int BlobURLRequestJob::BytesReadCompleted() {

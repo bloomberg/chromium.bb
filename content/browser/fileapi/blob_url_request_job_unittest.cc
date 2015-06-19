@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
@@ -16,7 +17,10 @@
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
+#include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/base/test_completion_callback.h"
+#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -48,12 +52,53 @@ const char kTestFileData1[] = "0123456789";
 const char kTestFileData2[] = "This is sample file.";
 const char kTestFileSystemFileData1[] = "abcdefghijklmnop";
 const char kTestFileSystemFileData2[] = "File system file test data.";
+const char kTestDiskCacheKey[] = "pipe";
+const char kTestDiskCacheData[] = "Ceci n'est pas un pamplemousse.";
 const char kTestContentType[] = "foo/bar";
 const char kTestContentDisposition[] = "attachment; filename=foo.txt";
 
 const char kFileSystemURLOrigin[] = "http://remote";
 const storage::FileSystemType kFileSystemType =
     storage::kFileSystemTypeTemporary;
+
+const int kTestDiskCacheStreamIndex = 0;
+
+// Our disk cache tests don't need a real data handle since the tests themselves
+// scope the disk cache and entries.
+class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
+ private:
+  ~EmptyDataHandle() override {}
+};
+
+scoped_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
+  scoped_ptr<disk_cache::Backend> cache;
+  net::TestCompletionCallback callback;
+  int rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
+                                          net::CACHE_BACKEND_DEFAULT,
+                                          base::FilePath(), 0,
+                                          false, nullptr, nullptr, &cache,
+                                          callback.callback());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+  return cache.Pass();
+}
+
+disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
+                                                const char* key,
+                                                const std::string& data) {
+  disk_cache::Entry* temp_entry = nullptr;
+  net::TestCompletionCallback callback;
+  int rv = cache->CreateEntry(key, &temp_entry, callback.callback());
+  if (callback.GetResult(rv) != net::OK)
+    return nullptr;
+  disk_cache::ScopedEntryPtr entry(temp_entry);
+
+  scoped_refptr<net::StringIOBuffer> iobuffer = new net::StringIOBuffer(data);
+  rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
+                        iobuffer->size(), callback.callback(), false);
+  EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
+  return entry.Pass();
+}
 
 }  // namespace
 
@@ -100,6 +145,10 @@ class BlobURLRequestJobTest : public testing::Test {
     base::File::Info file_info2;
     base::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
+
+    disk_cache_backend_ = CreateInMemoryDiskCache();
+    disk_cache_entry_ = CreateDiskCacheEntry(
+        disk_cache_backend_.get(), kTestDiskCacheKey, kTestDiskCacheData);
 
     url_request_job_factory_.SetProtocolHandler("blob",
                                                 new MockProtocolHandler(this));
@@ -208,18 +257,28 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void BuildComplicatedData(std::string* expected_result) {
     blob_data_->AppendData(kTestData1 + 1, 2);
+    *expected_result = std::string(kTestData1 + 1, 2);
+
     blob_data_->AppendFile(temp_file1_, 2, 3, temp_file_modification_time1_);
+    *expected_result += std::string(kTestFileData1 + 2, 3);
+
+    blob_data_->AppendDiskCacheEntry(new EmptyDataHandle(),
+                                     disk_cache_entry_.get(),
+                                     kTestDiskCacheStreamIndex);
+    *expected_result += std::string(kTestDiskCacheData);
+
     blob_data_->AppendFileSystemFile(temp_file_system_file1_, 3, 4,
                                      temp_file_system_file_modification_time1_);
+    *expected_result += std::string(kTestFileSystemFileData1 + 3, 4);
+
     blob_data_->AppendData(kTestData2 + 4, 5);
+    *expected_result += std::string(kTestData2 + 4, 5);
+
     blob_data_->AppendFile(temp_file2_, 5, 6, temp_file_modification_time2_);
+    *expected_result += std::string(kTestFileData2 + 5, 6);
+
     blob_data_->AppendFileSystemFile(temp_file_system_file2_, 6, 7,
                                      temp_file_system_file_modification_time2_);
-    *expected_result = std::string(kTestData1 + 1, 2);
-    *expected_result += std::string(kTestFileData1 + 2, 3);
-    *expected_result += std::string(kTestFileSystemFileData1 + 3, 4);
-    *expected_result += std::string(kTestData2 + 4, 5);
-    *expected_result += std::string(kTestFileData2 + 5, 6);
     *expected_result += std::string(kTestFileSystemFileData2 + 6, 7);
   }
 
@@ -256,6 +315,9 @@ class BlobURLRequestJobTest : public testing::Test {
   base::Time temp_file_system_file_modification_time1_;
   base::Time temp_file_system_file_modification_time2_;
 
+  scoped_ptr<disk_cache::Backend> disk_cache_backend_;
+  disk_cache::ScopedEntryPtr disk_cache_entry_;
+
   base::MessageLoopForIO message_loop_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
@@ -291,7 +353,7 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
     large_data.append(1, static_cast<char>(i % 256));
   ASSERT_EQ(static_cast<int>(large_data.size()),
             base::WriteFile(large_temp_file, large_data.data(),
-                                 large_data.size()));
+                            large_data.size()));
   blob_data_->AppendFile(large_temp_file, 0, kuint64max, base::Time());
   TestSuccessNonrangeRequest(large_data, large_data.size());
 }
@@ -371,7 +433,15 @@ TEST_F(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
   TestSuccessNonrangeRequest(result, 4);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetComplicatedDataAndFileRequest) {
+TEST_F(BlobURLRequestJobTest, TestGetSimpleDiskCacheRequest) {
+  blob_data_->AppendDiskCacheEntry(new EmptyDataHandle(),
+                                   disk_cache_entry_.get(),
+                                   kTestDiskCacheStreamIndex);
+  TestSuccessNonrangeRequest(kTestDiskCacheData,
+                             arraysize(kTestDiskCacheData) - 1);
+}
+
+TEST_F(BlobURLRequestJobTest, TestGetComplicatedDataFileAndDiskCacheRequest) {
   SetUpFileSystem();
   std::string result;
   BuildComplicatedData(&result);

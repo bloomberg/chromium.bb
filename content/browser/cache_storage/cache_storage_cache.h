@@ -105,7 +105,6 @@ class CONTENT_EXPORT CacheStorageCache
   friend class TestCacheStorageCache;
 
   struct KeysContext;
-  struct MatchContext;
   struct PutContext;
 
   // The backend progresses from uninitialized, to open, to closed, and cannot
@@ -134,12 +133,14 @@ class CONTENT_EXPORT CacheStorageCache
   // Match callbacks
   void MatchImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                  const ResponseCallback& callback);
-  void MatchDidOpenEntry(scoped_ptr<MatchContext> match_context, int rv);
-  void MatchDidReadMetadata(scoped_ptr<MatchContext> match_context,
+  void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
+                         const ResponseCallback& callback,
+                         scoped_ptr<disk_cache::Entry*> entry_ptr,
+                         int rv);
+  void MatchDidReadMetadata(scoped_ptr<ServiceWorkerFetchRequest> request,
+                            const ResponseCallback& callback,
+                            disk_cache::ScopedEntryPtr entry,
                             scoped_ptr<CacheMetadata> headers);
-  void MatchDidReadResponseBodyData(scoped_ptr<MatchContext> match_context,
-                                    int rv);
-  void MatchDoneWithBody(scoped_ptr<MatchContext> match_context);
 
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns OK on
@@ -149,7 +150,9 @@ class CONTENT_EXPORT CacheStorageCache
   void PutImpl(scoped_ptr<PutContext> put_context);
   void PutDidDelete(scoped_ptr<PutContext> put_context,
                     CacheStorageError delete_error);
-  void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv);
+  void PutDidCreateEntry(scoped_ptr<disk_cache::Entry*> entry_ptr,
+                         scoped_ptr<PutContext> put_context,
+                         int rv);
   void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                           int expected_bytes,
                           int rv);
