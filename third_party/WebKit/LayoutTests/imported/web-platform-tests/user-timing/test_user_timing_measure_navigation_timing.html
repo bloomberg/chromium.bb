@@ -5,10 +5,10 @@
         <title>window.performance User Timing clearMeasures() method is working properly with navigation timing
                attributes</title>
         <link rel="author" title="Microsoft" href="http://www.microsoft.com/" />
-        <link rel="help" href="http://127.0.0.1:8000/webperf/specs/UserTiming/#dom-performance-measure"/>
-        <script src="/w3c/resources/testharness.js"></script>
-        <script src="/w3c/resources/testharnessreport.js"></script>
-        <script src="/w3c/webperf/resources/webperftestharness.js"></script>
+        <link rel="help" href="http://www.w3.org/TR/user-timing/#dom-performance-measure"/>
+        <script src="../../../resources/testharness.js"></script>
+        <script src="../../../resources/testharnessreport.js"></script>
+        <script src="resources/webperftestharness.js"></script>
 
     <script type="text/javascript">
         // navigation timing attributes
@@ -89,7 +89,7 @@
             }
         ];
 
-        setup({timeout:1000, explicit_done: true});
+        setup({explicit_done: true});
 
         test_namespace();
 
@@ -198,7 +198,7 @@
             // test startTime; since for a mark, the startTime is always equal to a mark's value or the value of a
             // navigation timing attribute, the actual startTime should match the expected value exactly
             test_true(Math.abs(measureEntry.startTime - expectedStartTime) == 0,
-                      measureEntryCommand + ".startTime == " );
+                      measureEntryCommand + ".startTime == " + expectedStartTime);
 
             // test entryType
             test_true(measureEntry.entryType == "measure", measureEntryCommand + ".entryType == \"measure\"");
@@ -206,7 +206,7 @@
             // test duration, allow for an acceptable threshold in the difference between the actual duration and the
             // expected value for the duration
             test_true(Math.abs(measureEntry.duration - expectedDuration) <= testThreshold, measureEntryCommand +
-                      ".duration ~== "  + " (up to " + testThreshold + "ms difference allowed)");
+                      ".duration ~== " + expectedDuration + " (up to " + testThreshold + "ms difference allowed)");
         }
     </script>
     </head>

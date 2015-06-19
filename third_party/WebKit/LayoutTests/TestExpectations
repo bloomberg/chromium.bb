@@ -1255,9 +1255,6 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
-# Flaky
-crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
-
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
 crbug.com/431172 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Timeout ]

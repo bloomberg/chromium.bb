@@ -4,10 +4,10 @@
         <meta charset="UTF-8" />
         <title>window.performance User Timing measure() method is throwing the proper exceptions</title>
         <link rel="author" title="Microsoft" href="http://www.microsoft.com/" />
-        <link rel="help" href="http://127.0.0.1:8000/webperf/specs/UserTiming/#dom-performance-measure"/>
-        <script src="/w3c/resources/testharness.js"></script>
-        <script src="/w3c/resources/testharnessreport.js"></script>
-        <script src="/w3c/webperf/resources/webperftestharness.js"></script>
+        <link rel="help" href="http://www.w3.org/TR/user-timing/#dom-performance-measure"/>
+        <script src="../../../resources/testharness.js"></script>
+        <script src="../../../resources/testharnessreport.js"></script>
+        <script src="resources/webperftestharness.js"></script>
 
     <script type="text/javascript">
         // navigation timing attributes
@@ -37,7 +37,7 @@
         // test data
         var zeroedNavTimingAtt = undefined;
 
-        setup({timeout:1000, explicit_done: true});
+        setup({explicit_done: true});
 
         test_namespace();
 

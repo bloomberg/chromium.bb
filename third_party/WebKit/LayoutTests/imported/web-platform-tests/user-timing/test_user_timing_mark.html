@@ -4,10 +4,10 @@
         <meta charset="UTF-8" />
         <title>window.performance User Timing mark() method is working properly</title>
         <link rel="author" title="Microsoft" href="http://www.microsoft.com/" />
-        <link rel="help" href="http://127.0.0.1:8000/webperf/specs/UserTiming/#dom-performance-mark"/>
-        <script src="/w3c/resources/testharness.js"></script>
-        <script src="/w3c/resources/testharnessreport.js"></script>
-        <script src="/w3c/webperf/resources/webperftestharness.js"></script>
+        <link rel="help" href="http://www.w3.org/TR/user-timing/#dom-performance-mark"/>
+        <script src="../../../resources/testharness.js"></script>
+        <script src="../../../resources/testharnessreport.js"></script>
+        <script src="resources/webperftestharness.js"></script>
 
     <script type="text/javascript">
         // test data
@@ -29,7 +29,7 @@
             }
         ];
 
-        setup({timeout:1000, explicit_done: true});
+        setup({explicit_done: true});
 
         test_namespace();
 
@@ -183,7 +183,7 @@
             // test startTime, allow for an acceptable threshold in the difference between the startTime and the
             // expected value for the startTime (loadEventStart + markTestDelay)
             test_true(Math.abs(markEntry.startTime - expectedStartTime) <= testThreshold,
-                      markEntryCommand + ".startTime ~== "  + " (up to " + testThreshold +
+                      markEntryCommand + ".startTime ~== " + expectedStartTime + " (up to " + testThreshold +
                       "ms difference allowed)");
 
             // verify entryType
