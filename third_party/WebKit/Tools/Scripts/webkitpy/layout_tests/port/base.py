@@ -1575,8 +1575,16 @@ class Port(object):
             PhysicalTestSuite('css1', ['--enable-slimming-paint']),
             PhysicalTestSuite('css2.1', ['--enable-slimming-paint']),
             PhysicalTestSuite('css3', ['--enable-slimming-paint']),
+            PhysicalTestSuite('editing', ['--enable-slimming-paint']),
             PhysicalTestSuite('fast', ['--enable-slimming-paint']),
+            PhysicalTestSuite('media', ['--enable-slimming-paint']),
+            PhysicalTestSuite('paint', ['--enable-slimming-paint']),
+            PhysicalTestSuite('plugins', ['--enable-slimming-paint']),
+            PhysicalTestSuite('printing', ['--enable-slimming-paint']),
+            PhysicalTestSuite('scrollbars', ['--enable-slimming-paint']),
+            PhysicalTestSuite('selection', ['--enable-slimming-paint']),
             PhysicalTestSuite('svg', ['--enable-slimming-paint']),
+            PhysicalTestSuite('transforms', ['--enable-slimming-paint']),
         ]
 
     def virtual_test_suites(self):
