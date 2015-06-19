@@ -4,6 +4,7 @@
 
 #include "ash/display/display_layout.h"
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_pref_util.h"
 #include "base/json/json_value_converter.h"
 #include "base/logging.h"
@@ -70,7 +71,11 @@ DisplayLayout::DisplayLayout()
     : position(RIGHT),
       offset(0),
       mirrored(false),
+#if defined(OS_CHROMEOS)
+      default_unified(switches::UnifiedDesktopEnabled()),
+#else
       default_unified(false),
+#endif
       primary_id(gfx::Display::kInvalidDisplayID) {
 }
 
@@ -78,7 +83,11 @@ DisplayLayout::DisplayLayout(DisplayLayout::Position position, int offset)
     : position(position),
       offset(offset),
       mirrored(false),
+#if defined(OS_CHROMEOS)
+      default_unified(switches::UnifiedDesktopEnabled()),
+#else
       default_unified(false),
+#endif
       primary_id(gfx::Display::kInvalidDisplayID) {
   DCHECK_LE(TOP, position);
   DCHECK_GE(LEFT, position);

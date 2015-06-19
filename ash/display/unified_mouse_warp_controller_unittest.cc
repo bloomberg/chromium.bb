@@ -4,8 +4,6 @@
 
 #include "ash/display/unified_mouse_warp_controller.h"
 
-#include "ash/display/display_layout_store.h"
-#include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -25,9 +23,6 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
   void SetUp() override {
     test::AshTestBase::SetUp();
     test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
-    display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
   }
 
  protected:

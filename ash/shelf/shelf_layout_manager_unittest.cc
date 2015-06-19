@@ -22,6 +22,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -2342,10 +2343,8 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
 TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
+  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
-  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
   UpdateDisplay("500x500, 500x500");
 
   StatusAreaWidget* status_area_widget =

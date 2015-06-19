@@ -48,7 +48,13 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdPair(
     int64 id1,
     int64 id2,
     const DisplayLayout& layout) {
-  paired_layouts_[std::make_pair(id1, id2)] = layout;
+  auto key = std::make_pair(id1, id2);
+  paired_layouts_[key] = layout;
+#if defined(OS_CHROMEOS)
+  // Force disabling unified desktop if the flag is not set.
+  if (!switches::UnifiedDesktopEnabled())
+    paired_layouts_[key].default_unified = false;
+#endif
 }
 
 DisplayLayout DisplayLayoutStore::GetRegisteredDisplayLayout(
@@ -88,9 +94,6 @@ void DisplayLayoutStore::UpdatePrimaryDisplayId(const DisplayIdPair& pair,
 DisplayLayout DisplayLayoutStore::CreateDisplayLayout(
     const DisplayIdPair& pair) {
   DisplayLayout layout = default_display_layout_;
-  layout.default_unified =
-      Shell::GetInstance()->display_manager()->default_multi_display_mode() ==
-      DisplayManager::UNIFIED;
   layout.primary_id = pair.first;
   paired_layouts_[pair] = layout;
   return layout;

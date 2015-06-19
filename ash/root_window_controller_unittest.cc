@@ -295,9 +295,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
     return;
   test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
 
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
-  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
   UpdateDisplay("500x500");
   const int kLockScreenWindowId = 1000;
   const int kLockBackgroundWindowId = 1001;
@@ -338,6 +335,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to mirror.
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetMirrorMode(true);
   EXPECT_TRUE(display_manager->IsInMirrorMode());
 

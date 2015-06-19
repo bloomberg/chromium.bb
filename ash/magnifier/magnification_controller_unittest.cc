@@ -4,7 +4,6 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
-#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -672,10 +671,6 @@ TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
   test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
-
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
-  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
 
   EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
 
