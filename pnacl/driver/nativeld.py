@@ -56,6 +56,9 @@ EXTRA_ENV = {
                   '--eh-frame-hdr ' +
                   # Give an error if any TEXTRELs occur.
                   '-z text ' +
+                  # Ensure we don't accidentally get READ_IMPLIES_EXEC
+                  # behaviour when building Linux Non-SFI executables.
+                  '-z noexecstack ' +
                   '--build-id ',
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
