@@ -132,6 +132,7 @@ struct GPU_EXPORT Capabilities {
   bool blend_equation_advanced;
   bool blend_equation_advanced_coherent;
   bool texture_rg;
+  bool render_buffer_format_bgra8888;
 
   int major_version;
   int minor_version;

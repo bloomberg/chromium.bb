@@ -207,8 +207,13 @@ void GpuTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-ResourceFormat GpuTileTaskWorkerPool::GetResourceFormat() {
-  return rasterizer_->resource_provider()->best_texture_format();
+ResourceFormat GpuTileTaskWorkerPool::GetResourceFormat() const {
+  return rasterizer_->resource_provider()->best_render_buffer_format();
+}
+
+bool GpuTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
+  // This doesn't require a swizzle because we rasterize to the correct format.
+  return false;
 }
 
 void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {

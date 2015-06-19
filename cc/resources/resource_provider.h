@@ -95,6 +95,9 @@ class CC_EXPORT ResourceProvider {
     return use_rgba_4444_texture_format_ ? RGBA_4444 : best_texture_format_;
   }
   ResourceFormat best_texture_format() const { return best_texture_format_; }
+  ResourceFormat best_render_buffer_format() const {
+    return best_render_buffer_format_;
+  }
   ResourceFormat yuv_resource_format() const { return yuv_resource_format_; }
   bool use_sync_query() const { return use_sync_query_; }
   bool use_persistent_map_for_gpu_memory_buffers() const {
@@ -585,6 +588,7 @@ class CC_EXPORT ResourceProvider {
   ResourceFormat yuv_resource_format_;
   int max_texture_size_;
   ResourceFormat best_texture_format_;
+  ResourceFormat best_render_buffer_format_;
 
   base::ThreadChecker thread_checker_;
 

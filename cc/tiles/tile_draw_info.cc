@@ -9,7 +9,9 @@
 namespace cc {
 
 TileDrawInfo::TileDrawInfo()
-    : mode_(RESOURCE_MODE), solid_color_(SK_ColorWHITE) {
+    : mode_(RESOURCE_MODE),
+      solid_color_(SK_ColorWHITE),
+      contents_swizzled_(false) {
 }
 
 TileDrawInfo::~TileDrawInfo() {

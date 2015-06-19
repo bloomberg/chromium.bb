@@ -791,8 +791,9 @@ void TileManager::UpdateTileDrawInfo(
     DCHECK(resource);
     draw_info.set_use_resource();
     draw_info.resource_ = resource.Pass();
+    draw_info.contents_swizzled_ =
+        tile_task_runner_->GetResourceRequiresSwizzle();
   }
-
   client_->NotifyTileStateChanged(tile);
 }
 

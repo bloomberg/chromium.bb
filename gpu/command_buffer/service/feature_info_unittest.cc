@@ -340,6 +340,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GLES2) {
       GL_BGRA_EXT));
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_BGRA8_EXT));
+  EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
@@ -350,6 +351,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
               HasSubstr("GL_EXT_read_format_bgra"));
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888"));
+  EXPECT_TRUE(info_->feature_flags().ext_render_buffer_format_bgra8888);
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
@@ -370,6 +372,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888Apple) {
       GL_BGRA_EXT));
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_BGRA8_EXT));
+  EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_read_format_bgra) {
@@ -384,6 +387,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_read_format_bgra) {
       GL_BGRA_EXT));
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_BGRA8_EXT));
+  EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_sRGB) {
@@ -592,6 +596,7 @@ TEST_P(FeatureInfoTest, InitializeWithANGLE_BGRA8) {
   EXPECT_TRUE(info_->gl_version_info().is_angle);
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888"));
+  EXPECT_TRUE(info_->feature_flags().ext_render_buffer_format_bgra8888);
   EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_BGRA8_EXT));
 }
 
@@ -599,6 +604,7 @@ TEST_P(FeatureInfoTest, InitializeWithANGLE_BGRA8) {
 TEST_P(FeatureInfoTest,
        InitializeGLES2_no_CHROMIUM_renderbuffer_format_BGRA8888) {
   SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 2.0");
+  EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888")));
 }

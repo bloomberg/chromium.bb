@@ -1098,6 +1098,7 @@ ResourceProvider::ResourceProvider(
       yuv_resource_format_(LUMINANCE_8),
       max_texture_size_(0),
       best_texture_format_(RGBA_8888),
+      best_render_buffer_format_(RGBA_8888),
       use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
       id_allocation_chunk_size_(id_allocation_chunk_size),
       use_sync_query_(false),
@@ -1137,6 +1138,9 @@ void ResourceProvider::Initialize() {
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
   best_texture_format_ =
       PlatformColor::BestTextureFormat(use_texture_format_bgra_);
+
+  best_render_buffer_format_ =
+      PlatformColor::BestTextureFormat(caps.gpu.render_buffer_format_bgra8888);
 
   texture_id_allocator_.reset(
       new TextureIdAllocator(gl, id_allocation_chunk_size_));

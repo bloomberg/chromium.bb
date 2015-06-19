@@ -50,7 +50,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   void Shutdown() override;
   void ScheduleTasks(TileTaskQueue* queue) override;
   void CheckForCompletedTasks() override;
-  ResourceFormat GetResourceFormat() override;
+  ResourceFormat GetResourceFormat() const override;
+  bool GetResourceRequiresSwizzle() const override;
 
   // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(

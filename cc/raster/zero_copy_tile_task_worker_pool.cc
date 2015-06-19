@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -176,8 +177,12 @@ void ZeroCopyTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-ResourceFormat ZeroCopyTileTaskWorkerPool::GetResourceFormat() {
+ResourceFormat ZeroCopyTileTaskWorkerPool::GetResourceFormat() const {
   return resource_provider_->best_texture_format();
+}
+
+bool ZeroCopyTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
+  return !PlatformColor::SameComponentOrder(GetResourceFormat());
 }
 
 scoped_ptr<RasterBuffer> ZeroCopyTileTaskWorkerPool::AcquireBufferForRaster(

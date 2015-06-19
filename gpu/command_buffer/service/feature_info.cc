@@ -167,7 +167,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       blend_equation_advanced_coherent(false),
       ext_texture_rg(false),
       enable_subscribe_uniform(false),
-      emulate_primitive_restart_fixed_index(false) {
+      emulate_primitive_restart_fixed_index(false),
+      ext_render_buffer_format_bgra8888(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -516,6 +517,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_render_buffer_bgra) {
+    feature_flags_.ext_render_buffer_format_bgra8888 = true;
     AddExtensionString("GL_CHROMIUM_renderbuffer_format_BGRA8888");
     validators_.render_buffer_format.AddValue(GL_BGRA8_EXT);
   }

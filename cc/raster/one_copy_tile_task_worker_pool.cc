@@ -13,6 +13,7 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/resources/platform_color.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -295,8 +296,12 @@ void OneCopyTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-ResourceFormat OneCopyTileTaskWorkerPool::GetResourceFormat() {
+ResourceFormat OneCopyTileTaskWorkerPool::GetResourceFormat() const {
   return resource_provider_->best_texture_format();
+}
+
+bool OneCopyTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
+  return !PlatformColor::SameComponentOrder(GetResourceFormat());
 }
 
 scoped_ptr<RasterBuffer> OneCopyTileTaskWorkerPool::AcquireBufferForRaster(

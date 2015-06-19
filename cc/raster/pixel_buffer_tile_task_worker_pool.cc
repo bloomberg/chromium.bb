@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
@@ -312,8 +313,12 @@ void PixelBufferTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_raster_tasks_.clear();
 }
 
-ResourceFormat PixelBufferTileTaskWorkerPool::GetResourceFormat() {
+ResourceFormat PixelBufferTileTaskWorkerPool::GetResourceFormat() const {
   return resource_provider_->memory_efficient_texture_format();
+}
+
+bool PixelBufferTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
+  return !PlatformColor::SameComponentOrder(GetResourceFormat());
 }
 
 scoped_ptr<RasterBuffer> PixelBufferTileTaskWorkerPool::AcquireBufferForRaster(

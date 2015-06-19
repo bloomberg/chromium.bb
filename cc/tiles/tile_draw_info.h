@@ -65,10 +65,7 @@ class CC_EXPORT TileDrawInfo {
     return solid_color_;
   }
 
-  bool contents_swizzled() const {
-    DCHECK(resource_);
-    return !PlatformColor::SameComponentOrder(resource_->format());
-  }
+  bool contents_swizzled() const { return contents_swizzled_; }
 
   bool requires_resource() const {
     return mode_ == RESOURCE_MODE || mode_ == OOM_MODE;
@@ -99,6 +96,7 @@ class CC_EXPORT TileDrawInfo {
   Mode mode_;
   SkColor solid_color_;
   scoped_ptr<ScopedResource> resource_;
+  bool contents_swizzled_;
 };
 
 }  // namespace cc

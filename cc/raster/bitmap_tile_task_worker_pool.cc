@@ -12,6 +12,7 @@
 #include "cc/debug/traced_value.h"
 #include "cc/playback/raster_source.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
 
 namespace cc {
@@ -178,8 +179,12 @@ void BitmapTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat() {
+ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat() const {
   return resource_provider_->best_texture_format();
+}
+
+bool BitmapTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
+  return !PlatformColor::SameComponentOrder(GetResourceFormat());
 }
 
 scoped_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(

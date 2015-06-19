@@ -73,6 +73,7 @@ Capabilities::Capabilities()
       blend_equation_advanced(false),
       blend_equation_advanced_coherent(false),
       texture_rg(false),
+      render_buffer_format_bgra8888(false),
       major_version(2),
       minor_version(0) {
 }
