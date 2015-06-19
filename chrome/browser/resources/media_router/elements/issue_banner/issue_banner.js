@@ -34,8 +34,8 @@ Polymer({
     defaultActionButtonText_: {
       type: String,
       value: function() {
-        return loadTimeData.getString(
-            issueActionTypeToButtonTextResource[issue.defaultActionType]);
+        return this.issue == null ? '' : loadTimeData.getString(
+            issueActionTypeToButtonTextResource[this.issue.defaultActionType]);
       },
     },
   },
