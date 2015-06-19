@@ -166,6 +166,22 @@ static std::string SerializeBundlePolicy(
   return policy_str;
 }
 
+static std::string SerializeRtcpMuxPolicy(
+    webrtc::PeerConnectionInterface::RtcpMuxPolicy policy) {
+  string policy_str;
+  switch (policy) {
+  case webrtc::PeerConnectionInterface::kRtcpMuxPolicyNegotiate:
+    policy_str = "negotiate";
+    break;
+  case webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire:
+    policy_str = "require";
+    break;
+  default:
+    NOTREACHED();
+  };
+  return policy_str;
+}
+
 #define GET_STRING_OF_STATE(state)                \
   case WebRTCPeerConnectionHandlerClient::state:  \
     result = #state;                              \
@@ -382,7 +398,8 @@ void PeerConnectionTracker::RegisterPeerConnection(
   info.rtc_configuration =
       "{ servers: " +  SerializeServers(config.servers) + ", " +
       "iceTransportType: " + SerializeIceTransportType(config.type) + ", " +
-      "bundlePolicy: " + SerializeBundlePolicy(config.bundle_policy) + " }";
+      "bundlePolicy: " + SerializeBundlePolicy(config.bundle_policy) + ", " +
+      "rtcpMuxPolicy: " + SerializeRtcpMuxPolicy(config.rtcp_mux_policy) + " }";
 
   info.constraints = SerializeMediaConstraints(constraints);
   info.url = frame->document().url().spec();
@@ -456,6 +473,9 @@ void PeerConnectionTracker::TrackUpdateIce(
   string bundle_policy =
       "bundlePolicy: " + SerializeBundlePolicy(config.bundle_policy);
 
+  string rtcp_mux_policy =
+      "rtcpMuxPolicy: " + SerializeRtcpMuxPolicy(config.rtcp_mux_policy);
+
   string constraints =
       "constraints: {" + SerializeMediaConstraints(options) + "}";
 
@@ -463,7 +483,8 @@ void PeerConnectionTracker::TrackUpdateIce(
       pc_handler,
       "updateIce",
       servers_string + ", " + transport_type + ", " +
-      bundle_policy + ", " + constraints);
+      bundle_policy + ", " + rtcp_mux_policy + ", " +
+      constraints);
 }
 
 void PeerConnectionTracker::TrackAddIceCandidate(

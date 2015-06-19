@@ -188,34 +188,47 @@ void GetNativeRtcConfiguration(
   }
 
   switch (blink_config.iceTransports()) {
-  case blink::WebRTCIceTransportsNone:
-    webrtc_config->type = webrtc::PeerConnectionInterface::kNone;
-    break;
-  case blink::WebRTCIceTransportsRelay:
-    webrtc_config->type = webrtc::PeerConnectionInterface::kRelay;
-    break;
-  case blink::WebRTCIceTransportsAll:
-    webrtc_config->type = webrtc::PeerConnectionInterface::kAll;
-    break;
-  default:
-    NOTREACHED();
+    case blink::WebRTCIceTransportsNone:
+      webrtc_config->type = webrtc::PeerConnectionInterface::kNone;
+      break;
+    case blink::WebRTCIceTransportsRelay:
+      webrtc_config->type = webrtc::PeerConnectionInterface::kRelay;
+      break;
+    case blink::WebRTCIceTransportsAll:
+      webrtc_config->type = webrtc::PeerConnectionInterface::kAll;
+      break;
+    default:
+      NOTREACHED();
   }
 
   switch (blink_config.bundlePolicy()) {
-  case blink::WebRTCBundlePolicyBalanced:
-    webrtc_config->bundle_policy =
-        webrtc::PeerConnectionInterface::kBundlePolicyBalanced;
-    break;
-  case blink::WebRTCBundlePolicyMaxBundle:
-    webrtc_config->bundle_policy =
-        webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle;
-    break;
-  case blink::WebRTCBundlePolicyMaxCompat:
-    webrtc_config->bundle_policy =
-        webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat;
-    break;
-  default:
-    NOTREACHED();
+    case blink::WebRTCBundlePolicyBalanced:
+      webrtc_config->bundle_policy =
+          webrtc::PeerConnectionInterface::kBundlePolicyBalanced;
+      break;
+    case blink::WebRTCBundlePolicyMaxBundle:
+      webrtc_config->bundle_policy =
+          webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle;
+      break;
+    case blink::WebRTCBundlePolicyMaxCompat:
+      webrtc_config->bundle_policy =
+          webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  switch (blink_config.rtcpMuxPolicy()) {
+    case blink::WebRTCRtcpMuxPolicyNegotiate:
+      webrtc_config->rtcp_mux_policy =
+          webrtc::PeerConnectionInterface::kRtcpMuxPolicyNegotiate;
+      break;
+    case blink::WebRTCRtcpMuxPolicyRequire:
+      webrtc_config->rtcp_mux_policy =
+          webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
