@@ -217,19 +217,31 @@ inline bool compareCSSValueVector(const WillBeHeapVector<RefPtrWillBeMember<CSSV
 template<typename CSSValueType>
 inline bool compareCSSValuePtr(const RefPtr<CSSValueType>& first, const RefPtr<CSSValueType>& second)
 {
-    return first ? second && first->equals(*second) : !second;
+    if (first == second)
+        return true;
+    if (!first || !second)
+        return false;
+    return first->equals(*second);
 }
 
 template<typename CSSValueType>
 inline bool compareCSSValuePtr(const RawPtr<CSSValueType>& first, const RawPtr<CSSValueType>& second)
 {
-    return first ? second && first->equals(*second) : !second;
+    if (first == second)
+        return true;
+    if (!first || !second)
+        return false;
+    return first->equals(*second);
 }
 
 template<typename CSSValueType>
 inline bool compareCSSValuePtr(const Member<CSSValueType>& first, const Member<CSSValueType>& second)
 {
-    return first ? second && first->equals(*second) : !second;
+    if (first == second)
+        return true;
+    if (!first || !second)
+        return false;
+    return first->equals(*second);
 }
 
 #define DEFINE_CSS_VALUE_TYPE_CASTS(thisType, predicate) \
