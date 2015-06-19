@@ -64,6 +64,12 @@ public class LollipopBrowserAccessibilityManager extends BrowserAccessibilityMan
     }
 
     @Override
+    protected void setAccessibilityNodeInfoViewIdResourceName(
+            AccessibilityNodeInfo node, String viewIdResourceName) {
+        node.setViewIdResourceName(viewIdResourceName);
+    }
+
+    @Override
     protected void setAccessibilityEventLollipopAttributes(AccessibilityEvent event,
             boolean canOpenPopup,
             boolean contentInvalid,

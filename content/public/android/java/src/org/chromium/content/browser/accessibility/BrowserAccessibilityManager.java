@@ -761,12 +761,6 @@ public class BrowserAccessibilityManager {
     }
 
     @CalledByNative
-    private void setAccessibilityNodeInfoViewIdResourceName(
-            AccessibilityNodeInfo node, String viewIdResourceName) {
-        node.setViewIdResourceName(viewIdResourceName);
-    }
-
-    @CalledByNative
     private void setAccessibilityNodeInfoContentDescription(
             AccessibilityNodeInfo node, String contentDescription, boolean annotateAsLink) {
         if (annotateAsLink) {
@@ -857,6 +851,12 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     protected void setAccessibilityNodeInfoRangeInfo(AccessibilityNodeInfo node,
             int rangeType, float min, float max, float current) {
+        // Requires Lollipop or higher.
+    }
+
+    @CalledByNative
+    protected void setAccessibilityNodeInfoViewIdResourceName(
+            AccessibilityNodeInfo node, String viewIdResourceName) {
         // Requires Lollipop or higher.
     }
 
