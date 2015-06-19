@@ -6,7 +6,10 @@
 #include "modules/app_banner/BeforeInstallPromptEvent.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/app_banner/AppBannerPromptResult.h"
 #include "modules/app_banner/BeforeInstallPromptEventInit.h"
 #include "public/platform/modules/app_banner/WebAppBannerClient.h"
@@ -22,6 +25,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, con
     , m_platforms(platforms)
     , m_requestId(requestId)
     , m_client(client)
+    , m_redispatched(false)
 {
 }
 
@@ -30,6 +34,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, con
     , m_platforms(init.platforms())
     , m_requestId(-1)
     , m_client(nullptr)
+    , m_redispatched(false)
 {
 }
 
@@ -57,6 +62,18 @@ ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* scriptState)
 const AtomicString& BeforeInstallPromptEvent::interfaceName() const
 {
     return EventNames::BeforeInstallPromptEvent;
+}
+
+ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* scriptState)
+{
+    if (m_client && defaultPrevented() && !m_redispatched) {
+        ASSERT(m_requestId != -1);
+        m_redispatched = true;
+        m_client->showAppBanner(m_requestId);
+        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
+    }
+
+    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "The prompt() method may only be called once, following preventDefault()."));
 }
 
 } // namespace blink

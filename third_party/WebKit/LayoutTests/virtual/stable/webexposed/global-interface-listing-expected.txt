@@ -242,6 +242,7 @@ interface BeforeInstallPromptEvent
     getter platforms
     getter userChoice
     method constructor
+    method prompt
 interface BeforeUnloadEvent
     getter returnValue
     method constructor

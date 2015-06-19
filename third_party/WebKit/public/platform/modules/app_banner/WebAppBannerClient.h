@@ -18,6 +18,9 @@ public:
 
     // Ownership of the callbacks is transferred to the client.
     virtual void registerBannerCallbacks(int requestId, WebAppBannerCallbacks*) = 0;
+
+    // Tell the client that the event is being redispatched.
+    virtual void showAppBanner(int requestId) { }
 };
 
 } // namespace blink

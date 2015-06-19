@@ -40,6 +40,8 @@ public:
 
     virtual const AtomicString& interfaceName() const override;
 
+    ScriptPromise prompt(ScriptState*);
+
 private:
     BeforeInstallPromptEvent();
     BeforeInstallPromptEvent(const AtomicString& name, const Vector<String>& platforms, int requestId, WebAppBannerClient*);
@@ -50,6 +52,7 @@ private:
 
     int m_requestId;
     WebAppBannerClient* m_client;
+    bool m_redispatched;
 };
 
 DEFINE_TYPE_CASTS(BeforeInstallPromptEvent, Event, event, event->interfaceName() == EventNames::BeforeInstallPromptEvent, event.interfaceName() == EventNames::BeforeInstallPromptEvent);
