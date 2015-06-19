@@ -323,10 +323,13 @@ void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const Layout
         // Do not add continuations for outline painting by our containing block if we are a relative positioned
         // anonymous block (i.e. have our own layer), paint them straightaway instead. This is because a block depends on layoutObjects in its continuation table being
         // in the same layer.
-        if (!inlineEnclosedInSelfPaintingLayer && !m_layoutBlock.hasLayer())
+        if (!inlineEnclosedInSelfPaintingLayer && !m_layoutBlock.hasLayer()) {
             cb->addContinuationWithOutline(inlineLayoutObject);
-        else if (!inlineLayoutObject->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && m_layoutBlock.hasLayer()))
+        } else if (!inlineLayoutObject->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && m_layoutBlock.hasLayer())) {
+            // The outline might be painted multiple times if multiple blocks have the same inline element continuation, and the inline has a self-painting layer.
+            ScopeRecorder scopeRecorder(*info.context, *inlineLayoutObject);
             InlinePainter(*inlineLayoutObject).paintOutline(info, paintOffset - m_layoutBlock.locationOffset() + inlineLayoutObject->containingBlock()->location());
+        }
     }
 
     ContinuationOutlineTableMap* table = continuationOutlineTable();
