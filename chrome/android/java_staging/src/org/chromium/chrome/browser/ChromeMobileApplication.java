@@ -24,6 +24,7 @@ import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
@@ -127,7 +128,8 @@ public class ChromeMobileApplication extends ChromiumApplication {
     }
 
     private static final String[] CHROME_MANDATORY_PAKS = {
-        "en-US.pak", "resources.pak", "chrome_100_percent.pak",
+        "resources.pak",
+        "chrome_100_percent.pak",
     };
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static final String DEV_TOOLS_SERVER_SOCKET_PREFIX = "chrome";
@@ -196,7 +198,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
     protected void initializeLibraryDependencies() {
         // The ResourceExtractor is only needed by the browser process, but this will have no
         // impact on the renderer process construction.
-        ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
+        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks, CHROME_MANDATORY_PAKS);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

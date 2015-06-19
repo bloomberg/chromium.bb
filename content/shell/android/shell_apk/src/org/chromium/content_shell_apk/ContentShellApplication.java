@@ -28,7 +28,7 @@ public class ContentShellApplication extends ContentApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
+        ResourceExtractor.setMandatoryPaksToExtract(0, MANDATORY_PAK_FILES);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

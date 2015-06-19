@@ -24,6 +24,19 @@ jinja_variables = [
   "configuration_policy=$configuration_policy",
 ]
 
+chrome_android_paks_gypi =
+    exec_script("//build/gypi_to_gn.py",
+                [
+                  rebase_path("//chrome/chrome_android_paks.gypi"),
+                  "--replace=<(PRODUCT_DIR)=$root_out_dir",
+                ],
+                "scope",
+                [ "//chrome/chrome_android_paks.gypi" ])
+
+locale_pak_resources("chrome_locale_paks") {
+  sources = chrome_android_paks_gypi.chrome_android_pak_locale_resources
+}
+
 # GYP: //chrome/chrome.gyp:chrome_java (resources part)
 android_resources("chrome_java_resources") {
   resource_dirs = [
@@ -31,6 +44,7 @@ android_resources("chrome_java_resources") {
     "java/res_default",
   ]
   deps = [
+    ":chrome_locale_paks",
     ":chrome_strings_grd",
     "//content/public/android:content_java_resources",
     "//chrome/app:java_strings_grd",
@@ -242,6 +256,7 @@ android_library("chrome_shell_java") {
   deps = [
     ":chrome_shell_resources",
     ":chrome_java",
+    ":chrome_java_resources",
     "//base:base_java",
     "//content/public/android:content_java",
     "//components/dom_distiller/android:dom_distiller_content_java",
@@ -717,18 +732,10 @@ static_library("chrome_staging") {
 
 chrome_public_apk_assets_dir = "$root_build_dir/chrome_public_apk_assets"
 
-chrome_android_paks_gypi =
-    exec_script("//build/gypi_to_gn.py",
-                [ rebase_path("//chrome/chrome_android_paks.gypi") ],
-                "scope",
-                [ "//chrome/chrome_android_paks.gypi" ])
-
 copy_ex("chrome_public_apk_assets") {
   clear_dir = true
   dest = chrome_public_apk_assets_dir
-  gypi_sources = chrome_android_paks_gypi.chrome_android_pak_input_resources
-  cleaned_sources = rebase_path(gypi_sources, "<(PRODUCT_DIR)")
-  sources = rebase_path(cleaned_sources, ".", root_out_dir)
+  sources = chrome_android_paks_gypi.chrome_android_pak_input_resources
   if (icu_use_data_file) {
     sources += [ "$root_build_dir/icudtl.dat" ]
   }
