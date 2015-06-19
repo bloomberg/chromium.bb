@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include <map>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,10 +17,12 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -142,6 +146,89 @@ TEST_F(DisableWebRtcEncryptionFlagTest, StableChannel) {
 }
 
 #endif  // ENABLE_WEBRTC
+
+class BlinkSettingsFieldTrialTest : public testing::Test {
+ public:
+  BlinkSettingsFieldTrialTest()
+      : trial_list_(NULL),
+        command_line_(base::CommandLine::NO_PROGRAM) {}
+
+  void SetUp() override {
+    command_line_.AppendSwitchASCII(
+        switches::kProcessType, switches::kRendererProcess);
+  }
+
+  void TearDown() override {
+    variations::testing::ClearAllVariationParams();
+  }
+
+  void CreateFieldTrial() {
+    base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kGroupName);
+  }
+
+  void CreateFieldTrialWithParams() {
+    CreateFieldTrial();
+    std::map<std::string, std::string> params;
+    params.insert(std::make_pair("key1", "value1"));
+    params.insert(std::make_pair("key2", "value2"));
+    variations::AssociateVariationParams(kFieldTrialName, kGroupName, params);
+  }
+
+  void AppendContentBrowserClientSwitches() {
+    client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
+  }
+
+  const base::CommandLine& command_line() const {
+    return command_line_;
+  }
+
+  void AppendBlinkSettingsSwitch(const char* value) {
+    command_line_.AppendSwitchASCII(switches::kBlinkSettings, value);
+  }
+
+ private:
+  static const int kFakeChildProcessId = 1;
+  static const char kFieldTrialName[];
+  static const char kGroupName[];
+
+  ChromeContentBrowserClient client_;
+  base::FieldTrialList trial_list_;
+  base::CommandLine command_line_;
+
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+const char BlinkSettingsFieldTrialTest::kFieldTrialName[] =
+    "BackgroundHtmlParserTokenLimits";
+const char BlinkSettingsFieldTrialTest::kGroupName[] = "FakeGroup";
+
+TEST_F(BlinkSettingsFieldTrialTest, NoFieldTrial) {
+  AppendContentBrowserClientSwitches();
+  EXPECT_FALSE(command_line().HasSwitch(switches::kBlinkSettings));
+}
+
+TEST_F(BlinkSettingsFieldTrialTest, FieldTrialWithoutParams) {
+  CreateFieldTrial();
+  AppendContentBrowserClientSwitches();
+  EXPECT_FALSE(command_line().HasSwitch(switches::kBlinkSettings));
+}
+
+TEST_F(BlinkSettingsFieldTrialTest, BlinkSettingsSwitchAlreadySpecified) {
+  AppendBlinkSettingsSwitch("foo");
+  CreateFieldTrialWithParams();
+  AppendContentBrowserClientSwitches();
+  EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
+  EXPECT_EQ("foo",
+            command_line().GetSwitchValueASCII(switches::kBlinkSettings));
+}
+
+TEST_F(BlinkSettingsFieldTrialTest, FieldTrialEnabled) {
+  CreateFieldTrialWithParams();
+  AppendContentBrowserClientSwitches();
+  EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
+  EXPECT_EQ("key1=value1,key2=value2",
+            command_line().GetSwitchValueASCII(switches::kBlinkSettings));
+}
 
 }  // namespace chrome
 

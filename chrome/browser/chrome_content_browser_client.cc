@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include <map>
 #include <set>
 #include <utility>
 #include <vector>
@@ -17,6 +18,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -104,6 +107,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_fixer/url_fixer.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -1170,6 +1174,39 @@ bool IsAutoReloadVisibleOnlyEnabled() {
   return true;
 }
 
+void MaybeAppendBlinkSettingsSwitchForFieldTrial(
+    const base::CommandLine& browser_command_line,
+    base::CommandLine* command_line) {
+  // Calling GetVariationParams has the side-effect of assigning the client to a
+  // field trial group. It is important that we call this first (for example,
+  // before checking HasSwitch() below), so we're sure to assign users that
+  // specify the blink-settings flag to the flag forced field trial group.
+  std::map<std::string, std::string> params;
+  if (!variations::GetVariationParams(
+          "BackgroundHtmlParserTokenLimits", &params)) {
+    return;
+  }
+
+  if (browser_command_line.HasSwitch(switches::kBlinkSettings) ||
+      command_line->HasSwitch(switches::kBlinkSettings)) {
+    // The field trial is configured to force users that specify the
+    // blink-settings flag into a group with no params, so it's an
+    // error if this happens.
+    LOG(WARNING) << "Received field trial params, "
+                    "but blink-settings switch already specified.";
+    return;
+  }
+
+  // The blink-settings flag is of the form key1=value1,key2=value2,...
+  std::vector<std::string> blink_settings;
+  for (const auto& param : params) {
+    blink_settings.push_back(base::StringPrintf(
+        "%s=%s", param.first.c_str(), param.second.c_str()));
+  }
+  command_line->AppendSwitchASCII(switches::kBlinkSettings,
+                                  JoinString(blink_settings, ','));
+}
+
 }  // namespace
 
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
@@ -1332,6 +1369,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         }
       }
     }
+
+    MaybeAppendBlinkSettingsSwitchForFieldTrial(
+        browser_command_line, command_line);
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
