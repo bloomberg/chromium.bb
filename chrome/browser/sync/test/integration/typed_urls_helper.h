@@ -64,12 +64,11 @@ void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls);
 // Modifies an URL stored in history by setting a new title.
 void SetPageTitle(int index, const GURL& url, const std::string& title);
 
-// Returns true if all clients match the verifier profile.
-bool CheckAllProfilesHaveSameURLsAsVerifier();
+// Returns true if all clients have the same URLs.
+bool CheckAllProfilesHaveSameURLs();
 
-// Returns true if all clients match the verifier profile and if the
-// verification doesn't time out.
-bool AwaitCheckAllProfilesHaveSameURLsAsVerifier();
+// Returns true if all clients have the same URLs before the timeout.
+bool AwaitCheckAllProfilesHaveSameURLs();
 
 // Checks that the two vectors contain the same set of URLRows (possibly in
 // a different order).

@@ -396,15 +396,19 @@ bool CheckURLRowsAreEqual(
       (left.hidden() == right.hidden());
 }
 
-bool CheckAllProfilesHaveSameURLsAsVerifier() {
-  history::HistoryService* verifier_service =
-      HistoryServiceFactory::GetForProfile(test()->verifier(),
-                                           ServiceAccessType::IMPLICIT_ACCESS);
-  history::URLRows verifier_urls =
-      GetTypedUrlsFromHistoryService(verifier_service);
+bool CheckAllProfilesHaveSameURLs() {
+  history::URLRows golden_urls;
+  if (test()->use_verifier()) {
+    history::HistoryService* verifier_service =
+        HistoryServiceFactory::GetForProfile(
+            test()->verifier(), ServiceAccessType::IMPLICIT_ACCESS);
+    golden_urls = GetTypedUrlsFromHistoryService(verifier_service);
+  } else {
+    golden_urls = GetTypedUrlsFromClient(0);
+  }
   for (int i = 0; i < test()->num_clients(); ++i) {
     history::URLRows urls = GetTypedUrlsFromClient(i);
-    if (!CheckURLRowVectorsAreEqual(verifier_urls, urls))
+    if (!CheckURLRowVectorsAreEqual(golden_urls, urls))
       return false;
   }
   return true;
@@ -413,7 +417,7 @@ bool CheckAllProfilesHaveSameURLsAsVerifier() {
 namespace {
 
 // Helper class used in the implementation of
-// AwaitCheckAllProfilesHaveSameURLsAsVerifier.
+// AwaitCheckAllProfilesHaveSameURLs.
 class ProfilesHaveSameURLsChecker : public MultiClientStatusChangeChecker {
  public:
   ProfilesHaveSameURLsChecker();
@@ -430,7 +434,7 @@ ProfilesHaveSameURLsChecker::ProfilesHaveSameURLsChecker()
 ProfilesHaveSameURLsChecker::~ProfilesHaveSameURLsChecker() {}
 
 bool ProfilesHaveSameURLsChecker::IsExitConditionSatisfied() {
-  return CheckAllProfilesHaveSameURLsAsVerifier();
+  return CheckAllProfilesHaveSameURLs();
 }
 
 std::string ProfilesHaveSameURLsChecker::GetDebugMessage() const {
@@ -439,7 +443,7 @@ std::string ProfilesHaveSameURLsChecker::GetDebugMessage() const {
 
 }  //  namespace
 
-bool AwaitCheckAllProfilesHaveSameURLsAsVerifier() {
+bool AwaitCheckAllProfilesHaveSameURLs() {
   ProfilesHaveSameURLsChecker checker;
   checker.Wait();
   return !checker.TimedOut();
