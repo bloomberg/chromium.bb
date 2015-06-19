@@ -354,7 +354,7 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
   CreateImageView();
 
   image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-                             .GetImageNamed(IDR_AURA_UBER_TRAY_CAST_STATUS)
+                             .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)
                              .ToImageSkia());
 }
 

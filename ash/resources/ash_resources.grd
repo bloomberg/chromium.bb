@@ -84,7 +84,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_DISABLED_HOVER" file="cros/status/status_cast_disabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_ENABLED" file="cros/status/status_cast_enabled.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_ENABLED_HOVER" file="cros/status/status_cast_enabled_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_STATUS" file="cros/status/status_cast_tray.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE" file="cros/status/status_drive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="cros/status/status_drive_item_cancel.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="cros/status/status_drive_item_cancel_hover.png" />
@@ -105,6 +104,8 @@
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MORE" file="cros/status/status_more.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_OVERVIEW_MODE" file="cros/status/status_overview_mode.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE" file="cros/status/status_screenshare.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE_DARK" file="cros/status/status_screenshare_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_hover.png" />
 
@@ -163,8 +164,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="cros/status/status_power_small_all_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING" file="cros/status/status_recording.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING_RED" file="cros/status/status_recording_red.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE" file="cros/status/status_screenshare.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE_DARK" file="cros/status/status_screenshare_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="cros/status/status_settings.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS" file="cros/status/status_sms.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS_DISMISS" file="cros/status/status_sms_dismiss.png" />
