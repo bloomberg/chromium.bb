@@ -551,6 +551,8 @@ bool DrmDevice::CommitProperties(drmModePropertySet* properties,
   uint64_t id = page_flip_manager_->GetNextId();
   if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags,
                                 reinterpret_cast<void*>(id), properties)) {
+    if (test_only)
+      return true;
     page_flip_manager_->RegisterCallback(id, callback);
 
     // If the flip was requested synchronous or if no watcher has been installed
