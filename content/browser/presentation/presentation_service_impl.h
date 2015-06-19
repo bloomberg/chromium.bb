@@ -87,7 +87,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            MaxPendingJoinSessionRequests);
 
-  // Maximum number of queued StartSession or JoinSession requests.
+  // Maximum number of pending JoinSession requests at any given time.
   static const int kMaxNumQueuedSessionRequests = 10;
 
   using DefaultSessionMojoCallback =
@@ -156,27 +156,6 @@ class CONTENT_EXPORT PresentationServiceImpl
     NewSessionMojoCallback callback_;
 
     DISALLOW_COPY_AND_ASSIGN(NewSessionMojoCallbackWrapper);
-  };
-
-  // Context for a queued StartSession request.
-  class CONTENT_EXPORT StartSessionRequest {
-   public:
-    StartSessionRequest(const std::string& presentation_url,
-                        const std::string& presentation_id,
-                        const NewSessionMojoCallback& callback);
-    ~StartSessionRequest();
-
-    scoped_ptr<NewSessionMojoCallbackWrapper> PassCallback();
-
-    const std::string& presentation_url() const { return presentation_url_; }
-    const std::string& presentation_id() const { return presentation_id_; }
-
-   private:
-    const std::string presentation_url_;
-    const std::string presentation_id_;
-    scoped_ptr<NewSessionMojoCallbackWrapper> callback_wrapper_;
-
-    DISALLOW_COPY_AND_ASSIGN(StartSessionRequest);
   };
 
   // |render_frame_host|: The RFH this instance is associated with.
@@ -269,21 +248,12 @@ class CONTENT_EXPORT PresentationServiceImpl
       const PresentationError& error);
   void OnSendMessageCallback();
 
-  // Requests delegate to start a session.
-  void DoStartSession(scoped_ptr<StartSessionRequest> request);
-
   // Passed to embedder's implementation of PresentationServiceDelegate for
   // later invocation when session messages arrive.
   // For optimization purposes, this method will empty the messages
   // passed to it.
   void OnSessionMessages(
       scoped_ptr<ScopedVector<PresentationSessionMessage>> messages);
-
-  // Removes the head of the queue (which represents the request that has just
-  // been processed).
-  // Checks if there are any queued StartSession requests and if so, executes
-  // the first one in the queue.
-  void HandleQueuedStartSessionRequests();
 
   // Associates a JoinSession |callback| with a unique request ID and
   // stores it in a map.
@@ -305,11 +275,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   std::string default_presentation_id_;
 
   scoped_ptr<ScreenAvailabilityListenerImpl> screen_availability_listener_;
-
-  // We only allow one StartSession request to be processed at a time.
-  // StartSession requests are queued here. When a request has been processed,
-  // it is removed from head of the queue.
-  std::deque<linked_ptr<StartSessionRequest>> queued_start_session_requests_;
 
   // For StartSession requests.
   // Set to a positive value when a StartSession request is being processed.

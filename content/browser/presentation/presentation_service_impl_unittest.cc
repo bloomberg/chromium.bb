@@ -206,7 +206,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   void ExpectCleanState() {
     EXPECT_TRUE(service_impl_->default_presentation_url_.empty());
     EXPECT_TRUE(service_impl_->default_presentation_id_.empty());
-    EXPECT_TRUE(service_impl_->queued_start_session_requests_.empty());
     EXPECT_FALSE(service_impl_->screen_availability_listener_.get());
     EXPECT_FALSE(service_impl_->default_session_start_context_.get());
     EXPECT_FALSE(service_impl_->on_session_messages_callback_.get());
@@ -577,33 +576,15 @@ TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
   std::string presentation_id1("presentationId1");
   std::string presentation_url2("http://barUrl");
   std::string presentation_id2("presentationId2");
+  service_ptr_->StartSession(presentation_url1, presentation_id1,
+                             base::Bind(&DoNothing));
+  // This request should fail immediately, since there is already a StartSession
+  // in progress.
   service_ptr_->StartSession(
-      presentation_url1,
-      presentation_id1,
+      presentation_url2, presentation_id2,
       base::Bind(
-          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackSuccess,
+          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
           base::Unretained(this)));
-  service_ptr_->StartSession(
-      presentation_url2,
-      presentation_id2,
-      base::Bind(
-          &PresentationServiceImplTest::ExpectNewSessionMojoCallbackSuccess,
-          base::Unretained(this)));
-  base::RunLoop run_loop;
-  base::Callback<void(const PresentationSessionInfo&)> success_cb;
-  EXPECT_CALL(mock_delegate_, StartSession(
-      _, _, Eq(presentation_url1), Eq(presentation_id1), _, _))
-      .WillOnce(DoAll(
-            InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-            SaveArg<4>(&success_cb)));
-  run_loop.Run();
-
-  // Running the callback means the first request is done. It should now
-  // move on to the queued request.
-  EXPECT_CALL(mock_delegate_, StartSession(
-      _, _, Eq(presentation_url2), Eq(presentation_id2), _, _))
-      .Times(1);
-  success_cb.Run(PresentationSessionInfo(presentation_url1, presentation_id1));
   SaveQuitClosureAndRunLoop();
 }
 
@@ -832,31 +813,6 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
   EXPECT_EQ(0, memcmp(buffer, &(*test_message->data.get())[0], sizeof(buffer)));
   delete test_message;
   send_message_cb.Run();
-  SaveQuitClosureAndRunLoop();
-}
-
-TEST_F(PresentationServiceImplTest, MaxPendingStartSessionRequests) {
-  const char* presentation_url = "http://fooUrl%d";
-  const char* presentation_id = "presentationId%d";
-  int num_requests = PresentationServiceImpl::kMaxNumQueuedSessionRequests + 1;
-  int i = 0;
-  // First request will be processed. The subsequent
-  // |kMaxNumQueuedSessionRequests| requests will be queued.
-  EXPECT_CALL(mock_delegate_, StartSession(_, _, _, _, _, _)).Times(1);
-  for (; i < num_requests; ++i) {
-    service_ptr_->StartSession(
-        base::StringPrintf(presentation_url, i),
-        base::StringPrintf(presentation_id, i),
-        base::Bind(&DoNothing));
-  }
-
-  // Exceeded maximum queue size, should invoke mojo callback with error.
-  service_ptr_->StartSession(
-        base::StringPrintf(presentation_url, i),
-        base::StringPrintf(presentation_id, i),
-        base::Bind(
-            &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
-            base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
 }
 
