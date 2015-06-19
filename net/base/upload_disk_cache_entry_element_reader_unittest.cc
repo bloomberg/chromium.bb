@@ -118,7 +118,7 @@ class DelayedReadEntry : public disk_cache::Entry {
   void CancelSparseIO() override { entry_->CancelSparseIO(); }
 
   int ReadyForSparseIO(const CompletionCallback& callback) override {
-    return ReadyForSparseIO(callback);
+    return entry_->ReadyForSparseIO(callback);
   }
 
  private:
