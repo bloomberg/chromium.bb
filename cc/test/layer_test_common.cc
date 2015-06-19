@@ -115,7 +115,8 @@ LayerTestCommon::LayerImplTest::LayerImplTest()
     : client_(FakeLayerTreeHostClient::DIRECT_3D),
       host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)),
       root_layer_impl_(LayerImpl::Create(host_->host_impl()->active_tree(), 1)),
-      render_pass_(RenderPass::Create()) {
+      render_pass_(RenderPass::Create()),
+      layer_impl_id_(2) {
   root_layer_impl_->SetHasRenderSurface(true);
   scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
   host_->host_impl()->InitializeRenderer(FakeOutputSurface::Create3d());

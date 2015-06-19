@@ -1352,37 +1352,23 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-
-  host()->SetRootLayer(parent);
+  LayerImpl* parent = root_layer();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child = AddChild<LayerImpl>(render_surface1);
+  child->SetDrawsContent(true);
 
   const gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(render_surface1.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
+  SetLayerPropertiesForTesting(render_surface1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-
-  parent->AddChild(render_surface1);
-  render_surface1->AddChild(child);
-  render_surface1->SetForceRenderSurface(true);
   render_surface1->SetOpacity(0.f);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      parent, parent->bounds(), &render_surface_layer_list);
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -6247,65 +6233,53 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-
-  root->AddChild(render_surface);
-  render_surface->AddChild(child);
+  LayerImpl* root = root_layer();
+  LayerImpl* render_surface = AddChild<LayerImpl>(root);
+  LayerImpl* child = AddChild<LayerImpl>(render_surface);
+  child->SetDrawsContent(true);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               false,
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
+  SetLayerPropertiesForTesting(render_surface, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               false, true, true);
+  SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
                                false);
 
   root->SetShouldFlattenTransform(false);
   root->Set3dSortingContextId(1);
   render_surface->SetDoubleSided(false);
-  render_surface->SetForceRenderSurface(true);
 
-  host()->SetRootLayer(root);
+  ExecuteCalculateDrawProperties(root);
 
-  ExecuteCalculateDrawProperties(root.get());
-
-  EXPECT_EQ(2u, render_surface_layer_list()->size());
-  EXPECT_EQ(1u,
-            render_surface_layer_list()->at(0)
-                ->render_surface()->layer_list().size());
-  EXPECT_EQ(1u,
-            render_surface_layer_list()->at(1)
-                ->render_surface()->layer_list().size());
+  EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(1u, render_surface_layer_list_impl()
+                    ->at(0)
+                    ->render_surface()
+                    ->layer_list()
+                    .size());
+  EXPECT_EQ(1u, render_surface_layer_list_impl()
+                    ->at(1)
+                    ->render_surface()
+                    ->layer_list()
+                    .size());
 
   gfx::Transform rotation_transform = identity_transform;
   rotation_transform.RotateAboutXAxis(180.0);
 
   render_surface->SetTransform(rotation_transform);
 
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(1u, render_surface_layer_list()->size());
-  EXPECT_EQ(0u,
-            render_surface_layer_list()->at(0)
-                ->render_surface()->layer_list().size());
+  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(0u, render_surface_layer_list_impl()
+                    ->at(0)
+                    ->render_surface()
+                    ->layer_list()
+                    .size());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
@@ -6452,69 +6426,42 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
   // still results in correct clipping.
   //
   // + root
-  //   + scroll_child
   //   + scroll_parent_border
   //     + scroll_parent_clip
   //       + scroll_parent
+  //   + scroll_child
   //
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> scroll_parent_border = Layer::Create(layer_settings());
-  scoped_refptr<Layer> scroll_parent_clip = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* root = root_layer();
+  LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
+  LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
+  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
+  LayerImpl* scroll_child = AddChild<LayerImpl>(root);
 
-  root->AddChild(scroll_parent_border);
-  scroll_parent_border->AddChild(scroll_parent_clip);
-  scroll_parent_clip->AddChild(scroll_parent);
-
-  root->AddChild(scroll_child);
+  scroll_parent->SetDrawsContent(true);
+  scroll_child->SetDrawsContent(true);
 
   scroll_parent_clip->SetMasksToBounds(true);
 
-  scroll_child->SetScrollParent(scroll_parent.get());
+  scroll_child->SetScrollParent(scroll_parent);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent_border.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent_clip.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_child.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(scroll_parent_border, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_parent_clip, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_parent, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
 
-  host()->SetRootLayer(root);
-
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(root->render_surface());
 
@@ -6536,99 +6483,53 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   //     + scroll_grandparent_clip
   //       + scroll_grandparent
   //
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> scroll_parent_border = Layer::Create(layer_settings());
-  scoped_refptr<Layer> scroll_parent_clip = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* root = root_layer();
+  LayerImpl* scroll_child = AddChild<LayerImpl>(root);
+  LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
+  LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
+  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
+  LayerImpl* scroll_grandparent_border = AddChild<LayerImpl>(root);
+  LayerImpl* scroll_grandparent_clip =
+      AddChild<LayerImpl>(scroll_grandparent_border);
+  LayerImpl* scroll_grandparent = AddChild<LayerImpl>(scroll_grandparent_clip);
 
-  scoped_refptr<Layer> scroll_grandparent_border =
-      Layer::Create(layer_settings());
-  scoped_refptr<Layer> scroll_grandparent_clip =
-      Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_grandparent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-
-  root->AddChild(scroll_child);
-
-  root->AddChild(scroll_parent_border);
-  scroll_parent_border->AddChild(scroll_parent_clip);
-  scroll_parent_clip->AddChild(scroll_parent);
-
-  root->AddChild(scroll_grandparent_border);
-  scroll_grandparent_border->AddChild(scroll_grandparent_clip);
-  scroll_grandparent_clip->AddChild(scroll_grandparent);
+  scroll_parent->SetDrawsContent(true);
+  scroll_grandparent->SetDrawsContent(true);
+  scroll_child->SetDrawsContent(true);
 
   scroll_parent_clip->SetMasksToBounds(true);
   scroll_grandparent_clip->SetMasksToBounds(true);
 
-  scroll_child->SetScrollParent(scroll_parent.get());
-  scroll_parent_border->SetScrollParent(scroll_grandparent.get());
+  scroll_child->SetScrollParent(scroll_parent);
+  scroll_parent_border->SetScrollParent(scroll_grandparent);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_grandparent_border.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_grandparent_clip.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_grandparent.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent_border.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent_clip.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_child.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(scroll_grandparent_border, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_grandparent_clip, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_grandparent, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_parent_border, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_parent_clip, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_parent, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
 
-  host()->SetRootLayer(root);
-
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(root->render_surface());
 
@@ -6639,12 +6540,9 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   // Despite the fact that we visited the above layers out of order to get the
   // correct clip, the layer lists should be unaffected.
   EXPECT_EQ(3u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(scroll_child.get(),
-            root->render_surface()->layer_list().at(0).get());
-  EXPECT_EQ(scroll_parent.get(),
-            root->render_surface()->layer_list().at(1).get());
-  EXPECT_EQ(scroll_grandparent.get(),
-            root->render_surface()->layer_list().at(2).get());
+  EXPECT_EQ(scroll_child, root->render_surface()->layer_list().at(0));
+  EXPECT_EQ(scroll_parent, root->render_surface()->layer_list().at(1));
+  EXPECT_EQ(scroll_grandparent, root->render_surface()->layer_list().at(2));
 }
 
 TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
@@ -6655,137 +6553,72 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   //   + scroll_parent_border
   //     + scroll_parent_clip
   //       + scroll_parent
-  //         + render_surface1
+  //         + render_surface2
   //   + scroll_grandparent_border
   //     + scroll_grandparent_clip
   //       + scroll_grandparent
-  //         + render_surface2
+  //         + render_surface1
   //
-  scoped_refptr<LayerWithForcedDrawsContent> root =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* root = root_layer();
+  root->SetDrawsContent(true);
 
-  scoped_refptr<Layer> scroll_parent_border = Layer::Create(layer_settings());
-  scoped_refptr<Layer> scroll_parent_clip = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> render_surface1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* scroll_child = AddChild<LayerImpl>(root);
+  scroll_child->SetDrawsContent(true);
 
-  scoped_refptr<Layer> scroll_grandparent_border =
-      Layer::Create(layer_settings());
-  scoped_refptr<Layer> scroll_grandparent_clip =
-      Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_grandparent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> render_surface2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
+  LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
+  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(scroll_parent);
+  LayerImpl* scroll_grandparent_border = AddChild<LayerImpl>(root);
+  LayerImpl* scroll_grandparent_clip =
+      AddChild<LayerImpl>(scroll_grandparent_border);
+  LayerImpl* scroll_grandparent = AddChild<LayerImpl>(scroll_grandparent_clip);
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(scroll_grandparent);
 
-  scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-
-  root->AddChild(scroll_child);
-
-  root->AddChild(scroll_parent_border);
-  scroll_parent_border->AddChild(scroll_parent_clip);
-  scroll_parent_clip->AddChild(scroll_parent);
-  scroll_parent->AddChild(render_surface2);
-
-  root->AddChild(scroll_grandparent_border);
-  scroll_grandparent_border->AddChild(scroll_grandparent_clip);
-  scroll_grandparent_clip->AddChild(scroll_grandparent);
-  scroll_grandparent->AddChild(render_surface1);
+  scroll_parent->SetDrawsContent(true);
+  render_surface1->SetDrawsContent(true);
+  scroll_grandparent->SetDrawsContent(true);
+  render_surface2->SetDrawsContent(true);
 
   scroll_parent_clip->SetMasksToBounds(true);
   scroll_grandparent_clip->SetMasksToBounds(true);
 
-  scroll_child->SetScrollParent(scroll_parent.get());
-  scroll_parent_border->SetScrollParent(scroll_grandparent.get());
-
-  render_surface1->SetForceRenderSurface(true);
-  render_surface2->SetForceRenderSurface(true);
+  scroll_child->SetScrollParent(scroll_parent);
+  scroll_parent_border->SetScrollParent(scroll_grandparent);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_grandparent_border.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_grandparent_clip.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_grandparent.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface1.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent_border.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(40, 40),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent_clip.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(30, 30),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_parent.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface2.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(scroll_child.get(),
-                               identity_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(50, 50),
-                               true,
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(scroll_grandparent_border, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_grandparent_clip, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(20, 20),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_grandparent, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, false);
+  SetLayerPropertiesForTesting(render_surface1, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, true);
+  SetLayerPropertiesForTesting(scroll_parent_border, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(40, 40),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_parent_clip, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, false);
+  SetLayerPropertiesForTesting(scroll_parent, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, false);
+  SetLayerPropertiesForTesting(render_surface2, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, true);
+  SetLayerPropertiesForTesting(scroll_child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
 
-  host()->SetRootLayer(root);
-
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(),
-      root->bounds(),
-      identity_transform,
-      &render_surface_layer_list);
-
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(root->render_surface());
 
@@ -6795,13 +6628,13 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
 
   // Despite the fact that we had to process the layers out of order to get the
   // right clip, our render_surface_layer_list's order should be unaffected.
-  EXPECT_EQ(3u, render_surface_layer_list.size());
-  EXPECT_EQ(root.get(), render_surface_layer_list.at(0));
-  EXPECT_EQ(render_surface2.get(), render_surface_layer_list.at(1));
-  EXPECT_EQ(render_surface1.get(), render_surface_layer_list.at(2));
-  EXPECT_TRUE(render_surface_layer_list.at(0)->render_surface());
-  EXPECT_TRUE(render_surface_layer_list.at(1)->render_surface());
-  EXPECT_TRUE(render_surface_layer_list.at(2)->render_surface());
+  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(root, render_surface_layer_list_impl()->at(0));
+  EXPECT_EQ(render_surface2, render_surface_layer_list_impl()->at(1));
+  EXPECT_EQ(render_surface1, render_surface_layer_list_impl()->at(2));
+  EXPECT_TRUE(render_surface_layer_list_impl()->at(0)->render_surface());
+  EXPECT_TRUE(render_surface_layer_list_impl()->at(1)->render_surface());
+  EXPECT_TRUE(render_surface_layer_list_impl()->at(2)->render_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {

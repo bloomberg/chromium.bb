@@ -53,15 +53,26 @@ class LayerTestCommon {
 
     template <typename T>
     T* AddChildToRoot() {
-      scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(), 2);
+      scoped_ptr<T> layer =
+          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
       T* ptr = layer.get();
       root_layer_impl_->AddChild(layer.Pass());
       return ptr;
     }
 
+    template <typename T>
+    T* AddChild(LayerImpl* parent) {
+      scoped_ptr<T> layer =
+          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
+      T* ptr = layer.get();
+      parent->AddChild(layer.Pass());
+      return ptr;
+    }
+
     template <typename T, typename A>
     T* AddChildToRoot(const A& a) {
-      scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(), 2, a);
+      scoped_ptr<T> layer =
+          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a);
       T* ptr = layer.get();
       root_layer_impl_->AddChild(layer.Pass());
       return ptr;
@@ -70,7 +81,7 @@ class LayerTestCommon {
     template <typename T, typename A, typename B>
     T* AddChildToRoot(const A& a, const B& b) {
       scoped_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), 2, a, b);
+          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a, b);
       T* ptr = layer.get();
       root_layer_impl_->AddChild(layer.Pass());
       return ptr;
@@ -78,8 +89,8 @@ class LayerTestCommon {
 
     template <typename T, typename A, typename B, typename C, typename D>
     T* AddChildToRoot(const A& a, const B& b, const C& c, const D& d) {
-      scoped_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), 2, a, b, c, d);
+      scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
+                                      layer_impl_id_++, a, b, c, d);
       T* ptr = layer.get();
       root_layer_impl_->AddChild(layer.Pass());
       return ptr;
@@ -96,8 +107,8 @@ class LayerTestCommon {
                       const C& c,
                       const D& d,
                       const E& e) {
-      scoped_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), 2, a, b, c, d, e);
+      scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
+                                      layer_impl_id_++, a, b, c, d, e);
       T* ptr = layer.get();
       root_layer_impl_->AddChild(layer.Pass());
       return ptr;
@@ -130,6 +141,7 @@ class LayerTestCommon {
     scoped_ptr<FakeLayerTreeHost> host_;
     scoped_ptr<LayerImpl> root_layer_impl_;
     scoped_ptr<RenderPass> render_pass_;
+    int layer_impl_id_;
   };
 };
 
