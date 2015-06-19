@@ -25,6 +25,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
@@ -262,6 +263,11 @@ void ChromeShellDelegate::Observe(int type,
         SigninErrorNotifierFactory::GetForProfile(profile);
         SyncErrorNotifierFactory::GetForProfile(profile);
       }
+      // Do not use chrome::NOTIFICATION_PROFILE_ADDED because the
+      // profile is not fully initialized by user_manager.  Use
+      // chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED instead.
+      if (shelf_delegate_)
+        shelf_delegate_->OnUserProfileReadyToSwitch(profile);
       ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
       break;
     }

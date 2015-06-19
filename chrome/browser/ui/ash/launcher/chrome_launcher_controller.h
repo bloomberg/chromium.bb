@@ -73,10 +73,13 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 
 // A class which needs to be overwritten dependent on the used OS to moitor
 // user switching.
+// TODO(oshima): move this to .cc
 class ChromeLauncherControllerUserSwitchObserver {
  public:
   ChromeLauncherControllerUserSwitchObserver() {}
   virtual ~ChromeLauncherControllerUserSwitchObserver() {}
+
+  virtual void OnUserProfileReadyToSwitch(Profile* profile) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerUserSwitchObserver);
@@ -404,6 +407,9 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // animation predictions.
   bool ShelfBoundsChangesProbablyWithUser(aura::Window* root_window,
                                           const std::string& user_id) const;
+
+  // Called when the user profile is fully loaded and ready to switch to.
+  void OnUserProfileReadyToSwitch(Profile* profile);
 
   // Access to the BrowserStatusMonitor for tests.
   BrowserStatusMonitor* browser_status_monitor_for_test() {
