@@ -328,6 +328,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool isPointerLocked();
   virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
                                      bool event_cancelled) override;
+  virtual void onMouseDown(const blink::WebNode& mouse_down_node) override;
+
   virtual void initializeLayerTreeView() override;
 
   // blink::WebViewClient implementation --------------------------------------
@@ -463,7 +465,6 @@ class CONTENT_EXPORT RenderViewImpl
   void DidHandleKeyEvent() override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
-  void DidHandleMouseEvent(const blink::WebMouseEvent& event) override;
   bool HasTouchEventHandlersAt(const gfx::Point& point) const override;
   void OnSetFocus(bool enable) override;
   void OnWasHidden() override;

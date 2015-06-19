@@ -386,6 +386,30 @@ void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
       InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
 }
 
+
+bool RenderViewTest::SimulateElementRightClick(const std::string& element_id) {
+  gfx::Rect bounds = GetElementBounds(element_id);
+  if (bounds.IsEmpty())
+    return false;
+  SimulatePointRightClick(bounds.CenterPoint());
+  return true;
+}
+
+void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
+  WebMouseEvent mouse_event;
+  mouse_event.type = WebInputEvent::MouseDown;
+  mouse_event.button = WebMouseEvent::ButtonRight;
+  mouse_event.x = point.x();
+  mouse_event.y = point.y();
+  mouse_event.clickCount = 1;
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  impl->OnMessageReceived(
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+  mouse_event.type = WebInputEvent::MouseUp;
+  impl->OnMessageReceived(
+      InputMsg_HandleInputEvent(0, &mouse_event, ui::LatencyInfo(), false));
+}
+
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   WebGestureEvent gesture_event;
   gesture_event.x = rect.CenterPoint().x();

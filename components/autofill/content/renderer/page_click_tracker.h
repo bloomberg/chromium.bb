@@ -42,8 +42,7 @@ class PageClickTracker : public content::RenderFrameObserver {
 
     // RenderViewObserver implementation.
     void OnDestruct() override;
-    void DidHandleMouseEvent(const blink::WebMouseEvent& event) override;
-    void DidHandleGestureEvent(const blink::WebGestureEvent& event) override;
+    void OnMouseDown(const blink::WebNode& mouse_down_node) override;
     void FocusChangeComplete() override;
 
    private:
@@ -56,8 +55,7 @@ class PageClickTracker : public content::RenderFrameObserver {
 
   // RenderViewObserver methods forwarded from Legacy. Should be
   // merged into RenderFrameObserver.
-  void DidHandleMouseEvent(const blink::WebMouseEvent& event);
-  void DidHandleGestureEvent(const blink::WebGestureEvent& event);
+  void OnMouseDown(const blink::WebNode& mouse_down_node);
   void FocusChangeComplete();
   void DoFocusChangeComplete();
 

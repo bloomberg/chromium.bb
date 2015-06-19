@@ -2011,6 +2011,11 @@ bool RenderViewImpl::isPointerLocked() {
       webwidget_mouse_lock_target_.get());
 }
 
+void RenderViewImpl::onMouseDown(const WebNode& mouse_down_node) {
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, OnMouseDown(mouse_down_node));
+}
+
 void RenderViewImpl::didHandleGestureEvent(
     const WebGestureEvent& event,
     bool event_cancelled) {
@@ -3082,10 +3087,6 @@ bool RenderViewImpl::WillHandleGestureEvent(
   possible_drag_event_info_.event_location =
       gfx::Point(event.globalX, event.globalY);
   return false;
-}
-
-void RenderViewImpl::DidHandleMouseEvent(const WebMouseEvent& event) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleMouseEvent(event));
 }
 
 bool RenderViewImpl::HasTouchEventHandlersAt(const gfx::Point& point) const {

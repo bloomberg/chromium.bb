@@ -74,28 +74,9 @@ PageClickTracker::PageClickTracker(content::RenderFrame* render_frame,
 PageClickTracker::~PageClickTracker() {
 }
 
-void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
-  if (event.type != WebInputEvent::MouseDown ||
-      event.button != WebMouseEvent::ButtonLeft) {
-    return;
-  }
-
-  WebNode clicked_node = render_frame()->GetRenderView()->GetWebView()
-      ->hitTestResultAt(WebPoint(event.x, event.y)).node();
-  focused_node_was_last_clicked_ = !clicked_node.isNull() &&
-                                   clicked_node.focused();
-}
-
-void PageClickTracker::DidHandleGestureEvent(const WebGestureEvent& event) {
-  if (event.type != WebGestureEvent::GestureTap)
-    return;
-
-  WebNode tapped_node = render_frame()->GetRenderView()->GetWebView()
-      ->hitTestResultForTap(
-          WebPoint(event.x, event.y),
-          WebSize(event.data.tap.width, event.data.tap.height)).node();
-  focused_node_was_last_clicked_ = !tapped_node.isNull() &&
-                                   tapped_node.focused();
+void PageClickTracker::OnMouseDown(const WebNode& mouse_down_node) {
+  focused_node_was_last_clicked_ = !mouse_down_node.isNull() &&
+                                   mouse_down_node.focused();
 }
 
 void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
@@ -149,13 +130,8 @@ void PageClickTracker::Legacy::OnDestruct() {
   // No-op. Don't delete |this|.
 }
 
-void PageClickTracker::Legacy::DidHandleMouseEvent(const WebMouseEvent& event) {
-  tracker_->DidHandleMouseEvent(event);
-}
-
-void PageClickTracker::Legacy::DidHandleGestureEvent(
-    const WebGestureEvent& event) {
-  tracker_->DidHandleGestureEvent(event);
+void PageClickTracker::Legacy::OnMouseDown(const WebNode& mouse_down_node) {
+  tracker_->OnMouseDown(mouse_down_node);
 }
 
 void PageClickTracker::Legacy::FocusChangeComplete() {

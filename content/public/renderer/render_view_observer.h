@@ -80,8 +80,9 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidUpdateLayout() {}
 
   // These match the RenderView methods.
-  virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void DidHandleGestureEvent(const blink::WebGestureEvent& event) {}
+
+  virtual void OnMouseDown(const blink::WebNode& mouse_down_node) {}
 
   // These match incoming IPCs.
   virtual void Navigate(const GURL& url) {}

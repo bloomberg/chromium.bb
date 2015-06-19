@@ -114,6 +114,16 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
 }
 
+// Tests that PageClickTracker does not notify when there is right click.
+TEST_F(PageClickTrackerTest, PageClickTrackerInputRightClicked) {
+  EXPECT_NE(text_, text_.document().focusedElement());
+  // Right click the text field once.
+  EXPECT_TRUE(SimulateElementRightClick("text_1"));
+  EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.was_focused_);
+  EXPECT_NE(text_, test_listener_.form_control_element_clicked_);
+}
+
 TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusedAndClicked) {
   // Focus the text field without a click.
   ExecuteJavaScript("document.getElementById('text_1').focus();");

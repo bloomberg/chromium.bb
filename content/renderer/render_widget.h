@@ -569,10 +569,6 @@ class CONTENT_EXPORT RenderWidget
   // won't be sent to WebKit.
   virtual bool WillHandleGestureEvent(const blink::WebGestureEvent& event);
 
-  // Called by OnHandleInputEvent() to notify subclasses that a mouse event was
-  // just handled.
-  virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) {}
-
   // Called by OnHandleInputEvent() to forward a mouse wheel event to the
   // compositor thread, to effect the elastic overscroll effect.
   void ObserveWheelEventAndResult(const blink::WebMouseWheelEvent& wheel_event,
