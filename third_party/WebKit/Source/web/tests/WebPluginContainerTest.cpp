@@ -93,7 +93,7 @@ public:
     WebString selectionAsMarkup() const override { return WebString("y"); }
     bool supportsPaginatedPrint() override { return true; }
     int printBegin(const WebPrintParams& printParams) override { return 1; }
-    void printPage(int pageNumber, WebCanvas*, bool unused) override;
+    void printPage(int pageNumber, WebCanvas*) override;
 private:
     TestPluginWebFrameClient* m_testClient;
 };
@@ -116,7 +116,7 @@ private:
     bool m_printedPage = false;
 };
 
-void TestPlugin::printPage(int pageNumber, WebCanvas* canvas, bool unused)
+void TestPlugin::printPage(int pageNumber, WebCanvas* canvas)
 {
     ASSERT(m_testClient);
     m_testClient->onPrintPage();

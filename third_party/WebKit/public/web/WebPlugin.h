@@ -131,8 +131,6 @@ public:
     // pages to be printed at these settings.
     virtual int printBegin(const WebPrintParams& printParams) { return 0; }
 
-    // TODO: Remove third parameter when both blink and chromium changes land for bug496765
-    virtual void printPage(int pageNumber, WebCanvas* canvas, bool unused) { }
     virtual void printPage(int pageNumber, WebCanvas* canvas) { }
 
     // Ends the print operation.

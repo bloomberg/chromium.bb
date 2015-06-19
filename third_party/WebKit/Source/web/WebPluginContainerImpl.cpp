@@ -359,8 +359,6 @@ void WebPluginContainerImpl::printPage(int pageNumber, GraphicsContext* gc, cons
         return;
     gc->save();
     WebCanvas* canvas = gc->canvas();
-    // TODO: Remove third parameter when both blink and chromium changes land for bug496765
-    m_webPlugin->printPage(pageNumber, canvas, false);
     m_webPlugin->printPage(pageNumber, canvas);
     gc->restore();
 }
