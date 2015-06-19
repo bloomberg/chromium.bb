@@ -564,6 +564,15 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('deqp/functional/gles3/*', ['win', 'intel'], bug=483282)
     self.Skip('conformance2/*', ['win', 'intel'], bug=483282)
 
+    # Skip all WebGL 2 tests on Win NVIDIA debug.
+    self.Skip('deqp/data/gles3/shaders/*',
+        ['win', 'nvidia', 'debug'], bug=483282)
+    self.Skip('framework/opengl/simplereference/*',
+        ['win', 'nvidia', 'debug'], bug=483282)
+    self.Skip('deqp/functional/gles3/*',
+        ['win', 'nvidia', 'debug'], bug=483282)
+    self.Skip('conformance2/*',
+        ['win', 'nvidia', 'debug'], bug=483282)
 
     self.Fail('deqp/data/gles3/shaders/arrays.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constant_expressions.html', bug=483282)
