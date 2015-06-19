@@ -9,6 +9,7 @@
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
 namespace devtools {
@@ -63,10 +64,24 @@ void SecurityHandler::SetClient(scoped_ptr<Client> client) {
   client_.swap(client);
 }
 
+void SecurityHandler::AttachToRenderFrameHost() {
+  DCHECK(host_);
+  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
+  WebContentsObserver::Observe(web_contents);
+
+  // Send an initial SecurityStyleChanged event.
+  DCHECK(enabled_);
+  SecurityStyleExplanations security_style_explanations;
+  SecurityStyle security_style =
+      web_contents->GetDelegate()->GetSecurityStyle(
+          web_contents, &security_style_explanations);
+  SecurityStyleChanged(security_style, security_style_explanations);
+}
+
 void SecurityHandler::SetRenderFrameHost(RenderFrameHost* host) {
   host_ = host;
   if (enabled_ && host_)
-    WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host_));
+    AttachToRenderFrameHost();
 }
 
 void SecurityHandler::SecurityStyleChanged(
@@ -93,7 +108,8 @@ void SecurityHandler::SecurityStyleChanged(
 Response SecurityHandler::Enable() {
   enabled_ = true;
   if (host_)
-    WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host_));
+    AttachToRenderFrameHost();
+
   return Response::OK();
 }
 

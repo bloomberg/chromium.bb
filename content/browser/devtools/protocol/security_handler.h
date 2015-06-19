@@ -28,6 +28,7 @@ class SecurityHandler : public WebContentsObserver {
   Response Disable();
 
  private:
+  void AttachToRenderFrameHost();
 
   // WebContentsObserver overrides
   void SecurityStyleChanged(
