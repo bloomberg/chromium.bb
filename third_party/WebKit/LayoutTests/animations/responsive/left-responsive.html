@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script src="resources/responsive-test.js"></script>
+<script>
+assertResponsive({
+  property: 'left',
+  from: 'inherit',
+  to: '100px',
+  configurations: [{
+    state: {inherited: '0px'},
+    expect: [
+      {at: 0.25, is: '25px'},
+      {at: 0.75, is: '75px'},
+    ],
+  }, {
+    state: {inherited: 'auto'},
+    expect: [
+      {at: 0.25, is: 'auto'},
+      {at: 0.75, is: '100px'},
+    ],
+  }],
+});
+
+assertResponsive({
+  property: 'left',
+  from: '',
+  to: '100px',
+  configurations: [{
+    state: {underlying: '0px'},
+    expect: [
+      {at: 0.25, is: '25px'},
+      {at: 0.75, is: '75px'},
+    ],
+  }, {
+    state: {underlying: 'auto'},
+    expect: [
+      {at: 0.25, is: 'auto'},
+      {at: 0.75, is: '100px'},
+    ],
+  }, {
+    state: {underlying: 'inherit', inherited: '0px'},
+    expect: [
+      {at: 0.25, is: '25px'},
+      {at: 0.75, is: '75px'},
+    ],
+  }, {
+    state: {underlying: 'inherit', inherited: 'auto'},
+    expect: [
+      {at: 0.25, is: 'auto'},
+      {at: 0.75, is: '100px'},
+    ],
+  }],
+});
+</script>
