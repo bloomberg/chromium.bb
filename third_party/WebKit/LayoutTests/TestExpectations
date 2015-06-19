@@ -1801,7 +1801,6 @@ crbug.com/424338 [ XP ] tables/mozilla/bugs/bug3037-1.html [ Failure ]
 
 #crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Failure ]
 
-crbug.com/501775 inspector/extensions/extensions-resources.html [ Pass Failure Timeout ]
 crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Timeout ]
 
 crbug.com/501659 fast/parser/xml-colon-entity.html [ Failure ]
