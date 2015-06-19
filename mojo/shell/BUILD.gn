@@ -53,8 +53,7 @@ source_set("shell") {
   ]
 }
 
-test("tests") {
-  output_name = "mojo_shell_unittests"
+test("mojo_shell_unittests") {
   sources = [
     "application_manager_unittest.cc",
     "query_util_unittest.cc",

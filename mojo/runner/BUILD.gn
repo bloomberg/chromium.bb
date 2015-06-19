@@ -382,8 +382,7 @@ mojom("child_process_bindings") {
   import_dirs = [ "//mojo/services" ]
 }
 
-test("tests") {
-  output_name = "mojo_runner_unittests"
+test("mojo_runner_unittests") {
   sources = [
     "child_process_host_unittest.cc",
     "data_pipe_peek_unittest.cc",
