@@ -10,12 +10,13 @@
       'target_name': 'cloud_print',
       'type': 'none',
       'dependencies': [
-        'service/service.gyp:*',
         'gcp20/prototype/gcp20_device.gyp:*',
+        'service/service.gyp:*',
       ],
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
+            'service/win/service.gyp:*',
             'virtual_driver/win/install/virtual_driver_install.gyp:*',
             'virtual_driver/win/virtual_driver.gyp:*',
           ],
