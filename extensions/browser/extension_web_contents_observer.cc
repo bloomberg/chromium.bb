@@ -57,14 +57,44 @@ ExtensionWebContentsObserver::ExtensionWebContentsObserver(
     : content::WebContentsObserver(web_contents),
       browser_context_(web_contents->GetBrowserContext()),
       dispatcher_(browser_context_) {
-  NotifyRenderViewType(web_contents->GetRenderViewHost());
-  content::RenderFrameHost* host = web_contents->GetMainFrame();
-  if (host)
-    RenderFrameHostChanged(nullptr, host);
+  web_contents->ForEachFrame(
+      base::Bind(&ExtensionWebContentsObserver::InitializeFrameHelper,
+                 base::Unretained(this)));
   dispatcher_.set_delegate(this);
 }
 
 ExtensionWebContentsObserver::~ExtensionWebContentsObserver() {
+}
+
+void ExtensionWebContentsObserver::InitializeRenderFrame(
+    content::RenderFrameHost* render_frame_host) {
+  DCHECK(render_frame_host);
+  DCHECK(render_frame_host->IsRenderFrameLive());
+
+  // Notify the render frame of the view type.
+  render_frame_host->Send(new ExtensionMsg_NotifyRenderViewType(
+      render_frame_host->GetRoutingID(), GetViewType(web_contents())));
+
+  const Extension* frame_extension =
+      GetExtensionForRenderFrame(render_frame_host);
+  if (frame_extension) {
+    ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
+                                                         frame_extension);
+    ProcessManager::Get(browser_context_)
+        ->RegisterRenderFrameHost(web_contents(), render_frame_host,
+                                  frame_extension);
+  }
+
+  // This can be different from |frame_extension| above in the case of, e.g.,
+  // a non-extension iframe hosted in a chrome-extension:// page.
+  const Extension* main_frame_extension =
+      GetExtensionForRenderFrame(web_contents()->GetMainFrame());
+  // We notify the render frame that it's in an extension's tab, but not if this
+  // is a hosted app (we don't mind scripting on hosted apps' pages).
+  if (main_frame_extension && !main_frame_extension->is_hosted_app()) {
+    render_frame_host->Send(new ExtensionMsg_SetMainFrameExtensionOwner(
+        render_frame_host->GetRoutingID(), main_frame_extension->id()));
+  }
 }
 
 content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()
@@ -74,8 +104,7 @@ content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()
 
 void ExtensionWebContentsObserver::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  NotifyRenderViewType(render_view_host);
-
+  // TODO(devlin): Most/all of this should move to RenderFrameCreated.
   const Extension* extension = GetExtension(render_view_host);
   if (!extension)
     return;
@@ -117,11 +146,13 @@ void ExtensionWebContentsObserver::RenderViewCreated(
 
 void ExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  const Extension* extension = GetExtensionForRenderFrame(render_frame_host);
-  if (extension) {
-    ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
-                                                         extension);
-  }
+  InitializeRenderFrame(render_frame_host);
+}
+
+void ExtensionWebContentsObserver::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  ProcessManager::Get(browser_context_)
+      ->UnregisterRenderFrameHost(render_frame_host);
 }
 
 bool ExtensionWebContentsObserver::OnMessageReceived(
@@ -134,43 +165,6 @@ bool ExtensionWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ExtensionWebContentsObserver::FrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  ProcessManager::Get(browser_context_)->UnregisterRenderFrameHost(
-      render_frame_host);
-}
-
-void ExtensionWebContentsObserver::RenderFrameHostChanged(
-    content::RenderFrameHost* old_host,
-    content::RenderFrameHost* new_host) {
-  ProcessManager* process_manager = ProcessManager::Get(browser_context_);
-  if (old_host)
-    process_manager->UnregisterRenderFrameHost(old_host);
-
-  const Extension* frame_extension = GetExtensionForRenderFrame(new_host);
-  if (frame_extension) {
-    process_manager->RegisterRenderFrameHost(
-        web_contents(), new_host, frame_extension);
-  }
-
-  // This can be different from |frame_extension| above in the case of, e.g.,
-  // a non-extension iframe hosted in a chrome-extension:// page.
-  const Extension* tab_extension =
-      GetExtensionForRenderFrame(web_contents()->GetMainFrame());
-  if (tab_extension) {
-    new_host->Send(new ExtensionMsg_SetTabExtensionOwner(
-        new_host->GetRoutingID(), tab_extension->id()));
-  }
-}
-
-void ExtensionWebContentsObserver::NotifyRenderViewType(
-    content::RenderViewHost* render_view_host) {
-  if (render_view_host) {
-    render_view_host->Send(new ExtensionMsg_NotifyRenderViewType(
-        render_view_host->GetRoutingID(), GetViewType(web_contents())));
-  }
 }
 
 void ExtensionWebContentsObserver::PepperInstanceCreated() {
@@ -219,6 +213,17 @@ void ExtensionWebContentsObserver::OnRequest(
     content::RenderFrameHost* render_frame_host,
     const ExtensionHostMsg_Request_Params& params) {
   dispatcher_.Dispatch(params, render_frame_host);
+}
+
+void ExtensionWebContentsObserver::InitializeFrameHelper(
+    content::RenderFrameHost* render_frame_host) {
+  // Since this is called for all existing RenderFrameHosts during the
+  // ExtensionWebContentsObserver's creation, it's possible that not all hosts
+  // are ready.
+  // We only initialize the frame if the renderer counterpart is live; otherwise
+  // we wait for the RenderFrameCreated notification.
+  if (render_frame_host->IsRenderFrameLive())
+    InitializeRenderFrame(render_frame_host);
 }
 
 }  // namespace extensions

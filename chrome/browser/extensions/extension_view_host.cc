@@ -22,7 +22,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
-#include "extensions/common/extension_messages.h"
 #include "grit/browser_resources.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -239,16 +238,7 @@ void ExtensionViewHost::ResizeDueToAutoResize(WebContents* source,
 
 void ExtensionViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
   ExtensionHost::RenderViewCreated(render_view_host);
-
   view_->RenderViewCreated();
-
-  // If the host is bound to a window, then extract its id. Extensions hosted
-  // in ExternalTabContainer objects may not have an associated window.
-  WindowController* window = GetExtensionWindowController();
-  if (window) {
-    render_view_host->Send(new ExtensionMsg_UpdateBrowserWindowId(
-        render_view_host->GetRoutingID(), window->GetWindowId()));
-  }
 }
 
 // web_modal::WebContentsModalDialogManagerDelegate overrides:

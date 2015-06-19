@@ -16,10 +16,10 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
 #include "extensions/renderer/api_activity_logger.h"
-#include "extensions/renderer/extension_helper.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using content::V8ValueConverter;
@@ -155,13 +155,14 @@ void RuntimeCustomBindings::GetExtensionViews(
   if (extension_id.empty())
     return;
 
-  std::vector<content::RenderView*> views = ExtensionHelper::GetExtensionViews(
-      extension_id, browser_window_id, view_type);
+  std::vector<content::RenderFrame*> frames =
+      ExtensionFrameHelper::GetExtensionFrames(extension_id, browser_window_id,
+                                               view_type);
   v8::Local<v8::Array> v8_views = v8::Array::New(args.GetIsolate());
   int v8_index = 0;
-  for (size_t i = 0; i < views.size(); ++i) {
+  for (content::RenderFrame* frame : frames) {
     v8::Local<v8::Context> context =
-        views[i]->GetWebView()->mainFrame()->mainWorldScriptContext();
+        frame->GetWebFrame()->mainWorldScriptContext();
     if (!context.IsEmpty()) {
       v8::Local<v8::Value> window = context->Global();
       DCHECK(!window.IsEmpty());

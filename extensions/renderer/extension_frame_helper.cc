@@ -6,23 +6,96 @@
 
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/messaging_bindings.h"
+#include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
+
+namespace {
+
+base::LazyInstance<std::set<const ExtensionFrameHelper*>> g_frame_helpers =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Returns true if the render frame corresponding with |frame_helper| matches
+// the given criteria.
+bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
+                        ViewType match_view_type,
+                        int match_window_id,
+                        const std::string& match_extension_id) {
+  if (match_view_type != VIEW_TYPE_INVALID &&
+      frame_helper->view_type() != match_view_type)
+    return false;
+  GURL url = frame_helper->render_frame()->GetWebFrame()->document().url();
+  if (!url.SchemeIs(kExtensionScheme))
+    return false;
+  if (url.host() != match_extension_id)
+    return false;
+  if (match_window_id != extension_misc::kUnknownWindowId &&
+      frame_helper->browser_window_id() != match_window_id)
+    return false;
+  return true;
+}
+
+}  // namespace
 
 ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
                                            Dispatcher* extension_dispatcher)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ExtensionFrameHelper>(render_frame),
+      view_type_(VIEW_TYPE_INVALID),
       tab_id_(-1),
-      extension_dispatcher_(extension_dispatcher) {}
+      browser_window_id_(-1),
+      extension_dispatcher_(extension_dispatcher) {
+  g_frame_helpers.Get().insert(this);
+}
 
 ExtensionFrameHelper::~ExtensionFrameHelper() {
+  g_frame_helpers.Get().erase(this);
+}
+
+// static
+std::vector<content::RenderFrame*> ExtensionFrameHelper::GetExtensionFrames(
+    const std::string& extension_id,
+    int browser_window_id,
+    ViewType view_type) {
+  std::vector<content::RenderFrame*> render_frames;
+  for (const ExtensionFrameHelper* helper : g_frame_helpers.Get()) {
+    if (RenderFrameMatches(helper, view_type, browser_window_id, extension_id))
+      render_frames.push_back(helper->render_frame());
+  }
+  return render_frames;
+}
+
+// static
+content::RenderFrame* ExtensionFrameHelper::GetBackgroundPageFrame(
+    const std::string& extension_id) {
+  for (const ExtensionFrameHelper* helper : g_frame_helpers.Get()) {
+    if (RenderFrameMatches(helper, VIEW_TYPE_EXTENSION_BACKGROUND_PAGE,
+                           extension_misc::kUnknownWindowId, extension_id)) {
+      blink::WebLocalFrame* web_frame = helper->render_frame()->GetWebFrame();
+      // Check if this is the top frame.
+      if (web_frame->top() == web_frame)
+        return helper->render_frame();
+    }
+  }
+  return nullptr;
+}
+
+// static
+bool ExtensionFrameHelper::IsContextForEventPage(const ScriptContext* context) {
+  content::RenderFrame* render_frame = context->GetRenderFrame();
+  return context->extension() && render_frame &&
+         BackgroundInfo::HasLazyBackgroundPage(context->extension()) &&
+         ExtensionFrameHelper::Get(render_frame)->view_type() ==
+              VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 
 void ExtensionFrameHelper::DidCreateScriptContext(
@@ -51,8 +124,12 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnExtensionDispatchOnDisconnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnExtensionSetTabId)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabExtensionOwner,
-                        OnSetTabExtensionOwner)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
+                        OnUpdateBrowserWindowId)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetMainFrameExtensionOwner,
+                        OnSetMainFrameExtensionOwner)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
+                        OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -102,9 +179,19 @@ void ExtensionFrameHelper::OnExtensionSetTabId(int tab_id) {
   tab_id_ = tab_id;
 }
 
-void ExtensionFrameHelper::OnSetTabExtensionOwner(
+void ExtensionFrameHelper::OnUpdateBrowserWindowId(int browser_window_id) {
+  browser_window_id_ = browser_window_id;
+}
+
+void ExtensionFrameHelper::OnSetMainFrameExtensionOwner(
     const std::string& extension_id) {
   tab_extension_owner_id_ = extension_id;
+}
+
+void ExtensionFrameHelper::OnNotifyRendererViewType(ViewType type) {
+  // TODO(devlin): It'd be really nice to be able to
+  // DCHECK_EQ(VIEW_TYPE_INVALID, view_type_) here.
+  view_type_ = type;
 }
 
 void ExtensionFrameHelper::OnExtensionResponse(int request_id,

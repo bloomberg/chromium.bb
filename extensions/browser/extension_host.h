@@ -99,6 +99,8 @@ class ExtensionHost : public DeferredStartRenderHost,
 
   // content::WebContentsObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* host) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
   void RenderViewReady() override;

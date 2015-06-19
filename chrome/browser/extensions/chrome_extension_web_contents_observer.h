@@ -30,6 +30,10 @@ class ChromeExtensionWebContentsObserver
       content::WebContents* web_contents);
   ~ChromeExtensionWebContentsObserver() override;
 
+  // ExtensionWebContentsObserver:
+  void InitializeRenderFrame(
+      content::RenderFrameHost* render_frame_host) override;
+
   // content::WebContentsObserver overrides.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 

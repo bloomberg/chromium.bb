@@ -662,15 +662,6 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
   return true;
 }
 
-bool RenderFrameHostImpl::IsRenderFrameLive() {
-  bool is_live = GetProcess()->HasConnection() && render_frame_created_;
-
-  // Sanity check: the RenderView should always be live if the RenderFrame is.
-  DCHECK_IMPLIES(is_live, render_view_host_->IsRenderViewLive());
-
-  return is_live;
-}
-
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
   bool was_created = render_frame_created_;
   render_frame_created_ = created;
@@ -1996,6 +1987,15 @@ void RenderFrameHostImpl::InsertVisualStateCallback(
   uint64 key = next_id++;
   Send(new FrameMsg_VisualStateRequest(routing_id_, key));
   visual_state_callbacks_.insert(std::make_pair(key, callback));
+}
+
+bool RenderFrameHostImpl::IsRenderFrameLive() {
+  bool is_live = GetProcess()->HasConnection() && render_frame_created_;
+
+  // Sanity check: the RenderView should always be live if the RenderFrame is.
+  DCHECK_IMPLIES(is_live, render_view_host_->IsRenderViewLive());
+
+  return is_live;
 }
 
 #if defined(OS_WIN)

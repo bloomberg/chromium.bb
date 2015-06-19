@@ -150,6 +150,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::WebPageVisibilityState GetVisibilityState() override;
   void InsertVisualStateCallback(
       const VisualStateCallback& callback) override;
+  bool IsRenderFrameLive() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -192,10 +193,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool CreateRenderFrame(int parent_routing_id,
                          int previous_sibling_routing_id,
                          int proxy_routing_id);
-
-  // Returns whether the RenderFrame in the renderer process has been created
-  // and still has a connection.  This is valid for all frames.
-  bool IsRenderFrameLive();
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
   // the renderer process.  This is currently only used for subframes.

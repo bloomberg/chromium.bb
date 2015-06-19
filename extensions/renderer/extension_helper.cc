@@ -29,99 +29,11 @@ using blink::WebView;
 
 namespace extensions {
 
-namespace {
-
-// A RenderViewVisitor class that iterates through the set of available
-// views, looking for a view of the given type, in the given browser window
-// and within the given extension.
-// Used to accumulate the list of views associated with an extension.
-class ViewAccumulator : public content::RenderViewVisitor {
- public:
-  ViewAccumulator(const std::string& extension_id,
-                  int browser_window_id,
-                  ViewType view_type)
-      : extension_id_(extension_id),
-        browser_window_id_(browser_window_id),
-        view_type_(view_type) {
-  }
-
-  std::vector<content::RenderView*> views() { return views_; }
-
-  // Returns false to terminate the iteration.
-  bool Visit(content::RenderView* render_view) override {
-    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-    if (!ViewTypeMatches(helper->view_type(), view_type_))
-      return true;
-
-    GURL url = render_view->GetWebView()->mainFrame()->document().url();
-    if (!url.SchemeIs(kExtensionScheme))
-      return true;
-    const std::string& extension_id = url.host();
-    if (extension_id != extension_id_)
-      return true;
-
-    if (browser_window_id_ != extension_misc::kUnknownWindowId &&
-        helper->browser_window_id() != browser_window_id_) {
-      return true;
-    }
-
-    views_.push_back(render_view);
-
-    if (view_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
-      return false;  // There can be only one...
-    return true;
-  }
-
- private:
-  // Returns true if |type| "isa" |match|.
-  static bool ViewTypeMatches(ViewType type, ViewType match) {
-    if (type == match)
-      return true;
-
-    // INVALID means match all.
-    if (match == VIEW_TYPE_INVALID)
-      return true;
-
-    return false;
-  }
-
-  std::string extension_id_;
-  int browser_window_id_;
-  ViewType view_type_;
-  std::vector<content::RenderView*> views_;
-};
-
-}  // namespace
-
-// static
-std::vector<content::RenderView*> ExtensionHelper::GetExtensionViews(
-    const std::string& extension_id,
-    int browser_window_id,
-    ViewType view_type) {
-  ViewAccumulator accumulator(extension_id, browser_window_id, view_type);
-  content::RenderView::ForEach(&accumulator);
-  return accumulator.views();
-}
-
-// static
-content::RenderView* ExtensionHelper::GetBackgroundPage(
-    const std::string& extension_id) {
-  ViewAccumulator accumulator(extension_id, extension_misc::kUnknownWindowId,
-                              VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
-  content::RenderView::ForEach(&accumulator);
-  CHECK_LE(accumulator.views().size(), 1u);
-  if (accumulator.views().size() == 0)
-    return NULL;
-  return accumulator.views()[0];
-}
-
 ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
                                  Dispatcher* dispatcher)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
-      dispatcher_(dispatcher),
-      view_type_(VIEW_TYPE_INVALID),
-      browser_window_id_(-1) {
+      dispatcher_(dispatcher) {
   // Lifecycle managed by RenderViewObserver.
   new AutomationApiHelper(render_view);
 }
@@ -134,10 +46,6 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
-                        OnUpdateBrowserWindowId)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
-                        OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AddMessageToConsole,
                         OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed,
@@ -182,18 +90,10 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
       user_gesture);
 }
 
-void ExtensionHelper::OnNotifyRendererViewType(ViewType type) {
-  view_type_ = type;
-}
-
 void ExtensionHelper::OnSetFrameName(const std::string& name) {
   blink::WebView* web_view = render_view()->GetWebView();
   if (web_view)
     web_view->mainFrame()->setName(blink::WebString::fromUTF8(name));
-}
-
-void ExtensionHelper::OnUpdateBrowserWindowId(int window_id) {
-  browser_window_id_ = window_id;
 }
 
 void ExtensionHelper::OnAddMessageToConsole(ConsoleMessageLevel level,

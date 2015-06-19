@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/manifest_handlers/background_info.h"
-#include "extensions/renderer/extension_helper.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 
 namespace extensions {
@@ -28,10 +27,8 @@ LazyBackgroundPageNativeHandler::LazyBackgroundPageNativeHandler(
 
 void LazyBackgroundPageNativeHandler::IncrementKeepaliveCount(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (!context())
-    return;
-  content::RenderView* render_view = context()->GetRenderView();
-  if (IsContextLazyBackgroundPage(render_view, context()->extension())) {
+  if (context() && ExtensionFrameHelper::IsContextForEventPage(context())) {
+    content::RenderView* render_view = context()->GetRenderView();
     render_view->Send(new ExtensionHostMsg_IncrementLazyKeepaliveCount(
         render_view->GetRoutingID()));
   }
@@ -39,24 +36,11 @@ void LazyBackgroundPageNativeHandler::IncrementKeepaliveCount(
 
 void LazyBackgroundPageNativeHandler::DecrementKeepaliveCount(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (!context())
-    return;
-  content::RenderView* render_view = context()->GetRenderView();
-  if (IsContextLazyBackgroundPage(render_view, context()->extension())) {
+  if (context() && ExtensionFrameHelper::IsContextForEventPage(context())) {
+    content::RenderView* render_view = context()->GetRenderView();
     render_view->Send(new ExtensionHostMsg_DecrementLazyKeepaliveCount(
         render_view->GetRoutingID()));
   }
-}
-
-bool LazyBackgroundPageNativeHandler::IsContextLazyBackgroundPage(
-    content::RenderView* render_view,
-    const Extension* extension) {
-  if (!render_view)
-    return false;
-
-  ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-  return (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
-          helper->view_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
 }
 
 }  // namespace extensions

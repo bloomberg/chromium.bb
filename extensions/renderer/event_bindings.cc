@@ -17,9 +17,8 @@
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/value_counter.h"
-#include "extensions/renderer/extension_helper.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "url/gurl.h"
 
@@ -72,15 +71,6 @@ int DecrementEventListenerCount(ScriptContext* script_context,
                                 const std::string& event_name) {
   return --g_listener_counts
                .Get()[GetKeyForScriptContext(script_context)][event_name];
-}
-
-bool IsLazyBackgroundPage(content::RenderView* render_view,
-                          const Extension* extension) {
-  if (!render_view)
-    return false;
-  ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-  return (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
-          helper->view_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
 }
 
 EventFilteringInfo ParseFromObject(v8::Local<v8::Object> object,
@@ -189,8 +179,7 @@ void EventBindings::AttachEvent(const std::string& event_name) {
   // This is called the first time the page has added a listener. Since
   // the background page is the only lazy page, we know this is the first
   // time this listener has been registered.
-  if (IsLazyBackgroundPage(context()->GetRenderView(),
-                           context()->extension())) {
+  if (ExtensionFrameHelper::IsContextForEventPage(context())) {
     content::RenderThread::Get()->Send(
         new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
   }
@@ -219,8 +208,7 @@ void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
   // removed. If the context is the background page, and it removes the
   // last listener manually, then we assume that it is no longer interested
   // in being awakened for this event.
-  if (is_manual && IsLazyBackgroundPage(context()->GetRenderView(),
-                                        context()->extension())) {
+  if (is_manual && ExtensionFrameHelper::IsContextForEventPage(context())) {
     content::RenderThread::Get()->Send(
         new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
   }
@@ -267,8 +255,7 @@ void EventBindings::AttachFilteredEvent(
 
   // Only send IPCs the first time a filter gets added.
   if (AddFilter(event_name, extension_id, filter.get())) {
-    bool lazy = IsLazyBackgroundPage(context()->GetRenderView(),
-                                     context()->extension());
+    bool lazy = ExtensionFrameHelper::IsContextForEventPage(context());
     content::RenderThread::Get()->Send(new ExtensionHostMsg_AddFilteredListener(
         extension_id, event_name, *filter, lazy));
   }
@@ -293,11 +280,11 @@ void EventBindings::DetachFilteredEvent(
 
   // Only send IPCs the last time a filter gets removed.
   if (RemoveFilter(event_name, extension_id, event_matcher->value())) {
-    bool lazy = is_manual && IsLazyBackgroundPage(context()->GetRenderView(),
-                                                  context()->extension());
+    bool remove_lazy =
+        is_manual && ExtensionFrameHelper::IsContextForEventPage(context());
     content::RenderThread::Get()->Send(
         new ExtensionHostMsg_RemoveFilteredListener(
-            extension_id, event_name, *event_matcher->value(), lazy));
+            extension_id, event_name, *event_matcher->value(), remove_lazy));
   }
 
   event_filter.RemoveEventMatcher(matcher_id);

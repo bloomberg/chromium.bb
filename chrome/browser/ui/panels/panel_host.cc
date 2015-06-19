@@ -26,12 +26,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
-#include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -200,12 +198,6 @@ void PanelHost::HandleKeyboardEvent(
 void PanelHost::ResizeDueToAutoResize(content::WebContents* web_contents,
                                       const gfx::Size& new_size) {
   panel_->OnContentsAutoResized(new_size);
-}
-
-void PanelHost::RenderViewCreated(content::RenderViewHost* render_view_host) {
-  extensions::WindowController* window = GetExtensionWindowController();
-  render_view_host->Send(new ExtensionMsg_UpdateBrowserWindowId(
-      render_view_host->GetRoutingID(), window->GetWindowId()));
 }
 
 void PanelHost::RenderProcessGone(base::TerminationStatus status) {

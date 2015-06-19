@@ -74,7 +74,6 @@ class PanelHost : public content::WebContentsDelegate,
                              const gfx::Size& new_size) override;
 
   // content::WebContentsObserver overrides.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
 

@@ -45,6 +45,11 @@ class ExtensionWebContentsObserver
 
   content::BrowserContext* browser_context() { return browser_context_; }
 
+  // Initializes a new render frame. Subclasses should invoke this
+  // implementation if extending.
+  virtual void InitializeRenderFrame(
+      content::RenderFrameHost* render_frame_host);
+
   // ExtensionFunctionDispatcher::Delegate overrides.
   content::WebContents* GetAssociatedWebContents() const override;
 
@@ -54,17 +59,11 @@ class ExtensionWebContentsObserver
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // Subclasses should call this first before doing their own message handling.
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
-
-  // Per the documentation in WebContentsObserver, these two methods are
-  // appropriate to track the set of current RenderFrameHosts.
-  // NOTE: FrameDeleted() != RenderFrameDeleted().
-  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
 
   // Per the documentation in WebContentsObserver, these two methods are invoked
   // when a Pepper plugin instance is attached/detached in the page DOM.
@@ -75,9 +74,6 @@ class ExtensionWebContentsObserver
   // NULL if the render view host is not for a valid extension.
   const Extension* GetExtension(content::RenderViewHost* render_view_host);
 
-  // Updates ViewType for RenderViewHost based on GetViewType(web_contents()).
-  void NotifyRenderViewType(content::RenderViewHost* render_view_host);
-
   // Returns the extension or app ID associated with a render view host. Returns
   // the empty string if the render view host is not for a valid extension.
   static std::string GetExtensionId(content::RenderViewHost* render_view_host);
@@ -85,6 +81,10 @@ class ExtensionWebContentsObserver
  private:
   void OnRequest(content::RenderFrameHost* render_frame_host,
                  const ExtensionHostMsg_Request_Params& params);
+
+  // A helper function for initializing render frames at the creation of the
+  // observer.
+  void InitializeFrameHelper(content::RenderFrameHost* render_frame_host);
 
   // The BrowserContext associated with the WebContents being observed.
   content::BrowserContext* browser_context_;
