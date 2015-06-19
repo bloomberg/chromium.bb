@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -108,6 +109,19 @@ bool ServerTypeToPrediction(autofill::ServerFieldType server_field_type,
       return false;
   }
   return true;
+}
+
+bool ContainsAndroidCredentials(
+    const autofill::PasswordFormFillData& fill_data) {
+  for (const auto& login : fill_data.additional_logins) {
+    if (FacetURI::FromPotentiallyInvalidSpec(
+            login.second.realm).IsValidAndroidFacetURI()) {
+      return true;
+    }
+  }
+
+  return FacetURI::FromPotentiallyInvalidSpec(
+             fill_data.preferred_realm).IsValidAndroidFacetURI();
 }
 
 }  // namespace
@@ -671,6 +685,8 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
                                &fill_data);
       if (logger)
         logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
+      UMA_HISTOGRAM_BOOLEAN("PasswordManager.OfferedToFillAndroidCredentials",
+                            ContainsAndroidCredentials(fill_data));
       driver->FillPasswordForm(fill_data);
       break;
     }

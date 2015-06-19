@@ -27573,6 +27573,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.FillSuggestionsIncludeAndroidAppCredentials"
+    enum="PasswordManagerOfferedAndroidCredentials">
+  <owner>msramek@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    When offering to fill the username and password, whether at least one of the
+    credentials in the dropdown comes from an Android app.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.FormDataDeserializationStatus"
     enum="FormDataDeserializationStatus">
   <owner>gcasto@chromium.org</owner>
@@ -62442,6 +62452,11 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="PasswordManagerEmptyUsernamePasswordChangeForm" type="int">
   <int value="0" label="Not a password change form"/>
   <int value="1" label="A password change form"/>
+</enum>
+
+<enum name="PasswordManagerOfferedAndroidCredentials" type="int">
+  <int value="0" label="None from Android"/>
+  <int value="1" label="1+ from Android"/>
 </enum>
 
 <enum name="PasswordManagerOsPasswordStatus" type="int">
