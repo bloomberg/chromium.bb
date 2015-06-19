@@ -469,6 +469,9 @@ public:
             // May be redundant with deltaX/deltaY in the first scrollUpdate.
             float deltaXHint;
             float deltaYHint;
+            // If true, this event will skip hit testing to find a scroll
+            // target and instead just scroll the viewport.
+            bool targetViewport;
         } scrollBegin;
 
         struct {
@@ -489,6 +492,9 @@ public:
         struct {
             float velocityX;
             float velocityY;
+            // If true, this event will skip hit testing to find a scroll
+            // target and instead just scroll the viewport.
+            bool targetViewport;
         } flingStart;
 
         struct {
