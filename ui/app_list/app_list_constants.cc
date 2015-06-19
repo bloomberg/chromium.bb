@@ -85,6 +85,9 @@ const int kGridIconDimension = 48;
 
 // Preferred search result icon sizes.
 const int kListIconSize = 24;
+const int kListBadgeIconSize = 16;
+const int kListBadgeIconOffsetX = 6;
+const int kListBadgeIconOffsetY = 6;
 const int kTileIconSize = 48;
 
 // Preferred number of columns and rows in the centered app list apps grid.

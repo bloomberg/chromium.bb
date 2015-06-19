@@ -92,10 +92,15 @@ class APP_LIST_EXPORT SearchResultView
 
   // SearchResultObserver overrides:
   void OnIconChanged() override;
+  void OnBadgeIconChanged() override;
   void OnActionsChanged() override;
   void OnIsInstallingChanged() override;
   void OnPercentDownloadedChanged() override;
   void OnItemInstalled() override;
+
+  void SetIconImage(const gfx::ImageSkia& source,
+                    views::ImageView* const icon,
+                    const int icon_dimension);
 
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
@@ -108,6 +113,7 @@ class APP_LIST_EXPORT SearchResultView
   SearchResultListView* list_view_;
 
   views::ImageView* icon_;  // Owned by views hierarchy.
+  views::ImageView* badge_icon_;  // Owned by views hierarchy.
   scoped_ptr<gfx::RenderText> title_text_;
   scoped_ptr<gfx::RenderText> details_text_;
   SearchResultActionsView* actions_view_;  // Owned by the views hierarchy.

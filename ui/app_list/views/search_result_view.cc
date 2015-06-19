@@ -78,11 +78,14 @@ SearchResultView::SearchResultView(SearchResultListView* list_view)
       is_last_result_(false),
       list_view_(list_view),
       icon_(new views::ImageView),
+      badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new ProgressBarView) {
   icon_->set_interactive(false);
+  badge_icon_->set_interactive(false);
 
   AddChildView(icon_);
+  AddChildView(badge_icon_);
   AddChildView(actions_view_);
   AddChildView(progress_bar_);
   set_context_menu_controller(this);
@@ -100,6 +103,7 @@ void SearchResultView::SetResult(SearchResult* result) {
     result_->AddObserver(this);
 
   OnIconChanged();
+  OnBadgeIconChanged();
   OnActionsChanged();
   UpdateTitleText();
   UpdateDetailsText();
@@ -176,6 +180,13 @@ void SearchResultView::Layout() {
                     top_bottom_padding);
   icon_bounds.Intersect(rect);
   icon_->SetBoundsRect(icon_bounds);
+
+  gfx::Rect badge_icon_bounds(
+      icon_bounds.right() - kListBadgeIconSize + kListBadgeIconOffsetX,
+      icon_bounds.bottom() - kListBadgeIconSize + kListBadgeIconOffsetY,
+      kListBadgeIconSize, kListBadgeIconSize);
+  badge_icon_bounds.Intersect(rect);
+  badge_icon_->SetBoundsRect(badge_icon_bounds);
 
   const int max_actions_width =
       (rect.right() - kActionButtonRightMargin - icon_bounds.right()) / 2;
@@ -312,7 +323,7 @@ void SearchResultView::ButtonPressed(views::Button* sender,
 }
 
 void SearchResultView::OnIconChanged() {
-  gfx::ImageSkia image(result_ ? result_->icon() : gfx::ImageSkia());
+  const gfx::ImageSkia image(result_ ? result_->icon() : gfx::ImageSkia());
   // Note this might leave the view with an old icon. But it is needed to avoid
   // flash when a SearchResult's icon is loaded asynchronously. In this case, it
   // looks nicer to keep the stale icon for a little while on screen instead of
@@ -321,22 +332,42 @@ void SearchResultView::OnIconChanged() {
   if (image.isNull())
     return;
 
+  SetIconImage(image, icon_, kListIconSize);
+}
+
+void SearchResultView::OnBadgeIconChanged() {
+  const gfx::ImageSkia image(result_ ? result_->badge_icon()
+                                     : gfx::ImageSkia());
+  if (image.isNull()) {
+    badge_icon_->SetVisible(false);
+    return;
+  }
+
+  SetIconImage(image, badge_icon_, kListBadgeIconSize);
+  badge_icon_->SetVisible(true);
+}
+
+void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
+                                    views::ImageView* const icon,
+                                    const int icon_dimension) {
+  // Copy.
+  gfx::ImageSkia image(source);
+
   // Scales down big icons but leave small ones unchanged.
-  if (image.width() > kListIconSize || image.height() > kListIconSize) {
+  if (image.width() > icon_dimension || image.height() > icon_dimension) {
     image = gfx::ImageSkiaOperations::CreateResizedImage(
-        image,
-        skia::ImageOperations::RESIZE_BEST,
-        gfx::Size(kListIconSize, kListIconSize));
+        image, skia::ImageOperations::RESIZE_BEST,
+        gfx::Size(icon_dimension, icon_dimension));
   } else {
-    icon_->ResetImageSize();
+    icon->ResetImageSize();
   }
 
   // Set the image to an empty image before we reset the image because
   // since we're using the same backing store for our images, sometimes
   // ImageView won't detect that we have a new image set due to the pixel
   // buffer pointers remaining the same despite the image changing.
-  icon_->SetImage(gfx::ImageSkia());
-  icon_->SetImage(image);
+  icon->SetImage(gfx::ImageSkia());
+  icon->SetImage(image);
 }
 
 void SearchResultView::OnActionsChanged() {

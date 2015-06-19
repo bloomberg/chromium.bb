@@ -91,8 +91,11 @@ class APP_LIST_EXPORT SearchResult {
   const gfx::ImageSkia& icon() const { return icon_; }
   void SetIcon(const gfx::ImageSkia& icon);
 
+  const gfx::ImageSkia& badge_icon() const { return badge_icon_; }
+  void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
+
   const base::string16& title() const { return title_; }
-  void set_title(const base::string16& title) { title_ = title;}
+  void set_title(const base::string16& title) { title_ = title; }
 
   const Tags& title_tags() const { return title_tags_; }
   void set_title_tags(const Tags& tags) { title_tags_ = tags; }
@@ -174,6 +177,7 @@ class APP_LIST_EXPORT SearchResult {
   virtual void Open(int event_flags);
 
   gfx::ImageSkia icon_;
+  gfx::ImageSkia badge_icon_;
 
   base::string16 title_;
   Tags title_tags_;

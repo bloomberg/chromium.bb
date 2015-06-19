@@ -49,6 +49,11 @@ void SearchResult::SetIcon(const gfx::ImageSkia& icon) {
                     OnIconChanged());
 }
 
+void SearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
+  badge_icon_ = badge_icon;
+  FOR_EACH_OBSERVER(SearchResultObserver, observers_, OnBadgeIconChanged());
+}
+
 void SearchResult::SetActions(const Actions& sets) {
   actions_ = sets;
   FOR_EACH_OBSERVER(SearchResultObserver,
