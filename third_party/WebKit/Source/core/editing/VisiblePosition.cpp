@@ -58,19 +58,6 @@ VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinit
     init(positionWithAffinity.position(), positionWithAffinity.affinity());
 }
 
-static Position canonicalPosition(const Position& passedPosition);
-
-void VisiblePosition::init(const Position& position, EAffinity affinity)
-{
-    m_affinity = affinity;
-
-    m_deepPosition = canonicalPosition(position);
-
-    // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
-    if (m_affinity == UPSTREAM && (isNull() || inSameLine(VisiblePosition(position, DOWNSTREAM), *this)))
-        m_affinity = DOWNSTREAM;
-}
-
 VisiblePosition VisiblePosition::next(EditingBoundaryCrossingRule rule) const
 {
     VisiblePosition next(nextVisuallyDistinctCandidate(m_deepPosition), m_affinity);
@@ -626,6 +613,17 @@ static Position canonicalPosition(const Position& passedPosition)
         return prev;
 
     return next;
+}
+
+void VisiblePosition::init(const Position& position, EAffinity affinity)
+{
+    m_affinity = affinity;
+
+    m_deepPosition = canonicalPosition(position);
+
+    // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
+    if (m_affinity == UPSTREAM && (isNull() || inSameLine(VisiblePosition(position, DOWNSTREAM), *this)))
+        m_affinity = DOWNSTREAM;
 }
 
 UChar32 VisiblePosition::characterAfter() const
