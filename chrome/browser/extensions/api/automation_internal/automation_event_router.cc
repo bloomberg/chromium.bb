@@ -62,8 +62,7 @@ void AutomationEventRouter::DispatchAccessibilityEvent(
 
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
-    rph->Send(new ExtensionMsg_AccessibilityEvent(listener.routing_id,
-                                                  params));
+    rph->Send(new ExtensionMsg_AccessibilityEvent(listener.routing_id, params));
   }
 }
 
@@ -93,8 +92,7 @@ void AutomationEventRouter::Register(
   auto iter = std::find_if(
       listeners_.begin(),
       listeners_.end(),
-      [listener_process_id, listener_routing_id](
-          const AutomationListener& item) {
+      [listener_process_id, listener_routing_id](AutomationListener& item) {
         return (item.process_id == listener_process_id &&
                 item.routing_id == listener_routing_id);
       });
@@ -133,8 +131,8 @@ void AutomationEventRouter::Observe(
   std::remove_if(
       listeners_.begin(),
       listeners_.end(),
-      [process_id](const AutomationListener& item) {
-        return item.process_id == process_id;
+      [process_id](AutomationListener& item) {
+        return item.process_id = process_id;
       });
 }
 

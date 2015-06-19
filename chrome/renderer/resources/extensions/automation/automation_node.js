@@ -8,124 +8,6 @@ var automationInternal =
 var IsInteractPermitted =
     requireNative('automationInternal').IsInteractPermitted;
 
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @return {?number} The id of the root node.
- */
-var GetRootID = requireNative('automationInternal').GetRootID;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @return {?number} The id of the node's parent, or undefined if it's the
- *    root of its tree or if the tree or node wasn't found.
- */
-var GetParentID = requireNative('automationInternal').GetParentID;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @return {?number} The number of children of the node, or undefined if
- *     the tree or node wasn't found.
- */
-var GetChildCount = requireNative('automationInternal').GetChildCount;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {number} childIndex An index of a child of this node.
- * @return {?number} The id of the child at the given index, or undefined
- *     if the tree or node or child at that index wasn't found.
- */
-var GetChildIDAtIndex = requireNative('automationInternal').GetChildIDAtIndex;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @return {?number} The index of this node in its parent, or undefined if
- *     the tree or node or node parent wasn't found.
- */
-var GetIndexInParent = requireNative('automationInternal').GetIndexInParent;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @return {?Object} An object with a string key for every state flag set,
- *     or undefined if the tree or node or node parent wasn't found.
- */
-var GetState = requireNative('automationInternal').GetState;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @return {string} The role of the node, or undefined if the tree or
- *     node wasn't found.
- */
-var GetRole = requireNative('automationInternal').GetRole;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @return {?automation.Rect} The location of the node, or undefined if
- *     the tree or node wasn't found.
- */
-var GetLocation = requireNative('automationInternal').GetLocation;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of a string attribute.
- * @return {?string} The value of this attribute, or undefined if the tree,
- *     node, or attribute wasn't found.
- */
-var GetStringAttribute = requireNative('automationInternal').GetStringAttribute;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of an attribute.
- * @return {?boolean} The value of this attribute, or undefined if the tree,
- *     node, or attribute wasn't found.
- */
-var GetBoolAttribute = requireNative('automationInternal').GetBoolAttribute;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of an attribute.
- * @return {?number} The value of this attribute, or undefined if the tree,
- *     node, or attribute wasn't found.
- */
-var GetIntAttribute = requireNative('automationInternal').GetIntAttribute;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of an attribute.
- * @return {?number} The value of this attribute, or undefined if the tree,
- *     node, or attribute wasn't found.
- */
-var GetFloatAttribute = requireNative('automationInternal').GetFloatAttribute;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of an attribute.
- * @return {?Array.<number>} The value of this attribute, or undefined
- *     if the tree, node, or attribute wasn't found.
- */
-var GetIntListAttribute =
-    requireNative('automationInternal').GetIntListAttribute;
-
-/**
- * @param {number} axTreeID The id of the accessibility tree.
- * @param {number} nodeID The id of a node.
- * @param {string} attr The name of an HTML attribute.
- * @return {?string} The value of this attribute, or undefined if the tree,
- *     node, or attribute wasn't found.
- */
-var GetHtmlAttribute = requireNative('automationInternal').GetHtmlAttribute;
-
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var schema = requireNative('automationInternal').GetSchemaAdditions();
@@ -138,12 +20,16 @@ var utils = require('utils');
  */
 function AutomationNodeImpl(root) {
   this.rootImpl = root;
+  this.childIds = [];
   // Public attributes. No actual data gets set on this object.
+  this.attributes = {};
+  // Internal object holding all attributes.
+  this.attributesInternal = {};
   this.listeners = {};
+  this.location = { left: 0, top: 0, width: 0, height: 0 };
 }
 
 AutomationNodeImpl.prototype = {
-  treeID: -1,
   id: -1,
   role: '',
   state: { busy: true },
@@ -154,51 +40,16 @@ AutomationNodeImpl.prototype = {
   },
 
   get parent() {
-    if (this.hostNode_)
-      return this.hostNode_;
-    var parentID = GetParentID(this.treeID, this.id);
-    return this.rootImpl.get(parentID);
-  },
-
-  get state() {
-    return GetState(this.treeID, this.id);
-  },
-
-  get role() {
-    return GetRole(this.treeID, this.id);
-  },
-
-  get location() {
-    return GetLocation(this.treeID, this.id);
-  },
-
-  get indexInParent() {
-    return GetIndexInParent(this.treeID, this.id);
-  },
-
-  get childTree() {
-    var childTreeID = GetIntAttribute(this.treeID, this.id, 'childTreeId');
-    if (childTreeID)
-      return AutomationRootNodeImpl.get(childTreeID);
+    return this.hostTree || this.rootImpl.get(this.parentID);
   },
 
   get firstChild() {
-    if (this.childTree)
-      return this.childTree;
-    if (!GetChildCount(this.treeID, this.id))
-      return undefined;
-    var firstChildID = GetChildIDAtIndex(this.treeID, this.id, 0);
-    return this.rootImpl.get(firstChildID);
+    return this.childTree || this.rootImpl.get(this.childIds[0]);
   },
 
   get lastChild() {
-    if (this.childTree)
-      return this.childTree;
-    var count = GetChildCount(this.treeID, this.id);
-    if (!count)
-      return undefined;
-    var lastChildID = GetChildIDAtIndex(this.treeID, this.id, count - 1);
-    return this.rootImpl.get(lastChildID);
+    var childIds = this.childIds;
+    return this.childTree || this.rootImpl.get(childIds[childIds.length - 1]);
   },
 
   get children() {
@@ -206,28 +57,24 @@ AutomationNodeImpl.prototype = {
       return [this.childTree];
 
     var children = [];
-    var count = GetChildCount(this.treeID, this.id);
-    for (var i = 0; i < count; ++i) {
-      var childID = GetChildIDAtIndex(this.treeID, this.id, i);
-      var child = this.rootImpl.get(childID);
-      children.push(child);
+    for (var i = 0, childID; childID = this.childIds[i]; i++) {
+      logging.CHECK(this.rootImpl.get(childID));
+      children.push(this.rootImpl.get(childID));
     }
     return children;
   },
 
   get previousSibling() {
     var parent = this.parent;
-    var indexInParent = GetIndexInParent(this.treeID, this.id);
-    if (parent && indexInParent > 0)
-      return parent.children[indexInParent - 1];
+    if (parent && this.indexInParent > 0)
+      return parent.children[this.indexInParent - 1];
     return undefined;
   },
 
   get nextSibling() {
     var parent = this.parent;
-    var indexInParent = GetIndexInParent(this.treeID, this.id);
-    if (parent && indexInParent < parent.children.length)
-      return parent.children[indexInParent + 1];
+    if (parent && this.indexInParent < parent.children.length)
+      return parent.children[this.indexInParent + 1];
     return undefined;
   },
 
@@ -323,20 +170,12 @@ AutomationNodeImpl.prototype = {
     var impl = privates(this).impl;
     if (!impl)
       impl = this;
-
-    var parentID = GetParentID(this.treeID, this.id);
-    var count = GetChildCount(this.treeID, this.id);
-    var childIDs = [];
-    for (var i = 0; i < count; ++i) {
-      var childID = GetChildIDAtIndex(this.treeID, this.id, i);
-      childIDs.push(childID);
-    }
-
     return 'node id=' + impl.id +
         ' role=' + this.role +
         ' state=' + $JSON.stringify(this.state) +
-        ' parentID=' + parentID +
-        ' childIds=' + $JSON.stringify(childIDs);
+        ' parentID=' + impl.parentID +
+        ' childIds=' + $JSON.stringify(impl.childIds) +
+        ' attributes=' + $JSON.stringify(this.attributes);
   },
 
   dispatchEventAtCapturing_: function(event, path) {
@@ -380,9 +219,9 @@ AutomationNodeImpl.prototype = {
       try {
         listeners[i].callback(event);
       } catch (e) {
-        logging.WARNING('Error in event handler for ' + event.type +
-                        ' during phase ' + eventPhase + ': ' +
-                        e.message + '\nStack trace: ' + e.stack);
+        console.error('Error in event handler for ' + event.type +
+                      'during phase ' + eventPhase + ': ' +
+                      e.message + '\nStack trace: ' + e.stack);
       }
     }
   },
@@ -473,14 +312,17 @@ AutomationNodeImpl.prototype = {
     }
     if ('attributes' in params) {
       for (var attribute in params.attributes) {
+        if (!(attribute in this.attributesInternal))
+          return false;
+
         var attrValue = params.attributes[attribute];
         if (typeof attrValue != 'object') {
-          if (this[attribute] !== attrValue)
+          if (this.attributesInternal[attribute] !== attrValue)
             return false;
         } else if (attrValue instanceof RegExp) {
-          if (typeof this[attribute] != 'string')
+          if (typeof this.attributesInternal[attribute] != 'string')
             return false;
-          if (!attrValue.test(this[attribute]))
+          if (!attrValue.test(this.attributesInternal[attribute]))
             return false;
         } else {
           // TODO(aboxhall): handle intlist case.
@@ -492,196 +334,171 @@ AutomationNodeImpl.prototype = {
   }
 };
 
-var stringAttributes = [
-    'accessKey',
-    'action',
-    'ariaInvalidValue',
-    'autoComplete',
-    'containerLiveRelevant',
-    'containerLiveStatus',
-    'description',
-    'display',
-    'docDoctype',
-    'docMimetype',
-    'docTitle',
-    'docUrl',
-    'dropeffect',
-    'help',
-    'htmlTag',
-    'liveRelevant',
-    'liveStatus',
-    'name',
-    'placeholder',
-    'shortcut',
-    'textInputType',
-    'url',
-    'value'];
+// Maps an attribute to its default value in an invalidated node.
+// These attributes are taken directly from the Automation idl.
+var AutomationAttributeDefaults = {
+  'id': -1,
+  'role': '',
+  'state': {},
+  'location': { left: 0, top: 0, width: 0, height: 0 }
+};
 
-var boolAttributes = [
-    'ariaReadonly',
-    'buttonMixed',
-    'canSetValue',
-    'canvasHasFallback',
-    'containerLiveAtomic',
-    'containerLiveBusy',
-    'docLoaded',
-    'grabbed',
-    'isAxTreeHost',
-    'liveAtomic',
-    'liveBusy',
-    'updateLocationOnly'];
 
-var intAttributes = [
-    'backgroundColor',
-    'color',
-    'colorValue',
-    'hierarchicalLevel',
-    'invalidState',
-    'posInSet',
-    'scrollX',
-    'scrollXMax',
-    'scrollXMin',
-    'scrollY',
-    'scrollYMax',
-    'scrollYMin',
-    'setSize',
-    'sortDirection',
-    'tableCellColumnIndex',
-    'tableCellColumnSpan',
-    'tableCellRowIndex',
-    'tableCellRowSpan',
-    'tableColumnCount',
-    'tableColumnIndex',
-    'tableRowCount',
-    'tableRowIndex',
-    'textDirection',
-    'textSelEnd',
-    'textSelStart',
-    'textStyle'];
+var AutomationAttributeTypes = [
+  'boolAttributes',
+  'floatAttributes',
+  'htmlAttributes',
+  'intAttributes',
+  'intlistAttributes',
+  'stringAttributes'
+];
 
-var nodeRefAttributes = [
-    ['activedescendantId', 'activedescendant'],
-    ['tableColumnHeaderId', 'tableColumnHeader'],
-    ['tableHeaderId', 'tableHeader'],
-    ['tableRowHeaderId', 'tableRowHeader'],
-    ['titleUiElement', 'titleUIElement']];
+/**
+ * Maps an attribute name to another attribute who's value is an id or an array
+ * of ids referencing an AutomationNode.
+ * @param {!Object<string>}
+ * @const
+ */
+var ATTRIBUTE_NAME_TO_ID_ATTRIBUTE = {
+  'aria-activedescendant': 'activedescendantId',
+  'aria-controls': 'controlsIds',
+  'aria-describedby': 'describedbyIds',
+  'aria-flowto': 'flowtoIds',
+  'aria-labelledby': 'labelledbyIds',
+  'aria-owns': 'ownsIds'
+};
 
-var intListAttributes = [
-    'characterOffsets',
-    'lineBreaks',
-    'wordEnds',
-    'wordStarts'];
+/**
+ * A set of attributes ignored in the automation API.
+ * @param {!Object<boolean>}
+ * @const
+ */
+var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,
+                           'childTreeId': true,
+                           'controlsIds': true,
+                           'describedbyIds': true,
+                           'flowtoIds': true,
+                           'labelledbyIds': true,
+                           'ownsIds': true
+};
 
-var nodeRefListAttributes = [
-    ['cellIds', 'cells'],
-    ['controlsIds', 'controls'],
-    ['describedbyIds', 'describedBy'],
-    ['flowtoIds', 'flowTo'],
-    ['labelledbyIds', 'labelledBy'],
-    ['uniqueCellIds', 'uniqueCells']];
+function defaultStringAttribute(opt_defaultVal) {
+  return { default: undefined, reflectFrom: 'stringAttributes' };
+}
 
-var floatAttributes = [
-    'docLoadingProgress',
-    'valueForRange',
-    'minValueForRange',
-    'maxValueForRange',
-    'fontSize'];
+function defaultIntAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : 0;
+  return { default: defaultVal, reflectFrom: 'intAttributes' };
+}
 
-var htmlAttributes = [
-    ['type', 'inputType']];
+function defaultFloatAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : 0;
+  return { default: defaultVal, reflectFrom: 'floatAttributes' };
+}
 
-var publicAttributes = [];
+function defaultBoolAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : false;
+  return { default: defaultVal, reflectFrom: 'boolAttributes' };
+}
 
-stringAttributes.forEach(function (attributeName) {
-  publicAttributes.push(attributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, attributeName, {
-    get: function() {
-      return GetStringAttribute(this.treeID, this.id, attributeName);
-    }
-  });
-});
+function defaultHtmlAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : '';
+  return { default: defaultVal, reflectFrom: 'htmlAttributes' };
+}
 
-boolAttributes.forEach(function (attributeName) {
-  publicAttributes.push(attributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, attributeName, {
-    get: function() {
-      return GetBoolAttribute(this.treeID, this.id, attributeName);
-    }
-  });
-});
+function defaultIntListAttribute(opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : [];
+  return { default: defaultVal, reflectFrom: 'intlistAttributes' };
+}
 
-intAttributes.forEach(function (attributeName) {
-  publicAttributes.push(attributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, attributeName, {
-    get: function() {
-      return GetIntAttribute(this.treeID, this.id, attributeName);
-    }
-  });
-});
+function defaultNodeRefAttribute(idAttribute, opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : null;
+  return { default: defaultVal,
+           idFrom: 'intAttributes',
+           idAttribute: idAttribute,
+           isRef: true };
+}
 
-nodeRefAttributes.forEach(function (params) {
-  var srcAttributeName = params[0];
-  var dstAttributeName = params[1];
-  publicAttributes.push(dstAttributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, dstAttributeName, {
-    get: function() {
-      var id = GetIntAttribute(this.treeID, this.id, srcAttributeName);
-      if (id)
-        return this.rootImpl.get(id);
-      else
-        return undefined;
-    }
-  });
-});
+function defaultNodeRefListAttribute(idAttribute, opt_defaultVal) {
+  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : [];
+  return { default: [],
+           idFrom: 'intlistAttributes',
+           idAttribute: idAttribute,
+           isRef: true };
+}
 
-intListAttributes.forEach(function (attributeName) {
-  publicAttributes.push(attributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, attributeName, {
-    get: function() {
-      return GetIntListAttribute(this.treeID, this.id, attributeName);
-    }
-  });
-});
+// Maps an attribute to its default value in an invalidated node.
+// These attributes are taken directly from the Automation idl.
+var DefaultMixinAttributes = {
+  description: defaultStringAttribute(),
+  help: defaultStringAttribute(),
+  name: defaultStringAttribute(),
+  value: defaultStringAttribute(),
+  htmlTag: defaultStringAttribute(),
+  hierarchicalLevel: defaultIntAttribute(),
+  controls: defaultNodeRefListAttribute('controlsIds'),
+  describedby: defaultNodeRefListAttribute('describedbyIds'),
+  flowto: defaultNodeRefListAttribute('flowtoIds'),
+  labelledby: defaultNodeRefListAttribute('labelledbyIds'),
+  owns: defaultNodeRefListAttribute('ownsIds'),
+  wordStarts: defaultIntListAttribute(),
+  wordEnds: defaultIntListAttribute()
+};
 
-nodeRefListAttributes.forEach(function (params) {
-  var srcAttributeName = params[0];
-  var dstAttributeName = params[1];
-  publicAttributes.push(dstAttributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, dstAttributeName, {
-    get: function() {
-      var ids = GetIntListAttribute(this.treeID, this.id, srcAttributeName);
-      if (!ids)
-        return undefined;
-      var result = [];
-      for (var i = 0; i < ids.length; ++i) {
-        var node = this.rootImpl.get(ids[i]);
-        if (node)
-          result.push(node);
-      }
-      return result;
-    }
-  });
-});
+var ActiveDescendantMixinAttribute = {
+  activedescendant: defaultNodeRefAttribute('activedescendantId')
+};
 
-floatAttributes.forEach(function (attributeName) {
-  publicAttributes.push(attributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, attributeName, {
-    get: function() {
-      return GetFloatAttribute(this.treeID, this.id, attributeName);
-    }
-  });
-});
+var LinkMixinAttributes = {
+  url: defaultStringAttribute()
+};
 
-htmlAttributes.forEach(function (params) {
-  var srcAttributeName = params[0];
-  var dstAttributeName = params[1];
-  publicAttributes.push(dstAttributeName);
-  Object.defineProperty(AutomationNodeImpl.prototype, dstAttributeName, {
-    get: function() {
-      return GetHtmlAttribute(this.treeID, this.id, srcAttributeName);
-    }
-  });
-});
+var DocumentMixinAttributes = {
+  docUrl: defaultStringAttribute(),
+  docTitle: defaultStringAttribute(),
+  docLoaded: defaultStringAttribute(),
+  docLoadingProgress: defaultFloatAttribute()
+};
+
+var ScrollableMixinAttributes = {
+  scrollX: defaultIntAttribute(),
+  scrollXMin: defaultIntAttribute(),
+  scrollXMax: defaultIntAttribute(),
+  scrollY: defaultIntAttribute(),
+  scrollYMin: defaultIntAttribute(),
+  scrollYMax: defaultIntAttribute()
+};
+
+var EditableTextMixinAttributes = {
+  textSelStart: defaultIntAttribute(-1),
+  textSelEnd: defaultIntAttribute(-1),
+  type: defaultHtmlAttribute()
+};
+
+var RangeMixinAttributes = {
+  valueForRange: defaultFloatAttribute(),
+  minValueForRange: defaultFloatAttribute(),
+  maxValueForRange: defaultFloatAttribute()
+};
+
+var TableMixinAttributes = {
+  tableRowCount: defaultIntAttribute(),
+  tableColumnCount: defaultIntAttribute()
+};
+
+var TableCellMixinAttributes = {
+  tableCellColumnIndex: defaultIntAttribute(),
+  tableCellColumnSpan: defaultIntAttribute(1),
+  tableCellRowIndex: defaultIntAttribute(),
+  tableCellRowSpan: defaultIntAttribute(1)
+};
+
+var LiveRegionMixinAttributes = {
+  containerLiveAtomic: defaultBoolAttribute(),
+  containerLiveBusy: defaultBoolAttribute(),
+  containerLiveRelevant: defaultStringAttribute(),
+  containerLiveStatus: defaultStringAttribute(),
+};
 
 /**
  * AutomationRootNode.
@@ -706,88 +523,107 @@ function AutomationRootNodeImpl(treeID) {
   this.axNodeDataCache_ = {};
 }
 
-AutomationRootNodeImpl.idToAutomationRootNode_ = {};
-
-AutomationRootNodeImpl.get = function(treeID) {
-  var result = AutomationRootNodeImpl.idToAutomationRootNode_[treeID];
-  return result || undefined;
-}
-
-AutomationRootNodeImpl.getOrCreate = function(treeID) {
-  if (AutomationRootNodeImpl.idToAutomationRootNode_[treeID])
-    return AutomationRootNodeImpl.idToAutomationRootNode_[treeID];
-  var result = new AutomationRootNode(treeID);
-  AutomationRootNodeImpl.idToAutomationRootNode_[treeID] = result;
-  return result;
-}
-
-AutomationRootNodeImpl.destroy = function(treeID) {
-  delete AutomationRootNodeImpl.idToAutomationRootNode_[treeID];
-}
-
 AutomationRootNodeImpl.prototype = {
   __proto__: AutomationNodeImpl.prototype,
 
-  /**
-   * @type {boolean}
-   */
   isRootNode: true,
-
-  /**
-   * @type {number}
-   */
   treeID: -1,
-
-  /**
-   * The parent of this node from a different tree.
-   * @type {?AutomationNode}
-   * @private
-   */
-  hostNode_: null,
-
-  /**
-   * A map from id to AutomationNode.
-   * @type {Object.<number, AutomationNode>}
-   * @private
-   */
-  axNodeDataCache_: null,
-
-  get id() {
-    return GetRootID(this.treeID);
-  },
 
   get: function(id) {
     if (id == undefined)
       return undefined;
 
-    if (id == this.id)
-      return this.wrapper;
-
-    var obj = this.axNodeDataCache_[id];
-    if (obj)
-      return obj;
-
-    obj = new AutomationNode(this);
-    privates(obj).impl.treeID = this.treeID;
-    privates(obj).impl.id = id;
-    this.axNodeDataCache_[id] = obj;
-
-    return obj;
+    return this.axNodeDataCache_[id];
   },
 
-  remove: function(id) {
-    delete this.axNodeDataCache_[id];
+  unserialize: function(update) {
+    var updateState = { pendingNodes: {}, newNodes: {} };
+    var oldRootId = this.id;
+
+    if (update.nodeIdToClear < 0) {
+        logging.WARNING('Bad nodeIdToClear: ' + update.nodeIdToClear);
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
+    } else if (update.nodeIdToClear > 0) {
+      var nodeToClear = this.axNodeDataCache_[update.nodeIdToClear];
+      if (!nodeToClear) {
+        logging.WARNING('Bad nodeIdToClear: ' + update.nodeIdToClear +
+                        ' (not in cache)');
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
+      }
+      if (nodeToClear === this.wrapper) {
+        this.invalidate_(nodeToClear);
+      } else {
+        var children = nodeToClear.children;
+        for (var i = 0; i < children.length; i++)
+          this.invalidate_(children[i]);
+        var nodeToClearImpl = privates(nodeToClear).impl;
+        nodeToClearImpl.childIds = []
+        updateState.pendingNodes[nodeToClearImpl.id] = nodeToClear;
+      }
+    }
+
+    for (var i = 0; i < update.nodes.length; i++) {
+      if (!this.updateNode_(update.nodes[i], updateState))
+        return false;
+    }
+
+    if (Object.keys(updateState.pendingNodes).length > 0) {
+      logging.WARNING('Nodes left pending by the update: ' +
+          $JSON.stringify(updateState.pendingNodes));
+      lastError.set('automation',
+                    'Bad update received on automation tree',
+                    null,
+                    chrome);
+      return false;
+    }
+
+    // Notify tree change observers of new nodes.
+    // TODO(dmazzoni): Notify tree change observers of changed nodes,
+    // and handle subtreeCreated and nodeCreated properly.
+    var observers = automationUtil.treeChangeObservers;
+    if (observers.length > 0) {
+      for (var nodeId in updateState.newNodes) {
+        var node = updateState.newNodes[nodeId];
+        var treeChange =
+            {target: node, type: schema.TreeChangeType.nodeCreated};
+        for (var i = 0; i < observers.length; i++) {
+          try {
+            observers[i](treeChange);
+          } catch (e) {
+            console.error('Error in tree change observer for ' +
+                treeChange.type + ': ' + e.message +
+                '\nStack trace: ' + e.stack);
+          }
+        }
+      }
+    }
+
+    return true;
   },
 
   destroy: function() {
-    this.dispatchEvent(schema.EventType.destroyed);
-  },
+    if (this.hostTree)
+      this.hostTree.childTree = undefined;
+    this.hostTree = undefined;
 
-  setHostNode(hostNode) {
-    this.hostNode_ = hostNode;
+    this.dispatchEvent(schema.EventType.destroyed);
+    this.invalidate_(this.wrapper);
   },
 
   onAccessibilityEvent: function(eventParams) {
+    if (!this.unserialize(eventParams.update)) {
+      logging.WARNING('unserialization failed');
+      return false;
+    }
+
     var targetNode = this.get(eventParams.targetID);
     if (targetNode) {
       var targetNodeImpl = privates(targetNode).impl;
@@ -815,7 +651,372 @@ AutomationRootNodeImpl.prototype = {
     }
     return toStringInternal(this, 0);
   },
+
+  invalidate_: function(node) {
+    if (!node)
+      return;
+
+    // Notify tree change observers of the removed node.
+    var observers = automationUtil.treeChangeObservers;
+    if (observers.length > 0) {
+      var treeChange = {target: node, type: schema.TreeChangeType.nodeRemoved};
+      for (var i = 0; i < observers.length; i++) {
+        try {
+          observers[i](treeChange);
+        } catch (e) {
+          console.error('Error in tree change observer for ' + treeChange.type +
+              ': ' + e.message + '\nStack trace: ' + e.stack);
+        }
+      }
+    }
+
+    var children = node.children;
+
+    for (var i = 0, child; child = children[i]; i++) {
+      // Do not invalidate into subrooted nodes.
+      // TODO(dtseng): Revisit logic once out of proc iframes land.
+      if (child.root != node.root)
+        continue;
+      this.invalidate_(child);
+    }
+
+    // Retrieve the internal AutomationNodeImpl instance for this node.
+    // This object is not accessible outside of bindings code, but we can access
+    // it here.
+    var nodeImpl = privates(node).impl;
+    var id = nodeImpl.id;
+    for (var key in AutomationAttributeDefaults) {
+      nodeImpl[key] = AutomationAttributeDefaults[key];
+    }
+
+    nodeImpl.attributesInternal = {};
+    for (var key in DefaultMixinAttributes) {
+      var mixinAttribute = DefaultMixinAttributes[key];
+      if (!mixinAttribute.isRef)
+        nodeImpl.attributesInternal[key] = mixinAttribute.default;
+    }
+    nodeImpl.childIds = [];
+    nodeImpl.id = id;
+    delete this.axNodeDataCache_[id];
+  },
+
+  deleteOldChildren_: function(node, newChildIds) {
+    // Create a set of child ids in |src| for fast lookup, and return false
+    // if a duplicate is found;
+    var newChildIdSet = {};
+    for (var i = 0; i < newChildIds.length; i++) {
+      var childId = newChildIds[i];
+      if (newChildIdSet[childId]) {
+        logging.WARNING('Node ' + privates(node).impl.id +
+                        ' has duplicate child id ' + childId);
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
+      }
+      newChildIdSet[newChildIds[i]] = true;
+    }
+
+    // Delete the old children.
+    var nodeImpl = privates(node).impl;
+    var oldChildIds = nodeImpl.childIds;
+    for (var i = 0; i < oldChildIds.length;) {
+      var oldId = oldChildIds[i];
+      if (!newChildIdSet[oldId]) {
+        this.invalidate_(this.axNodeDataCache_[oldId]);
+        oldChildIds.splice(i, 1);
+      } else {
+        i++;
+      }
+    }
+    nodeImpl.childIds = oldChildIds;
+
+    return true;
+  },
+
+  createNewChildren_: function(node, newChildIds, updateState) {
+    logging.CHECK(node);
+    var success = true;
+
+    for (var i = 0; i < newChildIds.length; i++) {
+      var childId = newChildIds[i];
+      var childNode = this.axNodeDataCache_[childId];
+      if (childNode) {
+        if (childNode.parent != node) {
+          var parentId = -1;
+          if (childNode.parent) {
+            var parentImpl = privates(childNode.parent).impl;
+            parentId = parentImpl.id;
+          }
+          // This is a serious error - nodes should never be reparented.
+          // If this case occurs, continue so this node isn't left in an
+          // inconsistent state, but return failure at the end.
+          logging.WARNING('Node ' + childId + ' reparented from ' +
+                          parentId + ' to ' + privates(node).impl.id);
+          lastError.set('automation',
+                        'Bad update received on automation tree',
+                        null,
+                        chrome);
+          success = false;
+          continue;
+        }
+      } else {
+        childNode = new AutomationNode(this);
+        this.axNodeDataCache_[childId] = childNode;
+        privates(childNode).impl.id = childId;
+        updateState.pendingNodes[childId] = childNode;
+        updateState.newNodes[childId] = childNode;
+      }
+      privates(childNode).impl.indexInParent = i;
+      privates(childNode).impl.parentID = privates(node).impl.id;
+    }
+
+    return success;
+  },
+
+  setData_: function(node, nodeData) {
+    var nodeImpl = privates(node).impl;
+
+    // TODO(dtseng): Make into set listing all hosting node roles.
+    if (nodeData.role == schema.RoleType.webView) {
+      if (nodeImpl.childTreeID !== nodeData.intAttributes.childTreeId)
+        nodeImpl.pendingChildFrame = true;
+
+      if (nodeImpl.pendingChildFrame) {
+        nodeImpl.childTreeID = nodeData.intAttributes.childTreeId;
+        automationUtil.storeTreeCallback(nodeImpl.childTreeID, function(root) {
+          nodeImpl.pendingChildFrame = false;
+          nodeImpl.childTree = root;
+          privates(root).impl.hostTree = node;
+          if (root.attributes.docLoadingProgress == 1)
+            privates(root).impl.dispatchEvent(schema.EventType.loadComplete);
+          nodeImpl.dispatchEvent(schema.EventType.childrenChanged);
+        });
+        automationInternal.enableFrame(nodeImpl.childTreeID);
+      }
+    }
+    for (var key in AutomationAttributeDefaults) {
+      if (key in nodeData)
+        nodeImpl[key] = nodeData[key];
+      else
+        nodeImpl[key] = AutomationAttributeDefaults[key];
+    }
+
+    // Set all basic attributes.
+    this.mixinAttributes_(nodeImpl, DefaultMixinAttributes, nodeData);
+
+    // If this is a rootWebArea or webArea, set document attributes.
+    if (nodeData.role == schema.RoleType.rootWebArea ||
+        nodeData.role == schema.RoleType.webArea) {
+      this.mixinAttributes_(nodeImpl, DocumentMixinAttributes, nodeData);
+    }
+
+    // If this is a scrollable area, set scrollable attributes.
+    for (var scrollAttr in ScrollableMixinAttributes) {
+      var spec = ScrollableMixinAttributes[scrollAttr];
+      if (this.findAttribute_(scrollAttr, spec, nodeData) !== undefined) {
+        this.mixinAttributes_(nodeImpl, ScrollableMixinAttributes, nodeData);
+        break;
+      }
+    }
+
+    // If this is inside a live region, set live region mixins.
+    var attr = 'containerLiveStatus';
+    var spec = LiveRegionMixinAttributes[attr];
+    if (this.findAttribute_(attr, spec, nodeData) !== undefined) {
+      this.mixinAttributes_(nodeImpl, LiveRegionMixinAttributes, nodeData);
+    }
+
+    // If this is a link, set link attributes
+    if (nodeData.role == 'link') {
+      this.mixinAttributes_(nodeImpl, LinkMixinAttributes, nodeData);
+    }
+
+    // If this is an editable text area, set editable text attributes.
+    if (nodeData.role == schema.RoleType.textField ||
+        nodeData.role == schema.RoleType.spinButton) {
+      this.mixinAttributes_(nodeImpl, EditableTextMixinAttributes, nodeData);
+    }
+
+    // If this is a range type, set range attributes.
+    if (nodeData.role == schema.RoleType.progressIndicator ||
+        nodeData.role == schema.RoleType.scrollBar ||
+        nodeData.role == schema.RoleType.slider ||
+        nodeData.role == schema.RoleType.spinButton) {
+      this.mixinAttributes_(nodeImpl, RangeMixinAttributes, nodeData);
+    }
+
+    // If this is a table, set table attributes.
+    if (nodeData.role == schema.RoleType.table) {
+      this.mixinAttributes_(nodeImpl, TableMixinAttributes, nodeData);
+    }
+
+    // If this is a table cell, set table cell attributes.
+    if (nodeData.role == schema.RoleType.cell) {
+      this.mixinAttributes_(nodeImpl, TableCellMixinAttributes, nodeData);
+    }
+
+    // If this has an active descendant, expose it.
+    if ('intAttributes' in nodeData &&
+        'activedescendantId' in nodeData.intAttributes) {
+      this.mixinAttributes_(nodeImpl, ActiveDescendantMixinAttribute, nodeData);
+    }
+
+    for (var i = 0; i < AutomationAttributeTypes.length; i++) {
+      var attributeType = AutomationAttributeTypes[i];
+      for (var attributeName in nodeData[attributeType]) {
+        nodeImpl.attributesInternal[attributeName] =
+            nodeData[attributeType][attributeName];
+        if (ATTRIBUTE_BLACKLIST.hasOwnProperty(attributeName) ||
+            nodeImpl.attributes.hasOwnProperty(attributeName)) {
+          continue;
+        } else if (
+          ATTRIBUTE_NAME_TO_ID_ATTRIBUTE.hasOwnProperty(attributeName)) {
+          this.defineReadonlyAttribute_(nodeImpl,
+                                        nodeImpl.attributes,
+                                        attributeName,
+                                        true);
+        } else {
+          this.defineReadonlyAttribute_(nodeImpl,
+                                        nodeImpl.attributes,
+                                        attributeName);
+        }
+      }
+    }
+  },
+
+  mixinAttributes_: function(nodeImpl, attributes, nodeData) {
+    for (var attribute in attributes) {
+      var spec = attributes[attribute];
+      if (spec.isRef)
+        this.mixinRelationshipAttribute_(nodeImpl, attribute, spec, nodeData);
+      else
+        this.mixinAttribute_(nodeImpl, attribute, spec, nodeData);
+    }
+  },
+
+  mixinAttribute_: function(nodeImpl, attribute, spec, nodeData) {
+    var value = this.findAttribute_(attribute, spec, nodeData);
+    if (value === undefined)
+      value = spec.default;
+    nodeImpl.attributesInternal[attribute] = value;
+    this.defineReadonlyAttribute_(nodeImpl, nodeImpl, attribute);
+  },
+
+  mixinRelationshipAttribute_: function(nodeImpl, attribute, spec, nodeData) {
+    var idAttribute = spec.idAttribute;
+    var idValue = spec.default;
+    if (spec.idFrom in nodeData) {
+      idValue = idAttribute in nodeData[spec.idFrom]
+          ? nodeData[spec.idFrom][idAttribute] : idValue;
+    }
+
+    // Ok to define a list attribute with an empty list, but not a
+    // single ref with a null ID.
+    if (idValue === null)
+      return;
+
+    nodeImpl.attributesInternal[idAttribute] = idValue;
+    this.defineReadonlyAttribute_(
+      nodeImpl, nodeImpl, attribute, true, idAttribute);
+  },
+
+  findAttribute_: function(attribute, spec, nodeData) {
+    if (!('reflectFrom' in spec))
+      return;
+    var attributeGroup = spec.reflectFrom;
+    if (!(attributeGroup in nodeData))
+      return;
+
+    return nodeData[attributeGroup][attribute];
+  },
+
+  defineReadonlyAttribute_: function(
+      node, object, attributeName, opt_isIDRef, opt_idAttribute) {
+    if (attributeName in object)
+      return;
+
+    if (opt_isIDRef) {
+      $Object.defineProperty(object, attributeName, {
+        enumerable: true,
+        get: function() {
+          var idAttribute = opt_idAttribute ||
+                            ATTRIBUTE_NAME_TO_ID_ATTRIBUTE[attributeName];
+          var idValue = node.attributesInternal[idAttribute];
+          if (Array.isArray(idValue)) {
+            return idValue.map(function(current) {
+              return node.rootImpl.get(current);
+            }, this);
+          }
+          return node.rootImpl.get(idValue);
+        }.bind(this),
+      });
+    } else {
+      $Object.defineProperty(object, attributeName, {
+        enumerable: true,
+        get: function() {
+          return node.attributesInternal[attributeName];
+        }.bind(this),
+      });
+    }
+
+    if (object instanceof AutomationNodeImpl) {
+      // Also expose attribute publicly on the wrapper.
+      $Object.defineProperty(object.wrapper, attributeName, {
+        enumerable: true,
+        get: function() {
+          return object[attributeName];
+        },
+      });
+
+    }
+  },
+
+  updateNode_: function(nodeData, updateState) {
+    var node = this.axNodeDataCache_[nodeData.id];
+    var didUpdateRoot = false;
+    if (node) {
+      delete updateState.pendingNodes[privates(node).impl.id];
+    } else {
+      if (nodeData.role != schema.RoleType.rootWebArea &&
+          nodeData.role != schema.RoleType.desktop) {
+        logging.WARNING(String(nodeData.id) +
+                     ' is not in the cache and not the new root.');
+        lastError.set('automation',
+                      'Bad update received on automation tree',
+                      null,
+                      chrome);
+        return false;
+      }
+      // |this| is an AutomationRootNodeImpl; retrieve the
+      // AutomationRootNode instance instead.
+      node = this.wrapper;
+      didUpdateRoot = true;
+      updateState.newNodes[this.id] = this.wrapper;
+    }
+    this.setData_(node, nodeData);
+
+    // TODO(aboxhall): send onChanged event?
+    logging.CHECK(node);
+    if (!this.deleteOldChildren_(node, nodeData.childIds)) {
+      if (didUpdateRoot) {
+        this.invalidate_(this.wrapper);
+      }
+      return false;
+    }
+    var nodeImpl = privates(node).impl;
+
+    var success = this.createNewChildren_(node,
+                                          nodeData.childIds,
+                                          updateState);
+    nodeImpl.childIds = nodeData.childIds;
+    this.axNodeDataCache_[nodeImpl.id] = node;
+
+    return success;
+  }
 };
+
 
 var AutomationNode = utils.expose('AutomationNode',
                                   AutomationNodeImpl,
@@ -831,8 +1032,7 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'removeEventListener',
                                                 'domQuerySelector',
                                                 'toString' ],
-                                    readonly: publicAttributes.concat(
-                                              ['parent',
+                                    readonly: ['parent',
                                                'firstChild',
                                                'lastChild',
                                                'children',
@@ -842,24 +1042,13 @@ var AutomationNode = utils.expose('AutomationNode',
                                                'role',
                                                'state',
                                                'location',
+                                               'attributes',
                                                'indexInParent',
-                                               'root']) });
+                                               'root'] });
 
 var AutomationRootNode = utils.expose('AutomationRootNode',
                                       AutomationRootNodeImpl,
                                       { superclass: AutomationNode });
-
-AutomationRootNode.get = function(treeID) {
-  return AutomationRootNodeImpl.get(treeID);
-}
-
-AutomationRootNode.getOrCreate = function(treeID) {
-  return AutomationRootNodeImpl.getOrCreate(treeID);
-}
-
-AutomationRootNode.destroy = function(treeID) {
-  AutomationRootNodeImpl.destroy(treeID);
-}
 
 exports.AutomationNode = AutomationNode;
 exports.AutomationRootNode = AutomationRootNode;

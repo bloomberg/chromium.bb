@@ -325,8 +325,8 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
   EXPECT_TRUE(tree.Unserialize(update));
 
   ASSERT_EQ(2U, fake_delegate.deleted_ids().size());
-  EXPECT_EQ(1, fake_delegate.deleted_ids()[0]);
-  EXPECT_EQ(2, fake_delegate.deleted_ids()[1]);
+  EXPECT_EQ(2, fake_delegate.deleted_ids()[0]);
+  EXPECT_EQ(1, fake_delegate.deleted_ids()[1]);
 
   ASSERT_EQ(1U, fake_delegate.subtree_deleted_ids().size());
   EXPECT_EQ(1, fake_delegate.subtree_deleted_ids()[0]);

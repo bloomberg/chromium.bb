@@ -46,6 +46,9 @@ class LoggingNativeHandler : public ObjectBackedNativeHandler {
   void ParseArgs(const v8::FunctionCallbackInfo<v8::Value>& args,
                  bool* check_value,
                  std::string* error_message);
+
+  std::string ToStringOrDefault(const v8::Local<v8::String>& v8_string,
+                                const std::string& dflt);
 };
 
 }  // namespace extensions

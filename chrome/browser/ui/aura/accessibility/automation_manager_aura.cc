@@ -8,9 +8,8 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
+#include "chrome/browser/extensions/api/automation_internal/automation_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/aura/window.h"
@@ -20,7 +19,6 @@
 #include "ui/views/widget/widget.h"
 
 using content::BrowserContext;
-using extensions::AutomationEventRouter;
 
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
@@ -131,11 +129,18 @@ void AutomationManagerAura::ResetSerializer() {
 void AutomationManagerAura::SendEvent(BrowserContext* context,
                                       views::AXAuraObjWrapper* aura_obj,
                                       ui::AXEvent event_type) {
-  ExtensionMsg_AccessibilityEventParams params;
-  current_tree_serializer_->SerializeChanges(aura_obj, &params.update);
-  params.tree_id = 0;
-  params.id = aura_obj->GetID();
-  params.event_type = event_type;
-  AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvent(params);
+  ui::AXTreeUpdate update;
+  current_tree_serializer_->SerializeChanges(aura_obj, &update);
+
+  // Route this event to special process/routing ids recognized by the
+  // Automation API as the desktop tree.
+  // TODO(dtseng): Would idealy define these special desktop constants in idl.
+  content::AXEventNotificationDetails detail(
+      update.node_id_to_clear, update.nodes, event_type, aura_obj->GetID(),
+      0, /* process_id */
+      0 /* routing_id */);
+  std::vector<content::AXEventNotificationDetails> details;
+  details.push_back(detail);
+  extensions::automation_util::DispatchAccessibilityEventsToAutomation(
+      details, context, gfx::Vector2d());
 }

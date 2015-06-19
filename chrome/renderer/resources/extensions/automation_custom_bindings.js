@@ -16,11 +16,6 @@ var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
 var GetRoutingID = nativeAutomationInternal.GetRoutingID;
 var GetSchemaAdditions = nativeAutomationInternal.GetSchemaAdditions;
-var DestroyAccessibilityTree =
-    nativeAutomationInternal.DestroyAccessibilityTree;
-var GetIntAttribute = nativeAutomationInternal.GetIntAttribute;
-var StartCachingAccessibilityTrees =
-    nativeAutomationInternal.StartCachingAccessibilityTrees;
 var schema = GetSchemaAdditions();
 
 /**
@@ -29,6 +24,7 @@ var schema = GetSchemaAdditions();
 window.automationUtil = function() {};
 
 // TODO(aboxhall): Look into using WeakMap
+var idToAutomationRootNode = {};
 var idToCallback = {};
 
 var DESKTOP_TREE_ID = 0;
@@ -37,7 +33,7 @@ automationUtil.storeTreeCallback = function(id, callback) {
   if (!callback)
     return;
 
-  var targetTree = AutomationRootNode.get(id);
+  var targetTree = idToAutomationRootNode[id];
   if (!targetTree) {
     // If we haven't cached the tree, hold the callback until the tree is
     // populated by the initial onAccessibilityEvent call.
@@ -62,7 +58,6 @@ automation.registerCustomHook(function(bindingsAPI) {
   // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
   apiFunctions.setHandleRequest('getTree', function getTree(tabID, callback) {
     var routingID = GetRoutingID();
-    StartCachingAccessibilityTrees();
 
     // enableTab() ensures the renderer for the active or specified tab has
     // accessibility enabled, and fetches its ax tree id to use as
@@ -84,8 +79,8 @@ automation.registerCustomHook(function(bindingsAPI) {
 
   var desktopTree = null;
   apiFunctions.setHandleRequest('getDesktop', function(callback) {
-    StartCachingAccessibilityTrees();
-    desktopTree = AutomationRootNode.get(DESKTOP_TREE_ID);
+    desktopTree =
+        idToAutomationRootNode[DESKTOP_TREE_ID];
     if (!desktopTree) {
       if (DESKTOP_TREE_ID in idToCallback)
         idToCallback[DESKTOP_TREE_ID].push(callback);
@@ -98,7 +93,8 @@ automation.registerCustomHook(function(bindingsAPI) {
       // scope.
       automationInternal.enableDesktop(routingID, function() {
         if (lastError.hasError(chrome)) {
-          AutomationRootNode.destroy(DESKTOP_TREE_ID);
+          delete idToAutomationRootNode[
+              DESKTOP_TREE_ID];
           callback();
           return;
         }
@@ -129,65 +125,19 @@ automation.registerCustomHook(function(bindingsAPI) {
 
 });
 
-automationInternal.onTreeChange.addListener(function(treeID,
-                                                     nodeID,
-                                                     changeType) {
-  var tree = AutomationRootNode.get(treeID);
-  if (!tree)
-    return;
-
-  var node = privates(tree).impl.get(nodeID);
-  if (!node)
-    return;
-
-  if (node.role == 'webView') {
-    // A WebView in the desktop tree has a different AX tree as its child.
-    // When we encounter a WebView with a child AX tree id that we don't
-    // currently have cached, explicitly request that AX tree from the
-    // browser process and set up a callback when it loads to attach that
-    // tree as a child of this node and fire appropriate events.
-    var childTreeID = GetIntAttribute(treeID, nodeID, 'childTreeId');
-    if (!AutomationRootNode.get(childTreeID)) {
-      automationUtil.storeTreeCallback(childTreeID, function(root) {
-        privates(root).impl.setHostNode(node);
-
-        if (root.docLoaded)
-          privates(root).impl.dispatchEvent(schema.EventType.loadComplete);
-
-        privates(node).impl.dispatchEvent(schema.EventType.childrenChanged);
-      });
-
-      automationInternal.enableFrame(childTreeID);
-    }
-  }
-
-  var treeChange = {target: node, type: changeType};
-
-  // Make a copy of the observers in case one of these callbacks tries
-  // to change the list of observers.
-  var observers = automationUtil.treeChangeObservers.slice();
-  for (var i = 0; i < observers.length; i++) {
-    try {
-      observers[i](treeChange);
-    } catch (e) {
-      logging.WARNING('Error in tree change observer for ' +
-          treeChange.type + ': ' + e.message +
-          '\nStack trace: ' + e.stack);
-    }
-  }
-
-  if (changeType == schema.TreeChangeType.nodeRemoved) {
-    privates(tree).impl.remove(nodeID);
-  }
-});
-
 // Listen to the automationInternal.onAccessibilityEvent event, which is
 // essentially a proxy for the AccessibilityHostMsg_Events IPC from the
 // renderer.
 automationInternal.onAccessibilityEvent.addListener(function(data) {
   var id = data.treeID;
-  var targetTree = AutomationRootNode.getOrCreate(id);
-
+  var targetTree = idToAutomationRootNode[id];
+  if (!targetTree) {
+    // If this is the first time we've gotten data for this tree, it will
+    // contain all of the tree's data, so create a new tree which will be
+    // bootstrapped from |data|.
+    targetTree = new AutomationRootNode(id);
+    idToAutomationRootNode[id] = targetTree;
+  }
   if (!privates(targetTree).impl.onAccessibilityEvent(data))
     return;
 
@@ -199,7 +149,7 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   // attribute or child nodes. If we've got that, wait for the full tree before
   // calling the callback.
   // TODO(dmazzoni): Don't send down placeholder (crbug.com/397553)
-  if (id != DESKTOP_TREE_ID && !targetTree.url &&
+  if (id != DESKTOP_TREE_ID && !targetTree.attributes.url &&
       targetTree.children.length == 0) {
     return;
   }
@@ -208,6 +158,7 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   // have been cached in idToCallback, so call and delete it now that we
   // have the complete tree.
   for (var i = 0; i < idToCallback[id].length; i++) {
+    console.log('calling getTree() callback');
     var callback = idToCallback[id][i];
     callback(targetTree);
   }
@@ -215,17 +166,14 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
 });
 
 automationInternal.onAccessibilityTreeDestroyed.addListener(function(id) {
-  // Destroy the AutomationRootNode.
-  var targetTree = AutomationRootNode.get(id);
+  var targetTree = idToAutomationRootNode[id];
   if (targetTree) {
     privates(targetTree).impl.destroy();
-    AutomationRootNode.destroy(id);
+    delete idToAutomationRootNode[id];
   } else {
     logging.WARNING('no targetTree to destroy');
   }
-
-  // Destroy the native cache of the accessibility tree.
-  DestroyAccessibilityTree(id);
+  delete idToAutomationRootNode[id];
 });
 
 exports.binding = automation.generate();
