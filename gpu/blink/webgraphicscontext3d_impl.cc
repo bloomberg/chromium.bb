@@ -1084,12 +1084,12 @@ DELEGATE_TO_GL_2R(getUniformBlockIndex, GetUniformBlockIndex, WGC3Duint,
                   const WGC3Dchar *, WGC3Duint)
 DELEGATE_TO_GL_4(getUniformIndices, GetUniformIndices, WGC3Duint, WGC3Dsizei,
                  const WGC3Dchar *const*, WGC3Duint *)
-//DELEGATE_TO_GL_3(getUniformuiv, GetUniformuiv, WGC3Duint, WGC3Dint,
-//                 WGC3Duint *)
-//DELEGATE_TO_GL_3(getVertexAttribIiv, GetVertexAttribIiv, WGC3Duint,
-//                 WGC3Denum, WGC3Dint *)
-//DELEGATE_TO_GL_3(getVertexAttribIuiv, GetVertexAttribIuiv, WGC3Duint,
-//                 WGC3Denum, WGC3Duint *)
+DELEGATE_TO_GL_3(getUniformuiv, GetUniformuiv, WGC3Duint, WGC3Dint,
+                 WGC3Duint *)
+DELEGATE_TO_GL_3(getVertexAttribIiv, GetVertexAttribIiv, WGC3Duint,
+                 WGC3Denum, WGC3Dint *)
+DELEGATE_TO_GL_3(getVertexAttribIuiv, GetVertexAttribIuiv, WGC3Duint,
+                 WGC3Denum, WGC3Duint *)
 DELEGATE_TO_GL_3(invalidateFramebuffer, InvalidateFramebuffer, WGC3Denum,
                  WGC3Dsizei, const WGC3Denum *)
 DELEGATE_TO_GL_7(invalidateSubFramebuffer, InvalidateSubFramebuffer, WGC3Denum,
@@ -1101,6 +1101,8 @@ WGC3Dboolean WebGraphicsContext3DImpl::isSync(WGC3Dsync sync) {
 }
 DELEGATE_TO_GL_1R(isTransformFeedback, IsTransformFeedback, WGC3Duint,
                   WGC3Dboolean)
+DELEGATE_TO_GL_4R(mapBufferRange, MapBufferRange, WGC3Denum, WGC3Dintptr,
+                  WGC3Dsizeiptr, WGC3Dbitfield, void*);
 DELEGATE_TO_GL(pauseTransformFeedback, PauseTransformFeedback)
 //DELEGATE_TO_GL_3(programParameteri, ProgramParameteri, WGC3Duint, WGC3Denum,
 //                 WGC3Dint)
@@ -1152,6 +1154,7 @@ DELEGATE_TO_GL_4(uniformMatrix4x2fv, UniformMatrix4x2fv, WGC3Dint, WGC3Dsizei,
                  WGC3Dboolean, const WGC3Dfloat*)
 DELEGATE_TO_GL_4(uniformMatrix4x3fv, UniformMatrix4x3fv, WGC3Dint, WGC3Dsizei,
                  WGC3Dboolean, const WGC3Dfloat*)
+DELEGATE_TO_GL_1R(unmapBuffer, UnmapBuffer, WGC3Denum, WGC3Dboolean);
 DELEGATE_TO_GL_5(vertexAttribI4i, VertexAttribI4i, WGC3Duint, WGC3Dint,
                  WGC3Dint, WGC3Dint, WGC3Dint)
 DELEGATE_TO_GL_2(vertexAttribI4iv, VertexAttribI4iv, WGC3Duint,
