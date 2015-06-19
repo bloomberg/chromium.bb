@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
@@ -191,6 +192,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         getWindow().setBackgroundDrawableResource(R.color.light_background_color);
     }
 
+    @SuppressLint("NewApi")
     @Override
     public void postInflationStartup() {
         super.postInflationStartup();
@@ -561,6 +563,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * This cannot be overridden in order to preserve destruction order.  Override
      * {@link #onDestroyInternal()} instead to perform clean up tasks.
      */
+    @SuppressLint("NewApi")
     @Override
     protected final void onDestroy() {
         if (mReaderModeActivityDelegate != null) mReaderModeActivityDelegate.destroy();
