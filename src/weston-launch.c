@@ -738,10 +738,8 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	wl.child = fork();
-	if (wl.child == -1) {
-		error(1, errno, "fork failed");
-		exit(EXIT_FAILURE);
-	}
+	if (wl.child == -1)
+		error(EXIT_FAILURE, errno, "fork failed");
 
 	if (wl.child == 0)
 		launch_compositor(&wl, argc - optind, argv + optind);
