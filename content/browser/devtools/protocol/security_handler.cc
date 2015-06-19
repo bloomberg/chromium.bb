@@ -4,6 +4,10 @@
 
 #include "content/browser/devtools/protocol/security_handler.h"
 
+#include <string>
+
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
@@ -30,6 +34,18 @@ std::string SecurityStyleToProtocolSecurityState(
     default:
       NOTREACHED();
       return kSecurityStateUnknown;
+  }
+}
+
+void AddExplanations(
+    const std::string& security_style,
+    const std::vector<SecurityStyleExplanation>& explanations_to_add,
+    std::vector<scoped_refptr<SecurityStateExplanation>>* explanations) {
+  for (const auto& it : explanations_to_add) {
+    explanations->push_back(SecurityStateExplanation::Create()
+                                ->set_security_state(security_style)
+                                ->set_summary(it.summary)
+                                ->set_description(it.description));
   }
 }
 
@@ -60,8 +76,18 @@ void SecurityHandler::SecurityStyleChanged(
 
   const std::string security_state =
       SecurityStyleToProtocolSecurityState(security_style);
-  client_->SecurityStateChanged(
-      SecurityStateChangedParams::Create()->set_security_state(security_state));
+
+  std::vector<scoped_refptr<SecurityStateExplanation>> explanations;
+  AddExplanations(kSecurityStateInsecure,
+                  security_style_explanations.broken_explanations,
+                  &explanations);
+  AddExplanations(kSecurityStateWarning,
+                  security_style_explanations.warning_explanations,
+                  &explanations);
+
+  client_->SecurityStateChanged(SecurityStateChangedParams::Create()
+                                    ->set_security_state(security_state)
+                                    ->set_explanations(explanations));
 }
 
 Response SecurityHandler::Enable() {
