@@ -71,6 +71,43 @@ connection_security::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   return level;
 }
 
+scoped_refptr<net::X509Certificate> GetCertForSSLStatus(
+    const content::SSLStatus& ssl) {
+  scoped_refptr<net::X509Certificate> cert;
+  return content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert)
+             ? cert
+             : nullptr;
+}
+
+connection_security::SHA1DeprecationStatus GetSHA1DeprecationStatus(
+    scoped_refptr<net::X509Certificate> cert,
+    const content::SSLStatus& ssl) {
+  if (!cert || !(ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT))
+    return connection_security::NO_DEPRECATED_SHA1;
+
+  // The internal representation of the dates for UI treatment of SHA-1.
+  // See http://crbug.com/401365 for details.
+  static const int64_t kJanuary2017 = INT64_C(13127702400000000);
+  if (cert->valid_expiry() >= base::Time::FromInternalValue(kJanuary2017))
+    return connection_security::DEPRECATED_SHA1_BROKEN;
+  // kJanuary2016 needs to be kept in sync with
+  // ToolbarModelAndroid::IsDeprecatedSHA1Present().
+  static const int64_t kJanuary2016 = INT64_C(13096080000000000);
+  if (cert->valid_expiry() >= base::Time::FromInternalValue(kJanuary2016))
+    return connection_security::DEPRECATED_SHA1_WARNING;
+
+  return connection_security::NO_DEPRECATED_SHA1;
+}
+
+connection_security::MixedContentStatus GetMixedContentStatus(
+    const content::SSLStatus& ssl) {
+  if (ssl.content_status & content::SSLStatus::RAN_INSECURE_CONTENT)
+    return connection_security::RAN_MIXED_CONTENT;
+  if (ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT)
+    return connection_security::DISPLAYED_MIXED_CONTENT;
+  return connection_security::NO_MIXED_CONTENT;
+}
+
 }  // namespace
 
 namespace connection_security {
@@ -113,26 +150,21 @@ SecurityLevel GetSecurityLevelForWebContents(
       if (service && service->UsedPolicyCertificates())
         return SECURITY_POLICY_WARNING;
 #endif
-      scoped_refptr<net::X509Certificate> cert;
-      if (content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert) &&
-          (ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT)) {
-        // The internal representation of the dates for UI treatment of SHA-1.
-        // See http://crbug.com/401365 for details.
-        static const int64_t kJanuary2017 = INT64_C(13127702400000000);
-        // kJanuary2016 needs to be kept in sync with
-        // ToolbarModelAndroid::IsDeprecatedSHA1Present().
-        static const int64_t kJanuary2016 = INT64_C(13096080000000000);
-        if (cert->valid_expiry() >=
-            base::Time::FromInternalValue(kJanuary2017)) {
-          return SECURITY_ERROR;
-        }
-        if (cert->valid_expiry() >=
-            base::Time::FromInternalValue(kJanuary2016)) {
-          return SECURITY_WARNING;
-        }
-      }
-      if (ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT)
+
+      scoped_refptr<net::X509Certificate> cert = GetCertForSSLStatus(ssl);
+      SHA1DeprecationStatus sha1_status = GetSHA1DeprecationStatus(cert, ssl);
+      if (sha1_status == DEPRECATED_SHA1_BROKEN)
+        return SECURITY_ERROR;
+      if (sha1_status == DEPRECATED_SHA1_WARNING)
         return SECURITY_WARNING;
+
+      MixedContentStatus mixed_content_status = GetMixedContentStatus(ssl);
+      // Active mixed content is downgraded to the BROKEN style and
+      // handled above.
+      DCHECK_NE(RAN_MIXED_CONTENT, mixed_content_status);
+      if (mixed_content_status == DISPLAYED_MIXED_CONTENT)
+        return SECURITY_WARNING;
+
       if (net::IsCertStatusError(ssl.cert_status)) {
         DCHECK(net::IsCertStatusMinorError(ssl.cert_status));
         return SECURITY_WARNING;
@@ -153,25 +185,39 @@ SecurityLevel GetSecurityLevelForWebContents(
   }
 }
 
-content::SecurityStyle GetSecurityStyleForWebContents(
-    const content::WebContents* web_contents) {
-  SecurityLevel security_level = GetSecurityLevelForWebContents(web_contents);
-
-  switch (security_level) {
-    case NONE:
-      return content::SECURITY_STYLE_UNAUTHENTICATED;
-    case EV_SECURE:
-    case SECURE:
-      return content::SECURITY_STYLE_AUTHENTICATED;
-    case SECURITY_WARNING:
-    case SECURITY_POLICY_WARNING:
-      return content::SECURITY_STYLE_WARNING;
-    case SECURITY_ERROR:
-      return content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+void GetSecurityInfoForWebContents(const content::WebContents* web_contents,
+                                   SecurityInfo* security_info) {
+  content::NavigationEntry* entry =
+      web_contents ? web_contents->GetController().GetVisibleEntry() : nullptr;
+  if (!entry) {
+    security_info->security_style = content::SECURITY_STYLE_UNKNOWN;
+    return;
   }
 
-  NOTREACHED();
-  return content::SECURITY_STYLE_UNKNOWN;
+  SecurityLevel security_level = GetSecurityLevelForWebContents(web_contents);
+  switch (security_level) {
+    case NONE:
+      security_info->security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
+      break;
+    case EV_SECURE:
+    case SECURE:
+      security_info->security_style = content::SECURITY_STYLE_AUTHENTICATED;
+      break;
+    case SECURITY_WARNING:
+    case SECURITY_POLICY_WARNING:
+      security_info->security_style = content::SECURITY_STYLE_WARNING;
+      break;
+    case SECURITY_ERROR:
+      security_info->security_style =
+          content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+      break;
+  }
+
+  const content::SSLStatus& ssl = entry->GetSSL();
+  scoped_refptr<net::X509Certificate> cert = GetCertForSSLStatus(ssl);
+  security_info->sha1_deprecation_status = GetSHA1DeprecationStatus(cert, ssl);
+  security_info->mixed_content_status = GetMixedContentStatus(ssl);
+  security_info->cert_status = ssl.cert_status;
 }
 
 }  // namespace connection_security

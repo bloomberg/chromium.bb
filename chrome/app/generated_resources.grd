@@ -15661,6 +15661,39 @@ After you create a new supervised user, you can manage their settings at any tim
           Your printer is ready.
         </message>
       </if>
+
+      <!-- Strings describing Chrome security policy for DevTools security panel -->
+      <message name="IDS_BROKEN_SHA1" desc="Summary phrase for a security problem where the site's certificate expires in 2017 or later and contains a SHA1 signature in the chain.">
+        SHA-1 Certificate
+      </message>
+      <message name="IDS_BROKEN_SHA1_DESCRIPTION" desc="Description of a security problem where the site's certificate expires in 2017 or later and contains a SHA1 signature in the chain.">
+        The certificate for this site expires in 2017 or later, and the certificate chain contains a certificate signed using SHA-1.
+      </message>
+      <message name="IDS_WARNING_SHA1" desc="Summary phrase for a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain.">
+        SHA-1 Certificate
+      </message>
+      <message name="IDS_WARNING_SHA1_DESCRIPTION" desc="Description of a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain.">
+        The certificate for this site expires in 2016, and the certificate chain contains a certificate signed using SHA-1.
+      </message>
+      <message name="IDS_PASSIVE_MIXED_CONTENT" desc="Summary phrase of a security problem where the site displayed passive mixed content.">
+        Mixed Content
+      </message>
+      <message name="IDS_PASSIVE_MIXED_CONTENT_DESCRIPTION" desc="Description of a security problem where the site displayed passive mixed content.">
+        The site includes HTTP resources.
+      </message>
+      <message name="IDS_ACTIVE_MIXED_CONTENT" desc="Summary phrase for a security problem where site ran active mixed content.">
+        Active Mixed Content
+      </message>
+      <message name="IDS_ACTIVE_MIXED_CONTENT_DESCRIPTION" desc="Description of a security problem where site ran active mixed content.">
+        You have recently allowed insecure content (such as scripts or iframes) to run on this site.
+      </message>
+      <message name="IDS_CERTIFICATE_CHAIN_ERROR" desc="Summary phrase for a security problem with the site's certificate.">
+        Certificate Error
+      </message>
+      <message name="IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT" desc="Description of a security problem with the site's certificate.">
+        There are issues with the site's certificate chain (<ph name="CERT_ERROR_DESCRIPTION">$1<ex>net::ERR_CERT_AUTHORITY_INVALID</ex></ph>).
+      </message>
+
     </messages>
   </release>
 </grit>

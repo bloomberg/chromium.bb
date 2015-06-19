@@ -30,7 +30,9 @@ class SecurityHandler : public WebContentsObserver {
  private:
 
   // WebContentsObserver overrides
-  void SecurityStyleChanged(SecurityStyle security_style) override;
+  void SecurityStyleChanged(
+      SecurityStyle security_style,
+      const SecurityStyleExplanations& security_style_explanations) override;
 
   scoped_ptr<Client> client_;
   bool enabled_;

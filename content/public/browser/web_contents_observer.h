@@ -32,6 +32,7 @@ struct LoadFromMemoryCacheDetails;
 struct Referrer;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
+struct SecurityStyleExplanations;
 
 // An observer API implemented by classes which are interested in various page
 // load events from WebContents.  They also get a chance to filter IPC messages.
@@ -178,7 +179,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       const FrameNavigateParams& params) {}
 
   // This method is invoked when the SecurityStyle of the WebContents changes.
-  virtual void SecurityStyleChanged(content::SecurityStyle security_style) {}
+  // |security_style| is the new SecurityStyle. |security_style_explanations|
+  // contains human-readable strings explaining why the SecurityStyle of the
+  // page has been downgraded.
+  virtual void SecurityStyleChanged(
+      SecurityStyle security_style,
+      const SecurityStyleExplanations& security_style_explanations) {}
 
   // This method is invoked once the window.document object of the main frame
   // was created.

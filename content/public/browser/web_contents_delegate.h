@@ -47,6 +47,7 @@ struct DropData;
 struct FileChooserParams;
 struct NativeWebKeyboardEvent;
 struct Referrer;
+struct SecurityStyleExplanations;
 struct SSLStatus;
 }
 
@@ -486,9 +487,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   // default behavior is suppressed.
   virtual bool SaveFrame(const GURL& url, const Referrer& referrer);
 
-  // Can be overridden by a delegate to return the security style of the given
-  // |web_contents|. Returns SECURITY_STYLE_UNKNOWN if not overriden.
-  virtual SecurityStyle GetSecurityStyle(WebContents* web_contents);
+  // Can be overridden by a delegate to return the security style of the
+  // given |web_contents|, populating |security_style_explanations| to
+  // explain why the SecurityStyle was downgraded. Returns
+  // SECURITY_STYLE_UNKNOWN if not overriden.
+  virtual SecurityStyle GetSecurityStyle(
+      WebContents* web_contents,
+      SecurityStyleExplanations* security_style_explanations);
 
  protected:
   virtual ~WebContentsDelegate();

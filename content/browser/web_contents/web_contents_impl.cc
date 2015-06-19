@@ -83,6 +83,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/screen_orientation_dispatcher_host.h"
+#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -3229,9 +3230,12 @@ void WebContentsImpl::DidChangeVisibleSSLState() {
   if (delegate_) {
     delegate_->VisibleSSLStateChanged(this);
 
-    content::SecurityStyle security_style = delegate_->GetSecurityStyle(this);
-    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      SecurityStyleChanged(security_style));
+    SecurityStyleExplanations security_style_explanations;
+    SecurityStyle security_style =
+        delegate_->GetSecurityStyle(this, &security_style_explanations);
+    FOR_EACH_OBSERVER(
+        WebContentsObserver, observers_,
+        SecurityStyleChanged(security_style, security_style_explanations));
   }
 }
 

@@ -4,8 +4,6 @@
 
 #include "content/browser/devtools/protocol/security_handler.h"
 
-#include <string>
-
 #include "content/public/browser/web_contents.h"
 
 namespace content {
@@ -55,7 +53,9 @@ void SecurityHandler::SetRenderFrameHost(RenderFrameHost* host) {
     WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host_));
 }
 
-void SecurityHandler::SecurityStyleChanged(SecurityStyle security_style) {
+void SecurityHandler::SecurityStyleChanged(
+    SecurityStyle security_style,
+    const SecurityStyleExplanations& security_style_explanations) {
   DCHECK(enabled_);
 
   const std::string security_state =

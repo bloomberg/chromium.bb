@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/common/security_style.h"
+#include "net/cert/cert_status_flags.h"
 
 namespace content {
 class WebContents;
@@ -49,12 +50,50 @@ enum SecurityLevel {
   SECURITY_ERROR,
 };
 
+// Describes how the SHA1 deprecation policy applies to an HTTPS
+// connection.
+enum SHA1DeprecationStatus {
+  // No SHA1 deprecation policy applies.
+  NO_DEPRECATED_SHA1,
+  // The connection used a certificate with a SHA1 signature in the
+  // chain, and policy says that the connection should be treated as
+  // broken HTTPS.
+  DEPRECATED_SHA1_BROKEN,
+  // The connection used a certificate with a SHA1 signature in the
+  // chain, and policy says that the connection should be treated with a
+  // warning.
+  DEPRECATED_SHA1_WARNING,
+};
+
+// Describes the type of mixed content (if any) that a site
+// displayed/ran.
+enum MixedContentStatus {
+  NO_MIXED_CONTENT,
+  // The site displayed nonsecure resources (passive mixed content).
+  DISPLAYED_MIXED_CONTENT,
+  // The site ran nonsecure resources (active mixed content).
+  RAN_MIXED_CONTENT,
+};
+
+// Contains information about a page's security status, including a
+// SecurityStyle and the information that was used to decide which
+// SecurityStyle to assign.
+struct SecurityInfo {
+  content::SecurityStyle security_style;
+  SHA1DeprecationStatus sha1_deprecation_status;
+  MixedContentStatus mixed_content_status;
+  net::CertStatus cert_status;
+};
+
 // Returns a security level describing the overall security state of
 // the given |WebContents|.
 SecurityLevel GetSecurityLevelForWebContents(
     const content::WebContents* web_contents);
 
-// Returns the content::SecurityStyle for the given |web_contents|.
+// Populates |security_info| with information describing the given
+// |web_contents|, including a content::SecurityStyle value and security
+// properties that caused that value to be chosen.
+//
 // Note: This is a lossy operation. Not all of the policies
 // that can be expressed by a SecurityLevel (a //chrome concept) can
 // be expressed by a content::SecurityStyle.
@@ -62,8 +101,8 @@ SecurityLevel GetSecurityLevelForWebContents(
 // GetSecurityLevelForWebContents() to determine security policy, and
 // only use this function when policy needs to be supplied back to
 // layers in //content.
-content::SecurityStyle GetSecurityStyleForWebContents(
-    const content::WebContents* web_contents);
+void GetSecurityInfoForWebContents(const content::WebContents* web_contents,
+                                   SecurityInfo* security_info);
 
 }  // namespace connection_security
 

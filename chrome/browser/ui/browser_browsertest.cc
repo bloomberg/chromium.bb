@@ -79,6 +79,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/security_style_explanation.h"
+#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -92,6 +94,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -341,7 +344,8 @@ bool GetFilePathWithHostAndPortReplacement(
 }
 
 // A WebContentsObserver useful for testing the SecurityStyleChanged()
-// method: it keeps track of the latest security style that was fired.
+// method: it keeps track of the latest security style and explanation
+// that was fired.
 class SecurityStyleTestObserver : public WebContentsObserver {
  public:
   explicit SecurityStyleTestObserver(content::WebContents* web_contents)
@@ -349,16 +353,24 @@ class SecurityStyleTestObserver : public WebContentsObserver {
         latest_security_style_(content::SECURITY_STYLE_UNKNOWN) {}
   ~SecurityStyleTestObserver() override {}
 
-  void SecurityStyleChanged(content::SecurityStyle security_style) override {
+  void SecurityStyleChanged(content::SecurityStyle security_style,
+                            const content::SecurityStyleExplanations&
+                                security_style_explanations) override {
     latest_security_style_ = security_style;
+    latest_explanations_ = security_style_explanations;
   }
 
   content::SecurityStyle latest_security_style() const {
     return latest_security_style_;
   }
 
+  const content::SecurityStyleExplanations& latest_explanations() const {
+    return latest_explanations_;
+  }
+
  private:
   content::SecurityStyle latest_security_style_;
+  content::SecurityStyleExplanations latest_explanations_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
 };
@@ -2858,6 +2870,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ui_test_utils::NavigateToURL(browser(), mixed_content_url);
   EXPECT_EQ(content::SECURITY_STYLE_WARNING, observer.latest_security_style());
 
+  const content::SecurityStyleExplanations& mixed_content_explanation =
+      observer.latest_explanations();
+  ASSERT_EQ(1u, mixed_content_explanation.warning_explanations.size());
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT),
+            mixed_content_explanation.warning_explanations[0].summary);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT_DESCRIPTION),
+            mixed_content_explanation.warning_explanations[0].description);
+  EXPECT_EQ(0u, mixed_content_explanation.broken_explanations.size());
+
   // Visit a broken HTTPS url. Other conditions cannot be tested after
   // this one because once the interstitial is clicked through, all URLs
   // for this host will remain in a broken state.
@@ -2867,4 +2888,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ProceedThroughInterstitial(web_contents);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
             observer.latest_security_style());
+
+  const content::SecurityStyleExplanations& expired_explanation =
+      observer.latest_explanations();
+  EXPECT_EQ(0u, expired_explanation.warning_explanations.size());
+  ASSERT_EQ(1u, expired_explanation.broken_explanations.size());
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
+            expired_explanation.broken_explanations[0].summary);
+  base::string16 error_string =
+      base::UTF8ToUTF16(net::ErrorToString(net::ERR_CERT_DATE_INVALID));
+  EXPECT_EQ(l10n_util::GetStringFUTF8(
+                IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
+            expired_explanation.broken_explanations[0].description);
 }

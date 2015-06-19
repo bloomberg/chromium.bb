@@ -180,6 +180,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/security_style_explanation.h"
+#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -1304,8 +1306,60 @@ bool Browser::CanDragEnter(content::WebContents* source,
   return true;
 }
 
-content::SecurityStyle Browser::GetSecurityStyle(WebContents* web_contents) {
-  return connection_security::GetSecurityStyleForWebContents(web_contents);
+content::SecurityStyle Browser::GetSecurityStyle(
+    WebContents* web_contents,
+    content::SecurityStyleExplanations* security_style_explanations) {
+  connection_security::SecurityInfo security_info;
+  connection_security::GetSecurityInfoForWebContents(web_contents,
+                                                     &security_info);
+
+  if (security_info.security_style == content::SECURITY_STYLE_UNKNOWN)
+    return security_info.security_style;
+
+  if (security_info.sha1_deprecation_status ==
+      connection_security::DEPRECATED_SHA1_BROKEN) {
+    security_style_explanations->broken_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_BROKEN_SHA1),
+            l10n_util::GetStringUTF8(IDS_BROKEN_SHA1_DESCRIPTION)));
+  } else if (security_info.sha1_deprecation_status ==
+             connection_security::DEPRECATED_SHA1_WARNING) {
+    security_style_explanations->warning_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_WARNING_SHA1),
+            l10n_util::GetStringUTF8(IDS_WARNING_SHA1_DESCRIPTION)));
+  }
+
+  if (security_info.mixed_content_status ==
+      connection_security::RAN_MIXED_CONTENT) {
+    security_style_explanations->broken_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT),
+            l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT_DESCRIPTION)));
+  } else if (security_info.mixed_content_status ==
+             connection_security::DISPLAYED_MIXED_CONTENT) {
+    security_style_explanations->warning_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT),
+            l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT_DESCRIPTION)));
+  }
+
+  if (net::IsCertStatusError(security_info.cert_status)) {
+    base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(
+        net::MapCertStatusToNetError(security_info.cert_status)));
+
+    content::SecurityStyleExplanation explanation(
+        l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
+        l10n_util::GetStringFUTF8(
+            IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string));
+
+    if (net::IsCertStatusMinorError(security_info.cert_status))
+      security_style_explanations->warning_explanations.push_back(explanation);
+    else
+      security_style_explanations->broken_explanations.push_back(explanation);
+  }
+
+  return security_info.security_style;
 }
 
 bool Browser::IsMouseLocked() const {
