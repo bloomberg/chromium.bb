@@ -180,8 +180,12 @@ class UnitTest(unittest.TestCase):
                "targets": ["bar_unittests"]
              }"""}
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd: (
-        1, 'The input matches no targets, configs, or files\n', '')
+    mbw.cmds = [
+        (0, '', ''),
+        (1, 'The input matches no targets, configs, or files\n', ''),
+        (1, 'The input matches no targets, configs, or files\n', ''),
+    ]
+    mbw.Call = lambda cmd: mbw.cmds.pop(0)
 
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)

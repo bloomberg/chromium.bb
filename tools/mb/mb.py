@@ -76,6 +76,9 @@ class MetaBuildWrapper(object):
                             help='analyze whether changes to a set of files '
                                  'will cause a set of binaries to be rebuilt.')
     AddCommonOptions(subp)
+    subp.add_argument('--swarming-targets-file',
+                      help='save runtime dependencies for targets listed '
+                           'in file.')
     subp.add_argument('path', nargs=1,
                       help='path build was generated into.')
     subp.add_argument('input_path', nargs=1,
@@ -140,9 +143,9 @@ class MetaBuildWrapper(object):
   def CmdGen(self):
     vals = self.GetConfig()
     if vals['type'] == 'gn':
-      return self.RunGNGen(self.args.path[0], vals)
+      return self.RunGNGen(vals)
     if vals['type'] == 'gyp':
-      return self.RunGYPGen(self.args.path[0], vals)
+      return self.RunGYPGen(vals)
 
     raise MBErr('Unknown meta-build type "%s"' % vals['type'])
 
@@ -337,7 +340,9 @@ class MetaBuildWrapper(object):
         self.FlattenMixins(mixin_vals['mixins'], vals, visited)
     return vals
 
-  def RunGNGen(self, path, vals):
+  def RunGNGen(self, vals):
+    path = self.args.path[0]
+
     cmd = self.GNCmd('gen', path, vals['gn_args'])
 
     swarming_targets = []
@@ -387,7 +392,9 @@ class MetaBuildWrapper(object):
       cmd.append('--args=%s' % gn_args)
     return cmd
 
-  def RunGYPGen(self, path, vals):
+  def RunGYPGen(self, vals):
+    path = self.args.path[0]
+
     output_dir, gyp_config = self.ParseGYPConfigPath(path)
     if gyp_config != vals['gyp_config']:
       raise MBErr('The last component of the path (%s) must match the '
@@ -573,7 +580,13 @@ class MetaBuildWrapper(object):
       cmd += ['-D', d]
     return cmd
 
-  def RunGNAnalyze(self, _vals):
+  def RunGNAnalyze(self, vals):
+    # analyze runs before 'gn gen' now, so we need to run gn gen
+    # in order to ensure that we have a build directory.
+    ret = self.RunGNGen(vals)
+    if ret:
+      return ret
+
     inp = self.ReadInputJSON(['files', 'targets'])
     if self.args.verbose:
       self.Print()
