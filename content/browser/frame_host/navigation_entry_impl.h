@@ -174,14 +174,16 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Does nothing if there is no entry already and |url| is about:blank, since
   // that does not count as a real commit.
   void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
+                             int64 item_sequence_number,
+                             int64 document_sequence_number,
                              SiteInstanceImpl* site_instance,
                              const GURL& url,
                              const Referrer& referrer,
                              const PageState& page_state);
 
-  // Returns whether this entry has a FrameNavigationEntry for the given
-  // |frame_tree_node|.
-  bool HasFrameEntry(FrameTreeNode* frame_tree_node) const;
+  // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
+  // there is one in this NavigationEntry.
+  FrameNavigationEntry* GetFrameEntry(FrameTreeNode* frame_tree_node) const;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;

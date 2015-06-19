@@ -1548,6 +1548,84 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Verifies that item sequence numbers and document sequence numbers update
+// properly for main frames and subframes.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_SequenceNumbers) {
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // 1. Navigate the main frame.
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html"));
+  NavigateToURL(shell(), url);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  FrameNavigationEntry* frame_entry =
+      controller.GetLastCommittedEntry()->GetFrameEntry(root);
+  int64 isn_1 = frame_entry->item_sequence_number();
+  int64 dsn_1 = frame_entry->document_sequence_number();
+  EXPECT_NE(-1, isn_1);
+  EXPECT_NE(-1, dsn_1);
+
+  // 2. Do an in-page fragment navigation.
+  std::string script = "document.getElementById('fraglink').click()";
+  EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  frame_entry = controller.GetLastCommittedEntry()->GetFrameEntry(root);
+  int64 isn_2 = frame_entry->item_sequence_number();
+  int64 dsn_2 = frame_entry->document_sequence_number();
+  EXPECT_NE(-1, isn_2);
+  EXPECT_NE(isn_1, isn_2);
+  EXPECT_EQ(dsn_1, dsn_2);
+
+  // Also test subframe sequence numbers, but only in --site-per-proces mode.
+  // (We do not create subframe FrameNavigationEntries in default mode yet.)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return;
+
+  // 3. Add a subframe, which does an AUTO_SUBFRAME navigation.
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // The root FrameNavigationEntry hasn't changed.
+  EXPECT_EQ(frame_entry,
+            controller.GetLastCommittedEntry()->GetFrameEntry(root));
+
+  // We should have a unique ISN and DSN for the subframe entry.
+  FrameTreeNode* subframe = root->child_at(0);
+  FrameNavigationEntry* subframe_entry =
+      controller.GetLastCommittedEntry()->GetFrameEntry(subframe);
+  int64 isn_3 = subframe_entry->item_sequence_number();
+  int64 dsn_3 = subframe_entry->document_sequence_number();
+  EXPECT_NE(-1, isn_2);
+  EXPECT_NE(isn_2, isn_3);
+  EXPECT_NE(dsn_2, dsn_3);
+
+  // 4. Do an in-page fragment navigation in the subframe.
+  EXPECT_TRUE(content::ExecuteScript(subframe->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  subframe_entry = controller.GetLastCommittedEntry()->GetFrameEntry(subframe);
+  int64 isn_4 = subframe_entry->item_sequence_number();
+  int64 dsn_4 = subframe_entry->document_sequence_number();
+  EXPECT_NE(-1, isn_4);
+  EXPECT_NE(isn_3, isn_4);
+  EXPECT_EQ(dsn_3, dsn_4);
+}
+
 namespace {
 
 class HttpThrottle : public ResourceThrottle {

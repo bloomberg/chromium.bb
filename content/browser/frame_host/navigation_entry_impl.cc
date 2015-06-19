@@ -99,8 +99,8 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
                                          const base::string16& title,
                                          ui::PageTransition transition_type,
                                          bool is_renderer_initiated)
-    : frame_tree_(
-          new TreeNode(new FrameNavigationEntry(-1, instance, url, referrer))),
+    : frame_tree_(new TreeNode(
+          new FrameNavigationEntry(-1, -1, -1, instance, url, referrer))),
       unique_id_(GetUniqueIDInConstructor()),
       bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
@@ -510,6 +510,8 @@ void NavigationEntryImpl::ResetForCommit() {
 }
 
 void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
+                                                int64 item_sequence_number,
+                                                int64 document_sequence_number,
                                                 SiteInstanceImpl* site_instance,
                                                 const GURL& url,
                                                 const Referrer& referrer,
@@ -534,7 +536,9 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
   for (TreeNode* child : parent_node->children) {
     if (child->frame_entry->frame_tree_node_id() == frame_tree_node_id) {
       // Update the existing FrameNavigationEntry (e.g., for replaceState).
-      child->frame_entry->UpdateEntry(site_instance, url, referrer, page_state);
+      child->frame_entry->UpdateEntry(item_sequence_number,
+                                      document_sequence_number, site_instance,
+                                      url, referrer, page_state);
       return;
     }
   }
@@ -545,14 +549,17 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
   if (url == GURL(url::kAboutBlankURL))
     return;
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
-      frame_tree_node_id, site_instance, url, referrer);
+      frame_tree_node_id, item_sequence_number, document_sequence_number,
+      site_instance, url, referrer);
   frame_entry->set_page_state(page_state);
   parent_node->children.push_back(
       new NavigationEntryImpl::TreeNode(frame_entry));
 }
 
-bool NavigationEntryImpl::HasFrameEntry(FrameTreeNode* frame_tree_node) const {
-  return FindFrameEntry(frame_tree_node) != nullptr;
+FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
+    FrameTreeNode* frame_tree_node) const {
+  NavigationEntryImpl::TreeNode* tree_node = FindFrameEntry(frame_tree_node);
+  return tree_node ? tree_node->frame_entry.get() : nullptr;
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(

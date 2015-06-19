@@ -389,7 +389,7 @@ NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
 bool NavigationControllerImpl::HasCommittedRealLoad(
     FrameTreeNode* frame_tree_node) const {
   NavigationEntryImpl* last_committed = GetLastCommittedEntry();
-  return last_committed && last_committed->HasFrameEntry(frame_tree_node);
+  return last_committed && last_committed->GetFrameEntry(frame_tree_node);
 }
 
 void NavigationControllerImpl::LoadEntry(
@@ -1230,6 +1230,12 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
 
+  // Update the FrameNavigationEntry for new main frame commits.
+  FrameNavigationEntry* frame_entry =
+      new_entry->GetFrameEntry(rfh->frame_tree_node());
+  frame_entry->set_item_sequence_number(params.item_sequence_number);
+  frame_entry->set_document_sequence_number(params.document_sequence_number);
+
   // history.pushState() is classified as a navigation to a new page, but
   // sets was_within_same_page to true. In this case, we already have the
   // title and favicon available, so set them immediately.
@@ -1406,8 +1412,9 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
           switches::kSitePerProcess)) {
     // Make sure new_entry takes ownership of frame_entry in a scoped_refptr.
     FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
-        rfh->frame_tree_node()->frame_tree_node_id(), rfh->GetSiteInstance(),
-        params.url, params.referrer);
+        rfh->frame_tree_node()->frame_tree_node_id(),
+        params.item_sequence_number, params.document_sequence_number,
+        rfh->GetSiteInstance(), params.url, params.referrer);
     new_entry = GetLastCommittedEntry()->CloneAndReplace(rfh->frame_tree_node(),
                                                          frame_entry);
     CHECK(frame_entry->HasOneRef());
@@ -1462,9 +1469,10 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     // This may be a "new auto" case where we add a new FrameNavigationEntry, or
     // it may be a "history auto" case where we update an existing one.
     NavigationEntryImpl* last_committed = GetLastCommittedEntry();
-    last_committed->AddOrUpdateFrameEntry(rfh->frame_tree_node(),
-                                          rfh->GetSiteInstance(), params.url,
-                                          params.referrer, params.page_state);
+    last_committed->AddOrUpdateFrameEntry(
+        rfh->frame_tree_node(), params.item_sequence_number,
+        params.document_sequence_number, rfh->GetSiteInstance(), params.url,
+        params.referrer, params.page_state);
 
     // Cross-process subframe navigations may leave a pending entry around.
     // Clear it if it's actually for the subframe.

@@ -609,7 +609,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Builds and sends DidCommitProvisionalLoad to the host.
   void SendDidCommitProvisionalLoad(blink::WebFrame* frame,
-                                    blink::WebHistoryCommitType commit_type);
+                                    blink::WebHistoryCommitType commit_type,
+                                    const blink::WebHistoryItem& item);
 
   // IPC message handlers ------------------------------------------------------
   //

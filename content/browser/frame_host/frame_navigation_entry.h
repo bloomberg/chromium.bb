@@ -27,10 +27,11 @@ class CONTENT_EXPORT FrameNavigationEntry
  public:
   // TODO(creis): We should not use FTN IDs here, since they will change if you
   // leave a page and come back later.  We should evaluate whether Blink's
-  // frame sequence numbers or unique names would work instead, similar to
-  // HistoryNode.
+  // unique names would work instead, similar to HistoryNode.
   explicit FrameNavigationEntry(int64 frame_tree_node_id);
   FrameNavigationEntry(int64 frame_tree_node_id,
+                       int64 item_sequence_number,
+                       int64 document_sequence_number,
                        SiteInstanceImpl* site_instance,
                        const GURL& url,
                        const Referrer& referrer);
@@ -40,7 +41,9 @@ class CONTENT_EXPORT FrameNavigationEntry
   FrameNavigationEntry* Clone() const;
 
   // Updates all the members of this entry.
-  void UpdateEntry(SiteInstanceImpl* site_instance,
+  void UpdateEntry(int64 item_sequence_number,
+                   int64 document_sequence_number,
+                   SiteInstanceImpl* site_instance,
                    const GURL& url,
                    const Referrer& referrer,
                    const PageState& page_state);
@@ -50,6 +53,20 @@ class CONTENT_EXPORT FrameNavigationEntry
   // NavigationEntry.
   // TODO(creis): Replace with frame sequence number or unique name.
   int64 frame_tree_node_id() const { return frame_tree_node_id_; }
+
+  // Keeps track of where this entry belongs in the frame's session history.
+  // The item sequence number identifies each stop in the back/forward history
+  // and is globally unique.  The document sequence number increments for each
+  // new document and is also globally unique.  In-page navigations get a new
+  // item sequence number but the same document sequence number.
+  void set_item_sequence_number(int64 item_sequence_number) {
+    item_sequence_number_ = item_sequence_number;
+  }
+  int64 item_sequence_number() const { return item_sequence_number_; }
+  void set_document_sequence_number(int64 document_sequence_number) {
+    document_sequence_number_ = document_sequence_number;
+  }
+  int64 document_sequence_number() const { return document_sequence_number_; }
 
   // The SiteInstance responsible for rendering this frame.  All frames sharing
   // a SiteInstance must live in the same process.  This is a refcounted pointer
@@ -84,6 +101,8 @@ class CONTENT_EXPORT FrameNavigationEntry
 
   // See the accessors above for descriptions.
   int64 frame_tree_node_id_;
+  int64 item_sequence_number_;
+  int64 document_sequence_number_;
   scoped_refptr<SiteInstanceImpl> site_instance_;
   GURL url_;
   Referrer referrer_;

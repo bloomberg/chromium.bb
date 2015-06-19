@@ -2694,7 +2694,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   // new navigation.
   navigation_state->set_request_committed(true);
 
-  SendDidCommitProvisionalLoad(frame, commit_type);
+  SendDidCommitProvisionalLoad(frame, commit_type, item);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3809,8 +3809,9 @@ bool RenderFrameImpl::IsHidden() {
 
 // Tell the embedding application that the URL of the active page has changed.
 void RenderFrameImpl::SendDidCommitProvisionalLoad(
-      blink::WebFrame* frame,
-      blink::WebHistoryCommitType commit_type) {
+    blink::WebFrame* frame,
+    blink::WebHistoryCommitType commit_type,
+    const blink::WebHistoryItem& item) {
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
@@ -3884,6 +3885,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     params.page_state = HistoryEntryToPageState(entry);
   else
     params.page_state = PageState::CreateFromURL(request.url());
+  params.item_sequence_number = item.itemSequenceNumber();
+  params.document_sequence_number = item.documentSequenceNumber();
 
   if (!frame->parent()) {
     // Top-level navigation.
