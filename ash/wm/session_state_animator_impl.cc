@@ -401,8 +401,8 @@ void GetContainersInRootWindow(int container_mask,
         root_window, kShellWindowId_DesktopBackgroundContainer));
   }
   if (container_mask & SessionStateAnimator::LAUNCHER) {
-    containers->push_back(Shell::GetContainer(
-        root_window, kShellWindowId_DesktopBackgroundContainer));
+    containers->push_back(
+        Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
   }
   if (container_mask & SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS) {
     // TODO(antrim): Figure out a way to eliminate a need to exclude launcher
