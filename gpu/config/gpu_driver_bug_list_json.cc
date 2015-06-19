@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.14",
+  "version": "8.15",
   "entries": [
     {
       "id": 1,
@@ -1453,6 +1453,18 @@ LONG_STRING_CONST(
         "op": ">",
         "value": "1"
       },
+      "features": [
+        "disable_ns_cgl_surface_api"
+      ]
+    },
+    {
+      "id": 122,
+      "description": "NSCGLSurface API unsupported on VMWare drivers",
+      "cr_bugs": [496484],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x15ad",
       "features": [
         "disable_ns_cgl_surface_api"
       ]
