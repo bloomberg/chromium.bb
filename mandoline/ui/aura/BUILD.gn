@@ -11,8 +11,6 @@ source_set("aura") {
     "input_method_mandoline.h",
     "native_widget_view_manager.cc",
     "native_widget_view_manager.h",
-    "screen_mojo.cc",
-    "screen_mojo.h",
     "surface_binding.cc",
     "surface_binding.h",
     "surface_context_factory.cc",
@@ -47,6 +45,7 @@ source_set("aura") {
     "//ui/events",
     "//ui/events:events_base",
     "//ui/gl",
+    "//ui/mojo/init",
     "//ui/resources:ui_test_pak",
     "//ui/views",
   ]

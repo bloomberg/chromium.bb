@@ -2,48 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_UI_AURA_SCREEN_MOJO_H_
-#define MANDOLINE_UI_AURA_SCREEN_MOJO_H_
+#ifndef UI_MOJO_INIT_SCREEN_MOJO_H_
+#define UI_MOJO_INIT_SCREEN_MOJO_H_
 
-#include "base/macros.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/screen.h"
 
-namespace gfx {
-class Rect;
-class Transform;
-}
+namespace ui {
+namespace mojo {
 
-namespace mandoline {
-
-// A minimal implementation of gfx::Screen for mojo.
 class ScreenMojo : public gfx::Screen {
  public:
-  static ScreenMojo* Create();
-  ~ScreenMojo() override;
+  ScreenMojo(const gfx::Size& screen_size_in_pixels, float device_pixel_ratio);
 
- protected:
-  // gfx::Screen overrides:
+  // gfx::Screen:
   gfx::Point GetCursorScreenPoint() override;
   gfx::NativeWindow GetWindowUnderCursor() override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
-  int GetNumDisplays() const override;
-  std::vector<gfx::Display> GetAllDisplays() const override;
+  gfx::Display GetPrimaryDisplay() const override;
   gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
   gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+  int GetNumDisplays() const override;
+  std::vector<gfx::Display> GetAllDisplays() const override;
   gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
-  gfx::Display GetPrimaryDisplay() const override;
   void AddObserver(gfx::DisplayObserver* observer) override;
   void RemoveObserver(gfx::DisplayObserver* observer) override;
 
  private:
-  explicit ScreenMojo(const gfx::Rect& screen_bounds);
+  const gfx::Size screen_size_in_pixels_;
+  const float device_pixel_ratio_;
 
   gfx::Display display_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMojo);
 };
 
-}  // namespace mandoline
+}  // namespace mojo
+}  // namespace ui
 
-#endif  // MANDOLINE_UI_AURA_SCREEN_MOJO_H_
+#endif  // UI_MOJO_INIT_SCREEN_MOJO_H_

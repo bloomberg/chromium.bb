@@ -47,6 +47,12 @@ class Browser : public mojo::ViewManagerDelegate,
 
   const GURL& current_url() const { return current_url_; }
 
+  // Called once a valid device_pixel_ratio is determined. We gate construction
+  // of the UI until the device_pixel_ratio is available as it's necessary to
+  // properly setup the ui.
+  // TODO(sky): remove this. Only here until we move to viewmanager.
+  void OnDevicePixelRatioAvailable();
+
  private:
   // Overridden from mojo::ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;

@@ -19,6 +19,12 @@ class ApplicationImpl;
 class Shell;
 }
 
+namespace ui {
+namespace mojo {
+class UIInit;
+}
+}
+
 namespace scheduler {
 class RendererScheduler;
 }
@@ -26,7 +32,6 @@ class RendererScheduler;
 namespace html_viewer {
 
 class BlinkPlatformImpl;
-class UISetup;
 class MediaFactory;
 
 // Setup encapsulates the necessary state needed by HTMLViewer. Some objects
@@ -87,7 +92,7 @@ class Setup {
 
   gfx::Size screen_size_in_pixels_;
 
-  scoped_ptr<UISetup> ui_setup_;
+  scoped_ptr<ui::mojo::UIInit> ui_init_;
 
   // Skia requires that we have one of these. Unlike the one used in chrome,
   // this doesn't use purgable shared memory. Instead, it tries to free the

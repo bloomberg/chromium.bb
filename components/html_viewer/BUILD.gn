@@ -143,6 +143,7 @@ source_set("lib") {
     "//ui/events/gestures/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/mojo/init",
     "//ui/native_theme",
 
     # TODO(sky): we shouldn't be using ui_test_pak.
@@ -170,9 +171,6 @@ source_set("lib") {
 mojo_native_application("html_viewer") {
   sources = [
     "html_viewer.cc",
-    "ui_setup.h",
-    "ui_setup_android.cc",
-    "ui_setup_android.h",
   ]
   deps = [
     ":html_viewer_resources_grit",

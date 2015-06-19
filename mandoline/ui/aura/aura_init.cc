@@ -7,7 +7,8 @@
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "mandoline/ui/aura/screen_mojo.h"
+#include "components/view_manager/public/cpp/view.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,11 +37,13 @@ std::set<std::string> GetResourcePaths() {
 }  // namespace
 #endif  // defined(OS_ANDROID)
 
-AuraInit::AuraInit(mojo::Shell* shell) {
+// TODO(sky): the 1.f should be view->viewport_metrics().device_scale_factor,
+// but that causes clipping problems. No doubt we're not scaling a size
+// correctly.
+AuraInit::AuraInit(mojo::View* view, mojo::Shell* shell)
+    : ui_init_(view->viewport_metrics().size_in_pixels.To<gfx::Size>(), 1.f) {
   aura::Env::CreateInstance(false);
 
-  screen_.reset(ScreenMojo::Create());
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   InitializeResources(shell);
 
   ui::InitializeInputMethodForTesting();

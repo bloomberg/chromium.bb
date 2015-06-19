@@ -53,7 +53,7 @@ bool OmniboxImpl::ConfigureOutgoingConnection(
 
 void OmniboxImpl::OnEmbed(mojo::View* root) {
   if (!aura_init_.get()) {
-    aura_init_.reset(new AuraInit(app_impl_->shell()));
+    aura_init_.reset(new AuraInit(root, app_impl_->shell()));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
   }

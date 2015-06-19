@@ -19,13 +19,8 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/mojo/init/ui_init.h"
 #include "v8/include/v8.h"
-
-#if defined(OS_ANDROID)
-#include "components/html_viewer/ui_setup_android.h"
-#else
-#include "components/html_viewer/ui_setup.h"
-#endif
 
 namespace html_viewer {
 
@@ -102,7 +97,8 @@ void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
     return;
   }
 
-  ui_setup_.reset(new UISetup(screen_size_in_pixels, device_pixel_ratio));
+  ui_init_.reset(
+      new ui::mojo::UIInit(screen_size_in_pixels, device_pixel_ratio));
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 
   renderer_scheduler_ = scheduler::RendererScheduler::Create();

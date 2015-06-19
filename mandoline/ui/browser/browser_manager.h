@@ -18,6 +18,10 @@
 #include "mandoline/ui/aura/aura_init.h"
 #endif
 
+namespace mojo {
+class View;
+}
+
 namespace mandoline {
 
 class Browser;
@@ -36,7 +40,13 @@ class BrowserManager : public mojo::ApplicationDelegate,
   // Invoked by |browser| when it has closed.
   void BrowserClosed(Browser* browser);
 
+  bool InitUIIfNecessary(Browser* browser, mojo::View* view);
+
  private:
+  class DevicePixelRatioWaiter;
+
+  void OnDevicePixelRatioAvailable(Browser* browser, mojo::View* view);
+
   // Overridden from LaunchHandler:
   void LaunchURL(const mojo::String& url) override;
 
@@ -50,11 +60,14 @@ class BrowserManager : public mojo::ApplicationDelegate,
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::ApplicationImpl* app_;
+  // TODO(sky): This should be held in the ui classes, not here.
 #if defined(USE_AURA)
   scoped_ptr<AuraInit> aura_init_;
 #endif
   mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
   std::set<Browser*> browsers_;
+
+  scoped_ptr<DevicePixelRatioWaiter> device_pixel_ratio_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserManager);
 };
