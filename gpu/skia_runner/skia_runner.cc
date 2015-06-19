@@ -209,6 +209,9 @@ int main(int argc, char** argv) {
     }
   }
 
+  // Disable the security precautions to ensure we correctly read the picture.
+  SkPicture::SetPictureIOSecurityPrecautionsEnabled_Dangerous(false);
+
   for (auto file_pair : files) {
     skia::RefPtr<SkPicture> picture = ReadPicture(file_pair.first);
     if (!picture) {
