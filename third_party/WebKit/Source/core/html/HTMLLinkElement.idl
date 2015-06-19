@@ -50,5 +50,5 @@ interface HTMLLinkElement : HTMLElement {
 
     // Subresource Integrity
     // http://w3c.github.io/webappsec/specs/subresourceintegrity/#htmllinkelement-1
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
+    [Reflect] attribute DOMString integrity;
 };

@@ -662,6 +662,7 @@ html element link
     property href
     property hreflang
     property import
+    property integrity
     property media
     property rel
     property rev
@@ -801,6 +802,7 @@ html element script
     property defer
     property event
     property htmlFor
+    property integrity
     property src
     property text
     property type
@@ -1362,6 +1364,7 @@ svg element script
     property defer
     property event
     property htmlFor
+    property integrity
     property src
     property text
     property type

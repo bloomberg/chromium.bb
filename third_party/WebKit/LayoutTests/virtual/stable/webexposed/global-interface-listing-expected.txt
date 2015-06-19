@@ -2033,6 +2033,7 @@ interface HTMLLinkElement
     getter href
     getter hreflang
     getter import
+    getter integrity
     getter media
     getter rel
     getter rev
@@ -2046,6 +2047,7 @@ interface HTMLLinkElement
     setter disabled
     setter href
     setter hreflang
+    setter integrity
     setter media
     setter rel
     setter rev
@@ -2292,6 +2294,7 @@ interface HTMLScriptElement
     getter defer
     getter event
     getter htmlFor
+    getter integrity
     getter src
     getter text
     getter type
@@ -2302,6 +2305,7 @@ interface HTMLScriptElement
     setter defer
     setter event
     setter htmlFor
+    setter integrity
     setter src
     setter text
     setter type

@@ -14,7 +14,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Crypto.h"
 #include "platform/ParsingUtilities.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebCrypto.h"
@@ -105,9 +104,6 @@ HashAlgorithm SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithm alg
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const Resource& resource)
 {
-    if (!RuntimeEnabledFeatures::subresourceIntegrityEnabled())
-        return true;
-
     Document& document = element.document();
     String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
     if (attribute.isEmpty())
