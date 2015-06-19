@@ -62,10 +62,9 @@ void DrawQuad::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("content_space_rect", rect, value);
 
   bool rect_is_clipped;
-  gfx::QuadF rect_as_target_space_quad = MathUtil::MapQuad(
-      shared_quad_state->content_to_target_transform,
-      gfx::QuadF(rect),
-      &rect_is_clipped);
+  gfx::QuadF rect_as_target_space_quad =
+      MathUtil::MapQuad(shared_quad_state->quad_to_target_transform,
+                        gfx::QuadF(rect), &rect_is_clipped);
   MathUtil::AddToTracedValue("rect_as_target_space_quad",
                              rect_as_target_space_quad, value);
 
@@ -74,10 +73,9 @@ void DrawQuad::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("content_space_opaque_rect", opaque_rect, value);
 
   bool opaque_rect_is_clipped;
-  gfx::QuadF opaque_rect_as_target_space_quad = MathUtil::MapQuad(
-      shared_quad_state->content_to_target_transform,
-      gfx::QuadF(opaque_rect),
-      &opaque_rect_is_clipped);
+  gfx::QuadF opaque_rect_as_target_space_quad =
+      MathUtil::MapQuad(shared_quad_state->quad_to_target_transform,
+                        gfx::QuadF(opaque_rect), &opaque_rect_is_clipped);
   MathUtil::AddToTracedValue("opaque_rect_as_target_space_quad",
                              opaque_rect_as_target_space_quad, value);
 
@@ -86,10 +84,9 @@ void DrawQuad::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("content_space_visible_rect", visible_rect, value);
 
   bool visible_rect_is_clipped;
-  gfx::QuadF visible_rect_as_target_space_quad = MathUtil::MapQuad(
-      shared_quad_state->content_to_target_transform,
-      gfx::QuadF(visible_rect),
-      &visible_rect_is_clipped);
+  gfx::QuadF visible_rect_as_target_space_quad =
+      MathUtil::MapQuad(shared_quad_state->quad_to_target_transform,
+                        gfx::QuadF(visible_rect), &visible_rect_is_clipped);
 
   MathUtil::AddToTracedValue("visible_rect_as_target_space_quad",
                              visible_rect_as_target_space_quad, value);

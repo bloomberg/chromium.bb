@@ -161,7 +161,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
     SolidColorLayerImpl::AppendSolidQuads(
         render_pass, draw_properties().occlusion_in_content_space,
-        shared_quad_state, visible_content_rect(),
+        shared_quad_state, visible_layer_rect(),
         raster_source_->GetSolidColor(), append_quads_data);
     return;
   }
@@ -171,22 +171,22 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   Occlusion scaled_occlusion =
       draw_properties()
           .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
-              shared_quad_state->content_to_target_transform);
+              shared_quad_state->quad_to_target_transform);
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
-        render_pass, shared_quad_state->content_bounds, shared_quad_state,
+        render_pass, shared_quad_state->quad_layer_bounds, shared_quad_state,
         append_quads_data, DebugColors::DirectPictureBorderColor(),
         DebugColors::DirectPictureBorderWidth(layer_tree_impl()));
 
-    gfx::Rect geometry_rect = shared_quad_state->visible_content_rect;
+    gfx::Rect geometry_rect = shared_quad_state->visible_quad_layer_rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect =
         scaled_occlusion.GetUnoccludedContentRect(geometry_rect);
     if (visible_geometry_rect.IsEmpty())
       return;
 
-    gfx::Rect quad_content_rect = shared_quad_state->visible_content_rect;
+    gfx::Rect quad_content_rect = shared_quad_state->visible_quad_layer_rect;
     gfx::Size texture_size = quad_content_rect.size();
     gfx::RectF texture_rect = gfx::RectF(texture_size);
 
@@ -200,13 +200,13 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     return;
   }
 
-  AppendDebugBorderQuad(render_pass, shared_quad_state->content_bounds,
+  AppendDebugBorderQuad(render_pass, shared_quad_state->quad_layer_bounds,
                         shared_quad_state, append_quads_data);
 
   if (ShowDebugBorders()) {
     for (PictureLayerTilingSet::CoverageIterator iter(
              tilings_.get(), max_contents_scale,
-             shared_quad_state->visible_content_rect, ideal_contents_scale_);
+             shared_quad_state->visible_quad_layer_rect, ideal_contents_scale_);
          iter; ++iter) {
       SkColor color;
       float width;
@@ -263,7 +263,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   only_used_low_res_last_append_quads_ = true;
   for (PictureLayerTilingSet::CoverageIterator iter(
            tilings_.get(), max_contents_scale,
-           shared_quad_state->visible_content_rect, ideal_contents_scale_);
+           shared_quad_state->visible_quad_layer_rect, ideal_contents_scale_);
        iter; ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
@@ -272,7 +272,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     if (visible_geometry_rect.IsEmpty())
       continue;
 
-    append_quads_data->visible_content_area +=
+    append_quads_data->visible_layer_area +=
         visible_geometry_rect.width() * visible_geometry_rect.height();
 
     bool has_draw_quad = false;
@@ -376,14 +376,14 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
   // Aggressively remove any tilings that are not seen to save memory. Note
   // that this is at the expense of doing cause more frequent re-painting. A
-  // better scheme would be to maintain a tighter visible_content_rect for the
+  // better scheme would be to maintain a tighter visible_layer_rect for the
   // finer tilings.
   CleanUpTilingsOnActiveLayer(last_append_quads_tilings_);
 }
 
 bool PictureLayerImpl::UpdateTiles(bool resourceless_software_draw) {
   if (!resourceless_software_draw) {
-    visible_rect_for_tile_priority_ = visible_content_rect();
+    visible_rect_for_tile_priority_ = visible_layer_rect();
   }
 
   if (!CanHaveTilings()) {
@@ -1192,7 +1192,7 @@ void PictureLayerImpl::AsValueInto(
   MathUtil::AddToTracedValue("tile_priority_rect",
                              viewport_rect_for_tile_priority_in_content_space_,
                              state);
-  MathUtil::AddToTracedValue("visible_rect", visible_content_rect(), state);
+  MathUtil::AddToTracedValue("visible_rect", visible_layer_rect(), state);
 
   state->BeginArray("pictures");
   raster_source_->AsValueInto(state);

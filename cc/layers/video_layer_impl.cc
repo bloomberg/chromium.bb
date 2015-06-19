@@ -161,7 +161,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(transform, rotated_size, visible_content_rect(),
+  shared_quad_state->SetAll(transform, rotated_size, visible_layer_rect(),
                             clip_rect(), is_clipped(), draw_opacity(),
                             draw_blend_mode(), sorting_context_id());
 
@@ -389,11 +389,11 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   provider_client_impl_->ReleaseLock();
 }
 
-SimpleEnclosedRegion VideoLayerImpl::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion VideoLayerImpl::VisibleOpaqueRegion() const {
   // If we don't have a frame yet, then we don't have an opaque region.
   if (!provider_client_impl_->HasCurrentFrame())
     return SimpleEnclosedRegion();
-  return LayerImpl::VisibleContentOpaqueRegion();
+  return LayerImpl::VisibleOpaqueRegion();
 }
 
 void VideoLayerImpl::ReleaseResources() {

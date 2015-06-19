@@ -51,11 +51,10 @@ namespace {
 cc::SharedQuadState* ConvertSharedQuadState(const SharedQuadStatePtr& input,
                                             cc::RenderPass* render_pass) {
   cc::SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
-  state->SetAll(input->content_to_target_transform.To<gfx::Transform>(),
-                input->content_bounds.To<gfx::Size>(),
-                input->visible_content_rect.To<gfx::Rect>(),
-                input->clip_rect.To<gfx::Rect>(),
-                input->is_clipped,
+  state->SetAll(input->quad_to_target_transform.To<gfx::Transform>(),
+                input->quad_layer_bounds.To<gfx::Size>(),
+                input->visible_quad_layer_rect.To<gfx::Rect>(),
+                input->clip_rect.To<gfx::Rect>(), input->is_clipped,
                 input->opacity,
                 static_cast<::SkXfermode::Mode>(input->blend_mode),
                 input->sorting_context_id);
@@ -345,10 +344,10 @@ SharedQuadStatePtr
 TypeConverter<SharedQuadStatePtr, cc::SharedQuadState>::Convert(
     const cc::SharedQuadState& input) {
   SharedQuadStatePtr state = SharedQuadState::New();
-  state->content_to_target_transform =
-      Transform::From(input.content_to_target_transform);
-  state->content_bounds = Size::From(input.content_bounds);
-  state->visible_content_rect = Rect::From(input.visible_content_rect);
+  state->quad_to_target_transform =
+      Transform::From(input.quad_to_target_transform);
+  state->quad_layer_bounds = Size::From(input.quad_layer_bounds);
+  state->visible_quad_layer_rect = Rect::From(input.visible_quad_layer_rect);
   state->clip_rect = Rect::From(input.clip_rect);
   state->is_clipped = input.is_clipped;
   state->opacity = input.opacity;

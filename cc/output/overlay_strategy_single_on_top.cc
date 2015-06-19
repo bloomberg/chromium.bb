@@ -35,13 +35,13 @@ bool OverlayStrategySingleOnTop::Attempt(
       // Check that no prior quads overlap it.
       bool intersects = false;
       gfx::RectF rect = draw_quad->rect;
-      draw_quad->shared_quad_state->content_to_target_transform.TransformRect(
+      draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(
           &rect);
       for (auto overlap_iter = quad_list.cbegin(); overlap_iter != it;
            ++overlap_iter) {
         gfx::RectF overlap_rect = overlap_iter->rect;
-        overlap_iter->shared_quad_state->content_to_target_transform
-            .TransformRect(&overlap_rect);
+        overlap_iter->shared_quad_state->quad_to_target_transform.TransformRect(
+            &overlap_rect);
         if (rect.Intersects(overlap_rect) && !IsInvisibleQuad(*overlap_iter)) {
           intersects = true;
           break;

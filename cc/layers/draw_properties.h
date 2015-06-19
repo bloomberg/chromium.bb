@@ -81,8 +81,9 @@ struct CC_EXPORT DrawProperties {
   // ancestor of this layer.
   LayerType* render_target;
 
-  // This rect is in the layer's content space.
-  gfx::Rect visible_content_rect;
+  // This rect is a bounding box around what part of the layer is visible, in
+  // the layer's coordinate space.
+  gfx::Rect visible_layer_rect;
 
   // In target surface space, the rect that encloses the clipped, drawable
   // content of the layer.

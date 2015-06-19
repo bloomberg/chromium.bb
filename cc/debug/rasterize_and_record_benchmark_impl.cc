@@ -158,7 +158,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     rasterize_results_.total_picture_layers_with_no_content++;
     return;
   }
-  if (layer->visible_content_rect().IsEmpty()) {
+  if (layer->visible_layer_rect().IsEmpty()) {
     rasterize_results_.total_picture_layers_off_screen++;
     return;
   }
@@ -181,7 +181,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
   tiling->CreateAllTilesForTesting();
   RasterSource* raster_source = tiling->raster_source();
   for (PictureLayerTiling::CoverageIterator it(tiling, 1.f,
-                                               layer->visible_content_rect());
+                                               layer->visible_layer_rect());
        it; ++it) {
     DCHECK(*it);
 

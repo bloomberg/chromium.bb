@@ -850,11 +850,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
                                        *it,
                                        contributing_render_pass,
                                        &append_quads_data);
-    } else if (it.represents_itself() &&
-               !it->visible_content_rect().IsEmpty()) {
+    } else if (it.represents_itself() && !it->visible_layer_rect().IsEmpty()) {
       bool occluded =
           it->draw_properties().occlusion_in_content_space.IsOccluded(
-              it->visible_content_rect());
+              it->visible_layer_rect());
       if (!occluded && it->WillDraw(draw_mode, resource_provider_.get())) {
         DCHECK_EQ(active_tree_, it->layer_tree_impl());
 
@@ -880,7 +879,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         // For layers that represent themselves, add composite frame timing
         // requests if the visible rect intersects the requested rect.
         for (const auto& request : it->frame_timing_requests()) {
-          if (request.rect().Intersects(it->visible_content_rect())) {
+          if (request.rect().Intersects(it->visible_layer_rect())) {
             frame->composite_events.push_back(
                 FrameTimingTracker::FrameAndRectIds(
                     active_tree_->source_frame_number(), request.id()));
@@ -892,7 +891,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     }
 
     rendering_stats_instrumentation_->AddVisibleContentArea(
-        append_quads_data.visible_content_area);
+        append_quads_data.visible_layer_area);
     rendering_stats_instrumentation_->AddApproximatedVisibleContentArea(
         append_quads_data.approximated_visible_content_area);
     rendering_stats_instrumentation_->AddCheckerboardedVisibleContentArea(

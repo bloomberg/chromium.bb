@@ -57,8 +57,8 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
          exp_iter != expected->quad_list.cend();
          ++exp_iter, ++act_iter) {
       EXPECT_EQ(exp_iter->rect.ToString(), act_iter->rect.ToString());
-      EXPECT_EQ(exp_iter->shared_quad_state->content_bounds.ToString(),
-                act_iter->shared_quad_state->content_bounds.ToString());
+      EXPECT_EQ(exp_iter->shared_quad_state->quad_layer_bounds.ToString(),
+                act_iter->shared_quad_state->quad_layer_bounds.ToString());
     }
   }
 }

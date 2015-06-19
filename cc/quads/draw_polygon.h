@@ -29,7 +29,7 @@ class CC_EXPORT DrawPolygon {
               const gfx::Vector3dF& normal,
               int draw_order_index = 0);
   DrawPolygon(const DrawQuad* original_ref,
-              const gfx::RectF& visible_content_rect,
+              const gfx::RectF& visible_layer_rect,
               const gfx::Transform& transform,
               int draw_order_index = 0);
 

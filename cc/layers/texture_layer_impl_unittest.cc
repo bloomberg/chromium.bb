@@ -17,6 +17,32 @@ void IgnoreCallback(uint32 sync_point,
                     BlockingTaskRunner* main_thread_task_runner) {
 }
 
+TEST(TextureLayerImplTest, VisibleOpaqueRegion) {
+  const gfx::Size layer_bounds(100, 100);
+  const gfx::Rect layer_rect(layer_bounds);
+  const Region layer_region(layer_rect);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  TextureLayerImpl* layer = impl.AddChildToRoot<TextureLayerImpl>();
+  layer->SetBounds(layer_bounds);
+  layer->draw_properties().visible_layer_rect = layer_rect;
+  layer->SetBlendBackgroundColor(true);
+
+  // Verify initial conditions.
+  EXPECT_FALSE(layer->contents_opaque());
+  EXPECT_EQ(0u, layer->background_color());
+  EXPECT_EQ(Region().ToString(), layer->VisibleOpaqueRegion().ToString());
+
+  // Opaque background.
+  layer->SetBackgroundColor(SK_ColorWHITE);
+  EXPECT_EQ(layer_region.ToString(), layer->VisibleOpaqueRegion().ToString());
+
+  // Transparent background.
+  layer->SetBackgroundColor(SkColorSetARGB(100, 255, 255, 255));
+  EXPECT_EQ(Region().ToString(), layer->VisibleOpaqueRegion().ToString());
+}
+
 TEST(TextureLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
@@ -50,7 +76,7 @@ TEST(TextureLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(texture_layer_impl->visible_content_rect());
+    gfx::Rect occluded(texture_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());

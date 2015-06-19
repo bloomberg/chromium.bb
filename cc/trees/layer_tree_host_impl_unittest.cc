@@ -188,7 +188,7 @@ class LayerTreeHostImplTest : public testing::Test,
     root->SetPosition(gfx::PointF());
     root->SetBounds(gfx::Size(10, 10));
     root->SetDrawsContent(true);
-    root->draw_properties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
+    root->draw_properties().visible_layer_rect = gfx::Rect(0, 0, 10, 10);
     root->SetHasRenderSurface(true);
     host_impl_->active_tree()->SetRootLayer(root.Pass());
   }
@@ -2152,7 +2152,7 @@ class DidDrawCheckLayer : public LayerImpl {
         did_draw_called_(false) {
     SetBounds(gfx::Size(10, 10));
     SetDrawsContent(true);
-    draw_properties().visible_content_rect = gfx::Rect(0, 0, 10, 10);
+    draw_properties().visible_layer_rect = gfx::Rect(0, 0, 10, 10);
   }
 
  private:
@@ -2216,7 +2216,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   root->AddChild(DidDrawCheckLayer::Create(host_impl_->active_tree(), 2));
   DidDrawCheckLayer* layer =
       static_cast<DidDrawCheckLayer*>(root->children()[0]);
-  // Ensure visible_content_rect for layer is empty.
+  // Ensure visible_layer_rect for layer is empty.
   layer->SetPosition(gfx::PointF(100.f, 100.f));
   layer->SetBounds(gfx::Size(10, 10));
 
@@ -2232,9 +2232,9 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   EXPECT_FALSE(layer->will_draw_called());
   EXPECT_FALSE(layer->did_draw_called());
 
-  EXPECT_TRUE(layer->visible_content_rect().IsEmpty());
+  EXPECT_TRUE(layer->visible_layer_rect().IsEmpty());
 
-  // Ensure visible_content_rect for layer is not empty
+  // Ensure visible_layer_rect for layer is not empty
   layer->SetPosition(gfx::PointF());
 
   EXPECT_FALSE(layer->will_draw_called());
@@ -2247,7 +2247,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   EXPECT_TRUE(layer->will_draw_called());
   EXPECT_TRUE(layer->did_draw_called());
 
-  EXPECT_FALSE(layer->visible_content_rect().IsEmpty());
+  EXPECT_FALSE(layer->visible_layer_rect().IsEmpty());
 }
 
 TEST_F(LayerTreeHostImplTest, WillDrawNotCalledOnOccludedLayer) {
@@ -5529,20 +5529,20 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   root->SetHasRenderSurface(true);
   root->SetPosition(root_rect.origin());
   root->SetBounds(root_rect.size());
-  root->draw_properties().visible_content_rect = root_rect;
+  root->draw_properties().visible_layer_rect = root_rect;
   root->SetDrawsContent(false);
   root->render_surface()->SetContentRect(gfx::Rect(root_rect.size()));
 
   child->SetPosition(gfx::PointF(child_rect.x(), child_rect.y()));
   child->SetOpacity(0.5f);
   child->SetBounds(gfx::Size(child_rect.width(), child_rect.height()));
-  child->draw_properties().visible_content_rect = child_rect;
+  child->draw_properties().visible_layer_rect = child_rect;
   child->SetDrawsContent(false);
   child->SetHasRenderSurface(true);
 
   grand_child->SetPosition(grand_child_rect.origin());
   grand_child->SetBounds(grand_child_rect.size());
-  grand_child->draw_properties().visible_content_rect = grand_child_rect;
+  grand_child->draw_properties().visible_layer_rect = grand_child_rect;
   grand_child->SetDrawsContent(true);
 
   child->AddChild(grand_child.Pass());
@@ -5900,8 +5900,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   bool clipped = false, force_aa = false;
   gfx::QuadF device_layer_quad = MathUtil::MapQuad(
-      quad->shared_quad_state->content_to_target_transform,
-      gfx::QuadF(quad->shared_quad_state->visible_content_rect), &clipped);
+      quad->shared_quad_state->quad_to_target_transform,
+      gfx::QuadF(quad->shared_quad_state->visible_quad_layer_rect), &clipped);
   EXPECT_FALSE(clipped);
   bool antialiased =
       GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(

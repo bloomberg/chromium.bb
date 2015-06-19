@@ -184,12 +184,12 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
   ValidateQuadResources(quad);
 }
 
-SimpleEnclosedRegion TextureLayerImpl::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion TextureLayerImpl::VisibleOpaqueRegion() const {
   if (contents_opaque())
-    return SimpleEnclosedRegion(visible_content_rect());
+    return SimpleEnclosedRegion(visible_layer_rect());
 
   if (blend_background_color_ && (SkColorGetA(background_color()) == 0xFF))
-    return SimpleEnclosedRegion(visible_content_rect());
+    return SimpleEnclosedRegion(visible_layer_rect());
 
   return SimpleEnclosedRegion();
 }

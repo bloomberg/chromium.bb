@@ -814,7 +814,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   bool did_paint_content = false;
   for (const auto& layer : update_layer_list) {
     // TODO(enne): temporarily clobber draw properties visible rect.
-    layer->draw_properties().visible_content_rect =
+    layer->draw_properties().visible_layer_rect =
         layer->visible_rect_from_property_trees();
     did_paint_content |= layer->Update();
     content_is_suitable_for_gpu_rasterization_ &=

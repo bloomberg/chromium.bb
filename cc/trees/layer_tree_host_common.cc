@@ -370,7 +370,7 @@ static inline bool LayerClipsSubtree(LayerType* layer) {
 }
 
 template <typename LayerType>
-static gfx::Rect CalculateVisibleContentRect(
+static gfx::Rect CalculateVisibleLayerRect(
     LayerType* layer,
     const gfx::Rect& clip_rect_of_target_surface_in_target_space,
     const gfx::Rect& layer_rect_in_target_space) {
@@ -432,7 +432,7 @@ static bool LayerShouldBeSkipped(LayerType* layer, bool layer_is_drawn) {
   // Some additional conditions need to be computed at a later point after the
   // recursion is finished.
   //   - the intersection of render_surface content and layer clip_rect is empty
-  //   - the visible_content_rect is empty
+  //   - the visible_layer_rect is empty
   //
   // Note, if the layer should not have been drawn due to being fully
   // transparent, we would have skipped the entire subtree and never made it
@@ -1917,7 +1917,7 @@ static void CalculateDrawPropertiesInternal(
       DrawProperties<LayerType>& mask_layer_draw_properties =
           layer->mask_layer()->draw_properties();
       mask_layer_draw_properties.render_target = layer;
-      mask_layer_draw_properties.visible_content_rect =
+      mask_layer_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
     }
 
@@ -1925,7 +1925,7 @@ static void CalculateDrawPropertiesInternal(
       DrawProperties<LayerType>& replica_mask_draw_properties =
           layer->replica_layer()->mask_layer()->draw_properties();
       replica_mask_draw_properties.render_target = layer;
-      replica_mask_draw_properties.visible_content_rect =
+      replica_mask_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
     }
 
@@ -2222,7 +2222,7 @@ static void CalculateDrawPropertiesInternal(
   }
 
   // Compute the layer's visible content rect (the rect is in content space).
-  layer_draw_properties.visible_content_rect = CalculateVisibleContentRect(
+  layer_draw_properties.visible_layer_rect = CalculateVisibleLayerRect(
       layer, clip_rect_of_target_surface_in_target_space, rect_in_target_space);
 
   // Compute the remaining properties for the render surface, if the layer has
@@ -2481,10 +2481,10 @@ template <typename LayerType>
 void VerifyPropertyTreeValuesForLayer(LayerType* current_layer,
                                       PropertyTrees* property_trees) {
   const bool visible_rects_match =
-      ApproximatelyEqual(current_layer->visible_content_rect(),
+      ApproximatelyEqual(current_layer->visible_layer_rect(),
                          current_layer->visible_rect_from_property_trees());
   CHECK(visible_rects_match)
-      << "expected: " << current_layer->visible_content_rect().ToString()
+      << "expected: " << current_layer->visible_layer_rect().ToString()
       << " actual: "
       << current_layer->visible_rect_from_property_trees().ToString();
 

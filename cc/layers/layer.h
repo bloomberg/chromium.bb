@@ -254,8 +254,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::Rect drawable_content_rect() const {
     return draw_properties_.drawable_content_rect;
   }
-  gfx::Rect visible_content_rect() const {
-    return draw_properties_.visible_content_rect;
+  gfx::Rect visible_layer_rect() const {
+    return draw_properties_.visible_layer_rect;
   }
   Layer* render_target() {
     DCHECK(!draw_properties_.render_target ||
@@ -423,8 +423,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
       LayerAnimationEventObserver* animation_observer);
   void RemoveLayerAnimationEventObserver(
       LayerAnimationEventObserver* animation_observer);
-
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const;
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 

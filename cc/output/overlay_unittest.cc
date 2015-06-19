@@ -278,8 +278,8 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
          exp_iter != expected->quad_list.cend();
          ++exp_iter, ++act_iter) {
       EXPECT_EQ(exp_iter->rect.ToString(), act_iter->rect.ToString());
-      EXPECT_EQ(exp_iter->shared_quad_state->content_bounds.ToString(),
-                act_iter->shared_quad_state->content_bounds.ToString());
+      EXPECT_EQ(exp_iter->shared_quad_state->quad_layer_bounds.ToString(),
+                act_iter->shared_quad_state->quad_layer_bounds.ToString());
     }
   }
 }
@@ -546,7 +546,7 @@ TEST_F(SingleOverlayOnTopTest, RejectNonAxisAlignedTransform) {
                                 pass->shared_quad_state_list.back(),
                                 pass.get());
   pass->shared_quad_state_list.back()
-      ->content_to_target_transform.RotateAboutXAxis(45.f);
+      ->quad_to_target_transform.RotateAboutXAxis(45.f);
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -563,8 +563,8 @@ TEST_F(SingleOverlayOnTopTest, AllowVerticalFlip) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateCandidateQuadAt(resource_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(), rect);
-  pass->shared_quad_state_list.back()->content_to_target_transform.Scale(2.0f,
-                                                                         -1.0f);
+  pass->shared_quad_state_list.back()->quad_to_target_transform.Scale(2.0f,
+                                                                      -1.0f);
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -583,8 +583,8 @@ TEST_F(SingleOverlayOnTopTest, AllowHorizontalFlip) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateCandidateQuadAt(resource_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(), rect);
-  pass->shared_quad_state_list.back()->content_to_target_transform.Scale(-1.0f,
-                                                                         2.0f);
+  pass->shared_quad_state_list.back()->quad_to_target_transform.Scale(-1.0f,
+                                                                      2.0f);
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -602,8 +602,8 @@ TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateCandidateQuadAt(resource_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(), rect);
-  pass->shared_quad_state_list.back()->content_to_target_transform.Scale(2.0f,
-                                                                         1.0f);
+  pass->shared_quad_state_list.back()->quad_to_target_transform.Scale(2.0f,
+                                                                      1.0f);
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -620,7 +620,7 @@ TEST_F(SingleOverlayOnTopTest, Allow90DegreeRotation) {
   CreateCandidateQuadAt(resource_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(), rect);
   pass->shared_quad_state_list.back()
-      ->content_to_target_transform.RotateAboutZAxis(90.f);
+      ->quad_to_target_transform.RotateAboutZAxis(90.f);
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -638,7 +638,7 @@ TEST_F(SingleOverlayOnTopTest, Allow180DegreeRotation) {
   CreateCandidateQuadAt(resource_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(), rect);
   pass->shared_quad_state_list.back()
-      ->content_to_target_transform.RotateAboutZAxis(180.f);
+      ->quad_to_target_transform.RotateAboutZAxis(180.f);
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -656,7 +656,7 @@ TEST_F(SingleOverlayOnTopTest, Allow270DegreeRotation) {
   CreateCandidateQuadAt(resource_provider_.get(),
                         pass->shared_quad_state_list.back(), pass.get(), rect);
   pass->shared_quad_state_list.back()
-      ->content_to_target_transform.RotateAboutZAxis(270.f);
+      ->quad_to_target_transform.RotateAboutZAxis(270.f);
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());

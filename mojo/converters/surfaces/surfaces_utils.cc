@@ -14,9 +14,9 @@ namespace mojo {
 
 SharedQuadStatePtr CreateDefaultSQS(const gfx::Size& size) {
   SharedQuadStatePtr sqs = SharedQuadState::New();
-  sqs->content_to_target_transform = Transform::From(gfx::Transform());
-  sqs->content_bounds = Size::From(size);
-  sqs->visible_content_rect = Rect::From(gfx::Rect(size));
+  sqs->quad_to_target_transform = Transform::From(gfx::Transform());
+  sqs->quad_layer_bounds = Size::From(size);
+  sqs->visible_quad_layer_rect = Rect::From(gfx::Rect(size));
   sqs->clip_rect = Rect::From(gfx::Rect(size));
   sqs->is_clipped = false;
   sqs->opacity = 1.f;

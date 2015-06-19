@@ -14,7 +14,7 @@ struct AppendQuadsData {
   AppendQuadsData()
       : num_incomplete_tiles(0),
         num_missing_tiles(0),
-        visible_content_area(0),
+        visible_layer_area(0),
         approximated_visible_content_area(0),
         checkerboarded_visible_content_area(0) {}
 
@@ -23,7 +23,7 @@ struct AppendQuadsData {
   // Set by the layer appending quads.
   int64 num_missing_tiles;
   // Set by the layer appending quads.
-  int64 visible_content_area;
+  int64 visible_layer_area;
   // Set by the layer appending quads.
   int64 approximated_visible_content_area;
   // Set by the layer appending quads.

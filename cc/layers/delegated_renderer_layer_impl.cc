@@ -429,7 +429,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
       output_shared_quad_state->CopyFrom(delegated_shared_quad_state);
 
       if (is_root_delegated_render_pass) {
-        output_shared_quad_state->content_to_target_transform.ConcatTransform(
+        output_shared_quad_state->quad_to_target_transform.ConcatTransform(
             delegated_frame_to_target_transform);
 
         if (render_target() == this) {
@@ -457,7 +457,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     DCHECK(output_shared_quad_state);
 
     gfx::Transform quad_content_to_delegated_target_space =
-        output_shared_quad_state->content_to_target_transform;
+        output_shared_quad_state->quad_to_target_transform;
     if (!is_root_delegated_render_pass) {
       quad_content_to_delegated_target_space.ConcatTransform(
           delegated_render_pass->transform_to_root_target);

@@ -28,17 +28,17 @@ void SharedQuadState::CopyFrom(const SharedQuadState* other) {
   *this = *other;
 }
 
-void SharedQuadState::SetAll(const gfx::Transform& content_to_target_transform,
-                             const gfx::Size& content_bounds,
-                             const gfx::Rect& visible_content_rect,
+void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
+                             const gfx::Size& quad_layer_bounds,
+                             const gfx::Rect& visible_quad_layer_rect,
                              const gfx::Rect& clip_rect,
                              bool is_clipped,
                              float opacity,
                              SkXfermode::Mode blend_mode,
                              int sorting_context_id) {
-  this->content_to_target_transform = content_to_target_transform;
-  this->content_bounds = content_bounds;
-  this->visible_content_rect = visible_content_rect;
+  this->quad_to_target_transform = quad_to_target_transform;
+  this->quad_layer_bounds = quad_layer_bounds;
+  this->visible_quad_layer_rect = visible_quad_layer_rect;
   this->clip_rect = clip_rect;
   this->is_clipped = is_clipped;
   this->opacity = opacity;
@@ -47,10 +47,10 @@ void SharedQuadState::SetAll(const gfx::Transform& content_to_target_transform,
 }
 
 void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
-  MathUtil::AddToTracedValue("transform", content_to_target_transform, value);
-  MathUtil::AddToTracedValue("layer_content_bounds", content_bounds, value);
-  MathUtil::AddToTracedValue("layer_visible_content_rect", visible_content_rect,
-                             value);
+  MathUtil::AddToTracedValue("transform", quad_to_target_transform, value);
+  MathUtil::AddToTracedValue("layer_content_bounds", quad_layer_bounds, value);
+  MathUtil::AddToTracedValue("layer_visible_content_rect",
+                             visible_quad_layer_rect, value);
 
   value->SetBoolean("is_clipped", is_clipped);
 

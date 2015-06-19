@@ -50,7 +50,7 @@ bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
                                                OverlayCandidate* quad_info) {
   gfx::OverlayTransform overlay_transform =
       OverlayCandidate::GetOverlayTransform(
-          quad.shared_quad_state->content_to_target_transform, quad.y_flipped);
+          quad.shared_quad_state->quad_to_target_transform, quad.y_flipped);
   if (quad.background_color != SK_ColorTRANSPARENT ||
       quad.premultiplied_alpha ||
       overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
@@ -66,7 +66,7 @@ bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
                                              OverlayCandidate* quad_info) {
   gfx::OverlayTransform overlay_transform =
       OverlayCandidate::GetOverlayTransform(
-          quad.shared_quad_state->content_to_target_transform, false);
+          quad.shared_quad_state->quad_to_target_transform, false);
   if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
   if (!quad.matrix.IsScaleOrTranslation()) {
@@ -125,7 +125,7 @@ bool OverlayStrategyCommon::GetCandidateQuadInfo(const DrawQuad& draw_quad,
 
   quad_info->format = RGBA_8888;
   quad_info->display_rect = OverlayCandidate::GetOverlayRect(
-      draw_quad.shared_quad_state->content_to_target_transform, draw_quad.rect);
+      draw_quad.shared_quad_state->quad_to_target_transform, draw_quad.rect);
   return true;
 }
 

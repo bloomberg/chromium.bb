@@ -404,7 +404,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       transform, frame.render_passes[3]
                      ->quad_list.front()
-                     ->shared_quad_state->content_to_target_transform);
+                     ->shared_quad_state->quad_to_target_transform);
 
   // Quads from non-root RenderPasses should not be shifted though.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
@@ -412,16 +412,16 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[2]
                             ->quad_list.front()
-                            ->shared_quad_state->content_to_target_transform);
+                            ->shared_quad_state->quad_to_target_transform);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[2]
                             ->quad_list.ElementAt(1)
-                            ->shared_quad_state->content_to_target_transform);
+                            ->shared_quad_state->quad_to_target_transform);
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[1]
                             ->quad_list.front()
-                            ->shared_quad_state->content_to_target_transform);
+                            ->shared_quad_state->quad_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -584,7 +584,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[3]
                             ->quad_list.front()
-                            ->shared_quad_state->content_to_target_transform);
+                            ->shared_quad_state->quad_to_target_transform);
 
   // Quads from non-root RenderPasses should not be shifted either.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
@@ -592,16 +592,16 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[2]
                             ->quad_list.front()
-                            ->shared_quad_state->content_to_target_transform);
+                            ->shared_quad_state->quad_to_target_transform);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[2]
                             ->quad_list.ElementAt(1)
-                            ->shared_quad_state->content_to_target_transform);
+                            ->shared_quad_state->quad_to_target_transform);
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[1]
                             ->quad_list.front()
-                            ->shared_quad_state->content_to_target_transform);
+                            ->shared_quad_state->quad_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -829,7 +829,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
   expected.Scale(1.5, 1.5);
   expected.Translate(7.0, 7.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected, root_delegated_shared_quad_state->content_to_target_transform);
+      expected, root_delegated_shared_quad_state->quad_to_target_transform);
 
   // The contributing render pass should not be transformed from its input.
   EXPECT_EQ(gfx::Rect(21, 21, 3, 3).ToString(),
@@ -839,8 +839,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
   expected.Scale(0.8f, 0.8f);
   expected.Translate(9.0, 9.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected,
-      contrib_delegated_shared_quad_state->content_to_target_transform);
+      expected, contrib_delegated_shared_quad_state->quad_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -888,7 +887,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
   expected.Scale(1.5, 1.5);
   expected.Translate(7.0, 7.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected, root_delegated_shared_quad_state->content_to_target_transform);
+      expected, root_delegated_shared_quad_state->quad_to_target_transform);
 
   // The contributing render pass should not be transformed from its input.
   EXPECT_EQ(gfx::Rect(21, 21, 3, 3).ToString(),
@@ -898,8 +897,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
   expected.Scale(0.8f, 0.8f);
   expected.Translate(9.0, 9.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected,
-      contrib_delegated_shared_quad_state->content_to_target_transform);
+      expected, contrib_delegated_shared_quad_state->quad_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -937,7 +935,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   expected.Scale(3.0, 3.0);
   expected.Translate(7.0, 7.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected, root_delegated_shared_quad_state->content_to_target_transform);
+      expected, root_delegated_shared_quad_state->quad_to_target_transform);
 
   // The contributing render pass should not be transformed from its input.
   EXPECT_EQ(gfx::Rect(21, 21, 3, 3).ToString(),
@@ -947,8 +945,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
   expected.Scale(0.8f, 0.8f);
   expected.Translate(9.0, 9.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected,
-      contrib_delegated_shared_quad_state->content_to_target_transform);
+      expected, contrib_delegated_shared_quad_state->quad_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -985,7 +982,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   expected.Scale(3.0, 3.0);
   expected.Translate(7.0, 7.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected, root_delegated_shared_quad_state->content_to_target_transform);
+      expected, root_delegated_shared_quad_state->quad_to_target_transform);
 
   // The contributing render pass should not be transformed from its input.
   EXPECT_EQ(gfx::Rect(21, 21, 3, 3).ToString(),
@@ -995,8 +992,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
   expected.Scale(0.8f, 0.8f);
   expected.Translate(9.0, 9.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected,
-      contrib_delegated_shared_quad_state->content_to_target_transform);
+      expected, contrib_delegated_shared_quad_state->quad_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -1035,7 +1031,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, MismatchedDeviceScaleFactor) {
   expected.Scale(1.5, 1.5);
   expected.Translate(7.0, 7.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected, root_delegated_shared_quad_state->content_to_target_transform);
+      expected, root_delegated_shared_quad_state->quad_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -1496,7 +1492,7 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
   {
     SCOPED_TRACE("Full occlusion");
     {
-      gfx::Rect occluded(delegated_renderer_layer_impl->visible_content_rect());
+      gfx::Rect occluded(delegated_renderer_layer_impl->visible_layer_rect());
 
       SCOPED_TRACE("Root render pass");
       impl.AppendQuadsForPassWithOcclusion(delegated_renderer_layer_impl, pass1,
@@ -1506,7 +1502,7 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
       EXPECT_EQ(pass1->quad_list.size(), 0u);
     }
     {
-      gfx::Rect occluded(delegated_renderer_layer_impl->visible_content_rect());
+      gfx::Rect occluded(delegated_renderer_layer_impl->visible_layer_rect());
 
       SCOPED_TRACE("Contributing render pass");
       impl.AppendQuadsForPassWithOcclusion(delegated_renderer_layer_impl, pass2,

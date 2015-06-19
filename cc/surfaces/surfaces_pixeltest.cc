@@ -41,21 +41,15 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
     RenderPass* render_pass,
     const gfx::Transform& transform,
     const gfx::Size& size) {
-  const gfx::Size content_bounds = size;
-  const gfx::Rect visible_content_rect = gfx::Rect(size);
+  const gfx::Size layer_bounds = size;
+  const gfx::Rect visible_layer_rect = gfx::Rect(size);
   const gfx::Rect clip_rect = gfx::Rect(size);
   bool is_clipped = false;
   float opacity = 1.f;
   const SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(transform,
-                       content_bounds,
-                       visible_content_rect,
-                       clip_rect,
-                       is_clipped,
-                       opacity,
-                       blend_mode,
-                       0);
+  shared_state->SetAll(transform, layer_bounds, visible_layer_rect, clip_rect,
+                       is_clipped, opacity, blend_mode, 0);
   return shared_state;
 }
 

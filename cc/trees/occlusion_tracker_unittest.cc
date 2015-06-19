@@ -35,12 +35,12 @@ class TestContentLayerImpl : public LayerImpl {
     SetDrawsContent(true);
   }
 
-  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override {
+  SimpleEnclosedRegion VisibleOpaqueRegion() const override {
     if (override_opaque_contents_rect_) {
       return SimpleEnclosedRegion(
-          gfx::IntersectRects(opaque_contents_rect_, visible_content_rect()));
+          gfx::IntersectRects(opaque_contents_rect_, visible_layer_rect()));
     }
-    return LayerImpl::VisibleContentOpaqueRegion();
+    return LayerImpl::VisibleOpaqueRegion();
   }
   void SetOpaqueContentsRect(const gfx::Rect& opaque_contents_rect) {
     override_opaque_contents_rect_ = true;
@@ -59,7 +59,7 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker {
 
   bool OccludedLayer(const LayerImpl* layer,
                      const gfx::Rect& content_rect) const {
-    DCHECK(layer->visible_content_rect().Contains(content_rect));
+    DCHECK(layer->visible_layer_rect().Contains(content_rect));
     return this->GetCurrentOcclusionForLayer(layer->draw_transform())
         .IsOccluded(content_rect);
   }
@@ -68,7 +68,7 @@ class TestOcclusionTrackerWithClip : public TestOcclusionTracker {
   // layer. Simple wrapper around GetUnoccludedContentRect.
   gfx::Rect UnoccludedLayerContentRect(const LayerImpl* layer,
                                        const gfx::Rect& content_rect) const {
-    DCHECK(layer->visible_content_rect().Contains(content_rect));
+    DCHECK(layer->visible_layer_rect().Contains(content_rect));
     return this->GetCurrentOcclusionForLayer(layer->draw_transform())
         .GetUnoccludedContentRect(content_rect);
   }
@@ -644,7 +644,7 @@ class OcclusionTrackerTestSurfaceRotatedOffAxis : public OcclusionTrackerTest {
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));
 
     gfx::Rect clipped_layer_in_child = MathUtil::MapEnclosingClippedRect(
-        layer_transform, layer->visible_content_rect());
+        layer_transform, layer->visible_layer_rect());
 
     this->VisitLayer(layer, &occlusion);
     this->EnterContributingSurface(child, &occlusion);

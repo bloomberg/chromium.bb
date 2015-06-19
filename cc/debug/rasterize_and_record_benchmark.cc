@@ -109,7 +109,7 @@ scoped_ptr<MicroBenchmarkImpl> RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
 void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   DCHECK(host_);
 
-  gfx::Rect visible_layer_rect = layer->visible_content_rect();
+  gfx::Rect visible_layer_rect = layer->visible_layer_rect();
   if (visible_layer_rect.IsEmpty())
     return;
 

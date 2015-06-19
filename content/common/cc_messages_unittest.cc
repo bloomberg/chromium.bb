@@ -57,9 +57,9 @@ class CCMessagesTest : public testing::Test {
   }
 
   void Compare(const SharedQuadState* a, const SharedQuadState* b) {
-    EXPECT_EQ(a->content_to_target_transform, b->content_to_target_transform);
-    EXPECT_EQ(a->content_bounds, b->content_bounds);
-    EXPECT_EQ(a->visible_content_rect, b->visible_content_rect);
+    EXPECT_EQ(a->quad_to_target_transform, b->quad_to_target_transform);
+    EXPECT_EQ(a->quad_layer_bounds, b->quad_layer_bounds);
+    EXPECT_EQ(a->visible_quad_layer_rect, b->visible_quad_layer_rect);
     EXPECT_EQ(a->clip_rect, b->clip_rect);
     EXPECT_EQ(a->is_clipped, b->is_clipped);
     EXPECT_EQ(a->opacity, b->opacity);
@@ -627,12 +627,12 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   ASSERT_EQ(2u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(2u, pass_out->quad_list.size());
 
-  EXPECT_EQ(
-      gfx::Size(1, 1).ToString(),
-      pass_out->shared_quad_state_list.ElementAt(0)->content_bounds.ToString());
-  EXPECT_EQ(
-      gfx::Size(4, 4).ToString(),
-      pass_out->shared_quad_state_list.ElementAt(1)->content_bounds.ToString());
+  EXPECT_EQ(gfx::Size(1, 1).ToString(),
+            pass_out->shared_quad_state_list.ElementAt(0)
+                ->quad_layer_bounds.ToString());
+  EXPECT_EQ(gfx::Size(4, 4).ToString(),
+            pass_out->shared_quad_state_list.ElementAt(1)
+                ->quad_layer_bounds.ToString());
 }
 
 TEST_F(CCMessagesTest, Resources) {

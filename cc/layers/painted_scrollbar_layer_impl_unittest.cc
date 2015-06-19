@@ -88,7 +88,7 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(scrollbar_layer_impl->visible_content_rect());
+    gfx::Rect occluded(scrollbar_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());

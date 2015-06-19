@@ -251,7 +251,7 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
   TRACE_EVENT0("cc", "SoftwareRenderer::DoDrawQuad");
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
-                    quad->shared_quad_state->content_to_target_transform,
+                    quad->shared_quad_state->quad_to_target_transform,
                     quad->rect);
   gfx::Transform contents_device_transform =
       frame->window_matrix * frame->projection_matrix * quad_rect_matrix;

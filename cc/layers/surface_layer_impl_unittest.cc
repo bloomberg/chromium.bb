@@ -39,7 +39,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(surface_layer_impl->visible_content_rect());
+    gfx::Rect occluded(surface_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());

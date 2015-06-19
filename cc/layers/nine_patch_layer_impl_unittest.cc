@@ -37,7 +37,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
                               bool fill_center,
                               size_t expected_quad_size) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
-  gfx::Rect visible_content_rect(layer_size);
+  gfx::Rect visible_layer_rect(layer_size);
   gfx::Rect expected_remaining(border.x(),
                                border.y(),
                                layer_size.width() - border.width(),
@@ -52,7 +52,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
 
   scoped_ptr<NinePatchLayerImpl> layer =
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
-  layer->draw_properties().visible_content_rect = visible_content_rect;
+  layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
@@ -72,11 +72,11 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   const QuadList& quads = render_pass->quad_list;
   EXPECT_EQ(expected_quad_size, quads.size());
 
-  Region remaining(visible_content_rect);
+  Region remaining(visible_layer_rect);
   for (auto iter = quads.cbegin(); iter != quads.cend(); ++iter) {
     gfx::Rect quad_rect = iter->rect;
 
-    EXPECT_TRUE(visible_content_rect.Contains(quad_rect)) << iter.index();
+    EXPECT_TRUE(visible_layer_rect.Contains(quad_rect)) << iter.index();
     EXPECT_TRUE(remaining.Contains(quad_rect)) << iter.index();
     remaining.Subtract(Region(quad_rect));
   }
@@ -252,7 +252,7 @@ TEST(NinePatchLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(nine_patch_layer_impl->visible_content_rect());
+    gfx::Rect occluded(nine_patch_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());

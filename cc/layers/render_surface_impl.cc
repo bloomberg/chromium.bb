@@ -157,9 +157,9 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
                                     LayerImpl* mask_layer,
                                     AppendQuadsData* append_quads_data,
                                     RenderPassId render_pass_id) {
-  gfx::Rect visible_content_rect =
+  gfx::Rect visible_layer_rect =
       occlusion_in_content_space.GetUnoccludedContentRect(content_rect_);
-  if (visible_content_rect.IsEmpty())
+  if (visible_layer_rect.IsEmpty())
     return;
 
   SharedQuadState* shared_quad_state =
@@ -173,7 +173,7 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
     DebugBorderDrawQuad* debug_border_quad =
         render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
     debug_border_quad->SetNew(shared_quad_state, content_rect_,
-                              visible_content_rect, debug_border_color,
+                              visible_layer_rect, debug_border_color,
                               debug_border_width);
   }
 
@@ -200,14 +200,9 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
 
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-  quad->SetNew(shared_quad_state,
-               content_rect_,
-               visible_content_rect,
-               render_pass_id,
-               mask_resource_id,
-               mask_uv_scale,
-               mask_texture_size,
-               owning_layer_->filters(),
+  quad->SetNew(shared_quad_state, content_rect_, visible_layer_rect,
+               render_pass_id, mask_resource_id, mask_uv_scale,
+               mask_texture_size, owning_layer_->filters(),
                owning_layer_to_target_scale,
                owning_layer_->background_filters());
 }

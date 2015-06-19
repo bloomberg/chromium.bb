@@ -1520,12 +1520,6 @@ void Layer::RemoveLayerAnimationEventObserver(
   layer_animation_controller_->RemoveEventObserver(animation_observer);
 }
 
-SimpleEnclosedRegion Layer::VisibleContentOpaqueRegion() const {
-  if (contents_opaque())
-    return SimpleEnclosedRegion(visible_content_rect());
-  return SimpleEnclosedRegion();
-}
-
 ScrollbarLayerInterface* Layer::ToScrollbarLayer() {
   return nullptr;
 }

@@ -543,7 +543,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->draw_properties().visible_content_rect = viewport;
+  active_layer_->draw_properties().visible_layer_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   active_layer_->UpdateTiles(resourceless_software_draw);
 
@@ -559,7 +559,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   resourceless_software_draw = true;
   viewport = gfx::ScaleToEnclosingRect(viewport, 2);
   transform.Translate(1.f, 1.f);
-  active_layer_->draw_properties().visible_content_rect = viewport;
+  active_layer_->draw_properties().visible_layer_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   host_impl_.SetExternalDrawConstraints(transform,
                                         viewport,
@@ -1621,8 +1621,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
   gfx::Rect layer_invalidation(150, 200, 30, 180);
   SetupTreesWithInvalidation(pending_pile, active_pile, layer_invalidation);
 
-  active_layer_->draw_properties().visible_content_rect =
-      gfx::Rect(layer_bounds);
+  active_layer_->draw_properties().visible_layer_rect = gfx::Rect(layer_bounds);
 
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, nullptr);
@@ -1652,7 +1651,7 @@ TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
 
   SetupTrees(pending_pile, active_pile);
 
-  active_layer_->draw_properties().visible_content_rect = visible_rect;
+  active_layer_->draw_properties().visible_layer_rect = visible_rect;
 
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
@@ -1744,7 +1743,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
   gfx::Rect external_viewport_for_tile_priority(400, 200);
-  gfx::Rect visible_content_rect(200, 400);
+  gfx::Rect visible_layer_rect(200, 400);
 
   scoped_refptr<FakePicturePileImpl> active_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
@@ -1772,7 +1771,7 @@ TEST_F(NoLowResPictureLayerImplTest,
 
   // Set visible content rect that is different from
   // external_viewport_for_tile_priority.
-  pending_layer_->draw_properties().visible_content_rect = visible_content_rect;
+  pending_layer_->draw_properties().visible_layer_rect = visible_layer_rect;
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
   pending_layer_->UpdateTiles(resourceless_software_draw);
 
@@ -1780,7 +1779,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   // activation.
   gfx::Rect viewport_for_tile_priority =
       pending_layer_->viewport_rect_for_tile_priority_in_content_space();
-  viewport_for_tile_priority.Intersect(pending_layer_->visible_content_rect());
+  viewport_for_tile_priority.Intersect(pending_layer_->visible_layer_rect());
 
   EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
 
@@ -1809,7 +1808,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   // Activate and draw active layer.
   host_impl_.ActivateSyncTree();
   host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
-  active_layer_->draw_properties().visible_content_rect = visible_content_rect;
+  active_layer_->draw_properties().visible_layer_rect = visible_layer_rect;
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
@@ -2915,7 +2914,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   // No NOW tiles.
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
 
-  pending_layer_->draw_properties().visible_content_rect =
+  pending_layer_->draw_properties().visible_layer_rect =
       gfx::Rect(1100, 1100, 500, 500);
   bool resourceless_software_draw = false;
   pending_layer_->UpdateTiles(resourceless_software_draw);
@@ -2945,7 +2944,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
 
-  pending_layer_->draw_properties().visible_content_rect =
+  pending_layer_->draw_properties().visible_layer_rect =
       gfx::Rect(0, 0, 500, 500);
   pending_layer_->UpdateTiles(resourceless_software_draw);
 
@@ -3065,7 +3064,7 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
     for (PictureLayerTiling::CoverageIterator iter(
-             tiling, 1.f, pending_layer_->visible_content_rect());
+             tiling, 1.f, pending_layer_->visible_layer_rect());
          iter; ++iter) {
       if (mark_required) {
         number_of_marked_tiles++;
@@ -3208,7 +3207,7 @@ TEST_F(PictureLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(active_layer_->visible_content_rect());
+    gfx::Rect occluded(active_layer_->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(active_layer_, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
@@ -3567,7 +3566,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
                                         viewport,
                                         transform,
                                         resourceless_software_draw);
-  active_layer_->draw_properties().visible_content_rect = viewport;
+  active_layer_->draw_properties().visible_layer_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   active_layer_->UpdateTiles(resourceless_software_draw);
 
@@ -3583,7 +3582,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   resourceless_software_draw = true;
   viewport = gfx::ScaleToEnclosingRect(viewport, 2);
   transform.Translate(1.f, 1.f);
-  active_layer_->draw_properties().visible_content_rect = viewport;
+  active_layer_->draw_properties().visible_layer_rect = viewport;
   active_layer_->draw_properties().screen_space_transform = transform;
   host_impl_.SetExternalDrawConstraints(transform,
                                         viewport,
@@ -3798,21 +3797,21 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
 
   // SharedQuadState should have be of size 1, as we are doing AppenQuad once.
   EXPECT_EQ(1u, render_pass->shared_quad_state_list.size());
-  // The content_to_target_transform should be scaled by the
+  // The quad_to_target_transform should be scaled by the
   // MaximumTilingContentsScale on the layer.
   EXPECT_EQ(scaled_draw_transform.ToString(),
             render_pass->shared_quad_state_list.front()
-                ->content_to_target_transform.ToString());
+                ->quad_to_target_transform.ToString());
   // The content_bounds should be scaled by the
   // MaximumTilingContentsScale on the layer.
-  EXPECT_EQ(
-      gfx::Size(2500u, 5000u).ToString(),
-      render_pass->shared_quad_state_list.front()->content_bounds.ToString());
-  // The visible_content_rect should be scaled by the
+  EXPECT_EQ(gfx::Size(2500u, 5000u).ToString(),
+            render_pass->shared_quad_state_list.front()
+                ->quad_layer_bounds.ToString());
+  // The visible_layer_rect should be scaled by the
   // MaximumTilingContentsScale on the layer.
   EXPECT_EQ(gfx::Rect(0u, 0u, 2500u, 5000u).ToString(),
             render_pass->shared_quad_state_list.front()
-                ->visible_content_rect.ToString());
+                ->visible_quad_layer_rect.ToString());
 }
 
 class PictureLayerImplTestWithDelegatingRenderer : public PictureLayerImplTest {
@@ -3956,7 +3955,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     // Some tiles may not be visible (i.e. outside the viewport). The rest are
     // visible and at least partially unoccluded, verified by the above expect.
     bool tile_is_visible =
-        tile->content_rect().Intersects(pending_layer_->visible_content_rect());
+        tile->content_rect().Intersects(pending_layer_->visible_layer_rect());
     if (tile_is_visible)
       unoccluded_tile_count++;
     queue->Pop();
@@ -3985,7 +3984,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     EXPECT_FALSE(prioritized_tile.is_occluded());
 
     bool tile_is_visible =
-        tile->content_rect().Intersects(pending_layer_->visible_content_rect());
+        tile->content_rect().Intersects(pending_layer_->visible_layer_rect());
     if (tile_is_visible)
       unoccluded_tile_count++;
     queue->Pop();
@@ -4008,7 +4007,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     EXPECT_FALSE(prioritized_tile.is_occluded());
 
     bool tile_is_visible =
-        tile->content_rect().Intersects(pending_layer_->visible_content_rect());
+        tile->content_rect().Intersects(pending_layer_->visible_layer_rect());
     if (tile_is_visible)
       unoccluded_tile_count++;
     queue->Pop();
@@ -4606,7 +4605,7 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   host_impl_.SetRequiresHighResToDraw();
 
   // Update tiles.
-  pending_layer_->draw_properties().visible_content_rect = viewport;
+  pending_layer_->draw_properties().visible_layer_rect = viewport;
   pending_layer_->draw_properties().screen_space_transform = transform;
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -4620,7 +4619,7 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   viewport = gfx::Rect(0, 2000, 100, 100);
 
   // Update tiles.
-  pending_layer_->draw_properties().visible_content_rect = viewport;
+  pending_layer_->draw_properties().visible_layer_rect = viewport;
   pending_layer_->draw_properties().screen_space_transform = transform;
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);

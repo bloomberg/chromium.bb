@@ -270,7 +270,7 @@ static bool LayerShouldBeSkipped(LayerType* layer,
   // Some additional conditions need to be computed at a later point after the
   // recursion is finished.
   //   - the intersection of render_surface content and layer clip_rect is empty
-  //   - the visible_content_rect is empty
+  //   - the visible_layer_rect is empty
   //
   // Note, if the layer should not have been drawn due to being fully
   // transparent, we would have skipped the entire subtree and never made it

@@ -66,7 +66,7 @@ void DrawViewTree(mojo::Pass* pass,
   auto sqs = mojo::CreateDefaultSQS(view->bounds().size());
   sqs->blend_mode = mojo::SK_XFERMODE_kSrcOver_Mode;
   sqs->opacity = combined_opacity;
-  sqs->content_to_target_transform = mojo::Transform::From(node_transform);
+  sqs->quad_to_target_transform = mojo::Transform::From(node_transform);
 
   pass->quads.push_back(surface_quad.Pass());
   pass->shared_quad_states.push_back(sqs.Pass());

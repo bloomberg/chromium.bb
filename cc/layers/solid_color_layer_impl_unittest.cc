@@ -24,14 +24,14 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(800, 600);
-  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
+  gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
 
   FakeImplProxy proxy;
   TestTaskGraphRunner task_graph_runner;
   FakeLayerTreeHostImpl host_impl(&proxy, nullptr, &task_graph_runner);
   scoped_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
-  layer->draw_properties().visible_content_rect = visible_content_rect;
+  layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
@@ -40,7 +40,7 @@ TEST(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
   layer->AppendQuads(render_pass.get(), &data);
 
   LayerTestCommon::VerifyQuadsExactlyCoverRect(render_pass->quad_list,
-                                               visible_content_rect);
+                                               visible_layer_rect);
 }
 
 TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
@@ -49,14 +49,14 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
+  gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
 
   FakeImplProxy proxy;
   TestTaskGraphRunner task_graph_runner;
   FakeLayerTreeHostImpl host_impl(&proxy, nullptr, &task_graph_runner);
   scoped_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
-  layer->draw_properties().visible_content_rect = visible_content_rect;
+  layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->SetBackgroundColor(test_color);
   layer->SetHasRenderSurface(true);
@@ -77,14 +77,14 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
+  gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
 
   FakeImplProxy proxy;
   TestTaskGraphRunner task_graph_runner;
   FakeLayerTreeHostImpl host_impl(&proxy, nullptr, &task_graph_runner);
   scoped_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
-  layer->draw_properties().visible_content_rect = visible_content_rect;
+  layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->draw_properties().opacity = opacity;
   layer->SetHasRenderSurface(true);
@@ -105,7 +105,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
+  gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
 
   FakeImplProxy proxy;
   TestTaskGraphRunner task_graph_runner;
@@ -125,7 +125,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {
 
 TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_content_rect = gfx::Rect(layer_size);
+  gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
 
   LayerSettings layer_settings;
 
@@ -170,7 +170,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     layer_impl->AppendQuads(render_pass.get(), &data);
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
-    EXPECT_EQ(visible_content_rect.ToString(),
+    EXPECT_EQ(visible_layer_rect.ToString(),
               render_pass->quad_list.front()->opaque_rect.ToString());
   }
 
@@ -227,7 +227,7 @@ TEST(SolidColorLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(solid_color_layer_impl->visible_content_rect());
+    gfx::Rect occluded(solid_color_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(solid_color_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());

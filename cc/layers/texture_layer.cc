@@ -267,16 +267,6 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   }
 }
 
-SimpleEnclosedRegion TextureLayer::VisibleContentOpaqueRegion() const {
-  if (contents_opaque())
-    return SimpleEnclosedRegion(visible_content_rect());
-
-  if (blend_background_color_ && (SkColorGetA(background_color()) == 0xFF))
-    return SimpleEnclosedRegion(visible_content_rect());
-
-  return SimpleEnclosedRegion();
-}
-
 TextureLayer::TextureMailboxHolder::MainThreadReference::MainThreadReference(
     TextureMailboxHolder* holder)
     : holder_(holder) {

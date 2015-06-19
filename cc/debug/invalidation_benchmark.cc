@@ -71,9 +71,9 @@ void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
   switch (mode_) {
     case FIXED_SIZE: {
       // Invalidation with a random position and fixed size.
-      gfx::Rect visible_content_rect = layer->visible_content_rect();
-      int x = LCGRandom() * (visible_content_rect.width() - width_);
-      int y = LCGRandom() * (visible_content_rect.height() - height_);
+      gfx::Rect visible_layer_rect = layer->visible_layer_rect();
+      int x = LCGRandom() * (visible_layer_rect.width() - width_);
+      int y = LCGRandom() * (visible_layer_rect.height() - height_);
       gfx::Rect invalidation_rect(x, y, width_, height_);
       layer->SetNeedsDisplayRect(invalidation_rect);
       break;
@@ -85,11 +85,11 @@ void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
     }
     case RANDOM: {
       // Random invalidation inside the viewport.
-      gfx::Rect visible_content_rect = layer->visible_content_rect();
-      int x_min = LCGRandom() * visible_content_rect.width();
-      int x_max = LCGRandom() * visible_content_rect.width();
-      int y_min = LCGRandom() * visible_content_rect.height();
-      int y_max = LCGRandom() * visible_content_rect.height();
+      gfx::Rect visible_layer_rect = layer->visible_layer_rect();
+      int x_min = LCGRandom() * visible_layer_rect.width();
+      int x_max = LCGRandom() * visible_layer_rect.width();
+      int y_min = LCGRandom() * visible_layer_rect.height();
+      int y_max = LCGRandom() * visible_layer_rect.height();
       if (x_min > x_max)
         std::swap(x_min, x_max);
       if (y_min > y_max)
@@ -100,7 +100,7 @@ void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {
     }
     case VIEWPORT: {
       // Invalidate entire viewport.
-      layer->SetNeedsDisplayRect(layer->visible_content_rect());
+      layer->SetNeedsDisplayRect(layer->visible_layer_rect());
       break;
     }
   }

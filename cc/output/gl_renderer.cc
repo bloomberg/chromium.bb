@@ -599,7 +599,7 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
 
   SetShaderOpacity(quad->shared_quad_state->opacity,
                    program->fragment_shader().alpha_location());
-  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+  DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                    quad->rect, program->vertex_shader().matrix_location());
 }
 
@@ -620,7 +620,7 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   gfx::Rect layer_rect = quad->rect;
   gfx::Transform render_matrix;
   QuadRectTransform(&render_matrix,
-                    quad->shared_quad_state->content_to_target_transform,
+                    quad->shared_quad_state->quad_to_target_transform,
                     layer_rect);
   GLRenderer::ToGLMatrix(&gl_matrix[0],
                          frame->projection_matrix * render_matrix);
@@ -927,7 +927,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
-                    quad->shared_quad_state->content_to_target_transform,
+                    quad->shared_quad_state->quad_to_target_transform,
                     quad->rect);
   gfx::Transform contents_device_transform =
       frame->window_matrix * frame->projection_matrix * quad_rect_matrix;
@@ -1081,10 +1081,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   }
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      gl_,
-      &highp_threshold_cache_,
-      highp_threshold_min_,
-      quad->shared_quad_state->visible_content_rect.bottom_right());
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
+      quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   ShaderLocations locations;
 
@@ -1258,7 +1256,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   SetShaderOpacity(quad->shared_quad_state->opacity, locations.alpha);
   SetShaderQuadF(surface_quad, locations.quad);
-  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+  DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                    quad->rect, locations.matrix);
 
   // Flush the compositor context before the filter bitmap goes out of
@@ -1310,10 +1308,10 @@ bool is_bottom(const gfx::QuadF* clip_region, const DrawQuad* quad) {
     return true;
 
   return std::abs(clip_region->p3().y() -
-                  quad->shared_quad_state->content_bounds.height()) <
+                  quad->shared_quad_state->quad_layer_bounds.height()) <
              kAntiAliasingEpsilon &&
          std::abs(clip_region->p4().y() -
-                  quad->shared_quad_state->content_bounds.height()) <
+                  quad->shared_quad_state->quad_layer_bounds.height()) <
              kAntiAliasingEpsilon;
 }
 
@@ -1334,10 +1332,10 @@ bool is_right(const gfx::QuadF* clip_region, const DrawQuad* quad) {
     return true;
 
   return std::abs(clip_region->p2().x() -
-                  quad->shared_quad_state->content_bounds.width()) <
+                  quad->shared_quad_state->quad_layer_bounds.width()) <
              kAntiAliasingEpsilon &&
          std::abs(clip_region->p3().x() -
-                  quad->shared_quad_state->content_bounds.width()) <
+                  quad->shared_quad_state->quad_layer_bounds.width()) <
              kAntiAliasingEpsilon;
 }
 }  // anonymous namespace
@@ -1584,7 +1582,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
 
   gfx::Transform device_transform =
       frame->window_matrix * frame->projection_matrix *
-      quad->shared_quad_state->content_to_target_transform;
+      quad->shared_quad_state->quad_to_target_transform;
   device_transform.FlattenTo2d();
   if (!device_transform.IsInvertible())
     return;
@@ -1601,7 +1599,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
     bool force_aa = false;
     device_layer_quad = MathUtil::MapQuad(
         device_transform,
-        gfx::QuadF(quad->shared_quad_state->visible_content_rect), &clipped);
+        gfx::QuadF(quad->shared_quad_state->visible_quad_layer_rect), &clipped);
     use_aa = ShouldAntialiasQuad(device_layer_quad, clipped, force_aa);
   }
 
@@ -1649,7 +1647,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   gfx::RectF centered_rect(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
       tile_rect.size());
-  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+  DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                    centered_rect, uniforms.matrix_location);
 }
 
@@ -1693,7 +1691,7 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
                                  const gfx::QuadF* clip_region) {
   gfx::Transform device_transform =
       frame->window_matrix * frame->projection_matrix *
-      quad->shared_quad_state->content_to_target_transform;
+      quad->shared_quad_state->quad_to_target_transform;
   device_transform.FlattenTo2d();
 
   gfx::QuadF device_layer_quad;
@@ -1704,7 +1702,7 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
     bool force_aa = false;
     device_layer_quad = MathUtil::MapQuad(
         device_transform,
-        gfx::QuadF(quad->shared_quad_state->visible_content_rect), &clipped);
+        gfx::QuadF(quad->shared_quad_state->visible_quad_layer_rect), &clipped);
     use_aa = ShouldAntialiasQuad(device_layer_quad, clipped, force_aa);
   }
 
@@ -1835,7 +1833,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   gfx::RectF centered_rect(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
       tile_rect.size());
-  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+  DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                    centered_rect, uniforms.matrix_location);
 }
 
@@ -1851,7 +1849,7 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
 
   bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
   GLenum filter = (scaled ||
-                   !quad->shared_quad_state->content_to_target_transform
+                   !quad->shared_quad_state->quad_to_target_transform
                         .IsIdentityOrIntegerTranslation()) &&
                           !quad->nearest_neighbor
                       ? GL_LINEAR
@@ -1951,7 +1949,7 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   static float gl_matrix[16];
   ToGLMatrix(&gl_matrix[0],
              frame->projection_matrix *
-                 quad->shared_quad_state->content_to_target_transform);
+                 quad->shared_quad_state->quad_to_target_transform);
   gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
@@ -1963,10 +1961,8 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      gl_,
-      &highp_threshold_cache_,
-      highp_threshold_min_,
-      quad->shared_quad_state->visible_content_rect.bottom_right());
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
+      quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   bool use_alpha_plane = quad->a_plane_resource_id() != 0;
 
@@ -2159,8 +2155,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   SetShaderOpacity(quad->shared_quad_state->opacity, alpha_location);
   if (!clip_region) {
-    DrawQuadGeometry(frame,
-                     quad->shared_quad_state->content_to_target_transform,
+    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                      tile_rect, matrix_location);
   } else {
     float uvs[8] = {0};
@@ -2169,7 +2164,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     region_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
     region_quad -= gfx::Vector2dF(0.5f, 0.5f);
     DrawQuadGeometryClippedByQuadF(
-        frame, quad->shared_quad_state->content_to_target_transform, tile_rect,
+        frame, quad->shared_quad_state->quad_to_target_transform, tile_rect,
         region_quad, matrix_location, uvs);
   }
 }
@@ -2184,10 +2179,8 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   DCHECK(capabilities_.using_egl_image);
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      gl_,
-      &highp_threshold_cache_,
-      highp_threshold_min_,
-      quad->shared_quad_state->visible_content_rect.bottom_right());
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
+      quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   const VideoStreamTextureProgram* program =
       GetVideoStreamTextureProgram(tex_coord_precision);
@@ -2207,8 +2200,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   SetShaderOpacity(quad->shared_quad_state->opacity,
                    program->fragment_shader().alpha_location());
   if (!clip_region) {
-    DrawQuadGeometry(frame,
-                     quad->shared_quad_state->content_to_target_transform,
+    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                      quad->rect, program->vertex_shader().matrix_location());
   } else {
     gfx::QuadF region_quad(*clip_region);
@@ -2217,7 +2209,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
     float uvs[8] = {0};
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
     DrawQuadGeometryClippedByQuadF(
-        frame, quad->shared_quad_state->content_to_target_transform, quad->rect,
+        frame, quad->shared_quad_state->quad_to_target_transform, quad->rect,
         region_quad, program->vertex_shader().matrix_location(), uvs);
   }
 }
@@ -2333,10 +2325,8 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   }
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      gl_,
-      &highp_threshold_cache_,
-      highp_threshold_min_,
-      quad->shared_quad_state->visible_content_rect.bottom_right());
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
+      quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->resource_id());
@@ -2399,7 +2389,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   // Generate the transform matrix
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
-                    quad->shared_quad_state->content_to_target_transform,
+                    quad->shared_quad_state->quad_to_target_transform,
                     quad->rect);
   quad_rect_matrix = frame->projection_matrix * quad_rect_matrix;
 
@@ -2435,10 +2425,8 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      gl_,
-      &highp_threshold_cache_,
-      highp_threshold_min_,
-      quad->shared_quad_state->visible_content_rect.bottom_right());
+      gl_, &highp_threshold_cache_, highp_threshold_min_,
+      quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
   binding.Set(GetTextureIOSurfaceProgram(tex_coord_precision));
@@ -2467,14 +2455,13 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
   gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, lock.texture_id());
 
   if (!clip_region) {
-    DrawQuadGeometry(frame,
-                     quad->shared_quad_state->content_to_target_transform,
+    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                      quad->rect, binding.matrix_location);
   } else {
     float uvs[8] = {0};
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
     DrawQuadGeometryClippedByQuadF(
-        frame, quad->shared_quad_state->content_to_target_transform, quad->rect,
+        frame, quad->shared_quad_state->quad_to_target_transform, quad->rect,
         *clip_region, binding.matrix_location, uvs);
   }
 

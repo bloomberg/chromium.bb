@@ -235,34 +235,6 @@ TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendBackgroundColor(true));
 }
 
-TEST_F(TextureLayerTest, VisibleContentOpaqueRegion) {
-  const gfx::Size layer_bounds(100, 100);
-  const gfx::Rect layer_rect(layer_bounds);
-  const Region layer_region(layer_rect);
-
-  scoped_refptr<TextureLayer> layer =
-      TextureLayer::CreateForMailbox(layer_settings_, nullptr);
-  layer->SetBounds(layer_bounds);
-  layer->draw_properties().visible_content_rect = layer_rect;
-  layer->SetBlendBackgroundColor(true);
-
-  // Verify initial conditions.
-  EXPECT_FALSE(layer->contents_opaque());
-  EXPECT_EQ(0u, layer->background_color());
-  EXPECT_EQ(Region().ToString(),
-            layer->VisibleContentOpaqueRegion().ToString());
-
-  // Opaque background.
-  layer->SetBackgroundColor(SK_ColorWHITE);
-  EXPECT_EQ(layer_region.ToString(),
-            layer->VisibleContentOpaqueRegion().ToString());
-
-  // Transparent background.
-  layer->SetBackgroundColor(SkColorSetARGB(100, 255, 255, 255));
-  EXPECT_EQ(Region().ToString(),
-            layer->VisibleContentOpaqueRegion().ToString());
-}
-
 TEST_F(TextureLayerTest, RateLimiter) {
   FakeTextureLayerClient client;
   scoped_refptr<TextureLayer> test_layer =

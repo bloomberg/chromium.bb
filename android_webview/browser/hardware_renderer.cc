@@ -150,15 +150,15 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
 
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->content_to_target_transform = transform;
-  quad_state->content_bounds = frame_size_;
-  quad_state->visible_content_rect = gfx::Rect(frame_size_);
+  quad_state->quad_to_target_transform = transform;
+  quad_state->quad_layer_bounds = frame_size_;
+  quad_state->visible_quad_layer_rect = gfx::Rect(frame_size_);
   quad_state->opacity = 1.f;
 
   cc::SurfaceDrawQuad* surface_quad =
       render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  surface_quad->SetNew(quad_state, gfx::Rect(quad_state->content_bounds),
-                       gfx::Rect(quad_state->content_bounds), child_id_);
+  surface_quad->SetNew(quad_state, gfx::Rect(quad_state->quad_layer_bounds),
+                       gfx::Rect(quad_state->quad_layer_bounds), child_id_);
 
   scoped_ptr<cc::DelegatedFrameData> delegated_frame(
       new cc::DelegatedFrameData);

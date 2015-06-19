@@ -63,7 +63,7 @@ TEST(VideoLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(video_layer_impl->visible_content_rect());
+    gfx::Rect occluded(video_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
@@ -176,10 +176,10 @@ TEST(VideoLayerImplTest, Rotated0) {
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p1);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(0, 50, 0), p1);
   EXPECT_EQ(gfx::Point3F(100, 0, 0), p2);
 }
@@ -215,10 +215,10 @@ TEST(VideoLayerImplTest, Rotated90) {
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p1);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(0, 0, 0), p1);
   EXPECT_EQ(gfx::Point3F(100, 50, 0), p2);
 }
@@ -254,10 +254,10 @@ TEST(VideoLayerImplTest, Rotated180) {
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p1);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(100, 0, 0), p1);
   EXPECT_EQ(gfx::Point3F(0, 50, 0), p2);
 }
@@ -293,10 +293,10 @@ TEST(VideoLayerImplTest, Rotated270) {
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p1);
   impl.quad_list()
       .front()
-      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
+      ->shared_quad_state->quad_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(100, 50, 0), p1);
   EXPECT_EQ(gfx::Point3F(0, 0, 0), p2);
 }

@@ -52,7 +52,7 @@ DrawPolygon::DrawPolygon(const DrawQuad* original,
 // a visible content rect to make the 4 corner points from, and a transformation
 // to move it and its normal into screen space.
 DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
-                         const gfx::RectF& visible_content_rect,
+                         const gfx::RectF& visible_layer_rect,
                          const gfx::Transform& transform,
                          int draw_order_index)
     : normal_(0.0f, 0.0f, 1.0f),
@@ -61,7 +61,7 @@ DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
       is_split_(false) {
   gfx::Point3F points[8];
   int num_vertices_in_clipped_quad;
-  gfx::QuadF send_quad(visible_content_rect);
+  gfx::QuadF send_quad(visible_layer_rect);
 
   // Doing this mapping here is very important, since we can't just transform
   // the points without clipping and not run into strange geometry issues when

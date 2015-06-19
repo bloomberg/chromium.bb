@@ -1470,8 +1470,7 @@ TEST_F(LayerTreeImplTest,
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
 
   // Check whether the child layer fits into the root after scaled.
-  EXPECT_EQ(gfx::Rect(test_layer->bounds()),
-            test_layer->visible_content_rect());
+  EXPECT_EQ(gfx::Rect(test_layer->bounds()), test_layer->visible_layer_rect());
 
   // Hit checking for a point outside the layer should return a null pointer
   // (the root layer does not draw content, so it will not be tested either).

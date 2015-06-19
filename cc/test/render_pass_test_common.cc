@@ -193,8 +193,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   transformed_state->CopyFrom(shared_state);
   gfx::Transform rotation;
   rotation.Rotate(45);
-  transformed_state->content_to_target_transform =
-      transformed_state->content_to_target_transform * rotation;
+  transformed_state->quad_to_target_transform =
+      transformed_state->quad_to_target_transform * rotation;
   TileDrawQuad* transformed_tile_quad =
       this->CreateAndAppendDrawQuad<TileDrawQuad>();
   transformed_tile_quad->SetNew(transformed_state,

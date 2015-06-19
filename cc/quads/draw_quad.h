@@ -96,13 +96,13 @@ class CC_EXPORT DrawQuad {
   // Is the right edge of this tile aligned with the originating layer's
   // right edge?
   bool IsRightEdge() const {
-    return rect.right() == shared_quad_state->content_bounds.width();
+    return rect.right() == shared_quad_state->quad_layer_bounds.width();
   }
 
   // Is the bottom edge of this tile aligned with the originating layer's
   // bottom edge?
   bool IsBottomEdge() const {
-    return rect.bottom() == shared_quad_state->content_bounds.height();
+    return rect.bottom() == shared_quad_state->quad_layer_bounds.height();
   }
 
   // Is any edge of this tile aligned with the originating layer's

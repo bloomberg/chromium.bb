@@ -283,10 +283,9 @@ void LayerImpl::ClearRenderSurfaceLayerList() {
 
 void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
   state->SetAll(draw_properties_.target_space_transform, bounds(),
-                draw_properties_.visible_content_rect,
-                draw_properties_.clip_rect, draw_properties_.is_clipped,
-                draw_properties_.opacity, draw_properties_.blend_mode,
-                sorting_context_id_);
+                draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
+                draw_properties_.is_clipped, draw_properties_.opacity,
+                draw_properties_.blend_mode, sorting_context_id_);
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
@@ -295,14 +294,14 @@ void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
   gfx::Size scaled_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
-  gfx::Rect scaled_visible_content_rect =
-      gfx::ScaleToEnclosingRect(visible_content_rect(), scale);
-  scaled_visible_content_rect.Intersect(gfx::Rect(scaled_bounds));
+  gfx::Rect scaled_visible_layer_rect =
+      gfx::ScaleToEnclosingRect(visible_layer_rect(), scale);
+  scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
 
-  state->SetAll(scaled_draw_transform, scaled_bounds,
-                scaled_visible_content_rect, draw_properties().clip_rect,
-                draw_properties().is_clipped, draw_properties().opacity,
-                draw_properties().blend_mode, sorting_context_id_);
+  state->SetAll(scaled_draw_transform, scaled_bounds, scaled_visible_layer_rect,
+                draw_properties().clip_rect, draw_properties().is_clipped,
+                draw_properties().opacity, draw_properties().blend_mode,
+                sorting_context_id_);
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,
@@ -1259,9 +1258,9 @@ void LayerImpl::SetDoubleSided(bool double_sided) {
   NoteLayerPropertyChangedForSubtree();
 }
 
-SimpleEnclosedRegion LayerImpl::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion LayerImpl::VisibleOpaqueRegion() const {
   if (contents_opaque())
-    return SimpleEnclosedRegion(visible_content_rect());
+    return SimpleEnclosedRegion(visible_layer_rect());
   return SimpleEnclosedRegion();
 }
 

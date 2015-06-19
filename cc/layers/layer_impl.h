@@ -391,8 +391,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Rect drawable_content_rect() const {
     return draw_properties_.drawable_content_rect;
   }
-  gfx::Rect visible_content_rect() const {
-    return draw_properties_.visible_content_rect;
+  gfx::Rect visible_layer_rect() const {
+    return draw_properties_.visible_layer_rect;
   }
   LayerImpl* render_target() {
     DCHECK(!draw_properties_.render_target ||
@@ -558,7 +558,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return layer_animation_controller_.get();
   }
 
-  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const;
+  virtual SimpleEnclosedRegion VisibleOpaqueRegion() const;
 
   virtual void DidBecomeActive();
 

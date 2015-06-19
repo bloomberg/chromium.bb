@@ -183,14 +183,15 @@ enum SkXfermode {
 };
 
 struct SharedQuadState {
-  // Transforms from quad's original content space to its target content space.
-  Transform content_to_target_transform;
+  // Transforms quad rects into the target content space.
+  Transform quad_to_target_transform;
 
-  // This size lives in the content space for the quad's originating layer.
-  Size content_bounds;
+  // The size of the quads' originating layer in the space of the quad rects.
+  Size quad_layer_bounds;
 
-  // This rect lives in the content space for the quad's originating layer.
-  Rect visible_content_rect;
+  // The size of the visible area in the quads' originating layer, in the space
+  // of the quad rects.
+  Rect visible_quad_layer_rect;
 
   // This rect lives in the target content space.
   Rect clip_rect;

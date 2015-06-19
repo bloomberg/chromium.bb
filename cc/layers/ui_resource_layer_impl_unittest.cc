@@ -28,10 +28,10 @@ scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
     const gfx::Size& layer_size,
     bool opaque,
     UIResourceId uid) {
-  gfx::Rect visible_content_rect(layer_size);
+  gfx::Rect visible_layer_rect(layer_size);
   scoped_ptr<UIResourceLayerImpl> layer =
       UIResourceLayerImpl::Create(host_impl->active_tree(), 1);
-  layer->draw_properties().visible_content_rect = visible_content_rect;
+  layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
   layer->SetHasRenderSurface(true);
   layer->draw_properties().render_target = layer.get();
@@ -190,7 +190,7 @@ TEST(UIResourceLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(ui_resource_layer_impl->visible_content_rect());
+    gfx::Rect occluded(ui_resource_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(ui_resource_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());

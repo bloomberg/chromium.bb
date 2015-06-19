@@ -144,7 +144,6 @@ class CC_EXPORT TextureLayer : public Layer {
   void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   bool Update() override;
   void PushPropertiesTo(LayerImpl* layer) override;
-  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
 
  protected:
   TextureLayer(const LayerSettings& settings, TextureLayerClient* client);

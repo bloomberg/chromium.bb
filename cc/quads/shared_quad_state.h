@@ -32,9 +32,9 @@ class CC_EXPORT SharedQuadState {
 
   void CopyFrom(const SharedQuadState* other);
 
-  void SetAll(const gfx::Transform& content_to_target_transform,
-              const gfx::Size& content_bounds,
-              const gfx::Rect& visible_content_rect,
+  void SetAll(const gfx::Transform& quad_to_target_transform,
+              const gfx::Size& layer_bounds,
+              const gfx::Rect& visible_layer_rect,
               const gfx::Rect& clip_rect,
               bool is_clipped,
               float opacity,
@@ -42,12 +42,13 @@ class CC_EXPORT SharedQuadState {
               int sorting_context_id);
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
-  // Transforms from quad's original content space to its target content space.
-  gfx::Transform content_to_target_transform;
-  // This size lives in the content space for the quad's originating layer.
-  gfx::Size content_bounds;
-  // This rect lives in the content space for the quad's originating layer.
-  gfx::Rect visible_content_rect;
+  // Transforms quad rects into the target content space.
+  gfx::Transform quad_to_target_transform;
+  // The size of the quads' originating layer in the space of the quad rects.
+  gfx::Size quad_layer_bounds;
+  // The size of the visible area in the quads' originating layer, in the space
+  // of the quad rects.
+  gfx::Rect visible_quad_layer_rect;
   // This rect lives in the target content space.
   gfx::Rect clip_rect;
   bool is_clipped;

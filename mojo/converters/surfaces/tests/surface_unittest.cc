@@ -173,10 +173,10 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
 }
 
 TEST(SurfaceLibTest, SharedQuadState) {
-  gfx::Transform content_to_target_transform;
-  content_to_target_transform.Scale3d(0.3f, 0.7f, 0.9f);
-  gfx::Size content_bounds(57, 39);
-  gfx::Rect visible_content_rect(3, 7, 28, 42);
+  gfx::Transform quad_to_target_transform;
+  quad_to_target_transform.Scale3d(0.3f, 0.7f, 0.9f);
+  gfx::Size quad_layer_bounds(57, 39);
+  gfx::Rect visible_quad_layer_rect(3, 7, 28, 42);
   gfx::Rect clip_rect(9, 12, 21, 31);
   bool is_clipped = true;
   float opacity = 0.65f;
@@ -184,21 +184,17 @@ TEST(SurfaceLibTest, SharedQuadState) {
   ::SkXfermode::Mode blend_mode = ::SkXfermode::kSrcOver_Mode;
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(content_to_target_transform,
-              content_bounds,
-              visible_content_rect,
-              clip_rect,
-              is_clipped,
-              opacity,
-              blend_mode,
-              sorting_context_id);
+  sqs->SetAll(quad_to_target_transform, quad_layer_bounds,
+              visible_quad_layer_rect, clip_rect, is_clipped, opacity,
+              blend_mode, sorting_context_id);
 
   SharedQuadStatePtr mojo_sqs = SharedQuadState::From(*sqs);
   ASSERT_FALSE(mojo_sqs.is_null());
-  EXPECT_EQ(Transform::From(content_to_target_transform),
-            mojo_sqs->content_to_target_transform);
-  EXPECT_EQ(Size::From(content_bounds), mojo_sqs->content_bounds);
-  EXPECT_EQ(Rect::From(visible_content_rect), mojo_sqs->visible_content_rect);
+  EXPECT_EQ(Transform::From(quad_to_target_transform),
+            mojo_sqs->quad_to_target_transform);
+  EXPECT_EQ(Size::From(quad_layer_bounds), mojo_sqs->quad_layer_bounds);
+  EXPECT_EQ(Rect::From(visible_quad_layer_rect),
+            mojo_sqs->visible_quad_layer_rect);
   EXPECT_EQ(Rect::From(clip_rect), mojo_sqs->clip_rect);
   EXPECT_EQ(is_clipped, mojo_sqs->is_clipped);
   EXPECT_EQ(opacity, mojo_sqs->opacity);
@@ -219,24 +215,19 @@ TEST(SurfaceLibTest, RenderPass) {
                transform_to_root_target,
                has_transparent_background);
 
-  gfx::Transform content_to_target_transform;
-  content_to_target_transform.Scale3d(0.3f, 0.7f, 0.9f);
-  gfx::Size content_bounds(57, 39);
-  gfx::Rect visible_content_rect(3, 7, 28, 42);
+  gfx::Transform quad_to_target_transform;
+  quad_to_target_transform.Scale3d(0.3f, 0.7f, 0.9f);
+  gfx::Size quad_layer_bounds(57, 39);
+  gfx::Rect visible_quad_layer_rect(3, 7, 28, 42);
   gfx::Rect clip_rect(9, 12, 21, 31);
   bool is_clipped = true;
   float opacity = 0.65f;
   int sorting_context_id = 13;
   ::SkXfermode::Mode blend_mode = ::SkXfermode::kSrcOver_Mode;
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(content_to_target_transform,
-              content_bounds,
-              visible_content_rect,
-              clip_rect,
-              is_clipped,
-              opacity,
-              blend_mode,
-              sorting_context_id);
+  sqs->SetAll(quad_to_target_transform, quad_layer_bounds,
+              visible_quad_layer_rect, clip_rect, is_clipped, opacity,
+              blend_mode, sorting_context_id);
 
   gfx::Rect rect(5, 7, 13, 19);
   gfx::Rect opaque_rect(rect);
@@ -306,10 +297,9 @@ TEST(SurfaceLibTest, RenderPass) {
 
   cc::SharedQuadState* round_trip_sqs =
       round_trip_pass->shared_quad_state_list.front();
-  EXPECT_EQ(content_to_target_transform,
-            round_trip_sqs->content_to_target_transform);
-  EXPECT_EQ(content_bounds, round_trip_sqs->content_bounds);
-  EXPECT_EQ(visible_content_rect, round_trip_sqs->visible_content_rect);
+  EXPECT_EQ(quad_to_target_transform, round_trip_sqs->quad_to_target_transform);
+  EXPECT_EQ(quad_layer_bounds, round_trip_sqs->quad_layer_bounds);
+  EXPECT_EQ(visible_quad_layer_rect, round_trip_sqs->visible_quad_layer_rect);
   EXPECT_EQ(clip_rect, round_trip_sqs->clip_rect);
   EXPECT_EQ(is_clipped, round_trip_sqs->is_clipped);
   EXPECT_EQ(opacity, round_trip_sqs->opacity);

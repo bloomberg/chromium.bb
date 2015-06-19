@@ -713,7 +713,7 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     layer_tree_root->SetScrollOffset(gfx::ScrollOffset(10, 20));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
-    scrollbar_layer->draw_properties().visible_content_rect =
+    scrollbar_layer->draw_properties().visible_layer_rect =
         gfx::Rect(0, 0, 100, 200);
     scrollbar_layer->CreateRenderSurface();
     scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
@@ -776,7 +776,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   layer_tree_root->SetBounds(gfx::Size(100, 200));
   content_layer->SetBounds(gfx::Size(100, 200));
 
-  scrollbar_layer->draw_properties().visible_content_rect =
+  scrollbar_layer->draw_properties().visible_layer_rect =
       gfx::Rect(0, 0, 100, 200);
 
   scrollbar_layer->CreateRenderSurface();
@@ -909,7 +909,7 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     scrollbar_layer->SetPosition(scrollbar_location);
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
-    scrollbar_layer->draw_properties().visible_content_rect =
+    scrollbar_layer->draw_properties().visible_layer_rect =
         gfx::Rect(scrollbar_location, scrollbar_layer->bounds());
     scrollbar_layer->CreateRenderSurface();
     scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
@@ -971,7 +971,7 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->SetPosition(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
-    scrollbar_layer->draw_properties().visible_content_rect = scrollbar_rect;
+    scrollbar_layer->draw_properties().visible_layer_rect = scrollbar_rect;
 
     layer_tree_host_->SetDeviceScaleFactor(test_scale);
 

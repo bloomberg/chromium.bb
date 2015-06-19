@@ -39,7 +39,7 @@ TEST(IOSurfaceLayerImplTest, Occlusion) {
 
   {
     SCOPED_TRACE("Full occlusion");
-    gfx::Rect occluded(io_surface_layer_impl->visible_content_rect());
+    gfx::Rect occluded(io_surface_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(io_surface_layer_impl, occluded);
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());

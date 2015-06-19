@@ -117,10 +117,10 @@ bool PictureLayer::Update() {
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update();
 
-  gfx::Rect visible_layer_rect = visible_content_rect();
+  gfx::Rect update_rect = visible_layer_rect();
   gfx::Size layer_size = paint_properties().bounds;
 
-  if (last_updated_visible_content_rect_ == visible_content_rect() &&
+  if (last_updated_visible_layer_rect_ == update_rect &&
       recording_source_->GetSize() == layer_size &&
       pending_invalidation_.IsEmpty()) {
     // Only early out if the visible content rect of this layer hasn't changed.
@@ -145,7 +145,7 @@ bool PictureLayer::Update() {
   if (layer_tree_host()->settings().record_full_layer) {
     // Workaround for http://crbug.com/235910 - to retain backwards compat
     // the full page content must always be provided in the picture layer.
-    visible_layer_rect = gfx::Rect(layer_size);
+    update_rect = gfx::Rect(layer_size);
   }
 
   // UpdateAndExpandInvalidation will give us an invalidation that covers
@@ -154,9 +154,9 @@ bool PictureLayer::Update() {
   // for them.
   DCHECK(client_);
   updated |= recording_source_->UpdateAndExpandInvalidation(
-      client_, &recording_invalidation_, layer_size, visible_layer_rect,
+      client_, &recording_invalidation_, layer_size, update_rect,
       update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
-  last_updated_visible_content_rect_ = visible_content_rect();
+  last_updated_visible_layer_rect_ = visible_layer_rect();
 
   if (updated) {
     SetNeedsPushProperties();

@@ -30,7 +30,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
                 ResourceProvider* resource_provider) override;
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
-  SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
+  SimpleEnclosedRegion VisibleOpaqueRegion() const override;
   void ReleaseResources() override;
 
   // These setter methods don't cause any implicit damage, so the texture client

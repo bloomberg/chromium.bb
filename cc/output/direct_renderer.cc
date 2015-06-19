@@ -461,10 +461,9 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
     // This layer is in a 3D sorting context so we add it to the list of
     // polygons to go into the BSP tree.
     if (quad.shared_quad_state->sorting_context_id != 0) {
-      scoped_ptr<DrawPolygon> new_polygon(
-          new DrawPolygon(*it, quad.visible_rect,
-                          quad.shared_quad_state->content_to_target_transform,
-                          next_polygon_id++));
+      scoped_ptr<DrawPolygon> new_polygon(new DrawPolygon(
+          *it, quad.visible_rect,
+          quad.shared_quad_state->quad_to_target_transform, next_polygon_id++));
       if (new_polygon->points().size() > 2u) {
         poly_list.push_back(new_polygon.Pass());
       }
