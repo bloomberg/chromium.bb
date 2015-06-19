@@ -42,7 +42,13 @@ void TestingDelegate::OnBootstrapError() {
   base::MessageLoop::current()->Quit();
 }
 
-TEST_F(IPCMojoBootstrapTest, Connect) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_Connect DISABLED_Connect
+#else
+#define MAYBE_Connect Connect
+#endif
+TEST_F(IPCMojoBootstrapTest, MAYBE_Connect) {
   Init("IPCMojoBootstrapTestClient");
 
   TestingDelegate delegate;

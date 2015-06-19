@@ -145,7 +145,13 @@ class TestChannelListenerWithExtraExpectations
   bool is_connected_called_;
 };
 
-TEST_F(IPCChannelMojoTest, ConnectedFromClient) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_ConnectedFromClient DISABLED_ConnectedFromClient
+#else
+#define MAYBE_ConnectedFromClient ConnectedFromClient
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_ConnectedFromClient) {
   InitWithMojo("IPCChannelMojoTestClient");
 
   // Set up IPC channel and start client.
@@ -255,7 +261,13 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoErraticTestClient) {
   return 0;
 }
 
-TEST_F(IPCChannelMojoErrorTest, SendFailWithPendingMessages) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_SendFailWithPendingMessages DISABLED_SendFailWithPendingMessages
+#else
+#define MAYBE_SendFailWithPendingMessages SendFailWithPendingMessages
+#endif
+TEST_F(IPCChannelMojoErrorTest, MAYBE_SendFailWithPendingMessages) {
   InitWithMojo("IPCChannelMojoErraticTestClient");
 
   // Set up IPC channel and start client.
@@ -395,7 +407,13 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
   IPC::Sender* sender_;
 };
 
-TEST_F(IPCChannelMojoTest, SendMessagePipe) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_SendMessagePipe DISABLED_SendMessagePipe
+#else
+#define MAYBE_SendMessagePipe SendMessagePipe
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_SendMessagePipe) {
   InitWithMojo("IPCChannelMojoTestSendMessagePipeClient");
 
   ListenerThatExpectsOK listener;
@@ -486,7 +504,13 @@ void ParamTraitMessagePipeClient(bool receiving_valid_handle,
   client.Close();
 }
 
-TEST_F(IPCChannelMojoTest, ParamTraitValidMessagePipe) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_ParamTraitValidMessagePipe DISABLED_ParamTraitValidMessagePipe
+#else
+#define MAYBE_ParamTraitValidMessagePipe ParamTraitValidMessagePipe
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_ParamTraitValidMessagePipe) {
   InitWithMojo("ParamTraitValidMessagePipeClient");
 
   ListenerThatExpectsOK listener;
@@ -514,7 +538,13 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ParamTraitValidMessagePipeClient) {
   return 0;
 }
 
-TEST_F(IPCChannelMojoTest, ParamTraitInvalidMessagePipe) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_ParamTraitInvalidMessagePipe DISABLED_ParamTraitInvalidMessagePipe
+#else
+#define MAYBE_ParamTraitInvalidMessagePipe ParamTraitInvalidMessagePipe
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_ParamTraitInvalidMessagePipe) {
   InitWithMojo("ParamTraitInvalidMessagePipeClient");
 
   ListenerThatExpectsOK listener;
@@ -623,8 +653,13 @@ class ListenerThatExpectsFile : public IPC::Listener {
   IPC::Sender* sender_;
 };
 
-
-TEST_F(IPCChannelMojoTest, SendPlatformHandle) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_SendPlatformHandle DISABLED_SendPlatformHandle
+#else
+#define MAYBE_SendPlatformHandle SendPlatformHandle
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_SendPlatformHandle) {
   InitWithMojo("IPCChannelMojoTestSendPlatformHandleClient");
 
   ListenerThatExpectsOK listener;
@@ -681,7 +716,13 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
   IPC::Sender* sender_;
 };
 
-TEST_F(IPCChannelMojoTest, SendPlatformHandleAndPipe) {
+// Times out on Android; see http://crbug.com/502290
+#if defined(OS_ANDROID)
+#define MAYBE_SendPlatformHandleAndPipe DISABLED_SendPlatformHandleAndPipe
+#else
+#define MAYBE_SendPlatformHandleAndPipe SendPlatformHandleAndPipe
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_SendPlatformHandleAndPipe) {
   InitWithMojo("IPCChannelMojoTestSendPlatformHandleAndPipeClient");
 
   ListenerThatExpectsOK listener;
