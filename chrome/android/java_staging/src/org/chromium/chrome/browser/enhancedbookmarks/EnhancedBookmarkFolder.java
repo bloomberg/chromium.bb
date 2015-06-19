@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -16,51 +13,17 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItemsAdapter.BookmarkGrid;
-import org.chromium.chrome.browser.widget.CustomShapeDrawable.DarkBackgroundCircularDrawable;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**
  * A view that shows a bookmark folder's title, in the enhanced bookmarks UI.
  */
-abstract class EnhancedBookmarkFolder extends FrameLayout implements BookmarkGrid {
-
-    @SuppressLint("Instantiatable")
-    static class EnhancedBookmarkListFolder extends EnhancedBookmarkFolder {
-        public EnhancedBookmarkListFolder(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        protected void setupIcon() {
-            DarkBackgroundCircularDrawable icon = new DarkBackgroundCircularDrawable(
-                    BitmapFactory.decodeResource(getResources(), R.drawable.eb_folder));
-            int size = getResources().getDimensionPixelSize(
-                    R.dimen.enhanced_bookmark_folder_item_icon_size);
-            icon.setBounds(0, 0, size, size);
-            ApiCompatibilityUtils.setCompoundDrawablesRelative(mTitle, icon, null, null, null);
-        }
-    }
-
-    @SuppressLint("Instantiatable")
-    static class EnhancedBookmarkGridFolder extends EnhancedBookmarkFolder {
-        public EnhancedBookmarkGridFolder(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        protected void setupIcon() {
-            BitmapDrawable icon = TintedDrawable.constructTintedDrawable(
-                    getResources(), R.drawable.eb_folder);
-            ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    mTitle, icon, null, null, null);
-        }
-    }
-
+public class EnhancedBookmarkFolder extends FrameLayout implements BookmarkGrid {
     private BookmarkId mBookmarkId;
     private EnhancedBookmarkItemHighlightView mHighlightView;
     private EnhancedBookmarkDelegate mDelegate;
-    protected TextView mTitle;
+    private TextView mTitle;
 
     /**
      * Constructor for inflating from XML.
@@ -74,10 +37,11 @@ abstract class EnhancedBookmarkFolder extends FrameLayout implements BookmarkGri
         super.onFinishInflate();
         mHighlightView = (EnhancedBookmarkItemHighlightView) findViewById(R.id.highlight);
         mTitle = (TextView) findViewById(R.id.title);
-        setupIcon();
-    }
 
-    protected abstract void setupIcon();
+        ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(mTitle,
+                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.eb_folder),
+                null, null, null);
+    }
 
     @Override
     public void setBookmarkId(BookmarkId bookmarkId) {

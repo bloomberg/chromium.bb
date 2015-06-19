@@ -7,13 +7,10 @@ package org.chromium.chrome.browser.widget;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -53,29 +50,6 @@ public abstract class CustomShapeDrawable extends Drawable {
         @Override
         public void draw(Canvas canvas) {
             canvas.drawCircle(mRect.centerX(), mRect.centerY(), mRect.height() * 0.5f, mPaint);
-        }
-    }
-
-    /**
-     * A {@link CircularDrawable} with dark background.
-     */
-    public static class DarkBackgroundCircularDrawable extends CircularDrawable {
-        private static final int FOLDER_CIRCLE_BACKGROUND_COLOR = Color.parseColor("#9E9E9E");
-        private Paint mBackgroundPaint = new Paint();
-
-        public DarkBackgroundCircularDrawable(Bitmap bitmap) {
-            super(bitmap);
-            shouldScale(false);
-            mBackgroundPaint.setColor(FOLDER_CIRCLE_BACKGROUND_COLOR);
-            mBackgroundPaint.setAntiAlias(true);
-            mPaint.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
-        }
-
-        @Override
-        public void draw(Canvas canvas) {
-            canvas.drawCircle(mRect.centerX(), mRect.centerY(), mRect.height() * 0.5f,
-                    mBackgroundPaint);
-            super.draw(canvas);
         }
     }
 

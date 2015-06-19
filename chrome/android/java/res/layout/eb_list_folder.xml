@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<view class="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkFolder$EnhancedBookmarkListFolder"
+<view class="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkFolder"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="56dp" >
@@ -14,13 +14,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start|center"
         android:layout_margin="8dp"
-        android:paddingStart="8dp"
-        android:drawablePadding="16dp"
+        android:paddingStart="12dp"
+        android:drawablePadding="28dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:singleLine="true"
         android:textColor="#DF000000"
-        android:textSize="14sp" />
+        android:textSize="16sp" />
 
     <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItemHighlightView
         android:id="@+id/highlight"
