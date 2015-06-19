@@ -591,7 +591,8 @@ bool TrayCast::HasCastExtension() {
 void TrayCast::UpdateCachedReceiverState(
     const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
   has_cast_receivers_ = !receivers_activities.empty();
-  default_->SetVisible(has_cast_receivers_);
+  if (default_)
+    default_->SetVisible(has_cast_receivers_);
 }
 
 void TrayCast::UpdatePrimaryView() {
