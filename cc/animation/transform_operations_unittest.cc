@@ -139,14 +139,34 @@ void GetIdentityOperations(ScopedVector<TransformOperations>* operations) {
   operations->push_back(to_add);
 }
 
-TEST(TransformOperationTest, IdentityAlwaysMatches) {
+TEST(TransformOperationTest, MatchTypesOrder) {
+  TransformOperations mix_order_identity;
+  mix_order_identity.AppendTranslate(0, 0, 0);
+  mix_order_identity.AppendScale(1, 1, 1);
+  mix_order_identity.AppendTranslate(0, 0, 0);
+
+  TransformOperations mix_order_one;
+  mix_order_one.AppendTranslate(0, 1, 0);
+  mix_order_one.AppendScale(2, 1, 3);
+  mix_order_one.AppendTranslate(1, 0, 0);
+
+  TransformOperations mix_order_two;
+  mix_order_two.AppendTranslate(0, 1, 0);
+  mix_order_two.AppendTranslate(1, 0, 0);
+  mix_order_two.AppendScale(2, 1, 3);
+
+  EXPECT_TRUE(mix_order_identity.MatchesTypes(mix_order_one));
+  EXPECT_FALSE(mix_order_identity.MatchesTypes(mix_order_two));
+  EXPECT_FALSE(mix_order_one.MatchesTypes(mix_order_two));
+}
+
+TEST(TransformOperationTest, NoneAlwaysMatches) {
   ScopedVector<TransformOperations> operations;
   GetIdentityOperations(&operations);
 
-  for (size_t i = 0; i < operations.size(); ++i) {
-    for (size_t j = 0; j < operations.size(); ++j)
-      EXPECT_TRUE(operations[i]->MatchesTypes(*operations[j]));
-  }
+  TransformOperations none_operation;
+  for (size_t i = 0; i < operations.size(); ++i)
+    EXPECT_TRUE(operations[i]->MatchesTypes(none_operation));
 }
 
 TEST(TransformOperationTest, ApplyTranslate) {
@@ -427,12 +447,12 @@ TEST(TransformOperationTest, BlendRotationFromIdentity) {
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
     TransformOperations operations;
-    operations.AppendRotate(0, 0, 1, 360);
+    operations.AppendRotate(0, 0, 1, 90);
 
     SkMScalar progress = 0.5f;
 
     gfx::Transform expected;
-    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 180);
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 45);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -440,7 +460,7 @@ TEST(TransformOperationTest, BlendRotationFromIdentity) {
     progress = -0.5f;
 
     expected.MakeIdentity();
-    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), -180);
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), -45);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -448,7 +468,7 @@ TEST(TransformOperationTest, BlendRotationFromIdentity) {
     progress = 1.5f;
 
     expected.MakeIdentity();
-    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 540);
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 135);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, operations.Blend(*identity_operations[i], progress));
@@ -523,41 +543,38 @@ TEST(TransformOperationTest, BlendScaleFromIdentity) {
   }
 }
 
-TEST(TransformOperationTest, BlendSkewFromIdentity) {
-  ScopedVector<TransformOperations> identity_operations;
-  GetIdentityOperations(&identity_operations);
+TEST(TransformOperationTest, BlendSkewFromEmpty) {
+  TransformOperations empty_operation;
 
-  for (size_t i = 0; i < identity_operations.size(); ++i) {
-    TransformOperations operations;
-    operations.AppendSkew(2, 2);
+  TransformOperations operations;
+  operations.AppendSkew(2, 2);
 
-    SkMScalar progress = 0.5f;
+  SkMScalar progress = 0.5f;
 
-    gfx::Transform expected;
-    expected.SkewX(1);
-    expected.SkewY(1);
+  gfx::Transform expected;
+  expected.SkewX(1);
+  expected.SkewY(1);
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected, operations.Blend(*identity_operations[i], progress));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
+                                  operations.Blend(empty_operation, progress));
 
-    progress = -0.5f;
+  progress = -0.5f;
 
-    expected.MakeIdentity();
-    expected.SkewX(-1);
-    expected.SkewY(-1);
+  expected.MakeIdentity();
+  expected.SkewX(-1);
+  expected.SkewY(-1);
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected, operations.Blend(*identity_operations[i], progress));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
+                                  operations.Blend(empty_operation, progress));
 
-    progress = 1.5f;
+  progress = 1.5f;
 
-    expected.MakeIdentity();
-    expected.SkewX(3);
-    expected.SkewY(3);
+  expected.MakeIdentity();
+  expected.SkewX(3);
+  expected.SkewY(3);
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected, operations.Blend(*identity_operations[i], progress));
-  }
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
+                                  operations.Blend(empty_operation, progress));
 }
 
 TEST(TransformOperationTest, BlendPerspectiveFromIdentity) {
@@ -584,12 +601,12 @@ TEST(TransformOperationTest, BlendRotationToIdentity) {
 
   for (size_t i = 0; i < identity_operations.size(); ++i) {
     TransformOperations operations;
-    operations.AppendRotate(0, 0, 1, 360);
+    operations.AppendRotate(0, 0, 1, 90);
 
     SkMScalar progress = 0.5f;
 
     gfx::Transform expected;
-    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 180);
+    expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 45);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
         expected, identity_operations[i]->Blend(operations, progress));
@@ -632,23 +649,20 @@ TEST(TransformOperationTest, BlendScaleToIdentity) {
   }
 }
 
-TEST(TransformOperationTest, BlendSkewToIdentity) {
-  ScopedVector<TransformOperations> identity_operations;
-  GetIdentityOperations(&identity_operations);
+TEST(TransformOperationTest, BlendSkewToEmpty) {
+  TransformOperations empty_operation;
 
-  for (size_t i = 0; i < identity_operations.size(); ++i) {
-    TransformOperations operations;
-    operations.AppendSkew(2, 2);
+  TransformOperations operations;
+  operations.AppendSkew(2, 2);
 
-    SkMScalar progress = 0.5f;
+  SkMScalar progress = 0.5f;
 
-    gfx::Transform expected;
-    expected.SkewX(1);
-    expected.SkewY(1);
+  gfx::Transform expected;
+  expected.SkewX(1);
+  expected.SkewY(1);
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        expected, identity_operations[i]->Blend(operations, progress));
-  }
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
+                                  empty_operation.Blend(operations, progress));
 }
 
 TEST(TransformOperationTest, BlendPerspectiveToIdentity) {

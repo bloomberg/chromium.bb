@@ -163,16 +163,14 @@ bool TransformOperations::ScaleComponent(gfx::Vector3dF* scale) const {
 }
 
 bool TransformOperations::MatchesTypes(const TransformOperations& other) const {
-  if (IsIdentity() || other.IsIdentity())
+  if (operations_.size() == 0 || other.operations_.size() == 0)
     return true;
 
   if (operations_.size() != other.operations_.size())
     return false;
 
   for (size_t i = 0; i < operations_.size(); ++i) {
-    if (operations_[i].type != other.operations_[i].type
-      && !operations_[i].IsIdentity()
-      && !other.operations_[i].IsIdentity())
+    if (operations_[i].type != other.operations_[i].type)
       return false;
   }
 
