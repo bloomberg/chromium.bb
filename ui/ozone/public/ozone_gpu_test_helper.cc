@@ -42,10 +42,12 @@ class FakeGpuProcess : public IPC::Sender {
   }
 
   void InitOnIO() {
-    ui::OzonePlatform::GetInstance()
-        ->GetGpuPlatformSupport()
-        ->GetMessageFilter()
-        ->OnFilterAdded(this);
+    IPC::MessageFilter* filter = ui::OzonePlatform::GetInstance()
+                                     ->GetGpuPlatformSupport()
+                                     ->GetMessageFilter();
+
+    if (filter)
+      filter->OnFilterAdded(this);
   }
 
   bool Send(IPC::Message* msg) override {
