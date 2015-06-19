@@ -134,4 +134,8 @@ WebDataConsumerHandleImpl::obtainReaderInternal(Client* client) {
   return new ReaderImpl(context_, client);
 }
 
+const char* WebDataConsumerHandleImpl::debugName() const {
+  return "WebDataConsumerHandleImpl";
+}
+
 }  // namespace content

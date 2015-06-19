@@ -69,6 +69,7 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
 
  private:
   virtual ReaderImpl* obtainReaderInternal(Client* client);
+  const char* debugName() const override;
   void LockImplicitly();
   void UnlockImplicitly();
 

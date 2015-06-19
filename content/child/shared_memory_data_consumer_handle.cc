@@ -365,4 +365,8 @@ void SharedMemoryDataConsumerHandle::UnlockImplicitly() {
   }
 }
 
+const char* SharedMemoryDataConsumerHandle::debugName() const {
+  return "SharedMemoryDataConsumerHandle";
+}
+
 }  // namespace content

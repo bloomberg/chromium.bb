@@ -45,6 +45,7 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
 
  private:
   virtual ReaderImpl* obtainReaderInternal(Client* client);
+  const char* debugName() const override;
 
   scoped_refptr<Context> context_;
 };
