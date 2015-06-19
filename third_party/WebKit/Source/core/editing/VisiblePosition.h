@@ -112,7 +112,6 @@ public:
 
 private:
     void init(const Position&, EAffinity);
-    Position canonicalPosition(const Position&);
 
     Position leftVisuallyDistinctCandidate() const;
     Position rightVisuallyDistinctCandidate() const;

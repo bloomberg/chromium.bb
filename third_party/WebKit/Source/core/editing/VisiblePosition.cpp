@@ -58,6 +58,8 @@ VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinit
     init(positionWithAffinity.position(), positionWithAffinity.affinity());
 }
 
+static Position canonicalPosition(const Position& passedPosition);
+
 void VisiblePosition::init(const Position& position, EAffinity affinity)
 {
     m_affinity = affinity;
@@ -553,7 +555,7 @@ static Position canonicalizeCandidate(const Position& candidate)
     return candidate;
 }
 
-Position VisiblePosition::canonicalPosition(const Position& passedPosition)
+static Position canonicalPosition(const Position& passedPosition)
 {
     // Sometimes updating selection positions can be extremely expensive and occur
     // frequently.  Often calling preventDefault on mousedown events can avoid
