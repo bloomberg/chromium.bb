@@ -154,7 +154,7 @@ void RegisterGlobalFileDescriptor(JNIEnv* env,
                                   jint fd,
                                   jlong offset,
                                   jlong size) {
-  base::MemoryMappedFile::Region region(offset, size);
+  base::MemoryMappedFile::Region region = {offset, size};
   base::GlobalDescriptors::GetInstance()->Set(id, fd, region);
 }
 

@@ -110,7 +110,7 @@ TEST(DataPackTest, LoadFromFileRegion) {
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
-  base::MemoryMappedFile::Region region(sizeof(kPadding), kSamplePakSize);
+  base::MemoryMappedFile::Region region = {sizeof(kPadding), kSamplePakSize};
   ASSERT_TRUE(pack.LoadFromFileRegion(file.Pass(), region));
 
   base::StringPiece data;

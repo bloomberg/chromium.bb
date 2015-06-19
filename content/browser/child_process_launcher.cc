@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -43,6 +44,7 @@
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
 #include "content/browser/file_descriptor_info_impl.h"
+#include "gin/v8_initializer.h"
 #endif
 
 namespace content {
@@ -141,15 +143,45 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #endif
 #endif
 
-#if defined(OS_ANDROID)
-  // Android WebView runs in single process, ensure that we never get here
-  // when running in single process mode.
-  CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   std::map<int, base::MemoryMappedFile::Region> regions;
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
       *cmd_line, child_process_id, files_to_register.get());
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  base::PlatformFile natives_pf =
+      gin::V8Initializer::GetOpenNativesFileForChildProcesses(
+          &regions[kV8NativesDataDescriptor]);
+  DCHECK_GE(natives_pf, 0);
+  files_to_register->Share(kV8NativesDataDescriptor, natives_pf);
 
-  GetContentClient()->browser()->AppendMappedFileCommandLineSwitches(cmd_line);
+  base::MemoryMappedFile::Region snapshot_region;
+  base::PlatformFile snapshot_pf =
+      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(
+          &snapshot_region);
+  // Failure to load the V8 snapshot is not necessarily an error. V8 can start
+  // up (slower) without the snapshot.
+  if (snapshot_pf != -1) {
+    files_to_register->Share(kV8SnapshotDataDescriptor, snapshot_pf);
+    regions.insert(std::make_pair(kV8SnapshotDataDescriptor, snapshot_region));
+  }
+
+  if (process_type != switches::kZygoteProcess) {
+    cmd_line->AppendSwitch(::switches::kV8NativesPassedByFD);
+    if (snapshot_pf != -1) {
+      cmd_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
+    }
+  }
+#endif  // defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+
+#if defined(OS_ANDROID)
+  files_to_register->Share(
+      kAndroidICUDataDescriptor,
+      base::i18n::GetIcuDataFileHandle(&regions[kAndroidICUDataDescriptor]));
+
+  // Android WebView runs in single process, ensure that we never get here
+  // when running in single process mode.
+  CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
 
   StartChildProcess(
       cmd_line->argv(), child_process_id, files_to_register.Pass(), regions,
@@ -161,11 +193,6 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   // child termination.
 
 #if !defined(OS_MACOSX)
-  GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
-      *cmd_line, child_process_id, files_to_register.get());
-
-  GetContentClient()->browser()->AppendMappedFileCommandLineSwitches(cmd_line);
-
   if (use_zygote) {
     base::ProcessHandle handle = ZygoteHostImpl::GetInstance()->ForkRequest(
         cmd_line->argv(), files_to_register.Pass(), process_type);

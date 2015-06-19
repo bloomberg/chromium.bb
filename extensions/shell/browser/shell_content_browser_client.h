@@ -52,21 +52,12 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   void SiteInstanceDeleting(content::SiteInstance* site_instance) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
-  void AppendMappedFileCommandLineSwitches(
-      base::CommandLine* command_line) override;
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
   content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_process_id) override;
   void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) override;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  void GetAdditionalMappedFilesForChildProcess(
-      const base::CommandLine& command_line,
-      int child_process_id,
-      content::FileDescriptorInfo* mappings) override;
-#endif
-
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
  protected:
@@ -81,13 +72,6 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
 
   // Returns the extension or app associated with |site_instance| or NULL.
   const Extension* GetExtension(content::SiteInstance* site_instance);
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::ScopedFD v8_natives_fd_;
-  base::ScopedFD v8_snapshot_fd_;
-  bool natives_fd_exists() { return v8_natives_fd_ != -1; }
-  bool snapshot_fd_exists() { return v8_snapshot_fd_ != -1; }
-#endif
 
   // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* browser_main_parts_;

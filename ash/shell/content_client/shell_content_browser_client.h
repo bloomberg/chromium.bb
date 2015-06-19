@@ -33,26 +33,10 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
-  void AppendMappedFileCommandLineSwitches(
-      base::CommandLine* command_line) override;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  void GetAdditionalMappedFilesForChildProcess(
-      const base::CommandLine& command_line,
-      int child_process_id,
-      content::FileDescriptorInfo* mappings) override;
-#endif
 
   content::ShellBrowserContext* browser_context();
 
  private:
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  bool natives_fd_exists() { return v8_natives_fd_.is_valid(); }
-  bool snapshot_fd_exists() { return v8_snapshot_fd_.is_valid(); }
-
-  base::ScopedFD v8_natives_fd_;
-  base::ScopedFD v8_snapshot_fd_;
-#endif
-
   ShellBrowserMainParts* shell_browser_main_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentBrowserClient);
