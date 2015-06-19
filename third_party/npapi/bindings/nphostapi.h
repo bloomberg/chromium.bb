@@ -5,11 +5,17 @@
 #ifndef _NPHOSTAPI_H_
 #define _NPHOSTAPI_H_
 
-#include "base/port.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
+
+// Define an OS-neutral wrapper for shared library entry points
+#if defined(OS_WIN)
+#define API_CALL __stdcall
+#else
+#define API_CALL
+#endif
 
 #ifdef __cplusplus
 extern "C" {

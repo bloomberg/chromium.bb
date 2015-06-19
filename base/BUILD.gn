@@ -365,7 +365,6 @@ component("base") {
     "pending_task.h",
     "pickle.cc",
     "pickle.h",
-    "port.h",
     "posix/eintr_wrapper.h",
     "posix/file_descriptor_shuffle.cc",
     "posix/global_descriptors.cc",

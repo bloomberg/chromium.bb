@@ -431,7 +431,6 @@
           'pending_task.h',
           'pickle.cc',
           'pickle.h',
-          'port.h',
           'posix/eintr_wrapper.h',
           'posix/global_descriptors.cc',
           'posix/global_descriptors.h',
