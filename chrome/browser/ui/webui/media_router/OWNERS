@@ -4,9 +4,9 @@ apacible@chromium.org
 haibinlu@chromium.org
 
 # Also include an owner with committer privileges.
+kmarshall@chromium.org
 mfoltz@chromium.org
 wez@chromium.org
 
 # Other members, for potential FYI reviews.
 imcheng@chromium.org
-kmarshall@chromium.org
