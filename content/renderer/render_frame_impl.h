@@ -756,11 +756,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates a factory object used for creating audio and video renderers.
   scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
 
-  // Checks that the RenderView is ready to display the navigation to |url|. If
-  // the return value is false, the navigation should be abandoned.
-  bool PrepareRenderViewForNavigation(
+  // Does preparation for the navigation to |url|.
+  void PrepareRenderViewForNavigation(
       const GURL& url,
-      bool is_history_navigation,
       const RequestNavigationParams& request_params,
       bool* is_reload,
       blink::WebURLRequest::CachePolicy* cache_policy);

@@ -4067,12 +4067,8 @@ void RenderFrameImpl::OnFailedNavigation(
   bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
-  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-          common_params.url, is_history_navigation, request_params, &is_reload,
-          &cache_policy)) {
-    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
-    return;
-  }
+  RenderFrameImpl::PrepareRenderViewForNavigation(
+      common_params.url, request_params, &is_reload, &cache_policy);
 
   GetContentClient()->SetActiveURL(common_params.url);
 
@@ -4093,6 +4089,8 @@ void RenderFrameImpl::OnFailedNavigation(
   SendFailedProvisionalLoad(failed_request, error, frame_);
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
+    // TODO(avi): Remove this; we shouldn't ever be dropping navigations.
+    // http://crbug.com/501960
     Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
   }
@@ -4369,12 +4367,8 @@ void RenderFrameImpl::NavigateInternal(
   bool is_history_navigation = request_params.page_state.IsValid();
   WebURLRequest::CachePolicy cache_policy =
       WebURLRequest::UseProtocolCachePolicy;
-  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-          common_params.url, is_history_navigation, request_params, &is_reload,
-          &cache_policy)) {
-    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
-    return;
-  }
+  RenderFrameImpl::PrepareRenderViewForNavigation(
+      common_params.url, request_params, &is_reload, &cache_policy);
 
   GetContentClient()->SetActiveURL(common_params.url);
 
@@ -4633,9 +4627,8 @@ RenderFrameImpl::CreateRendererFactory() {
 #endif
 }
 
-bool RenderFrameImpl::PrepareRenderViewForNavigation(
+void RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
-    bool is_history_navigation,
     const RequestNavigationParams& request_params,
     bool* is_reload,
     WebURLRequest::CachePolicy* cache_policy) {
@@ -4645,15 +4638,6 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, render_view_->observers_, Navigate(url));
-
-  // If this is a stale back/forward (due to a recent navigation the browser
-  // didn't know about), ignore it. Only check if swapped in because if the
-  // frame is swapped out, it won't commit before asking the browser.
-  if (!render_view_->is_swapped_out() && is_history_navigation &&
-      render_view_->history_list_offset_ !=
-          request_params.current_history_list_offset) {
-    return false;
-  }
 
   render_view_->history_list_offset_ =
       request_params.current_history_list_offset;
@@ -4665,7 +4649,7 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
   }
 
   if (!is_swapped_out_ || frame_->parent())
-    return true;
+    return;
 
   // This is a swapped out main frame, so swap the renderer back in.
   // We marked the view as hidden when swapping the view out, so be sure to
@@ -4687,7 +4671,7 @@ bool RenderFrameImpl::PrepareRenderViewForNavigation(
 
   render_view_->SetSwappedOut(false);
   is_swapped_out_ = false;
-  return true;
+  return;
 }
 
 void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request) {

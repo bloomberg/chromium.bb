@@ -890,10 +890,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
                     int /* job_id */,
                     IPC::PlatformFileForTransit /* file handle */)
 
-// Temporary message to diagnose an unexpected condition in WebContentsImpl.
-IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
-                     GURL /* data */)
-
 // An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
 // process to release the magnified image.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,

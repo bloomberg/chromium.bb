@@ -967,44 +967,9 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       rfh->GetSiteInstance(),
       params.page_id);
   if (existing_entry_index == -1) {
-    // The page was not found. It could have been pruned because of the limit on
-    // back/forward entries (not likely since we'll usually tell it to navigate
-    // to such entries). It could also mean that the renderer is smoking crack.
-    NOTREACHED();
-
-    // Because the unknown entry has committed, we risk showing the wrong URL in
-    // release builds. Instead, we'll kill the renderer process to be safe.
-    LOG(ERROR) << "terminating renderer for bad navigation: " << params.url;
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_NC"));
-
-    // Temporary code so we can get more information.  Format:
-    //  http://url/foo.html#page1#max3#frame1#ids:2_Nx,1_1x,3_2
-    std::string temp = params.url.spec();
-    temp.append("#page");
-    temp.append(base::IntToString(params.page_id));
-    temp.append("#max");
-    temp.append(base::IntToString(delegate_->GetMaxPageID()));
-    temp.append("#frame");
-    temp.append(base::IntToString(rfh->GetRoutingID()));
-    temp.append("#ids");
-    for (int i = 0; i < static_cast<int>(entries_.size()); ++i) {
-      // Append entry metadata (e.g., 3_7x):
-      //  3: page_id
-      //  7: SiteInstance ID, or N for null
-      //  x: appended if not from the current SiteInstance
-      temp.append(base::IntToString(entries_[i]->GetPageID()));
-      temp.append("_");
-      if (entries_[i]->site_instance())
-        temp.append(base::IntToString(entries_[i]->site_instance()->GetId()));
-      else
-        temp.append("N");
-      if (entries_[i]->site_instance() != rfh->GetSiteInstance())
-        temp.append("x");
-      temp.append(",");
-    }
-    GURL url(temp);
-    rfh->render_view_host()->Send(new ViewMsg_TempCrashWithData(url));
-    return NAVIGATION_TYPE_NAV_IGNORE;
+    // The renderer has committed a navigation to an entry that no longer
+    // exists. Because the renderer is showing that page, resurrect that entry.
+    return NAVIGATION_TYPE_NEW_PAGE;
   }
   NavigationEntryImpl* existing_entry = entries_[existing_entry_index].get();
 
@@ -1150,12 +1115,9 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
   // Now we know that the notification is for an existing page. Find that entry.
   int existing_entry_index = GetEntryIndexWithUniqueID(params.nav_entry_id);
   if (existing_entry_index == -1) {
-    // The page was not found. It could have been pruned because of the limit on
-    // back/forward entries (not likely since we'll usually tell it to navigate
-    // to such entries). It could also mean that the renderer is smoking crack.
-    // TODO(avi): Crash the renderer like we do in the old ClassifyNavigation?
-    NOTREACHED() << "Could not find nav entry with id " << params.nav_entry_id;
-    return NAVIGATION_TYPE_NAV_IGNORE;
+    // The renderer has committed a navigation to an entry that no longer
+    // exists. Because the renderer is showing that page, resurrect that entry.
+    return NAVIGATION_TYPE_NEW_PAGE;
   }
 
   // Any top-level navigations with the same base (minus the reference fragment)
@@ -1179,8 +1141,11 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   bool update_virtual_url;
   // Only make a copy of the pending entry if it is appropriate for the new page
   // that was just loaded.  We verify this at a coarse grain by checking that
-  // the SiteInstance hasn't been assigned to something else.
-  if (pending_entry_ &&
+  // the SiteInstance hasn't been assigned to something else, and by making sure
+  // that the pending entry was intended as a new entry (rather than being a
+  // history navigation that was interrupted by an unrelated, renderer-initiated
+  // navigation).
+  if (pending_entry_ && pending_entry_index_ == -1 &&
       (!pending_entry_->site_instance() ||
        pending_entry_->site_instance() == rfh->GetSiteInstance())) {
     new_entry = pending_entry_->Clone();
@@ -1792,13 +1757,13 @@ void NavigationControllerImpl::InsertOrReplaceEntry(NavigationEntryImpl* entry,
                                                     bool replace) {
   DCHECK(entry->GetTransitionType() != ui::PAGE_TRANSITION_AUTO_SUBFRAME);
 
-  // Copy the pending entry's unique ID to the committed entry.
-  // I don't know if pending_entry_index_ can be other than -1 here.
-  const NavigationEntryImpl* const pending_entry =
-      (pending_entry_index_ == -1) ?
-          pending_entry_ : entries_[pending_entry_index_].get();
-  if (pending_entry)
-    entry->set_unique_id(pending_entry->GetUniqueID());
+  // If the pending_entry_index_ is -1, the navigation was to a new page, and we
+  // need to keep continuity with the pending entry, so copy the pending entry's
+  // unique ID to the committed entry. If the pending_entry_index_ isn't -1,
+  // then the renderer navigated on its own, independent of the pending entry,
+  // so don't copy anything.
+  if (pending_entry_ && pending_entry_index_ == -1)
+    entry->set_unique_id(pending_entry_->GetUniqueID());
 
   DiscardNonCommittedEntriesInternal();
 

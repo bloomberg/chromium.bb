@@ -5008,4 +5008,66 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
   }
 }
 
+// Tests that if a stale navigation comes back from the renderer, it is properly
+// resurrected.
+TEST_F(NavigationControllerTest, StaleNavigationsResurrected) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  // Start on page A.
+  const GURL url_a("http://foo.com/a");
+  main_test_rfh()->NavigateAndCommitRendererInitiated(0, true, url_a);
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+
+  // Go to page B.
+  const GURL url_b("http://foo.com/b");
+  main_test_rfh()->NavigateAndCommitRendererInitiated(1, true, url_b);
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  int b_entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
+  int b_page_id = controller.GetLastCommittedEntry()->GetPageID();
+
+  // Back to page A.
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+
+  // Start going forward to page B.
+  controller.GoForward();
+
+  // But the renderer unilaterally navigates to page C, pruning B.
+  const GURL url_c("http://foo.com/c");
+  main_test_rfh()->NavigateAndCommitRendererInitiated(2, true, url_c);
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  int c_entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
+  EXPECT_NE(c_entry_id, b_entry_id);
+
+  // And then the navigation to B gets committed.
+  main_test_rfh()->SendNavigate(b_page_id, b_entry_id, false, url_b);
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+
+  // Even though we were doing a history navigation, because the entry was
+  // pruned it will end up as a *new* entry at the end of the entry list. This
+  // means that occasionally a navigation conflict will end up with one entry
+  // bubbling to the end of the entry list, but that's the least-bad option.
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url_a, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_c, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url_b, controller.GetEntryAtIndex(2)->GetURL());
+}
+
 }  // namespace content

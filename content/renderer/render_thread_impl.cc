@@ -1528,7 +1528,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkTypeChanged, OnNetworkTypeChanged)
-    IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
     IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
 #if defined(OS_ANDROID)
@@ -1686,11 +1685,6 @@ void RenderThreadImpl::OnNetworkTypeChanged(
       RenderProcessObserver, observers_, NetworkStateChanged(online));
   WebNetworkStateNotifier::setWebConnectionType(
       NetConnectionTypeToWebConnectionType(type));
-}
-
-void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
-  GetContentClient()->SetActiveURL(data);
-  CHECK(false);
 }
 
 void RenderThreadImpl::OnUpdateTimezone(const std::string& zone_id) {

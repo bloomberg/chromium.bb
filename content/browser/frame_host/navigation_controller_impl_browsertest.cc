@@ -105,11 +105,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UniqueIDs) {
             controller.GetEntryAtIndex(1)->GetUniqueID());
 }
 
-// The renderer uses the position in the history list as a clue to whether a
-// navigation is stale. In the case where the entry limit is reached and the
-// history list is pruned, make sure that there is no mismatch that would cause
-// it to start incorrectly rejecting navigations as stale. See
-// http://crbug.com/89798.
+// This test used to make sure that a scheme used to prevent spoofs didn't ever
+// interfere with navigations. We switched to a different scheme, so now this is
+// just a test to make sure we can still navigate once we prune the history
+// list.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        DontIgnoreBackAfterNavEntryLimit) {
   NavigationController& controller =
