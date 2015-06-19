@@ -820,10 +820,10 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-
-  if (loader->request()->was_fetched_via_proxy() &&
-      loader->request()->was_fetched_via_spdy() &&
-      loader->request()->url().SchemeIs(url::kHttpScheme)) {
+  net::URLRequest* request = loader->request();
+  if (request->was_fetched_via_proxy() &&
+      request->was_fetched_via_spdy() &&
+      request->url().SchemeIs(url::kHttpScheme)) {
     scheduler_->OnReceivedSpdyProxiedHttpResponse(
         info->GetChildID(), info->GetRouteID());
   }
@@ -834,8 +834,7 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
 
   // Notify the observers on the UI thread.
   scoped_ptr<ResourceRequestDetails> detail(new ResourceRequestDetails(
-      loader->request(),
-      GetCertID(loader->request(), info->GetChildID())));
+      request, GetCertID(request, info->GetChildID())));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
