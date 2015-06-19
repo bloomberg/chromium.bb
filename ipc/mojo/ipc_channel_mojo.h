@@ -57,21 +57,12 @@ class IPC_MOJO_EXPORT ChannelMojo
       base::Callback<void(mojo::ScopedMessagePipeHandle,
                           mojo::embedder::ChannelInfo*)>;
 
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-    virtual base::WeakPtr<Delegate> ToWeakPtr() = 0;
-    virtual void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) = 0;
-  };
-
   // True if ChannelMojo should be used regardless of the flag.
   static bool ShouldBeUsed();
 
   // Create ChannelMojo. A bootstrap channel is created as well.
-  // |host| must not be null for server channels.
   // |broker| must outlive the newly created channel.
   static scoped_ptr<ChannelMojo> Create(
-      Delegate* delegate,
       scoped_refptr<base::TaskRunner> io_runner,
       const ChannelHandle& channel_handle,
       Mode mode,
@@ -86,7 +77,6 @@ class IPC_MOJO_EXPORT ChannelMojo
   // http://crbug.com/493414.
   // |broker| must outlive the factory and all channels it creates.
   static scoped_ptr<ChannelFactory> CreateServerFactory(
-      Delegate* delegate,
       scoped_refptr<base::TaskRunner> io_runner,
       const ChannelHandle& channel_handle,
       AttachmentBroker* broker = nullptr);
@@ -96,15 +86,11 @@ class IPC_MOJO_EXPORT ChannelMojo
   // http://crbug.com/493414.
   // |broker| must outlive the factory and all channels it creates.
   static scoped_ptr<ChannelFactory> CreateClientFactory(
-      Delegate* delegate,
       scoped_refptr<base::TaskRunner> io_runner,
       const ChannelHandle& channel_handle,
       AttachmentBroker* broker = nullptr);
 
   ~ChannelMojo() override;
-
-  // ChannelMojoHost tells the client handle using this API.
-  void OnClientLaunched(base::ProcessHandle handle);
 
   // Channel implementation
   bool Connect() override;
@@ -137,8 +123,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   void OnPipeError(internal::MessagePipeReader* reader) override;
 
  protected:
-  ChannelMojo(Delegate* delegate,
-              scoped_refptr<base::TaskRunner> io_runner,
+  ChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
               const ChannelHandle& channel_handle,
               Mode mode,
               Listener* listener,
@@ -166,7 +151,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   // notifications invoked by them.
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
-  void InitOnIOThread(ChannelMojo::Delegate* delegate);
+  void InitOnIOThread();
 
   static void CreateMessagingPipeOnIOThread(
       mojo::embedder::ScopedPlatformHandle handle,
@@ -177,7 +162,6 @@ class IPC_MOJO_EXPORT ChannelMojo
                               mojo::embedder::ChannelInfo* channel_info);
 
   scoped_ptr<MojoBootstrap> bootstrap_;
-  base::WeakPtr<Delegate> delegate_;
   Mode mode_;
   Listener* listener_;
   base::ProcessId peer_pid_;

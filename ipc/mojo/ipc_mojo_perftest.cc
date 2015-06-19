@@ -6,7 +6,6 @@
 #include "base/run_loop.h"
 #include "ipc/ipc_perftest_support.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 
 namespace {
@@ -37,20 +36,14 @@ public:
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    host_.reset(new IPC::ChannelMojoHost(runner));
-    return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 runner, handle, nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(runner, handle, nullptr);
   }
 
   bool DidStartClient() override {
     bool ok = IPCTestBase::DidStartClient();
     DCHECK(ok);
-    host_->OnClientLaunched(client_process().Handle());
     return ok;
   }
-
- private:
-  scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
 MojoChannelPerfTest::MojoChannelPerfTest() {
@@ -88,7 +81,7 @@ MojoTestClient::MojoTestClient() {
 scoped_ptr<IPC::Channel> MojoTestClient::CreateChannel(
     IPC::Listener* listener) {
   return scoped_ptr<IPC::Channel>(IPC::ChannelMojo::Create(
-      NULL, task_runner(), IPCTestBase::GetChannelName("PerformanceClient"),
+      task_runner(), IPCTestBase::GetChannelName("PerformanceClient"),
       IPC::Channel::MODE_CLIENT, listener, nullptr));
 }
 

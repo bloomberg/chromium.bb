@@ -18,8 +18,6 @@ component("mojo") {
     "client_channel.mojom",
     "ipc_channel_mojo.cc",
     "ipc_channel_mojo.h",
-    "ipc_channel_mojo_host.cc",
-    "ipc_channel_mojo_host.h",
     "ipc_message_pipe_reader.cc",
     "ipc_message_pipe_reader.h",
     "ipc_mojo_bootstrap.cc",

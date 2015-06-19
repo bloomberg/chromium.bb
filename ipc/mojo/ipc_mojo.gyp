@@ -32,8 +32,6 @@
         'async_handle_waiter.h',
         'ipc_channel_mojo.cc',
         'ipc_channel_mojo.h',
-        'ipc_channel_mojo_host.cc',
-        'ipc_channel_mojo_host.h',
         'ipc_mojo_bootstrap.cc',
         'ipc_mojo_bootstrap.h',
         'ipc_mojo_handle_attachment.cc',

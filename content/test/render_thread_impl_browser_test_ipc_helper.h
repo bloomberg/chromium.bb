@@ -13,7 +13,6 @@
 #include "ipc/mojo/scoped_ipc_support.h"
 
 namespace IPC {
-class ChannelMojoHost;
 class ChannelProxy;
 class Sender;
 };
@@ -47,7 +46,6 @@ class RenderThreadImplBrowserIPCTestHelper {
   scoped_ptr<DummyListener> dummy_listener_;
   scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
-  scoped_ptr<IPC::ChannelMojoHost> mojo_host_;
   std::string channel_id_;
 };
 

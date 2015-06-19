@@ -282,10 +282,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // browser_process.h)
   scoped_ptr<IPC::ChannelProxy> channel_;
 
-  // A host object ChannelMojo needs. The lifetime is bound to
-  // the RenderProcessHostImpl, not the channel.
-  scoped_ptr<IPC::ChannelMojoHost> channel_mojo_host_;
-
   // True if fast shutdown has been performed on this RPH.
   bool fast_shutdown_started_;
 

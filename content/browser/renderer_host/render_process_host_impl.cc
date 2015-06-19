@@ -156,7 +156,6 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -714,14 +713,11 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
             ->task_runner();
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
-    if (!channel_mojo_host_) {
-      channel_mojo_host_.reset(new IPC::ChannelMojoHost(mojo_task_runner));
-    }
 
     return IPC::ChannelProxy::Create(
         IPC::ChannelMojo::CreateServerFactory(
-            channel_mojo_host_->channel_delegate(), mojo_task_runner,
-            channel_id, content::ChildProcessHost::GetAttachmentBroker()),
+            mojo_task_runner, channel_id,
+            content::ChildProcessHost::GetAttachmentBroker()),
         this, runner.get());
   }
 
@@ -2340,8 +2336,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   tracked_objects::ScopedTracker tracking_profile5(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "465841 RenderProcessHostImpl::OnProcessLaunched::MojoClientLaunch"));
-  if (channel_mojo_host_)
-    channel_mojo_host_->OnClientLaunched(GetHandle());
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
   // is fixed.

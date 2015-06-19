@@ -21,8 +21,7 @@ class AttachmentBroker;
 // to be wrapped by Mojo MessagePipe.
 //
 // Clients should implement MojoBootstrapDelegate to get the pipe
-// from MojoBootstrap object. It should also tell the client process handle
-// using OnClientLaunched().
+// from MojoBootstrap object.
 //
 // This lives on IO thread other than Create(), which can be called from
 // UI thread as Channel::Create() can be.
@@ -51,9 +50,6 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
 
   // GetSelfPID returns the PID associated with |channel_|.
   base::ProcessId GetSelfPID() const;
-
-  // Each client should call this once the process handle becomes known.
-  virtual void OnClientLaunched(base::ProcessHandle process) = 0;
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   int GetClientFileDescriptor() const;

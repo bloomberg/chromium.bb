@@ -312,10 +312,9 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
     scoped_refptr<base::SequencedTaskRunner> io_task_runner = GetIOTaskRunner();
     DCHECK(io_task_runner);
-    channel_->Init(
-        IPC::ChannelMojo::CreateClientFactory(
-            nullptr, io_task_runner, channel_name_, attachment_broker_.get()),
-        create_pipe_now);
+    channel_->Init(IPC::ChannelMojo::CreateClientFactory(
+                       io_task_runner, channel_name_, attachment_broker_.get()),
+                   create_pipe_now);
     return;
   }
 

@@ -17,7 +17,6 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
-#include "ipc/mojo/ipc_channel_mojo_host.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 #include "ipc/mojo/ipc_mojo_message_helper.h"
 #include "ipc/mojo/ipc_mojo_param_traits.h"
@@ -68,10 +67,9 @@ class ListenerThatExpectsOK : public IPC::Listener {
 class ChannelClient {
  public:
   explicit ChannelClient(IPC::Listener* listener, const char* name) {
-    channel_ =
-        IPC::ChannelMojo::Create(NULL, main_message_loop_.task_runner(),
-                                 IPCTestBase::GetChannelName(name),
-                                 IPC::Channel::MODE_CLIENT, listener, nullptr);
+    channel_ = IPC::ChannelMojo::Create(
+        main_message_loop_.task_runner(), IPCTestBase::GetChannelName(name),
+        IPC::Channel::MODE_CLIENT, listener, nullptr);
   }
 
   void Connect() {
@@ -116,20 +114,15 @@ class IPCChannelMojoTest : public IPCChannelMojoTestBase {
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return IPC::ChannelMojo::CreateServerFactory(
-        host_->channel_delegate(), task_runner(), handle, nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle,
+                                                 nullptr);
   }
 
   bool DidStartClient() override {
     bool ok = IPCTestBase::DidStartClient();
     DCHECK(ok);
-    host_->OnClientLaunched(client_process().Handle());
     return ok;
   }
-
- private:
-  scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
 
@@ -224,20 +217,15 @@ class IPCChannelMojoErrorTest : public IPCChannelMojoTestBase {
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return IPC::ChannelMojo::CreateServerFactory(
-        host_->channel_delegate(), task_runner(), handle, nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle,
+                                                 nullptr);
   }
 
   bool DidStartClient() override {
     bool ok = IPCTestBase::DidStartClient();
     DCHECK(ok);
-    host_->OnClientLaunched(client_process().Handle());
     return ok;
   }
-
- private:
-  scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
 class ListenerThatQuits : public IPC::Listener {
@@ -558,24 +546,19 @@ class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    host_.reset(new IPC::ChannelMojoHost(task_runner()));
-    return IPC::ChannelMojo::CreateServerFactory(
-        host_->channel_delegate(), task_runner(), handle, nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle,
+                                                 nullptr);
   }
 
   bool DidStartClient() override {
     IPCTestBase::DidStartClient();
-    const base::ProcessHandle client = client_process().Handle();
+    // const base::ProcessHandle client = client_process().Handle();
     // Forces GetFileHandleForProcess() fail. It happens occasionally
     // in production, so we should exercise it somehow.
     // TODO(morrita): figure out how to safely test this. See crbug.com/464109.
     // ::CloseHandle(client);
-    host_->OnClientLaunched(client);
     return true;
   }
-
- private:
-  scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
 TEST_F(IPCChannelMojoDeadHandleTest, InvalidClientHandle) {

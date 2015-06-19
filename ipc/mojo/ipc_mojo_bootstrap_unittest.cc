@@ -55,7 +55,6 @@ TEST_F(IPCMojoBootstrapTest, Connect) {
 #else
   ASSERT_TRUE(StartClient());
 #endif
-  bootstrap->OnClientLaunched(client_process().Handle());
 
   base::MessageLoop::current()->Run();
 
