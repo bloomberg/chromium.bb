@@ -35,17 +35,6 @@ typedef base::Callback<void(uint32_t /* frame */,
                             uint32_t /* useconds */,
                             uint64_t /* id */)> DrmEventHandler;
 
-struct PageFlipPayload {
-  PageFlipPayload(const scoped_refptr<base::TaskRunner>& task_runner,
-                  const DrmDevice::PageFlipCallback& callback)
-      : task_runner(task_runner), callback(callback) {}
-
-  // Task runner for the thread scheduling the page flip event. This is used to
-  // run the callback on the same thread the callback was created on.
-  scoped_refptr<base::TaskRunner> task_runner;
-  DrmDevice::PageFlipCallback callback;
-};
-
 bool DrmCreateDumbBuffer(int fd,
                          const SkImageInfo& info,
                          uint32_t* handle,
@@ -559,8 +548,6 @@ bool DrmDevice::CommitProperties(drmModePropertySet* properties,
     flags |= DRM_MODE_ATOMIC_TEST_ONLY;
   else
     flags |= DRM_MODE_PAGE_FLIP_EVENT;
-  scoped_ptr<PageFlipPayload> payload(
-      new PageFlipPayload(base::ThreadTaskRunnerHandle::Get(), callback));
   uint64_t id = page_flip_manager_->GetNextId();
   if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags,
                                 reinterpret_cast<void*>(id), properties)) {
