@@ -57,10 +57,6 @@ class TimeDelta;
 class TimeTicks;
 class TraceTicks;
 struct FileDescriptor;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-class SharedMemoryHandle;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 namespace IPC {
@@ -470,16 +466,6 @@ struct IPC_EXPORT ParamTraits<base::FileDescriptor> {
   static void Log(const param_type& p, std::string* l);
 };
 #endif  // defined(OS_POSIX)
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-template <>
-struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
-  typedef base::SharedMemoryHandle param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-#endif
 
 template <>
 struct IPC_EXPORT ParamTraits<base::FilePath> {

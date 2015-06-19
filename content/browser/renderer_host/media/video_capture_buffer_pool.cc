@@ -70,11 +70,7 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
   ClientBuffer AsClientBuffer() override { return nullptr; }
 #if defined(OS_POSIX)
   base::FileDescriptor AsPlatformFile() override {
-#if defined(OS_MACOSX)
-    return handle_.GetFileDescriptor();
-#else
     return handle_;
-#endif  // defined(OS_MACOSX)
   }
 #endif
 
@@ -106,11 +102,7 @@ class GpuMemoryBufferBufferHandle
   ClientBuffer AsClientBuffer() override { return gmb_->AsClientBuffer(); }
 #if defined(OS_POSIX)
   base::FileDescriptor AsPlatformFile() override {
-#if defined(OS_MACOSX)
-    return gmb_->GetHandle().handle.GetFileDescriptor();
-#else
     return gmb_->GetHandle().handle;
-#endif  // defined(OS_MACOSX)
   }
 #endif
 

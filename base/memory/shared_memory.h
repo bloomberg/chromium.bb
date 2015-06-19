@@ -17,7 +17,6 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"
 
 #if defined(OS_POSIX)
@@ -29,6 +28,14 @@
 namespace base {
 
 class FilePath;
+
+// SharedMemoryHandle is a platform specific type which represents
+// the underlying OS handle to a shared memory segment.
+#if defined(OS_WIN)
+typedef HANDLE SharedMemoryHandle;
+#elif defined(OS_POSIX)
+typedef FileDescriptor SharedMemoryHandle;
+#endif
 
 // Options for creating a shared memory object.
 struct SharedMemoryCreateOptions {
@@ -82,13 +89,12 @@ class BASE_EXPORT SharedMemory {
   // only affects how the SharedMemory will be mmapped.  Use
   // ShareReadOnlyToProcess to drop permissions.  TODO(jln,jyasskin): DCHECK
   // that |read_only| matches the permissions of the handle.
-  SharedMemory(const SharedMemoryHandle& handle, bool read_only);
+  SharedMemory(SharedMemoryHandle handle, bool read_only);
 
   // Create a new SharedMemory object from an existing, open
   // shared memory file that was created by a remote process and not shared
   // to the current process.
-  SharedMemory(const SharedMemoryHandle& handle,
-               bool read_only,
+  SharedMemory(SharedMemoryHandle handle, bool read_only,
                ProcessHandle process);
 
   // Closes any open files.

@@ -24,7 +24,7 @@ SharedMemory::SharedMemory()
       requested_size_(0) {
 }
 
-SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
+SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
     : mapped_file_(handle.fd),
       mapped_size_(0),
       memory_(NULL),
@@ -32,8 +32,7 @@ SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
       requested_size_(0) {
 }
 
-SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
-                           bool read_only,
+SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
                            ProcessHandle process)
     : mapped_file_(handle.fd),
       mapped_size_(0),

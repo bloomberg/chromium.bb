@@ -19,6 +19,10 @@
 #include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif  // OS_MACOSX
+
 #if defined(OS_ANDROID)
 #include "base/os_compat_android.h"
 #include "third_party/ashmem/ashmem.h"
@@ -106,7 +110,7 @@ SharedMemory::SharedMemory()
       requested_size_(0) {
 }
 
-SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
+SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
     : mapped_file_(handle.fd),
       readonly_mapped_file_(-1),
       mapped_size_(0),
@@ -115,8 +119,7 @@ SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
       requested_size_(0) {
 }
 
-SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
-                           bool read_only,
+SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
                            ProcessHandle process)
     : mapped_file_(handle.fd),
       readonly_mapped_file_(-1),
@@ -287,6 +290,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     requested_size_ = options.size;
   }
   if (fp == NULL) {
+#if !defined(OS_MACOSX)
     PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
     FilePath dir = path.DirName();
     if (access(dir.value().c_str(), W_OK | X_OK) < 0) {
@@ -296,6 +300,9 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
                    << "/dev/shm.  Try 'sudo chmod 1777 /dev/shm' to fix.";
       }
     }
+#else
+    PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
+#endif
     return false;
   }
 
@@ -452,11 +459,15 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
   if (!GetShmemTempDir(false, &temp_dir))
     return false;
 
+#if !defined(OS_MACOSX)
 #if defined(GOOGLE_CHROME_BUILD)
   std::string name_base = std::string("com.google.Chrome");
 #else
   std::string name_base = std::string("org.chromium.Chromium");
 #endif
+#else  // OS_MACOSX
+  std::string name_base = std::string(base::mac::BaseBundleID());
+#endif  // OS_MACOSX
   *path = temp_dir.AppendASCII(name_base + ".shmem." + mem_name);
   return true;
 }
