@@ -57,13 +57,6 @@ void WebServiceWorkerProviderImpl::registerServiceWorker(
       context_->provider_id(), pattern, script_url, callbacks);
 }
 
-void WebServiceWorkerProviderImpl::unregisterServiceWorker(
-    const WebURL& pattern,
-    blink::WebCallbacks<bool, blink::WebServiceWorkerError>* callbacks) {
-  GetDispatcher()->DeprecatedUnregisterServiceWorker(context_->provider_id(),
-                                                     pattern, callbacks);
-}
-
 void WebServiceWorkerProviderImpl::getRegistration(
     const blink::WebURL& document_url,
     WebServiceWorkerRegistrationCallbacks* callbacks) {

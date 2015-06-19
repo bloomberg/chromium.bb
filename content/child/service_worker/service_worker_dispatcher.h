@@ -73,12 +73,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
   // Corresponds to ServiceWorkerRegistration.update().
   void UpdateServiceWorker(int provider_id, int64 registration_id);
   // Corresponds to ServiceWorkerRegistration.unregister().
-  // TODO(nhiroki): Remove a deprecated version after http://crbug.com/500404 is
-  // fixed.
-  void DeprecatedUnregisterServiceWorker(
-      int provider_id,
-      const GURL& pattern,
-      WebServiceWorkerUnregistrationCallbacks* callbacks);
   void UnregisterServiceWorker(
       int provider_id,
       int64 registration_id,

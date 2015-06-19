@@ -136,34 +136,6 @@ void ServiceWorkerDispatcher::UpdateServiceWorker(int provider_id,
       provider_id, registration_id));
 }
 
-void ServiceWorkerDispatcher::DeprecatedUnregisterServiceWorker(
-    int provider_id,
-    const GURL& pattern,
-    WebServiceWorkerUnregistrationCallbacks* callbacks) {
-  DCHECK(callbacks);
-
-  if (pattern.possibly_invalid_spec().size() > GetMaxURLChars()) {
-    scoped_ptr<WebServiceWorkerUnregistrationCallbacks>
-        owned_callbacks(callbacks);
-    std::string error_message(kServiceWorkerUnregisterErrorPrefix);
-    error_message += "The provided scope is too long.";
-    scoped_ptr<WebServiceWorkerError> error(
-        new WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
-                                  blink::WebString::fromUTF8(error_message)));
-    callbacks->onError(error.release());
-    return;
-  }
-
-  int request_id = pending_unregistration_callbacks_.Add(callbacks);
-  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
-                           "ServiceWorkerDispatcher::UnregisterServiceWorker",
-                           request_id,
-                           "Scope", pattern.spec());
-  thread_safe_sender_->Send(
-      new ServiceWorkerHostMsg_DeprecatedUnregisterServiceWorker(
-          CurrentWorkerId(), request_id, provider_id, pattern));
-}
-
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
     int provider_id,
     int64 registration_id,

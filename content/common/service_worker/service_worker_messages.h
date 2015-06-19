@@ -123,13 +123,6 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_UpdateServiceWorker,
                      int /* provider_id */,
                      int64 /* registration_id */)
 
-// TODO(nhiroki): Remove this after http://crbug.com/500404 is fixed.
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_DeprecatedUnregisterServiceWorker,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     int /* provider_id */,
-                     GURL /* scope (url pattern) */)
-
 IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
                      int /* thread_id */,
                      int /* request_id */,

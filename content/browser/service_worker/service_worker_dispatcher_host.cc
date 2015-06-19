@@ -168,8 +168,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnRegisterServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UpdateServiceWorker,
                         OnUpdateServiceWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DeprecatedUnregisterServiceWorker,
-                        OnDeprecatedUnregisterServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UnregisterServiceWorker,
                         OnUnregisterServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetRegistration,
@@ -424,80 +422,6 @@ void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(int provider_id,
   // script without consulting caches", so set |force_bypass_cache| to true.
   GetContext()->UpdateServiceWorker(registration,
                                     true /* force_bypass_cache */);
-}
-
-void ServiceWorkerDispatcherHost::OnDeprecatedUnregisterServiceWorker(
-    int thread_id,
-    int request_id,
-    int provider_id,
-    const GURL& pattern) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnUnregisterServiceWorker");
-  if (!GetContext()) {
-    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id,
-        request_id,
-        blink::WebServiceWorkerError::ErrorTypeAbort,
-        base::ASCIIToUTF16(kShutdownErrorMessage)));
-    return;
-  }
-  if (!pattern.is_valid()) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_UNREGISTER_BAD_URL);
-    return;
-  }
-
-  ServiceWorkerProviderHost* provider_host = GetContext()->GetProviderHost(
-      render_process_id_, provider_id);
-  if (!provider_host) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_UNREGISTER_NO_HOST);
-    return;
-  }
-  if (!provider_host->IsContextAlive()) {
-    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id,
-        request_id,
-        blink::WebServiceWorkerError::ErrorTypeAbort,
-        base::ASCIIToUTF16(kShutdownErrorMessage)));
-    return;
-  }
-
-  // TODO(ksakamoto): This check can be removed once crbug.com/439697 is fixed.
-  if (provider_host->document_url().is_empty()) {
-    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
-    return;
-  }
-
-  if (!CanUnregisterServiceWorker(provider_host->document_url(), pattern)) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_UNREGISTER_CANNOT);
-    return;
-  }
-
-  if (!GetContentClient()->browser()->AllowServiceWorker(
-          pattern, provider_host->topmost_frame_url(), resource_context_,
-          render_process_id_, provider_host->frame_id())) {
-    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeUnknown,
-        base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
-    return;
-  }
-
-  TRACE_EVENT_ASYNC_BEGIN1(
-      "ServiceWorker",
-      "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
-      request_id,
-      "Pattern", pattern.spec());
-  GetContext()->UnregisterServiceWorker(
-      pattern,
-      base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete,
-                 this,
-                 thread_id,
-                 request_id));
 }
 
 void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(

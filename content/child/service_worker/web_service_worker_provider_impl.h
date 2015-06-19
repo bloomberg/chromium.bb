@@ -34,12 +34,6 @@ class WebServiceWorkerProviderImpl
   virtual void registerServiceWorker(const blink::WebURL& pattern,
                                      const blink::WebURL& script_url,
                                      WebServiceWorkerRegistrationCallbacks*);
-
-  // TODO(nhiroki): Remove this after http://crbug.com/500404 is fixed.
-  virtual void unregisterServiceWorker(
-      const blink::WebURL& pattern,
-      blink::WebCallbacks<bool, blink::WebServiceWorkerError>*);
-
   virtual void getRegistration(const blink::WebURL& document_url,
                                WebServiceWorkerGetRegistrationCallbacks*);
   virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*);

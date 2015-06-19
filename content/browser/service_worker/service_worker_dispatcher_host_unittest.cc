@@ -99,6 +99,22 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     dispatcher_host_->ipc_sink()->ClearMessages();
   }
 
+  void SendUnregister(int64 provider_id, int64 registration_id) {
+    dispatcher_host_->OnMessageReceived(
+        ServiceWorkerHostMsg_UnregisterServiceWorker(-1, -1, provider_id,
+                                                     registration_id));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void Unregister(int64 provider_id,
+                  int64 registration_id,
+                  uint32 expected_message) {
+    SendUnregister(provider_id, registration_id);
+    EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
+        expected_message));
+    dispatcher_host_->ipc_sink()->ClearMessages();
+  }
+
   void SendGetRegistration(int64 provider_id, GURL document_url) {
     dispatcher_host_->OnMessageReceived(
         ServiceWorkerHostMsg_GetRegistration(
@@ -175,7 +191,15 @@ TEST_F(ServiceWorkerDispatcherHostTest,
                   ServiceWorkerMsg_ServiceWorkerGetRegistrationError::ID);
   GetRegistrations(kProviderId,
                    ServiceWorkerMsg_ServiceWorkerGetRegistrationsError::ID);
-  // TODO(nhiroki): Test Unregister() (http://crbug.com/500404).
+
+  // Add a registration into a live registration map so that Unregister() can
+  // find it.
+  const int64 kRegistrationId = 999;  // Dummy value
+  scoped_refptr<ServiceWorkerRegistration> registration(
+      new ServiceWorkerRegistration(GURL("https://www.example.com/"),
+                                    kRegistrationId, context()->AsWeakPtr()));
+  Unregister(kProviderId, kRegistrationId,
+             ServiceWorkerMsg_ServiceWorkerUnregistrationError::ID);
 
   SetBrowserClientForTesting(old_browser_client);
 }
