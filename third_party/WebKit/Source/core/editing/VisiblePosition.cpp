@@ -439,12 +439,12 @@ VisiblePosition VisiblePosition::right(bool stayInEditableContent) const
     return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);
 }
 
-VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePosition &pos) const
+static VisiblePosition honorEditingBoundaryAtOrBeforeOf(const VisiblePosition& pos, const Position& anchor)
 {
     if (pos.isNull())
         return pos;
 
-    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(anchor);
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
     if (highestRoot && !pos.deepEquivalent().deprecatedNode()->isDescendantOf(highestRoot))
@@ -463,6 +463,11 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePos
 
     // Return the last position before pos that is in the same editable region as this position
     return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
+}
+
+VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePosition &pos) const
+{
+    return honorEditingBoundaryAtOrBeforeOf(pos, deepEquivalent());
 }
 
 VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosition &pos) const
