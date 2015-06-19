@@ -237,6 +237,8 @@
         'browser/sync/sync_observer_bridge.mm',
         'browser/sync/sync_setup_service.cc',
         'browser/sync/sync_setup_service.h',
+        'browser/sync/sync_setup_service_factory.cc',
+        'browser/sync/sync_setup_service_factory.h',
         'browser/translate/after_translate_infobar_controller.h',
         'browser/translate/after_translate_infobar_controller.mm',
         'browser/translate/before_translate_infobar_controller.h',
