@@ -265,26 +265,17 @@ void SingleThreadProxy::DoCommit() {
     DCHECK_EQ(1.f, scroll_info->page_scale_delta);
 #endif
 
-    if (layer_tree_host_->settings().impl_side_painting) {
-      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-      // is fixed.
-      tracked_objects::ScopedTracker tracking_profile8(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "461509 SingleThreadProxy::DoCommit8"));
-      // Commit goes directly to the active tree, but we need to synchronously
-      // "activate" the tree still during commit to satisfy any potential
-      // SetNextCommitWaitsForActivation calls.  Unfortunately, the tree
-      // might not be ready to draw, so DidActivateSyncTree must set
-      // the flag to force the tree to not draw until textures are ready.
-      NotifyReadyToActivate();
-    } else {
-      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-      // is fixed.
-      tracked_objects::ScopedTracker tracking_profile9(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "461509 SingleThreadProxy::DoCommit9"));
-      CommitComplete();
-    }
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile8(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "461509 SingleThreadProxy::DoCommit8"));
+    // Commit goes directly to the active tree, but we need to synchronously
+    // "activate" the tree still during commit to satisfy any potential
+    // SetNextCommitWaitsForActivation calls.  Unfortunately, the tree
+    // might not be ready to draw, so DidActivateSyncTree must set
+    // the flag to force the tree to not draw until textures are ready.
+    NotifyReadyToActivate();
   }
 }
 
@@ -448,25 +439,20 @@ void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 
 void SingleThreadProxy::DidActivateSyncTree() {
-  // Non-impl-side painting finishes commit in DoCommit.  Impl-side painting
-  // defers until here to simulate SetNextCommitWaitsForActivation.
-  if (layer_tree_host_impl_->settings().impl_side_painting) {
-    // This is required because NotifyReadyToActivate gets called immediately
-    // after commit since single thread commits directly to the active tree.
-    if (scheduler_on_impl_thread_)
-      scheduler_on_impl_thread_->SetWaitForReadyToDraw();
+  // This is required because NotifyReadyToActivate gets called immediately
+  // after commit since single thread commits directly to the active tree.
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->SetWaitForReadyToDraw();
 
-    // Synchronously call to CommitComplete. Resetting
-    // |commit_blocking_task_runner| would make sure all tasks posted during
-    // commit/activation before CommitComplete.
-    CommitComplete();
-  }
+  // Synchronously call to CommitComplete. Resetting
+  // |commit_blocking_task_runner| would make sure all tasks posted during
+  // commit/activation before CommitComplete.
+  CommitComplete();
 
   timing_history_.DidActivateSyncTree();
 }
 
 void SingleThreadProxy::DidPrepareTiles() {
-  DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
   DCHECK(Proxy::IsImplThread());
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->DidPrepareTiles();
@@ -578,13 +564,11 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   // Finish the impl frame.
   {
     DebugScopedSetImplThread impl(this);
-    if (layer_tree_host_impl_->settings().impl_side_painting) {
-      layer_tree_host_impl_->ActivateSyncTree();
-      DCHECK(!layer_tree_host_impl_->active_tree()
-                  ->needs_update_draw_properties());
-      layer_tree_host_impl_->PrepareTiles();
-      layer_tree_host_impl_->SynchronouslyInitializeAllTiles();
-    }
+    layer_tree_host_impl_->ActivateSyncTree();
+    DCHECK(
+        !layer_tree_host_impl_->active_tree()->needs_update_draw_properties());
+    layer_tree_host_impl_->PrepareTiles();
+    layer_tree_host_impl_->SynchronouslyInitializeAllTiles();
 
     DoAnimate();
 
@@ -903,7 +887,6 @@ void SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
 
 void SingleThreadProxy::ScheduledActionPrepareTiles() {
   TRACE_EVENT0("cc", "SingleThreadProxy::ScheduledActionPrepareTiles");
-  DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
   DebugScopedSetImplThread impl(this);
   layer_tree_host_impl_->PrepareTiles();
 }

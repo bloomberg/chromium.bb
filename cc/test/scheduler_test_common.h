@@ -188,13 +188,6 @@ class TestScheduler : public Scheduler {
 
   ~TestScheduler() override;
 
-  void NotifyReadyToCommitThenActivateIfNeeded() {
-    NotifyReadyToCommit();
-    if (settings_.impl_side_painting) {
-      NotifyReadyToActivate();
-    }
-  }
-
   base::TimeDelta BeginImplFrameInterval() {
     return begin_impl_frame_tracker_.Interval();
   }

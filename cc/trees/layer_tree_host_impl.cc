@@ -305,7 +305,7 @@ void LayerTreeHostImpl::BeginCommit() {
   if (output_surface_)
     output_surface_->ForceReclaimResources();
 
-  if (settings_.impl_side_painting && !proxy_->CommitToActiveTree())
+  if (!proxy_->CommitToActiveTree())
     CreatePendingTree();
 }
 
@@ -317,31 +317,24 @@ void LayerTreeHostImpl::CommitComplete() {
   UpdateTreeResourcesForGpuRasterizationIfNeeded();
   sync_tree()->set_needs_update_draw_properties();
 
-  if (settings_.impl_side_painting) {
-    // Impl-side painting needs an update immediately post-commit to have the
-    // opportunity to create tilings.  Other paths can call UpdateDrawProperties
-    // more lazily when needed prior to drawing.  Because invalidations may
-    // be coming from the main thread, it's safe to do an update for lcd text
-    // at this point and see if lcd text needs to be disabled on any layers.
-    bool update_lcd_text = true;
-    sync_tree()->UpdateDrawProperties(update_lcd_text);
-    // Start working on newly created tiles immediately if needed.
-    if (tile_manager_ && tile_priorities_dirty_) {
-      PrepareTiles();
-    } else {
-      NotifyReadyToActivate();
-
-      // Ensure we get ReadyToDraw signal even when PrepareTiles not run. This
-      // is important for SingleThreadProxy and impl-side painting case. For
-      // STP, we commit to active tree and RequiresHighResToDraw, and set
-      // Scheduler to wait for ReadyToDraw signal to avoid Checkerboard.
-      if (proxy_->CommitToActiveTree())
-        NotifyReadyToDraw();
-    }
+  // We need an update immediately post-commit to have the opportunity to create
+  // tilings.  Because invalidations may be coming from the main thread, it's
+  // safe to do an update for lcd text at this point and see if lcd text needs
+  // to be disabled on any layers.
+  bool update_lcd_text = true;
+  sync_tree()->UpdateDrawProperties(update_lcd_text);
+  // Start working on newly created tiles immediately if needed.
+  if (tile_manager_ && tile_priorities_dirty_) {
+    PrepareTiles();
   } else {
-    // If we're not in impl-side painting, the tree is immediately considered
-    // active.
-    ActivateSyncTree();
+    NotifyReadyToActivate();
+
+    // Ensure we get ReadyToDraw signal even when PrepareTiles not run. This
+    // is important for SingleThreadProxy and impl-side painting case. For
+    // STP, we commit to active tree and RequiresHighResToDraw, and set
+    // Scheduler to wait for ReadyToDraw signal to avoid Checkerboard.
+    if (proxy_->CommitToActiveTree())
+      NotifyReadyToDraw();
   }
 
   micro_benchmark_controller_.DidCompleteCommit();
@@ -1027,8 +1020,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // This will cause NotifyTileStateChanged() to be called for any visible tiles
   // that completed, which will add damage to the frame for them so they appear
   // as part of the current frame being drawn.
-  if (settings_.impl_side_painting)
-    tile_manager_->UpdateVisibleTiles(global_tile_state_);
+  tile_manager_->UpdateVisibleTiles(global_tile_state_);
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
   frame->render_passes.clear();
@@ -1220,7 +1212,6 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
 }
 
 void LayerTreeHostImpl::DidModifyTilePriorities() {
-  DCHECK(settings_.impl_side_painting);
   // Mark priorities as dirty and schedule a PrepareTiles().
   tile_priorities_dirty_ = true;
   client_->SetNeedsPrepareTilesOnImplThread();
@@ -1318,7 +1309,6 @@ void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
 void LayerTreeHostImpl::SetTreeActivationCallback(
     const base::Closure& callback) {
   DCHECK(proxy_->IsImplThread());
-  DCHECK(settings_.impl_side_painting || callback.is_null());
   tree_activation_callback_ = callback;
 }
 
@@ -1499,10 +1489,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                               !output_surface_->context_provider());
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
-  if (settings_.impl_side_painting) {
-    memory_history_->SaveEntry(
-        tile_manager_->memory_stats_from_last_assign());
-  }
+  memory_history_->SaveEntry(tile_manager_->memory_stats_from_last_assign());
 
   if (debug_state_.ShowHudRects()) {
     debug_rect_history_->SaveDebugRectsForCurrentFrame(
@@ -1510,13 +1497,6 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         active_tree_->hud_layer(),
         *frame->render_surface_layer_list,
         debug_state_);
-  }
-
-  if (!settings_.impl_side_painting && debug_state_.continuous_painting) {
-    const RenderingStats& stats =
-        rendering_stats_instrumentation_->GetRenderingStats();
-    paint_time_counter_->SavePaintTime(
-        stats.begin_main_frame_to_commit_duration.GetLastTimeDelta());
   }
 
   bool is_new_trace;
@@ -1901,13 +1881,11 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
   active_tree_->DidBecomeActive();
   ActivateAnimations();
-  if (settings_.impl_side_painting) {
-    client_->RenewTreePriority();
-    // If we have any picture layers, then by activating we also modified tile
-    // priorities.
-    if (!active_tree_->picture_layers().empty())
-      DidModifyTilePriorities();
-  }
+  client_->RenewTreePriority();
+  // If we have any picture layers, then by activating we also modified tile
+  // priorities.
+  if (!active_tree_->picture_layers().empty())
+    DidModifyTilePriorities();
 
   client_->OnCanDrawStateChanged(CanDraw());
   client_->DidActivateSyncTree();
@@ -2047,7 +2025,6 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
 
 void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(!tile_manager_);
-  DCHECK(settings_.impl_side_painting);
   DCHECK(output_surface_);
   DCHECK(resource_provider_);
 
@@ -2237,8 +2214,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // Since the new renderer may be capable of MSAA, update status here.
   UpdateGpuRasterizationStatus();
 
-  if (settings_.impl_side_painting)
-    CreateAndSetTileManager();
+  CreateAndSetTileManager();
   RecreateTreeResources();
 
   // Initialize vsync parameters to sane values.

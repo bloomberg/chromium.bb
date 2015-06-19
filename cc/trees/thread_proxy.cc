@@ -147,9 +147,9 @@ bool ThreadProxy::IsStarted() const {
 }
 
 bool ThreadProxy::CommitToActiveTree() const {
-  // With ThreadProxy and impl-side painting, we use a pending tree and activate
-  // it once it's ready to draw.
-  return !impl().layer_tree_host_impl->settings().impl_side_painting;
+  // With ThreadProxy, we use a pending tree and activate it once it's ready to
+  // draw to allow input to modify the active tree and draw during raster.
+  return false;
 }
 
 void ThreadProxy::SetLayerTreeHostClientReady() {
@@ -651,10 +651,6 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
       impl().layer_tree_host_impl->CurrentBeginFrameArgs();
   begin_main_frame_state->scroll_info =
       impl().layer_tree_host_impl->ProcessScrollDeltas();
-
-  if (!impl().layer_tree_host_impl->settings().impl_side_painting) {
-    DCHECK_GT(impl().layer_tree_host_impl->memory_allocation_limit_bytes(), 0u);
-  }
   begin_main_frame_state->memory_allocation_limit_bytes =
       impl().layer_tree_host_impl->memory_allocation_limit_bytes();
   begin_main_frame_state->memory_allocation_priority_cutoff =
@@ -904,8 +900,7 @@ void ThreadProxy::ScheduledActionCommit() {
       impl().layer_tree_host_impl.get());
   blocked_main().main_thread_inside_commit = false;
 
-  bool hold_commit = layer_tree_host()->settings().impl_side_painting &&
-                     blocked_main().commit_waits_for_activation;
+  bool hold_commit = blocked_main().commit_waits_for_activation;
   blocked_main().commit_waits_for_activation = false;
 
   if (hold_commit) {
@@ -1014,7 +1009,6 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
 
 void ThreadProxy::ScheduledActionPrepareTiles() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionPrepareTiles");
-  DCHECK(impl().layer_tree_host_impl->settings().impl_side_painting);
   impl().layer_tree_host_impl->PrepareTiles();
 }
 
@@ -1254,7 +1248,6 @@ void ThreadProxy::DidActivateSyncTree() {
   if (impl().completion_event_for_commit_held_on_tree_activation) {
     TRACE_EVENT_INSTANT0(
         "cc", "ReleaseCommitbyActivation", TRACE_EVENT_SCOPE_THREAD);
-    DCHECK(impl().layer_tree_host_impl->settings().impl_side_painting);
     impl().completion_event_for_commit_held_on_tree_activation->Signal();
     impl().completion_event_for_commit_held_on_tree_activation = NULL;
   }

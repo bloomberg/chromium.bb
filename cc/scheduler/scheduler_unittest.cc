@@ -328,7 +328,8 @@ class SchedulerTest : public testing::Test {
       AdvanceFrame();
 
       scheduler_->NotifyBeginMainFrameStarted();
-      scheduler_->NotifyReadyToCommitThenActivateIfNeeded();
+      scheduler_->NotifyReadyToCommit();
+      scheduler_->NotifyReadyToActivate();
 
       EXPECT_FALSE(scheduler_->CommitPending());
 

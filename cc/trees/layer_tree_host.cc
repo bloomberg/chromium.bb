@@ -677,8 +677,7 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
 }
 
 void LayerTreeHost::RecordGpuRasterizationHistogram() {
-  // Gpu rasterization is only supported when impl-side painting is enabled.
-  if (gpu_rasterization_histogram_recorded_ || !settings_.impl_side_painting)
+  if (gpu_rasterization_histogram_recorded_)
     return;
 
   // Record how widely gpu rasterization is enabled.
