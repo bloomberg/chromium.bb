@@ -36,13 +36,16 @@ typedef struct {
 
 class MockHTMLResourcePreloader : public ResourcePreloader {
 public:
-    void preloadRequestVerification(Resource::Type type, const String& url, const String& baseURL, int width)
+    void preloadRequestVerification(Resource::Type type, const String& url, const String& baseURL, int width, const ClientHintsPreferences& preferences)
     {
         EXPECT_FALSE(m_preloadRequest->isPreconnect());
         EXPECT_EQ(type, m_preloadRequest->resourceType());
         EXPECT_STREQ(url.ascii().data(), m_preloadRequest->resourceURL().ascii().data());
         EXPECT_STREQ(baseURL.ascii().data(), m_preloadRequest->baseURL().string().ascii().data());
         EXPECT_EQ(width, m_preloadRequest->resourceWidth());
+        EXPECT_EQ(preferences.shouldSendDPR(), m_preloadRequest->preferences().shouldSendDPR());
+        EXPECT_EQ(preferences.shouldSendResourceWidth(), m_preloadRequest->preferences().shouldSendResourceWidth());
+        EXPECT_EQ(preferences.shouldSendViewportWidth(), m_preloadRequest->preferences().shouldSendViewportWidth());
     }
 
     void preconnectRequestVerification(const String& host, CrossOriginAttributeValue crossOrigin)
@@ -112,7 +115,7 @@ protected:
         m_scanner->appendToEnd(String(testCase.inputHTML));
         m_scanner->scan(&preloader, baseURL);
 
-        preloader.preloadRequestVerification(testCase.type, testCase.preloadedURL, testCase.outputBaseURL, testCase.resourceWidth);
+        preloader.preloadRequestVerification(testCase.type, testCase.preloadedURL, testCase.outputBaseURL, testCase.resourceWidth, testCase.preferences);
     }
 
     void test(PreconnectTestCase testCase)
@@ -228,21 +231,24 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH)
     resourceWidth.setShouldSendResourceWidth(true);
     all.setShouldSendResourceWidth(true);
     viewportWidth.setShouldSendViewportWidth(true);
+    all.setShouldSendViewportWidth(true);
     TestCase testCases[] = {
         {"http://example.test", "<meta http-equiv='accept-ch' content='bla'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<meta http-equiv='accept-ch' content='dprw'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<meta http-equiv='accept-ch'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<meta http-equiv='accept-ch' content='dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dpr},
         {"http://example.test", "<meta http-equiv='accept-ch' content='bla,dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dpr},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  width  '><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  width  , wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  '><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  , wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, resourceWidth},
-        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  ,width, wutever, dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, all},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  width  '><img sizes='100vw' srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 500, resourceWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  width  , wutever'><img sizes='300px' srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 300, resourceWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  '><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, viewportWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  , wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, viewportWidth},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  viewport-width  ,width, wutever, dpr \t'><img sizes='90vw' srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 450, all},
     };
 
-    for (const auto& testCase : testCases)
+    for (const auto& testCase : testCases) {
+        runSetUp(false);
         test(testCase);
+    }
 }
 
 TEST_F(HTMLPreloadScannerTest, testPreconnect)

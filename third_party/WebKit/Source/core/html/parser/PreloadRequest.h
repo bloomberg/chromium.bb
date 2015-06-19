@@ -45,6 +45,7 @@ public:
     bool isPreconnect() const { return m_requestType == RequestTypePreconnect; }
     bool isCORS() const { return m_isCORSEnabled; }
     bool isAllowCredentials() const { return m_allowCredentials == AllowStoredCredentials; }
+    const ClientHintsPreferences& preferences() const { return m_clientHintsPreferences; }
 
 private:
     PreloadRequest(const String& initiatorName,

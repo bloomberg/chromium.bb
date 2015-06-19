@@ -537,10 +537,13 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             const typename Token::Attribute* equivAttribute = token.getAttributeItem(http_equivAttr);
             if (equivAttribute) {
                 String equivAttributeValue(equivAttribute->value);
-                if (equalIgnoringCase(equivAttributeValue, "content-security-policy"))
+                if (equalIgnoringCase(equivAttributeValue, "content-security-policy")) {
                     m_isCSPEnabled = true;
-                else if (equalIgnoringCase(equivAttributeValue, "accept-ch"))
-                    handleAcceptClientHintsHeader(equivAttributeValue, m_clientHintsPreferences, nullptr);
+                } else if (equalIgnoringCase(equivAttributeValue, "accept-ch")) {
+                    const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
+                    if (contentAttribute)
+                        handleAcceptClientHintsHeader(String(contentAttribute->value), m_clientHintsPreferences, nullptr);
+                }
                 return;
             }
             const typename Token::Attribute* nameAttribute = token.getAttributeItem(nameAttr);
