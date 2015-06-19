@@ -293,6 +293,9 @@ NaClMessageScanner::~NaClMessageScanner() {
 // message body, rather than passed in a separate FileDescriptorSet. Therefore,
 // on Windows, any message containing handles must be rewritten in the POSIX
 // format before we can send it to the NaCl plugin.
+// On Mac, base::SharedMemoryHandle has a different serialization than
+// base::FileDescriptor (which base::SharedMemoryHandle is typedef-ed to in
+// OS_NACL).
 bool NaClMessageScanner::ScanMessage(
     const IPC::Message& msg,
     uint32_t type,
@@ -304,7 +307,7 @@ bool NaClMessageScanner::ScanMessage(
   DCHECK(!new_msg_ptr->get());
 
   bool rewrite_msg =
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
       true;
 #else
       false;

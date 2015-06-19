@@ -20,6 +20,10 @@
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/memory/shared_memory_handle.h"
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 #if defined(OS_WIN)
 #include <tchar.h>
 #endif
@@ -515,6 +519,58 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
   }
 }
 #endif  // defined(OS_POSIX)
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+void ParamTraits<base::SharedMemoryHandle>::Write(Message* m,
+                                                  const param_type& p) {
+  m->WriteInt(p.GetType());
+
+  if (p.GetType() == base::SharedMemoryHandle::POSIX)
+    ParamTraits<base::FileDescriptor>::Write(m, p.GetFileDescriptor());
+}
+
+bool ParamTraits<base::SharedMemoryHandle>::Read(const Message* m,
+                                                 base::PickleIterator* iter,
+                                                 param_type* r) {
+  base::SharedMemoryHandle::TypeWireFormat type;
+  if (!iter->ReadInt(&type))
+    return false;
+
+  base::SharedMemoryHandle::Type shm_type = base::SharedMemoryHandle::POSIX;
+  switch (type) {
+    case base::SharedMemoryHandle::POSIX:
+    case base::SharedMemoryHandle::MACH: {
+      shm_type = static_cast<base::SharedMemoryHandle::Type>(type);
+      break;
+    }
+    default:
+      return false;
+  }
+
+  if (shm_type == base::SharedMemoryHandle::POSIX) {
+    base::FileDescriptor file_descriptor;
+
+    bool success =
+        ParamTraits<base::FileDescriptor>::Read(m, iter, &file_descriptor);
+    if (!success)
+      return false;
+
+    *r = base::SharedMemoryHandle(file_descriptor.fd,
+                                  file_descriptor.auto_close);
+    return true;
+  }
+
+  return true;
+}
+
+void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
+                                                std::string* l) {
+  if (p.GetType() == base::SharedMemoryHandle::POSIX) {
+    l->append(base::StringPrintf("Mechanism POSIX Fd"));
+    ParamTraits<base::FileDescriptor>::Log(p.GetFileDescriptor(), l);
+  }
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 void ParamTraits<base::FilePath>::Write(Message* m, const param_type& p) {
   p.WriteToPickle(m);

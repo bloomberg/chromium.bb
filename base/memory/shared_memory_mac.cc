@@ -19,10 +19,9 @@
 #include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"
 
-#if defined(OS_ANDROID)
-#include "base/os_compat_android.h"
-#include "third_party/ashmem/ashmem.h"
-#endif
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif  // OS_MACOSX
 
 namespace base {
 
@@ -45,7 +44,6 @@ struct ScopedPathUnlinkerTraits {
 // Unlinks the FilePath when the object is destroyed.
 typedef ScopedGeneric<FilePath*, ScopedPathUnlinkerTraits> ScopedPathUnlinker;
 
-#if !defined(OS_ANDROID)
 // Makes a temporary file, fdopens it, and then unlinks it. |fp| is populated
 // with the fdopened FILE. |readonly_fd| is populated with the opened fd if
 // options.share_read_only is true. |path| is populated with the location of
@@ -94,7 +92,6 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
   }
   return true;
 }
-#endif  // !defined(OS_ANDROID)
 }
 
 SharedMemory::SharedMemory()
@@ -107,7 +104,7 @@ SharedMemory::SharedMemory()
 }
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
-    : mapped_file_(handle.fd),
+    : mapped_file_(GetFdFromSharedMemoryHandle(handle)),
       readonly_mapped_file_(-1),
       mapped_size_(0),
       memory_(NULL),
@@ -118,7 +115,7 @@ SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
                            bool read_only,
                            ProcessHandle process)
-    : mapped_file_(handle.fd),
+    : mapped_file_(GetFdFromSharedMemoryHandle(handle)),
       readonly_mapped_file_(-1),
       mapped_size_(0),
       memory_(NULL),
@@ -136,7 +133,7 @@ SharedMemory::~SharedMemory() {
 
 // static
 bool SharedMemory::IsHandleValid(const SharedMemoryHandle& handle) {
-  return handle.fd >= 0;
+  return handle.IsValid();
 }
 
 // static
@@ -146,8 +143,8 @@ SharedMemoryHandle SharedMemory::NULLHandle() {
 
 // static
 void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
-  DCHECK_GE(handle.fd, 0);
-  if (close(handle.fd) < 0)
+  DCHECK_GE(GetFdFromSharedMemoryHandle(handle), 0);
+  if (close(GetFdFromSharedMemoryHandle(handle)) < 0)
     DPLOG(ERROR) << "close";
 }
 
@@ -159,28 +156,24 @@ size_t SharedMemory::GetHandleLimit() {
 // static
 SharedMemoryHandle SharedMemory::DuplicateHandle(
     const SharedMemoryHandle& handle) {
-  int duped_handle = HANDLE_EINTR(dup(handle.fd));
-  if (duped_handle < 0)
-    return base::SharedMemory::NULLHandle();
-  return base::FileDescriptor(duped_handle, true);
+  return handle.Duplicate();
 }
 
 // static
 int SharedMemory::GetFdFromSharedMemoryHandle(
     const SharedMemoryHandle& handle) {
-  return handle.fd;
+  return handle.GetFileDescriptor().fd;
 }
 
 bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   return CreateAnonymous(size) && Map(size);
 }
 
-#if !defined(OS_ANDROID)
 // static
 int SharedMemory::GetSizeFromSharedMemoryHandle(
     const SharedMemoryHandle& handle) {
   struct stat st;
-  if (fstat(handle.fd, &st) != 0)
+  if (fstat(GetFdFromSharedMemoryHandle(handle), &st) != 0)
     return -1;
   return st.st_size;
 }
@@ -288,14 +281,6 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   }
   if (fp == NULL) {
     PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
-    FilePath dir = path.DirName();
-    if (access(dir.value().c_str(), W_OK | X_OK) < 0) {
-      PLOG(ERROR) << "Unable to access(W_OK|X_OK) " << dir.value();
-      if (dir.value() == "/dev/shm") {
-        LOG(FATAL) << "This is frequently caused by incorrect permissions on "
-                   << "/dev/shm.  Try 'sudo chmod 1777 /dev/shm' to fix.";
-      }
-    }
     return false;
   }
 
@@ -333,7 +318,6 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   }
   return PrepareMapFile(fp.Pass(), readonly_fd.Pass());
 }
-#endif  // !defined(OS_ANDROID)
 
 bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (mapped_file_ == -1)
@@ -344,18 +328,6 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
 
   if (memory_)
     return false;
-
-#if defined(OS_ANDROID)
-  // On Android, Map can be called with a size and offset of zero to use the
-  // ashmem-determined size.
-  if (bytes == 0) {
-    DCHECK_EQ(0, offset);
-    int ashmem_bytes = ashmem_get_size_region(mapped_file_);
-    if (ashmem_bytes < 0)
-      return false;
-    bytes = ashmem_bytes;
-  }
-#endif
 
   memory_ = mmap(NULL, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
                  MAP_SHARED, mapped_file_, offset);
@@ -383,7 +355,7 @@ bool SharedMemory::Unmap() {
 }
 
 SharedMemoryHandle SharedMemory::handle() const {
-  return FileDescriptor(mapped_file_, false);
+  return SharedMemoryHandle(mapped_file_, false);
 }
 
 void SharedMemory::Close() {
@@ -399,7 +371,6 @@ void SharedMemory::Close() {
   }
 }
 
-#if !defined(OS_ANDROID)
 bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
   DCHECK_EQ(-1, mapped_file_);
   DCHECK_EQ(-1, readonly_mapped_file_);
@@ -452,15 +423,10 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
   if (!GetShmemTempDir(false, &temp_dir))
     return false;
 
-#if defined(GOOGLE_CHROME_BUILD)
-  std::string name_base = std::string("com.google.Chrome");
-#else
-  std::string name_base = std::string("org.chromium.Chromium");
-#endif
+  std::string name_base = std::string(base::mac::BaseBundleID());
   *path = temp_dir.AppendASCII(name_base + ".shmem." + mem_name);
   return true;
 }
-#endif  // !defined(OS_ANDROID)
 
 bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
                                         SharedMemoryHandle* new_handle,
@@ -485,8 +451,7 @@ bool SharedMemory::ShareToProcessCommon(ProcessHandle process,
     return false;
   }
 
-  new_handle->fd = new_fd;
-  new_handle->auto_close = true;
+  new_handle->SetFileHandle(new_fd, true);
 
   if (close_self) {
     Unmap();

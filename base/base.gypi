@@ -358,6 +358,9 @@
           'memory/scoped_vector.h',
           'memory/shared_memory.h',
           'memory/shared_memory_android.cc',
+          'memory/shared_memory_handle.h',
+          'memory/shared_memory_handle_mac.cc',
+          'memory/shared_memory_mac.cc',
           'memory/shared_memory_nacl.cc',
           'memory/shared_memory_posix.cc',
           'memory/shared_memory_win.cc',
@@ -760,6 +763,11 @@
           4018,
         ],
         'target_conditions': [
+          ['OS == "mac"', {
+            'sources!': [
+              'memory/shared_memory_posix.cc',
+            ],
+          }],
           ['(<(desktop_linux) == 0 and <(chromeos) == 0) or >(nacl_untrusted_build)==1', {
               'sources/': [
                 ['exclude', '^nix/'],

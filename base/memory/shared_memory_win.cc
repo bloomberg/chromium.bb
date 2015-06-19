@@ -44,7 +44,7 @@ SharedMemory::SharedMemory(const std::wstring& name)
       name_(name) {
 }
 
-SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
+SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
     : mapped_file_(handle),
       memory_(NULL),
       read_only_(read_only),
@@ -52,7 +52,7 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
       mapped_size_(0) {
 }
 
-SharedMemory::SharedMemory(SharedMemoryHandle handle,
+SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
                            bool read_only,
                            ProcessHandle process)
     : mapped_file_(NULL),
