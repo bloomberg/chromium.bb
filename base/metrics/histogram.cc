@@ -131,6 +131,23 @@ HistogramBase* Histogram::FactoryTimeGet(const std::string& name,
                     flags);
 }
 
+HistogramBase* Histogram::FactoryGet(const char* name,
+                                     Sample minimum,
+                                     Sample maximum,
+                                     size_t bucket_count,
+                                     int32 flags) {
+  return FactoryGet(std::string(name), minimum, maximum, bucket_count, flags);
+}
+
+HistogramBase* Histogram::FactoryTimeGet(const char* name,
+                                         TimeDelta minimum,
+                                         TimeDelta maximum,
+                                         size_t bucket_count,
+                                         int32 flags) {
+  return FactoryTimeGet(std::string(name), minimum, maximum, bucket_count,
+                        flags);
+}
+
 // Calculate what range of values are held in each bucket.
 // We have to be careful that we don't pick a ratio between starting points in
 // consecutive buckets that is sooo small, that the integer bounds are the same
@@ -532,6 +549,23 @@ HistogramBase* LinearHistogram::FactoryTimeGet(const std::string& name,
                     flags);
 }
 
+HistogramBase* LinearHistogram::FactoryGet(const char* name,
+                                           Sample minimum,
+                                           Sample maximum,
+                                           size_t bucket_count,
+                                           int32 flags) {
+  return FactoryGet(std::string(name), minimum, maximum, bucket_count, flags);
+}
+
+HistogramBase* LinearHistogram::FactoryTimeGet(const char* name,
+                                               TimeDelta minimum,
+                                               TimeDelta maximum,
+                                               size_t bucket_count,
+                                               int32 flags) {
+  return FactoryTimeGet(std::string(name),  minimum, maximum, bucket_count,
+                        flags);
+}
+
 HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
       const std::string& name,
       Sample minimum,
@@ -677,6 +711,10 @@ HistogramBase* BooleanHistogram::FactoryGet(const std::string& name,
   return histogram;
 }
 
+HistogramBase* BooleanHistogram::FactoryGet(const char* name, int32 flags) {
+  return FactoryGet(std::string(name), flags);
+}
+
 HistogramType BooleanHistogram::GetHistogramType() const {
   return BOOLEAN_HISTOGRAM;
 }
@@ -735,6 +773,13 @@ HistogramBase* CustomHistogram::FactoryGet(
 
   DCHECK_EQ(histogram->GetHistogramType(), CUSTOM_HISTOGRAM);
   return histogram;
+}
+
+HistogramBase* CustomHistogram::FactoryGet(
+    const char* name,
+    const std::vector<Sample>& custom_ranges,
+    int32 flags) {
+  return FactoryGet(std::string(name), custom_ranges, flags);
 }
 
 HistogramType CustomHistogram::GetHistogramType() const {
