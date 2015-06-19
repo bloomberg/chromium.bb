@@ -26,6 +26,7 @@ namespace chromeos {
 // requests access to certificates.
 class PlatformKeysCertificateSelector : public chrome::CertificateSelector {
  public:
+  // |callback| must not be null.
   PlatformKeysCertificateSelector(const net::CertificateList& certificates,
                                   const std::string& extension_name,
                                   const CertificateSelectedCallback& callback,
@@ -40,7 +41,9 @@ class PlatformKeysCertificateSelector : public chrome::CertificateSelector {
 
  private:
   const std::string extension_name_;
-  const CertificateSelectedCallback callback_;
+
+  // Will be reset to null after it was run.
+  CertificateSelectedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformKeysCertificateSelector);
 };

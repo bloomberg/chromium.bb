@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/platform_keys_certificate_selector_chromeos.h"
 
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,9 +23,14 @@ PlatformKeysCertificateSelector::PlatformKeysCertificateSelector(
     : CertificateSelector(certificates, web_contents),
       extension_name_(extension_name),
       callback_(callback) {
+  DCHECK(!callback_.is_null());
 }
 
 PlatformKeysCertificateSelector::~PlatformKeysCertificateSelector() {
+  // Ensure to call back even if the dialog was closed because of the views
+  // hierarchy being destroyed.
+  if (!callback_.is_null())
+    base::ResetAndReturn(&callback_).Run(nullptr);
 }
 
 void PlatformKeysCertificateSelector::Init() {
@@ -44,15 +50,17 @@ void PlatformKeysCertificateSelector::Init() {
 }
 
 bool PlatformKeysCertificateSelector::Cancel() {
-  callback_.Run(nullptr);
+  DCHECK(!callback_.is_null());
+  base::ResetAndReturn(&callback_).Run(nullptr);
   return true;
 }
 
 bool PlatformKeysCertificateSelector::Accept() {
+  DCHECK(!callback_.is_null());
   scoped_refptr<net::X509Certificate> cert = GetSelectedCert();
   if (!cert)
     return false;
-  callback_.Run(cert);
+  base::ResetAndReturn(&callback_).Run(cert);
   return true;
 }
 
