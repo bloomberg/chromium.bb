@@ -6,14 +6,17 @@
 #include "config.h"
 #include "core/events/PromiseRejectionEvent.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
+
 namespace blink {
 
 PromiseRejectionEvent::PromiseRejectionEvent()
 {
 }
 
-PromiseRejectionEvent::PromiseRejectionEvent(const AtomicString& type, const PromiseRejectionEventInit& initializer)
+PromiseRejectionEvent::PromiseRejectionEvent(ScriptState* state, const AtomicString& type, const PromiseRejectionEventInit& initializer)
     : Event(type, initializer)
+    , m_scriptState(state)
 {
     if (initializer.hasPromise()) {
         m_promise.set(initializer.promise().isolate(), initializer.promise().v8Value());
@@ -31,14 +34,18 @@ PromiseRejectionEvent::~PromiseRejectionEvent()
 
 ScriptPromise PromiseRejectionEvent::promise(ScriptState* state) const
 {
-    v8::Local<v8::Value> value = m_promise.newLocal(state->isolate());
-    return ScriptPromise(state, value);
+    // Return null when the promise is accessed by a different world than the world that created the promise.
+    if (!m_scriptState || !m_scriptState->contextIsValid() || m_scriptState->world().worldId() != state->world().worldId())
+        return ScriptPromise();
+    return ScriptPromise(m_scriptState.get(), m_promise.newLocal(m_scriptState->isolate()));
 }
 
 ScriptValue PromiseRejectionEvent::reason(ScriptState* state) const
 {
-    v8::Local<v8::Value> value = m_reason.newLocal(state->isolate());
-    return ScriptValue(state, value);
+    // Return null when the value is accessed by a different world than the world that created the value.
+    if (m_reason.isEmpty() || !m_scriptState || !m_scriptState->contextIsValid() || m_scriptState->world().worldId() != state->world().worldId())
+        return ScriptValue(state, v8::Null(state->isolate()));
+    return ScriptValue(m_scriptState.get(), m_reason.newLocal(m_scriptState->isolate()));
 }
 
 const AtomicString& PromiseRejectionEvent::interfaceName() const

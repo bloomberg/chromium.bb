@@ -67,7 +67,7 @@ public:
             init.setPromise(ScriptPromise(m_scriptState, value));
             init.setReason(m_exception);
             init.setCancelable(true);
-            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(EventTypeNames::unhandledrejection, init);
+            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::unhandledrejection, init);
             // Log to console if event was not preventDefault()'ed.
             m_shouldLogToConsole = target->dispatchEvent(event);
         }
@@ -114,7 +114,7 @@ public:
             PromiseRejectionEventInit init;
             init.setPromise(ScriptPromise(m_scriptState, value));
             init.setReason(m_exception);
-            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(EventTypeNames::rejectionhandled, init);
+            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::rejectionhandled, init);
             m_shouldLogToConsole &= target->dispatchEvent(event);
         }
 

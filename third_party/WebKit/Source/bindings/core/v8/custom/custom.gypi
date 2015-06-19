@@ -22,6 +22,7 @@
             'V8MessageEventCustom.cpp',
             'V8MutationObserverCustom.cpp',
             'V8PopStateEventCustom.cpp',
+            'V8PromiseRejectionEventCustom.cpp',
             'V8WindowCustom.cpp',
             'V8XMLHttpRequestCustom.cpp',
         ],

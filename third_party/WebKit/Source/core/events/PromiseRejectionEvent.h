@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/events/Event.h"
@@ -21,9 +22,9 @@ public:
     {
         return adoptRefWillBeNoop(new PromiseRejectionEvent);
     }
-    static PassRefPtrWillBeRawPtr<PromiseRejectionEvent> create(const AtomicString& type, const PromiseRejectionEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<PromiseRejectionEvent> create(ScriptState* state, const AtomicString& type, const PromiseRejectionEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new PromiseRejectionEvent(type, initializer));
+        return adoptRefWillBeNoop(new PromiseRejectionEvent(state, type, initializer));
     }
 
     ScriptValue reason(ScriptState*) const;
@@ -35,13 +36,13 @@ public:
 
 private:
     PromiseRejectionEvent();
-    PromiseRejectionEvent(const AtomicString& type, ScriptPromise, ScriptValue reason);
-    PromiseRejectionEvent(const AtomicString&, const PromiseRejectionEventInit&);
+    PromiseRejectionEvent(ScriptState*, const AtomicString&, const PromiseRejectionEventInit&);
     ~PromiseRejectionEvent() override;
 
     static void didCollectPromise(const v8::WeakCallbackInfo<PromiseRejectionEvent>&);
     static void didCollectReason(const v8::WeakCallbackInfo<PromiseRejectionEvent>&);
 
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_promise;
     ScopedPersistent<v8::Value> m_reason;
 };

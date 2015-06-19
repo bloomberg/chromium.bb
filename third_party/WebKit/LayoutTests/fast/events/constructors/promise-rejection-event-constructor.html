@@ -9,8 +9,8 @@ test(function() {
   // No initializer is passed.
   assert_equals(new PromiseRejectionEvent('eventType').bubbles, false);
   assert_equals(new PromiseRejectionEvent('eventType').cancelable, false);
-  assert_equals(new PromiseRejectionEvent('eventType').promise, undefined);
-  assert_equals(new PromiseRejectionEvent('eventType').reason, undefined);
+  assert_equals(new PromiseRejectionEvent('eventType').promise, null);
+  assert_equals(new PromiseRejectionEvent('eventType').reason, null);
 
   // bubbles is passed.
   assert_equals(new PromiseRejectionEvent('eventType', { bubbles: false }).bubbles, false);
