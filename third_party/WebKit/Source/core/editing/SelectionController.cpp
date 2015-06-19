@@ -99,6 +99,11 @@ static VisibleSelection expandSelectionToRespectUserSelectAll(Node* targetNode, 
     return expandSelectionToRespectUserSelectAllAlgorithm<VisibleSelection::InDOMTree>(targetNode, selection);
 }
 
+static bool expandSelectionUsingGranularity(VisibleSelection& selection, TextGranularity granularity)
+{
+    return selection.expandUsingGranularity(granularity);
+}
+
 bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node* targetNode, const VisibleSelection& selection, TextGranularity granularity)
 {
     if (Position::nodeIsUserSelectNone(targetNode))
@@ -128,7 +133,7 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
         VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
         if (pos.isNotNull()) {
             newSelection = VisibleSelection(pos);
-            newSelection.expandUsingGranularity(WordGranularity);
+            expandSelectionUsingGranularity(newSelection, WordGranularity);
         }
 
         if (appendTrailingWhitespace == ShouldAppendTrailingWhitespace && newSelection.isRange())
@@ -232,7 +237,7 @@ bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithH
     VisiblePosition pos(innerNode->layoutObject()->positionForPoint(event.localPoint()));
     if (pos.isNotNull()) {
         newSelection = VisibleSelection(pos);
-        newSelection.expandUsingGranularity(ParagraphGranularity);
+        expandSelectionUsingGranularity(newSelection, ParagraphGranularity);
     }
 
     return updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), ParagraphGranularity);
@@ -302,7 +307,7 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
 
         if (m_frame->selection().granularity() != CharacterGranularity) {
             granularity = m_frame->selection().granularity();
-            newSelection.expandUsingGranularity(m_frame->selection().granularity());
+            expandSelectionUsingGranularity(newSelection, m_frame->selection().granularity());
         }
     } else {
         newSelection = expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePos));
@@ -420,7 +425,7 @@ void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTe
     }
 
     if (m_frame->selection().granularity() != CharacterGranularity)
-        newSelection.expandUsingGranularity(m_frame->selection().granularity());
+        expandSelectionUsingGranularity(newSelection, m_frame->selection().granularity());
 
     m_frame->selection().setNonDirectionalSelectionIfNeeded(newSelection, m_frame->selection().granularity(),
         FrameSelection::AdjustEndpointsAtBidiBoundary);
