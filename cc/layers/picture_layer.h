@@ -30,7 +30,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
-  bool Update(ResourceUpdateQueue* queue) override;
+  bool Update() override;
   void SetIsMask(bool is_mask) override;
   skia::RefPtr<SkPicture> GetPicture() const override;
   bool IsSuitableForGpuRasterization() const override;

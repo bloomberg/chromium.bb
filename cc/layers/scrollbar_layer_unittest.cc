@@ -12,7 +12,6 @@
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/quads/solid_color_draw_quad.h"
-#include "cc/resources/resource_update_queue.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -722,11 +721,9 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
-    ResourceUpdateQueue queue;
-
     scrollbar_layer->SavePaintProperties();
     for (int update_counter = 0; update_counter < num_updates; update_counter++)
-      scrollbar_layer->Update(&queue);
+      scrollbar_layer->Update();
 
     // A non-solid-color scrollbar should have requested two textures.
     EXPECT_EQ(expected_resources, layer_tree_host_->UIResourceCount());
@@ -788,7 +785,6 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
-  ResourceUpdateQueue queue;
   size_t resource_count;
   int expected_created, expected_deleted;
   scrollbar_layer->SavePaintProperties();
@@ -796,7 +792,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   resource_count = 2;
   expected_created = 2;
   expected_deleted = 0;
-  EXPECT_TRUE(scrollbar_layer->Update(&queue));
+  EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
   EXPECT_NE(0, scrollbar_layer->thumb_resource_id());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
@@ -807,7 +803,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   expected_created = 2;
   expected_deleted = 2;
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 0, 0));
-  EXPECT_TRUE(scrollbar_layer->Update(&queue));
+  EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_EQ(0, scrollbar_layer->track_resource_id());
   EXPECT_EQ(0, scrollbar_layer->thumb_resource_id());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
@@ -818,7 +814,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   expected_created = 2;
   expected_deleted = 2;
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 0, 0));
-  EXPECT_FALSE(scrollbar_layer->Update(&queue));
+  EXPECT_FALSE(scrollbar_layer->Update());
   EXPECT_EQ(0, scrollbar_layer->track_resource_id());
   EXPECT_EQ(0, scrollbar_layer->thumb_resource_id());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
@@ -829,7 +825,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   expected_created = 4;
   expected_deleted = 2;
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
-  EXPECT_TRUE(scrollbar_layer->Update(&queue));
+  EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
   EXPECT_NE(0, scrollbar_layer->thumb_resource_id());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
@@ -840,7 +836,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   expected_created = 5;
   expected_deleted = 4;
   scrollbar_layer->fake_scrollbar()->set_has_thumb(false);
-  EXPECT_TRUE(scrollbar_layer->Update(&queue));
+  EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
   EXPECT_EQ(0, scrollbar_layer->thumb_resource_id());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
@@ -851,7 +847,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   expected_created = 5;
   expected_deleted = 5;
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 0, 0));
-  EXPECT_TRUE(scrollbar_layer->Update(&queue));
+  EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_EQ(0, scrollbar_layer->track_resource_id());
   EXPECT_EQ(0, scrollbar_layer->thumb_resource_id());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
@@ -863,7 +859,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   expected_deleted = 5;
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
   scrollbar_layer->fake_scrollbar()->set_has_thumb(true);
-  EXPECT_TRUE(scrollbar_layer->Update(&queue));
+  EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
   EXPECT_NE(0, scrollbar_layer->thumb_resource_id());
 
@@ -873,7 +869,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
   scrollbar_layer->fake_scrollbar()->set_has_thumb(false);
   scrollbar_layer->SetBounds(gfx::Size(90, 15));
-  EXPECT_TRUE(scrollbar_layer->Update(&queue));
+  EXPECT_TRUE(scrollbar_layer->Update());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
   EXPECT_EQ(expected_created, layer_tree_host_->TotalUIResourceCreated());
   EXPECT_EQ(expected_deleted, layer_tree_host_->TotalUIResourceDeleted());
@@ -882,7 +878,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
       layer_tree_host_->ui_resource_size(scrollbar_layer->track_resource_id()));
 
   scrollbar_layer->ResetNeedsDisplayForTesting();
-  EXPECT_FALSE(scrollbar_layer->Update(&queue));
+  EXPECT_FALSE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
   EXPECT_EQ(0, scrollbar_layer->thumb_resource_id());
   EXPECT_EQ(resource_count, layer_tree_host_->UIResourceCount());
@@ -923,9 +919,8 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
 
     layer_tree_host_->SetDeviceScaleFactor(test_scale);
 
-    ResourceUpdateQueue queue;
     scrollbar_layer->SavePaintProperties();
-    scrollbar_layer->Update(&queue);
+    scrollbar_layer->Update();
 
     // Verify that we have not generated any content uploads that are larger
     // than their destination textures.
@@ -980,11 +975,10 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
 
     layer_tree_host_->SetDeviceScaleFactor(test_scale);
 
-    ResourceUpdateQueue queue;
     gfx::Rect screen_space_clip_rect;
     scrollbar_layer->SavePaintProperties();
 
-    scrollbar_layer->Update(&queue);
+    scrollbar_layer->Update();
 
     UIResourceBitmap* bitmap = layer_tree_host_->ui_resource_bitmap(
         scrollbar_layer->track_resource_id());

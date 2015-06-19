@@ -904,7 +904,7 @@ void SingleThreadProxy::DoBeginMainFrame(
   // New commits requested inside UpdateLayers should be respected.
   commit_requested_ = false;
 
-  layer_tree_host_->UpdateLayers(queue_for_commit_.get());
+  layer_tree_host_->UpdateLayers();
 
   timing_history_.DidBeginMainFrame();
 

@@ -694,18 +694,13 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   proxy->CompositeImmediately(frame_begin_time);
 }
 
-bool LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue) {
+bool LayerTreeHost::UpdateLayers() {
   DCHECK(!output_surface_lost_);
-
   if (!root_layer())
     return false;
-
   DCHECK(!root_layer()->parent());
-
-  bool result = UpdateLayers(root_layer(), queue);
-
+  bool result = DoUpdateLayers(root_layer());
   micro_benchmark_controller_.DidUpdateLayers();
-
   return result || next_commit_forces_redraw_;
 }
 
@@ -758,10 +753,9 @@ bool LayerTreeHost::UsingSharedMemoryResources() {
   return GetRendererCapabilities().using_shared_memory_resources;
 }
 
-bool LayerTreeHost::UpdateLayers(Layer* root_layer,
-                                 ResourceUpdateQueue* queue) {
-  TRACE_EVENT1("cc", "LayerTreeHost::UpdateLayers",
-               "source_frame_number", source_frame_number());
+bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
+  TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
+               source_frame_number());
 
   RenderSurfaceLayerList render_surface_layer_list;
 
@@ -822,7 +816,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     // TODO(enne): temporarily clobber draw properties visible rect.
     layer->draw_properties().visible_content_rect =
         layer->visible_rect_from_property_trees();
-    did_paint_content |= layer->Update(queue);
+    did_paint_content |= layer->Update();
     content_is_suitable_for_gpu_rasterization_ &=
         layer->IsSuitableForGpuRasterization();
   }

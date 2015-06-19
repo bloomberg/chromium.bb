@@ -6,7 +6,6 @@
 
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/resource_update_queue.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -58,10 +57,9 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
-  ResourceUpdateQueue queue;
   gfx::Rect screen_space_clip_rect;
   test_layer->SavePaintProperties();
-  test_layer->Update(&queue);
+  test_layer->Update();
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
@@ -73,7 +71,7 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
   test_layer->SetAperture(aperture);
   test_layer->SetUIResourceId(resource->id());
   test_layer->SetFillCenter(fill_center);
-  test_layer->Update(&queue);
+  test_layer->Update();
 
   EXPECT_TRUE(test_layer->DrawsContent());
 }

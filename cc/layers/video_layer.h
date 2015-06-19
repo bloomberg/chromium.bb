@@ -26,7 +26,7 @@ class CC_EXPORT VideoLayer : public Layer {
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
-  bool Update(ResourceUpdateQueue* queue) override;
+  bool Update() override;
 
  private:
   VideoLayer(const LayerSettings& settings,

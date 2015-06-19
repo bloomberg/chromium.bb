@@ -216,8 +216,8 @@ bool TextureLayer::HasDrawableContent() const {
   return (client_ || holder_ref_) && Layer::HasDrawableContent();
 }
 
-bool TextureLayer::Update(ResourceUpdateQueue* queue) {
-  bool updated = Layer::Update(queue);
+bool TextureLayer::Update() {
+  bool updated = Layer::Update();
   if (client_) {
     TextureMailbox mailbox;
     scoped_ptr<SingleReleaseCallback> release_callback;

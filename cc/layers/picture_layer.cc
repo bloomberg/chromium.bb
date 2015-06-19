@@ -113,9 +113,9 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
   Layer::SetNeedsDisplayRect(layer_rect);
 }
 
-bool PictureLayer::Update(ResourceUpdateQueue* queue) {
+bool PictureLayer::Update() {
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
-  bool updated = Layer::Update(queue);
+  bool updated = Layer::Update();
 
   gfx::Rect visible_layer_rect = visible_content_rect();
   gfx::Size layer_size = paint_properties().bounds;

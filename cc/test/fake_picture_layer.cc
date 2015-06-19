@@ -42,10 +42,10 @@ scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
   return FakePictureLayerImpl::Create(tree_impl, layer_id_);
 }
 
-bool FakePictureLayer::Update(ResourceUpdateQueue* queue) {
+bool FakePictureLayer::Update() {
   if (disable_lcd_text_)
     draw_properties().can_use_lcd_text = false;
-  bool updated = PictureLayer::Update(queue);
+  bool updated = PictureLayer::Update();
   update_count_++;
   return updated || always_update_resources_;
 }

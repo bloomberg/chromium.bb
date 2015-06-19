@@ -122,7 +122,7 @@ class CC_EXPORT LayerTreeHost {
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
-  bool UpdateLayers(ResourceUpdateQueue* queue);
+  bool UpdateLayers();
 
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
@@ -361,7 +361,7 @@ class CC_EXPORT LayerTreeHost {
  private:
   void InitializeProxy(scoped_ptr<Proxy> proxy);
 
-  bool UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
+  bool DoUpdateLayers(Layer* root_layer);
   void UpdateHudLayer();
 
   void ReduceMemoryUsage();

@@ -7,7 +7,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/resource_update_queue.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -82,9 +81,8 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
-  ResourceUpdateQueue queue;
   test_layer->SavePaintProperties();
-  test_layer->Update(&queue);
+  test_layer->Update();
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
@@ -93,7 +91,7 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   bitmap.setImmutable();
 
   test_layer->SetBitmap(bitmap);
-  test_layer->Update(&queue);
+  test_layer->Update();
 
   EXPECT_TRUE(test_layer->DrawsContent());
 }
@@ -108,9 +106,8 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
-  ResourceUpdateQueue queue;
   test_layer->SavePaintProperties();
-  test_layer->Update(&queue);
+  test_layer->Update();
 
   EXPECT_FALSE(test_layer->DrawsContent());
 
@@ -118,7 +115,7 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   scoped_ptr<ScopedUIResource> resource = ScopedUIResource::Create(
       layer_tree_host_.get(), UIResourceBitmap(gfx::Size(10, 10), is_opaque));
   test_layer->SetUIResourceId(resource->id());
-  test_layer->Update(&queue);
+  test_layer->Update();
 
   EXPECT_TRUE(test_layer->DrawsContent());
 

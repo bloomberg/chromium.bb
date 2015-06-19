@@ -40,7 +40,7 @@ class FakePictureLayer : public PictureLayer {
 
   void disable_lcd_text() { disable_lcd_text_ = true; }
 
-  bool Update(ResourceUpdateQueue* queue) override;
+  bool Update() override;
 
   void PushPropertiesTo(LayerImpl* layer) override;
 

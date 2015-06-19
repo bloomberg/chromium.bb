@@ -47,9 +47,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   host->SetRootLayer(layer);
   layer->SetIsDrawable(true);
   layer->SavePaintProperties();
-
-  scoped_ptr<ResourceUpdateQueue> queue(new ResourceUpdateQueue);
-  layer->Update(queue.get());
+  layer->Update();
 
   EXPECT_EQ(0, host->source_frame_number());
   host->CommitComplete();

@@ -45,9 +45,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   using LayerTreeHost::SetOutputSurfaceLostForTesting;
   using LayerTreeHost::InitializeSingleThreaded;
   using LayerTreeHost::InitializeForTesting;
-  void UpdateLayers(ResourceUpdateQueue* queue) {
-    LayerTreeHost::UpdateLayers(queue);
-  }
+  void UpdateLayers() { LayerTreeHost::UpdateLayers(); }
 
   MicroBenchmarkController* GetMicroBenchmarkController() {
     return &micro_benchmark_controller_;

@@ -24,7 +24,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
-  bool Update(ResourceUpdateQueue* queue) override;
+  bool Update() override;
   void PushPropertiesTo(LayerImpl* impl) override;
 
   // Called by the DelegatedFrameProvider when a new frame is available to be

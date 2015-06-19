@@ -37,8 +37,8 @@ FakePaintedScrollbarLayer::FakePaintedScrollbarLayer(
 
 FakePaintedScrollbarLayer::~FakePaintedScrollbarLayer() {}
 
-bool FakePaintedScrollbarLayer::Update(ResourceUpdateQueue* queue) {
-  bool updated = PaintedScrollbarLayer::Update(queue);
+bool FakePaintedScrollbarLayer::Update() {
+  bool updated = PaintedScrollbarLayer::Update();
   ++update_count_;
   return updated;
 }

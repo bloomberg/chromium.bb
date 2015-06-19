@@ -827,7 +827,7 @@ void ThreadProxy::BeginMainFrame(
   scoped_ptr<ResourceUpdateQueue> queue =
       make_scoped_ptr(new ResourceUpdateQueue);
 
-  bool updated = layer_tree_host()->UpdateLayers(queue.get());
+  bool updated = layer_tree_host()->UpdateLayers();
 
   layer_tree_host()->WillCommit();
   devtools_instrumentation::ScopedCommitTrace commit_task(
