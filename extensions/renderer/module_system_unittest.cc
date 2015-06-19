@@ -34,7 +34,8 @@ class CounterNatives : public ObjectBackedNativeHandler {
 
 class TestExceptionHandler : public ModuleSystem::ExceptionHandler {
  public:
-  TestExceptionHandler() : handled_exception_(false) {}
+  TestExceptionHandler()
+      : ModuleSystem::ExceptionHandler(nullptr), handled_exception_(false) {}
 
   void HandleUncaughtException(const v8::TryCatch& try_catch) override {
     handled_exception_ = true;
@@ -404,11 +405,14 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromAnotherContext) {
                             "    return 'pong';"
                             "  }"
                             "});");
-  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
-      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  gin::ModuleRegistry::From(env()->context()->v8_context())
+      ->AddBuiltinModule(
+          env()->isolate(), "natives",
+          other_env->module_system()->NewInstance());
   gin::ModuleRegistry::From(other_env->context()->v8_context())
       ->AddBuiltinModule(
-          env()->isolate(), "natives", env()->module_system()->NewInstance());
+          env()->isolate(), "natives",
+          env()->module_system()->NewInstance());
   env()->module_system()->Require("test");
   RunResolvedPromises();
 }
@@ -438,11 +442,14 @@ TEST_F(ModuleSystemTest, TestRequireAsyncBetweenContexts) {
                             "    return natives.requireAsync('pong');"
                             "  }"
                             "});");
-  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
-      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  gin::ModuleRegistry::From(env()->context()->v8_context())
+      ->AddBuiltinModule(
+          env()->isolate(), "natives",
+          other_env->module_system()->NewInstance());
   gin::ModuleRegistry::From(other_env->context()->v8_context())
       ->AddBuiltinModule(
-          env()->isolate(), "natives", env()->module_system()->NewInstance());
+          env()->isolate(), "natives",
+          env()->module_system()->NewInstance());
   env()->module_system()->Require("test");
   RunResolvedPromises();
 }
@@ -461,8 +468,10 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleRegistry) {
                         "  });"
                         "});");
   scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
-  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
-      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  gin::ModuleRegistry::From(env()->context()->v8_context())
+      ->AddBuiltinModule(
+          env()->isolate(), "natives",
+          other_env->module_system()->NewInstance());
   other_env->ShutdownGin();
   env()->module_system()->Require("test");
   RunResolvedPromises();
@@ -477,8 +486,10 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleSystem) {
                         "      natives.requireAsync('foo') === undefined);"
                         "});");
   scoped_ptr<ModuleSystemTestEnvironment> other_env = CreateEnvironment();
-  gin::ModuleRegistry::From(env()->context()->v8_context())->AddBuiltinModule(
-      env()->isolate(), "natives", other_env->module_system()->NewInstance());
+  gin::ModuleRegistry::From(env()->context()->v8_context())
+      ->AddBuiltinModule(
+          env()->isolate(), "natives",
+          other_env->module_system()->NewInstance());
   other_env->ShutdownModuleSystem();
   env()->module_system()->Require("test");
   RunResolvedPromises();

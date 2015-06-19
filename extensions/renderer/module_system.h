@@ -51,12 +51,16 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   class ExceptionHandler {
    public:
+    explicit ExceptionHandler(ScriptContext* context) : context_(context) {}
     virtual ~ExceptionHandler() {}
     virtual void HandleUncaughtException(const v8::TryCatch& try_catch) = 0;
 
    protected:
     // Formats |try_catch| as a nice string.
     std::string CreateExceptionString(const v8::TryCatch& try_catch);
+    // A script context associated with this handler. Owned by the module
+    // system.
+    ScriptContext* context_;
   };
 
   // Enables native bindings for the duration of its lifetime.
@@ -126,7 +130,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
                     const std::string& field,
                     const std::string& module_name,
                     const std::string& module_field,
-                    v8::AccessorGetterCallback getter);
+                    v8::AccessorNameGetterCallback getter);
 
   // Make |object|.|field| lazily evaluate to the result of
   // requireNative(|module_name|)[|module_field|].
@@ -150,12 +154,12 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
 
   // Retrieves the lazily defined field specified by |property|.
-  static void LazyFieldGetter(v8::Local<v8::String> property,
+  static void LazyFieldGetter(v8::Local<v8::Name> property,
                               const v8::PropertyCallbackInfo<v8::Value>& info);
   // Retrieves the lazily defined field specified by |property| on a native
   // object.
   static void NativeLazyFieldGetter(
-      v8::Local<v8::String> property,
+      v8::Local<v8::Name> property,
       const v8::PropertyCallbackInfo<v8::Value>& info);
 
   // Called when an exception is thrown but not caught.

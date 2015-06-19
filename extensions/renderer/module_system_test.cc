@@ -27,6 +27,7 @@ namespace {
 
 class FailsOnException : public ModuleSystem::ExceptionHandler {
  public:
+  FailsOnException() : ModuleSystem::ExceptionHandler(nullptr) {}
   void HandleUncaughtException(const v8::TryCatch& try_catch) override {
     FAIL() << "Uncaught exception: " << CreateExceptionString(try_catch);
   }
@@ -129,10 +130,10 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
   context_holder_->SetContext(v8::Context::New(
       isolate, g_v8_extension_configurator.Get().GetConfiguration()));
   context_.reset(new ScriptContext(context_holder_->context(),
-                                   NULL,  // WebFrame
-                                   NULL,  // Extension
+                                   nullptr,  // WebFrame
+                                   nullptr,  // Extension
                                    Feature::BLESSED_EXTENSION_CONTEXT,
-                                   NULL,  // Effective Extension
+                                   nullptr,  // Effective Extension
                                    Feature::BLESSED_EXTENSION_CONTEXT));
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_.get());
