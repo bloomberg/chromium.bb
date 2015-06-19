@@ -47,33 +47,33 @@ PolymerTest.prototype = {
     testing.Test.prototype.setUp.call(this);
 
     // Import Polymer and iron-test-helpers before running tests.
-    suiteSetup(function(done) {
-      PolymerTest.importHref(
-          'chrome://resources/polymer/v1_0/polymer/polymer.html', done);
-      PolymerTest.importHref(
-          'chrome://resources/polymer/v1_0/iron-test-helpers/' +
-          'iron-test-helpers.html',
-          done);
+    suiteSetup(function() {
+      return Promise.all([
+        PolymerTest.importHtml(
+            'chrome://resources/polymer/v1_0/polymer/polymer.html'),
+        PolymerTest.importHtml(
+            'chrome://resources/polymer/v1_0/iron-test-helpers/' +
+            'iron-test-helpers.html'),
+      ]);
     });
   },
 };
 
 /**
- * Imports the HTML file, then calls |done| on success or throws an error.
- * @param {string} href The URL to load.
- * @param {function(Error=)} done The done callback.
+ * Imports the HTML file.
+ * @param {string} src The URL to load.
+ * @return {Promise} A promise that is resolved/rejected on success/failure.
  */
-PolymerTest.importHref = function(href, done) {
+PolymerTest.importHtml = function(src) {
   var link = document.createElement('link');
   link.rel = 'import';
-  link.onload = function() {
-    done();
-  };
-  link.onerror = function() {
-    done(new Error('Failed to load ' + href));
-  };
-  link.href = href;
+  var promise = new Promise(function(resolve, reject) {
+    link.onload = resolve;
+    link.onerror = reject;
+  });
+  link.href = src;
   document.head.appendChild(link);
+  return promise;
 };
 
 /**

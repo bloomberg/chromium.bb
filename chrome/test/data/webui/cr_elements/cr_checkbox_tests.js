@@ -13,10 +13,9 @@ cr.define('cr_checkbox', function() {
       var checkbox;
 
       // Import cr_checkbox.html before running suite.
-      suiteSetup(function(done) {
-        PolymerTest.importHref(
-            'chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html',
-            done);
+      suiteSetup(function() {
+        return PolymerTest.importHtml(
+            'chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html');
       });
 
       // Initialize a checked cr-checkbox before each test.
