@@ -7,6 +7,19 @@
 #include "components/proximity_auth/logging/log_buffer.h"
 
 namespace proximity_auth {
+namespace {
+
+bool g_logging_enabled = true;
+
+}  // namespace
+
+ScopedDisableLoggingForTesting::ScopedDisableLoggingForTesting() {
+  g_logging_enabled = false;
+}
+
+ScopedDisableLoggingForTesting::~ScopedDisableLoggingForTesting() {
+  g_logging_enabled = true;
+}
 
 ScopedLogMessage::ScopedLogMessage(const char* file,
                                    int line,
@@ -15,6 +28,9 @@ ScopedLogMessage::ScopedLogMessage(const char* file,
 }
 
 ScopedLogMessage::~ScopedLogMessage() {
+  if (!g_logging_enabled)
+    return;
+
   LogBuffer::GetInstance()->AddLogMessage(LogBuffer::LogMessage(
       stream_.str(), base::Time::Now(), file_, line_, severity_));
 

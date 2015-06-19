@@ -24,6 +24,14 @@ namespace proximity_auth {
   proximity_auth::ScopedLogMessage(__FILE__, __LINE__, \
                                    logging::LOG_##severity).stream()
 
+// Disables all logging while in scope. Intended to be called only from test
+// code, to clean up test output.
+class ScopedDisableLoggingForTesting {
+ public:
+  ScopedDisableLoggingForTesting();
+  ~ScopedDisableLoggingForTesting();
+};
+
 // An intermediate object used by the PA_LOG macro, wrapping a
 // logging::LogMessage instance. When this object is destroyed, the message will
 // be logged with the standard logging system and also added to Proximity Auth

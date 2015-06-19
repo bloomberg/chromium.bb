@@ -74,7 +74,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // The value returned if the RSSI or transmit power cannot be read.
   static const int kUnknownPower = 127;
 
-  struct ConnectionInfo {
+  struct DEVICE_BLUETOOTH_EXPORT ConnectionInfo {
     int rssi;
     int transmit_power;
     int max_transmit_power;
