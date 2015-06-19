@@ -43,11 +43,6 @@ class SearchCardView : public views::View {
   }
 
   ~SearchCardView() override {}
-
-  void ChildPreferredSizeChanged(views::View* child) override {
-    Layout();
-    PreferredSizeChanged();
-  }
 };
 
 }  // namespace
@@ -91,6 +86,7 @@ void SearchResultPageView::AddSearchResultContainerView(
   AddChildView(view_to_add);
   result_container_views_.push_back(result_container);
   result_container->SetResults(results_model);
+  result_container->set_delegate(this);
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -156,7 +152,7 @@ bool SearchResultPageView::IsValidSelectionIndex(int index) {
   return index >= 0 && index < static_cast<int>(result_container_views_.size());
 }
 
-void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
+void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   DCHECK(!result_container_views_.empty());
 
   // Only sort and layout the containers when they have all updated.

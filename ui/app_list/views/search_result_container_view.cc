@@ -10,7 +10,8 @@
 namespace app_list {
 
 SearchResultContainerView::SearchResultContainerView()
-    : selected_index_(-1),
+    : delegate_(nullptr),
+      selected_index_(-1),
       num_results_(0),
       results_(NULL),
       update_factory_(this) {
@@ -86,7 +87,8 @@ void SearchResultContainerView::DoUpdate() {
   update_factory_.InvalidateWeakPtrs();
   num_results_ = Update();
   Layout();
-  PreferredSizeChanged();
+  if (delegate_)
+    delegate_->OnSearchResultContainerResultsChanged();
 }
 
 }  // namespace app_list

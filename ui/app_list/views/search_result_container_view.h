@@ -19,8 +19,14 @@ namespace app_list {
 class APP_LIST_EXPORT SearchResultContainerView : public views::View,
                                                   public ui::ListModelObserver {
  public:
+  class Delegate {
+   public:
+    virtual void OnSearchResultContainerResultsChanged() = 0;
+  };
   SearchResultContainerView();
   ~SearchResultContainerView() override;
+
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Sets the search results to listen to.
   void SetResults(AppListModel::SearchResults* results);
@@ -82,6 +88,8 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   // Batching method that actually performs the update and updates layout.
   void DoUpdate();
+
+  Delegate* delegate_;
 
   int selected_index_;
   int num_results_;
