@@ -1120,7 +1120,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
     } else {
         IntPoint adjustedScrollPosition = view->adjustScrollPositionWithinRange(m_currentItem->scrollPoint());
         if (adjustedScrollPosition != view->scrollPosition())
-            view->notifyScrollPositionChanged(adjustedScrollPosition);
+            view->setScrollPosition(adjustedScrollPosition, ProgrammaticScroll);
     }
 
     if (m_frame->isMainFrame()) {

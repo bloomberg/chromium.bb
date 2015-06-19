@@ -164,7 +164,7 @@ void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollType s
         behavior = scrollBehaviorStyle();
 
     if (scrollType == CompositorScroll)
-        scrollAnimator()->scrollToOffsetWithoutAnimation(toFloatPoint(position), CompositorScroll);
+        scrollPositionChanged(adjustScrollPositionWithinRange(position), CompositorScroll);
     else if (scrollType == ProgrammaticScroll)
         programmaticScrollHelper(position, behavior);
     else if (scrollType == UserScroll)
@@ -194,25 +194,24 @@ void ScrollableArea::setScrollPositionSingleAxis(ScrollbarOrientation orientatio
 
 void ScrollableArea::programmaticScrollHelper(const DoublePoint& position, ScrollBehavior scrollBehavior)
 {
-    if (scrollBehavior == ScrollBehaviorSmooth) {
-        if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
-            scrollAnimator->cancelAnimations();
+    cancelScrollAnimation();
+
+    if (scrollBehavior == ScrollBehaviorSmooth)
         programmaticScrollAnimator()->animateToOffset(toFloatPoint(position));
-    } else {
-        // TODO(bokan): This should probably use programmaticScrollAnimator.
-        cancelProgrammaticScrollAnimation();
-        scrollAnimator()->scrollToOffsetWithoutAnimation(toFloatPoint(position), ProgrammaticScroll);
-    }
+    else
+        programmaticScrollAnimator()->scrollToOffsetWithoutAnimation(toFloatPoint(position));
 }
 
 void ScrollableArea::userScrollHelper(const DoublePoint& position, ScrollBehavior scrollBehavior)
 {
-    if (scrollBehavior == ScrollBehaviorSmooth) {
-        // TODO(bokan)
-    } else {
-        cancelProgrammaticScrollAnimation();
-        scrollAnimator()->scrollToOffsetWithoutAnimation(toFloatPoint(position), UserScroll);
-    }
+    cancelProgrammaticScrollAnimation();
+
+    // Smooth user scrolls (keyboard, wheel clicks) are handled via the userScroll method.
+    // TODO(bokan): The userScroll method should probably be modified to call this method
+    //              and ScrollAnimator to have a simpler animateToOffset method like the
+    //              ProgrammaticScrollAnimator.
+    ASSERT(scrollBehavior == ScrollBehaviorInstant);
+    scrollAnimator()->scrollToOffsetWithoutAnimation(toFloatPoint(position));
 }
 
 void ScrollableArea::scrollIntoRect(const LayoutRect& rectInContent, const FloatRect& targetRectInFrame)
@@ -243,20 +242,15 @@ LayoutRect ScrollableArea::scrollIntoView(const LayoutRect& rectInContent, const
     return LayoutRect();
 }
 
-void ScrollableArea::notifyScrollPositionChanged(const DoublePoint& position)
-{
-    // TODO(bokan): This should probably be something other than CompositorScroll.
-    scrollPositionChanged(position, CompositorScroll);
-    scrollAnimator()->setCurrentPosition(toFloatPoint(scrollPositionDouble()));
-}
-
 void ScrollableArea::scrollPositionChanged(const DoublePoint& position, ScrollType scrollType)
 {
     TRACE_EVENT0("blink", "ScrollableArea::scrollPositionChanged");
 
     DoublePoint oldPosition = scrollPositionDouble();
+    DoublePoint truncatedPosition = shouldUseIntegerScrollOffset() ? flooredIntPoint(position) : position;
+
     // Tell the derived class to scroll its contents.
-    setScrollOffset(position, scrollType);
+    setScrollOffset(truncatedPosition, scrollType);
 
     Scrollbar* verticalScrollbar = this->verticalScrollbar();
 
@@ -285,6 +279,8 @@ void ScrollableArea::scrollPositionChanged(const DoublePoint& position, ScrollTy
         // FIXME: Pass in DoubleSize. crbug.com/414283.
         scrollAnimator()->notifyContentAreaScrolled(toFloatSize(scrollPositionDouble() - oldPosition));
     }
+
+    scrollAnimator()->setCurrentPosition(toFloatPoint(position));
 }
 
 bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, ScrollBehavior& behavior)
@@ -333,12 +329,7 @@ DoublePoint ScrollableArea::adjustScrollPositionWithinRange(const DoublePoint& s
 // NOTE: Only called from Internals for testing.
 void ScrollableArea::setScrollOffsetFromInternals(const IntPoint& offset)
 {
-    setScrollOffsetFromAnimation(DoublePoint(offset), ProgrammaticScroll);
-}
-
-void ScrollableArea::setScrollOffsetFromAnimation(const DoublePoint& offset, ScrollType scrollType)
-{
-    scrollPositionChanged(offset, scrollType);
+    scrollPositionChanged(DoublePoint(offset), ProgrammaticScroll);
 }
 
 void ScrollableArea::willStartLiveResize()
@@ -550,6 +541,12 @@ void ScrollableArea::notifyCompositorAnimationFinished(int groupId)
 {
     if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
         programmaticScrollAnimator->notifyCompositorAnimationFinished(groupId);
+}
+
+void ScrollableArea::cancelScrollAnimation()
+{
+    if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
+        scrollAnimator->cancelAnimations();
 }
 
 void ScrollableArea::cancelProgrammaticScrollAnimation()

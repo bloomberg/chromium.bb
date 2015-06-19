@@ -696,9 +696,6 @@ private:
 
     bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
     void adjustScrollbarOpacity();
-    // FIXME(bokan): setScrollOffset, setScrollPosition, scrollTo, scrollToOffsetWithoutAnimation,
-    // notifyScrollPositionChanged...there's too many ways to scroll this class. This needs
-    // some cleanup.
     void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
 
     IntRect rectToCopyOnScroll() const;

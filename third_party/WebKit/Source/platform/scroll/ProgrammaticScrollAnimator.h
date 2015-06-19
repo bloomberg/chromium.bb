@@ -26,6 +26,7 @@ public:
 
     ~ProgrammaticScrollAnimator();
 
+    void scrollToOffsetWithoutAnimation(const FloatPoint&);
     void animateToOffset(FloatPoint);
     void cancelAnimation();
     void tickAnimation(double monotonicTime);
@@ -58,6 +59,7 @@ private:
     };
 
     void resetAnimationState();
+    void notifyPositionChanged(const DoublePoint&);
 
     ScrollableArea* m_scrollableArea;
     OwnPtr<WebScrollOffsetAnimationCurve> m_animationCurve;

@@ -45,7 +45,7 @@ public:
     virtual ~ScrollAnimatorNone();
 
     virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&, ScrollType) override;
+    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
     virtual void cancelAnimations() override;
     virtual void serviceScrollAnimations() override;

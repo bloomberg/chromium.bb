@@ -635,10 +635,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
 
     if (originalScrollOffset != adjustedScrollOffset()) {
         DoublePoint origin(scrollOrigin());
-
-        // Call the base version here since calling this class' version will early because the
-        // offset itself hasn't changed, the scroll origin has.
-        ScrollableArea::setScrollPosition(-origin + adjustedScrollOffset(), ProgrammaticScroll);
+        scrollPositionChanged(-origin + adjustedScrollOffset(), ProgrammaticScroll);
     }
 
     bool hasHorizontalOverflow = this->hasHorizontalOverflow();

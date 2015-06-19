@@ -3351,7 +3351,7 @@ void WebViewImpl::resetScrollAndScaleState()
         ScrollableArea* scrollableArea = frameView->layoutViewportScrollableArea();
 
         if (scrollableArea->scrollPositionDouble() != DoublePoint::zero())
-            scrollableArea->notifyScrollPositionChanged(DoublePoint::zero());
+            scrollableArea->setScrollPosition(DoublePoint::zero(), ProgrammaticScroll);
     }
 
     pageScaleConstraintsSet().setNeedsReset(true);
@@ -4219,7 +4219,7 @@ void WebViewImpl::applyViewportDeltas(
         + DoubleSize(layoutViewportDelta.width, layoutViewportDelta.height);
 
     if (layoutViewport->scrollPositionDouble() != layoutViewportPosition) {
-        layoutViewport->notifyScrollPositionChanged(layoutViewportPosition);
+        layoutViewport->setScrollPosition(layoutViewportPosition, CompositorScroll);
         frameView->setWasScrolledByUser(true);
     }
 }

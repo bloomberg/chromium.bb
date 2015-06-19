@@ -57,7 +57,7 @@ public:
     // class implementation always scrolls immediately, never animates.
     virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
 
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&, ScrollType);
+    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 
     ScrollableArea* scrollableArea() const { return m_scrollableArea; }
 
@@ -103,7 +103,7 @@ public:
 protected:
     explicit ScrollAnimator(ScrollableArea*);
 
-    virtual void notifyPositionChanged(ScrollType);
+    virtual void notifyPositionChanged();
 
     ScrollableArea* m_scrollableArea;
     float m_currentPosX; // We avoid using a FloatPoint in order to reduce

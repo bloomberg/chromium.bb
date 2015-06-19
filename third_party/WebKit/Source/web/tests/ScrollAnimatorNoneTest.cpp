@@ -55,7 +55,6 @@ public:
     MOCK_METHOD2(setScrollOffset, void(const IntPoint&, ScrollType));
     MOCK_METHOD2(invalidateScrollbarRect, void(Scrollbar*, const IntRect&));
     MOCK_METHOD1(invalidateScrollCornerRect, void(const IntRect&));
-    MOCK_METHOD1(setScrollOffsetFromAnimation, void(const IntPoint&));
     MOCK_CONST_METHOD0(enclosingScrollableArea, ScrollableArea*());
     MOCK_CONST_METHOD0(minimumScrollPosition, IntPoint());
     MOCK_CONST_METHOD0(maximumScrollPosition, IntPoint());

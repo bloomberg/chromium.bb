@@ -385,7 +385,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView)
     visualViewport.setScale(1.5f);
     visualViewport.setScrollPosition(DoublePoint(0, 10), ProgrammaticScroll);
     layoutViewport.setScrollPosition(DoublePoint(50, 50), ProgrammaticScroll);
-    rootFrameViewport->notifyScrollPositionChanged(rootFrameViewport->scrollPositionDouble());
+    rootFrameViewport->setScrollPosition(rootFrameViewport->scrollPositionDouble(), ProgrammaticScroll);
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(rootFrameViewport->visibleContentRectDouble(ExcludeScrollbars)),

@@ -433,26 +433,25 @@ ScrollResultOneDimensional ScrollAnimatorNone::userScroll(ScrollbarOrientation o
     return ScrollResultOneDimensional(needToScroll);
 }
 
-void ScrollAnimatorNone::scrollToOffsetWithoutAnimation(const FloatPoint& offset, ScrollType scrollType)
+void ScrollAnimatorNone::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
 {
-    stopAnimationTimerIfNeeded();
-
-    m_horizontalData.reset();
-    *m_horizontalData.m_currentPosition = offset.x();
-    m_horizontalData.m_desiredPosition = offset.x();
     m_currentPosX = offset.x();
-
-    m_verticalData.reset();
-    *m_verticalData.m_currentPosition = offset.y();
-    m_verticalData.m_desiredPosition = offset.y();
     m_currentPosY = offset.y();
 
-    notifyPositionChanged(scrollType);
+    // Must be called after setting the position since canceling the animation resets
+    // the desired position to the current.
+    cancelAnimations();
+    notifyPositionChanged();
 }
 
 void ScrollAnimatorNone::cancelAnimations()
 {
     m_animationActive = false;
+
+    m_horizontalData.reset();
+    m_verticalData.reset();
+    m_horizontalData.m_desiredPosition = m_currentPosX;
+    m_verticalData.m_desiredPosition = m_currentPosY;
 }
 
 void ScrollAnimatorNone::serviceScrollAnimations()
@@ -510,7 +509,7 @@ void ScrollAnimatorNone::animationTimerFired()
         m_animationActive = false;
 
     TRACE_EVENT0("blink", "ScrollAnimatorNone::notifyPositionChanged");
-    notifyPositionChanged(UserScroll);
+    notifyPositionChanged();
 
     if (!continueAnimation)
         animationDidFinish();

@@ -1489,7 +1489,6 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
 
 void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scrollType, ScrollBehavior scrollBehavior)
 {
-    cancelProgrammaticScrollAnimation();
     m_maintainScrollPositionAnchor = nullptr;
 
     DoublePoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
@@ -1499,14 +1498,7 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scr
     if (scrollBehavior == ScrollBehaviorAuto)
         scrollBehavior = scrollBehaviorStyle();
 
-    if (scrollBehavior == ScrollBehaviorInstant) {
-        DoubleSize newOffset(newScrollPosition.x(), newScrollPosition.y());
-        // TODO(bokan): Why do we need to go through updateScrollbars? If not, we can
-        // just delete this whole method and use the base version.
-        updateScrollbars(newOffset);
-    } else {
-        ScrollableArea::setScrollPosition(newScrollPosition, ProgrammaticScroll, ScrollBehaviorSmooth);
-    }
+    ScrollableArea::setScrollPosition(newScrollPosition, scrollType, scrollBehavior);
 }
 
 void FrameView::setElasticOverscroll(const FloatSize& elasticOverscroll)

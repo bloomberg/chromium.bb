@@ -27,7 +27,6 @@ public:
     MOCK_METHOD2(invalidateScrollbarRect, void(Scrollbar*, const IntRect&));
     MOCK_METHOD1(invalidateScrollCornerRect, void(const IntRect&));
     MOCK_CONST_METHOD0(enclosingScrollableArea, ScrollableArea*());
-    MOCK_CONST_METHOD0(minimumScrollPosition, IntPoint());
     MOCK_CONST_METHOD1(visibleContentRect, IntRect(IncludeScrollbarsInRect));
     MOCK_CONST_METHOD0(contentsSize, IntSize());
     MOCK_CONST_METHOD0(scrollbarsCanBeActive, bool());
@@ -37,6 +36,7 @@ public:
     bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
     void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset.shrunkTo(m_maximumScrollPosition); }
     IntPoint scrollPosition() const override { return m_scrollPosition; }
+    IntPoint minimumScrollPosition() const override { return IntPoint(); }
     IntPoint maximumScrollPosition() const override { return m_maximumScrollPosition; }
     int visibleHeight() const override { return 768; }
     int visibleWidth() const override { return 1024; }
@@ -114,7 +114,7 @@ private:
 TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
 {
     MockScrollableArea scrollableArea(IntPoint(0, 100));
-    scrollableArea.notifyScrollPositionChanged(IntPoint(0, 10000));
+    scrollableArea.setScrollPosition(IntPoint(0, 10000), CompositorScroll);
     EXPECT_EQ(100.0, scrollableArea.scrollAnimator()->currentPosition().y());
 }
 

@@ -317,7 +317,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
     }
 
     if (view && view->scrollPosition() != origin)
-        view->notifyScrollPositionChanged(origin);
+        view->setScrollPosition(origin, ProgrammaticScroll);
 }
 
 float Page::pageScaleFactor() const

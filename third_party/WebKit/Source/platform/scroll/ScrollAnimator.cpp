@@ -60,16 +60,16 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orien
     float usedDelta = (newPos - currentPos) / step;
     currentPos = newPos;
 
-    notifyPositionChanged(UserScroll);
+    notifyPositionChanged();
 
     return ScrollResultOneDimensional(true, delta - usedDelta);
 }
 
-void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset, ScrollType scrollType)
+void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
 {
     m_currentPosX = offset.x();
     m_currentPosY = offset.y();
-    notifyPositionChanged(scrollType);
+    notifyPositionChanged();
 }
 
 ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
@@ -154,12 +154,9 @@ FloatPoint ScrollAnimator::currentPosition() const
     return FloatPoint(m_currentPosX, m_currentPosY);
 }
 
-void ScrollAnimator::notifyPositionChanged(ScrollType scrollType)
+void ScrollAnimator::notifyPositionChanged()
 {
-    if (!m_scrollableArea->shouldUseIntegerScrollOffset())
-        m_scrollableArea->setScrollOffsetFromAnimation(DoublePoint(m_currentPosX, m_currentPosY), scrollType);
-    else
-        m_scrollableArea->setScrollOffsetFromAnimation(IntPoint(m_currentPosX, m_currentPosY), scrollType);
+    m_scrollableArea->scrollPositionChanged(DoublePoint(m_currentPosX, m_currentPosY), UserScroll);
 }
 
 float ScrollAnimator::clampScrollPosition(ScrollbarOrientation orientation, float pos)

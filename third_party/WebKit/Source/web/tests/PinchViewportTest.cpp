@@ -943,7 +943,7 @@ TEST_F(PinchViewportTest, DISABLED_TestScrollFocusedNodeIntoRect)
     EXPECT_FLOAT_POINT_EQ(FloatPoint(150, 200), pinchViewport.visibleRect().location());
 
     // Try it again but with the page zoomed in
-    frame()->view()->notifyScrollPositionChanged(IntPoint(0, 0));
+    frame()->view()->setScrollPosition(IntPoint(0, 0), ProgrammaticScroll);
     webViewImpl()->resizePinchViewport(IntSize(500, 300));
     pinchViewport.setLocation(FloatPoint(0, 0));
 

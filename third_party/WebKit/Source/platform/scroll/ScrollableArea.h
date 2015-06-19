@@ -89,10 +89,6 @@ public:
     // cenetered in the second rect, which is given relative to the area's origin.
     void scrollIntoRect(const LayoutRect& rectInContent, const FloatRect& targetRectInFrame);
 
-    // Should be called when the scroll position changes externally, for example if the scroll layer position
-    // is updated on the scrolling thread and we need to notify the main thread.
-    void notifyScrollPositionChanged(const DoublePoint&);
-
     static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
 
     virtual ScrollResult handleWheel(const PlatformWheelEvent&);
@@ -272,6 +268,7 @@ public:
 
     void layerForScrollingDidChange();
 
+    void cancelScrollAnimation();
     void cancelProgrammaticScrollAnimation();
 
     virtual ~ScrollableArea();
@@ -306,13 +303,12 @@ protected:
     void setScrollOrigin(const IntPoint&);
     void resetScrollOriginChanged() { m_scrollOriginChanged = false; }
 
-private:
+    // Needed to let the animators call scrollPositionChanged.
+    friend class ScrollAnimator;
+    friend class ProgrammaticScrollAnimator;
     void scrollPositionChanged(const DoublePoint&, ScrollType);
 
-    // NOTE: Only called from the ScrollAnimator.
-    friend class ScrollAnimator;
-    void setScrollOffsetFromAnimation(const DoublePoint&, ScrollType);
-
+private:
     void programmaticScrollHelper(const DoublePoint&, ScrollBehavior);
     void userScrollHelper(const DoublePoint&, ScrollBehavior);
 

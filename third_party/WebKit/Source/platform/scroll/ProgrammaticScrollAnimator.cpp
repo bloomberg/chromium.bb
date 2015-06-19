@@ -42,6 +42,17 @@ void ProgrammaticScrollAnimator::resetAnimationState()
     m_compositorAnimationGroupId = 0;
 }
 
+void ProgrammaticScrollAnimator::notifyPositionChanged(const DoublePoint& offset)
+{
+    m_scrollableArea->scrollPositionChanged(offset, ProgrammaticScroll);
+}
+
+void ProgrammaticScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
+{
+    cancelAnimation();
+    notifyPositionChanged(offset);
+}
+
 void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
 {
     m_startTime = 0.0;
@@ -52,7 +63,7 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
     m_scrollableArea->registerForAnimation();
     if (!m_scrollableArea->scheduleAnimation()) {
         resetAnimationState();
-        m_scrollableArea->notifyScrollPositionChanged(IntPoint(offset.x(), offset.y()));
+        notifyPositionChanged(IntPoint(offset.x(), offset.y()));
     }
     m_runState = RunState::WaitingToSendToCompositor;
 }
@@ -92,12 +103,12 @@ void ProgrammaticScrollAnimator::tickAnimation(double monotonicTime)
     double elapsedTime = monotonicTime - m_startTime;
     bool isFinished = (elapsedTime > m_animationCurve->duration());
     FloatPoint offset = m_animationCurve->getValue(elapsedTime);
-    m_scrollableArea->notifyScrollPositionChanged(IntPoint(offset.x(), offset.y()));
+    notifyPositionChanged(IntPoint(offset.x(), offset.y()));
 
     if (isFinished) {
         resetAnimationState();
     } else if (!m_scrollableArea->scheduleAnimation()) {
-        m_scrollableArea->notifyScrollPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
+        notifyPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
         resetAnimationState();
     }
 }
@@ -156,7 +167,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
         if (!sentToCompositor) {
             m_runState = RunState::RunningOnMainThread;
             if (!m_scrollableArea->scheduleAnimation()) {
-                m_scrollableArea->notifyScrollPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
+                notifyPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
                 resetAnimationState();
             }
         }
@@ -175,7 +186,7 @@ void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange()
         m_scrollableArea->registerForAnimation();
         if (!m_scrollableArea->scheduleAnimation()) {
             resetAnimationState();
-            m_scrollableArea->notifyScrollPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
+            notifyPositionChanged(IntPoint(m_targetOffset.x(), m_targetOffset.y()));
         }
     }
 }
