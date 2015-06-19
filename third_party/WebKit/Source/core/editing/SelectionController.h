@@ -69,6 +69,9 @@ private:
     explicit SelectionController(LocalFrame&);
 
     template <typename Strategy>
+    bool handleMousePressEventSingleClickAlgorithm(const MouseEventWithHitTestResults&);
+
+    template <typename Strategy>
     void updateSelectionForMouseDragAlgorithm(const HitTestResult&, Node*, const LayoutPoint&, const IntPoint&);
 
     enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };

@@ -250,7 +250,14 @@ static int textDistance(const Position& start, const Position& end)
 
 bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
 {
+    return handleMousePressEventSingleClickAlgorithm<VisibleSelection::InDOMTree>(event);
+}
+
+template <typename Strategy>
+bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseEventWithHitTestResults& event)
+{
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventSingleClick");
+    using PositionType = typename Strategy::PositionType;
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     Node* innerNode = event.innerNode();
@@ -273,7 +280,7 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
     VisiblePosition visiblePos(innerNode->layoutObject()->positionForPoint(event.localPoint()));
     if (visiblePos.isNull())
         visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode), DOWNSTREAM);
-    Position pos = visiblePos.deepEquivalent();
+    PositionType pos = Strategy::toPositionType(visiblePos.deepEquivalent());
 
     VisibleSelection newSelection = m_frame->selection().selection();
     TextGranularity granularity = CharacterGranularity;
@@ -281,18 +288,18 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
     if (extendSelection && newSelection.isCaretOrRange()) {
         VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(VisiblePosition(pos))));
         if (selectionInUserSelectAll.isRange()) {
-            if (comparePositions(selectionInUserSelectAll.start(), newSelection.start()) < 0)
-                pos = selectionInUserSelectAll.start();
-            else if (comparePositions(newSelection.end(), selectionInUserSelectAll.end()) < 0)
-                pos = selectionInUserSelectAll.end();
+            if (Strategy::selectionStart(selectionInUserSelectAll).compareTo(Strategy::selectionStart(newSelection)) < 0)
+                pos = Strategy::selectionStart(selectionInUserSelectAll);
+            else if (Strategy::selectionEnd(newSelection).compareTo(Strategy::selectionEnd(selectionInUserSelectAll)) < 0)
+                pos = Strategy::selectionEnd(selectionInUserSelectAll);
         }
 
         if (!m_frame->editor().behavior().shouldConsiderSelectionAsDirectional()) {
             if (pos.isNotNull()) {
                 // See <rdar://problem/3668157> REGRESSION (Mail): shift-click deselects when selection
                 // was created right-to-left
-                Position start = newSelection.start();
-                Position end = newSelection.end();
+                PositionType start = Strategy::selectionStart(newSelection);
+                PositionType end = Strategy::selectionEnd(newSelection);
                 int distanceToStart = textDistance(start, pos);
                 int distanceToEnd = textDistance(pos, end);
                 if (distanceToStart <= distanceToEnd)
