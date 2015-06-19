@@ -357,6 +357,13 @@ void BrowserAccessibilityManager::ScrollToPoint(
   }
 }
 
+void BrowserAccessibilityManager::SetScrollOffset(
+    const BrowserAccessibility& node, gfx::Point offset) {
+  if (delegate_) {
+    delegate_->AccessibilitySetScrollOffset(node.GetId(), offset);
+  }
+}
+
 void BrowserAccessibilityManager::SetValue(
     const BrowserAccessibility& node,
     const base::string16& value) {

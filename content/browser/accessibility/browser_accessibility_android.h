@@ -19,8 +19,6 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   bool PlatformIsLeaf() const override;
 
-  bool CanScrollForward() const;
-  bool CanScrollBackward() const;
   bool IsCheckable() const;
   bool IsChecked() const;
   bool IsClickable() const;
@@ -53,10 +51,19 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   int GetItemIndex() const;
   int GetItemCount() const;
 
+  bool CanScrollForward() const;
+  bool CanScrollBackward() const;
+  bool CanScrollUp() const;
+  bool CanScrollDown() const;
+  bool CanScrollLeft() const;
+  bool CanScrollRight() const;
   int GetScrollX() const;
   int GetScrollY() const;
+  int GetMinScrollX() const;
+  int GetMinScrollY() const;
   int GetMaxScrollX() const;
   int GetMaxScrollY() const;
+  bool Scroll(int direction) const;
 
   int GetTextChangeFromIndex() const;
   int GetTextChangeAddedCount() const;

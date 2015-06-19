@@ -110,6 +110,13 @@ IPC_MESSAGE_ROUTED2(AccessibilityMsg_ScrollToPoint,
                     int /* object id */,
                     gfx::Point /* new location */)
 
+// Relay a request from assistive technology to set the scroll offset
+// of an accessibility object that's a scroll container, to a specific
+// offset.
+IPC_MESSAGE_ROUTED2(AccessibilityMsg_SetScrollOffset,
+                    int /* object id */,
+                    gfx::Point /* new offset */)
+
 // Relay a request from assistive technology to set the cursor or
 // selection within an editable text element.
 IPC_MESSAGE_ROUTED3(AccessibilityMsg_SetTextSelection,

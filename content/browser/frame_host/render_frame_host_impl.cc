@@ -469,6 +469,12 @@ void RenderFrameHostImpl::AccessibilityScrollToPoint(
       routing_id_, acc_obj_id, point));
 }
 
+void RenderFrameHostImpl::AccessibilitySetScrollOffset(
+    int acc_obj_id, const gfx::Point& offset) {
+  Send(new AccessibilityMsg_SetScrollOffset(
+      routing_id_, acc_obj_id, offset));
+}
+
 void RenderFrameHostImpl::AccessibilitySetTextSelection(
     int object_id, int start_offset, int end_offset) {
   Send(new AccessibilityMsg_SetTextSelection(

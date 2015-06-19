@@ -52,6 +52,7 @@ android_library("content_java") {
   srcjar_deps = [
     ":common_aidl",
     ":content_public_android_java_enums_srcjar",
+    "//content/browser/accessibility:content_browser_accessibility_java_enums_srcjar",
     "//ui/touch_selection:ui_touch_selection_enums_srcjar",
     "//ui/touch_selection:ui_touch_handle_orientation_srcjar",
   ]

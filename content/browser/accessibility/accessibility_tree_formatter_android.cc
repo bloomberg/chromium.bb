@@ -117,6 +117,14 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->SetInteger("range_max", static_cast<int>(android_node->RangeMax()));
   dict->SetInteger("range_current_value",
                    static_cast<int>(android_node->RangeCurrentValue()));
+
+  // Actions.
+  dict->SetBoolean("action_scroll_forward", android_node->CanScrollForward());
+  dict->SetBoolean("action_scroll_backward", android_node->CanScrollBackward());
+  dict->SetBoolean("action_scroll_up", android_node->CanScrollUp());
+  dict->SetBoolean("action_scroll_down", android_node->CanScrollDown());
+  dict->SetBoolean("action_scroll_left", android_node->CanScrollLeft());
+  dict->SetBoolean("action_scroll_right", android_node->CanScrollRight());
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(

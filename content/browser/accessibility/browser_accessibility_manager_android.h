@@ -16,6 +16,17 @@ namespace aria_strings {
   extern const char kAriaLiveAssertive[];
 }
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.accessibility
+enum ScrollDirection {
+  FORWARD,
+  BACKWARD,
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+};
+
 // From android.view.accessibility.AccessibilityNodeInfo in Java:
 enum AndroidMovementGranularity {
   ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_CHARACTER = 1,
@@ -132,6 +143,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // asynchronously load inline text boxes for this node only, enabling more
   // accurate movement by granularities on this node.
   void SetAccessibilityFocus(JNIEnv* env, jobject obj, jint id);
+
+  // Returns true if the object is a slider.
+  bool IsSlider(JNIEnv* env, jobject obj, jint id);
+
+  // Scrolls any scrollable container by about 80% of one page in the
+  // given direction.
+  bool Scroll(JNIEnv* env, jobject obj, jint id, int direction);
 
  protected:
   // AXTreeDelegate overrides.

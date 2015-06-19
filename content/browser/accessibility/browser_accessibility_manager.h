@@ -59,6 +59,8 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
       int acc_obj_id, const gfx::Rect& subfocus) = 0;
   virtual void AccessibilityScrollToPoint(
       int acc_obj_id, const gfx::Point& point) = 0;
+  virtual void AccessibilitySetScrollOffset(
+      int acc_obj_id, const gfx::Point& offset) = 0;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) = 0;
   virtual void AccessibilitySetValue(
@@ -176,6 +178,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // where |point| is in global coordinates of the WebContents.
   void ScrollToPoint(
       const BrowserAccessibility& node, gfx::Point point);
+
+  // If |node| is itself a scrollable container, set its scroll
+  // offset to |offset|.
+  void SetScrollOffset(const BrowserAccessibility& node, gfx::Point offset);
 
   // Tell the renderer to set the value of an editable text node.
   void SetValue(

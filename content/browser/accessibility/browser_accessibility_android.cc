@@ -101,24 +101,6 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
   return BrowserAccessibility::PlatformIsLeaf();
 }
 
-bool BrowserAccessibilityAndroid::CanScrollForward() const {
-  if (!IsSlider())
-    return false;
-
-  float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
-  float max = GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE);
-  return value < max;
-}
-
-bool BrowserAccessibilityAndroid::CanScrollBackward() const {
-  if (!IsSlider())
-    return false;
-
-  float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
-  float min = GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE);
-  return value > min;
-}
-
 bool BrowserAccessibilityAndroid::IsCheckable() const {
   bool checkable = false;
   bool is_aria_pressed_defined;
@@ -234,8 +216,8 @@ bool BrowserAccessibilityAndroid::IsRangeType() const {
 }
 
 bool BrowserAccessibilityAndroid::IsScrollable() const {
-  int dummy;
-  return GetIntAttribute(ui::AX_ATTR_SCROLL_X_MAX, &dummy);
+  return (HasIntAttribute(ui::AX_ATTR_SCROLL_X_MAX) &&
+          GetRole() != ui::AX_ROLE_SCROLL_AREA);
 }
 
 bool BrowserAccessibilityAndroid::IsSelected() const {
@@ -486,6 +468,44 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
   return count;
 }
 
+bool BrowserAccessibilityAndroid::CanScrollForward() const {
+  if (IsSlider()) {
+    float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+    float max = GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE);
+    return value < max;
+  } else {
+    return GetScrollX() < GetMaxScrollX() ||
+           GetScrollY() < GetMaxScrollY();
+  }
+}
+
+bool BrowserAccessibilityAndroid::CanScrollBackward() const {
+  if (IsSlider()) {
+    float value = GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+    float min = GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE);
+    return value > min;
+  } else {
+    return GetScrollX() > GetMinScrollX() ||
+           GetScrollY() > GetMinScrollY();
+  }
+}
+
+bool BrowserAccessibilityAndroid::CanScrollUp() const {
+  return GetScrollY() > GetMinScrollY();
+}
+
+bool BrowserAccessibilityAndroid::CanScrollDown() const {
+  return GetScrollY() < GetMaxScrollY();
+}
+
+bool BrowserAccessibilityAndroid::CanScrollLeft() const {
+  return GetScrollX() > GetMinScrollX();
+}
+
+bool BrowserAccessibilityAndroid::CanScrollRight() const {
+  return GetScrollX() < GetMaxScrollX();
+}
+
 int BrowserAccessibilityAndroid::GetScrollX() const {
   int value = 0;
   GetIntAttribute(ui::AX_ATTR_SCROLL_X, &value);
@@ -498,16 +518,85 @@ int BrowserAccessibilityAndroid::GetScrollY() const {
   return value;
 }
 
+int BrowserAccessibilityAndroid::GetMinScrollX() const {
+  return GetIntAttribute(ui::AX_ATTR_SCROLL_X_MIN);
+}
+
+int BrowserAccessibilityAndroid::GetMinScrollY() const {
+  return GetIntAttribute(ui::AX_ATTR_SCROLL_Y_MIN);
+}
+
 int BrowserAccessibilityAndroid::GetMaxScrollX() const {
-  int value = 0;
-  GetIntAttribute(ui::AX_ATTR_SCROLL_X_MAX, &value);
-  return value;
+  return GetIntAttribute(ui::AX_ATTR_SCROLL_X_MAX);
 }
 
 int BrowserAccessibilityAndroid::GetMaxScrollY() const {
-  int value = 0;
-  GetIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX, &value);
-  return value;
+  return GetIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX);
+}
+
+bool BrowserAccessibilityAndroid::Scroll(int direction) const {
+  int x = GetIntAttribute(ui::AX_ATTR_SCROLL_X);
+  int x_min = GetIntAttribute(ui::AX_ATTR_SCROLL_X_MIN);
+  int x_max = GetIntAttribute(ui::AX_ATTR_SCROLL_X_MAX);
+  int y = GetIntAttribute(ui::AX_ATTR_SCROLL_Y);
+  int y_min = GetIntAttribute(ui::AX_ATTR_SCROLL_Y_MIN);
+  int y_max = GetIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX);
+
+  // Figure out the bounding box of the visible portion of this scrollable
+  // view so we know how much to scroll by.
+  gfx::Rect bounds;
+  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) {
+    // If this is the root web area, use the bounds of the view to determine
+    // how big one page is.
+    if (!manager()->delegate())
+      return false;
+    bounds = manager()->delegate()->AccessibilityGetViewBounds();
+  } else if (GetRole() == ui::AX_ROLE_WEB_AREA) {
+    // If this is a web area inside of an iframe, try to use the bounds of
+    // the containing element.
+    BrowserAccessibility* parent = GetParent();
+    while (parent && (parent->GetLocation().width() == 0 ||
+                      parent->GetLocation().height() == 0)) {
+      parent = parent->GetParent();
+    }
+    if (parent)
+      bounds = parent->GetLocation();
+    else
+      bounds = GetLocation();
+  } else {
+    // Otherwise this is something like a scrollable div, just use the
+    // bounds of this object itself.
+    bounds = GetLocation();
+  }
+
+  // Scroll by 80% of one page.
+  int page_x = std::max(bounds.width() * 4 / 5, 1);
+  int page_y = std::max(bounds.height() * 4 / 5, 1);
+
+  if (direction == FORWARD)
+    direction = y_max > y_min ? DOWN : RIGHT;
+  if (direction == BACKWARD)
+    direction = y_max > y_min ? UP : LEFT;
+
+  switch (direction) {
+    case UP:
+      y = std::min(std::max(y - page_y, y_min), y_max);
+      break;
+    case DOWN:
+      y = std::min(std::max(y + page_y, y_min), y_max);
+      break;
+    case LEFT:
+      x = std::min(std::max(x - page_x, x_min), x_max);
+      break;
+    case RIGHT:
+      x = std::min(std::max(x + page_x, x_min), x_max);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  manager()->SetScrollOffset(*this, gfx::Point(x, y));
+  return true;
 }
 
 int BrowserAccessibilityAndroid::GetTextChangeFromIndex() const {

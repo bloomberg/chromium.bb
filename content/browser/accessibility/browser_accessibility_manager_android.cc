@@ -269,6 +269,10 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       id,
       node->CanScrollForward(),
       node->CanScrollBackward(),
+      node->CanScrollUp(),
+      node->CanScrollDown(),
+      node->CanScrollLeft(),
+      node->CanScrollRight(),
       node->IsClickable(),
       node->IsEditableText(),
       node->IsEnabled(),
@@ -733,6 +737,26 @@ void BrowserAccessibilityManagerAndroid::SetAccessibilityFocus(
     JNIEnv* env, jobject obj, jint id) {
   if (delegate_)
     delegate_->AccessibilitySetAccessibilityFocus(id);
+}
+
+bool BrowserAccessibilityManagerAndroid::IsSlider(
+    JNIEnv* env, jobject obj, jint id) {
+  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
+      GetFromID(id));
+  if (!node)
+    return false;
+
+  return node->GetRole() == ui::AX_ROLE_SLIDER;
+}
+
+bool BrowserAccessibilityManagerAndroid::Scroll(
+    JNIEnv* env, jobject obj, jint id, int direction) {
+  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
+      GetFromID(id));
+  if (!node)
+    return false;
+
+  return node->Scroll(direction);
 }
 
 void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(

@@ -454,6 +454,7 @@
             'speech_recognition_error_java',
             'top_controls_state_java',
             'screen_orientation_values_java',
+            'accessibility_java',
           ],
           'variables': {
             'java_in_dir': '../content/public/android/java',
@@ -560,6 +561,14 @@
           'type': 'none',
           'variables': {
             'source_file': 'public/common/screen_orientation_values.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'accessibility_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/accessibility/browser_accessibility_manager_android.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

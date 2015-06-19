@@ -165,6 +165,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                         const gfx::Rect& subfocus) override;
   void AccessibilityScrollToPoint(int acc_obj_id,
                                   const gfx::Point& point) override;
+  void AccessibilitySetScrollOffset(int acc_obj_id,
+                                    const gfx::Point& offset) override;
   void AccessibilitySetTextSelection(int acc_obj_id,
                                      int start_offset,
                                      int end_offset) override;

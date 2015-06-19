@@ -94,6 +94,7 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToMakeVisible,
                         OnScrollToMakeVisible)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToPoint, OnScrollToPoint)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetScrollOffset, OnSetScrollOffset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection, OnSetTextSelection)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetValue, OnSetValue)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ShowContextMenu, OnShowContextMenu)
@@ -438,6 +439,19 @@ void RendererAccessibility::OnScrollToPoint(int acc_obj_id, gfx::Point point) {
   // TODO(dmazzoni): remove this once this bug is fixed:
   // https://bugs.webkit.org/show_bug.cgi?id=73460
   HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_LAYOUT_COMPLETE);
+}
+
+void RendererAccessibility::OnSetScrollOffset(int acc_obj_id,
+                                              gfx::Point offset) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached())
+    return;
+
+  obj.setScrollOffset(WebPoint(offset.x(), offset.y()));
 }
 
 void RendererAccessibility::OnSetFocus(int acc_obj_id) {
