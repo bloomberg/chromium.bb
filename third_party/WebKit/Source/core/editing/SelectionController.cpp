@@ -245,8 +245,7 @@ bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithH
 
 static int textDistance(const Position& start, const Position& end)
 {
-    RefPtrWillBeRawPtr<Range> range = Range::create(*start.document(), start, end);
-    return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);
+    return TextIterator::rangeLength(start, end, true);
 }
 
 bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
