@@ -10,6 +10,7 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
+#include "content/public/browser/notification_service.h"
 
 ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
@@ -115,4 +117,12 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
   DCHECK(image_service);
   image_service->Prefetch(url);
+}
+
+void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(
+    AutocompleteController* controller) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+      content::Source<AutocompleteController>(controller),
+      content::NotificationService::NoDetails());
 }

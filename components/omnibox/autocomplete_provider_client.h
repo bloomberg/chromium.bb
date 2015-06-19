@@ -9,6 +9,7 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 
+class AutocompleteController;
 struct AutocompleteMatch;
 class AutocompleteSchemeClassifier;
 class GURL;
@@ -70,6 +71,16 @@ class AutocompleteProviderClient {
       const base::string16& term) = 0;
 
   virtual void PrefetchImage(const GURL& url) = 0;
+
+  // Called by |controller| when its results have changed and all providers are
+  // done processing the autocomplete request. At the //chrome level, this
+  // callback results in firing the
+  // NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY notification.
+  // TODO(blundell): Remove the //chrome-level notification entirely in favor of
+  // having AutocompleteController expose a CallbackList that //chrome-level
+  // listeners add themselves to, and then kill this method.
+  virtual void OnAutocompleteControllerResultReady(
+      AutocompleteController* controller) {}
 };
 
 #endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_

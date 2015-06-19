@@ -18,7 +18,6 @@
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_provider.h"
 #include "chrome/browser/autocomplete/zero_suggest_provider.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "components/omnibox/bookmark_provider.h"
 #include "components/omnibox/history_quick_provider.h"
 #include "components/omnibox/history_url_provider.h"
@@ -27,7 +26,6 @@
 #include "components/omnibox/search_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/browser/notification_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -609,12 +607,8 @@ void AutocompleteController::UpdateAssistedQueryStats(
 void AutocompleteController::NotifyChanged(bool notify_default_match) {
   if (delegate_)
     delegate_->OnResultChanged(notify_default_match);
-  if (done_) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-        content::Source<AutocompleteController>(this),
-        content::NotificationService::NoDetails());
-  }
+  if (done_)
+    provider_client_->OnAutocompleteControllerResultReady(this);
 }
 
 void AutocompleteController::CheckIfDone() {
