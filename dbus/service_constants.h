@@ -1907,6 +1907,7 @@ const char kGetDebugLogs[] = "GetDebugLogs";
 const char kGetInterfaces[] = "GetInterfaces";
 const char kGetModemStatus[] = "GetModemStatus";
 const char kGetNetworkStatus[] = "GetNetworkStatus";
+const char kGetRandomPerfOutput[] = "GetRandomPerfOutput";
 const char kGetRichPerfData[] = "GetRichPerfData";
 const char kGetRoutes[] = "GetRoutes";
 const char kGetWiMaxStatus[] = "GetWiMaxStatus";
