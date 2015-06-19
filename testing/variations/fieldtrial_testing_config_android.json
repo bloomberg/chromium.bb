@@ -28,5 +28,10 @@
         {
             "group_name": "Disabled"
         }
+    ],
+    "LimitSyncPassphrasePrompt": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
