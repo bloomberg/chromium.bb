@@ -59,6 +59,15 @@ std::string GetContextTypeDescriptionString(Feature::Context context_type) {
   return std::string();
 }
 
+static std::string ToStringOrDefault(
+    const v8::Local<v8::String>& v8_string,
+    const std::string& dflt) {
+  if (v8_string.IsEmpty())
+    return dflt;
+  std::string ascii_value = *v8::String::Utf8Value(v8_string);
+  return ascii_value.empty() ? dflt : ascii_value;
+}
+
 }  // namespace
 
 // A gin::Runner that delegates to its ScriptContext.
@@ -378,6 +387,27 @@ std::string ScriptContext::GetDebugString() const {
       effective_extension_.get() ? effective_extension_->id().c_str()
                                  : "(none)",
       GetEffectiveContextTypeDescription().c_str());
+}
+
+std::string ScriptContext::GetStackTraceAsString() const {
+  v8::Local<v8::StackTrace> stack_trace =
+      v8::StackTrace::CurrentStackTrace(isolate(), 10);
+  if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
+    return "    <no stack trace>";
+  } else {
+    std::string result;
+    for (int i = 0; i < stack_trace->GetFrameCount(); ++i) {
+      v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(i);
+      CHECK(!frame.IsEmpty());
+      result += base::StringPrintf(
+          "\n    at %s (%s:%d:%d)",
+          ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
+          ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
+          frame->GetLineNumber(),
+          frame->GetColumn());
+    }
+    return result;
+  }
 }
 
 ScriptContext::Runner::Runner(ScriptContext* context) : context_(context) {

@@ -183,6 +183,9 @@ class ScriptContext : public RequestSender::Source {
   // Returns a string representation of this ScriptContext, for debugging.
   std::string GetDebugString() const;
 
+  // Gets the current stack trace as a multi-line string to be logged.
+  std::string GetStackTraceAsString() const;
+
  private:
   class Runner;
 

@@ -138,8 +138,6 @@
       'browser/extensions/api/automation_internal/automation_event_router.h',
       'browser/extensions/api/automation_internal/automation_internal_api.cc',
       'browser/extensions/api/automation_internal/automation_internal_api.h',
-      'browser/extensions/api/automation_internal/automation_util.cc',
-      'browser/extensions/api/automation_internal/automation_util.h',
       'browser/extensions/api/autotest_private/autotest_private_api.cc',
       'browser/extensions/api/autotest_private/autotest_private_api.h',
       'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.cc',

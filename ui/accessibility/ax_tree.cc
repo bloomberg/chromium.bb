@@ -221,11 +221,11 @@ void AXTree::DestroySubtree(AXNode* node,
 
 void AXTree::DestroyNodeAndSubtree(AXNode* node,
                                    AXTreeUpdateState* update_state) {
+  if (delegate_)
+    delegate_->OnNodeWillBeDeleted(this, node);
   id_map_.erase(node->id());
   for (int i = 0; i < node->child_count(); ++i)
     DestroyNodeAndSubtree(node->ChildAtIndex(i), update_state);
-  if (delegate_)
-    delegate_->OnNodeWillBeDeleted(this, node);
   if (update_state) {
     update_state->pending_nodes.erase(node);
   }

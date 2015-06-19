@@ -12,7 +12,6 @@
 #include "chrome/browser/accessibility/ax_tree_id_registry.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
-#include "chrome/browser/extensions/api/automation_internal/automation_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +28,8 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -45,6 +46,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::AutomationWebContentsObserver);
 namespace extensions {
 
 namespace {
+
 const int kDesktopTreeID = 0;
 const char kCannotRequestAutomationOnPage[] =
     "Cannot request automation tree on url \"*\". "
@@ -193,24 +195,41 @@ class AutomationWebContentsObserver
   void AccessibilityEventReceived(
       const std::vector<content::AXEventNotificationDetails>& details)
       override {
-    automation_util::DispatchAccessibilityEventsToAutomation(
-        details, browser_context_,
-        web_contents()->GetContainerBounds().OffsetFromOrigin());
+    std::vector<content::AXEventNotificationDetails>::const_iterator iter =
+        details.begin();
+    for (; iter != details.end(); ++iter) {
+      const content::AXEventNotificationDetails& event = *iter;
+      int tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
+          event.process_id, event.routing_id);
+      ExtensionMsg_AccessibilityEventParams params;
+      params.tree_id = tree_id;
+      params.id = event.id;
+      params.event_type = event.event_type;
+      params.update.node_id_to_clear = event.node_id_to_clear;
+      params.update.nodes = event.nodes;
+      params.location_offset =
+          web_contents()->GetContainerBounds().OffsetFromOrigin();
+
+      AutomationEventRouter* router = AutomationEventRouter::GetInstance();
+      router->DispatchAccessibilityEvent(params);
+    }
   }
 
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
-    automation_util::DispatchTreeDestroyedEventToAutomation(
+    int tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
         render_frame_host->GetProcess()->GetID(),
-        render_frame_host->GetRoutingID(),
+        render_frame_host->GetRoutingID());
+    AXTreeIDRegistry::GetInstance()->RemoveAXTreeID(tree_id);
+    AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+        tree_id,
         browser_context_);
   }
 
  private:
   friend class content::WebContentsUserData<AutomationWebContentsObserver>;
 
-  AutomationWebContentsObserver(
-      content::WebContents* web_contents)
+  explicit AutomationWebContentsObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
         browser_context_(web_contents->GetBrowserContext()) {}
 
@@ -245,6 +264,7 @@ AutomationInternalEnableTabFunction::Run() {
     if (!contents)
       return RespondNow(Error("No active tab"));
   }
+
   content::RenderFrameHost* rfh = contents->GetMainFrame();
   if (!rfh)
     return RespondNow(Error("Could not enable accessibility for active tab"));
@@ -256,6 +276,7 @@ AutomationInternalEnableTabFunction::Run() {
 
   AutomationWebContentsObserver::CreateForWebContents(contents);
   contents->EnableTreeOnlyAccessibilityMode();
+
   int ax_tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
       rfh->GetProcess()->GetID(), rfh->GetRoutingID());
 
@@ -270,11 +291,12 @@ AutomationInternalEnableTabFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
-// TODO(dtseng): Limited to desktop tree for now pending out of proc iframes.
+  // TODO(dtseng): Limited to desktop tree for now pending out of proc iframes.
   using api::automation_internal::EnableFrame::Params;
 
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
   AXTreeIDRegistry::FrameID frame_id =
       AXTreeIDRegistry::GetInstance()->GetFrameID(params->tree_id);
   content::RenderFrameHost* rfh =
