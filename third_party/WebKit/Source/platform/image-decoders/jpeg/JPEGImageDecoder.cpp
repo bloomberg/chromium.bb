@@ -536,7 +536,7 @@ public:
 
         case JPEG_DECOMPRESS_PROGRESSIVE:
             if (m_state == JPEG_DECOMPRESS_PROGRESSIVE) {
-                int status;
+                int status = 0;
                 do {
                     decoder_error_mgr* err = reinterpret_cast_ptr<decoder_error_mgr *>(m_info.err);
                     if (err->num_corrupt_warnings)
