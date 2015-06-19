@@ -35,6 +35,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   MOCK_METHOD2(LoadProfileAsync,
                void(const base::FilePath&,
                     base::Callback<void(Profile*)>));
+  MOCK_METHOD1(IsProfileLockedForPath, bool(const base::FilePath&));
 
   MOCK_METHOD2(GetWindows, AppWindowList(Profile*, const std::string&));
 
@@ -48,6 +49,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
                     const Extension*,
                     const std::vector<base::FilePath>&));
   MOCK_METHOD2(LaunchShim, void(Profile*, const Extension*));
+  MOCK_METHOD0(LaunchUserManager, void());
 
   MOCK_METHOD0(MaybeTerminate, void());
 
@@ -169,10 +171,14 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 
     EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_a_))
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
         .WillRepeatedly(Return(&profile_a_));
     EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_b_))
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_b_))
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_b_))
         .WillRepeatedly(Return(&profile_b_));
 
@@ -251,6 +257,15 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFound) {
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND));
+  NormalLaunch(&host_aa_);
+}
+
+TEST_F(ExtensionAppShimHandlerTest, LaunchProfileIsLocked) {
+  // Profile is locked.
+  EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(host_aa_, OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_LOCKED));
+  EXPECT_CALL(*delegate_, LaunchUserManager());
   NormalLaunch(&host_aa_);
 }
 

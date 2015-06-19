@@ -157,10 +157,10 @@ bool IsRegularOrGuestSession(Browser* browser) {
   return profile->IsGuestSession() || !profile->IsOffTheRecord();
 }
 
-bool IsProfileLocked(Profile* profile) {
+bool IsProfileLocked(const base::FilePath& path) {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  size_t profile_index = cache.GetIndexOfProfileWithPath(path);
 
   if (profile_index == std::string::npos)
     return false;

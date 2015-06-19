@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 
+#include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -25,6 +26,7 @@ class UserManagerView : public views::DialogDelegateView {
   // Creates a new UserManagerView instance for the |system_profile| and shows
   // the |url|.
   static void OnSystemProfileCreated(scoped_ptr<UserManagerView> instance,
+                                     base::AutoReset<bool>* pending,
                                      Profile* system_profile,
                                      const std::string& url);
 

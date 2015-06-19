@@ -14,11 +14,14 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -175,6 +178,13 @@ void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
       base::string16(), base::string16(), std::string());
 }
 
+bool ExtensionAppShimHandler::Delegate::IsProfileLockedForPath(
+    const base::FilePath& path) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
+  return profiles::IsProfileLocked(full_path);
+}
+
 AppWindowList ExtensionAppShimHandler::Delegate::GetWindows(
     Profile* profile,
     const std::string& extension_id) {
@@ -221,6 +231,12 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(Profile* profile,
                                                    const Extension* extension) {
   web_app::MaybeLaunchShortcut(
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
+}
+
+void ExtensionAppShimHandler::Delegate::LaunchUserManager() {
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_NO_TUTORIAL,
+                    profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER);
 }
 
 void ExtensionAppShimHandler::Delegate::MaybeTerminate() {
@@ -413,6 +429,13 @@ void ExtensionAppShimHandler::OnShimLaunch(
     LOG(ERROR) << "Requested directory is not a known profile '"
                << profile_path.value() << "'.";
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
+    return;
+  }
+
+  if (delegate_->IsProfileLockedForPath(profile_path)) {
+    LOG(WARNING) << "Requested profile is locked.  Showing User Manager.";
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_PROFILE_LOCKED);
+    delegate_->LaunchUserManager();
     return;
   }
 

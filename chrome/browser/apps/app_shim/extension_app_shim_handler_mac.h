@@ -52,6 +52,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual Profile* ProfileForPath(const base::FilePath& path);
     virtual void LoadProfileAsync(const base::FilePath& path,
                                   base::Callback<void(Profile*)> callback);
+    virtual bool IsProfileLockedForPath(const base::FilePath& path);
 
     virtual extensions::AppWindowRegistry::AppWindowList GetWindows(
         Profile* profile,
@@ -68,6 +69,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
                            const std::vector<base::FilePath>& files);
     virtual void LaunchShim(Profile* profile,
                             const extensions::Extension* extension);
+    virtual void LaunchUserManager();
 
     virtual void MaybeTerminate();
   };

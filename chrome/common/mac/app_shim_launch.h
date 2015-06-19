@@ -26,6 +26,8 @@ enum AppShimLaunchResult {
   APP_SHIM_LAUNCH_PROFILE_NOT_FOUND,
   // The app was not found.
   APP_SHIM_LAUNCH_APP_NOT_FOUND,
+  // The profile was locked.
+  APP_SHIM_LAUNCH_PROFILE_LOCKED,
   // Counter and end marker.
   APP_SHIM_LAUNCH_NUM_RESULTS
 };

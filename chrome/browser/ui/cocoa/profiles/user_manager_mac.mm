@@ -43,6 +43,7 @@ void ChangeAppControllerForProfile(Profile* profile,
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
 UserManagerMac* instance_ = NULL;  // Weak.
+BOOL instance_under_construction_ = NO;
 
 // Custom WebContentsDelegate that allows handling of hotkeys.
 class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
@@ -199,6 +200,14 @@ void UserManager::Show(
     return;
   }
 
+  // Under some startup conditions, we can try twice to create the User Manager.
+  // Because creating the System profile is asynchronous, it's possible for
+  // there to then be multiple pending operations and eventually multiple
+  // User Managers.
+  if (instance_under_construction_)
+      return;
+  instance_under_construction_ = YES;
+
   // Create the guest profile, if necessary, and open the User Manager
   // from the guest profile.
   profiles::CreateSystemProfileForUserManager(
@@ -238,6 +247,7 @@ void UserManagerMac::OnSystemProfileCreated(const base::Time& start_time,
   instance_ = new UserManagerMac(system_profile);
   instance_->set_user_manager_started_showing(start_time);
   [instance_->window_controller() showURL:GURL(url)];
+  instance_under_construction_ = NO;
 }
 
 void UserManagerMac::LogTimeToOpen() {

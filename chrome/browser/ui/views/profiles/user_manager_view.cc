@@ -46,6 +46,7 @@ namespace {
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
 UserManagerView* instance_ = NULL;
+bool instance_under_construction_ = false;
 
 } // namespace
 
@@ -71,6 +72,13 @@ void UserManager::Show(
     return;
   }
 
+  // Under some startup conditions, we can try twice to create the User Manager.
+  // Because creating the System profile is asynchronous, it's possible for
+  // there to then be multiple pending operations and eventually multiple
+  // User Managers.
+  if (instance_under_construction_)
+      return;
+
   // Create the system profile, if necessary, and open the user manager
   // from the system profile.
   UserManagerView* user_manager = new UserManagerView();
@@ -80,7 +88,9 @@ void UserManager::Show(
       tutorial_mode,
       profile_open_action,
       base::Bind(&UserManagerView::OnSystemProfileCreated,
-                 base::Passed(make_scoped_ptr(user_manager))));
+                 base::Passed(make_scoped_ptr(user_manager)),
+                 base::Owned(new base::AutoReset<bool>(
+                     &instance_under_construction_, true))));
 }
 
 void UserManager::Hide() {
@@ -111,6 +121,7 @@ UserManagerView::~UserManagerView() {
 // static
 void UserManagerView::OnSystemProfileCreated(
     scoped_ptr<UserManagerView> instance,
+    base::AutoReset<bool>* pending,
     Profile* system_profile,
     const std::string& url) {
   // If we are showing the User Manager after locking a profile, change the
