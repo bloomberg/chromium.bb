@@ -248,7 +248,7 @@ static_library("hello") {
 This applies the `hello_config` to the `hello` target itself, plus all
 targets that depend on transitively depend on the current one. Now
 everybody that depends on us will get our settings. You can also set
-`direct_dependent_configs` which applies only to targets that directly
+`public_configs` which applies only to targets that directly
 depend on your target (not transitively).
 
 Now if you compile and run, you'll see the new version with two people:
