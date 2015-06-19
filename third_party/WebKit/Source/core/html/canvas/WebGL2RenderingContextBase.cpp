@@ -91,7 +91,14 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target, GLintptr offset
     if (isContextLost())
         return;
 
-    notImplemented();
+    void* mappedData = webContext()->mapBufferRange(target, offset, returnedData->byteLength(), GL_MAP_READ_BIT);
+
+    if (!mappedData)
+        return;
+
+    memcpy(returnedData->data(), mappedData, returnedData->byteLength());
+
+    webContext()->unmapBuffer(target);
 }
 
 void WebGL2RenderingContextBase::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
@@ -1269,8 +1276,10 @@ void WebGL2RenderingContextBase::bindTransformFeedback(GLenum target, WebGLTrans
     bool deleted;
     if (!checkObjectToBeBound("bindTransformFeedback", feedback, deleted))
         return;
-    if (deleted)
-        feedback = 0;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindTransformFeedback", "attempted to bind a deleted transform feedback object");
+        return;
+    }
 
     if (target != GL_TRANSFORM_FEEDBACK) {
         synthesizeGLError(GL_INVALID_ENUM, "bindTransformFeedback", "target must be TRANSFORM_FEEDBACK");

@@ -520,6 +520,7 @@ public:
     virtual WGC3Dboolean isSampler(WebGLId sampler) { return false; }
     virtual WGC3Dboolean isSync(WGC3Dsync sync) { return false; }
     virtual WGC3Dboolean isTransformFeedback(WebGLId transformfeedback) { return false; }
+    virtual void* mapBufferRange(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr length, WGC3Dbitfield access) { return 0; }
     virtual void pauseTransformFeedback(void) { }
     virtual void programParameteri(WebGLId program, WGC3Denum pname, WGC3Dint value) { }
     virtual void readBuffer(WGC3Denum src) { }
@@ -547,6 +548,8 @@ public:
     virtual void uniformMatrix3x4fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
     virtual void uniformMatrix4x2fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
     virtual void uniformMatrix4x3fv(WGC3Dint location, WGC3Dsizei count, WGC3Dboolean transpose, const WGC3Dfloat* value) { }
+    virtual WGC3Dboolean unmapBuffer(WGC3Denum target) { return false; }
+
     virtual void vertexAttribI4i(WGC3Duint index, WGC3Dint x, WGC3Dint y, WGC3Dint z, WGC3Dint w) { }
     virtual void vertexAttribI4iv(WGC3Duint index, const WGC3Dint *v) { }
     virtual void vertexAttribI4ui(WGC3Duint index, WGC3Duint x, WGC3Duint y, WGC3Duint z, WGC3Duint w) { }
