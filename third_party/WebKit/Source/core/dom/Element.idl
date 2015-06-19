@@ -28,7 +28,7 @@
     readonly attribute DOMString localName;
     readonly attribute DOMString tagName;
 
-    [Reflect, ExposeJSAccessors] attribute DOMString id;
+    [Reflect] attribute DOMString id;
     [Reflect=class] attribute DOMString className;
     [SameObject, PerWorldBindings] readonly attribute DOMTokenList classList;
 
@@ -58,7 +58,7 @@
 
     // DOM Parsing and Serialization
     // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-element-interface
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, ExposeJSAccessors] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
     [CustomElementCallbacks, RaisesException, MeasureAs=InsertAdjacentHTML] void insertAdjacentHTML(DOMString position, DOMString text);
 

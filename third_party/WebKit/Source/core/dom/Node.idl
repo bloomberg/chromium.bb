@@ -41,17 +41,17 @@
     readonly attribute unsigned short nodeType;
     readonly attribute DOMString nodeName;
 
-    [ExposeJSAccessors] readonly attribute DOMString? baseURI;
+    readonly attribute DOMString? baseURI;
 
-    [PerWorldBindings, ExposeJSAccessors] readonly attribute Document? ownerDocument;
-    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? parentNode;
+    [PerWorldBindings] readonly attribute Document? ownerDocument;
+    [PerWorldBindings] readonly attribute Node? parentNode;
     [PerWorldBindings] readonly attribute Element? parentElement;
     [ImplementedAs=hasChildren] boolean hasChildNodes();
-    [SameObject, PerWorldBindings, ExposeJSAccessors] readonly attribute NodeList childNodes;
-    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? firstChild;
-    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? lastChild;
-    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? previousSibling;
-    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node? nextSibling;
+    [SameObject, PerWorldBindings] readonly attribute NodeList childNodes;
+    [PerWorldBindings] readonly attribute Node? firstChild;
+    [PerWorldBindings] readonly attribute Node? lastChild;
+    [PerWorldBindings] readonly attribute Node? previousSibling;
+    [PerWorldBindings] readonly attribute Node? nextSibling;
 
     [CustomElementCallbacks] attribute DOMString? nodeValue;
     // FIXME: textContent should not have [TreatUndefinedAs=NullString].

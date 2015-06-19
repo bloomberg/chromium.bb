@@ -95,7 +95,7 @@ interface Document : Node {
     // FIXME: title and dir should not have [TreatNullAs=NullString].
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString title;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString dir;
-    [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings, TypeChecking=Interface, ExposeJSAccessors] attribute HTMLElement? body;
+    [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings, TypeChecking=Interface] attribute HTMLElement? body;
     readonly attribute HTMLHeadElement? head;
     [SameObject] readonly attribute HTMLCollection images;
     [SameObject] readonly attribute HTMLCollection embeds;
