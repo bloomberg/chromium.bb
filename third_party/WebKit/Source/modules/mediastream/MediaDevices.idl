@@ -8,6 +8,6 @@
     GarbageCollected,
     RuntimeEnabled=EnumerateDevices
 ]
-interface MediaDevices : EventTarget {
+interface MediaDevices {
     [RuntimeEnabled=EnumerateDevices, TypeChecking=Interface, CallWith=ScriptState] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
 };
