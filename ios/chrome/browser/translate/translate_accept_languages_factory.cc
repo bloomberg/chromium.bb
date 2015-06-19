@@ -28,6 +28,7 @@ class TranslateAcceptLanguagesService : public KeyedService {
 
  private:
   translate::TranslateAcceptLanguages accept_languages_;
+
   DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguagesService);
 };
 
@@ -49,7 +50,8 @@ TranslateAcceptLanguagesFactory::GetInstance() {
 
 // static
 translate::TranslateAcceptLanguages*
-TranslateAcceptLanguagesFactory::GetForBrowserState(web::BrowserState* state) {
+TranslateAcceptLanguagesFactory::GetForBrowserState(
+    ios::ChromeBrowserState* state) {
   TranslateAcceptLanguagesService* service =
       static_cast<TranslateAcceptLanguagesService*>(
           GetInstance()->GetServiceForBrowserState(state, true));
@@ -65,14 +67,16 @@ TranslateAcceptLanguagesFactory::TranslateAcceptLanguagesFactory()
 TranslateAcceptLanguagesFactory::~TranslateAcceptLanguagesFactory() {
 }
 
-KeyedService* TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
-    web::BrowserState* browser_state) const {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state);
-  return new TranslateAcceptLanguagesService(chrome_browser_state->GetPrefs());
+scoped_ptr<KeyedService>
+TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  return make_scoped_ptr(
+      new TranslateAcceptLanguagesService(browser_state->GetPrefs()));
 }
 
 web::BrowserState* TranslateAcceptLanguagesFactory::GetBrowserStateToUse(
-    web::BrowserState* state) const {
-  return GetBrowserStateRedirectedInIncognito(state);
+    web::BrowserState* context) const {
+  return GetBrowserStateRedirectedInIncognito(context);
 }

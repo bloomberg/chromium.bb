@@ -41,16 +41,16 @@ EnhancedBookmarkModelFactory::EnhancedBookmarkModelFactory()
 EnhancedBookmarkModelFactory::~EnhancedBookmarkModelFactory() {
 }
 
-KeyedService* EnhancedBookmarkModelFactory::BuildServiceInstanceFor(
+scoped_ptr<KeyedService> EnhancedBookmarkModelFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   DCHECK(!context->IsOffTheRecord());
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
-  return new EnhancedBookmarkModel(
+  return make_scoped_ptr(new EnhancedBookmarkModel(
       provider->GetBookmarkModelForBrowserState(browser_state),
       ios::GetChromeBrowserProvider()->GetProductVersionWithPrefix(
-          kVersionPrefix));
+          kVersionPrefix)));
 }
 
 web::BrowserState* EnhancedBookmarkModelFactory::GetBrowserStateToUse(

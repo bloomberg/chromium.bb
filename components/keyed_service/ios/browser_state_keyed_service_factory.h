@@ -90,7 +90,7 @@ class KEYED_SERVICE_EXPORT BrowserStateKeyedServiceFactory
 
   // All subclasses of BrowserStateKeyedServiceFactory must return a
   // KeyedService instead of just a BrowserStateKeyedBase.
-  virtual KeyedService* BuildServiceInstanceFor(
+  virtual scoped_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const = 0;
 
   // A helper object actually listens for notifications about BrowserState

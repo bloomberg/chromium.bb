@@ -6,13 +6,14 @@
 #define IOS_CHROME_BROWSER_SUGGESTIONS_SUGGESTIONS_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
 
-namespace web {
-class BrowserState;
+namespace ios {
+class ChromeBrowserState;
 }
 
 namespace suggestions {
@@ -27,7 +28,7 @@ class SuggestionsServiceFactory : public BrowserStateKeyedServiceFactory {
 
   // Returns the SuggestionsService for |browser_state|.
   static SuggestionsService* GetForBrowserState(
-      web::BrowserState* browser_state);
+      ios::ChromeBrowserState* browser_state);
 
  private:
   friend struct DefaultSingletonTraits<SuggestionsServiceFactory>;
@@ -35,9 +36,9 @@ class SuggestionsServiceFactory : public BrowserStateKeyedServiceFactory {
   SuggestionsServiceFactory();
   ~SuggestionsServiceFactory() override;
 
-  // BrowserStateKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      web::BrowserState* browser_state) const override;
+  // BrowserStateKeyedServiceFactory implementation.
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+      web::BrowserState* context) const override;
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 

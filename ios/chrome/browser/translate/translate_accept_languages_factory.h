@@ -13,8 +13,8 @@ namespace translate {
 class TranslateAcceptLanguages;
 }
 
-namespace web {
-class BrowserState;
+namespace ios {
+class ChromeBrowserState;
 }
 
 // TranslateAcceptLanguagesFactory is a way to associate a
@@ -22,7 +22,7 @@ class BrowserState;
 class TranslateAcceptLanguagesFactory : public BrowserStateKeyedServiceFactory {
  public:
   static translate::TranslateAcceptLanguages* GetForBrowserState(
-      web::BrowserState* browser_state);
+      ios::ChromeBrowserState* browser_state);
   static TranslateAcceptLanguagesFactory* GetInstance();
 
  private:
@@ -31,11 +31,11 @@ class TranslateAcceptLanguagesFactory : public BrowserStateKeyedServiceFactory {
   TranslateAcceptLanguagesFactory();
   ~TranslateAcceptLanguagesFactory() override;
 
-  // BrowserStateKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      web::BrowserState* browser_state) const override;
+  // BrowserStateKeyedServiceFactory implementation.
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+      web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
-      web::BrowserState* browser_state) const override;
+      web::BrowserState* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguagesFactory);
 };

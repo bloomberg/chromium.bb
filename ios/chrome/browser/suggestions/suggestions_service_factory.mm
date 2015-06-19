@@ -33,7 +33,7 @@ SuggestionsServiceFactory* SuggestionsServiceFactory::GetInstance() {
 
 // static
 SuggestionsService* SuggestionsServiceFactory::GetForBrowserState(
-    web::BrowserState* browser_state) {
+    ios::ChromeBrowserState* browser_state) {
   return static_cast<SuggestionsService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -48,22 +48,22 @@ SuggestionsServiceFactory::SuggestionsServiceFactory()
 SuggestionsServiceFactory::~SuggestionsServiceFactory() {
 }
 
-KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
-    web::BrowserState* browser_state) const {
+scoped_ptr<KeyedService> SuggestionsServiceFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
   base::SequencedWorkerPool* sequenced_worker_pool =
       web::WebThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       sequenced_worker_pool->GetSequencedTaskRunner(
           sequenced_worker_pool->GetSequenceToken());
 
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state);
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
   base::FilePath database_dir(
-      chrome_browser_state->GetStatePath().Append(kThumbnailDirectory));
+      browser_state->GetStatePath().Append(kThumbnailDirectory));
   scoped_ptr<SuggestionsStore> suggestions_store(
-      new SuggestionsStore(chrome_browser_state->GetPrefs()));
+      new SuggestionsStore(browser_state->GetPrefs()));
   scoped_ptr<BlacklistStore> blacklist_store(
-      new BlacklistStore(chrome_browser_state->GetPrefs()));
+      new BlacklistStore(browser_state->GetPrefs()));
   scoped_ptr<leveldb_proto::ProtoDatabaseImpl<ImageData>> db(
       new leveldb_proto::ProtoDatabaseImpl<ImageData>(background_task_runner));
   scoped_ptr<ImageFetcher> image_fetcher(new ImageFetcherImpl(
@@ -71,9 +71,9 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<ImageManager> thumbnail_manager(new ImageManager(
       image_fetcher.Pass(), db.Pass(), database_dir,
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB)));
-  return new SuggestionsService(
+  return make_scoped_ptr(new SuggestionsService(
       browser_state->GetRequestContext(), suggestions_store.Pass(),
-      thumbnail_manager.Pass(), blacklist_store.Pass());
+      thumbnail_manager.Pass(), blacklist_store.Pass()));
 }
 
 void SuggestionsServiceFactory::RegisterBrowserStatePrefs(

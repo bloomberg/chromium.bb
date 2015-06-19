@@ -5,26 +5,24 @@
 #include "ios/public/test/fake_sync_service_factory.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync_driver/fake_sync_service.h"
+#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 
 namespace {
 
 class KeyedFakeSyncService : public KeyedService {
  public:
-  KeyedFakeSyncService(sync_driver::FakeSyncService* service)
-      : fake_sync_service_(service) {
-    DCHECK(fake_sync_service_);
-  }
+  KeyedFakeSyncService() {}
 
   sync_driver::FakeSyncService* fake_sync_service() {
-    return fake_sync_service_.get();
+    return &fake_sync_service_;
   }
 
  private:
-  scoped_ptr<sync_driver::FakeSyncService> fake_sync_service_;
+  sync_driver::FakeSyncService fake_sync_service_;
 };
 
 }  // namespace
@@ -38,15 +36,10 @@ FakeSyncServiceFactory* FakeSyncServiceFactory::GetInstance() {
 
 // static
 sync_driver::FakeSyncService* FakeSyncServiceFactory::GetForBrowserState(
-    web::BrowserState* browser_state) {
+    ios::ChromeBrowserState* browser_state) {
   return static_cast<KeyedFakeSyncService*>(
              FakeSyncServiceFactory::GetInstance()->GetServiceForBrowserState(
                  browser_state, true))->fake_sync_service();
-}
-
-KeyedService* FakeSyncServiceFactory::BuildServiceInstanceFor(
-    web::BrowserState* context) const {
-  return new KeyedFakeSyncService(new sync_driver::FakeSyncService);
 }
 
 FakeSyncServiceFactory::FakeSyncServiceFactory()
@@ -56,6 +49,11 @@ FakeSyncServiceFactory::FakeSyncServiceFactory()
 }
 
 FakeSyncServiceFactory::~FakeSyncServiceFactory() {
+}
+
+scoped_ptr<KeyedService> FakeSyncServiceFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
+  return make_scoped_ptr(new KeyedFakeSyncService);
 }
 
 }  // namespace ios

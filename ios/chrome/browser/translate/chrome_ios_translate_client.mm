@@ -131,7 +131,8 @@ translate::TranslateAcceptLanguages*
 ChromeIOSTranslateClient::GetTranslateAcceptLanguages() {
   DCHECK(web_state());
   return TranslateAcceptLanguagesFactory::GetForBrowserState(
-      web_state()->GetBrowserState());
+      ios::ChromeBrowserState::FromBrowserState(
+          web_state()->GetBrowserState()));
 }
 
 int ChromeIOSTranslateClient::GetInfobarIconID() const {

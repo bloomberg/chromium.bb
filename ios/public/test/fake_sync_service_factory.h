@@ -6,14 +6,19 @@
 #define IOS_PUBLIC_TEST_FAKE_SYNC_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+
+template <typename T>
+struct DefaultSingletonTraits;
 
 namespace sync_driver {
 class FakeSyncService;
 }
 
 namespace ios {
+
+class ChromeBrowserState;
 
 class FakeSyncServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
@@ -22,17 +27,17 @@ class FakeSyncServiceFactory : public BrowserStateKeyedServiceFactory {
 
   // Returns the FakeSyncService associated to |browser_state|.
   static sync_driver::FakeSyncService* GetForBrowserState(
-      web::BrowserState* browser_state);
+      ios::ChromeBrowserState* browser_state);
 
  private:
   friend struct DefaultSingletonTraits<FakeSyncServiceFactory>;
 
-  // BrowserStateKeyedServiceFactory implementation:
-  KeyedService* BuildServiceInstanceFor(
-      web::BrowserState* context) const override;
-
   FakeSyncServiceFactory();
   ~FakeSyncServiceFactory() override;
+
+  // BrowserStateKeyedServiceFactory implementation.
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+      web::BrowserState* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncServiceFactory);
 };

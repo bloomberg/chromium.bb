@@ -5,19 +5,19 @@
 #ifndef IOS_CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_H_
 #define IOS_CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_H_
 
-#include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-template <typename T> struct DefaultSingletonTraits;
-
-class KeyedService;
+template <typename T>
+struct DefaultSingletonTraits;
 
 namespace dom_distiller {
 class DomDistillerService;
 }
 
-namespace web {
-class BrowserState;
+namespace ios {
+class ChromeBrowserState;
 }
 
 namespace dom_distiller {
@@ -26,7 +26,7 @@ class DomDistillerServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static DomDistillerServiceFactory* GetInstance();
   static DomDistillerService* GetForBrowserState(
-      web::BrowserState* browser_state);
+      ios::ChromeBrowserState* browser_state);
 
  private:
   friend struct DefaultSingletonTraits<DomDistillerServiceFactory>;
@@ -35,10 +35,12 @@ class DomDistillerServiceFactory : public BrowserStateKeyedServiceFactory {
   ~DomDistillerServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
-  KeyedService* BuildServiceInstanceFor(
-      web::BrowserState* browser_state) const override;
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+      web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
-      web::BrowserState* browser_state) const override;
+      web::BrowserState* context) const override;
+
+  DISALLOW_COPY(DomDistillerServiceFactory);
 };
 
 }  // namespace dom_distiller

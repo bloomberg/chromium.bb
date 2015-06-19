@@ -6,8 +6,10 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 #include "components/sync_driver/fake_sync_service.h"
@@ -29,7 +31,7 @@ class MissingServiceKeyedServiceFactory
   ~MissingServiceKeyedServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
-  KeyedService* BuildServiceInstanceFor(
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MissingServiceKeyedServiceFactory);
@@ -50,7 +52,8 @@ MissingServiceKeyedServiceFactory::MissingServiceKeyedServiceFactory()
 MissingServiceKeyedServiceFactory::~MissingServiceKeyedServiceFactory() {
 }
 
-KeyedService* MissingServiceKeyedServiceFactory::BuildServiceInstanceFor(
+scoped_ptr<KeyedService>
+MissingServiceKeyedServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   NOTREACHED();
   return nullptr;

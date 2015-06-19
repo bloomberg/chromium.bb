@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_FAVICON_FAVICON_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 template <typename T>
@@ -36,7 +37,7 @@ class FaviconServiceFactory : public BrowserStateKeyedServiceFactory {
   ~FaviconServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
-  KeyedService* BuildServiceInstanceFor(
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
 

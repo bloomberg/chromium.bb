@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARK_MODEL_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 template <typename T>
@@ -34,7 +35,7 @@ class EnhancedBookmarkModelFactory : public BrowserStateKeyedServiceFactory {
   ~EnhancedBookmarkModelFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
-  KeyedService* BuildServiceInstanceFor(
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;

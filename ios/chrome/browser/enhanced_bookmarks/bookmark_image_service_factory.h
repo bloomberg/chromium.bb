@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_BOOKMARK_IMAGE_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 template <typename T>
@@ -15,7 +16,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-class KeyedService;
 class BookmarkImageServiceIOS;
 
 // Singleton that owns all BookmarkImageServices and associates them with
@@ -33,9 +33,9 @@ class BookmarkImageServiceFactory : public BrowserStateKeyedServiceFactory {
   ~BookmarkImageServiceFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
-  web::BrowserState* GetBrowserStateToUse(
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
-  KeyedService* BuildServiceInstanceFor(
+  web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkImageServiceFactory);

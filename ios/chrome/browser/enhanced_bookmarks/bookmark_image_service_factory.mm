@@ -34,19 +34,19 @@ BookmarkImageServiceFactory::BookmarkImageServiceFactory()
 BookmarkImageServiceFactory::~BookmarkImageServiceFactory() {
 }
 
-web::BrowserState* BookmarkImageServiceFactory::GetBrowserStateToUse(
-    web::BrowserState* context) const {
-  return context;
-}
-
-KeyedService* BookmarkImageServiceFactory::BuildServiceInstanceFor(
+scoped_ptr<KeyedService> BookmarkImageServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   DCHECK(!context->IsOffTheRecord());
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return new BookmarkImageServiceIOS(
+  return make_scoped_ptr(new BookmarkImageServiceIOS(
       browser_state->GetStatePath(),
       enhanced_bookmarks::EnhancedBookmarkModelFactory::GetForBrowserState(
           browser_state),
-      browser_state->GetRequestContext(), web::WebThread::GetBlockingPool());
+      browser_state->GetRequestContext(), web::WebThread::GetBlockingPool()));
+}
+
+web::BrowserState* BookmarkImageServiceFactory::GetBrowserStateToUse(
+    web::BrowserState* context) const {
+  return context;
 }

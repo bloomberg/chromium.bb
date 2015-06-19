@@ -47,14 +47,14 @@ FaviconServiceFactory::FaviconServiceFactory()
 FaviconServiceFactory::~FaviconServiceFactory() {
 }
 
-KeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
+scoped_ptr<KeyedService> FaviconServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return new favicon::FaviconService(
-      scoped_ptr<favicon::FaviconClient>(new FaviconClientImpl),
+  return make_scoped_ptr(new favicon::FaviconService(
+      make_scoped_ptr(new FaviconClientImpl),
       ios::GetKeyedServiceProvider()->GetHistoryServiceForBrowserState(
-          browser_state, ServiceAccessType::EXPLICIT_ACCESS));
+          browser_state, ServiceAccessType::EXPLICIT_ACCESS)));
 }
 
 bool FaviconServiceFactory::ServiceIsNULLWhileTesting() const {

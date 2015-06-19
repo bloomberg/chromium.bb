@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/dom_distiller/core/article_entry.h"
@@ -55,7 +54,7 @@ DomDistillerServiceFactory* DomDistillerServiceFactory::GetInstance() {
 
 // static
 DomDistillerService* DomDistillerServiceFactory::GetForBrowserState(
-    web::BrowserState* browser_state) {
+    ios::ChromeBrowserState* browser_state) {
   return static_cast<DomDistillerKeyedService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -69,8 +68,8 @@ DomDistillerServiceFactory::DomDistillerServiceFactory()
 DomDistillerServiceFactory::~DomDistillerServiceFactory() {
 }
 
-KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
-    web::BrowserState* browser_state) const {
+scoped_ptr<KeyedService> DomDistillerServiceFactory::BuildServiceInstanceFor(
+    web::BrowserState* context) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(
           web::WebThread::GetBlockingPool()->GetSequenceToken());
@@ -80,34 +79,31 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
           background_task_runner));
 
   base::FilePath database_dir(
-      browser_state->GetStatePath().Append(FILE_PATH_LITERAL("Articles")));
+      context->GetStatePath().Append(FILE_PATH_LITERAL("Articles")));
 
   scoped_ptr<DomDistillerStore> dom_distiller_store(
       new DomDistillerStore(db.Pass(), database_dir));
 
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
-      new DistillerPageFactoryIOS(browser_state));
+      new DistillerPageFactoryIOS(context));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
-      new DistillerURLFetcherFactory(browser_state->GetRequestContext()));
+      new DistillerURLFetcherFactory(context->GetRequestContext()));
 
   dom_distiller::proto::DomDistillerOptions options;
   scoped_ptr<DistillerFactory> distiller_factory(
       new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
   scoped_ptr<DistilledPagePrefs> distilled_page_prefs(new DistilledPagePrefs(
-      ios::ChromeBrowserState::FromBrowserState(browser_state)->GetPrefs()));
+      ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs()));
 
-  DomDistillerKeyedService* service =
-      new DomDistillerKeyedService(
-          dom_distiller_store.Pass(), distiller_factory.Pass(),
-          distiller_page_factory.Pass(), distilled_page_prefs.Pass());
-
-  return service;
+  return make_scoped_ptr(new DomDistillerKeyedService(
+      dom_distiller_store.Pass(), distiller_factory.Pass(),
+      distiller_page_factory.Pass(), distilled_page_prefs.Pass()));
 }
 
 web::BrowserState* DomDistillerServiceFactory::GetBrowserStateToUse(
-    web::BrowserState* browser_state) const {
+    web::BrowserState* context) const {
   // Makes normal profile and off-the-record profile use same service instance.
-  return GetBrowserStateRedirectedInIncognito(browser_state);
+  return GetBrowserStateRedirectedInIncognito(context);
 }
 
 }  // namespace dom_distiller

@@ -47,20 +47,21 @@ BookmarkServerClusterServiceFactory::BookmarkServerClusterServiceFactory()
 BookmarkServerClusterServiceFactory::~BookmarkServerClusterServiceFactory() {
 }
 
-KeyedService* BookmarkServerClusterServiceFactory::BuildServiceInstanceFor(
+scoped_ptr<KeyedService>
+BookmarkServerClusterServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   DCHECK(!context->IsOffTheRecord());
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
-  return new BookmarkServerClusterService(
+  return make_scoped_ptr(new BookmarkServerClusterService(
       GetApplicationContext()->GetApplicationLocale(),
       browser_state->GetRequestContext(),
       provider->GetProfileOAuth2TokenServiceIOSForBrowserState(browser_state),
       provider->GetSigninManagerForBrowserState(browser_state),
       EnhancedBookmarkModelFactory::GetForBrowserState(browser_state),
       provider->GetSyncServiceForBrowserState(browser_state),
-      browser_state->GetPrefs());
+      browser_state->GetPrefs()));
 }
 
 web::BrowserState* BookmarkServerClusterServiceFactory::GetBrowserStateToUse(

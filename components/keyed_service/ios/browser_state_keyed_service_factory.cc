@@ -77,10 +77,7 @@ void BrowserStateKeyedServiceFactory::BrowserStateDestroyed(
 scoped_ptr<KeyedService>
 BrowserStateKeyedServiceFactory::BuildServiceInstanceFor(
     base::SupportsUserData* context) const {
-  // TODO(isherman): The wrapped BuildServiceInstanceFor() should return a
-  // scoped_ptr as well.
-  return make_scoped_ptr(
-      BuildServiceInstanceFor(static_cast<web::BrowserState*>(context)));
+  return BuildServiceInstanceFor(static_cast<web::BrowserState*>(context));
 }
 
 bool BrowserStateKeyedServiceFactory::IsOffTheRecord(
