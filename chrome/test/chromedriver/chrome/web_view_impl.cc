@@ -578,8 +578,11 @@ Status WebViewImpl::SynthesizeScrollGesture(int x,
   base::DictionaryValue params;
   params.SetInteger("x", x);
   params.SetInteger("y", y);
-  params.SetInteger("xdistance", xoffset);
-  params.SetInteger("ydistance", yoffset);
+  // Chrome's synthetic scroll gesture is actually a "swipe" gesture, so the
+  // direction of the swipe is opposite to the scroll (i.e. a swipe up scrolls
+  // down, and a swipe left scrolls right).
+  params.SetInteger("xDistance", -xoffset);
+  params.SetInteger("yDistance", -yoffset);
   return client_->SendCommand("Input.synthesizeScrollGesture", params);
 }
 

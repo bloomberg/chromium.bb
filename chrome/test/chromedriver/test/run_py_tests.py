@@ -975,13 +975,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testTouchScrollElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/touch_action_tests.html'))
+    scroll_left = 'return document.body.scrollLeft;'
+    scroll_top = 'return document.body.scrollTop;'
+    self.assertEquals(0, self._driver.ExecuteScript(scroll_left))
+    self.assertEquals(0, self._driver.ExecuteScript(scroll_top))
     events = self._driver.FindElement('id', 'events')
-    self.assertTrue(events.IsDisplayed())
-    xoffset = 0
-    yoffset = self._driver.ExecuteScript('return window.screen.height * 2;')
-    self._driver.TouchScroll(events, xoffset, yoffset)
-    bottom = self._driver.FindElement('id', 'bottom')
-    self.assertTrue(bottom.IsDisplayed())
+    self._driver.TouchScroll(events, 47, 53)
+    self.assertEquals(47, self._driver.ExecuteScript(scroll_left))
+    self.assertEquals(53, self._driver.ExecuteScript(scroll_top))
 
   def testTouchDoubleTapElement(self):
     self._driver.Load(self.GetHttpUrlForFile(
