@@ -122,7 +122,6 @@ group("all_components") {
     "//components/web_resource",
     "//components/webcrypto",
     "//components/webdata/common",
-    "//components/webui_generator",
     "//components/wifi",
     "//components/wifi_sync",
   ]
@@ -156,7 +155,6 @@ group("all_components") {
     deps -= [
       "//components/history/content/browser",
       "//components/keyed_service/content",
-      "//components/webui_generator",
     ]
   }
 
@@ -397,9 +395,7 @@ test("components_browsertests") {
   data_deps = [ ":components_tests_pak" ]
 
   if (is_android) {
-    sources += [
-      "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
-    ]
+    sources += [ "test/android/browsertests_apk/components_browser_tests_jni_onload.cc" ]
     sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
     deps += [ "//testing/android/native_test:native_test_support" ]
     use_launcher = false

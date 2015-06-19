@@ -126,7 +126,6 @@ exec_script_whitelist = [
 
   "//components/domain_reliability/BUILD.gn",
   "//components/scheduler/scheduler.gni",
-  "//components/webui_generator/generator/wug.gni",
   "//content/browser/browser.gni",
   "//content/child/child.gni",
   "//content/common/common.gni",

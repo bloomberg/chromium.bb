@@ -47,12 +47,6 @@ class StartupUtils {
   // Sets initial locale in local settings.
   static void SetInitialLocale(const std::string& locale);
 
-  // Returns true if it is allowed to activate the new version of OOBE.
-  static bool IsNewOobeAllowed();
-
-  // Returns true if the new version of OOBE has been activated.
-  static bool IsNewOobeActivated();
-
   // Returns true if it is allowed to activate webview based signin flow.
   static bool IsWebviewSigninAllowed();
 

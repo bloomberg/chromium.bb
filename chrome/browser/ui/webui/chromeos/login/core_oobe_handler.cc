@@ -5,14 +5,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
 #include "ash/shell.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -23,7 +21,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_constants.h"
@@ -143,8 +140,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableDebuggingScreen);
   AddCallback("headerBarVisible",
               &CoreOobeHandler::HandleHeaderBarVisible);
-  AddCallback("switchToNewOobe",
-              &CoreOobeHandler::HandleSwitchToNewOobe);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -423,13 +418,6 @@ void CoreOobeHandler::HandleHeaderBarVisible() {
     login_display_host->SetStatusAreaVisible(true);
   if (ScreenLocker::default_screen_locker())
     ScreenLocker::default_screen_locker()->delegate()->OnHeaderBarVisible();
-}
-
-void CoreOobeHandler::HandleSwitchToNewOobe() {
-  if (!StartupUtils::IsNewOobeAllowed())
-    return;
-  g_browser_process->local_state()->SetBoolean(prefs::kNewOobe, true);
-  chrome::AttemptRestart();
 }
 
 void CoreOobeHandler::InitDemoModeDetection() {

@@ -62,7 +62,6 @@
         '../cloud_print/cloud_print.gyp:cloud_print_unittests',
         '../components/components.gyp:network_hints_browser',
         '../components/components.gyp:policy_templates',
-        '../components/components.gyp:webui_generator',
         '../components/components_tests.gyp:components_browsertests',
         '../components/components_tests.gyp:components_perftests',
         '../components/components_tests.gyp:components_unittests',

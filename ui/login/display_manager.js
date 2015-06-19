@@ -50,7 +50,6 @@
 /** @const */ var ACCELERATOR_APP_LAUNCH_BAILOUT = 'app_launch_bailout';
 /** @const */ var ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG =
     'app_launch_network_config';
-/** @const */ var ACCELERATOR_NEW_OOBE = 'new_oobe';
 /** @const */ var ACCELERATOR_TOGGLE_WEBVIEW_SIGNIN = 'toggle_webview_signin';
 /** @const */ var ACCELERATOR_TOGGLE_NEW_LOGIN_UI = 'toggle_new_login_ui';
 
@@ -404,8 +403,6 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('networkConfigRequest');
-      } else if (name == ACCELERATOR_NEW_OOBE) {
-        chrome.send('switchToNewOobe');
       } else if (name == ACCELERATOR_TOGGLE_WEBVIEW_SIGNIN) {
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_OOBE_ENROLLMENT)

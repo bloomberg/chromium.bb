@@ -69,7 +69,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/oobe/oobe_md_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
 
@@ -115,7 +114,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/oobe/oobe.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
 #include "chrome/browser/ui/webui/chromeos/certificate_manager_dialog_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
@@ -217,12 +215,6 @@ WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
 template<>
 WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
   return new chromeos::OobeUI(web_ui, url);
-}
-
-template <>
-WebUIController* NewWebUI<OobeMdUI>(WebUI* web_ui, const GURL& url) {
-  chromeos::Oobe::Register();
-  return new OobeMdUI(web_ui, url.host());
 }
 #endif
 
@@ -461,8 +453,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::NfcDebugUI>;
   if (url.host() == chrome::kChromeUIOobeHost)
     return &NewWebUI<chromeos::OobeUI>;
-  if (url.host() == chrome::kChromeUIOobeMdHost)
-    return &NewWebUI<OobeMdUI>;
   if (url.host() == chrome::kChromeUIPowerHost)
     return &NewWebUI<chromeos::PowerUI>;
   if (url.host() == chrome::kChromeUIProvidedFileSystemsHost)

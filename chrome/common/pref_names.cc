@@ -1882,9 +1882,6 @@ const char kLogoutStartedLast[] = "chromeos.logout-started";
 //   chrome/browser/chromeos/policy/consumer_management_stage.h
 const char kConsumerManagementStage[] = "consumer_management.stage";
 
-// A boolean pref. If set to true, new experimental OOBE UI is displayed.
-const char kNewOobe[] = "NewOobe";
-
 // A boolean pref. If set to true, experimental webview based signin flow
 // is deactivated.
 const char kWebviewSigninDisabled[] = "webview_signin_disabled";

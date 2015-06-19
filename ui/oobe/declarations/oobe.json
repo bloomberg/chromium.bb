@@ -1,7 +1,0 @@
-{
-  "comment": "Root OOBE element.",
-  "type": "oobe",
-  "events": [
-    { "name": "button_clicked" }
-  ]
-}

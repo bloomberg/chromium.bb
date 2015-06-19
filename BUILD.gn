@@ -436,7 +436,6 @@ group("both_gn_and_gyp") {
       "//chrome/test:chrome_app_unittests",
       "//cloud_print:cloud_print_unittests",
       "//components/network_hints/browser",
-      "//components/webui_generator",
       "//content/public/app:browser",
       "//content/public/app:child",
 

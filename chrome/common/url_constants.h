@@ -268,7 +268,6 @@ extern const char kChromeUIMobileSetupHost[];
 extern const char kChromeUINetworkHost[];
 extern const char kChromeUINfcDebugHost[];
 extern const char kChromeUIOobeHost[];
-extern const char kChromeUIOobeMdHost[];
 extern const char kChromeUIOSCreditsHost[];
 extern const char kChromeUIPowerHost[];
 extern const char kChromeUIProxySettingsHost[];

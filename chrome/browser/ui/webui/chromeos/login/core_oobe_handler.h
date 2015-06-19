@@ -111,7 +111,6 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleToggleResetScreen();
   void HandleEnableDebuggingScreen();
   void HandleHeaderBarVisible();
-  void HandleSwitchToNewOobe();
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();

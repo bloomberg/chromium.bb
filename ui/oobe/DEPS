@@ -1,6 +1,0 @@
-include_rules = [
-  "+base/strings",
-  "+content/public/browser",
-  "+grit/oobe_resources.h",
-  "+grit/oobe_resources_map.h",
-]

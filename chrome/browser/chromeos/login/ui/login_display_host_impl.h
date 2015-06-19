@@ -306,9 +306,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // True is subscribed as keyboard controller observer.
   bool is_observing_keyboard_;
 
-  // True if the host is showing a new version of OOBE screen.
-  bool is_new_oobe_;
-
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
   // during a login session and restored afterwards.
   scoped_ptr<aura::client::ScopedDragDropDisabler> scoped_drag_drop_disabler_;

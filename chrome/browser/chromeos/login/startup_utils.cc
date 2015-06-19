@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -59,7 +58,6 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kDeviceRegistered, -1);
   registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
-  registry->RegisterBooleanPref(prefs::kNewOobe, false);
   registry->RegisterBooleanPref(prefs::kWebviewSigninDisabled, false);
   registry->RegisterBooleanPref(prefs::kNewLoginUIPopup, false);
 }
@@ -225,17 +223,6 @@ void StartupUtils::SetInitialLocale(const std::string& locale) {
     SaveStringPreferenceForced(prefs::kInitialLocale, locale);
   else
     NOTREACHED();
-}
-
-// static
-bool StartupUtils::IsNewOobeAllowed() {
-  return extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV;
-}
-
-// static
-bool StartupUtils::IsNewOobeActivated() {
-  return g_browser_process->local_state()->GetBoolean(prefs::kNewOobe) &&
-      IsNewOobeAllowed();
 }
 
 }  // namespace chromeos
