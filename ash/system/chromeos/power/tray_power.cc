@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
@@ -29,6 +30,38 @@ using message_center::MessageCenter;
 using message_center::Notification;
 
 namespace ash {
+namespace {
+
+std::string GetNotificationStateString(
+    TrayPower::NotificationState notification_state) {
+  switch (notification_state) {
+    case TrayPower::NOTIFICATION_NONE:
+      return "none";
+    case TrayPower::NOTIFICATION_LOW_POWER:
+      return "low power";
+    case TrayPower::NOTIFICATION_CRITICAL:
+      return "critical power";
+  }
+  NOTREACHED() << "Unknown state " << notification_state;
+  return "Unknown state";
+}
+
+void LogBatteryForUsbCharger(TrayPower::NotificationState state,
+                             int battery_percent) {
+  LOG(WARNING) << "Showing " << GetNotificationStateString(state)
+               << " notification. USB charger is connected. "
+               << "Battery percentage: " << battery_percent << "%.";
+}
+
+void LogBatteryForNoCharger(TrayPower::NotificationState state,
+                            int remaining_minutes) {
+  LOG(WARNING) << "Showing " << GetNotificationStateString(state)
+               << " notification. No charger connected."
+               << " Remaining time: " << remaining_minutes << " minutes.";
+}
+
+}  // namespace
+
 namespace tray {
 
 // This view is used only for the tray.
@@ -211,16 +244,19 @@ bool TrayPower::UpdateNotificationStateForRemainingTime() {
     case NOTIFICATION_NONE:
       if (remaining_minutes <= kCriticalMinutes) {
         notification_state_ = NOTIFICATION_CRITICAL;
+        LogBatteryForNoCharger(notification_state_, remaining_minutes);
         return true;
       }
       if (remaining_minutes <= kLowPowerMinutes) {
         notification_state_ = NOTIFICATION_LOW_POWER;
+        LogBatteryForNoCharger(notification_state_, remaining_minutes);
         return true;
       }
       return false;
     case NOTIFICATION_LOW_POWER:
       if (remaining_minutes <= kCriticalMinutes) {
         notification_state_ = NOTIFICATION_CRITICAL;
+        LogBatteryForNoCharger(notification_state_, remaining_minutes);
         return true;
       }
       return false;
@@ -247,16 +283,19 @@ bool TrayPower::UpdateNotificationStateForRemainingPercentage() {
     case NOTIFICATION_NONE:
       if (remaining_percentage <= kCriticalPercentage) {
         notification_state_ = NOTIFICATION_CRITICAL;
+        LogBatteryForUsbCharger(notification_state_, remaining_percentage);
         return true;
       }
       if (remaining_percentage <= kLowPowerPercentage) {
         notification_state_ = NOTIFICATION_LOW_POWER;
+        LogBatteryForUsbCharger(notification_state_, remaining_percentage);
         return true;
       }
       return false;
     case NOTIFICATION_LOW_POWER:
       if (remaining_percentage <= kCriticalPercentage) {
         notification_state_ = NOTIFICATION_CRITICAL;
+        LogBatteryForUsbCharger(notification_state_, remaining_percentage);
         return true;
       }
       return false;
