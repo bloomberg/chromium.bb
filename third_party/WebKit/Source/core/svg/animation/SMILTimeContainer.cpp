@@ -84,6 +84,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation, SVGElement* target, 
     ASSERT(target);
     ASSERT(animation->hasValidAttributeName());
     ASSERT(animation->hasValidAttributeType());
+    ASSERT(animation->inActiveDocument());
 
 #if ENABLE(ASSERT)
     ASSERT(!m_preventScheduledAnimationsChanges);
@@ -169,6 +170,9 @@ bool SMILTimeContainer::isStarted() const
 void SMILTimeContainer::begin()
 {
     RELEASE_ASSERT(!m_beginTime);
+
+    if (!document().isActive())
+        return;
 
     if (!handleAnimationPolicy(RestartOnceTimerIfNotPaused))
         return;
@@ -426,6 +430,9 @@ void SMILTimeContainer::serviceAnimations(double monotonicAnimationStartTime)
 
 void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime)
 {
+    if (!document().isActive())
+        return;
+
 #if !ENABLE(OILPAN)
     DiscardScope discardScope(m_ownerSVGElement);
 #endif
@@ -446,6 +453,7 @@ void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapse
 
 SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 {
+    ASSERT(document().isActive());
     SMILTime earliestFireTime = SMILTime::unresolved();
 
 #if ENABLE(ASSERT)
