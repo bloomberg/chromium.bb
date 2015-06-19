@@ -8,6 +8,7 @@
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Partitions.h"
+#include "wtf/Threading.h"
 
 namespace blink {
 
@@ -36,9 +37,9 @@ void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionNa
     ASSERT(memoryStats->isValid);
     String dumpName;
     if (memoryStats->isDirectMap)
-        dumpName = String::format("partition_alloc/%s/directMap_%zu", partitionName, ++m_uid);
+        dumpName = String::format("partition_alloc/thread_%lu/%s/directMap_%lu", static_cast<unsigned long>(WTF::currentThread()), partitionName, static_cast<unsigned long>(++m_uid));
     else
-        dumpName = String::format("partition_alloc/%s/bucket_%zu", partitionName, static_cast<size_t>(memoryStats->bucketSlotSize));
+        dumpName = String::format("partition_alloc/thread_%lu/%s/bucket_%u", static_cast<unsigned long>(WTF::currentThread()), partitionName, static_cast<unsigned>(memoryStats->bucketSlotSize));
 
     WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
     allocatorDump->AddScalar("size", "bytes", memoryStats->residentBytes);
