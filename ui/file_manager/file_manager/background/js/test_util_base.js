@@ -73,6 +73,7 @@ test.util.TESTING_EXTENSION_IDS = [
   'oobinhbdbiehknkpbpejbbpdbkdjmoco',  // File Manager test
   'ejhcmmdhhpdhhgmifplfmjobgegbibkn',  // Gallery test
   'ljoplibgfehghmibaoaepfagnmbbfiga',  // Video Player test
+  'ddabbgbggambiildohfagdkliahiecfl',  // Audio Player test
 ];
 
 /**

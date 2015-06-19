@@ -12,6 +12,8 @@
  */
 var AUDIO_PLAYER_ICON = 'icons/audio-player-64.png';
 
+var AUDIO_PLAYER_APP_URL = 'audio_player.html';
+
 /**
  * Configuration of the audio player panel.
  * @type {Object}
@@ -35,7 +37,7 @@ var background = new BackgroundBase();
  * Wrapper of audio player window.
  * @type {SingletonAppWindowWrapper}
  */
-var audioPlayer = new SingletonAppWindowWrapper('audio_player.html',
+var audioPlayer = new SingletonAppWindowWrapper(AUDIO_PLAYER_APP_URL,
                                                 audioPlayerCreateOptions);
 
 /**
@@ -160,11 +162,9 @@ function open(playlist, reopen) {
   }).then(function() {
     audioPlayer.setIcon(AUDIO_PLAYER_ICON);
     audioPlayer.rawAppWindow.focus();
+    return AUDIO_PLAYER_APP_URL;
   }).catch(function(error) {
     console.error('Launch failed' + error.stack || error);
     return Promise.reject(error);
   });
 }
-
-// Register the test utils.
-test.util.registerRemoteTestUtils();
