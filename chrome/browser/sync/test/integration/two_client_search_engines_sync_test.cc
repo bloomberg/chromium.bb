@@ -25,14 +25,38 @@ class TwoClientSearchEnginesSyncTest : public SyncTest {
 };
 
 // TCM ID - 8898628.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Add) {
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2ETest_Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 
-  search_engines_helper::AddSearchEngine(0, 0);
+  // Note that a random seed is needed due to the E2E nature of the tests, and
+  // the synced data persisting in the server across tests.
+  int search_engine_seed = base::Time::Now().ToInternalValue();
+  search_engines_helper::AddSearchEngine(0, search_engine_seed);
+  ASSERT_TRUE(search_engines_helper::HasSearchEngine(0, search_engine_seed));
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::HasSearchEngine(1, search_engine_seed));
+}
+
+// TCM ID - 8898660.
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2ETest_Delete) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+
+  // Note that a random seed is needed due to the E2E nature of the tests, and
+  // the synced data persisting in the server across tests.
+  int search_engine_seed = base::Time::Now().ToInternalValue();
+  search_engines_helper::AddSearchEngine(0, search_engine_seed);
+  ASSERT_TRUE(search_engines_helper::HasSearchEngine(0, search_engine_seed));
+
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::HasSearchEngine(1, search_engine_seed));
+
+  search_engines_helper::DeleteSearchEngineBySeed(0, search_engine_seed);
+
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
+  ASSERT_FALSE(search_engines_helper::HasSearchEngine(1, search_engine_seed));
 }
 
 // TCM ID - 8912240.
@@ -44,8 +68,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, AddMultiple) {
   for (int i = 0; i < 3; ++i)
     search_engines_helper::AddSearchEngine(0, i);
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 }
 
 // TCM ID - 9011135.
@@ -63,8 +86,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Duplicates) {
   search_engines_helper::GetVerifierService()->Add(
       search_engines_helper::CreateTestTemplateURL(profile, 0,
           ASCIIToUTF16("somethingelse"), "newguid"));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 }
 
 // TCM ID - 9004201.
@@ -75,15 +97,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateKeyword) {
   search_engines_helper::AddSearchEngine(0, 0);
 
   // Change the keyword.
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 
   search_engines_helper::EditSearchEngine(0, ASCIIToUTF16("test0"),
       ASCIIToUTF16("test0"), ASCIIToUTF16("newkeyword"),
       "http://www.test0.com/");
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 }
 
 // TCM ID - 8894859.
@@ -93,16 +113,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateUrl) {
 
   search_engines_helper::AddSearchEngine(0, 0);
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 
   // Change the URL.
   search_engines_helper::EditSearchEngine(0, ASCIIToUTF16("test0"),
       ASCIIToUTF16("test0"), ASCIIToUTF16("test0"),
       "http://www.wikipedia.org/q=%s");
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 }
 
 // TCM ID - 8910490.
@@ -112,31 +130,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateName) {
 
   search_engines_helper::AddSearchEngine(0, 0);
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 
   // Change the short name.
   search_engines_helper::EditSearchEngine(0, ASCIIToUTF16("test0"),
       ASCIIToUTF16("New Name"), ASCIIToUTF16("test0"), "http://www.test0.com/");
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
-}
-
-// TCM ID - 8898660.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Delete) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
-
-  search_engines_helper::AddSearchEngine(0, 0);
-
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
-
-  search_engines_helper::DeleteSearchEngineBySeed(0, 0);
-
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 }
 
 // TCM ID - 9004196.
@@ -209,15 +209,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, SyncDefault) {
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 
   search_engines_helper::AddSearchEngine(0, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 
   // Change the default to the new search engine, sync, and ensure that it
   // changed in the second client. AllServicesMatch does a default search
   // provider check.
   search_engines_helper::ChangeDefaultSearchProvider(0, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 }
 
 // Ensure that we can change the search engine and immediately delete it
@@ -228,16 +226,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DeleteSyncedDefault) {
 
   search_engines_helper::AddSearchEngine(0, 0);
   search_engines_helper::AddSearchEngine(0, 1);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 
   search_engines_helper::ChangeDefaultSearchProvider(0, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 
   // Change the default on the first client and delete the old default.
   search_engines_helper::ChangeDefaultSearchProvider(0, 1);
   search_engines_helper::DeleteSearchEngineBySeed(0, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  ASSERT_TRUE(search_engines_helper::AllServicesMatch());
+  ASSERT_TRUE(search_engines_helper::AwaitAllServicesMatch());
 }

@@ -28,6 +28,10 @@ TemplateURLService* GetVerifierService();
 // Retrns true iff their user-visible fields match.
 bool ServiceMatchesVerifier(int profile_index);
 
+// Blocks until either AllServicesMatch returns true or a timeout occurs.
+// Returns true if AllServicesMatch succeeded, false if timeout.
+bool AwaitAllServicesMatch();
+
 // Returns true iff all TemplateURLServices match with the verifier.
 bool AllServicesMatch();
 
@@ -64,6 +68,10 @@ void DeleteSearchEngineBySeed(int profile_index, int seed);
 // |profile_index| to be the new default. Does the same to the verifier, if it
 // is used.
 void ChangeDefaultSearchProvider(int profile_index, int seed);
+
+// Returns true if the profile at |profile_index| has a search engine matching
+// the search engine generated with |seed|.
+bool HasSearchEngine(int profile_index, int seed);
 
 }  // namespace search_engines_helper
 

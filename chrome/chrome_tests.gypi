@@ -1406,6 +1406,8 @@
       'browser/sync/test/integration/apps_helper.h',
       'browser/sync/test/integration/autofill_helper.cc',
       'browser/sync/test/integration/autofill_helper.h',
+      'browser/sync/test/integration/await_match_status_change_checker.cc',
+      'browser/sync/test/integration/await_match_status_change_checker.h',
       'browser/sync/test/integration/bookmarks_helper.cc',
       'browser/sync/test/integration/bookmarks_helper.h',
       'browser/sync/test/integration/dictionary_helper.cc',

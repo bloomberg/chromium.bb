@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -53,8 +54,8 @@ bool TURLsMatch(const TemplateURL* turl1, const TemplateURL* turl2) {
 
   // Print some useful debug info.
   if (!result) {
-    LOG(ERROR) << "TemplateURLs did not match: " << GetTURLInfoString(turl1)
-               << " vs " << GetTURLInfoString(turl2);
+    DVLOG(1) << "TemplateURLs did not match: " << GetTURLInfoString(turl1)
+             << " vs " << GetTURLInfoString(turl2);
   }
 
   return result;
@@ -74,15 +75,15 @@ bool ServicesMatch(int profile_a, int profile_b) {
   GUIDToTURLMap b_turls = CreateGUIDToTURLMap(service_b);
 
   if (a_turls.size() != b_turls.size()) {
-    LOG(ERROR) << "Service a and b do not match in size: " << a_turls.size()
-               << " vs " << b_turls.size() << " respectively.";
+    DVLOG(1) << "Service a and b do not match in size: " << a_turls.size()
+             << " vs " << b_turls.size() << " respectively.";
     return false;
   }
 
   for (GUIDToTURLMap::iterator it = a_turls.begin();
        it != a_turls.end(); ++it) {
     if (b_turls.find(it->first) == b_turls.end()) {
-      LOG(ERROR) << "TURL GUID from a not found in b's TURLs: " << it->first;
+      DVLOG(1) << "TURL GUID from a not found in b's TURLs: " << it->first;
       return false;
     }
     if (!TURLsMatch(b_turls[it->first], it->second))
@@ -94,13 +95,13 @@ bool ServicesMatch(int profile_a, int profile_b) {
   CHECK(default_a);
   CHECK(default_b);
   if (!TURLsMatch(default_a, default_b)) {
-    LOG(ERROR) << "Default search providers do not match: A's default: "
-               << default_a->keyword() << " B's default: "
-               << default_b->keyword();
+    DVLOG(1) << "Default search providers do not match: A's default: "
+             << default_a->keyword()
+             << " B's default: " << default_b->keyword();
     return false;
   } else {
-    LOG(INFO) << "A had default with URL: " << default_a->url()
-              << " and keyword: " << default_a->keyword();
+    DVLOG(1) << "A had default with URL: " << default_a->url()
+             << " and keyword: " << default_a->keyword();
   }
 
   return true;
@@ -135,9 +136,9 @@ bool ServiceMatchesVerifier(int profile_index) {
   TemplateURLService::TemplateURLVector verifier_turls =
       verifier->GetTemplateURLs();
   if (verifier_turls.size() != other->GetTemplateURLs().size()) {
-    LOG(ERROR) << "Verifier and other service have a different count of TURLs: "
-               << verifier_turls.size() << " vs "
-               << other->GetTemplateURLs().size() << " respectively.";
+    DVLOG(1) << "Verifier and other service have a different count of TURLs: "
+             << verifier_turls.size() << " vs "
+             << other->GetTemplateURLs().size() << " respectively.";
     return false;
   }
 
@@ -148,8 +149,8 @@ bool ServiceMatchesVerifier(int profile_index) {
         verifier_turl->keyword());
 
     if (!other_turl) {
-      LOG(ERROR) << "The other service did not contain a TURL with keyword: "
-                 << verifier_turl->keyword();
+      DVLOG(1) << "The other service did not contain a TURL with keyword: "
+               << verifier_turl->keyword();
       return false;
     }
     if (!TURLsMatch(verifier_turl, other_turl))
@@ -159,17 +160,24 @@ bool ServiceMatchesVerifier(int profile_index) {
   return true;
 }
 
+bool AwaitAllServicesMatch() {
+  AwaitMatchStatusChangeChecker checker(base::Bind(AllServicesMatch),
+                                        "All search engines match");
+  checker.Wait();
+  return !checker.TimedOut();
+}
+
 bool AllServicesMatch() {
   // Use 0 as the baseline.
   if (test()->use_verifier() && !ServiceMatchesVerifier(0)) {
-    LOG(ERROR) << "TemplateURLService 0 does not match verifier.";
+    DVLOG(1) << "TemplateURLService 0 does not match verifier.";
     return false;
   }
 
   for (int it = 1; it < test()->num_clients(); ++it) {
     if (!ServicesMatch(0, it)) {
-      LOG(ERROR) << "TemplateURLService " << it << " does not match with "
-                 << "service 0.";
+      DVLOG(1) << "TemplateURLService " << it << " does not match with "
+               << "service 0.";
       return false;
     }
   }
@@ -263,6 +271,13 @@ void ChangeDefaultSearchProvider(int profile_index, int seed) {
     ASSERT_TRUE(verifier_turl);
     GetVerifierService()->SetUserSelectedDefaultSearchProvider(verifier_turl);
   }
+}
+
+bool HasSearchEngine(int profile_index, int seed) {
+  TemplateURLService* service = GetServiceForBrowserContext(profile_index);
+  base::string16 keyword(CreateKeyword(seed));
+  TemplateURL* turl = service->GetTemplateURLForKeyword(keyword);
+  return turl != nullptr;
 }
 
 }  // namespace search_engines_helper
