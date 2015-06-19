@@ -2,33 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/message_loop/message_loop_task_runner.h"
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace base {
 
-namespace {
-
-class MessageLoopProxyTest : public testing::Test {
+class MessageLoopTaskRunnerTest : public testing::Test {
  public:
-  MessageLoopProxyTest()
+  MessageLoopTaskRunnerTest()
       : current_loop_(new MessageLoop()),
         task_thread_("task_thread"),
-        thread_sync_(true, false) {
-  }
+        thread_sync_(true, false) {}
 
-  void DeleteCurrentMessageLoop() {
-    current_loop_.reset();
-  }
+  void DeleteCurrentMessageLoop() { current_loop_.reset(); }
 
  protected:
   void SetUp() override {
@@ -38,8 +35,8 @@ class MessageLoopProxyTest : public testing::Test {
 
     // Allow us to pause the |task_thread_|'s MessageLoop.
     task_thread_.message_loop()->PostTask(
-        FROM_HERE,
-        Bind(&MessageLoopProxyTest::BlockTaskThreadHelper, Unretained(this)));
+        FROM_HERE, Bind(&MessageLoopTaskRunnerTest::BlockTaskThreadHelper,
+                        Unretained(this)));
   }
 
   void TearDown() override {
@@ -55,16 +52,14 @@ class MessageLoopProxyTest : public testing::Test {
   // threading mistake sneaks into the PostTaskAndReplyRelay implementation.
   class LoopRecorder : public RefCountedThreadSafe<LoopRecorder> {
    public:
-    LoopRecorder(MessageLoop** run_on, MessageLoop** deleted_on,
+    LoopRecorder(MessageLoop** run_on,
+                 MessageLoop** deleted_on,
                  int* destruct_order)
         : run_on_(run_on),
           deleted_on_(deleted_on),
-          destruct_order_(destruct_order) {
-    }
+          destruct_order_(destruct_order) {}
 
-    void RecordRun() {
-      *run_on_ = MessageLoop::current();
-    }
+    void RecordRun() { *run_on_ = MessageLoop::current(); }
 
    private:
     friend class RefCountedThreadSafe<LoopRecorder>;
@@ -87,13 +82,9 @@ class MessageLoopProxyTest : public testing::Test {
     MessageLoop::current()->QuitWhenIdle();
   }
 
-  void UnblockTaskThread() {
-    thread_sync_.Signal();
-  }
+  void UnblockTaskThread() { thread_sync_.Signal(); }
 
-  void BlockTaskThreadHelper() {
-    thread_sync_.Wait();
-  }
+  void BlockTaskThreadHelper() { thread_sync_.Wait(); }
 
   static StaticAtomicSequenceNumber g_order;
 
@@ -104,9 +95,9 @@ class MessageLoopProxyTest : public testing::Test {
   base::WaitableEvent thread_sync_;
 };
 
-StaticAtomicSequenceNumber MessageLoopProxyTest::g_order;
+StaticAtomicSequenceNumber MessageLoopTaskRunnerTest::g_order;
 
-TEST_F(MessageLoopProxyTest, PostTaskAndReply_Basic) {
+TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_Basic) {
   MessageLoop* task_run_on = NULL;
   MessageLoop* task_deleted_on = NULL;
   int task_delete_order = -1;
@@ -119,9 +110,8 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReply_Basic) {
   scoped_refptr<LoopRecorder> reply_recoder =
       new LoopRecorder(&reply_run_on, &reply_deleted_on, &reply_delete_order);
 
-  ASSERT_TRUE(task_thread_.message_loop_proxy()->PostTaskAndReply(
-      FROM_HERE,
-      Bind(&RecordLoop, task_recoder),
+  ASSERT_TRUE(task_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE, Bind(&RecordLoop, task_recoder),
       Bind(&RecordLoopAndQuit, reply_recoder)));
 
   // Die if base::Bind doesn't retain a reference to the recorders.
@@ -140,7 +130,7 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReply_Basic) {
   EXPECT_LT(task_delete_order, reply_delete_order);
 }
 
-TEST_F(MessageLoopProxyTest, PostTaskAndReplyOnDeletedThreadDoesNotLeak) {
+TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReplyOnDeletedThreadDoesNotLeak) {
   MessageLoop* task_run_on = NULL;
   MessageLoop* task_deleted_on = NULL;
   int task_delete_order = -1;
@@ -153,16 +143,15 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReplyOnDeletedThreadDoesNotLeak) {
   scoped_refptr<LoopRecorder> reply_recoder =
       new LoopRecorder(&reply_run_on, &reply_deleted_on, &reply_delete_order);
 
-  // Grab a MessageLoopProxy to a dead MessageLoop.
-  scoped_refptr<MessageLoopProxy> task_loop_proxy =
-      task_thread_.message_loop_proxy();
+  // Grab a task runner to a dead MessageLoop.
+  scoped_refptr<SingleThreadTaskRunner> task_runner =
+      task_thread_.task_runner();
   UnblockTaskThread();
   task_thread_.Stop();
 
-  ASSERT_FALSE(task_loop_proxy->PostTaskAndReply(
-      FROM_HERE,
-      Bind(&RecordLoop, task_recoder),
-      Bind(&RecordLoopAndQuit, reply_recoder)));
+  ASSERT_FALSE(
+      task_runner->PostTaskAndReply(FROM_HERE, Bind(&RecordLoop, task_recoder),
+                                    Bind(&RecordLoopAndQuit, reply_recoder)));
 
   // The relay should have properly deleted its resources leaving us as the only
   // reference.
@@ -175,7 +164,7 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReplyOnDeletedThreadDoesNotLeak) {
   EXPECT_FALSE(reply_run_on);
 }
 
-TEST_F(MessageLoopProxyTest, PostTaskAndReply_SameLoop) {
+TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_SameLoop) {
   MessageLoop* task_run_on = NULL;
   MessageLoop* task_deleted_on = NULL;
   int task_delete_order = -1;
@@ -189,9 +178,8 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReply_SameLoop) {
       new LoopRecorder(&reply_run_on, &reply_deleted_on, &reply_delete_order);
 
   // Enqueue the relay.
-  ASSERT_TRUE(current_loop_->message_loop_proxy()->PostTaskAndReply(
-      FROM_HERE,
-      Bind(&RecordLoop, task_recoder),
+  ASSERT_TRUE(current_loop_->task_runner()->PostTaskAndReply(
+      FROM_HERE, Bind(&RecordLoop, task_recoder),
       Bind(&RecordLoopAndQuit, reply_recoder)));
 
   // Die if base::Bind doesn't retain a reference to the recorders.
@@ -209,7 +197,7 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReply_SameLoop) {
   EXPECT_LT(task_delete_order, reply_delete_order);
 }
 
-TEST_F(MessageLoopProxyTest, PostTaskAndReply_DeadReplyLoopDoesNotDelete) {
+TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_DeadReplyLoopDoesNotDelete) {
   // Annotate the scope as having memory leaks to suppress heapchecker reports.
   ANNOTATE_SCOPED_MEMORY_LEAK;
   MessageLoop* task_run_on = NULL;
@@ -225,9 +213,8 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReply_DeadReplyLoopDoesNotDelete) {
       new LoopRecorder(&reply_run_on, &reply_deleted_on, &reply_delete_order);
 
   // Enqueue the relay.
-  task_thread_.message_loop_proxy()->PostTaskAndReply(
-      FROM_HERE,
-      Bind(&RecordLoop, task_recoder),
+  task_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE, Bind(&RecordLoop, task_recoder),
       Bind(&RecordLoopAndQuit, reply_recoder));
 
   // Die if base::Bind doesn't retain a reference to the recorders.
@@ -261,6 +248,111 @@ TEST_F(MessageLoopProxyTest, PostTaskAndReply_DeadReplyLoopDoesNotDelete) {
   // http://crbug.com/86301.
 }
 
-}  // namespace
+class MessageLoopTaskRunnerThreadingTest : public testing::Test {
+ public:
+  void Release() const {
+    AssertOnIOThread();
+    Quit();
+  }
+
+  void Quit() const {
+    loop_.PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+  }
+
+  void AssertOnIOThread() const {
+    ASSERT_TRUE(io_thread_->task_runner()->BelongsToCurrentThread());
+    ASSERT_EQ(io_thread_->task_runner(), ThreadTaskRunnerHandle::Get());
+  }
+
+  void AssertOnFileThread() const {
+    ASSERT_TRUE(file_thread_->task_runner()->BelongsToCurrentThread());
+    ASSERT_EQ(file_thread_->task_runner(), ThreadTaskRunnerHandle::Get());
+  }
+
+ protected:
+  void SetUp() override {
+    io_thread_.reset(new Thread("MessageLoopTaskRunnerThreadingTest_IO"));
+    file_thread_.reset(new Thread("MessageLoopTaskRunnerThreadingTest_File"));
+    io_thread_->Start();
+    file_thread_->Start();
+  }
+
+  void TearDown() override {
+    io_thread_->Stop();
+    file_thread_->Stop();
+  }
+
+  static void BasicFunction(MessageLoopTaskRunnerThreadingTest* test) {
+    test->AssertOnFileThread();
+    test->Quit();
+  }
+
+  static void AssertNotRun() { FAIL() << "Callback Should not get executed."; }
+
+  class DeletedOnFile {
+   public:
+    explicit DeletedOnFile(MessageLoopTaskRunnerThreadingTest* test)
+        : test_(test) {}
+
+    ~DeletedOnFile() {
+      test_->AssertOnFileThread();
+      test_->Quit();
+    }
+
+   private:
+    MessageLoopTaskRunnerThreadingTest* test_;
+  };
+
+  scoped_ptr<Thread> io_thread_;
+  scoped_ptr<Thread> file_thread_;
+
+ private:
+  mutable MessageLoop loop_;
+};
+
+TEST_F(MessageLoopTaskRunnerThreadingTest, Release) {
+  EXPECT_TRUE(io_thread_->task_runner()->ReleaseSoon(FROM_HERE, this));
+  MessageLoop::current()->Run();
+}
+
+TEST_F(MessageLoopTaskRunnerThreadingTest, Delete) {
+  DeletedOnFile* deleted_on_file = new DeletedOnFile(this);
+  EXPECT_TRUE(
+      file_thread_->task_runner()->DeleteSoon(FROM_HERE, deleted_on_file));
+  MessageLoop::current()->Run();
+}
+
+TEST_F(MessageLoopTaskRunnerThreadingTest, PostTask) {
+  EXPECT_TRUE(file_thread_->task_runner()->PostTask(
+      FROM_HERE, Bind(&MessageLoopTaskRunnerThreadingTest::BasicFunction,
+                      Unretained(this))));
+  MessageLoop::current()->Run();
+}
+
+TEST_F(MessageLoopTaskRunnerThreadingTest, PostTaskAfterThreadExits) {
+  scoped_ptr<Thread> test_thread(
+      new Thread("MessageLoopTaskRunnerThreadingTest_Dummy"));
+  test_thread->Start();
+  scoped_refptr<SingleThreadTaskRunner> task_runner =
+      test_thread->task_runner();
+  test_thread->Stop();
+
+  bool ret = task_runner->PostTask(
+      FROM_HERE, Bind(&MessageLoopTaskRunnerThreadingTest::AssertNotRun));
+  EXPECT_FALSE(ret);
+}
+
+TEST_F(MessageLoopTaskRunnerThreadingTest, PostTaskAfterThreadIsDeleted) {
+  scoped_refptr<SingleThreadTaskRunner> task_runner;
+  {
+    scoped_ptr<Thread> test_thread(
+        new Thread("MessageLoopTaskRunnerThreadingTest_Dummy"));
+    test_thread->Start();
+    task_runner = test_thread->task_runner();
+  }
+  bool ret = task_runner->PostTask(
+      FROM_HERE, Bind(&MessageLoopTaskRunnerThreadingTest::AssertNotRun));
+  EXPECT_FALSE(ret);
+}
 
 }  // namespace base

@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy_impl.h"
 #include "base/message_loop/message_loop_test.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"

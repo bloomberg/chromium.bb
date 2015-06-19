@@ -170,7 +170,7 @@ MessageLoop::~MessageLoop() {
   // Tell the incoming queue that we are dying.
   incoming_task_queue_->WillDestroyCurrentMessageLoop();
   incoming_task_queue_ = NULL;
-  message_loop_proxy_ = NULL;
+  task_runner_ = NULL;
 
   // OK, now make it so that no one can find us.
   lazy_tls_ptr.Pointer()->Set(NULL);
@@ -257,27 +257,27 @@ void MessageLoop::RemoveDestructionObserver(
 void MessageLoop::PostTask(
     const tracked_objects::Location& from_here,
     const Closure& task) {
-  message_loop_proxy_->PostTask(from_here, task);
+  task_runner_->PostTask(from_here, task);
 }
 
 void MessageLoop::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const Closure& task,
     TimeDelta delay) {
-  message_loop_proxy_->PostDelayedTask(from_here, task, delay);
+  task_runner_->PostDelayedTask(from_here, task, delay);
 }
 
 void MessageLoop::PostNonNestableTask(
     const tracked_objects::Location& from_here,
     const Closure& task) {
-  message_loop_proxy_->PostNonNestableTask(from_here, task);
+  task_runner_->PostNonNestableTask(from_here, task);
 }
 
 void MessageLoop::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const Closure& task,
     TimeDelta delay) {
-  message_loop_proxy_->PostNonNestableDelayedTask(from_here, task, delay);
+  task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
 }
 
 void MessageLoop::Run() {
@@ -386,8 +386,7 @@ MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
       message_histogram_(NULL),
       run_loop_(NULL),
       incoming_task_queue_(new internal::IncomingTaskQueue(this)),
-      message_loop_proxy_(
-          new internal::MessageLoopProxyImpl(incoming_task_queue_)) {
+      task_runner_(new internal::MessageLoopTaskRunner(incoming_task_queue_)) {
   // If type is TYPE_CUSTOM non-null pump_factory must be given.
   DCHECK_EQ(type_ == TYPE_CUSTOM, !pump_factory_.is_null());
 }
@@ -403,9 +402,8 @@ void MessageLoop::BindToCurrentThread() {
   lazy_tls_ptr.Pointer()->Set(this);
 
   incoming_task_queue_->StartScheduling();
-  message_loop_proxy_->BindToCurrentThread();
-  thread_task_runner_handle_.reset(
-      new ThreadTaskRunnerHandle(message_loop_proxy_));
+  task_runner_->BindToCurrentThread();
+  thread_task_runner_handle_.reset(new ThreadTaskRunnerHandle(task_runner_));
 }
 
 void MessageLoop::RunHandler() {

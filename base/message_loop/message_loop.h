@@ -16,8 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/incoming_task_queue.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/message_loop/message_loop_proxy_impl.h"
+#include "base/message_loop/message_loop_task_runner.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/observer_list.h"
@@ -296,19 +295,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   }
   const std::string& thread_name() const { return thread_name_; }
 
-  // Gets the message loop proxy associated with this message loop.
-  //
-  // NOTE: Deprecated; prefer task_runner() and the TaskRunner interfaces
-  scoped_refptr<MessageLoopProxy> message_loop_proxy() {
-    return message_loop_proxy_;
-  }
-
   // Gets the TaskRunner associated with this message loop.
   // TODO(skyostil): Change this to return a const reference to a refptr
   // once the internal type matches what is being returned (crbug.com/465354).
-  scoped_refptr<SingleThreadTaskRunner> task_runner() {
-    return message_loop_proxy_;
-  }
+  scoped_refptr<SingleThreadTaskRunner> task_runner() { return task_runner_; }
 
   // Enables or disables the recursive task processing. This happens in the case
   // of recursive message loops. Some unwanted message loop may occurs when
@@ -531,8 +521,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   scoped_refptr<internal::IncomingTaskQueue> incoming_task_queue_;
 
-  // The message loop proxy associated with this message loop.
-  scoped_refptr<internal::MessageLoopProxyImpl> message_loop_proxy_;
+  // The task runner associated with this message loop.
+  scoped_refptr<internal::MessageLoopTaskRunner> task_runner_;
   scoped_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
   template <class T, class R> friend class base::subtle::DeleteHelperInternal;

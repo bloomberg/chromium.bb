@@ -237,6 +237,5 @@ TEST_F(ThreadTest, CleanUp) {
 
 TEST_F(ThreadTest, ThreadNotStarted) {
   Thread a("Inert");
-  EXPECT_EQ(nullptr, a.message_loop_proxy());
   EXPECT_EQ(nullptr, a.task_runner());
 }
