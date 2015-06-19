@@ -36,8 +36,11 @@ class WebMemoryAllocatorDumpImpl : public blink::WebMemoryAllocatorDump {
                          const char* units,
                          const blink::WebString& value);
 
+  virtual blink::WebMemoryAllocatorDumpGuid guid() const;
+
  private:
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump_;  // Not owned.
+  blink::WebMemoryAllocatorDumpGuid guid_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMemoryAllocatorDumpImpl);
 };

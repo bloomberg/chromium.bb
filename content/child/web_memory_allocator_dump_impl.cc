@@ -10,7 +10,8 @@ namespace content {
 
 WebMemoryAllocatorDumpImpl::WebMemoryAllocatorDumpImpl(
     base::trace_event::MemoryAllocatorDump* memory_allocator_dump)
-    : memory_allocator_dump_(memory_allocator_dump) {
+    : memory_allocator_dump_(memory_allocator_dump),
+      guid_(memory_allocator_dump->guid().ToUint64()) {
 }
 
 WebMemoryAllocatorDumpImpl::~WebMemoryAllocatorDumpImpl() {
@@ -32,5 +33,9 @@ void WebMemoryAllocatorDumpImpl::AddString(const char* name,
                                            const char* units,
                                            const blink::WebString& value) {
   memory_allocator_dump_->AddString(name, units, value.utf8());
+}
+
+blink::WebMemoryAllocatorDumpGuid WebMemoryAllocatorDumpImpl::guid() const {
+  return guid_;
 }
 }  // namespace content

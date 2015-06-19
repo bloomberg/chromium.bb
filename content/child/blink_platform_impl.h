@@ -137,6 +137,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
   virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
   virtual blink::WebProcessMemoryDump* createProcessMemoryDump();
+  virtual blink::Platform::WebMemoryAllocatorDumpGuid
+  createWebMemoryAllocatorDumpGuid(const blink::WebString& guidStr);
 
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebString queryLocalizedString(

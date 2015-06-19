@@ -29,6 +29,25 @@ WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
   // Get a MemoryAllocatorDump from the base/ object.
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
       process_memory_dump_->CreateAllocatorDump(absolute_name.utf8());
+
+  return createWebMemoryAllocatorDump(memory_allocator_dump);
+}
+
+blink::WebMemoryAllocatorDump*
+WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
+    const blink::WebString& absolute_name,
+    blink::WebMemoryAllocatorDumpGuid guid) {
+  // Get a MemoryAllocatorDump from the base/ object with given guid.
+  base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
+      process_memory_dump_->CreateAllocatorDump(
+          absolute_name.utf8(),
+          base::trace_event::MemoryAllocatorDumpGuid(guid));
+  return createWebMemoryAllocatorDump(memory_allocator_dump);
+}
+
+blink::WebMemoryAllocatorDump*
+WebProcessMemoryDumpImpl::createWebMemoryAllocatorDump(
+    base::trace_event::MemoryAllocatorDump* memory_allocator_dump) {
   if (!memory_allocator_dump)
     return nullptr;
 
@@ -40,7 +59,6 @@ WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
   // |web_memory_allocator_dumpd_impl|.
   memory_allocator_dumps_.set(memory_allocator_dump,
                               make_scoped_ptr(web_memory_allocator_dump_impl));
-
   return web_memory_allocator_dump_impl;
 }
 
@@ -95,6 +113,23 @@ void WebProcessMemoryDumpImpl::takeAllDumpsFrom(
   }
   DCHECK_EQ(expected_final_size, memory_allocator_dumps_.size());
   DCHECK(other_impl->memory_allocator_dumps_.empty());
+}
+
+void WebProcessMemoryDumpImpl::AddOwnershipEdge(
+    blink::WebMemoryAllocatorDumpGuid source,
+    blink::WebMemoryAllocatorDumpGuid target,
+    int importance) {
+  process_memory_dump_->AddOwnershipEdge(
+      base::trace_event::MemoryAllocatorDumpGuid(source),
+      base::trace_event::MemoryAllocatorDumpGuid(target), importance);
+}
+
+void WebProcessMemoryDumpImpl::AddOwnershipEdge(
+    blink::WebMemoryAllocatorDumpGuid source,
+    blink::WebMemoryAllocatorDumpGuid target) {
+  process_memory_dump_->AddOwnershipEdge(
+      base::trace_event::MemoryAllocatorDumpGuid(source),
+      base::trace_event::MemoryAllocatorDumpGuid(target));
 }
 
 }  // namespace content

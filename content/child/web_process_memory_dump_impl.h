@@ -41,10 +41,18 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   // blink::WebProcessMemoryDump implementation.
   virtual blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
       const blink::WebString& absolute_name);
+  virtual blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
+      const blink::WebString& absolute_name,
+      blink::WebMemoryAllocatorDumpGuid guid);
   virtual blink::WebMemoryAllocatorDump* getMemoryAllocatorDump(
       const blink::WebString& absolute_name) const;
   virtual void clear();
   virtual void takeAllDumpsFrom(blink::WebProcessMemoryDump* other);
+  virtual void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
+                                blink::WebMemoryAllocatorDumpGuid target,
+                                int importance);
+  virtual void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
+                                blink::WebMemoryAllocatorDumpGuid target);
 
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {
     return process_memory_dump_;
@@ -52,6 +60,9 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebProcessMemoryDumpImplTest, IntegrationTest);
+
+  blink::WebMemoryAllocatorDump* createWebMemoryAllocatorDump(
+      base::trace_event::MemoryAllocatorDump* memory_allocator_dump);
 
   // Only for the case of ProcessMemoryDump being owned (i.e. the default ctor).
   scoped_ptr<base::trace_event::ProcessMemoryDump> owned_process_memory_dump_;

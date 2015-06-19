@@ -102,6 +102,22 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
   traced_value = new base::trace_event::TracedValue();
   wpmd1->process_memory_dump()->AsValueInto(traced_value.get());
 
+  // Check if a WebMemoryAllocatorDump created with guid, has correct guid.
+  blink::WebMemoryAllocatorDumpGuid guid =
+      base::trace_event::MemoryAllocatorDumpGuid("id_1").ToUint64();
+  auto wmad3 = wpmd1->createMemoryAllocatorDump("1/3", guid);
+  ASSERT_EQ(wmad3->guid(), guid);
+  ASSERT_EQ(wmad3, wpmd1->getMemoryAllocatorDump("1/3"));
+
+  // Check that AddOwnershipEdge is propagated correctly.
+  auto wmad4 = wpmd1->createMemoryAllocatorDump("1/4");
+  wpmd1->AddOwnershipEdge(wmad4->guid(), guid);
+  auto allocator_dumps_edges =
+      wpmd1->process_memory_dump()->allocator_dumps_edges();
+  ASSERT_EQ(1u, allocator_dumps_edges.size());
+  ASSERT_EQ(wmad4->guid(), allocator_dumps_edges[0].source.ToUint64());
+  ASSERT_EQ(guid, allocator_dumps_edges[0].target.ToUint64());
+
   wpmd1.reset();
 }
 
