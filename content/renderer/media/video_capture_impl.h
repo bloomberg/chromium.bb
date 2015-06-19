@@ -109,15 +109,13 @@ class CONTENT_EXPORT VideoCaptureImpl
                        int buffer_id) override;
   void OnBufferDestroyed(int buffer_id) override;
   void OnBufferReceived(int buffer_id,
+                        base::TimeTicks timestamp,
+                        const base::DictionaryValue& metadata,
+                        media::VideoFrame::Format pixel_format,
+                        media::VideoFrame::StorageType storage_type,
                         const gfx::Size& coded_size,
                         const gfx::Rect& visible_rect,
-                        base::TimeTicks timestamp,
-                        const base::DictionaryValue& metadata) override;
-  void OnMailboxBufferReceived(int buffer_id,
-                               const gpu::MailboxHolder& mailbox_holder,
-                               const gfx::Size& packed_frame_size,
-                               base::TimeTicks timestamp,
-                               const base::DictionaryValue& metadata) override;
+                        const gpu::MailboxHolder& mailbox_holder) override;
   void OnStateChanged(VideoCaptureState state) override;
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) override;

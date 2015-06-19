@@ -134,22 +134,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
                     base::SharedMemoryHandle handle,
                     int length,
                     int buffer_id));
-  MOCK_METHOD2(OnBufferFreed,
-               void(int device_id, int buffer_id));
-  MOCK_METHOD6(OnBufferFilled,
-               void(int device_id,
-                    int buffer_id,
-                    const gfx::Size& coded_size,
-                    const gfx::Rect& visible_rect,
-                    const base::TimeTicks& timestamp,
-                    const base::DictionaryValue& metadata));
-  MOCK_METHOD6(OnMailboxBufferFilled,
-               void(int device_id,
-                    int buffer_id,
-                    const gpu::MailboxHolder& mailbox_holder,
-                    const gfx::Size& packed_frame_size,
-                    const base::TimeTicks& timestamp,
-                    const base::DictionaryValue& metadata));
+  MOCK_METHOD2(OnBufferFreed, void(int device_id, int buffer_id));
+  MOCK_METHOD1(OnBufferFilled, void(int device_id));
   MOCK_METHOD2(OnStateChanged, void(int device_id, VideoCaptureState state));
 
   // Use class DumpVideo to write I420 video to file.
@@ -200,8 +186,6 @@ class MockVideoCaptureHost : public VideoCaptureHost {
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnNewBufferCreatedDispatch)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_FreeBuffer, OnBufferFreedDispatch)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferFilledDispatch)
-      IPC_MESSAGE_HANDLER(VideoCaptureMsg_MailboxBufferReady,
-                          OnMailboxBufferFilledDispatch)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnStateChangedDispatch)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -244,19 +228,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
       dumper_.NewVideoFrame(dib->memory());
     }
 
-    OnBufferFilled(params.device_id, params.buffer_id, params.coded_size,
-                   params.visible_rect, params.timestamp, params.metadata);
-    if (return_buffers_) {
-      VideoCaptureHost::OnRendererFinishedWithBuffer(
-          params.device_id, params.buffer_id, 0, -1.0);
-    }
-  }
-
-  void OnMailboxBufferFilledDispatch(
-      const VideoCaptureMsg_MailboxBufferReady_Params& params) {
-    OnMailboxBufferFilled(params.device_id, params.buffer_id,
-                          params.mailbox_holder, params.packed_frame_size,
-                          params.timestamp, params.metadata);
+    OnBufferFilled(params.device_id);
     if (return_buffers_) {
       VideoCaptureHost::OnRendererFinishedWithBuffer(
           params.device_id, params.buffer_id, 0, -1.0);
@@ -404,7 +376,7 @@ class VideoCaptureHostTest : public testing::Test {
         .WillRepeatedly(Return());
 
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _, _))
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()));
 
@@ -438,7 +410,7 @@ class VideoCaptureHostTest : public testing::Test {
         .Times(AnyNumber()).WillRepeatedly(Return());
 
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _, _, _, _))
+    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _, _, _, _, _, _, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()));
 
@@ -470,7 +442,7 @@ class VideoCaptureHostTest : public testing::Test {
 
   void NotifyPacketReady() {
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _, _))
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()))
         .RetiresOnSaturation();

@@ -9,19 +9,9 @@
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 
-namespace base {
-class DictionaryValue;
-class TimeTicks;
-}  // namespace base
-
-namespace gfx {
-class Rect;
-class Size;
-}  // namespace gfx
-
-namespace gpu {
-struct MailboxHolder;
-}  // namespace gpu
+namespace media {
+class VideoFrame;
+}  // namespace media
 
 namespace content {
 
@@ -45,22 +35,11 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   virtual void OnBufferDestroyed(VideoCaptureControllerID id,
                                  int buffer_id) = 0;
 
-  // A buffer has been filled with I420 video.
+  // A buffer has been filled with a captured VideoFrame.
   virtual void OnBufferReady(VideoCaptureControllerID id,
                              int buffer_id,
-                             const gfx::Size& coded_size,
-                             const gfx::Rect& visible_rect,
-                             const base::TimeTicks& timestamp,
-                             scoped_ptr<base::DictionaryValue> metadata) = 0;
-
-  // A texture mailbox buffer has been filled with data.
-  virtual void OnMailboxBufferReady(
-      VideoCaptureControllerID id,
-      int buffer_id,
-      const gpu::MailboxHolder& mailbox_holder,
-      const gfx::Size& packed_frame_size,
-      const base::TimeTicks& timestamp,
-      scoped_ptr<base::DictionaryValue> metadata) = 0;
+                             const scoped_refptr<media::VideoFrame>& frame,
+                             const base::TimeTicks& timestamp) = 0;
 
   // The capture session has ended and no more frames will be sent.
   virtual void OnEnded(VideoCaptureControllerID id) = 0;

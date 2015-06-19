@@ -84,10 +84,23 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     STORAGE_OWNED_MEMORY = 3,  // VideoFrame has allocated its own data buffer.
     STORAGE_SHMEM = 4,  // Pixels are backed by Shared Memory.
 #if defined(OS_LINUX)
+    // TODO(mcasas): Consider turning this type into STORAGE_NATIVE or another
+    // meaningful name and handle it appropriately in all cases.
     STORAGE_DMABUFS = 5,  // Each plane is stored into a DmaBuf.
 #endif
 #if defined(VIDEO_HOLE)
-    STORAGE_HOLE = 6,  // Opaque storage.
+    // Indicates protected media that needs to be directly rendered to hw. It
+    // is, in principle, platform independent, see http://crbug.com/323157 and
+    // https://groups.google.com/a/google.com/d/topic/chrome-gpu/eIM1RwarUmk/discussion
+    STORAGE_HOLE = 6,
+#endif
+
+#if defined(VIDEO_HOLE)
+    STORAGE_LAST = STORAGE_HOLE,
+#elif defined(OS_LINUX)
+    STORAGE_LAST = STORAGE_DMABUFS,
+#else
+    STORAGE_LAST = STORAGE_SHMEM
 #endif
   };
 

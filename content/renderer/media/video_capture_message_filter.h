@@ -20,7 +20,6 @@
 #include "media/base/video_capture_types.h"
 
 struct VideoCaptureMsg_BufferReady_Params;
-struct VideoCaptureMsg_MailboxBufferReady_Params;
 
 namespace gpu {
 struct MailboxHolder;
@@ -39,21 +38,16 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
 
     virtual void OnBufferDestroyed(int buffer_id) = 0;
 
-    // Called when a video frame buffer is received from the browser process.
-    virtual void OnBufferReceived(
-        int buffer_id,
-        const gfx::Size& coded_size,
-        const gfx::Rect& visible_rect,
-        base::TimeTicks timestamp,
-        const base::DictionaryValue& metadata) = 0;
-
-    // Called when a video mailbox buffer is received from the browser process.
-    virtual void OnMailboxBufferReceived(
-        int buffer_id,
-        const gpu::MailboxHolder& mailbox_holder,
-        const gfx::Size& packed_frame_size,
-        base::TimeTicks timestamp,
-        const base::DictionaryValue& metadata) = 0;
+    // Called when a buffer referencing a captured VideoFrame is received from
+    // Browser process.
+    virtual void OnBufferReceived(int buffer_id,
+                                  base::TimeTicks timestamp,
+                                  const base::DictionaryValue& metadata,
+                                  media::VideoFrame::Format pixel_format,
+                                  media::VideoFrame::StorageType storage_type,
+                                  const gfx::Size& coded_size,
+                                  const gfx::Rect& visible_rect,
+                                  const gpu::MailboxHolder& mailbox_holder) = 0;
 
     // Called when state of a video capture device has changed in the browser
     // process.
@@ -110,10 +104,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
 
   // Receive a filled buffer from browser process.
   void OnBufferReceived(const VideoCaptureMsg_BufferReady_Params& params);
-
-  // Receive a filled texture mailbox buffer from browser process.
-  void OnMailboxBufferReceived(
-      const VideoCaptureMsg_MailboxBufferReady_Params& params);
 
   // State of browser process' video capture device has changed.
   void OnDeviceStateChanged(int device_id, VideoCaptureState state);

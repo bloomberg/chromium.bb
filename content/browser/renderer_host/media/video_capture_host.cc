@@ -78,10 +78,8 @@ void VideoCaptureHost::OnBufferDestroyed(VideoCaptureControllerID controller_id,
 void VideoCaptureHost::OnBufferReady(
     VideoCaptureControllerID controller_id,
     int buffer_id,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const base::TimeTicks& timestamp,
-    scoped_ptr<base::DictionaryValue> metadata) {
+    const scoped_refptr<media::VideoFrame>& video_frame,
+    const base::TimeTicks& timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (entries_.find(controller_id) == entries_.end())
     return;
@@ -89,35 +87,19 @@ void VideoCaptureHost::OnBufferReady(
   VideoCaptureMsg_BufferReady_Params params;
   params.device_id = controller_id;
   params.buffer_id = buffer_id;
-  params.coded_size = coded_size;
-  params.visible_rect = visible_rect;
   params.timestamp = timestamp;
-  if (metadata)
-    params.metadata.Swap(metadata.get());
+  video_frame->metadata()->MergeInternalValuesInto(&params.metadata);
+  params.pixel_format = video_frame->format();
+  params.storage_type = video_frame->storage_type();
+  params.coded_size = video_frame->coded_size();
+  params.visible_rect = video_frame->visible_rect();
+  if (video_frame->HasTextures()) {
+    DCHECK_EQ(media::VideoFrame::NumPlanes(video_frame->format()), 1u)
+        << "Multiplanar textures not supported";
+    params.mailbox_holder = video_frame->mailbox_holder(0);
+  }
+
   Send(new VideoCaptureMsg_BufferReady(params));
-}
-
-void VideoCaptureHost::OnMailboxBufferReady(
-    VideoCaptureControllerID controller_id,
-    int buffer_id,
-    const gpu::MailboxHolder& mailbox_holder,
-    const gfx::Size& packed_frame_size,
-    const base::TimeTicks& timestamp,
-    scoped_ptr<base::DictionaryValue> metadata) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (entries_.find(controller_id) == entries_.end())
-    return;
-
-  VideoCaptureMsg_MailboxBufferReady_Params params;
-  params.device_id = controller_id;
-  params.buffer_id = buffer_id;
-  params.mailbox_holder = mailbox_holder;
-  params.packed_frame_size = packed_frame_size;
-  params.timestamp = timestamp;
-  if (metadata)
-    params.metadata.Swap(metadata.get());
-  Send(new VideoCaptureMsg_MailboxBufferReady(params));
 }
 
 void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {

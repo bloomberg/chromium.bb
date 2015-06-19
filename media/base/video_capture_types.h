@@ -54,7 +54,8 @@ enum ResolutionChangePolicy {
   // exceeding the maximum dimensions specified.
   RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
 
-  RESOLUTION_POLICY_LAST,
+  // Must always be equal to largest entry in the enum.
+  RESOLUTION_POLICY_LAST = RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
 };
 
 // Some drivers use rational time per frame instead of float frame rate, this

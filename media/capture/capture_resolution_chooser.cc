@@ -34,8 +34,6 @@ gfx::Size ComputeMinimumCaptureSize(
     }
     case RESOLUTION_POLICY_ANY_WITHIN_LIMIT:
       return gfx::Size(1, 1);
-    case RESOLUTION_POLICY_LAST:
-      break;
   }
   NOTREACHED();
   return gfx::Size(1, 1);
@@ -75,6 +73,7 @@ CaptureResolutionChooser::CaptureResolutionChooser(
   DCHECK_LT(0, max_frame_size_.height());
   DCHECK_LE(min_frame_size_.width(), max_frame_size_.width());
   DCHECK_LE(min_frame_size_.height(), max_frame_size_.height());
+  DCHECK_LE(resolution_change_policy_, RESOLUTION_POLICY_LAST);
 
   RecomputeCaptureSize();
 }
@@ -104,9 +103,6 @@ void CaptureResolutionChooser::SetSourceSize(const gfx::Size& source_size) {
           source_size, min_frame_size_, max_frame_size_);
       RecomputeCaptureSize();
       break;
-
-    case RESOLUTION_POLICY_LAST:
-      NOTREACHED();
   }
 }
 

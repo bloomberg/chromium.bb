@@ -86,17 +86,8 @@ class CONTENT_EXPORT VideoCaptureHost
                          int buffer_id) override;
   void OnBufferReady(VideoCaptureControllerID id,
                      int buffer_id,
-                     const gfx::Size& coded_size,
-                     const gfx::Rect& visible_rect,
-                     const base::TimeTicks& timestamp,
-                     scoped_ptr<base::DictionaryValue> metadata) override;
-  void OnMailboxBufferReady(
-      VideoCaptureControllerID id,
-      int buffer_id,
-      const gpu::MailboxHolder& mailbox_holder,
-      const gfx::Size& packed_frame_size,
-      const base::TimeTicks& timestamp,
-      scoped_ptr<base::DictionaryValue> metadata) override;
+                     const scoped_refptr<media::VideoFrame>& frame,
+                     const base::TimeTicks& timestamp) override;
   void OnEnded(VideoCaptureControllerID id) override;
 
  private:

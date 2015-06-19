@@ -303,8 +303,8 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
 
   int count = 0;
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
-    if (!frame->metadata()->HasKey(media::VideoFrameMetadata::FRAME_RATE)) {
-      frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+    if (!frame->metadata()->HasKey(VideoFrameMetadata::FRAME_RATE)) {
+      frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
                                    video_capture_format_.frame_rate);
     }
     scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue());
@@ -314,21 +314,20 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       if (client->session_closed || client->paused)
         continue;
 
-      scoped_ptr<base::DictionaryValue> copy_of_metadata;
-      if (client == controller_clients_.back())
-        copy_of_metadata = metadata.Pass();
-      else
-        copy_of_metadata.reset(metadata->DeepCopy());
+      CHECK((frame->IsMappable() && frame->format() == VideoFrame::I420) ||
+            (!frame->IsMappable() && frame->HasTextures() &&
+             frame->format() == VideoFrame::ARGB))
+          << "Format and/or storage type combination not supported (received: "
+          << VideoFrame::FormatToString(frame->format()) << ")";
 
       if (frame->HasTextures()) {
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
         DCHECK_EQ(1u, VideoFrame::NumPlanes(frame->format()));
-        client->event_handler->OnMailboxBufferReady(
-            client->controller_id, buffer_id, frame->mailbox_holder(0),
-            frame->coded_size(), timestamp, copy_of_metadata.Pass());
-      } else if (frame->format() == media::VideoFrame::I420) {
-        bool is_new_buffer = client->known_buffers.insert(buffer_id).second;
+
+      } else if (frame->format() == VideoFrame::I420) {
+        const bool is_new_buffer =
+            client->known_buffers.insert(buffer_id).second;
         if (is_new_buffer) {
           // On the first use of a buffer on a client, share the memory handle.
           size_t memory_size = 0;
@@ -337,16 +336,12 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
           client->event_handler->OnBufferCreated(
               client->controller_id, remote_handle, memory_size, buffer_id);
         }
-
-        client->event_handler->OnBufferReady(
-            client->controller_id, buffer_id, frame->coded_size(),
-            frame->visible_rect(), timestamp, copy_of_metadata.Pass());
-      } else {
-        // VideoFrame format not supported.
-        NOTREACHED() << media::VideoFrame::FormatToString(frame->format());
-        break;
       }
 
+      client->event_handler->OnBufferReady(client->controller_id,
+                                           buffer_id,
+                                           frame,
+                                           timestamp);
       const bool inserted =
           client->active_buffers.insert(std::make_pair(buffer_id, frame))
               .second;
@@ -364,7 +359,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
                                frame->visible_rect().width(),
                                frame->visible_rect().height());
     double frame_rate = 0.0f;
-    if (!frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
+    if (!frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
                                       &frame_rate)) {
       frame_rate = video_capture_format_.frame_rate;
     }

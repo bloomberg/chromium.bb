@@ -52,8 +52,10 @@ class MockVideoCaptureControllerEventHandler
   // VideoCaptureControllerEventHandler, to be used in EXPECT_CALL().
   MOCK_METHOD1(DoBufferCreated, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoBufferDestroyed, void(VideoCaptureControllerID));
-  MOCK_METHOD2(DoBufferReady, void(VideoCaptureControllerID, const gfx::Size&));
-  MOCK_METHOD1(DoMailboxBufferReady, void(VideoCaptureControllerID));
+  MOCK_METHOD2(DoI420BufferReady,
+               void(VideoCaptureControllerID, const gfx::Size&));
+  MOCK_METHOD2(DoTextureBufferReady,
+               void(VideoCaptureControllerID, const gfx::Size&));
   MOCK_METHOD1(DoEnded, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoError, void(VideoCaptureControllerID));
 
@@ -68,41 +70,26 @@ class MockVideoCaptureControllerEventHandler
   void OnBufferDestroyed(VideoCaptureControllerID id, int buffer_id) override {
     DoBufferDestroyed(id);
   }
-  void OnBufferReady(
-      VideoCaptureControllerID id,
-      int buffer_id,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const base::TimeTicks& timestamp,
-      scoped_ptr<base::DictionaryValue> metadata) override {
-    DoBufferReady(id, coded_size);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureController::ReturnBuffer,
-                   base::Unretained(controller_),
-                   id,
-                   this,
-                   buffer_id,
-                   0,
-                   resource_utilization_));
-  }
-  void OnMailboxBufferReady(
-      VideoCaptureControllerID id,
-      int buffer_id,
-      const gpu::MailboxHolder& mailbox_holder,
-      const gfx::Size& packed_frame_size,
-      const base::TimeTicks& timestamp,
-      scoped_ptr<base::DictionaryValue> metadata) override {
-    DoMailboxBufferReady(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureController::ReturnBuffer,
-                   base::Unretained(controller_),
-                   id,
-                   this,
-                   buffer_id,
-                   mailbox_holder.sync_point,
-                   resource_utilization_));
+  void OnBufferReady(VideoCaptureControllerID id,
+                     int buffer_id,
+                     const scoped_refptr<media::VideoFrame>& frame,
+                     const base::TimeTicks& timestamp) override {
+    if (!frame->HasTextures()) {
+      EXPECT_EQ(frame->format(), media::VideoFrame::I420);
+      DoI420BufferReady(id, frame->coded_size());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
+                                base::Unretained(controller_), id, this,
+                                buffer_id, 0, resource_utilization_));
+    } else {
+      EXPECT_EQ(frame->format(), media::VideoFrame::ARGB);
+      DoTextureBufferReady(id, frame->coded_size());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
+                                base::Unretained(controller_), id, this,
+                                buffer_id, frame->mailbox_holder(0).sync_point,
+                                resource_utilization_));
+    }
   }
   void OnEnded(VideoCaptureControllerID id) override {
     DoEnded(id);
@@ -337,17 +324,23 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   {
     InSequence s;
     EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1)).Times(1);
-    EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_1,_)).Times(1);
+    EXPECT_CALL(*client_a_,
+                DoI420BufferReady(client_a_route_1, capture_resolution))
+        .Times(1);
   }
   {
     InSequence s;
     EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1)).Times(1);
-    EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_1,_)).Times(1);
+    EXPECT_CALL(*client_b_,
+                DoI420BufferReady(client_b_route_1, capture_resolution))
+        .Times(1);
   }
   {
     InSequence s;
     EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2)).Times(1);
-    EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_2,_)).Times(1);
+    EXPECT_CALL(*client_a_,
+                DoI420BufferReady(client_a_route_2, capture_resolution))
+        .Times(1);
   }
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
@@ -387,9 +380,15 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                         base::TimeTicks());
 
   // The buffer should be delivered to the clients in any order.
-  EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_1,_)).Times(1);
-  EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_1,_)).Times(1);
-  EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_2,_)).Times(1);
+  EXPECT_CALL(*client_a_,
+              DoI420BufferReady(client_a_route_1, capture_resolution))
+      .Times(1);
+  EXPECT_CALL(*client_b_,
+              DoI420BufferReady(client_b_route_1, capture_resolution))
+      .Times(1);
+  EXPECT_CALL(*client_a_,
+              DoI420BufferReady(client_a_route_2, capture_resolution))
+      .Times(1);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
@@ -427,16 +426,24 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   // The new client needs to be told of 3 buffers; the old clients only 2.
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_2)).Times(kPoolSize);
-  EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2,_)).Times(kPoolSize);
+  EXPECT_CALL(*client_b_,
+              DoI420BufferReady(client_b_route_2, capture_resolution))
+      .Times(kPoolSize);
   EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1))
       .Times(kPoolSize - 1);
-  EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_1,_)).Times(kPoolSize);
+  EXPECT_CALL(*client_a_,
+              DoI420BufferReady(client_a_route_1, capture_resolution))
+      .Times(kPoolSize);
   EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2))
       .Times(kPoolSize - 1);
-  EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_2,_)).Times(kPoolSize);
+  EXPECT_CALL(*client_a_,
+              DoI420BufferReady(client_a_route_2, capture_resolution))
+      .Times(kPoolSize);
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1))
       .Times(kPoolSize - 1);
-  EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_1,_)).Times(kPoolSize);
+  EXPECT_CALL(*client_b_,
+              DoI420BufferReady(client_b_route_1, capture_resolution))
+      .Times(kPoolSize);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
@@ -475,7 +482,9 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                         base::TimeTicks());
   // B2 is the only client left, and is the only one that should
   // get the buffer.
-  EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2,_)).Times(2);
+  EXPECT_CALL(*client_b_,
+              DoI420BufferReady(client_b_route_2, capture_resolution))
+      .Times(2);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
@@ -528,8 +537,11 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                             capture_resolution).get());
   ASSERT_FALSE(device_->ReserveOutputBuffer(media::PIXEL_FORMAT_TEXTURE,
                                             capture_resolution).get());
-  EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2,_)).Times(shm_buffers);
-  EXPECT_CALL(*client_b_, DoMailboxBufferReady(client_b_route_2))
+  EXPECT_CALL(*client_b_,
+              DoI420BufferReady(client_b_route_2, capture_resolution))
+      .Times(shm_buffers);
+  EXPECT_CALL(*client_b_,
+              DoTextureBufferReady(client_b_route_2, capture_resolution))
       .Times(mailbox_buffers);
 #if !defined(OS_ANDROID)
   EXPECT_CALL(*client_b_, DoBufferDestroyed(client_b_route_2));
@@ -723,7 +735,7 @@ TEST_F(VideoCaptureControllerTest, CheckRotationsAndCrops) {
     {
       InSequence s;
       EXPECT_CALL(*client_a_, DoBufferCreated(route_id)).Times(1);
-      EXPECT_CALL(*client_a_, DoBufferReady(route_id, _))
+      EXPECT_CALL(*client_a_, DoI420BufferReady(route_id, _))
           .Times(1)
           .WillOnce(SaveArg<1>(&coded_size));
     }

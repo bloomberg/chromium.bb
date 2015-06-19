@@ -188,9 +188,9 @@ void VideoCaptureImpl::GetDeviceFormatsInUse(
         new VideoCaptureHostMsg_GetDeviceFormatsInUse(device_id_, session_id_));
 }
 
-void VideoCaptureImpl::OnBufferCreated(
-    base::SharedMemoryHandle handle,
-    int length, int buffer_id) {
+void VideoCaptureImpl::OnBufferCreated(base::SharedMemoryHandle handle,
+                                       int length,
+                                       int buffer_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // In case client calls StopCapture before the arrival of created buffer,
@@ -226,80 +226,64 @@ void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
   client_buffers_.erase(iter);
 }
 
-void VideoCaptureImpl::OnBufferReceived(int buffer_id,
-                                        const gfx::Size& coded_size,
-                                        const gfx::Rect& visible_rect,
-                                        base::TimeTicks timestamp,
-                                        const base::DictionaryValue& metadata) {
+void VideoCaptureImpl::OnBufferReceived(
+    int buffer_id,
+    base::TimeTicks timestamp,
+    const base::DictionaryValue& metadata,
+    media::VideoFrame::Format pixel_format,
+    media::VideoFrame::StorageType storage_type,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gpu::MailboxHolder& mailbox_holder) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
     Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0, -1.0));
     return;
   }
-
   if (first_frame_timestamp_.is_null())
     first_frame_timestamp_ = timestamp;
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
-  TRACE_EVENT_INSTANT2(
-      "cast_perf_test", "OnBufferReceived",
-      TRACE_EVENT_SCOPE_THREAD,
-      "timestamp", timestamp.ToInternalValue(),
-      "time_delta", (timestamp - first_frame_timestamp_).ToInternalValue());
+  TRACE_EVENT_INSTANT2("cast_perf_test", "OnBufferReceived",
+                       TRACE_EVENT_SCOPE_THREAD, "timestamp",
+                       timestamp.ToInternalValue(), "time_delta",
+                       (timestamp - first_frame_timestamp_).ToInternalValue());
 
-  const ClientBufferMap::const_iterator iter = client_buffers_.find(buffer_id);
-  DCHECK(iter != client_buffers_.end());
-  scoped_refptr<ClientBuffer> buffer = iter->second;
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          media::VideoFrame::I420,
-          coded_size,
-          visible_rect,
-          gfx::Size(visible_rect.width(), visible_rect.height()),
-          reinterpret_cast<uint8*>(buffer->buffer->memory()),
-          buffer->buffer_size,
-          buffer->buffer->handle(),
-          0,
-          timestamp - first_frame_timestamp_);
-  frame->AddDestructionObserver(
-      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame,
-                 frame->metadata(),
-                 nullptr,
-                 media::BindToCurrentLoop(
-                     base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
-                                weak_factory_.GetWeakPtr(),
-                                buffer_id,
-                                buffer))));
-  frame->metadata()->MergeInternalValuesFrom(metadata);
+  scoped_refptr<media::VideoFrame> frame;
+  uint32* release_sync_point_storage = nullptr;
+  scoped_refptr<ClientBuffer> buffer;
 
-  for (const auto& client : clients_)
-    client.second.deliver_frame_cb.Run(frame, timestamp);
-}
+  if (mailbox_holder.mailbox.IsZero()) {
+    DCHECK_EQ(media::VideoFrame::I420, pixel_format);
+    const ClientBufferMap::const_iterator iter =
+        client_buffers_.find(buffer_id);
+    DCHECK(iter != client_buffers_.end());
+    buffer = iter->second;
+    frame = media::VideoFrame::WrapExternalSharedMemory(
+        pixel_format,
+        coded_size,
+        visible_rect,
+        gfx::Size(visible_rect.width(), visible_rect.height()),
+        reinterpret_cast<uint8*>(buffer->buffer->memory()),
+        buffer->buffer_size,
+        buffer->buffer->handle(),
+        0  /* shared_memory_offset */,
+        timestamp - first_frame_timestamp_);
 
-void VideoCaptureImpl::OnMailboxBufferReceived(
-    int buffer_id,
-    const gpu::MailboxHolder& mailbox_holder,
-    const gfx::Size& packed_frame_size,
-    base::TimeTicks timestamp,
-    const base::DictionaryValue& metadata) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0, -1.0));
-    return;
+  } else {
+    DCHECK_EQ(media::VideoFrame::ARGB, pixel_format);
+    DCHECK(mailbox_holder.mailbox.Verify());  // Paranoia?
+    // To be deleted in DidFinishConsumingFrame().
+    release_sync_point_storage = new uint32(0);
+    frame = media::VideoFrame::WrapNativeTexture(
+        pixel_format,
+        mailbox_holder,
+        base::Bind(&SaveReleaseSyncPoint, release_sync_point_storage),
+        coded_size,
+        gfx::Rect(coded_size),
+        coded_size,
+        timestamp - first_frame_timestamp_);
   }
-
-  if (first_frame_timestamp_.is_null())
-    first_frame_timestamp_ = timestamp;
-
-  uint32* const release_sync_point_storage =
-      new uint32(0);  // Deleted in DidFinishConsumingFrame().
-  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
-      media::VideoFrame::ARGB, mailbox_holder,
-      base::Bind(&SaveReleaseSyncPoint, release_sync_point_storage),
-      packed_frame_size, gfx::Rect(packed_frame_size), packed_frame_size,
-      timestamp - first_frame_timestamp_);
   frame->AddDestructionObserver(
       base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame,
                  frame->metadata(),
@@ -308,7 +292,7 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
                      &VideoCaptureImpl::OnClientBufferFinished,
                      weak_factory_.GetWeakPtr(),
                      buffer_id,
-                     scoped_refptr<ClientBuffer>()))));
+                     buffer))));
 
   frame->metadata()->MergeInternalValuesFrom(metadata);
 

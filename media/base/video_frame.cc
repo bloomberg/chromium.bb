@@ -43,7 +43,7 @@ static bool IsValidPlane(size_t plane, VideoFrame::Format format) {
 static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
   return
 #if defined(OS_LINUX)
-      // This is not strictly needed but makes it explicit that, at VideoFrame
+      // This is not strictly needed but makes explicit that, at VideoFrame
       // level, DmaBufs are not mappable from userspace.
       storage_type != VideoFrame::STORAGE_DMABUFS &&
 #endif
