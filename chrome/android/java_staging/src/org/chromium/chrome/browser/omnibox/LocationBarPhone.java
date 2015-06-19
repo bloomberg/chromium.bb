@@ -207,6 +207,11 @@ public class LocationBarPhone extends LocationBarLayout {
         return retVal;
     }
 
+    @Override
+    protected boolean isUrlFocusChangeInProgress() {
+        return mUrlFocusChangeInProgress;
+    }
+
     /**
      * Handles any actions to be performed after all other actions triggered by the URL focus
      * change.  This will be called after any animations are performed to transition from one

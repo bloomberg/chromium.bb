@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.BackgroundContentViewHelper;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -241,6 +242,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private boolean mSuggestionSelectionInProgress;
 
     private CustomSelectionActionModeCallback mDefaultActionModeCallbackForTextEdit;
+
+    private Runnable mShowSuggestions;
 
     /**
      * Listener for receiving the messages related with interacting with the omnibox during startup.
@@ -930,6 +933,14 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     /**
+     * @return Whether the URL focus change is taking place, e.g. a focus animation is running on
+     *         a phone device.
+     */
+    protected boolean isUrlFocusChangeInProgress() {
+        return false;
+    }
+
+    /**
      * Triggered when the URL input field has gained or lost focus.
      * @param hasFocus Whether the URL field has gained focus.
      */
@@ -1582,6 +1593,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public void hideSuggestions() {
         if (mAutocomplete == null) return;
 
+        if (mShowSuggestions != null) removeCallbacks(mShowSuggestions);
+
         recordSuggestionsDismissed();
 
         stopAutocomplete(true);
@@ -1817,10 +1830,23 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mSuggestionList.resetMaxTextWidths();
 
         if (itemsChanged) mSuggestionListAdapter.notifySuggestionsChanged();
+
         if (mUrlBar.hasFocus()) {
-            setSuggestionsListVisibility(true);
-            if (itemCountChanged) {
-                mSuggestionList.updateLayoutParams();
+            final boolean updateLayoutParams = itemCountChanged;
+            mShowSuggestions = new Runnable() {
+                @Override
+                public void run() {
+                    setSuggestionsListVisibility(true);
+                    if (updateLayoutParams) {
+                        mSuggestionList.updateLayoutParams();
+                    }
+                    mShowSuggestions = null;
+                }
+            };
+            if (!isUrlFocusChangeInProgress()) {
+                mShowSuggestions.run();
+            } else {
+                postDelayed(mShowSuggestions, ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
             }
         }
 
