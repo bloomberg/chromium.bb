@@ -478,6 +478,8 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
             return AnimatableClipPathOperation::create(operation);
         return AnimatableUnknown::create(CSSValueNone);
     case CSSPropertyWebkitColumnCount:
+        if (style.hasAutoColumnCount())
+            return AnimatableUnknown::create(CSSValueAuto);
         return createFromDouble(style.columnCount());
     case CSSPropertyWebkitColumnGap:
         return createFromDouble(style.columnGap());
@@ -486,6 +488,8 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyWebkitColumnRuleWidth:
         return createFromDouble(style.columnRuleWidth());
     case CSSPropertyWebkitColumnWidth:
+        if (style.hasAutoColumnWidth())
+            return AnimatableUnknown::create(CSSValueAuto);
         return createFromDouble(style.columnWidth());
     case CSSPropertyWebkitFilter:
         return AnimatableFilterOperations::create(style.filter());

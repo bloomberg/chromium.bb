@@ -38,12 +38,11 @@ assertInterpolation({
   {at: 1, is: '101px'},
   {at: 1.5, is: '151px'}
 ]);
-assertInterpolation({
+
+assertNoInterpolation({
   property: '-webkit-column-width',
-  from: '0px',
+  from: 'auto',
   to: '100px'
-}, [
-  {at: 0, is: '20px'}
-]);
+});
 </script>
 </body>

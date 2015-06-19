@@ -20,6 +20,12 @@
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
+assertNoInterpolation({
+  property: '-webkit-column-count',
+  from: 'auto',
+  to: '5'
+});
+
 assertInterpolation({
   property: '-webkit-column-count',
   from: '1',
@@ -40,7 +46,7 @@ assertInterpolation({
 // 5.
 assertInterpolation({
   property: '-webkit-column-count',
-  from: '0',
+  from: '1',
   to: '5'
 }, [
   {at: -0.5, is: '1'}, // Must be strictly positive
