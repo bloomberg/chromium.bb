@@ -192,6 +192,7 @@
     { "name": "accounts.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "profiles.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "mail.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "mail-settings.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "inbox.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "talkgadget.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "talk.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
