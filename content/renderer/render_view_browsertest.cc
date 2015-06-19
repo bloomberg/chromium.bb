@@ -1261,16 +1261,9 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   }
 }
 
-// see http://crbug.com/238750
-#if defined(OS_WIN)
-#define MAYBE_OnHandleKeyboardEvent DISABLED_OnHandleKeyboardEvent
-#else
-#define MAYBE_OnHandleKeyboardEvent OnHandleKeyboardEvent
-#endif
-
 // Test that we can receive correct DOM events when we send input events
 // through the RenderWidget::OnHandleInputEvent() function.
-TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
+TEST_F(RenderViewImplTest, OnHandleKeyboardEvent) {
 #if !defined(OS_MACOSX)
   // Load an HTML page consisting of one <input> element and three
   // contentediable <div> elements.

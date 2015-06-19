@@ -110,7 +110,6 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
                                                 DWORD time_ms) {
   WebKeyboardEvent result;
 
-  DCHECK(time_ms);
   result.timeStampSeconds = time_ms / 1000.0;
 
   result.windowsKeyCode = static_cast<int>(wparam);
@@ -244,7 +243,6 @@ WebMouseEvent WebMouseEventBuilder::Build(HWND hwnd,
     NOTREACHED();
   }
 
-  DCHECK(time_ms);
   result.timeStampSeconds = time_ms / 1000.0;
 
   // set position fields:
@@ -331,7 +329,6 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(HWND hwnd,
 
   result.type = WebInputEvent::MouseWheel;
 
-  DCHECK(time_ms);
   result.timeStampSeconds = time_ms / 1000.0;
 
   result.button = WebMouseEvent::ButtonNone;
