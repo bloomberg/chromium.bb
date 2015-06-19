@@ -112,18 +112,19 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
     if (string.isEmpty())
         return false;
 
-    // First try creating a color specified by name, rgba(), rgb() or "#" syntax.
-    if (CSSParserFastPaths::parseColorAsRGBA32(color, string, !strict))
+    // The regular color parsers don't resolve all named colors, so explicitly
+    // handle these first.
+    Color namedColor;
+    if (namedColor.setNamedColor(string)) {
+        color = namedColor.rgb();
         return true;
+    }
 
-    // In case the fast-path parser didn't understand the color, try the full parser.
-    RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create();
-    // FIXME: The old CSS parser is only working in strict mode ignoring the strict parameter.
-    // It needs to be investigated why.
-    if (!parseValue(stylePropertySet.get(), CSSPropertyColor, string, false, strictCSSParserContext()))
-        return false;
+    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::parseColor(string, !strict);
+    // TODO(timloh): Why is this always strict mode?
+    if (!value)
+        value = parseSingleValue(CSSPropertyColor, string, strictCSSParserContext());
 
-    RefPtrWillBeRawPtr<CSSValue> value = stylePropertySet->getPropertyCSSValue(CSSPropertyColor);
     if (!value || !value->isPrimitiveValue())
         return false;
 

@@ -428,31 +428,7 @@ static bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters,
     return false;
 }
 
-bool CSSParserFastPaths::parseColorAsRGBA32(RGBA32& rgb, const String& name, bool quirksMode)
-{
-    unsigned length = name.length();
-    bool parseResult;
-
-    if (!length)
-        return false;
-
-    if (name.is8Bit())
-        parseResult = fastParseColorInternal(rgb, name.characters8(), length, quirksMode);
-    else
-        parseResult = fastParseColorInternal(rgb, name.characters16(), length, quirksMode);
-
-    if (parseResult)
-        return true;
-
-    // Try named colors.
-    Color tc;
-    if (!tc.setNamedColor(name))
-        return false;
-    rgb = tc.rgb();
-    return true;
-}
-
-static PassRefPtrWillBeRawPtr<CSSValue> parseColor(const String& string, bool quirksMode)
+PassRefPtrWillBeRawPtr<CSSValue> CSSParserFastPaths::parseColor(const String& string, bool quirksMode)
 {
     ASSERT(!string.isEmpty());
     CSSParserString cssString;
@@ -464,9 +440,20 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseColor(const String& string, bool qu
         return cssValuePool().createIdentifierValue(valueID);
 
     RGBA32 color;
-    if (!CSSParserFastPaths::parseColorAsRGBA32(color, string, quirksMode))
+
+    // Fast path for hex colors and rgb()/rgba() colors
+    bool parseResult;
+    if (string.is8Bit())
+        parseResult = fastParseColorInternal(color, string.characters8(), string.length(), quirksMode);
+    else
+        parseResult = fastParseColorInternal(color, string.characters16(), string.length(), quirksMode);
+    if (parseResult)
+        return cssValuePool().createColorValue(color);
+
+    Color namedColor;
+    if (!namedColor.setNamedColor(string))
         return nullptr;
-    return cssValuePool().createColorValue(color);
+    return cssValuePool().createColorValue(namedColor.rgb());
 }
 
 bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID)

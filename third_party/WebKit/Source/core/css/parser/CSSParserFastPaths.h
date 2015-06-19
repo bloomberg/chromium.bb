@@ -25,9 +25,7 @@ public:
     static bool isKeywordPropertyID(CSSPropertyID);
     static bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID);
 
-    // Keywords like 'green' will be resolved here, unlike during regular
-    // property parsing where we'd leave it as a keyword.
-    static bool parseColorAsRGBA32(RGBA32&, const String&, bool quirksMode);
+    static PassRefPtrWillBeRawPtr<CSSValue> parseColor(const String&, bool quirksMode);
 };
 
 } // namespace blink
