@@ -225,14 +225,16 @@ public class OMADownloadHandler {
                     (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
             try {
                 ParcelFileDescriptor fd = manager.openDownloadedFile(mDownloadId);
-                if (fd == null) return null;
-                omaInfo = parseDownloadDescriptor(new FileInputStream(fd.getFileDescriptor()));
-                fd.close();
+                if (fd != null) {
+                    omaInfo = parseDownloadDescriptor(new FileInputStream(fd.getFileDescriptor()));
+                    fd.close();
+                }
             } catch (FileNotFoundException e) {
                 Log.w(TAG, "File not found.", e);
             } catch (IOException e) {
                 Log.w(TAG, "Cannot read file.", e);
             }
+            manager.remove(mDownloadId);
             return omaInfo;
         }
 
@@ -386,8 +388,7 @@ public class OMADownloadHandler {
                 if (which == AlertDialog.BUTTON_POSITIVE) {
                     downloadOMAContent(downloadId, downloadInfo, omaInfo);
                 } else {
-                    sendInstallNotificationAndNextStep(
-                            omaInfo, downloadInfo, DOWNLOAD_STATUS_USER_CANCELLED);
+                    sendNotification(omaInfo, downloadInfo, DOWNLOAD_STATUS_USER_CANCELLED);
                 }
             }
         };

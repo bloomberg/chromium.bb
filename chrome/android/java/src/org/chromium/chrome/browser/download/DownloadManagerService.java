@@ -540,9 +540,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                         mPendingAutoOpenDownloads.remove(downloadId);
                         if (OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(
                                 info.getMimeType())) {
-                            mOMADownloadHandler.handleOMADownload(
-                                    info, downloadId);
-                            manager.remove(downloadId);
+                            mOMADownloadHandler.handleOMADownload(info, downloadId);
                             break;
                         }
                         Uri uri = manager.getUriForDownloadedFile(downloadId);
