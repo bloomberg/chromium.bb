@@ -199,7 +199,9 @@ gfx::Image ExternalInstallBubbleAlert::GetBubbleViewIcon() {
 }
 
 base::string16 ExternalInstallBubbleAlert::GetBubbleViewTitle() {
-  return prompt_->GetDialogTitle();
+  return l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE,
+      base::UTF8ToUTF16(prompt_->extension()->name()));
 }
 
 std::vector<base::string16>
@@ -210,6 +212,14 @@ ExternalInstallBubbleAlert::GetBubbleViewMessages() {
       ExtensionInstallPrompt::PermissionsType::WITHHELD_PERMISSIONS;
 
   std::vector<base::string16> messages;
+  int heading_id =
+      IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_EXTENSION;
+  if (prompt_->extension()->is_app())
+    heading_id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_APP;
+  else if (prompt_->extension()->is_theme())
+    heading_id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_THEME;
+  messages.push_back(l10n_util::GetStringUTF16(heading_id));
+
   if (prompt_->GetPermissionCount(regular_permissions)) {
     messages.push_back(prompt_->GetPermissionsHeading(regular_permissions));
     for (size_t i = 0; i < prompt_->GetPermissionCount(regular_permissions);

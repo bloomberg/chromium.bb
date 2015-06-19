@@ -4304,6 +4304,33 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_REPAIR_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt. Asks the user if they want to update the extension/app.">
         Repair "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_APP" desc="Titlebar of the prompt window for an externally installed app">
+        Another program on your computer added an app that may change the way Chrome works.
+
+<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_EXTENSION" desc="Titlebar of the prompt window for an externally installed extension">
+        Another program on your computer added an extension that may change the way Chrome works.
+
+<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_THEME" desc="Titlebar of the prompt window for an externally installed theme">
+        Another program on your computer added a theme that may change the way Chrome works.
+
+<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Button on the external install prompt to enable an extension installed by a third party.">
+        Enable extension
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="Button on the external install prompt to enable an extension installed by a third party.">
+        Enable app
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Button on the external install prompt to enable an extension installed by a third party.">
+        Enable theme
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="Button on the external install prompt to remove an extension installed by a third party.">
+        Remove from Chrome
+      </message>
 
       <!-- Extension alerts. -->
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Titlebar of the extension notification alert">
@@ -5155,32 +5182,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_THEME" desc="The wrench menu item indicating that a new external extension was installed.">
         New theme added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_APP" desc="Titlebar of the prompt window for an externally installed app">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_TITLE" desc="The title for the bubble that alerts the user that a new external extension was installed.">
+        "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_APP" desc="The heading text (below the title) for the bubble that alerts the user that a new external app was installed.">
         Another program on your computer added an app that may change the way Chrome works.
-
-<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_EXTENSION" desc="Titlebar of the prompt window for an externally installed extension">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_EXTENSION" desc="The heading text (below the title) for the bubble that alerts the user that a new external extension was installed.">
         Another program on your computer added an extension that may change the way Chrome works.
-
-<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE_THEME" desc="Titlebar of the prompt window for an externally installed theme">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_THEME" desc="The heading text (below the title) for the bubble that alerts the user that a new external theme was installed.">
         Another program on your computer added a theme that may change the way Chrome works.
-
-<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>
-      </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Button on the external install prompt to enable an extension installed by a third party.">
-        Enable extension
-      </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="Button on the external install prompt to enable an extension installed by a third party.">
-        Enable app
-      </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Button on the external install prompt to enable an extension installed by a third party.">
-        Enable theme
-      </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="Button on the external install prompt to remove an extension installed by a third party.">
-        Remove from Chrome
       </message>
 
       <if expr="use_titlecase">
