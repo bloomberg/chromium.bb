@@ -95,6 +95,8 @@ source_set("lib") {
     "view_locator.h",
     "view_manager_app.cc",
     "view_manager_app.h",
+    "view_manager_root_impl.cc",
+    "view_manager_root_impl.h",
     "view_manager_service_impl.cc",
     "view_manager_service_impl.h",
     "window_manager_access_policy.cc",

@@ -127,7 +127,7 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
   // ConfigureIncomingConnection() must have been called before getting here.
   DCHECK(connection_manager_.get());
   view_manager_root_binding_.reset(new mojo::Binding<ViewManagerRoot>(
-      connection_manager_.get(), request.Pass()));
+      connection_manager_->view_manager_root(), request.Pass()));
   view_manager_root_binding_->set_error_handler(this);
 }
 

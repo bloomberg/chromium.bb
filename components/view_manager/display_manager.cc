@@ -141,7 +141,7 @@ void DefaultDisplayManager::SchedulePaint(const ServerView* view,
   if (!view->IsDrawn())
     return;
   const gfx::Rect root_relative_rect =
-      ConvertRectBetweenViews(view, delegate_->GetRoot(), bounds);
+      ConvertRectBetweenViews(view, delegate_->GetRootView(), bounds);
   if (root_relative_rect.IsEmpty())
     return;
   dirty_rect_.Union(root_relative_rect);
@@ -161,7 +161,7 @@ void DefaultDisplayManager::Draw() {
   auto pass = mojo::CreateDefaultPass(1, rect);
   pass->damage_rect = Rect::From(dirty_rect_);
 
-  DrawViewTree(pass.get(), delegate_->GetRoot(), gfx::Vector2d(), 1.0f);
+  DrawViewTree(pass.get(), delegate_->GetRootView(), gfx::Vector2d(), 1.0f);
 
   auto frame = mojo::Frame::New();
   frame->passes.push_back(pass.Pass());
@@ -213,7 +213,7 @@ void DefaultDisplayManager::OnMetricsChanged(const gfx::Size& size,
   metrics.size_in_pixels = mojo::Size::From(size);
   metrics.device_pixel_ratio = device_scale_factor;
 
-  delegate_->GetRoot()->SetBounds(gfx::Rect(size));
+  delegate_->GetRootView()->SetBounds(gfx::Rect(size));
   delegate_->OnViewportMetricsChanged(metrics_, metrics);
 
   metrics_.size_in_pixels = metrics.size_in_pixels.Clone();

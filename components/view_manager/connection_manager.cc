@@ -118,18 +118,15 @@ ConnectionManager::ConnectionManager(
     : delegate_(delegate),
       window_manager_client_connection_(nullptr),
       next_connection_id_(1),
+      next_root_id_(0),
       event_dispatcher_(this),
-      display_manager_(
-          DisplayManager::Create(is_headless, app_impl, gpu_state)),
-      root_(CreateServerView(RootViewId(0))),
       current_change_(nullptr),
       in_destructor_(false),
       animation_runner_(base::TimeTicks::Now()),
       focus_controller_(new FocusController(this)) {
-  root_->SetBounds(gfx::Rect(800, 600));
-  root_->SetVisible(true);
-
-  display_manager_->Init(this);
+  view_manager_root_.reset(new ViewManagerRootImpl(
+      RootViewId(next_root_id_++), this, is_headless, app_impl, gpu_state));
+  view_manager_root_->Init();
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -140,10 +137,10 @@ ConnectionManager::~ConnectionManager() {
   // destroyed before |root_|.
   focus_controller_.reset();
 
+  view_manager_root_.reset();
   STLDeleteValues(&connection_map_);
   // All the connections should have been destroyed.
   DCHECK(connection_map_.empty());
-  root_.reset();
 }
 
 ServerView* ConnectionManager::CreateServerView(const ViewId& id) {
@@ -208,7 +205,7 @@ void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
 
 void ConnectionManager::OnAccelerator(ServerView* root, mojo::EventPtr event) {
   // TODO(fsamuel): Support multiple roots.
-  view_manager_root_client_->OnAccelerator(event.Pass());
+  view_manager_root_->client()->OnAccelerator(event.Pass());
 }
 
 ViewManagerServiceImpl* ConnectionManager::GetConnection(
@@ -218,8 +215,9 @@ ViewManagerServiceImpl* ConnectionManager::GetConnection(
 }
 
 ServerView* ConnectionManager::GetView(const ViewId& id) {
-  if (id == root_->id())
-    return root_.get();
+  // TODO(fsamuel): Support multiple roots.
+  if (view_manager_root_->root_view()->id() == id)
+    return view_manager_root_->root_view();
   ViewManagerServiceImpl* service = GetConnection(id.connection_id);
   return service ? service->GetView(id) : nullptr;
 }
@@ -237,15 +235,20 @@ ServerView* ConnectionManager::GetFocusedView() {
 }
 
 bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
-  // TODO(fsamuel): Iterate over all roots once we support multiple roots.
-  return root_->Contains(view) && view != root_.get();
+  // TODO(fsamuel): Support multiple roots.
+  return view_manager_root_->IsViewAttachedToRoot(view);
 }
 
 void ConnectionManager::SchedulePaint(const ServerView* view,
                                       const gfx::Rect& bounds) {
-  // TODO(fsamuel): Direct this paint to the appropriate DisplayManager once we
-  // support multiple roots.
-  display_manager_->SchedulePaint(view, gfx::Rect(view->bounds().size()));
+  // TODO(fsamuel): Support multiple roots.
+  view_manager_root_->SchedulePaintIfInViewport(view, bounds);
+}
+
+void ConnectionManager::OnDisplayClosed() {
+  // TODO(fsamuel): Only report we lost the connection to the window manager
+  // if there are no more roots.
+  delegate_->OnLostConnectionToWindowManager();
 }
 
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
@@ -260,10 +263,9 @@ bool ConnectionManager::DidConnectionMessageClient(
 
 mojo::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
     const ServerView* view) {
-   // TODO(fsamuel): Once we support multiple roots, grab the the DisplayManager
-   // associated with the root view of this |view|, and grab that display's
-   // metrics.
-  return display_manager_->GetViewportMetrics().Clone();
+  // TODO(fsamuel): Support multiple roots. We should pull the metrics from
+  // the viewport where this |view| belong.
+  return view_manager_root_->GetViewportMetrics().Clone();
 }
 
 const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
@@ -338,25 +340,21 @@ void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                          base::Bind(&base::DoNothing));
 }
 
-ServerView* ConnectionManager::GetRoot() {
-  return root_.get();
+void ConnectionManager::OnEvent(ViewManagerRootImpl* root,
+                                mojo::EventPtr event) {
+  event_dispatcher_.OnEvent(root->root_view(), event.Pass());
 }
 
-void ConnectionManager::OnEvent(mojo::EventPtr event) {
-  event_dispatcher_.OnEvent(root_.get(), event.Pass());
+void ConnectionManager::AddAccelerator(ViewManagerRootImpl* root,
+                                       mojo::KeyboardCode keyboard_code,
+                                       mojo::EventFlags flags) {
+  event_dispatcher_.AddAccelerator(keyboard_code, flags);
 }
 
-void ConnectionManager::OnDisplayClosed() {
-  delegate_->OnLostConnectionToWindowManager();
-}
-
-void ConnectionManager::OnViewportMetricsChanged(
-    const mojo::ViewportMetrics& old_metrics,
-    const mojo::ViewportMetrics& new_metrics) {
-  for (auto& pair : connection_map_) {
-    pair.second->service()->ProcessViewportMetricsChanged(
-        old_metrics, new_metrics, IsChangeSource(pair.first));
-  }
+void ConnectionManager::RemoveAccelerator(ViewManagerRootImpl* root,
+                                          mojo::KeyboardCode keyboard_code,
+                                          mojo::EventFlags flags) {
+  event_dispatcher_.RemoveAccelerator(keyboard_code, flags);
 }
 
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
@@ -405,6 +403,15 @@ void ConnectionManager::ProcessViewDeleted(const ViewId& view) {
   }
 }
 
+void ConnectionManager::ProcessViewportMetricsChanged(
+    const mojo::ViewportMetrics& old_metrics,
+    const mojo::ViewportMetrics& new_metrics) {
+  for (auto& pair : connection_map_) {
+    pair.second->service()->ProcessViewportMetricsChanged(
+        old_metrics, new_metrics, IsChangeSource(pair.first));
+  }
+}
+
 void ConnectionManager::PrepareForChange(ScopedChange* change) {
   // Should only ever have one change in flight.
   CHECK(!current_change_);
@@ -418,7 +425,8 @@ void ConnectionManager::FinishChange() {
 }
 
 void ConnectionManager::DoAnimation() {
-  if (!DecrementAnimatingViewsOpacity(GetRoot()))
+  // TODO(fsamuel): Support multiple roots.
+  if (!DecrementAnimatingViewsOpacity(view_manager_root_->root_view()))
     animation_timer_.Stop();
 }
 
@@ -481,10 +489,11 @@ void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
 }
 
 const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
-  // TODO(fsamuel): Iterate over all roots once we support multiple roots.
   while (view && view->parent())
     view = view->parent();
-  return view == root_.get() ? view : nullptr;
+  if (view_manager_root_->root_view() == view)
+    return view;
+  return nullptr;
 }
 
 void ConnectionManager::OnViewDestroyed(ServerView* view) {
@@ -565,27 +574,8 @@ void ConnectionManager::OnViewSharedPropertyChanged(
   }
 }
 
-void ConnectionManager::SetViewManagerRootClient(
-    mojo::ViewManagerRootClientPtr client) {
-  view_manager_root_client_ = client.Pass();
-}
-
-void ConnectionManager::SetViewportSize(mojo::SizePtr size) {
-  display_manager_->SetViewportSize(size.To<gfx::Size>());
-}
-
 void ConnectionManager::CloneAndAnimate(mojo::Id transport_view_id) {
   CloneAndAnimate(ViewIdFromTransportId(transport_view_id));
-}
-
-void ConnectionManager::AddAccelerator(mojo::KeyboardCode keyboard_code,
-                                       mojo::EventFlags flags) {
-  event_dispatcher_.AddAccelerator(keyboard_code, flags);
-}
-
-void ConnectionManager::RemoveAccelerator(mojo::KeyboardCode keyboard_code,
-                                          mojo::EventFlags flags) {
-  event_dispatcher_.RemoveAccelerator(keyboard_code, flags);
 }
 
 void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,

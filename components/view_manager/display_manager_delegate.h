@@ -17,7 +17,7 @@ class ServerView;
 class DisplayManagerDelegate {
  public:
   // Returns the root view of this display.
-  virtual ServerView* GetRoot() = 0;
+  virtual ServerView* GetRootView() = 0;
 
   // Called when the window managed by the DisplayManager is closed.
   virtual void OnDisplayClosed() = 0;
