@@ -983,15 +983,6 @@
             'enable_mdns%' : 1,
         }],
 
-        # Turns on compiler optimizations in V8 in Debug build, except
-        # on android_clang, where we're hitting a weird linker error.
-        # TODO(dpranke): http://crbug.com/266155 .
-        ['OS=="android"', {
-          'v8_optimized_debug%': 1,
-        }, {
-          'v8_optimized_debug%': 2,
-        }],
-
         # Disable various features by default on embedded.
         ['embedded==1', {
           'remoting%': 0,
@@ -1227,7 +1218,6 @@
     'enable_service_discovery%' : '<(enable_service_discovery)',
     'enable_wifi_bootstrapping%': '<(enable_wifi_bootstrapping)',
     'enable_hangout_services_extension%' : '<(enable_hangout_services_extension)',
-    'v8_optimized_debug%': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
     'use_goma%': '<(use_goma)',
     'gomadir%': '<(gomadir)',
@@ -1241,6 +1231,9 @@
     'android_app_version_name%': '<(android_app_version_name)',
     'android_app_version_code%': '<(android_app_version_code)',
     'enable_webvr%': '<(enable_webvr)',
+
+    # Turns on compiler optimizations in V8 in Debug build.
+    'v8_optimized_debug%': 1,
 
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
