@@ -277,59 +277,60 @@ if (enable_configuration_policy) {
 
   if (is_android) {
     import("//build/config/android/rules.gni")
+
+    resources_name = "app_restrictions_resources"
+    resources_zip = "res.java/$resources_name.zip"
+    generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
+
+    consolidate_target_name = "${resources_name}__consolidate_resources"
+    copy(consolidate_target_name) {
+      sources = [
+        app_restrictions_path,
+      ]
+      outputs = [
+        "$generated_resources_dir/xml-v21/app_restrictions.xml",
+      ]
+      deps = [
+        ":cloud_policy_code_generate",
+        ":policy_templates",
+      ]
+    }
+
+    # TODO(471115): The write_build_config template is in
+    # //build/config/android/internal_rules.gni and is not meant for external
+    # use. The public rules (in rules.gni) should be updated to support what
+    # we are doing here.
+    build_config_target_name = "${resources_name}__build_config"
+    write_build_config(build_config_target_name) {
+      build_config = "$target_gen_dir/$resources_name.build_config"
+      resources_zip = "$root_build_dir/$resources_zip"
+      type = "android_resources"
+    }
+
+    zip_target_name = "${resources_name}__create_zip"
+    action(zip_target_name) {
+      script = "//build/android/gn/zip.py"
+      outputs = [
+        "$root_build_dir/$resources_zip",
+      ]
+      generated_resources = get_target_outputs(":$consolidate_target_name") +
+                            policy_templates_android_outputs
+      inputs = generated_resources
+      rebased_inputs = rebase_path(generated_resources, root_build_dir)
+      rebased_resources_dir =
+          rebase_path(generated_resources_dir, root_build_dir)
+      args = [
+        "--inputs=$rebased_inputs",
+        "--output=$resources_zip",
+        "--base-dir=$rebased_resources_dir",
+      ]
+      deps = [
+        ":$consolidate_target_name",
+        ":policy_templates_grit",  # For policy_templates_android_outputs.
+      ]
+    }
+
     group("app_restrictions_resources") {
-      resources_zip = "res.java/$target_name.zip"
-      generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
-
-      consolidate_target_name = "${target_name}__consolidate_resources"
-      copy(consolidate_target_name) {
-        sources = [
-          app_restrictions_path,
-        ]
-        outputs = [
-          "$generated_resources_dir/xml-v21/app_restrictions.xml",
-        ]
-        deps = [
-          ":cloud_policy_code_generate",
-          ":policy_templates",
-        ]
-      }
-
-      # TODO(471115): The write_build_config template is in
-      # //build/config/android/internal_rules.gni and is not meant for external
-      # use. The public rules (in rules.gni) should be updated to support what
-      # we are doing here.
-      build_config_path = "$target_gen_dir/$target_name.build_config"
-      build_config_target_name = "${target_name}__build_config"
-      write_build_config(build_config_target_name) {
-        build_config = build_config_path
-        resources_zip = "$root_build_dir/$resources_zip"
-        type = "android_resources"
-      }
-
-      zip_target_name = "${target_name}__create_zip"
-      action(zip_target_name) {
-        script = "//build/android/gn/zip.py"
-        outputs = [
-          "$root_build_dir/$resources_zip",
-        ]
-        generated_resources = get_target_outputs(":$consolidate_target_name") +
-                              policy_templates_android_outputs
-        inputs = generated_resources
-        rebased_inputs = rebase_path(generated_resources, root_build_dir)
-        rebased_resources_dir =
-            rebase_path(generated_resources_dir, root_build_dir)
-        args = [
-          "--inputs=$rebased_inputs",
-          "--output=$resources_zip",
-          "--base-dir=$rebased_resources_dir",
-        ]
-        deps = [
-          ":$consolidate_target_name",
-          ":policy_templates_grit",  # For policy_templates_android_outputs.
-        ]
-      }
-
       deps = [
         ":$build_config_target_name",
         ":$zip_target_name",
