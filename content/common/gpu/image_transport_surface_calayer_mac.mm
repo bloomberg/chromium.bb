@@ -59,7 +59,8 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
   if (feature_info->workarounds().disable_ns_cgl_surface_api)
     return false;
 
-  return true;
+  // Leave this feature disabled until a flag for it is available.
+  return false;
 }
 
 }  // namespace
