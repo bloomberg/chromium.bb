@@ -120,6 +120,7 @@ public:
     PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const;
     bool toNormalizedPositions(Position& start, Position& end) const;
     static void normalizePositions(const Position& start, const Position& end, Position* normalizedStart, Position* normalizedEnd);
+    static void normalizePositions(const PositionInComposedTree& start, const PositionInComposedTree& end, PositionInComposedTree* outStart, PositionInComposedTree* outEnd);
 
     Element* rootEditableElement() const;
     bool isContentEditable() const;

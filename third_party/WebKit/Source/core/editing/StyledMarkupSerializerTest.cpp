@@ -86,6 +86,7 @@ TEST_F(StyledMarkupSerializerTest, TextOnly)
     setBodyContent(bodyContent);
     const char* expectedResult = "<span style=\"display: inline !important; float: none;\">Hello world!</span>";
     EXPECT_EQ(expectedResult, serialize<EditingStrategy>());
+    EXPECT_EQ(expectedResult, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, BlockFormatting)
@@ -93,6 +94,7 @@ TEST_F(StyledMarkupSerializerTest, BlockFormatting)
     const char* bodyContent = "<div>Hello world!</div>";
     setBodyContent(bodyContent);
     EXPECT_EQ(bodyContent, serialize<EditingStrategy>());
+    EXPECT_EQ(bodyContent, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, FormControlInput)
@@ -101,6 +103,7 @@ TEST_F(StyledMarkupSerializerTest, FormControlInput)
     setBodyContent(bodyContent);
     const char* expectedResult = "<input value=\"foo\">";
     EXPECT_EQ(expectedResult, serialize<EditingStrategy>());
+    EXPECT_EQ(expectedResult, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, FormControlInputRange)
@@ -109,6 +112,7 @@ TEST_F(StyledMarkupSerializerTest, FormControlInputRange)
     setBodyContent(bodyContent);
     const char* expectedResult = "<input type=\"range\">";
     EXPECT_EQ(expectedResult, serialize<EditingStrategy>());
+    EXPECT_EQ(expectedResult, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, FormControlSelect)
@@ -116,6 +120,7 @@ TEST_F(StyledMarkupSerializerTest, FormControlSelect)
     const char* bodyContent = "<select><option value=\"1\">one</option><option value=\"2\">two</option></select>";
     setBodyContent(bodyContent);
     EXPECT_EQ(bodyContent, serialize<EditingStrategy>());
+    EXPECT_EQ(bodyContent, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, FormControlTextArea)
@@ -125,6 +130,7 @@ TEST_F(StyledMarkupSerializerTest, FormControlTextArea)
     const char* expectedResult = "<textarea></textarea>";
     EXPECT_EQ(expectedResult, serialize<EditingStrategy>())
         << "contents of TEXTAREA element should not be appeared.";
+    EXPECT_EQ(expectedResult, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, HeadingFormatting)
@@ -132,6 +138,7 @@ TEST_F(StyledMarkupSerializerTest, HeadingFormatting)
     const char* bodyContent = "<h4>Hello world!</h4>";
     setBodyContent(bodyContent);
     EXPECT_EQ(bodyContent, serialize<EditingStrategy>());
+    EXPECT_EQ(bodyContent, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, InlineFormatting)
@@ -139,6 +146,7 @@ TEST_F(StyledMarkupSerializerTest, InlineFormatting)
     const char* bodyContent = "<b>Hello world!</b>";
     setBodyContent(bodyContent);
     EXPECT_EQ(bodyContent, serialize<EditingStrategy>());
+    EXPECT_EQ(bodyContent, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, Mixed)
@@ -146,6 +154,7 @@ TEST_F(StyledMarkupSerializerTest, Mixed)
     const char* bodyContent = "<i>foo<b>bar</b>baz</i>";
     setBodyContent(bodyContent);
     EXPECT_EQ(bodyContent, serialize<EditingStrategy>());
+    EXPECT_EQ(bodyContent, serialize<EditingInComposedTreeStrategy>());
 }
 
 TEST_F(StyledMarkupSerializerTest, ShadowTreeDistributeOrder)
@@ -155,6 +164,20 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeDistributeOrder)
     setBodyContent(bodyContent);
     setShadowContent(shadowContent);
     EXPECT_EQ("<p id=\"host\"><b id=\"one\">11</b><b id=\"two\">22</b></p>", serialize<EditingStrategy>())
+        << "00 and 33 aren't appeared since they aren't distributed.";
+    EXPECT_EQ("<p id=\"host\"><a><b id=\"two\">22</b><b id=\"one\">11</b></a></p>", serialize<EditingInComposedTreeStrategy>())
+        << "00 and 33 aren't appeared since they aren't distributed.";
+}
+
+TEST_F(StyledMarkupSerializerTest, ShadowTreeInput)
+{
+    const char* bodyContent = "<p id=\"host\">00<b id=\"one\">11</b><b id=\"two\"><input value=\"22\"></b>33</p>";
+    const char* shadowContent = "<a><content select=#two></content><content select=#one></content></a>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent);
+    EXPECT_EQ("<p id=\"host\"><b id=\"one\">11</b><b id=\"two\"><input value=\"22\"></b></p>", serialize<EditingStrategy>())
+        << "00 and 33 aren't appeared since they aren't distributed.";
+    EXPECT_EQ("<p id=\"host\"><a><b id=\"two\"><input value=\"22\"></b><b id=\"one\">11</b></a></p>", serialize<EditingInComposedTreeStrategy>())
         << "00 and 33 aren't appeared since they aren't distributed.";
 }
 
@@ -169,6 +192,8 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeNested)
 
     EXPECT_EQ("<p id=\"host\"><b id=\"one\">11</b><b id=\"two\">22</b></p>", serialize<EditingStrategy>())
         << "00 and 33 aren't appeared since they aren't distributed.";
+    EXPECT_EQ("<p id=\"host\"><a><b id=\"two\">22</b><b id=\"host2\">NESTED</b><b id=\"one\">11</b></a></p>", serialize<EditingInComposedTreeStrategy>())
+        << "00 and 33 aren't appeared since they aren't distributed.";
 }
 
 TEST_F(StyledMarkupSerializerTest, StyleDisplayNone)
@@ -177,6 +202,7 @@ TEST_F(StyledMarkupSerializerTest, StyleDisplayNone)
     setBodyContent(bodyContent);
     const char* expectedResult = "<b>0022</b>";
     EXPECT_EQ(expectedResult, serialize<EditingStrategy>());
+    EXPECT_EQ(expectedResult, serialize<EditingInComposedTreeStrategy>());
 }
 
 } // namespace blink

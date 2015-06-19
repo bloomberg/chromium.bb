@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/editing/EditingStrategy.h"
 
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/htmlediting.h"
 
 namespace blink {
@@ -143,6 +144,16 @@ short EditingAlgorithm<Traversal>::comparePositions(Node* containerA, int offset
     // Should never reach this point.
     ASSERT_NOT_REACHED();
     return 0;
+}
+
+bool EditingInComposedTreeStrategy::isSelectionBoundaryShadowHost(const Node& node)
+{
+    if (!node.isElementNode())
+        return false;
+    ElementShadow* shadow = toElement(node).shadow();
+    if (!shadow)
+        return false;
+    return shadow->youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot;
 }
 
 ContainerNode* EditingInComposedTreeStrategy::parentOrShadowHostNode(const Node& node)

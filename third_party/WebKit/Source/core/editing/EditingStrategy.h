@@ -41,6 +41,9 @@ public:
     using PositionIteratorType = PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
     using PositionType = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
+    // Returns true if the given node is considered as selection boundary.
+    static bool isSelectionBoundaryShadowHost(const Node&);
+
     // Don't use |parentOrShadowHostNode()| in composed tree specific algorithm.
     // This function is provided here for sharing algorithm with
     // |TextIteratorAlgorithm|, which handles shadow tree within in

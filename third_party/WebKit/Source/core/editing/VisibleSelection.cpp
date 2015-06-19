@@ -232,6 +232,11 @@ void VisibleSelection::normalizePositions(const Position& start, const Position&
     return normalizePositionsAlgorithm<Position>(start, end, outStart, outEnd);
 }
 
+void VisibleSelection::normalizePositions(const PositionInComposedTree& start, const PositionInComposedTree& end, PositionInComposedTree* outStart, PositionInComposedTree* outEnd)
+{
+    return normalizePositionsAlgorithm<PositionInComposedTree>(start, end, outStart, outEnd);
+}
+
 bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) const
 {
     if (isNone())

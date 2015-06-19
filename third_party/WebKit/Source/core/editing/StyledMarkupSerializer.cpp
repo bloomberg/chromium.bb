@@ -59,6 +59,21 @@ TextOffset toTextOffset(const PositionType& position)
     return TextOffset(toText(position.containerNode()), position.offsetInContainerNode());
 }
 
+template<typename EditingStrategy>
+static bool handleSelectionBoundary(const Node&);
+
+template<>
+bool handleSelectionBoundary<EditingStrategy>(const Node&)
+{
+    return false;
+}
+
+template<>
+bool handleSelectionBoundary<EditingInComposedTreeStrategy>(const Node& node)
+{
+    return EditingInComposedTreeStrategy::isSelectionBoundaryShadowHost(node);
+}
+
 } // namespace
 
 using namespace HTMLNames;
@@ -274,29 +289,35 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
         if (!n)
             break;
 
-        next = Strategy::next(*n);
-
-        if (isBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd) {
-            // Don't write out empty block containers that aren't fully selected.
-            continue;
-        }
-
-        if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag)) {
-            next = Strategy::nextSkippingChildren(*n);
-            // Don't skip over pastEnd.
-            if (pastEnd && Strategy::isDescendantOf(*pastEnd, *n))
-                next = pastEnd;
+        // If |n| is a selection boundary such as <input>, traverse the child
+        // nodes in the DOM tree instead of the composed tree.
+        if (handleSelectionBoundary<Strategy>(*n)) {
+            lastClosed = StyledMarkupTraverser<EditingStrategy>(m_accumulator, m_lastClosed.get()).traverse(n, EditingStrategy::nextSkippingChildren(*n));
+            next = EditingInComposedTreeStrategy::nextSkippingChildren(*n);
         } else {
-            // Add the node to the markup if we're not skipping the descendants
-            appendStartMarkup(*n);
-
-            // If node has no children, close the tag now.
-            if (Strategy::hasChildren(*n)) {
-                ancestorsToClose.append(toContainerNode(n));
+            next = Strategy::next(*n);
+            if (isBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd) {
+                // Don't write out empty block containers that aren't fully selected.
                 continue;
             }
-            appendEndMarkup(*n);
-            lastClosed = n;
+
+            if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag)) {
+                next = Strategy::nextSkippingChildren(*n);
+                // Don't skip over pastEnd.
+                if (pastEnd && Strategy::isDescendantOf(*pastEnd, *n))
+                    next = pastEnd;
+            } else {
+                // Add the node to the markup if we're not skipping the descendants
+                appendStartMarkup(*n);
+
+                // If node has no children, close the tag now.
+                if (Strategy::hasChildren(*n)) {
+                    ancestorsToClose.append(toContainerNode(n));
+                    continue;
+                }
+                appendEndMarkup(*n);
+                lastClosed = n;
+            }
         }
 
         // If we didn't insert open tag and there's no more siblings or we're at the end of the traversal, take care of ancestors.
@@ -462,5 +483,6 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupTraverser<Strategy>::createInlineSt
 }
 
 template class StyledMarkupSerializer<EditingStrategy>;
+template class StyledMarkupSerializer<EditingInComposedTreeStrategy>;
 
 } // namespace blink
