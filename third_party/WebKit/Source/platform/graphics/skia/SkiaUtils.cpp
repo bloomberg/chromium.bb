@@ -243,7 +243,6 @@ InterpolationQuality limitInterpolationQuality(const GraphicsContext* context, I
 }
 
 InterpolationQuality computeInterpolationQuality(
-    const SkMatrix& matrix,
     float srcWidth,
     float srcHeight,
     float destWidth,
@@ -322,12 +321,8 @@ InterpolationQuality computeInterpolationQuality(
     if (!isDataComplete)
         return InterpolationLow;
 
-    // Everything else gets resampled.
-    // High quality interpolation only enabled for scaling and translation.
-    if (!(matrix.getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
-        return InterpolationHigh;
-
-    return InterpolationLow;
+    // Everything else gets resampled at high quality.
+    return InterpolationHigh;
 }
 
 int clampedAlphaForBlending(float alpha)

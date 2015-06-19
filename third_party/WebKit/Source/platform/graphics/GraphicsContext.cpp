@@ -956,15 +956,8 @@ SkFilterQuality GraphicsContext::computeFilterQuality(Image* image, const FloatR
     } else if (image->isLazyDecodedBitmap()) {
         resampling = InterpolationHigh;
     } else {
-        // Take into account scale applied to the canvas when computing sampling mode (e.g. CSS scale or page scale).
-        // FIXME: In slimming paint, we create GCs on the fly when entering a new DisplayItemList
-        // scope, so relying on getTotalMatrix here is not sound.
         SkRect destRectTarget = dest;
-        SkMatrix totalMatrix = getTotalMatrix();
-        if (!(totalMatrix.getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
-            totalMatrix.mapRect(&destRectTarget, dest);
-
-        resampling = computeInterpolationQuality(totalMatrix,
+        resampling = computeInterpolationQuality(
             SkScalarToFloat(src.width()), SkScalarToFloat(src.height()),
             SkScalarToFloat(destRectTarget.width()), SkScalarToFloat(destRectTarget.height()),
             image->isImmutableBitmap());

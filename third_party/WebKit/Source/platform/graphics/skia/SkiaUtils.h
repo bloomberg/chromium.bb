@@ -118,7 +118,6 @@ bool nearlyIntegral(float value);
 InterpolationQuality limitInterpolationQuality(const GraphicsContext*, InterpolationQuality resampling);
 
 InterpolationQuality computeInterpolationQuality(
-    const SkMatrix&,
     float srcWidth,
     float srcHeight,
     float destWidth,
