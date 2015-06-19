@@ -138,6 +138,8 @@
         'debug/rendering_stats_instrumentation.cc',
         'debug/rendering_stats_instrumentation.h',
         'debug/ring_buffer.h',
+        'debug/traced_display_item_list.cc',
+        'debug/traced_display_item_list.h',
         'debug/traced_picture.cc',
         'debug/traced_picture.h',
         'debug/traced_value.cc',

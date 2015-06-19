@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/picture_debug_util.h"
+#include "cc/debug/traced_display_item_list.h"
 #include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"
 #include "cc/playback/display_item_list_settings.h"
@@ -24,12 +25,10 @@ namespace cc {
 
 namespace {
 
-bool PictureTracingEnabled() {
+bool DisplayItemsTracingEnabled() {
   bool tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-    TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
-    TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
-    &tracing_enabled);
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.display_items"), &tracing_enabled);
   return tracing_enabled;
 }
 
@@ -65,9 +64,10 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
 
 DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
                                  const DisplayItemListSettings& settings)
-    : DisplayItemList(layer_rect,
-                      settings,
-                      !settings.use_cached_picture || PictureTracingEnabled()) {
+    : DisplayItemList(
+          layer_rect,
+          settings,
+          !settings.use_cached_picture || DisplayItemsTracingEnabled()) {
 }
 
 scoped_refptr<DisplayItemList> DisplayItemList::CreateWithoutCachedPicture(
@@ -210,17 +210,19 @@ size_t DisplayItemList::PictureMemoryUsage() const {
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-DisplayItemList::AsValue() const {
+DisplayItemList::AsValue(bool include_items) const {
   DCHECK(ProcessAppendedItemsCalled());
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
 
-  state->SetInteger("length", base::saturated_cast<int>(items_.size()));
-  state->BeginArray("params.items");
-  for (const DisplayItem* item : items_) {
-    item->AsValueInto(state.get());
+  if (include_items) {
+    state->BeginArray("params.items");
+    for (const DisplayItem* item : items_) {
+      item->AsValueInto(state.get());
+    }
+    state->EndArray();
   }
-  state->EndArray();
+
   state->SetValue("params.layer_rect", MathUtil::AsValue(layer_rect_));
 
   if (!layer_rect_.IsEmpty()) {
@@ -244,9 +246,12 @@ DisplayItemList::AsValue() const {
 void DisplayItemList::EmitTraceSnapshot() const {
   DCHECK(ProcessAppendedItemsCalled());
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.display_items") ","
       TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
-      "cc::DisplayItemList", this, AsValue());
+      "cc::DisplayItemList", this,
+      TracedDisplayItemList::AsTraceableDisplayItemList(this,
+          DisplayItemsTracingEnabled()));
 }
 
 void DisplayItemList::GatherPixelRefs(const gfx::Size& grid_cell_size) {
