@@ -797,6 +797,23 @@ crbug.com/409767 crypto/subtle/worker-subtle-crypto-concurrent.html [ Crash Pass
 crbug.com/438403 crypto/subtle/aes-cbc/decrypt-failures.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc/encrypt-decrypt.html [ Crash Pass ]
 
+# Temporarily disabled tests for V8 Harmony Array/TypedArray methods
+crbug.com/502308 media/encrypted-media/encrypted-media-syntax.html [ NeedsManualRebaseline ]
+crbug.com/502308 virtual/pointerevent/fast/events/constructors/midi-message-event-constructor.html [ NeedsManualRebaseline ]
+crbug.com/502308 fast/canvas/webgl/type-conversion-test.html [ NeedsManualRebaseline ]
+crbug.com/502308 fast/dom/Window/window-postmessage-args.html [ NeedsManualRebaseline ]
+crbug.com/502308 fast/dom/Window/window-postmessage-clone.html [ NeedsManualRebaseline ]
+crbug.com/502308 virtual/stable/webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+crbug.com/502308 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+crbug.com/502308 virtual/gpu/fast/canvas/webgl/type-conversion-test.html [ NeedsManualRebaseline ]
+crbug.com/502308 webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
+crbug.com/502308 webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
+crbug.com/502308 fast/events/constructors/midi-message-event-constructor.html [ NeedsManualRebaseline ]
+crbug.com/502308 webexposed/global-interface-listing-compositor-worker.html [ NeedsManualRebaseline ]
+crbug.com/502308 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
+crbug.com/502308 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
+crbug.com/502308 virtual/display_list_2d_canvas/fast/canvas/webgl/type-conversion-test.html [ NeedsManualRebaseline ]
+
 crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
