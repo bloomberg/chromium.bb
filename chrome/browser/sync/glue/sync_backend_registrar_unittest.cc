@@ -44,7 +44,8 @@ void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
   registrar->OnChangesComplete(type);
 }
 
-class SyncBackendRegistrarTest : public testing::Test {
+// Flaky: https://crbug.com/498238
+class DISABLED_SyncBackendRegistrarTest : public testing::Test {
  public:
   void TestNonUIDataTypeActivationAsync(sync_driver::ChangeProcessor* processor,
                                         base::WaitableEvent* done) {
@@ -61,13 +62,13 @@ class SyncBackendRegistrarTest : public testing::Test {
   }
 
  protected:
-  SyncBackendRegistrarTest()
+  DISABLED_SyncBackendRegistrarTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
                        content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
         sync_thread_(NULL) {}
 
-  ~SyncBackendRegistrarTest() override {}
+  ~DISABLED_SyncBackendRegistrarTest() override {}
 
   void SetUp() override {
     test_user_share_.SetUp();
@@ -110,7 +111,7 @@ class SyncBackendRegistrarTest : public testing::Test {
   base::Thread* sync_thread_;
 };
 
-TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
+TEST_F(DISABLED_SyncBackendRegistrarTest, ConstructorEmpty) {
   registrar_->SetInitialTypes(ModelTypeSet());
   EXPECT_FALSE(registrar_->IsNigoriEnabled());
   {
@@ -122,7 +123,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   ExpectHasProcessorsForTypes(*registrar_, ModelTypeSet());
 }
 
-TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
+TEST_F(DISABLED_SyncBackendRegistrarTest, ConstructorNonEmpty) {
   const ModelTypeSet initial_types(BOOKMARKS, NIGORI, PASSWORDS);
   registrar_->SetInitialTypes(initial_types);
   EXPECT_TRUE(registrar_->IsNigoriEnabled());
@@ -141,7 +142,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   ExpectHasProcessorsForTypes(*registrar_, ModelTypeSet());
 }
 
-TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
+TEST_F(DISABLED_SyncBackendRegistrarTest, ConfigureDataTypes) {
   registrar_->SetInitialTypes(ModelTypeSet());
 
   // Add.
@@ -177,7 +178,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   EXPECT_TRUE(ModelTypeSet().Equals(registrar_->GetLastConfiguredTypes()));
 }
 
-TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
+TEST_F(DISABLED_SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   InSequence in_sequence;
   registrar_->SetInitialTypes(ModelTypeSet());
 
@@ -218,7 +219,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   TriggerChanges(registrar_.get(), BOOKMARKS);
 }
 
-TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
+TEST_F(DISABLED_SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   InSequence in_sequence;
   registrar_->SetInitialTypes(ModelTypeSet());
 
@@ -244,10 +245,11 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   BrowserThread::PostTask(
       BrowserThread::DB,
       FROM_HERE,
-      base::Bind(&SyncBackendRegistrarTest::TestNonUIDataTypeActivationAsync,
-                 base::Unretained(this),
-                 &change_processor_mock,
-                 &done));
+      base::Bind(
+          &DISABLED_SyncBackendRegistrarTest::TestNonUIDataTypeActivationAsync,
+          base::Unretained(this),
+          &change_processor_mock,
+          &done));
   done.Wait();
 
   registrar_->DeactivateDataType(AUTOFILL);
