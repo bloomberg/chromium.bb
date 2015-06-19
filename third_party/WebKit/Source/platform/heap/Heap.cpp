@@ -1264,7 +1264,6 @@ void NormalPage::makeConsistentForGC()
 
 void NormalPage::makeConsistentForMutator()
 {
-    size_t markedObjectSize = 0;
     Address startOfGap = payload();
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
@@ -1281,16 +1280,12 @@ void NormalPage::makeConsistentForMutator()
             heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
         if (header->isMarked()) {
             header->unmark();
-            markedObjectSize += header->size();
         }
         headerAddress += header->size();
         startOfGap = headerAddress;
     }
     if (startOfGap != payloadEnd())
         heapForNormalPage()->addToFreeList(startOfGap, payloadEnd() - startOfGap);
-
-    if (markedObjectSize)
-        Heap::increaseMarkedObjectSize(markedObjectSize);
 }
 
 #if defined(ADDRESS_SANITIZER)
@@ -1585,10 +1580,8 @@ void LargeObjectPage::makeConsistentForGC()
 void LargeObjectPage::makeConsistentForMutator()
 {
     HeapObjectHeader* header = heapObjectHeader();
-    if (header->isMarked()) {
+    if (header->isMarked())
         header->unmark();
-        Heap::increaseMarkedObjectSize(size());
-    }
 }
 
 #if defined(ADDRESS_SANITIZER)
@@ -2019,7 +2012,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     StackFrameDepthScope stackDepthScope;
 
     size_t totalObjectSize = Heap::allocatedObjectSize() + Heap::markedObjectSize();
-    Heap::resetHeapCounters();
+    if (gcType != ThreadState::TakeSnapshot)
+        Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
     ThreadState::visitPersistentRoots(gcScope.visitor());
