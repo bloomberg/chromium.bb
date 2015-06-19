@@ -88,8 +88,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
     explicit MainThreadOrBlockedMainThread(LayerTreeHost* host);
     ~MainThreadOrBlockedMainThread();
 
-    PrioritizedResourceManager* contents_texture_manager();
-
     LayerTreeHost* layer_tree_host;
     bool commit_waits_for_activation;
     bool main_thread_inside_commit;
@@ -104,10 +102,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
     ~CompositorThreadOnly();
 
     const int layer_tree_host_id;
-
-    // Copy of the main thread side contents texture manager for work
-    // that needs to be done on the compositor thread.
-    PrioritizedResourceManager* contents_texture_manager;
 
     scoped_ptr<Scheduler> scheduler;
 
@@ -207,8 +201,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
   void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> queue) override;
-  bool ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
-                                               int priority_cutoff) override;
   bool IsInsideDraw() override;
   void RenewTreePriority() override;
   void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,

@@ -93,9 +93,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_animate_(false),
         did_request_prepare_tiles_(false),
         did_complete_page_scale_animation_(false),
-        reduce_memory_result_(true),
-        current_limit_bytes_(0),
-        current_priority_cutoff_value_(0) {
+        reduce_memory_result_(true) {
     media::InitializeMediaLibrary();
   }
 
@@ -142,12 +140,6 @@ class LayerTreeHostImplTest : public testing::Test,
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override {}
   void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events) override {}
-  bool ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
-                                               int priority_cutoff) override {
-    current_limit_bytes_ = limit_bytes;
-    current_priority_cutoff_value_ = priority_cutoff;
-    return reduce_memory_result_;
-  }
   bool IsInsideDraw() override { return false; }
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
@@ -368,32 +360,6 @@ class LayerTreeHostImplTest : public testing::Test,
     EXPECT_TRUE(host_impl_->CanDraw());
     EXPECT_TRUE(on_can_draw_state_changed_called_);
     on_can_draw_state_changed_called_ = false;
-
-    // Toggle contents textures purged without causing any evictions,
-    // and make sure that it does not change can_draw.
-    set_reduce_memory_result(false);
-    host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-        host_impl_->memory_allocation_limit_bytes() - 1));
-    EXPECT_TRUE(host_impl_->CanDraw());
-    EXPECT_FALSE(on_can_draw_state_changed_called_);
-    on_can_draw_state_changed_called_ = false;
-
-    // Toggle contents textures purged to make sure it toggles can_draw.
-    set_reduce_memory_result(true);
-    host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-        host_impl_->memory_allocation_limit_bytes() - 1));
-    if (always_draw) {
-      EXPECT_TRUE(host_impl_->CanDraw());
-    } else {
-      EXPECT_FALSE(host_impl_->CanDraw());
-    }
-    EXPECT_TRUE(on_can_draw_state_changed_called_);
-    on_can_draw_state_changed_called_ = false;
-
-    host_impl_->active_tree()->ResetContentsTexturesPurged();
-    EXPECT_TRUE(host_impl_->CanDraw());
-    EXPECT_TRUE(on_can_draw_state_changed_called_);
-    on_can_draw_state_changed_called_ = false;
   }
 
   void SetupMouseMoveAtWithDeviceScale(float device_scale_factor);
@@ -428,8 +394,6 @@ class LayerTreeHostImplTest : public testing::Test,
   bool reduce_memory_result_;
   base::Closure animation_task_;
   base::TimeDelta requested_animation_delay_;
-  size_t current_limit_bytes_;
-  int current_priority_cutoff_value_;
 };
 
 TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
@@ -5693,46 +5657,6 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   Mock::VerifyAndClearExpectations(&mock_context);
 }
 
-TEST_F(LayerTreeHostImplTest, ReleaseContentsTextureShouldTriggerCommit) {
-  set_reduce_memory_result(false);
-
-  // If changing the memory limit wouldn't result in changing what was
-  // committed, then no commit should be requested.
-  set_reduce_memory_result(false);
-  host_impl_->set_max_memory_needed_bytes(
-      host_impl_->memory_allocation_limit_bytes() - 1);
-  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
-  EXPECT_FALSE(did_request_commit_);
-  did_request_commit_ = false;
-
-  // If changing the memory limit would result in changing what was
-  // committed, then a commit should be requested, even though nothing was
-  // evicted.
-  set_reduce_memory_result(false);
-  host_impl_->set_max_memory_needed_bytes(
-      host_impl_->memory_allocation_limit_bytes());
-  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
-  EXPECT_TRUE(did_request_commit_);
-  did_request_commit_ = false;
-
-  // Especially if changing the memory limit caused evictions, we need
-  // to re-commit.
-  set_reduce_memory_result(true);
-  host_impl_->set_max_memory_needed_bytes(1);
-  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes() - 1));
-  EXPECT_TRUE(did_request_commit_);
-  did_request_commit_ = false;
-
-  // But if we set it to the same value that it was before, we shouldn't
-  // re-commit.
-  host_impl_->SetMemoryPolicy(ManagedMemoryPolicy(
-      host_impl_->memory_allocation_limit_bytes()));
-  EXPECT_FALSE(did_request_commit_);
-}
-
 class LayerTreeHostImplTestWithDelegatingRenderer
     : public LayerTreeHostImplTest {
  protected:
@@ -6043,51 +5967,6 @@ TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
       FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()));
   host_impl_->InitializeRenderer(output_surface.Pass());
   EXPECT_LT(0ul, host_impl_->memory_allocation_limit_bytes());
-}
-
-TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
-  ManagedMemoryPolicy policy1(
-      456, gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING, 1000);
-  int everything_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
-      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING);
-  int allow_nice_to_have_cutoff_value =
-      ManagedMemoryPolicy::PriorityCutoffToValue(
-          gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE);
-  int nothing_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
-      gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
-
-  // GPU rasterization should be disabled by default on the tree(s)
-  EXPECT_FALSE(host_impl_->active_tree()->use_gpu_rasterization());
-  EXPECT_TRUE(host_impl_->pending_tree() == NULL);
-
-  host_impl_->SetVisible(true);
-  host_impl_->SetMemoryPolicy(policy1);
-  EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
-  EXPECT_EQ(everything_cutoff_value, current_priority_cutoff_value_);
-
-  host_impl_->SetVisible(false);
-  EXPECT_EQ(0u, current_limit_bytes_);
-  EXPECT_EQ(nothing_cutoff_value, current_priority_cutoff_value_);
-
-  host_impl_->SetVisible(true);
-  EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
-  EXPECT_EQ(everything_cutoff_value, current_priority_cutoff_value_);
-
-  // Now enable GPU rasterization and test if we get nice to have cutoff,
-  // when visible.
-  LayerTreeSettings settings;
-  settings.gpu_rasterization_enabled = true;
-  CreateHostImpl(settings, CreateOutputSurface());
-  host_impl_->SetContentIsSuitableForGpuRasterization(true);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
-  host_impl_->SetVisible(true);
-  host_impl_->SetMemoryPolicy(policy1);
-  EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
-  EXPECT_EQ(allow_nice_to_have_cutoff_value, current_priority_cutoff_value_);
-
-  host_impl_->SetVisible(false);
-  EXPECT_EQ(0u, current_limit_bytes_);
-  EXPECT_EQ(nothing_cutoff_value, current_priority_cutoff_value_);
 }
 
 TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {

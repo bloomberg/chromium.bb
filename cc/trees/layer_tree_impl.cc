@@ -57,7 +57,6 @@ LayerTreeImpl::LayerTreeImpl(
       max_page_scale_factor_(0),
       elastic_overscroll_(elastic_overscroll),
       scrolling_layer_id_from_previous_tree_(0),
-      contents_textures_purged_(false),
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true),
@@ -234,11 +233,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_source_frame_number(source_frame_number());
   target_tree->set_background_color(background_color());
   target_tree->set_has_transparent_background(has_transparent_background());
-
-  if (ContentsTexturesPurged())
-    target_tree->SetContentsTexturesPurged();
-  else
-    target_tree->ResetContentsTexturesPurged();
 
   if (ViewportSizeInvalid())
     target_tree->SetViewportSizeInvalid();
@@ -795,24 +789,6 @@ void LayerTreeImpl::DidBecomeActive() {
     swap_promise->DidActivate();
   devtools_instrumentation::DidActivateLayerTree(layer_tree_host_impl_->id(),
                                                  source_frame_number_);
-}
-
-bool LayerTreeImpl::ContentsTexturesPurged() const {
-  return contents_textures_purged_;
-}
-
-void LayerTreeImpl::SetContentsTexturesPurged() {
-  if (contents_textures_purged_)
-    return;
-  contents_textures_purged_ = true;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
-}
-
-void LayerTreeImpl::ResetContentsTexturesPurged() {
-  if (!contents_textures_purged_)
-    return;
-  contents_textures_purged_ = false;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 bool LayerTreeImpl::RequiresHighResToDraw() const {

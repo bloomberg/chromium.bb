@@ -194,13 +194,6 @@ void LayerTreeHost::SetLayerTreeHostClientReady() {
   proxy_->SetLayerTreeHostClientReady();
 }
 
-void LayerTreeHost::DeleteContentsTexturesOnImplThread(
-    ResourceProvider* resource_provider) {
-  DCHECK(proxy_->IsImplThread());
-  if (contents_texture_manager_)
-    contents_texture_manager_->ClearAllMemory(resource_provider);
-}
-
 void LayerTreeHost::WillBeginMainFrame() {
   devtools_instrumentation::WillBeginMainThreadFrame(id(),
                                                      source_frame_number());
@@ -241,32 +234,6 @@ void LayerTreeHost::BeginCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 // after the commit, but on the main thread.
 void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   DCHECK(proxy_->IsImplThread());
-
-  // If there are linked evicted backings, these backings' resources may be put
-  // into the impl tree, so we can't draw yet. Determine this before clearing
-  // all evicted backings.
-  bool new_impl_tree_has_no_evicted_resources = false;
-  if (contents_texture_manager_) {
-    new_impl_tree_has_no_evicted_resources =
-        !contents_texture_manager_->LinkedEvictedBackingsExist();
-
-    // If the memory limit has been increased since this now-finishing
-    // commit began, and the extra now-available memory would have been used,
-    // then request another commit.
-    if (contents_texture_manager_->MaxMemoryLimitBytes() <
-            host_impl->memory_allocation_limit_bytes() &&
-        contents_texture_manager_->MaxMemoryLimitBytes() <
-            contents_texture_manager_->MaxMemoryNeededBytes()) {
-      host_impl->SetNeedsCommit();
-    }
-
-    host_impl->set_max_memory_needed_bytes(
-        contents_texture_manager_->MaxMemoryNeededBytes());
-
-    contents_texture_manager_->UpdateBackingsState(
-        host_impl->resource_provider());
-    contents_texture_manager_->ReduceMemory(host_impl->resource_provider());
-  }
 
   bool is_new_trace;
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
@@ -353,11 +320,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   DCHECK(!sync_tree->ViewportSizeInvalid());
 
-  if (new_impl_tree_has_no_evicted_resources) {
-    if (sync_tree->ContentsTexturesPurged())
-      sync_tree->ResetContentsTexturesPurged();
-  }
-
   sync_tree->set_has_ever_been_drawn(false);
 
   {
@@ -417,19 +379,10 @@ void LayerTreeHost::RequestNewOutputSurface() {
 
 void LayerTreeHost::DidInitializeOutputSurface() {
   output_surface_lost_ = false;
-
-  if (!contents_texture_manager_ && !settings_.impl_side_painting) {
-    contents_texture_manager_ =
-        PrioritizedResourceManager::Create(proxy_.get());
-    surface_memory_placeholder_ =
-        contents_texture_manager_->CreateTexture(gfx::Size(), RGBA_8888);
-  }
-
   if (root_layer()) {
     LayerTreeHostCommon::CallFunctionForSubtree(
         root_layer(), [](Layer* layer) { layer->OnOutputSurfaceCreated(); });
   }
-
   client_->DidInitializeOutputSurface();
 }
 

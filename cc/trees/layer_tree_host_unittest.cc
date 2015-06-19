@@ -69,17 +69,7 @@ using testing::Mock;
 namespace cc {
 namespace {
 
-class LayerTreeHostTest : public LayerTreeTest {
- public:
-  LayerTreeHostTest() : contents_texture_manager_(nullptr) {}
-
-  void DidInitializeOutputSurface() override {
-    contents_texture_manager_ = layer_tree_host()->contents_texture_manager();
-  }
-
- protected:
-  PrioritizedResourceManager* contents_texture_manager_;
-};
+class LayerTreeHostTest : public LayerTreeTest {};
 
 class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
  public:
@@ -3532,69 +3522,6 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
-
-class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestAbortEvictedTextures()
-      : num_will_begin_main_frames_(0), num_impl_commits_(0) {}
-
- protected:
-  void SetupTree() override {
-    scoped_refptr<SolidColorLayer> root_layer =
-        SolidColorLayer::Create(layer_settings());
-    root_layer->SetBounds(gfx::Size(200, 200));
-    root_layer->SetIsDrawable(true);
-    root_layer->CreateRenderSurface();
-
-    layer_tree_host()->SetRootLayer(root_layer);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void WillBeginMainFrame() override {
-    num_will_begin_main_frames_++;
-    switch (num_will_begin_main_frames_) {
-      case 2:
-        // Send a redraw to the compositor thread.  This will (wrongly) be
-        // ignored unless aborting resets the texture state.
-        layer_tree_host()->SetNeedsRedraw();
-        break;
-    }
-  }
-
-  void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
-    num_impl_commits_++;
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    switch (impl->SourceAnimationFrameNumberForTesting()) {
-      case 1:
-        // Prevent draws until commit.
-        impl->active_tree()->SetContentsTexturesPurged();
-        EXPECT_FALSE(impl->CanDraw());
-        // Trigger an abortable commit.
-        impl->SetNeedsCommit();
-        break;
-      case 2:
-        EndTest();
-        break;
-    }
-  }
-
-  void AfterTest() override {
-    // Ensure that the commit was truly aborted.
-    EXPECT_EQ(2, num_will_begin_main_frames_);
-    EXPECT_EQ(1, num_impl_commits_);
-  }
-
- private:
-  int num_will_begin_main_frames_;
-  int num_impl_commits_;
-};
-
-// Commits can only be aborted when using the thread proxy.
-MULTI_THREAD_TEST_F(LayerTreeHostTestAbortEvictedTextures);
 
 class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
  protected:

@@ -152,8 +152,6 @@ void SingleThreadProxy::SetOutputSurface(
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
-    layer_tree_host_->DeleteContentsTexturesOnImplThread(
-        layer_tree_host_impl_->resource_provider());
     success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
   }
 
@@ -242,16 +240,6 @@ void SingleThreadProxy::DoCommit() {
         blocking_main_thread_task_runner()));
 
     layer_tree_host_impl_->BeginCommit();
-
-    if (PrioritizedResourceManager* contents_texture_manager =
-        layer_tree_host_->contents_texture_manager()) {
-      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-      // is fixed.
-      tracked_objects::ScopedTracker tracking_profile3(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "461509 SingleThreadProxy::DoCommit3"));
-      contents_texture_manager->PushTexturePrioritiesToBackings();
-    }
     layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
@@ -406,8 +394,6 @@ void SingleThreadProxy::Stop() {
 
     BlockingTaskRunner::CapturePostTasks blocked(
         blocking_main_thread_task_runner());
-    layer_tree_host_->DeleteContentsTexturesOnImplThread(
-        layer_tree_host_impl_->resource_provider());
     scheduler_on_impl_thread_ = nullptr;
     layer_tree_host_impl_ = nullptr;
   }
@@ -481,23 +467,6 @@ void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
   DCHECK(Proxy::IsImplThread());
   DebugScopedSetMainThread main(this);
   layer_tree_host_->SetAnimationEvents(events.Pass());
-}
-
-bool SingleThreadProxy::ReduceContentsTextureMemoryOnImplThread(
-    size_t limit_bytes,
-    int priority_cutoff) {
-  DCHECK(IsImplThread());
-  PrioritizedResourceManager* contents_texture_manager =
-      layer_tree_host_->contents_texture_manager();
-
-  ResourceProvider* resource_provider =
-      layer_tree_host_impl_->resource_provider();
-
-  if (!contents_texture_manager || !resource_provider)
-    return false;
-
-  return contents_texture_manager->ReduceMemoryOnImplThread(
-      limit_bytes, priority_cutoff, resource_provider);
 }
 
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
@@ -888,15 +857,6 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
   layer_tree_host_->Layout();
-
-  if (PrioritizedResourceManager* contents_texture_manager =
-          layer_tree_host_->contents_texture_manager()) {
-    contents_texture_manager->UnlinkAndClearEvictedBackings();
-    contents_texture_manager->SetMaxMemoryLimitBytes(
-        layer_tree_host_impl_->memory_allocation_limit_bytes());
-    contents_texture_manager->SetExternalPriorityCutoff(
-        layer_tree_host_impl_->memory_allocation_priority_cutoff());
-  }
 
   DCHECK(!queue_for_commit_);
   queue_for_commit_ = make_scoped_ptr(new ResourceUpdateQueue);

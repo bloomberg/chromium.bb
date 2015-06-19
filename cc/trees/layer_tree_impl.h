@@ -259,10 +259,6 @@ class CC_EXPORT LayerTreeImpl {
 
   void DidBecomeActive();
 
-  bool ContentsTexturesPurged() const;
-  void SetContentsTexturesPurged();
-  void ResetContentsTexturesPurged();
-
   // Set on the active tree when the viewport size recently changed
   // and the active tree's size is now out of date.
   bool ViewportSizeInvalid() const;
@@ -400,7 +396,6 @@ class CC_EXPORT LayerTreeImpl {
   // would not be fully covered by opaque content.
   Region unoccluded_screen_space_region_;
 
-  bool contents_textures_purged_;
   bool viewport_size_invalid_;
   bool needs_update_draw_properties_;
 

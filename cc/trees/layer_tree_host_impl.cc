@@ -289,10 +289,8 @@ void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   // If the begin frame data was handled, then scroll and scale set was applied
   // by the main thread, so the active tree needs to be updated as if these sent
   // values were applied and committed.
-  if (CommitEarlyOutHandledCommit(reason)) {
+  if (CommitEarlyOutHandledCommit(reason))
     active_tree_->ApplySentScrollAndScaleDeltasFromAbortedCommit();
-    active_tree_->ResetContentsTexturesPurged();
-  }
 }
 
 void LayerTreeHostImpl::BeginCommit() {
@@ -383,12 +381,6 @@ bool LayerTreeHostImpl::CanDraw() const {
   if (active_tree_->ViewportSizeInvalid()) {
     TRACE_EVENT_INSTANT0(
         "cc", "LayerTreeHostImpl::CanDraw viewport size recently changed",
-        TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
-  if (active_tree_->ContentsTexturesPurged()) {
-    TRACE_EVENT_INSTANT0(
-        "cc", "LayerTreeHostImpl::CanDraw contents textures purged",
         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
@@ -1149,7 +1141,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
 }
 
 void LayerTreeHostImpl::EvictTexturesForTesting() {
-  EnforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
+  UpdateTileManagerMemoryPolicy(ManagedMemoryPolicy(0));
 }
 
 void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
@@ -1173,26 +1165,6 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
 
 size_t LayerTreeHostImpl::SourceAnimationFrameNumberForTesting() const {
   return fps_counter_->current_frame_number();
-}
-
-void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
-    const ManagedMemoryPolicy& policy) {
-
-  bool evicted_resources = client_->ReduceContentsTextureMemoryOnImplThread(
-      visible_ ? policy.bytes_limit_when_visible : 0,
-      ManagedMemoryPolicy::PriorityCutoffToValue(
-          visible_ ? policy.priority_cutoff_when_visible
-                   : gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING));
-  if (evicted_resources) {
-    active_tree_->SetContentsTexturesPurged();
-    if (pending_tree_)
-      pending_tree_->SetContentsTexturesPurged();
-    client_->SetNeedsCommitOnImplThread();
-    client_->OnCanDrawStateChanged(CanDraw());
-    client_->RenewTreePriority();
-  }
-
-  UpdateTileManagerMemoryPolicy(policy);
 }
 
 void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
@@ -1367,10 +1339,10 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
     // In single-thread mode, this can be called on the main thread by
     // GLRenderer::OnMemoryAllocationChanged.
     DebugScopedSetImplThread impl_thread(proxy_);
-    EnforceManagedMemoryPolicy(actual_policy);
+    UpdateTileManagerMemoryPolicy(actual_policy);
   } else {
     DCHECK(proxy_->IsImplThread());
-    EnforceManagedMemoryPolicy(actual_policy);
+    UpdateTileManagerMemoryPolicy(actual_policy);
   }
 
   // If there is already enough memory to draw everything imaginable and the
@@ -1974,7 +1946,7 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     return;
   visible_ = visible;
   DidVisibilityChange(this, visible_);
-  EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
+  UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 
   // If we just became visible, we have to ensure that we draw high res tiles,
   // to prevent checkerboard/low res flashes.

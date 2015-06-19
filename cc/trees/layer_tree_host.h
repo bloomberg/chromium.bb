@@ -121,7 +121,6 @@ class CC_EXPORT LayerTreeHost {
   bool output_surface_lost() const { return output_surface_lost_; }
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
-  void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
   bool UpdateLayers();
 
   // Called when the compositor completed page scale animation.
@@ -225,10 +224,6 @@ class CC_EXPORT LayerTreeHost {
 
   void set_has_transparent_background(bool transparent) {
     has_transparent_background_ = transparent;
-  }
-
-  PrioritizedResourceManager* contents_texture_manager() const {
-    return contents_texture_manager_.get();
   }
 
   void SetVisible(bool visible);
@@ -401,9 +396,6 @@ class CC_EXPORT LayerTreeHost {
 
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
-
-  scoped_ptr<PrioritizedResourceManager> contents_texture_manager_;
-  scoped_ptr<PrioritizedResource> surface_memory_placeholder_;
 
   base::WeakPtr<InputHandler> input_handler_weak_ptr_;
   base::WeakPtr<TopControlsManager> top_controls_manager_weak_ptr_;
