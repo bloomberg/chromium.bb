@@ -679,6 +679,7 @@ void ThreadState::performIdleGC(double deadlineSeconds)
         return;
 
     double idleDeltaInSeconds = deadlineSeconds - Platform::current()->monotonicallyIncreasingTime();
+    TRACE_EVENT2("blink_gc", "ThreadState::performIdleGC", "idleDeltaInSeconds", idleDeltaInSeconds, "estimatedMarkingTime", Heap::estimatedMarkingTime());
     if (idleDeltaInSeconds <= Heap::estimatedMarkingTime() && !Platform::current()->currentThread()->scheduler()->canExceedIdleDeadlineIfRequired()) {
         // If marking is estimated to take longer than the deadline and we can't
         // exceed the deadline, then reschedule for the next idle period.
