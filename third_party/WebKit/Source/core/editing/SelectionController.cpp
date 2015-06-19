@@ -366,6 +366,14 @@ void SelectionController::updateSelectionForMouseDrag(Node* mousePressNode, cons
 
 void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTestResult, Node* mousePressNode, const LayoutPoint& dragStartPos, const IntPoint& lastKnownMousePosition)
 {
+    updateSelectionForMouseDragAlgorithm<VisibleSelection::InDOMTree>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
+}
+
+template <typename Strategy>
+void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResult& hitTestResult, Node* mousePressNode, const LayoutPoint& dragStartPos, const IntPoint& lastKnownMousePosition)
+{
+    using PositionType = typename Strategy::PositionType;
+
     if (!m_mouseDownMayStartSelect)
         return;
 
@@ -384,7 +392,7 @@ void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTe
 
     // Special case to limit selection to the containing block for SVG text.
     // FIXME: Isn't there a better non-SVG-specific way to do this?
-    if (Node* selectionBaseNode = newSelection.base().deprecatedNode()) {
+    if (Node* selectionBaseNode = Strategy::selectionBase(newSelection).deprecatedNode()) {
         if (LayoutObject* selectionBaseLayoutObject = selectionBaseNode->layoutObject()) {
             if (selectionBaseLayoutObject->isSVGText()) {
                 if (target->layoutObject()->containingBlock() != selectionBaseLayoutObject->containingBlock())
@@ -405,18 +413,22 @@ void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTe
     if (RuntimeEnabledFeatures::userSelectAllEnabled()) {
         Node* rootUserSelectAllForMousePressNode = Position::rootUserSelectAllForNode(mousePressNode);
         if (rootUserSelectAllForMousePressNode && rootUserSelectAllForMousePressNode == Position::rootUserSelectAllForNode(target)) {
-            newSelection.setBase(positionBeforeNode(rootUserSelectAllForMousePressNode).upstream(CanCrossEditingBoundary));
-            newSelection.setExtent(positionAfterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
+            newSelection.setBase(PositionType::beforeNode(rootUserSelectAllForMousePressNode).upstream(CanCrossEditingBoundary));
+            newSelection.setExtent(PositionType::afterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
         } else {
             // Reset base for user select all when base is inside user-select-all area and extent < base.
-            if (rootUserSelectAllForMousePressNode && comparePositions(target->layoutObject()->positionForPoint(hitTestResult.localPoint()), mousePressNode->layoutObject()->positionForPoint(dragStartPos)) < 0)
-                newSelection.setBase(positionAfterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
+            if (rootUserSelectAllForMousePressNode) {
+                PositionType eventPosition = Strategy::toPositionType(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position());
+                PositionType dragStartPosition = Strategy::toPositionType(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position());
+                if (eventPosition.compareTo(dragStartPosition) < 0)
+                    newSelection.setBase(PositionType::afterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
+            }
 
             Node* rootUserSelectAllForTarget = Position::rootUserSelectAllForNode(target);
-            if (rootUserSelectAllForTarget && mousePressNode->layoutObject() && comparePositions(target->layoutObject()->positionForPoint(hitTestResult.localPoint()), mousePressNode->layoutObject()->positionForPoint(dragStartPos)) < 0)
-                newSelection.setExtent(positionBeforeNode(rootUserSelectAllForTarget).upstream(CanCrossEditingBoundary));
+            if (rootUserSelectAllForTarget && mousePressNode->layoutObject() && Strategy::toPositionType(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position()).compareTo(Strategy::toPositionType(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position())) < 0)
+                newSelection.setExtent(PositionType::beforeNode(rootUserSelectAllForTarget).upstream(CanCrossEditingBoundary));
             else if (rootUserSelectAllForTarget && mousePressNode->layoutObject())
-                newSelection.setExtent(positionAfterNode(rootUserSelectAllForTarget).downstream(CanCrossEditingBoundary));
+                newSelection.setExtent(PositionType::afterNode(rootUserSelectAllForTarget).downstream(CanCrossEditingBoundary));
             else
                 newSelection.setExtent(targetPosition);
         }

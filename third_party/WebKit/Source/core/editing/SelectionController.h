@@ -68,6 +68,9 @@ public:
 private:
     explicit SelectionController(LocalFrame&);
 
+    template <typename Strategy>
+    void updateSelectionForMouseDragAlgorithm(const HitTestResult&, Node*, const LayoutPoint&, const IntPoint&);
+
     enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };
     void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
     void selectClosestMisspellingFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
