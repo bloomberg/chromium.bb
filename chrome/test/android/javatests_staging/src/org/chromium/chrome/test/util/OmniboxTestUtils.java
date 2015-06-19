@@ -24,6 +24,7 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -143,7 +144,8 @@ public class OmniboxTestUtils {
             mSuggestionsDispatcher = new Runnable() {
                 @Override
                 public void run() {
-                    List<SuggestionsResult> suggestions = mSuggestions.get(text.toLowerCase());
+                    List<SuggestionsResult> suggestions =
+                            mSuggestions.get(text.toLowerCase(Locale.US));
                     if (suggestions == null) return;
 
                     for (int i = 0; i < suggestions.size(); i++) {

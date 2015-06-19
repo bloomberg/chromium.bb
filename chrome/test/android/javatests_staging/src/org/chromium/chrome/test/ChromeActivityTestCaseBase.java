@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
@@ -14,6 +15,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Browser;
 import android.text.TextUtils;
@@ -216,6 +218,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      * Closes all Chrome activity app tasks. This is for cleaning up Chrome tasks in the recent,
      * those are not necessarily associated with a live activity.
      */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void closeAllChromeActivityAppTasks() throws ClassNotFoundException {
         ActivityManager am = (ActivityManager) getInstrumentation().getTargetContext()
                 .getSystemService(Context.ACTIVITY_SERVICE);

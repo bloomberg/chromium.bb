@@ -84,7 +84,7 @@ public abstract class ChromeTabbedActivityTestBase extends
             try {
                 pageLoadedCallbacks[i].waitForCallback(0);
             } catch (TimeoutException e) {
-                fail(String.format("PAGE_LOAD_FINISHED was not received for tabId=%d", tabIds[i]));
+                fail("PAGE_LOAD_FINISHED was not received for tabId=" + tabIds[i]);
             }
         }
     }
