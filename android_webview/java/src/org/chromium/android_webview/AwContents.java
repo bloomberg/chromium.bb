@@ -1435,7 +1435,8 @@ public class AwContents implements SmartClipProvider,
         if (extraHeaders != null) {
             for (String header : extraHeaders.keySet()) {
                 if (referer.equals(header.toLowerCase(Locale.US))) {
-                    params.setReferrer(new Referrer(extraHeaders.remove(header), 1));
+                    params.setReferrer(new Referrer(extraHeaders.remove(header),
+                            Referrer.REFERRER_POLICY_DEFAULT));
                     params.setExtraHeaders(extraHeaders);
                     break;
                 }

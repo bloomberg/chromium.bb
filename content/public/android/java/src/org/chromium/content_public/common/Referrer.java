@@ -9,9 +9,18 @@ package org.chromium.content_public.common;
  * originating frame. This corresponds to native content/public/common/referrer.h.
  */
 public class Referrer {
+    /** @see blink::WebReferrerPolicyAlways */
+    public static final int REFERRER_POLICY_ALWAYS = 0;
+
+    /** @see blink::WebReferrerPolicyDefault */
+    public static final int REFERRER_POLICY_DEFAULT = 1;
+
     private final String mUrl;
     private final int mPolicy;
 
+    /**
+     * Constructs a referrer with the given url and policy.
+     */
     public Referrer(String url, int policy) {
         mUrl = url;
         mPolicy = policy;

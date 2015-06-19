@@ -30,6 +30,8 @@ import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.Referrer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -344,6 +346,21 @@ public class IntentHandler {
             return referrerExtra.toString();
         }
         return null;
+    }
+
+    /**
+     * Add referrer and extra headers to a {@link LoadUrlParams}, if we managed to parse them from
+     * the intent.
+     * @param params The {@link LoadUrlParams} to add referrer and headers.
+     * @param intent The intent we use to parse the extras.
+     */
+    public static void addReferrerAndHeaders(LoadUrlParams params, Intent intent, Context context) {
+        String referrer = getReferrerUrl(intent, context);
+        if (referrer != null) {
+            params.setReferrer(new Referrer(referrer, Referrer.REFERRER_POLICY_DEFAULT));
+        }
+        String headers = getExtraHeadersFromIntent(intent, referrer != null);
+        if (headers != null) params.setVerbatimHeaders(headers);
     }
 
     /**

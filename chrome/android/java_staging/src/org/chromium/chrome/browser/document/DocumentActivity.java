@@ -71,7 +71,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
-import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -480,15 +479,7 @@ public class DocumentActivity extends ChromeActivity {
             loadUrlParams.setIntentReceivedTimestamp(getOnCreateTimestampUptimeMs());
         }
 
-        String refererUrl = IntentHandler.getReferrerUrl(intent, this);
-        if (refererUrl != null) {
-            loadUrlParams.setReferrer(new Referrer(refererUrl, 1 /* WebReferrerPolicyDefault */));
-        }
-
-        String extraHeaders = IntentHandler.getExtraHeadersFromIntent(intent, refererUrl != null);
-        if (extraHeaders != null) {
-            loadUrlParams.setVerbatimHeaders(extraHeaders);
-        }
+        IntentHandler.addReferrerAndHeaders(loadUrlParams, intent, this);
 
         if (pendingData != null) {
             if (pendingData.postData != null) {

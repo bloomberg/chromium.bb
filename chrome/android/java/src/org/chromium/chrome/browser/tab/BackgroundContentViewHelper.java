@@ -333,7 +333,7 @@ public class BackgroundContentViewHelper extends EmptyTabObserver {
         // For Experiment: gcjeid=19
         String referrerTrimmed = "http://" + referrerHost + "/?"
                 + GWS_CHROME_JOINT_EXPERIMENT_ID_STRING + "=19";
-        loadUrlParams.setReferrer(new Referrer(referrerTrimmed, 0 /* WebReferrerPolicyAlways */));
+        loadUrlParams.setReferrer(new Referrer(referrerTrimmed, Referrer.REFERRER_POLICY_ALWAYS));
         mContentViewCore.getWebContents().getNavigationController().loadUrl(loadUrlParams);
     }
 

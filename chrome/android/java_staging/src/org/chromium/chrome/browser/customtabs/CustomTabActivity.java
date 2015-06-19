@@ -82,8 +82,8 @@ public class CustomTabActivity extends ChromeActivity {
         if (sActiveContentHandler.getSessionId() != intentSessionId) return false;
         String url = IntentHandler.getUrlFromIntent(intent);
         if (TextUtils.isEmpty(url)) return false;
-        sActiveContentHandler.loadUrlAndTrackFromTimestamp(
-                new LoadUrlParams(url), IntentHandler.getTimestampFromIntent(intent));
+        sActiveContentHandler.loadUrlAndTrackFromTimestamp(new LoadUrlParams(url),
+                IntentHandler.getTimestampFromIntent(intent));
         return true;
     }
 
@@ -177,12 +177,12 @@ public class CustomTabActivity extends ChromeActivity {
                 });
 
         mTab.setFullscreenManager(getFullscreenManager());
-        mTab.loadUrlAndTrackFromTimestamp(
-                new LoadUrlParams(url), IntentHandler.getTimestampFromIntent(getIntent()));
+        loadUrlInCurrentTab(new LoadUrlParams(url),
+                IntentHandler.getTimestampFromIntent(getIntent()));
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override
             public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
-                mTab.loadUrlAndTrackFromTimestamp(params, timestamp);
+                loadUrlInCurrentTab(params, timestamp);
             }
 
             @Override
@@ -229,6 +229,17 @@ public class CustomTabActivity extends ChromeActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onConfigurationChanged(newConfig);
+    }
+
+    /**
+     * Loads the current tab with the given load params. Unlike
+     * {@link CustomTab#loadUrlAndTrackFromTimestamp(LoadUrlParams, long)}, this method takes client
+     * referrer and extra headers into account.
+     */
+    private void loadUrlInCurrentTab(LoadUrlParams params, long timeStamp) {
+        Intent intent = getIntent();
+        IntentHandler.addReferrerAndHeaders(params, intent, this);
+        mTab.loadUrlAndTrackFromTimestamp(params, timeStamp);
     }
 
     /**
