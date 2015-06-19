@@ -65,6 +65,7 @@ import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -233,7 +234,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 Tab tab = getActivity().getCurrentTabModel().getTabAt(1);
-                String title = tab.getTitle().toLowerCase();
+                String title = tab.getTitle().toLowerCase(Locale.US);
                 String expectedTitle = "new tab";
                 return title.startsWith(expectedTitle);
             }
@@ -680,7 +681,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         for (int i = 1; i < count; i++) {
             float y = getLayoutTabInStackXY(false, i)[1];
             assertTrue(
-                    String.format("Tab %d's final draw Y, %f, should exceed the view height, %f.",
+                    String.format(Locale.US,
+                            "Tab %d's final draw Y, %f, should exceed the view height, %f.",
                             i, y, mTabsViewHeightDp),
                     y >= mTabsViewHeightDp);
         }
@@ -703,7 +705,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         for (int i = 1; i < count; i++) {
             float x = getLayoutTabInStackXY(false, i)[0];
             assertTrue(
-                    String.format("Tab %d's final draw X, %f, should exceed the view width, %f.",
+                    String.format(Locale.US,
+                            "Tab %d's final draw X, %f, should exceed the view width, %f.",
                             i, x, mTabsViewWidthDp),
                     x >= mTabsViewWidthDp);
         }

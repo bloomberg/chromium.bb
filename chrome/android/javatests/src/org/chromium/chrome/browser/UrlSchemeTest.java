@@ -8,6 +8,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -94,6 +95,7 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Navigation"})
+    @SuppressLint("SdCardPath")
     public void testContentUrlFromFile() throws InterruptedException, IOException {
         final String target = "content_from_file";
         final String fileName = "/sdcard/" + target + ".html";
@@ -113,6 +115,7 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Navigation"})
+    @SuppressLint("SdCardPath")
     public void testFileUrlNavigation() throws InterruptedException, IOException {
         final String target = "/sdcard/url_navigation_test.html";
 

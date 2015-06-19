@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -211,6 +212,8 @@ public class CronetPerfTestActivity extends Activity {
             }
         }
 
+        // TODO(pauljensen): Remove @SuppressLint once crbug.com/501591 is fixed.
+        @SuppressLint("NewApi")
         private void startLogging() {
             if (getConfigBoolean("CAPTURE_NETLOG")) {
                 mCronetContext.startNetLogToFile(getFilesDir().getPath() + "/" + mName + ".json",

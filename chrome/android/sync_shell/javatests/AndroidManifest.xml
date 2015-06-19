@@ -6,6 +6,12 @@
        doesn't ignore this. -->
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.chromium.chrome.sync_shell.tests">
+    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
+    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
+    <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- We add an application tag here just so that we can indicate that this
          package needs to link against the android.test library, which is
          needed when building test cases. -->
@@ -19,13 +25,7 @@
             </intent-filter>
         </activity>
     </application>
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
     <instrumentation android:name="org.chromium.chrome.test.ChromeInstrumentationTestRunner"
         android:targetPackage="org.chromium.chrome.sync_shell"
         android:label="Tests for org.chromium.chrome.sync_shell"/>
-    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
-    <uses-permission android:name="android.permission.INJECT_EVENTS" />
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
-    <uses-permission android:name="android.permission.READ_LOGS"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>

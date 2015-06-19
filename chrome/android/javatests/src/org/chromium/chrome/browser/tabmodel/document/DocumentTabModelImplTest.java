@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -29,6 +30,7 @@ import java.util.Map;
  * Tests the functionality of the DocumentTabModel.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentTabModelImplTest extends NativeLibraryTestBase {
     private static final String MODEL_STATE_WITH_1010_1011 = "CgUgACjyBwoFIAEo8wc=";
 

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.R;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -112,7 +111,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return lastActivity instanceof WebappActivity
-                        && lastActivity.findViewById(R.id.content).hasWindowFocus();
+                        && lastActivity.findViewById(android.R.id.content).hasWindowFocus();
             }
         }));
         assertTrue(isNumberOfRunningActivitiesCorrect(1));
@@ -125,7 +124,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return lastActivity instanceof WebappActivity && lastActivity != firstActivity
-                        && lastActivity.findViewById(R.id.content).hasWindowFocus();
+                        && lastActivity.findViewById(android.R.id.content).hasWindowFocus();
             }
         }));
         assertTrue(isNumberOfRunningActivitiesCorrect(2));
@@ -137,7 +136,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return lastActivity instanceof WebappActivity && lastActivity == firstActivity
-                        && lastActivity.findViewById(R.id.content).hasWindowFocus();
+                        && lastActivity.findViewById(android.R.id.content).hasWindowFocus();
             }
         }));
         assertTrue(isNumberOfRunningActivitiesCorrect(2));
@@ -157,7 +156,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                View rootView = lastActivity.findViewById(R.id.content);
+                View rootView = lastActivity.findViewById(android.R.id.content);
                 return lastActivity instanceof WebappActivity && rootView.hasWindowFocus();
             }
         }));
@@ -197,7 +196,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             @Override
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                if (!lastActivity.findViewById(R.id.content).hasWindowFocus()) return false;
+                if (!lastActivity.findViewById(android.R.id.content).hasWindowFocus()) return false;
                 return lastActivity instanceof ChromeTabbedActivity
                         || lastActivity instanceof DocumentActivity;
             }
@@ -211,7 +210,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             public boolean isSatisfied() {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return lastActivity instanceof WebappActivity && lastActivity != firstActivity
-                        && lastActivity.findViewById(R.id.content).hasWindowFocus();
+                        && lastActivity.findViewById(android.R.id.content).hasWindowFocus();
             }
         }));
     }

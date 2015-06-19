@@ -7,17 +7,27 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.chrome.tests">
 
+    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
+    <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:label="ChromePublicTest">
 
         <uses-library android:name="android.test.runner" />
 
         <provider android:name="org.chromium.chrome.test.TestContentProvider"
-            android:authorities="org.chromium.chrome.test.TestContentProvider" />
+            android:authorities="org.chromium.chrome.test.TestContentProvider"
+            android:exported="true" />
 
         <!-- The authority must not conflict with the authority defined in ChromeShellTestApk. -->
         <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider"
-            android:authorities="org.chromium.chrome.test.partnercustomizations" />
+            android:authorities="org.chromium.chrome.test.partnercustomizations"
+            android:exported="true" />
 
         <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
             android:exported="true">
@@ -49,7 +59,7 @@
 
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
-
+        <!--suppress ExportedReceiver -->
         <receiver android:name="org.chromium.chrome.browser.customtabs.CustomTabsActivityTest$DummyBroadcastReceiver">
             <intent-filter>
                 <action android:name="org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT" >
@@ -58,14 +68,7 @@
         </receiver>
     </application>
 
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
     <instrumentation android:name="org.chromium.chrome.test.ChromeStagingInstrumentationTestRunner"
         android:targetPackage="{{manifest_package}}"
         android:label="Tests for {{manifest_package}}"/>
-    <uses-permission android:name="android.permission.INJECT_EVENTS" />
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
-    <uses-permission android:name="android.permission.READ_LOGS"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

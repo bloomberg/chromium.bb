@@ -35,6 +35,7 @@ import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.net.URLEncoder;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
@@ -324,25 +325,25 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         for (int i = 0; i < repeats; i++) {
             singleClickView(getActivity().findViewById(R.id.back_button));
             UiUtils.settleDownUI(getInstrumentation());
-            assertEquals(String.format(
+            assertEquals(String.format(Locale.US,
                     "URL mismatch after pressing back button for the 1st time in repetition %d.",
                     i), urls[1], getActivity().getActivityTab().getUrl());
 
             singleClickView(getActivity().findViewById(R.id.back_button));
             UiUtils.settleDownUI(getInstrumentation());
-            assertEquals(String.format(
+            assertEquals(String.format(Locale.US,
                     "URL mismatch after pressing back button for the 2nd time in repetition %d.",
                     i), urls[0], getActivity().getActivityTab().getUrl());
 
             singleClickView(getActivity().findViewById(R.id.forward_button));
             UiUtils.settleDownUI(getInstrumentation());
-            assertEquals(String.format(
+            assertEquals(String.format(Locale.US,
                     "URL mismatch after pressing fwd button for the 1st time in repetition %d.", i),
                     urls[1], getActivity().getActivityTab().getUrl());
 
             singleClickView(getActivity().findViewById(R.id.forward_button));
             UiUtils.settleDownUI(getInstrumentation());
-            assertEquals(String.format(
+            assertEquals(String.format(Locale.US,
                     "URL mismatch after pressing fwd button for the 2nd time in repetition %d.", i),
                     urls[2], getActivity().getActivityTab().getUrl());
         }

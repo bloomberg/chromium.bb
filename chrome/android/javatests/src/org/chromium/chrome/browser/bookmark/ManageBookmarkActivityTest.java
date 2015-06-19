@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.bookmark;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Context;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -23,13 +21,13 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Tests the ManageBookmarkActivity, which allows users to add and edit bookmarks.
  */
 public class ManageBookmarkActivityTest extends ChromeTabbedActivityTestBase {
-    private static final long PAGE_LOAD_WAIT_TIMEOUT_SECONDS = scaleTimeout(10);
     private static final String DOM_DISTILLER_SCHEME = "chrome-distiller";
 
     @Override
@@ -92,7 +90,7 @@ public class ManageBookmarkActivityTest extends ChromeTabbedActivityTestBase {
         assertTrue("Expected "
                 + "title to contain 'edit' when changing an existing bookmark",
                 ((TextView) editActivity.findViewById(R.id.bookmark_action_title))
-                        .getText().toString().toLowerCase().contains("edit"));
+                        .getText().toString().toLowerCase(Locale.US).contains("edit"));
     }
 
     @SmallTest
@@ -214,7 +212,7 @@ public class ManageBookmarkActivityTest extends ChromeTabbedActivityTestBase {
         assertTrue("Expected "
                 + "title to contain 'add' when adding a new bookmark",
                 ((TextView) addActivity.findViewById(R.id.bookmark_action_title))
-                        .getText().toString().toLowerCase().contains("add"));
+                        .getText().toString().toLowerCase(Locale.US).contains("add"));
         BookmarkTestUtils.clickOkButton(this, addFragment);
 
 
@@ -225,6 +223,6 @@ public class ManageBookmarkActivityTest extends ChromeTabbedActivityTestBase {
         assertTrue("Expected "
                 + "title to contain 'edit' when changing an existing bookmark",
                 ((TextView) editActivity.findViewById(R.id.bookmark_action_title))
-                        .getText().toString().toLowerCase().contains("edit"));
+                        .getText().toString().toLowerCase(Locale.US).contains("edit"));
     }
 }

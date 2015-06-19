@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -38,7 +39,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
     private static class MockBindingManager implements BindingManager {
         // Maps pid to the last received visibility state of the renderer.
-        private final SparseArray<Boolean> mProcessInForegroundMap = new SparseArray<Boolean>();
+        private final SparseBooleanArray mProcessInForegroundMap = new SparseBooleanArray();
         // Maps pid to a string recording calls to setInForeground() and visibilityDetermined().
         private final SparseArray<String> mVisibilityCallsMap = new SparseArray<String>();
 
@@ -51,7 +52,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         }
 
         boolean setInForegroundWasCalled(int pid) {
-            return mProcessInForegroundMap.get(pid) != null;
+            return mProcessInForegroundMap.indexOfKey(pid) >= 0;
         }
 
         String getVisibilityCalls(int pid) {

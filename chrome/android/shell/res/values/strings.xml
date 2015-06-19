@@ -7,7 +7,6 @@
  -->
 
 <resources>
-    <string name="app_name">Chrome Shell</string>
     <string name="url_hint">Type URL Here</string>
     <string name="print_menu">Print…</string>
     <string name="signin_select_account">Select Account</string>

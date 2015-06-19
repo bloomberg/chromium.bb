@@ -12,6 +12,8 @@ import android.graphics.drawable.Drawable;
 import android.test.mock.MockResources;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
+import android.util.SparseIntArray;
 
 import org.chromium.chrome.R;
 
@@ -25,8 +27,8 @@ import org.chromium.chrome.R;
 public class MockResourcesForLayout extends MockResources {
     private final Resources mValidResources;
     private final SparseArray<Float> mFloats = new SparseArray<Float>();
-    private final SparseArray<Integer> mIntegers = new SparseArray<Integer>();
-    private final SparseArray<Boolean> mBooleans = new SparseArray<Boolean>();
+    private final SparseIntArray mIntegers = new SparseIntArray();
+    private final SparseBooleanArray mBooleans = new SparseBooleanArray();
     private final SparseArray<String> mStrings = new SparseArray<String>();
     private final Drawable mDrawable = new ColorDrawable(Color.RED);
 
@@ -102,14 +104,14 @@ public class MockResourcesForLayout extends MockResources {
 
     @Override
     public int getInteger(int id) {
-        final Integer value = mIntegers.get(id);
-        return value != null ? value.intValue() : mValidResources.getInteger(id);
+        if (mIntegers.indexOfKey(id) < 0) mValidResources.getInteger(id);
+        return mIntegers.get(id);
     }
 
     @Override
     public boolean getBoolean(int id) {
-        final Boolean value = mBooleans.get(id);
-        return value != null ? value.booleanValue() : mValidResources.getBoolean(id);
+        if (mBooleans.indexOfKey(id) < 0) mValidResources.getBoolean(id);
+        return mBooleans.get(id);
     }
 
     @Override

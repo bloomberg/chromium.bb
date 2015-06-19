@@ -164,6 +164,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // The class cannot implement TouchExplorationStateChangeListener,
     // because it is only available for Build.VERSION_CODES.KITKAT and later.
     // We have to instantiate the TouchExplorationStateChangeListner object in the code.
+    @SuppressLint("NewApi")
     private TouchExplorationStateChangeListener mTouchExplorationStateChangeListener;
 
     // Observes when sync becomes ready to create the mContextReporter.

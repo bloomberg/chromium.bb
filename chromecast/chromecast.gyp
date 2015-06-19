@@ -11,6 +11,7 @@
     # Refers to enum CastProductType in components/metrics/proto/cast_logs.proto
     'cast_product_type%': 0,  # CAST_PRODUCT_TYPE_UNKNOWN
     'chromium_code': 1,
+    'never_lint': 1,
     'chromecast_branding%': 'Chromium',
     'disable_display%': 0,
     'enable_default_cast_graphics%': 1,

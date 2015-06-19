@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.notifications;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -36,6 +37,8 @@ import java.util.concurrent.TimeoutException;
  *
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
+// TODO(peter): remove @SuppressLint once crbug.com/501900 is fixed.
+@SuppressLint("NewApi")
 public class NotificationUIManagerTest extends ChromeShellTestBase {
     private static final String NOTIFICATION_TEST_PAGE =
             TestHttpServerClient.getUrl("chrome/test/data/notifications/android_test.html");

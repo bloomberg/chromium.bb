@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
@@ -780,6 +781,7 @@ public class BrowserAccessibilityManager {
         node.setClassName(className);
     }
 
+    @SuppressLint("NewApi")
     @CalledByNative
     private void setAccessibilityNodeInfoContentDescription(
             AccessibilityNodeInfo node, String contentDescription, boolean annotateAsLink) {

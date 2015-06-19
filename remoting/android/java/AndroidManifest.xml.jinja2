@@ -27,6 +27,8 @@
             android:name="org.chromium.chromoting.ThirdPartyTokenFetcher$OAuthRedirectActivity"
             android:enabled="false"
             android:noHistory="true">
+            <!-- TODO(kevinp): suppress once crbug.com/501593 is fixed. -->
+            <!--suppress AppIndexingError -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
