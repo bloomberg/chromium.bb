@@ -42,8 +42,8 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   bool HasKeyboard() const override;
   bool HasTouchpad() const override;
   bool HasCapsLockLed() const override;
-  void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys) override;
-  void AllowAllKeys() override;
+  void SetKeyFilter(bool enable_filter,
+                    std::vector<DomCode> allowed_keys) override;
   void OnStopped() override;
 
   void ProcessEvents(const struct input_event* inputs, int count);

@@ -74,11 +74,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // called unless HasTouchscreen() returns true
   virtual int GetTouchPoints() const;
 
-  // Sets which keyboard keys should be processed.
-  virtual void SetAllowedKeys(scoped_ptr<std::set<DomCode>> allowed_keys);
-
-  // Allows all keys to be processed.
-  virtual void AllowAllKeys();
+  // Sets which keyboard keys should be processed. If |enable_filter| is
+  // false, all keys are allowed and |allowed_keys| is ignored.
+  virtual void SetKeyFilter(bool enable_filter,
+                            std::vector<DomCode> allowed_keys);
 
   // Update caps lock LED state.
   virtual void SetCapsLockLed(bool enabled);

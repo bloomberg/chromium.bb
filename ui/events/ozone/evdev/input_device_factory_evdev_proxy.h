@@ -41,11 +41,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void AddInputDevice(int id, const base::FilePath& path);
   void RemoveInputDevice(const base::FilePath& path);
   void OnStartupScanComplete();
-  void DisableInternalTouchpad();
-  void EnableInternalTouchpad();
-  void DisableInternalKeyboardExceptKeys(
-      scoped_ptr<std::set<DomCode>> excepted_keys);
-  void EnableInternalKeyboard();
   void SetCapsLockLed(bool enabled);
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);

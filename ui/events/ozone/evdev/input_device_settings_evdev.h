@@ -5,7 +5,11 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_SETTINGS_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_SETTINGS_EVDEV_H_
 
+#include <vector>
+
 namespace ui {
+
+enum class DomCode;
 
 struct InputDeviceSettingsEvdev {
   InputDeviceSettingsEvdev();
@@ -24,6 +28,10 @@ struct InputDeviceSettingsEvdev {
 
   int touchpad_sensitivity = kDefaultSensitivity;
   int mouse_sensitivity = kDefaultSensitivity;
+
+  bool enable_internal_touchpad = true;
+  bool enable_internal_keyboard_filter = false;
+  std::vector<DomCode> internal_keyboard_allowed_keys;
 };
 
 }  // namespace ui

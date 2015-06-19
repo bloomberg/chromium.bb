@@ -73,18 +73,12 @@ class OZONE_EXPORT InputController {
   // experience in some use cases (e.g., typing, watching video).
   virtual void SetTapToClickPaused(bool state) = 0;
 
-  // Disables the internal touchpad.
-  virtual void DisableInternalTouchpad() = 0;
+  virtual void SetInternalTouchpadEnabled(bool enabled) = 0;
 
-  // Enables the internal touchpad.
-  virtual void EnableInternalTouchpad() = 0;
-
-  // Disables all keys on the internal keyboard except |excepted_keys|.
-  virtual void DisableInternalKeyboardExceptKeys(
-      scoped_ptr<std::set<DomCode>> excepted_keys) = 0;
-
-  // Enables all keys on the internal keyboard.
-  virtual void EnableInternalKeyboard() = 0;
+  // If |enable_filter| is true, all keys on the internal keyboard except
+  // |allowed_keys| are disabled.
+  virtual void SetInternalKeyboardFilter(bool enable_filter,
+                                         std::vector<DomCode> allowed_keys) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputController);

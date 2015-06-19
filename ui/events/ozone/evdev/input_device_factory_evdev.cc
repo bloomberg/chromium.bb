@@ -276,48 +276,6 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   }
 }
 
-void InputDeviceFactoryEvdev::DisableInternalTouchpad() {
-  for (const auto& it : converters_) {
-    EventConverterEvdev* converter = it.second;
-    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
-        converter->HasTouchpad()) {
-      DCHECK(!converter->HasKeyboard());
-      converter->set_ignore_events(true);
-    }
-  }
-}
-
-void InputDeviceFactoryEvdev::EnableInternalTouchpad() {
-  for (const auto& it : converters_) {
-    EventConverterEvdev* converter = it.second;
-    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
-        converter->HasTouchpad()) {
-      DCHECK(!converter->HasKeyboard());
-      converter->set_ignore_events(false);
-    }
-  }
-}
-
-void InputDeviceFactoryEvdev::DisableInternalKeyboardExceptKeys(
-    scoped_ptr<std::set<DomCode>> excepted_keys) {
-  for (const auto& it : converters_) {
-    EventConverterEvdev* converter = it.second;
-    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
-        converter->HasKeyboard()) {
-      converter->SetAllowedKeys(excepted_keys.Pass());
-    }
-  }
-}
-
-void InputDeviceFactoryEvdev::EnableInternalKeyboard() {
-  for (const auto& it : converters_) {
-    EventConverterEvdev* converter = it.second;
-    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
-        converter->HasKeyboard()) {
-      converter->AllowAllKeys();
-    }
-  }
-}
 
 void InputDeviceFactoryEvdev::SetCapsLockLed(bool enabled) {
   caps_lock_led_enabled_ = enabled;
@@ -379,6 +337,18 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
                             input_device_settings_.tap_to_click_paused);
+
+  for (const auto& it : converters_) {
+    EventConverterEvdev* converter = it.second;
+    converter->set_ignore_events(!IsDeviceEnabled(converter));
+
+    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        converter->HasKeyboard()) {
+      converter->SetKeyFilter(
+          input_device_settings_.enable_internal_keyboard_filter,
+          input_device_settings_.internal_keyboard_allowed_keys);
+    }
+  }
 }
 
 void InputDeviceFactoryEvdev::ApplyCapsLockLed() {
@@ -386,6 +356,16 @@ void InputDeviceFactoryEvdev::ApplyCapsLockLed() {
     EventConverterEvdev* converter = it.second;
     converter->SetCapsLockLed(caps_lock_led_enabled_);
   }
+}
+
+bool InputDeviceFactoryEvdev::IsDeviceEnabled(
+    const EventConverterEvdev* converter) {
+  if (!input_device_settings_.enable_internal_touchpad &&
+      converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+      converter->HasTouchpad())
+    return false;
+
+  return true;
 }
 
 void InputDeviceFactoryEvdev::UpdateDirtyFlags(

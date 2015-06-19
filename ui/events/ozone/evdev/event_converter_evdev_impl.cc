@@ -87,16 +87,15 @@ bool EventConverterEvdevImpl::HasCapsLockLed() const {
   return has_caps_lock_led_;
 }
 
-void EventConverterEvdevImpl::SetAllowedKeys(
-    scoped_ptr<std::set<DomCode>> allowed_keys) {
-  DCHECK(HasKeyboard());
-  if (!allowed_keys) {
+void EventConverterEvdevImpl::SetKeyFilter(bool enable_filter,
+                                           std::vector<DomCode> allowed_keys) {
+  if (!enable_filter) {
     blocked_keys_.reset();
     return;
   }
 
   blocked_keys_.set();
-  for (const DomCode& it : *allowed_keys) {
+  for (const DomCode& it : allowed_keys) {
     int evdev_code =
         NativeCodeToEvdevCode(KeycodeConverter::DomCodeToNativeKeycode(it));
     blocked_keys_.reset(evdev_code);
@@ -108,11 +107,6 @@ void EventConverterEvdevImpl::SetAllowedKeys(
     if (blocked_keys_.test(key))
       OnKeyChange(key, false /* down */, timestamp);
   }
-}
-
-void EventConverterEvdevImpl::AllowAllKeys() {
-  DCHECK(HasKeyboard());
-  blocked_keys_.reset();
 }
 
 void EventConverterEvdevImpl::OnStopped() {

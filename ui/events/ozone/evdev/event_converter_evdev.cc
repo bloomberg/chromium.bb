@@ -77,12 +77,8 @@ int EventConverterEvdev::GetTouchPoints() const {
   return 0;
 }
 
-void EventConverterEvdev::SetAllowedKeys(
-    scoped_ptr<std::set<DomCode>> allowed_keys) {
-  NOTREACHED();
-}
-
-void EventConverterEvdev::AllowAllKeys() {
+void EventConverterEvdev::SetKeyFilter(bool enable_filter,
+                                       std::vector<DomCode> allowed_keys) {
   NOTREACHED();
 }
 

@@ -60,32 +60,6 @@ void InputDeviceFactoryEvdevProxy::OnStartupScanComplete() {
                             input_device_factory_));
 }
 
-void InputDeviceFactoryEvdevProxy::DisableInternalTouchpad() {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::DisableInternalTouchpad,
-                            input_device_factory_));
-}
-
-void InputDeviceFactoryEvdevProxy::EnableInternalTouchpad() {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::EnableInternalTouchpad,
-                            input_device_factory_));
-}
-
-void InputDeviceFactoryEvdevProxy::DisableInternalKeyboardExceptKeys(
-    scoped_ptr<std::set<DomCode>> excepted_keys) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputDeviceFactoryEvdev::DisableInternalKeyboardExceptKeys,
-                 input_device_factory_, base::Passed(&excepted_keys)));
-}
-
-void InputDeviceFactoryEvdevProxy::EnableInternalKeyboard() {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::EnableInternalKeyboard,
-                            input_device_factory_));
-}
-
 void InputDeviceFactoryEvdevProxy::SetCapsLockLed(bool enabled) {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&InputDeviceFactoryEvdev::SetCapsLockLed,

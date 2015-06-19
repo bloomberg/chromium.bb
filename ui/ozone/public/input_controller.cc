@@ -39,11 +39,9 @@ class StubInputController : public InputController {
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply) override;
   void GetTouchEventLog(const base::FilePath& out_dir,
                         const GetTouchEventLogReply& reply) override;
-  void DisableInternalTouchpad() override;
-  void EnableInternalTouchpad() override;
-  void DisableInternalKeyboardExceptKeys(
-      scoped_ptr<std::set<DomCode>> excepted_keys) override;
-  void EnableInternalKeyboard() override;
+  void SetInternalTouchpadEnabled(bool enabled) override;
+  void SetInternalKeyboardFilter(bool enable_filter,
+                                 std::vector<DomCode> allowed_keys) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInputController);
@@ -122,17 +120,12 @@ void StubInputController::GetTouchEventLog(const base::FilePath& out_dir,
   reply.Run(make_scoped_ptr(new std::vector<base::FilePath>));
 }
 
-void StubInputController::DisableInternalTouchpad() {
+void StubInputController::SetInternalTouchpadEnabled(bool enabled) {
 }
 
-void StubInputController::EnableInternalTouchpad() {
-}
-
-void StubInputController::DisableInternalKeyboardExceptKeys(
-    scoped_ptr<std::set<DomCode>> excepted_keys) {
-}
-
-void StubInputController::EnableInternalKeyboard() {
+void StubInputController::SetInternalKeyboardFilter(
+    bool enable_filter,
+    std::vector<DomCode> allowed_keys) {
 }
 
 }  // namespace

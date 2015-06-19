@@ -19,26 +19,28 @@ ScopedDisableInternalMouseAndKeyboardOzone::
   ui::InputController* input_controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
   if (input_controller->HasTouchpad()) {
-    input_controller->DisableInternalTouchpad();
+    input_controller->SetInternalTouchpadEnabled(false);
     aura::client::GetCursorClient(Shell::GetInstance()->GetPrimaryRootWindow())
         ->HideCursor();
   }
 
   // Allow the acccessible keys present on the side of some devices to continue
   // working.
-  scoped_ptr<std::set<ui::DomCode>> excepted_keys(new std::set<ui::DomCode>);
-  excepted_keys->insert(ui::DomCode::VOLUME_DOWN);
-  excepted_keys->insert(ui::DomCode::VOLUME_UP);
-  excepted_keys->insert(ui::DomCode::POWER);
-  input_controller->DisableInternalKeyboardExceptKeys(excepted_keys.Pass());
+  std::vector<ui::DomCode> allowed_keys;
+  allowed_keys.push_back(ui::DomCode::VOLUME_DOWN);
+  allowed_keys.push_back(ui::DomCode::VOLUME_UP);
+  allowed_keys.push_back(ui::DomCode::POWER);
+  input_controller->SetInternalKeyboardFilter(true /* enable_filter */,
+                                              allowed_keys);
 }
 
 ScopedDisableInternalMouseAndKeyboardOzone::
     ~ScopedDisableInternalMouseAndKeyboardOzone() {
   ui::InputController* input_controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
-  input_controller->EnableInternalTouchpad();
-  input_controller->EnableInternalKeyboard();
+  input_controller->SetInternalTouchpadEnabled(true);
+  input_controller->SetInternalKeyboardFilter(false /* enable_filter */,
+                                              std::vector<ui::DomCode>());
 }
 
 }  // namespace ash

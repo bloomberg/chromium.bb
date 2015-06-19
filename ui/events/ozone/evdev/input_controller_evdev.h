@@ -57,11 +57,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply) override;
   void GetTouchEventLog(const base::FilePath& out_dir,
                         const GetTouchEventLogReply& reply) override;
-  void DisableInternalTouchpad() override;
-  void EnableInternalTouchpad() override;
-  void DisableInternalKeyboardExceptKeys(
-      scoped_ptr<std::set<DomCode>> excepted_keys) override;
-  void EnableInternalKeyboard() override;
+  void SetInternalTouchpadEnabled(bool enabled) override;
+  void SetInternalKeyboardFilter(bool enable_filter,
+                                 std::vector<DomCode> allowed_keys) override;
 
  private:
   // Post task to update settings.

@@ -77,27 +77,17 @@ void InputControllerEvdev::GetAutoRepeatRate(base::TimeDelta* delay,
   keyboard_->GetAutoRepeatRate(delay, interval);
 }
 
-void InputControllerEvdev::DisableInternalTouchpad() {
-  if (input_device_factory_)
-    input_device_factory_->DisableInternalTouchpad();
+void InputControllerEvdev::SetInternalTouchpadEnabled(bool enabled) {
+  input_device_settings_.enable_internal_touchpad = enabled;
+  ScheduleUpdateDeviceSettings();
 }
 
-void InputControllerEvdev::EnableInternalTouchpad() {
-  if (input_device_factory_)
-    input_device_factory_->EnableInternalTouchpad();
-}
-
-void InputControllerEvdev::DisableInternalKeyboardExceptKeys(
-    scoped_ptr<std::set<DomCode>> excepted_keys) {
-  if (input_device_factory_) {
-    input_device_factory_->DisableInternalKeyboardExceptKeys(
-        excepted_keys.Pass());
-  }
-}
-
-void InputControllerEvdev::EnableInternalKeyboard() {
-  if (input_device_factory_)
-    input_device_factory_->EnableInternalKeyboard();
+void InputControllerEvdev::SetInternalKeyboardFilter(
+    bool enable_filter,
+    std::vector<DomCode> allowed_keys) {
+  input_device_settings_.enable_internal_keyboard_filter = enable_filter;
+  input_device_settings_.internal_keyboard_allowed_keys = allowed_keys;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::SetTouchpadSensitivity(int value) {

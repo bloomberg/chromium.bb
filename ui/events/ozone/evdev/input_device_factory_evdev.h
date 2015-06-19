@@ -53,19 +53,6 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   // Device thread handler for initial scan completion.
   void OnStartupScanComplete();
 
-  // Disables the internal touchpad.
-  void DisableInternalTouchpad();
-
-  // Enables the internal touchpad.
-  void EnableInternalTouchpad();
-
-  // Disables all keys on the internal keyboard except |excepted_keys|.
-  void DisableInternalKeyboardExceptKeys(
-      scoped_ptr<std::set<DomCode>> excepted_keys);
-
-  // Enables all keys on the internal keyboard.
-  void EnableInternalKeyboard();
-
   // LED state.
   void SetCapsLockLed(bool enabled);
 
@@ -87,6 +74,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   // Sync input_device_settings_ to attached devices.
   void ApplyInputDeviceSettings();
   void ApplyCapsLockLed();
+
+  // Policy for device enablement.
+  bool IsDeviceEnabled(const EventConverterEvdev* converter);
 
   // Update observers on device changes.
   void UpdateDirtyFlags(const EventConverterEvdev* converter);
