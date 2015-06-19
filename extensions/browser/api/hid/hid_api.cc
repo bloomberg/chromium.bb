@@ -14,6 +14,8 @@
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/device_permissions_prompt.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/common/api/hid.h"
 #include "net/base/io_buffer.h"
 
@@ -26,7 +28,6 @@ using device::HidService;
 
 namespace {
 
-const char kErrorServiceUnavailable[] = "HID services are unavailable.";
 const char kErrorPermissionDenied[] = "Permission to access device was denied.";
 const char kErrorInvalidDeviceId[] = "Invalid HID device ID.";
 const char kErrorFailedToOpenDevice[] = "Failed to open HID device.";
@@ -67,12 +68,10 @@ HidGetDevicesFunction::~HidGetDevicesFunction() {}
 ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
   scoped_ptr<core_api::hid::GetDevices::Params> parameters =
       hid::GetDevices::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   HidDeviceManager* device_manager = HidDeviceManager::Get(browser_context());
-  if (!device_manager) {
-    return RespondNow(Error(kErrorServiceUnavailable));
-  }
+  CHECK(device_manager);
 
   std::vector<HidDeviceFilter> filters;
   if (parameters->options.filters) {
@@ -101,6 +100,51 @@ void HidGetDevicesFunction::OnEnumerationComplete(
   Respond(OneArgument(devices.release()));
 }
 
+HidGetUserSelectedDevicesFunction::HidGetUserSelectedDevicesFunction() {
+}
+
+HidGetUserSelectedDevicesFunction::~HidGetUserSelectedDevicesFunction() {
+}
+
+ExtensionFunction::ResponseAction HidGetUserSelectedDevicesFunction::Run() {
+  scoped_ptr<core_api::hid::GetUserSelectedDevices::Params> parameters =
+      hid::GetUserSelectedDevices::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents || !user_gesture()) {
+    return RespondNow(OneArgument(new base::ListValue()));
+  }
+
+  bool multiple = false;
+  std::vector<HidDeviceFilter> filters;
+  if (parameters->options) {
+    multiple = parameters->options->multiple && *parameters->options->multiple;
+    if (parameters->options->filters) {
+      const auto& api_filters = *parameters->options->filters;
+      filters.resize(api_filters.size());
+      for (size_t i = 0; i < api_filters.size(); ++i) {
+        ConvertHidDeviceFilter(api_filters[i], &filters[i]);
+      }
+    }
+  }
+
+  prompt_ =
+      ExtensionsAPIClient::Get()->CreateDevicePermissionsPrompt(web_contents);
+  CHECK(prompt_);
+  prompt_->AskForHidDevices(
+      extension(), browser_context(), multiple, filters,
+      base::Bind(&HidGetUserSelectedDevicesFunction::OnDevicesChosen, this));
+  return RespondLater();
+}
+
+void HidGetUserSelectedDevicesFunction::OnDevicesChosen(
+    const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
+  HidDeviceManager* device_manager = HidDeviceManager::Get(browser_context());
+  CHECK(device_manager);
+  Respond(OneArgument(device_manager->GetApiDevicesFromList(devices).Pass()));
+}
+
 HidConnectFunction::HidConnectFunction() : connection_manager_(nullptr) {
 }
 
@@ -109,18 +153,14 @@ HidConnectFunction::~HidConnectFunction() {}
 ExtensionFunction::ResponseAction HidConnectFunction::Run() {
   scoped_ptr<core_api::hid::Connect::Params> parameters =
       hid::Connect::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   HidDeviceManager* device_manager = HidDeviceManager::Get(browser_context());
-  if (!device_manager) {
-    return RespondNow(Error(kErrorServiceUnavailable));
-  }
+  CHECK(device_manager);
 
   connection_manager_ =
       ApiResourceManager<HidConnectionResource>::Get(browser_context());
-  if (!connection_manager_) {
-    return RespondNow(Error(kErrorServiceUnavailable));
-  }
+  CHECK(connection_manager_);
 
   scoped_refptr<HidDeviceInfo> device_info =
       device_manager->GetDeviceInfo(parameters->device_id);
@@ -128,14 +168,12 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
     return RespondNow(Error(kErrorInvalidDeviceId));
   }
 
-  if (!HidDeviceManager::HasPermission(extension(), device_info)) {
+  if (!device_manager->HasPermission(extension(), device_info, true)) {
     return RespondNow(Error(kErrorPermissionDenied));
   }
 
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
-  if (!hid_service) {
-    return RespondNow(Error(kErrorServiceUnavailable));
-  }
+  CHECK(hid_service);
 
   hid_service->Connect(
       device_info->device_id(),
@@ -145,7 +183,7 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
 
 void HidConnectFunction::OnConnectComplete(
     scoped_refptr<HidConnection> connection) {
-  if (!connection.get()) {
+  if (!connection) {
     Respond(Error(kErrorFailedToOpenDevice));
     return;
   }
@@ -163,13 +201,11 @@ HidDisconnectFunction::~HidDisconnectFunction() {}
 ExtensionFunction::ResponseAction HidDisconnectFunction::Run() {
   scoped_ptr<core_api::hid::Disconnect::Params> parameters =
       hid::Disconnect::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   ApiResourceManager<HidConnectionResource>* connection_manager =
       ApiResourceManager<HidConnectionResource>::Get(browser_context());
-  if (!connection_manager) {
-    return RespondNow(Error(kErrorServiceUnavailable));
-  }
+  CHECK(connection_manager);
 
   int connection_id = parameters->connection_id;
   HidConnectionResource* resource =
@@ -195,9 +231,7 @@ ExtensionFunction::ResponseAction HidConnectionIoFunction::Run() {
 
   ApiResourceManager<HidConnectionResource>* connection_manager =
       ApiResourceManager<HidConnectionResource>::Get(browser_context());
-  if (!connection_manager) {
-    return RespondNow(Error(kErrorServiceUnavailable));
-  }
+  CHECK(connection_manager);
 
   HidConnectionResource* resource =
       connection_manager->Get(extension_id(), connection_id_);
@@ -215,7 +249,7 @@ HidReceiveFunction::~HidReceiveFunction() {}
 
 bool HidReceiveFunction::ValidateParameters() {
   parameters_ = hid::Receive::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }
@@ -245,7 +279,7 @@ HidSendFunction::~HidSendFunction() {}
 
 bool HidSendFunction::ValidateParameters() {
   parameters_ = hid::Send::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }
@@ -274,7 +308,7 @@ HidReceiveFeatureReportFunction::~HidReceiveFeatureReportFunction() {}
 
 bool HidReceiveFeatureReportFunction::ValidateParameters() {
   parameters_ = hid::ReceiveFeatureReport::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }
@@ -303,7 +337,7 @@ HidSendFeatureReportFunction::~HidSendFeatureReportFunction() {}
 
 bool HidSendFeatureReportFunction::ValidateParameters() {
   parameters_ = hid::SendFeatureReport::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters_);
   set_connection_id(parameters_->connection_id);
   return true;
 }

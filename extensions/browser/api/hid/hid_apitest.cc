@@ -10,6 +10,8 @@
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "device/hid/hid_usage_and_page.h"
+#include "extensions/browser/api/device_permissions_prompt.h"
+#include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/base/io_buffer.h"
@@ -157,7 +159,7 @@ class MockHidService : public HidService {
                                kReportDescriptor + sizeof(kReportDescriptor));
     }
     HidService::AddDevice(new HidDeviceInfo(device_id, vendor_id, product_id,
-                                            "", "", kHIDBusTypeUSB,
+                                            "Test Device", "A", kHIDBusTypeUSB,
                                             report_descriptor));
   }
 
@@ -169,6 +171,38 @@ class MockHidService : public HidService {
 }  // namespace device
 
 namespace extensions {
+
+class TestDevicePermissionsPrompt
+    : public DevicePermissionsPrompt,
+      public DevicePermissionsPrompt::Prompt::Observer {
+ public:
+  TestDevicePermissionsPrompt(content::WebContents* web_contents)
+      : DevicePermissionsPrompt(web_contents) {}
+
+  ~TestDevicePermissionsPrompt() override { prompt()->SetObserver(nullptr); }
+
+  void ShowDialog() override { prompt()->SetObserver(this); }
+
+  void OnDevicesChanged() override {
+    for (size_t i = 0; i < prompt()->GetDeviceCount(); ++i) {
+      prompt()->GrantDevicePermission(i);
+      if (!prompt()->multiple()) {
+        break;
+      }
+    }
+    prompt()->Dismissed();
+  }
+};
+
+class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
+ public:
+  TestExtensionsAPIClient() : ShellExtensionsAPIClient() {}
+
+  scoped_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
+      content::WebContents* web_contents) const override {
+    return make_scoped_ptr(new TestDevicePermissionsPrompt(web_contents));
+  }
+};
 
 class HidApiTest : public ShellApiTest {
  public:
@@ -217,6 +251,22 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
   hid_service_->RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
+  ExtensionTestMessageListener open_listener("opened_device", false);
+
+  TestExtensionsAPIClient test_api_client;
+  ASSERT_TRUE(LoadApp("api_test/hid/get_user_selected_devices"));
+  ASSERT_TRUE(open_listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener remove_listener("removed", false);
+  hid_service_->RemoveDevice(kTestDeviceIds[0]);
+  ASSERT_TRUE(remove_listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener add_listener("added", false);
+  hid_service_->AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, true);
+  ASSERT_TRUE(add_listener.WaitUntilSatisfied());
 }
 
 }  // namespace extensions

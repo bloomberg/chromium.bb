@@ -11,6 +11,7 @@
 #include "device/core/device_client.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_service.h"
+#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 
@@ -57,12 +58,13 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
   }
 }
 
-bool WillDispatchDeviceEvent(scoped_refptr<HidDeviceInfo> device_info,
+bool WillDispatchDeviceEvent(base::WeakPtr<HidDeviceManager> device_manager,
+                             scoped_refptr<device::HidDeviceInfo> device_info,
                              content::BrowserContext* context,
                              const Extension* extension,
                              base::ListValue* event_args) {
-  if (extension) {
-    return HidDeviceManager::HasPermission(extension, device_info);
+  if (device_manager && extension) {
+    return device_manager->HasPermission(extension, device_info, false);
   }
   return false;
 }
@@ -83,10 +85,8 @@ struct HidDeviceManager::GetApiDevicesParams {
 };
 
 HidDeviceManager::HidDeviceManager(content::BrowserContext* context)
-    : initialized_(false),
+    : browser_context_(context),
       hid_service_observer_(this),
-      enumeration_ready_(false),
-      next_resource_id_(0),
       weak_factory_(this) {
   event_router_ = EventRouter::Get(context);
   if (event_router_) {
@@ -125,6 +125,22 @@ void HidDeviceManager::GetApiDevices(
   }
 }
 
+scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevicesFromList(
+    const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scoped_ptr<base::ListValue> device_list(new base::ListValue());
+  for (const auto& device : devices) {
+    const auto device_entry = resource_ids_.find(device->device_id());
+    DCHECK(device_entry != resource_ids_.end());
+
+    hid::HidDeviceInfo device_info;
+    device_info.device_id = device_entry->second;
+    PopulateHidDeviceInfo(&device_info, device);
+    device_list->Append(device_info.ToValue().release());
+  }
+  return device_list.Pass();
+}
+
 scoped_refptr<HidDeviceInfo> HidDeviceManager::GetDeviceInfo(int resource_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
@@ -139,9 +155,24 @@ scoped_refptr<HidDeviceInfo> HidDeviceManager::GetDeviceInfo(int resource_id) {
   return hid_service->GetDeviceInfo(device_iter->second);
 }
 
-// static
 bool HidDeviceManager::HasPermission(const Extension* extension,
-                                     scoped_refptr<HidDeviceInfo> device_info) {
+                                     scoped_refptr<HidDeviceInfo> device_info,
+                                     bool update_last_used) {
+  DevicePermissionsManager* permissions_manager =
+      DevicePermissionsManager::Get(browser_context_);
+  CHECK(permissions_manager);
+  DevicePermissions* device_permissions =
+      permissions_manager->GetForExtension(extension->id());
+  DCHECK(device_permissions);
+  scoped_refptr<DevicePermissionEntry> permission_entry =
+      device_permissions->FindHidDeviceEntry(device_info);
+  if (permission_entry) {
+    if (update_last_used) {
+      permissions_manager->UpdateLastUsed(extension->id(), permission_entry);
+    }
+    return true;
+  }
+
   UsbDevicePermission::CheckParam usbParam(
       device_info->vendor_id(), device_info->product_id(),
       UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
@@ -250,7 +281,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
       continue;
     }
 
-    if (!HasPermission(extension, device_info)) {
+    if (!HasPermission(extension, device_info, false)) {
       continue;
     }
 
@@ -288,8 +319,8 @@ void HidDeviceManager::DispatchEvent(const std::string& event_name,
                                      scoped_ptr<base::ListValue> event_args,
                                      scoped_refptr<HidDeviceInfo> device_info) {
   scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
-  event->will_dispatch_callback =
-      base::Bind(&WillDispatchDeviceEvent, device_info);
+  event->will_dispatch_callback = base::Bind(
+      &WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(), device_info);
   event_router_->BroadcastEvent(event.Pass());
 }
 

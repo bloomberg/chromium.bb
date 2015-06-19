@@ -1,0 +1,13 @@
+{
+  "name": "chrome.hid.getUserSelectedDevices",
+  "version": "0.1",
+  "description": "browser test for chrome.hid.getUserSelectedDevices",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "hid"
+  ]
+}

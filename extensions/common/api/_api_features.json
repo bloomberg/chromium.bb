@@ -169,6 +169,11 @@
     "dependencies": ["permission:hid"],
     "contexts": ["blessed_extension"]
   },
+  "hid.getUserSelectedDevices": {
+    "contexts": ["blessed_extension"],
+    "channel": "dev",
+    "dependencies": ["permission:hid"]
+  },
   "idle": {
     "dependencies": ["permission:idle"],
     "contexts": ["blessed_extension"]

@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/device_permissions_view_controller.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "device/usb/usb_device.h"
 
 using extensions::DevicePermissionsPrompt;
@@ -55,6 +56,14 @@ void DevicePermissionsDialogController::OnConstrainedWindowClosed(
 }
 
 void ChromeDevicePermissionsPrompt::ShowDialog() {
-  // These objects will delete themselves when the dialog closes.
-  new DevicePermissionsDialogController(web_contents(), prompt());
+  web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents());
+  if (manager) {
+    // These objects will delete themselves when the dialog closes.
+    new DevicePermissionsDialogController(web_contents(), prompt());
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&DevicePermissionsPrompt::Prompt::Dismissed, prompt()));
+  }
 }

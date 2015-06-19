@@ -17,6 +17,7 @@
 
 namespace device {
 class HidConnection;
+class HidDeviceInfo;
 class HidService;
 }  // namespace device
 
@@ -25,6 +26,8 @@ class IOBuffer;
 }  // namespace net
 
 namespace extensions {
+
+class DevicePermissionsPrompt;
 
 class HidGetDevicesFunction : public UIThreadExtensionFunction {
  public:
@@ -41,6 +44,28 @@ class HidGetDevicesFunction : public UIThreadExtensionFunction {
   void OnEnumerationComplete(scoped_ptr<base::ListValue> devices);
 
   DISALLOW_COPY_AND_ASSIGN(HidGetDevicesFunction);
+};
+
+class HidGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hid.getUserSelectedDevices",
+                             HID_GETUSERSELECTEDDEVICES)
+
+  HidGetUserSelectedDevicesFunction();
+
+ private:
+  ~HidGetUserSelectedDevicesFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnDevicesChosen(
+      const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
+
+  HidDeviceManager* device_manager_;
+  scoped_ptr<DevicePermissionsPrompt> prompt_;
+
+  DISALLOW_COPY_AND_ASSIGN(HidGetUserSelectedDevicesFunction);
 };
 
 class HidConnectFunction : public UIThreadExtensionFunction {

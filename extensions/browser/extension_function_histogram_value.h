@@ -1115,6 +1115,7 @@ enum HistogramValue {
   SERIAL_CLEARBREAK,
   EXTENSIONVIEWINTERNAL_LOADSRC,
   EXTENSIONVIEWINTERNAL_PARSESRC,
+  HID_GETUSERSELECTEDDEVICES,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY
