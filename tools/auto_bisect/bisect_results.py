@@ -105,9 +105,9 @@ class BisectResults(object):
           'Failed to re-test reverted culprit CL against ToT.')
       return
 
-    confidence_params = (results_reverted[0]['values'],
-                         results_tot[0]['values'])
-    confidence = BisectResults.ConfidenceScore(*confidence_params)
+    confidence = BisectResults.ConfidenceScore(
+        results_reverted[0]['values'],
+        results_tot[0]['values'])
 
     self.retest_results_tot = RevisionState('ToT', 'n/a', 0)
     self.retest_results_tot.value = results_tot[0]
@@ -247,14 +247,12 @@ class BisectResults(object):
         [working_mean, broken_mean]) /
         max(0.0001, min(mean_of_good_runs, mean_of_bad_runs))) * 100.0
 
-    # Give a "confidence" in the bisect. Currently, we consider the values of
-    # only the revisions at the breaking range (last known good and first known
-    # bad) see the note in the docstring for FindBreakingRange.
-    confidence_params = (
+    # Give a "confidence" in the bisect culprit by seeing whether the results
+    # of the culprit revision and the revision before that appear to be
+    # statistically significantly different.
+    confidence = cls.ConfidenceScore(
         sum([first_working_rev.value['values']], []),
-        sum([last_broken_rev.value['values']], [])
-    )
-    confidence = cls.ConfidenceScore(*confidence_params)
+        sum([last_broken_rev.value['values']], []))
 
     bad_greater_than_good = mean_of_bad_runs > mean_of_good_runs
 
