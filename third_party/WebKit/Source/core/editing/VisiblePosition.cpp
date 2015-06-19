@@ -544,12 +544,13 @@ VisiblePosition VisiblePosition::skipToEndOfEditingBoundary(const VisiblePositio
     return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
-static Position canonicalizeCandidate(const Position& candidate)
+template <typename PositionType>
+static PositionType canonicalizeCandidate(const PositionType& candidate)
 {
     if (candidate.isNull())
-        return Position();
+        return PositionType();
     ASSERT(candidate.isCandidate());
-    Position upstream = candidate.upstream();
+    PositionType upstream = candidate.upstream();
     if (upstream.isCandidate())
         return upstream;
     return candidate;
