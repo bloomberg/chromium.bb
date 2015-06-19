@@ -3927,8 +3927,9 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     // Otherwise, it will fall back to the normal SW path.
     WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
     ASSERT(texture);
-    if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat, type, level)) {
-        if (video->copyVideoTextureToPlatformTexture(webContext(), texture->object(), internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+    if (GL_TEXTURE_2D == target) {
+        if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat, type, level)
+            && video->copyVideoTextureToPlatformTexture(webContext(), texture->object(), internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
             return;
         }
