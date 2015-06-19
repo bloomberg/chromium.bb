@@ -9,6 +9,7 @@
 #include "core/frame/PlatformEventController.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
+#include "platform/Timer.h"
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
@@ -60,13 +61,13 @@ private:
 
     void updateOrientation();
 
-    void dispatchChangeEvent();
+    void dispatchEventTimerFired(Timer<ScreenOrientationController>*);
 
     bool isActiveAndVisible() const;
 
     PersistentWillBeMember<ScreenOrientation> m_orientation;
     WebScreenOrientationClient* m_client;
-    bool m_isDispatchingEvent;
+    Timer<ScreenOrientationController> m_dispatchEventTimer;
 };
 
 } // namespace blink

@@ -5,8 +5,6 @@
 #include "config.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -42,7 +40,7 @@ ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebS
     : LocalFrameLifecycleObserver(&frame)
     , PlatformEventController(frame.page())
     , m_client(client)
-    , m_isDispatchingEvent(false)
+    , m_dispatchEventTimer(this, &ScreenOrientationController::dispatchEventTimerFired)
 {
 }
 
@@ -140,12 +138,8 @@ void ScreenOrientationController::notifyOrientationChanged()
     }
 
     // Notify current orientation object.
-    if (!m_isDispatchingEvent) {
-        if (Document* document = frame()->document()) {
-            document->postTask(FROM_HERE, createSameThreadTask(&ScreenOrientationController::dispatchChangeEvent, this));
-            m_isDispatchingEvent = true;
-        }
-    }
+    if (!m_dispatchEventTimer.isActive())
+        m_dispatchEventTimer.startOneShot(0, FROM_HERE);
 
     // ... and child frames, if they have a ScreenOrientationController.
     for (size_t i = 0; i < childFrames.size(); ++i) {
@@ -178,9 +172,8 @@ void ScreenOrientationController::unlock()
     m_client->unlockOrientation();
 }
 
-void ScreenOrientationController::dispatchChangeEvent()
+void ScreenOrientationController::dispatchEventTimerFired(Timer<ScreenOrientationController>*)
 {
-    m_isDispatchingEvent = false;
     if (!m_orientation)
         return;
     m_orientation->dispatchEvent(Event::create(EventTypeNames::change));
