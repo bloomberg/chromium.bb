@@ -90,9 +90,7 @@ if (is_win) {
   }
 }
 
-component("ffmpeg") {
-  public_configs = [ ":ffmpeg_dependent_config" ]
-
+source_set("ffmpeg_internal") {
   if (build_ffmpegsumo) {
     sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
@@ -234,14 +232,9 @@ component("ffmpeg") {
         # for clock_gettime on precise
         libs += [ "rt" ]
       }
-      if (is_component_build) {
+      if (is_component_ffmpeg) {
         # Export all symbols when building as component.
         configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-        # Fixes warnings PIC relocation when building as component.
-        ldflags += [
-          "-Wl,-Bsymbolic",
-          "-L", rebase_path(target_gen_dir, root_build_dir),
-        ]
       }
 # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
 #      if (is_openbsd) {
@@ -250,7 +243,7 @@ component("ffmpeg") {
 #      }
     }
     if (is_mac) {
-      if (is_component_build) {
+      if (is_component_ffmpeg) {
         # Export all symbols when building as component.
         configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
       }
@@ -308,16 +301,9 @@ component("ffmpeg") {
         "vsnprintf=avpriv_vsnprintf",
       ]
 
-      if (is_component_build) {
+      if (is_component_ffmpeg) {
         # Required to avoid 4049 and 4217 errors around redundant imports.
         cflags += [ "/FIcompat/msvcrt/snprintf.h", "/FIcompat/msvcrt/strtod.h" ]
-
-        # Windows component build needs the .def file to export ffmpeg symbols.
-        deps += [ ":ffmpeg_generate_def" ]
-        ldflags =
-          [ "/DEF:" +
-            rebase_path("$target_gen_dir/ffmpeg.def", root_build_dir) ]
-
       }
 
       # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
@@ -355,5 +341,33 @@ component("ffmpeg") {
         os_config != "linux-noasm") {
       deps += [ ":ffmpeg_yasm" ]
     }
+  }
+}
+
+if (is_component_ffmpeg) {
+  shared_library("ffmpeg") {
+    public_configs = [ ":ffmpeg_dependent_config" ]
+    deps = [ ":ffmpeg_internal" ]
+
+    # So we can append below and assume they're defined.
+    ldflags = []
+
+    if (is_posix && !is_mac) {
+      # Fixes warnings PIC relocation when building as component.
+      ldflags += [
+        "-Wl,-Bsymbolic",
+        "-L", rebase_path(target_gen_dir, root_build_dir),
+      ]
+    } else if (is_win) {
+      # Windows component build needs the .def file to export ffmpeg symbols.
+      deps += [ ":ffmpeg_generate_def" ]
+      ldflags +=
+        [ "/DEF:" + rebase_path("$target_gen_dir/ffmpeg.def", root_build_dir) ]
+    }
+  }
+} else {
+  source_set("ffmpeg") {
+    public_configs = [ ":ffmpeg_dependent_config" ]
+    deps = [ ":ffmpeg_internal" ]
   }
 }

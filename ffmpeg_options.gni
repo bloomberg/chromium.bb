@@ -25,6 +25,13 @@ declare_args() {
   # not build ffmpegsumo itself.  Users are expected to build and provide
   # their own version of ffmpegsumo.
   build_ffmpegsumo = true
+
+  # Set true to build ffmpeg as a shared library. NOTE: this means we should
+  # always consult is_component_ffmpeg instead of is_component_build for
+  # ffmpeg targets. This helps linux chromium packagers that swap out our
+  # ffmpeg.so with their own. See discussion here
+  # https://groups.google.com/a/chromium.org/forum/#!msg/chromium-packagers/R5rcZXWxBEQ/B6k0zzmJbvcJ
+  is_component_ffmpeg = is_component_build
 }
 
 assert(ffmpeg_branding == "Chromium" ||

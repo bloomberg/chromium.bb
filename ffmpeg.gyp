@@ -10,6 +10,12 @@
 #   build_ffmpegsumo
 #     When set to zero, will not include ffmpegsumo as a library to be built as
 #     part of the larger chrome binary. Default value is 1.
+#   ffmpeg_component
+#     Set true to build ffmpeg as a shared library. NOTE: this means we should
+#     always consult the value of 'ffmpeg_component' instead of 'component' for
+#     this file. This helps linux chromium packagers that swap out our
+#     ffmpeg.so with their own. See discussion here
+#     https://groups.google.com/a/chromium.org/forum/#!msg/chromium-packagers/R5rcZXWxBEQ/B6k0zzmJbvcJ
 #
 
 {
@@ -74,6 +80,7 @@
     ],
 
     'build_ffmpegsumo%': 1,
+    'ffmpeg_component%': '<(component)',
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
@@ -161,7 +168,7 @@
 
   'targets': [{
     'target_name': 'ffmpeg',
-    'type': '<(component)',
+    'type': '<(ffmpeg_component)',
     'variables': {
       # Path to platform configuration files.
       'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
@@ -303,7 +310,7 @@
                     ],
                   },
                 }],
-                ['component == "shared_library"', {
+                ['ffmpeg_component == "shared_library"', {
                   # Export all symbols when building as component.
                   'cflags!': [
                     '-fvisibility=hidden',
@@ -357,7 +364,7 @@
                     ],
                   },
                 }],
-                ['component == "shared_library"', {
+                ['ffmpeg_component == "shared_library"', {
                   'xcode_settings': {
                     # GCC version of no -fvisiliity=hidden. Ensures that all
                     # symbols are exported for component builds.
@@ -411,7 +418,7 @@
                     4267
                   ],
                 }],
-                ['component == "shared_library"', {
+                ['ffmpeg_component == "shared_library"', {
                   # Fix warnings about a local symbol being inefficiently imported.
                   'msvs_settings': {
                     'VCCLCompilerTool': {
