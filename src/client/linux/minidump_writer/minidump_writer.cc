@@ -154,7 +154,7 @@ class MinidumpWriter {
     else if (!minidump_writer_.Open(path_))
       return false;
 
-    return dumper_->ThreadsSuspend();
+    return dumper_->ThreadsSuspend() && dumper_->LateInit();
   }
 
   ~MinidumpWriter() {

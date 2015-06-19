@@ -52,6 +52,22 @@
 #include "common/linux/safe_readlink.h"
 #include "third_party/lss/linux_syscall_support.h"
 
+#if defined(__ANDROID__)
+
+// Android packed relocations definitions are not yet available from the
+// NDK header files, so we have to provide them manually here.
+#ifndef DT_LOOS
+#define DT_LOOS 0x6000000d
+#endif
+#ifndef DT_ANDROID_REL
+static const int DT_ANDROID_REL = DT_LOOS + 2;
+#endif
+#ifndef DT_ANDROID_RELA
+static const int DT_ANDROID_RELA = DT_LOOS + 4;
+#endif
+
+#endif  // __ANDROID __
+
 static const char kMappedFileUnsafePrefix[] = "/dev/";
 static const char kDeletedSuffix[] = " (deleted)";
 static const char kReservedFlags[] = " ---p";
@@ -90,6 +106,13 @@ LinuxDumper::~LinuxDumper() {
 
 bool LinuxDumper::Init() {
   return ReadAuxv() && EnumerateThreads() && EnumerateMappings();
+}
+
+bool LinuxDumper::LateInit() {
+#if defined(__ANDROID__)
+  LatePostprocessMappings();
+#endif
+  return true;
 }
 
 bool
@@ -394,6 +417,108 @@ bool LinuxDumper::EnumerateMappings() {
 
   return !mappings_.empty();
 }
+
+#if defined(__ANDROID__)
+
+bool LinuxDumper::GetLoadedElfHeader(uintptr_t start_addr, ElfW(Ehdr)* ehdr) {
+  CopyFromProcess(ehdr, pid_,
+                  reinterpret_cast<const void*>(start_addr),
+                  sizeof(*ehdr));
+  return my_memcmp(&ehdr->e_ident, ELFMAG, SELFMAG) == 0;
+}
+
+void LinuxDumper::ParseLoadedElfProgramHeaders(ElfW(Ehdr)* ehdr,
+                                               uintptr_t start_addr,
+                                               uintptr_t* min_vaddr_ptr,
+                                               uintptr_t* dyn_vaddr_ptr,
+                                               size_t* dyn_count_ptr) {
+  uintptr_t phdr_addr = start_addr + ehdr->e_phoff;
+
+  const uintptr_t max_addr = UINTPTR_MAX;
+  uintptr_t min_vaddr = max_addr;
+  uintptr_t dyn_vaddr = 0;
+  size_t dyn_count = 0;
+
+  for (size_t i = 0; i < ehdr->e_phnum; ++i) {
+    ElfW(Phdr) phdr;
+    CopyFromProcess(&phdr, pid_,
+                    reinterpret_cast<const void*>(phdr_addr),
+                    sizeof(phdr));
+    if (phdr.p_type == PT_LOAD && phdr.p_vaddr < min_vaddr) {
+      min_vaddr = phdr.p_vaddr;
+    }
+    if (phdr.p_type == PT_DYNAMIC) {
+      dyn_vaddr = phdr.p_vaddr;
+      dyn_count = phdr.p_memsz / sizeof(ElfW(Dyn));
+    }
+    phdr_addr += sizeof(phdr);
+  }
+
+  *min_vaddr_ptr = min_vaddr;
+  *dyn_vaddr_ptr = dyn_vaddr;
+  *dyn_count_ptr = dyn_count;
+}
+
+bool LinuxDumper::HasAndroidPackedRelocations(uintptr_t load_bias,
+                                              uintptr_t dyn_vaddr,
+                                              size_t dyn_count) {
+  uintptr_t dyn_addr = load_bias + dyn_vaddr;
+  for (size_t i = 0; i < dyn_count; ++i) {
+    ElfW(Dyn) dyn;
+    CopyFromProcess(&dyn, pid_,
+                    reinterpret_cast<const void*>(dyn_addr),
+                    sizeof(dyn));
+    if (dyn.d_tag == DT_ANDROID_REL || dyn.d_tag == DT_ANDROID_RELA) {
+      return true;
+    }
+    dyn_addr += sizeof(dyn);
+  }
+  return false;
+}
+
+uintptr_t LinuxDumper::GetEffectiveLoadBias(ElfW(Ehdr)* ehdr,
+                                            uintptr_t start_addr) {
+  uintptr_t min_vaddr = 0;
+  uintptr_t dyn_vaddr = 0;
+  size_t dyn_count = 0;
+  ParseLoadedElfProgramHeaders(ehdr, start_addr,
+                               &min_vaddr, &dyn_vaddr, &dyn_count);
+  // If |min_vaddr| is non-zero and we find Android packed relocation tags,
+  // return the effective load bias.
+  if (min_vaddr != 0) {
+    const uintptr_t load_bias = start_addr - min_vaddr;
+    if (HasAndroidPackedRelocations(load_bias, dyn_vaddr, dyn_count)) {
+      return load_bias;
+    }
+  }
+  // Either |min_vaddr| is zero, or it is non-zero but we did not find the
+  // expected Android packed relocations tags.
+  return start_addr;
+}
+
+void LinuxDumper::LatePostprocessMappings() {
+  for (size_t i = 0; i < mappings_.size(); ++i) {
+    // Only consider exec mappings that indicate a file path was mapped, and
+    // where the ELF header indicates a mapped shared library.
+    MappingInfo* mapping = mappings_[i];
+    if (!(mapping->exec && mapping->name[0] == '/')) {
+      continue;
+    }
+    ElfW(Ehdr) ehdr;
+    if (!GetLoadedElfHeader(mapping->start_addr, &ehdr)) {
+      continue;
+    }
+    if (ehdr.e_type == ET_DYN) {
+      // Compute the effective load bias for this mapped library, and update
+      // the mapping to hold that rather than |start_addr|. Where the library
+      // does not contain Android packed relocations, GetEffectiveLoadBias()
+      // returns |start_addr| and the mapping entry is not changed.
+      mapping->start_addr = GetEffectiveLoadBias(&ehdr, mapping->start_addr);
+    }
+  }
+}
+
+#endif  // __ANDROID__
 
 // Get information about the stack, given the stack pointer. We don't try to
 // walk the stack since we might not have all the information needed to do

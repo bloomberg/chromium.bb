@@ -86,7 +86,7 @@ class MicrodumpWriter {
     // try to not crash.
     if (!dumper_->Init() || !log_line_)
       return false;
-    return dumper_->ThreadsSuspend();
+    return dumper_->ThreadsSuspend() && dumper_->LateInit();
   }
 
   bool Dump() {

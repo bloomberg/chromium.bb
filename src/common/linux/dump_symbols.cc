@@ -95,6 +95,15 @@ using google_breakpad::scoped_ptr;
 #define EM_AARCH64      183
 #endif
 
+// Define SHT_ANDROID_REL and SHT_ANDROID_RELA if not defined by the host.
+// Sections with this type contain Android packed relocations.
+#ifndef SHT_ANDROID_REL
+#define SHT_ANDROID_REL  (SHT_LOOS + 1)
+#endif
+#ifndef SHT_ANDROID_RELA
+#define SHT_ANDROID_RELA (SHT_LOOS + 2)
+#endif
+
 //
 // FDWrapper
 //
@@ -610,6 +619,28 @@ bool LoadSymbols(const string& obj_file,
   const char *names_end = names + section_names->sh_size;
   bool found_debug_info_section = false;
   bool found_usable_info = false;
+
+  // Reject files that contain Android packed relocations. The pre-packed
+  // version of the file should be symbolized; the packed version is only
+  // intended for use on the target system.
+  if (FindElfSectionByName<ElfClass>(".rel.dyn", SHT_ANDROID_REL,
+                                     sections, names,
+                                     names_end, elf_header->e_shnum)) {
+    fprintf(stderr, "%s: file contains a \".rel.dyn\" section "
+                    "with type SHT_ANDROID_REL\n", obj_file.c_str());
+    fprintf(stderr, "Files containing Android packed relocations "
+                    "may not be symbolized.\n");
+    return false;
+  }
+  if (FindElfSectionByName<ElfClass>(".rela.dyn", SHT_ANDROID_RELA,
+                                     sections, names,
+                                     names_end, elf_header->e_shnum)) {
+    fprintf(stderr, "%s: file contains a \".rela.dyn\" section "
+                    "with type SHT_ANDROID_RELA\n", obj_file.c_str());
+    fprintf(stderr, "Files containing Android packed relocations "
+                    "may not be symbolized.\n");
+    return false;
+  }
 
   if (options.symbol_data != ONLY_CFI) {
 #ifndef NO_STABS_SUPPORT

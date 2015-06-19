@@ -39,6 +39,9 @@
 #define CLIENT_LINUX_MINIDUMP_WRITER_LINUX_DUMPER_H_
 
 #include <elf.h>
+#if defined(__ANDROID__)
+#include <link.h>
+#endif
 #include <linux/limits.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -75,6 +78,12 @@ class LinuxDumper {
 
   // Parse the data for |threads| and |mappings|.
   virtual bool Init();
+
+  // Take any actions that could not be taken in Init(). LateInit() is
+  // called after all other caller's initialization is complete, and in
+  // particular after it has called ThreadsSuspend(), so that ptrace is
+  // available.
+  virtual bool LateInit();
 
   // Return true if the dumper performs a post-mortem dump.
   virtual bool IsPostMortem() const = 0;
@@ -182,6 +191,62 @@ class LinuxDumper {
 
   // Info from /proc/<pid>/auxv
   wasteful_vector<elf_aux_val_t> auxv_;
+
+#if defined(__ANDROID__)
+ private:
+  // Android M and later support packed ELF relocations in shared libraries.
+  // Packing relocations changes the vaddr of the LOAD segments, such that
+  // the effective load bias is no longer the same as the start address of
+  // the memory mapping containing the executable parts of the library. The
+  // packing is applied to the stripped library run on the target, but not to
+  // any other library, and in particular not to the library used to generate
+  // breakpad symbols. As a result, we need to adjust the |start_addr| for
+  // any mapping that results from a shared library that contains Android
+  // packed relocations, so that it properly represents the effective library
+  // load bias. The following functions support this adjustment.
+
+  // Check that a given mapping at |start_addr| is for an ELF shared library.
+  // If it is, place the ELF header in |ehdr| and return true.
+  // The first LOAD segment in an ELF shared library has offset zero, so the
+  // ELF file header is at the start of this map entry, and in already mapped
+  // memory.
+  bool GetLoadedElfHeader(uintptr_t start_addr, ElfW(Ehdr)* ehdr);
+
+  // For the ELF file mapped at |start_addr|, iterate ELF program headers to
+  // find the min vaddr of all program header LOAD segments, the vaddr for
+  // the DYNAMIC segment, and a count of DYNAMIC entries. Return values in
+  // |min_vaddr_ptr|, |dyn_vaddr_ptr|, and |dyn_count_ptr|.
+  // The program header table is also in already mapped memory.
+  void ParseLoadedElfProgramHeaders(ElfW(Ehdr)* ehdr,
+                                    uintptr_t start_addr,
+                                    uintptr_t* min_vaddr_ptr,
+                                    uintptr_t* dyn_vaddr_ptr,
+                                    size_t* dyn_count_ptr);
+
+  // Search the DYNAMIC tags for the ELF file with the given |load_bias|, and
+  // return true if the tags indicate that the file contains Android packed
+  // relocations. Dynamic tags are found at |dyn_vaddr| past the |load_bias|.
+  bool HasAndroidPackedRelocations(uintptr_t load_bias,
+                                   uintptr_t dyn_vaddr,
+                                   size_t dyn_count);
+
+  // If the ELF file mapped at |start_addr| contained Android packed
+  // relocations, return the load bias that the system linker (or Chromium
+  // crazy linker) will have used. If the file did not contain Android
+  // packed relocations, returns |start_addr|, indicating that no adjustment
+  // is necessary.
+  // The effective load bias is |start_addr| adjusted downwards by the
+  // min vaddr in the library LOAD segments.
+  uintptr_t GetEffectiveLoadBias(ElfW(Ehdr)* ehdr, uintptr_t start_addr);
+
+  // Called from LateInit(). Iterates |mappings_| and rewrites the |start_addr|
+  // field of any that represent ELF shared libraries with Android packed
+  // relocations, so that |start_addr| is the load bias that the system linker
+  // (or Chromium crazy linker) used. This value matches the addresses produced
+  // when the non-relocation-packed library is used for breakpad symbol
+  // generation.
+  void LatePostprocessMappings();
+#endif  // __ANDROID__
 };
 
 }  // namespace google_breakpad
