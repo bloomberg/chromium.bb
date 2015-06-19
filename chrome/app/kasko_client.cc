@@ -9,6 +9,7 @@
 #include <windows.h>
 
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
@@ -68,14 +69,35 @@ KaskoClient::~KaskoClient() {
   kasko::api::ShutdownClient();
 }
 
-extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
-    EXCEPTION_POINTERS* info, const char* protobuf, size_t protobuf_length) {
+// Sends a diagnostic report for the current process, then terminates it.
+// |info| is an optional exception record describing an exception on the current
+// thread.
+// |protobuf| is an optional buffer of length |protobuf_length|.
+// |base_addresses| and |lengths| are optional null-terminated arrays of the
+// same length. For each entry in |base_addresses|, a memory range starting at
+// the specified address and having the length specified in the corresponding
+// entry in |lengths| will be explicitly included in the report.
+extern "C" void __declspec(dllexport)
+    ReportCrashWithProtobufAndMemoryRanges(EXCEPTION_POINTERS* info,
+                                           const char* protobuf,
+                                           size_t protobuf_length,
+                                           const void* const* base_addresses,
+                                           const size_t* lengths) {
   if (g_chrome_watcher_client && g_chrome_watcher_client->EnsureInitialized()) {
     size_t crash_key_count = 0;
     const kasko::api::CrashKey* crash_keys = nullptr;
     GetKaskoCrashKeys(&crash_keys, &crash_key_count);
+    std::vector<kasko::api::MemoryRange> memory_ranges;
+    if (base_addresses && lengths) {
+      for (int i = 0; base_addresses[i] != nullptr && lengths[i] != 0; ++i) {
+        kasko::api::MemoryRange memory_range = {base_addresses[i], lengths[i]};
+        memory_ranges.push_back(memory_range);
+      }
+    }
     kasko::api::SendReport(info, g_minidump_type, protobuf, protobuf_length,
-                           crash_keys, crash_key_count);
+                           crash_keys, crash_key_count,
+                           memory_ranges.size() ? &memory_ranges[0] : nullptr,
+                           memory_ranges.size());
   }
 
   // The Breakpad integration hooks TerminateProcess. Sidestep it to avoid a
@@ -88,6 +110,12 @@ extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
           "TerminateProcessWithoutDump"));
   CHECK(terminate_process_without_dump);
   terminate_process_without_dump();
+}
+
+extern "C" void __declspec(dllexport) ReportCrashWithProtobuf(
+    EXCEPTION_POINTERS* info, const char* protobuf, size_t protobuf_length) {
+  ReportCrashWithProtobufAndMemoryRanges(info, protobuf, protobuf_length,
+                                         nullptr, nullptr);
 }
 
 #endif  // defined(KASKO)
