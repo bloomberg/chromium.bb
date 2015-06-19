@@ -141,6 +141,7 @@ public:
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle(CSSStyleDeclaration*);
     bool findPropertyByRange(const SourceRange&, unsigned* ruleIndex, unsigned* propertyIndex, bool* overwrite);
     bool lineNumberAndColumnToOffset(unsigned lineNumber, unsigned columnNumber, unsigned* offset);
+    virtual bool isInlineStyle() = 0;
 
 protected:
     InspectorStyleSheetBase(const String& id, Listener*);
@@ -175,9 +176,10 @@ public:
     virtual Document* ownerDocument() const override;
     virtual bool setText(const String&, ExceptionState&) override;
     virtual bool getText(String* result) const override;
-    CSSStyleRule* setRuleSelector(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
-    CSSMediaRule* setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
-    CSSStyleRule* addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
+    RefPtrWillBeRawPtr<CSSStyleRule>  setRuleSelector(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    RefPtrWillBeRawPtr<CSSStyleRule>  setStyleText(const SourceRange&, const String& text, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    RefPtrWillBeRawPtr<CSSMediaRule>  setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    RefPtrWillBeRawPtr<CSSStyleRule>  addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
     bool deleteRule(const SourceRange&, ExceptionState&);
 
     CSSStyleSheet* pageStyleSheet() const { return m_pageStyleSheet.get(); }
@@ -195,7 +197,7 @@ public:
     virtual unsigned indexOf(CSSStyleDeclaration*) const override;
     virtual CSSStyleDeclaration* styleAt(unsigned ruleIndex) const override;
     virtual bool setStyleText(unsigned ruleIndex, const String&) override;
-
+    bool isInlineStyle() override { return false; }
     const CSSRuleVector& flatRules();
 
 protected:
@@ -210,12 +212,10 @@ private:
     InspectorStyleSheet(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
     unsigned ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange&);
     bool findRuleByHeaderRange(const SourceRange&, CSSRule**, CSSRuleSourceData**);
+    bool findRuleByBodyRange(const SourceRange&, CSSRule**, CSSRuleSourceData**);
     CSSStyleRule* insertCSSOMRuleInStyleSheet(const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
-    bool verifyRuleText(const String& ruleText);
-    bool verifySelectorText(const String& selectorText);
-    bool verifyMediaText(const String& mediaText);
     String sourceMapURL() const;
     String sourceURL() const;
     bool ensureText() const;
@@ -256,6 +256,7 @@ public:
     virtual CSSStyleDeclaration* styleAt(unsigned ruleIndex) const override { ASSERT_UNUSED(ruleIndex, !ruleIndex); return inlineStyle(); }
     virtual unsigned indexOf(CSSStyleDeclaration* style) const override { return 0; }
     virtual bool setStyleText(unsigned ruleIndex, const String&) override;
+    CSSStyleDeclaration* inlineStyle() const;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -266,10 +267,10 @@ protected:
     // Also accessed by friend class InspectorStyle.
     virtual bool ensureParsedDataReady() override;
     virtual PassRefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceDataAt(unsigned ruleIndex) const override { ASSERT_UNUSED(ruleIndex, !ruleIndex); return m_ruleSourceData; }
+    bool isInlineStyle() override { return true; }
 
 private:
     InspectorStyleSheetForInlineStyle(const String& id, PassRefPtrWillBeRawPtr<Element>, Listener*);
-    CSSStyleDeclaration* inlineStyle() const;
     const String& elementStyleText() const;
     PassRefPtrWillBeRawPtr<CSSRuleSourceData> getStyleAttributeData() const;
 
@@ -281,6 +282,7 @@ private:
     mutable String m_styleText;
     mutable bool m_isStyleTextValid;
 };
+
 
 
 } // namespace blink

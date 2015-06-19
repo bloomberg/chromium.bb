@@ -39,6 +39,7 @@ function updateStyleSheetRange(command, styleSheetId, expectError, options, call
 
 InspectorTest.setPropertyText = updateStyleSheetRange.bind(null, "CSS.setPropertyText");
 InspectorTest.setRuleSelector = updateStyleSheetRange.bind(null, "CSS.setRuleSelector");
+InspectorTest.setStyleText = updateStyleSheetRange.bind(null, "CSS.setStyleText");
 InspectorTest.setMediaText = updateStyleSheetRange.bind(null, "CSS.setMediaText");
 InspectorTest.addRule = updateStyleSheetRange.bind(null, "CSS.addRule");
 

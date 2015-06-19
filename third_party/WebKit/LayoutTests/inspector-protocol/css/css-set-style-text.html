@@ -1,0 +1,109 @@
+<html>
+<head>
+<link rel="stylesheet" href="resources/set-style-text.css"/>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    var setStyleText;
+    var verifyProtocolError;
+    var dumpStyleSheet;
+    var documentNodeId;
+    var styleSheetId;
+
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+        InspectorTest.sendCommandOrDie("CSS.enable", {});
+    }
+
+    function styleSheetAdded(result)
+    {
+        styleSheetId = result.params.header.styleSheetId;
+        setStyleText = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, false);
+        verifyProtocolError = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, true);
+        dumpStyleSheet = InspectorTest.dumpStyleSheetText.bind(null, styleSheetId);
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onInitialStyleSheetText);
+    }
+
+    function dumpAndNext(next)
+    {
+        return InspectorTest.loadAndDumpMatchingRules.bind(InspectorTest, documentNodeId, "#test", InspectorTest.undoAndNext(next));
+    }
+
+    function onInitialStyleSheetText(result)
+    {
+        InspectorTest.log("==== Initial style sheet text ====");
+        InspectorTest.log(result.text);
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+    var testSuite = [
+        function testBasicSetStyle(next)
+        {
+            setStyleText({
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
+                text: "\n    content: 'EDITED';\n",
+            }, dumpAndNext(next));
+        },
+
+        function testSetStylePoorContent(next)
+        {
+            verifyProtocolError({
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
+                text: "}",
+            }, dumpAndNext(next));
+        },
+
+        function testSetStyleInMedia(next)
+        {
+            setStyleText({
+                styleSheetId: styleSheetId,
+                range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
+                text: "\n        content: 'EDITED';\n        color: red;\n        /** foo */\n    ",
+            }, dumpAndNext(next));
+        },
+
+        function testDeleteStyleBody(next)
+        {
+            setStyleText({
+                styleSheetId: styleSheetId,
+                range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
+                text: "",
+            }, dumpAndNext(next));
+        },
+
+        function testSetStylePoorRange(next)
+        {
+            verifyProtocolError({
+                styleSheetId: styleSheetId,
+                range: { startLine: 11, startColumn: 11, endLine: 15, endColumn: 4 },
+                text: "\n        content: 'EDITED';\n",
+            }, dumpAndNext(next));
+        },
+
+        function testSetStyleOpenComment(next)
+        {
+            verifyProtocolError({
+                styleSheetId: styleSheetId,
+                range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
+                text: "\n        content: 'EDITED'/* ;\n",
+            }, dumpAndNext(next));
+        }
+   ];
+}
+
+</script>
+</head>
+<body onload="runTest();">
+<p>The test verifies functionality of protocol method CSS.setStyleText.</p>
+<article id="test"></article>
+</body>
+</html>

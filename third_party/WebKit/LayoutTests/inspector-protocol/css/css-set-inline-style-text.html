@@ -1,0 +1,110 @@
+<html>
+<head>
+<link rel="stylesheet" href="resources/set-style-text.css"/>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    var styleSheetId;
+    var documentNodeId;
+    var setStyleText;
+    var verifyProtocolError;
+    var dumpStyleSheet;
+
+    InspectorTest.sendCommandOrDie("DOM.enable", {});
+    InspectorTest.sendCommandOrDie("CSS.enable", {}, cssWasEnabled);
+
+    function cssWasEnabled()
+    {
+        InspectorTest.sendCommandOrDie("DOM.getDocument", {}, onGotDocument);
+    }
+
+    function onGotDocument(result)
+    {
+        documentNodeId = result.root.nodeId;
+        InspectorTest.sendCommandOrDie("DOM.querySelector", { nodeId: documentNodeId, selector: "#inliner" }, onGotNode);
+    }
+
+    function onGotNode(node)
+    {
+        InspectorTest.sendCommandOrDie("CSS.getInlineStylesForNode", { nodeId: node.nodeId }, onGotInlineStyles);
+    }
+
+    function onGotInlineStyles(result)
+    {
+        styleSheetId = result.inlineStyle.styleSheetId;
+        setStyleText = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, false);
+        verifyProtocolError = InspectorTest.setStyleText.bind(InspectorTest, styleSheetId, true);
+        dumpStyleSheet = InspectorTest.dumpStyleSheetText.bind(null, styleSheetId);
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onInitialStyleSheetText);
+    }
+
+    function dumpAndNext(next)
+    {
+        return function()
+        {
+            InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onReceiveStyleSheetText);
+
+            function onReceiveStyleSheetText(result)
+            {
+                InspectorTest.log("Stylesheet text: " + result.text);
+                InspectorTest.domUndo(next);
+            }
+        }
+    }
+
+    function onInitialStyleSheetText(result)
+    {
+        InspectorTest.log("==== Initial style sheet text ====");
+        InspectorTest.log(result.text);
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+    var testSuite = [
+        function testBasicSetStyle(next)
+        {
+            setStyleText({
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
+                text: "content: 'EDITED'",
+            }, dumpAndNext(next));
+        },
+
+        function testSetStylePoorContent(next)
+        {
+            verifyProtocolError({
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
+                text: "}",
+            }, dumpAndNext(next));
+        },
+
+        function testDeleteStyleBody(next)
+        {
+            setStyleText({
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
+                text: "",
+            }, dumpAndNext(next));
+        },
+
+        function testSetStyleOpenComment(next)
+        {
+            verifyProtocolError({
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 0, endLine: 0, endColumn: 11 },
+                text: "/*",
+            }, dumpAndNext(next));
+        }
+   ];
+}
+
+</script>
+</head>
+<body onload="runTest();">
+<p>The test verifies functionality of protocol method CSS.setStyleText for inline elements.</p>
+<div id="inliner" style="color: red;">
+</body>
+</html>

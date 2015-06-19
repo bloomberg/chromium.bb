@@ -6,30 +6,18 @@
 function test()
 {
     var inlineStyleSheetId;
-    function sendCommand(command, properties, callback) {
-        InspectorTest.sendCommand(command, properties || {}, commandCallback);
-        function commandCallback(msg)
-        {
-            if (msg.error) {
-                InspectorTest.log(msg.error.message);
-                InspectorTest.completeTest();
-                return;
-            }
-            callback(msg.result);
-        }
-    }
 
     InspectorTest.sendCommand("CSS.enable", {}, cssWasEnabled);
 
     function cssWasEnabled()
     {
-        sendCommand("DOM.getDocument", {}, onGotDocument);
+        InspectorTest.sendCommandOrDie("DOM.getDocument", {}, onGotDocument);
     }
 
     function onGotDocument(result)
     {
         var root = result.root;
-        sendCommand("DOM.querySelector", {
+        InspectorTest.sendCommandOrDie("DOM.querySelector", {
             nodeId: root.nodeId,
             selector: "#inliner"
         }, onGotNode);
@@ -37,19 +25,19 @@ function test()
 
     function onGotNode(node)
     {
-        sendCommand("CSS.getInlineStylesForNode", { nodeId: node.nodeId }, onGotInlineStyles);
+        InspectorTest.sendCommandOrDie("CSS.getInlineStylesForNode", { nodeId: node.nodeId }, onGotInlineStyles);
     }
 
     function onGotInlineStyles(result)
     {
         inlineStyleSheetId = result.inlineStyle.styleSheetId;
-        sendCommand("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onReceiveStyleSheetText);
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onReceiveStyleSheetText);
     }
 
     function onReceiveStyleSheetText(result)
     {
         InspectorTest.log(result.text);
-        sendCommand("CSS.setStyleSheetText", {
+        InspectorTest.sendCommandOrDie("CSS.setStyleSheetText", {
             styleSheetId: inlineStyleSheetId,
             text: "border: 1px solid black;"
         }, onSetStyleSheetBody);
@@ -57,7 +45,7 @@ function test()
 
     function onSetStyleSheetBody(result)
     {
-        sendCommand("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onCheckStyleSheetBody);
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onCheckStyleSheetBody);
     }
 
     function onCheckStyleSheetBody(result)

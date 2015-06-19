@@ -136,6 +136,7 @@ public:
     virtual void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text) override;
     virtual void setPropertyText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result) override;
     virtual void setRuleSelector(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) override;
+    virtual void setStyleText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result) override;
     virtual void setMediaText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSMedia>& result) override;
     virtual void createStyleSheet(ErrorString*, const String& frameId, TypeBuilder::CSS::StyleSheetId* outStyleSheetId) override;
     virtual void addRule(ErrorString*, const String& styleSheetId, const String& ruleText, const RefPtr<JSONObject>& location, RefPtr<TypeBuilder::CSS::CSSRule>& result) override;
@@ -150,7 +151,8 @@ private:
     class StyleSheetAction;
     class SetStyleSheetTextAction;
     class SetPropertyTextAction;
-    class SetRuleSelectorOrMediaAction;
+    class ModifyRuleAction;
+    class SetElementStyleAction;
     class AddRuleAction;
     class InspectorResourceContentLoaderCallback;
 

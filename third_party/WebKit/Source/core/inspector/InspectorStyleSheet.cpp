@@ -332,6 +332,100 @@ void StyleSheetHandler::endMediaQuery()
     m_currentMediaQueryData.clear();
 }
 
+bool verifyRuleText(Document* document, const String& ruleText)
+{
+    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
+    RuleSourceDataList sourceData;
+    String text = ruleText + " div { " + bogusPropertyName + ": none; }";
+    StyleSheetHandler handler(text, document, &sourceData);
+    CSSParser::parseSheetForInspector(parserContextForDocument(document), text, handler);
+    unsigned ruleCount = sourceData.size();
+
+    // Exactly two rules should be parsed.
+    if (ruleCount != 2)
+        return false;
+
+    // Added rule must be style rule.
+    if (!sourceData.at(0)->styleSourceData)
+        return false;
+
+    WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.at(1)->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
+
+    // Exactly one property should be in rule.
+    if (propertyCount != 1)
+        return false;
+
+    // Check for the property name.
+    if (propertyData.at(0).name != bogusPropertyName)
+        return false;
+
+    return true;
+}
+
+bool verifyStyleText(Document* document, const String& text)
+{
+    return verifyRuleText(document, "div {" + text + "}");
+}
+
+bool verifySelectorText(Document* document, const String& selectorText)
+{
+    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
+    RuleSourceDataList sourceData;
+    String text = selectorText + " { " + bogusPropertyName + ": none; }";
+    StyleSheetHandler handler(text, document, &sourceData);
+    CSSParser::parseSheetForInspector(parserContextForDocument(document), text, handler);
+
+    // Exactly one rule should be parsed.
+    unsigned ruleCount = sourceData.size();
+    if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Style)
+        return false;
+
+    // Exactly one property should be in style rule.
+    WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.at(0)->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
+    if (propertyCount != 1)
+        return false;
+
+    // Check for the property name.
+    if (propertyData.at(0).name != bogusPropertyName)
+        return false;
+
+    return true;
+}
+
+bool verifyMediaText(Document* document, const String& mediaText)
+{
+    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
+    RuleSourceDataList sourceData;
+    String text = "@media " + mediaText + " { div { " + bogusPropertyName + ": none; } }";
+    StyleSheetHandler handler(text, document, &sourceData);
+    CSSParser::parseSheetForInspector(parserContextForDocument(document), text, handler);
+
+    // Exactly one media rule should be parsed.
+    unsigned ruleCount = sourceData.size();
+    if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Media)
+        return false;
+
+    // Media rule should have exactly one style rule child.
+    RuleSourceDataList& childSourceData = sourceData.at(0)->childRules;
+    ruleCount = childSourceData.size();
+    if (ruleCount != 1 || !childSourceData.at(0)->styleSourceData)
+        return false;
+
+    // Exactly one property should be in style rule.
+    WillBeHeapVector<CSSPropertySourceData>& propertyData = childSourceData.at(0)->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
+    if (propertyCount != 1)
+        return false;
+
+    // Check for the property name.
+    if (propertyData.at(0).name != bogusPropertyName)
+        return false;
+
+    return true;
+}
+
 } // namespace
 
 class ParsedStyleSheet : public NoBaseWillBeGarbageCollectedFinalized<ParsedStyleSheet> {
@@ -1007,9 +1101,9 @@ bool InspectorStyleSheet::setText(const String& text, ExceptionState& exceptionS
     return true;
 }
 
-CSSStyleRule* InspectorStyleSheet::setRuleSelector(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
+RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::setRuleSelector(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
 {
-    if (!verifySelectorText(text)) {
+    if (!verifySelectorText(ownerDocument(), text)) {
         exceptionState.throwDOMException(SyntaxError, "Selector or media text is not valid.");
         return nullptr;
     }
@@ -1021,7 +1115,7 @@ CSSStyleRule* InspectorStyleSheet::setRuleSelector(const SourceRange& range, con
         return nullptr;
     }
 
-    CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
+    RefPtrWillBeRawPtr<CSSStyleRule>  styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
     styleRule->setSelectorText(text);
 
     replaceText(sourceData->ruleHeaderRange, text, newRange, oldText);
@@ -1030,9 +1124,32 @@ CSSStyleRule* InspectorStyleSheet::setRuleSelector(const SourceRange& range, con
     return styleRule;
 }
 
-CSSMediaRule* InspectorStyleSheet::setMediaRuleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
+RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::setStyleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
 {
-    if (!verifyMediaText(text)) {
+    if (!verifyStyleText(ownerDocument(), text)) {
+        exceptionState.throwDOMException(SyntaxError, "Style text is not valid.");
+        return nullptr;
+    }
+
+    CSSRule* rule = nullptr;
+    CSSRuleSourceData* sourceData = nullptr;
+    if (!findRuleByBodyRange(range, &rule, &sourceData) || !sourceData->styleSourceData || rule->type() != CSSRule::STYLE_RULE) {
+        exceptionState.throwDOMException(NotFoundError, "Source range didn't match existing style source range");
+        return nullptr;
+    }
+
+    RefPtrWillBeRawPtr<CSSStyleRule> styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
+    styleRule->style()->setCSSText(text, exceptionState);
+
+    replaceText(sourceData->ruleBodyRange, text, newRange, oldText);
+    onStyleSheetTextChanged();
+
+    return styleRule;
+}
+
+RefPtrWillBeRawPtr<CSSMediaRule> InspectorStyleSheet::setMediaRuleText(const SourceRange& range, const String& text, SourceRange* newRange, String* oldText, ExceptionState& exceptionState)
+{
+    if (!verifyMediaText(ownerDocument(), text)) {
         exceptionState.throwDOMException(SyntaxError, "Selector or media text is not valid.");
         return nullptr;
     }
@@ -1044,7 +1161,7 @@ CSSMediaRule* InspectorStyleSheet::setMediaRuleText(const SourceRange& range, co
         return nullptr;
     }
 
-    CSSMediaRule* mediaRule = InspectorCSSAgent::asCSSMediaRule(rule);
+    RefPtrWillBeRawPtr<CSSMediaRule>  mediaRule = InspectorCSSAgent::asCSSMediaRule(rule);
     mediaRule->media()->setMediaText(text);
 
     replaceText(sourceData->ruleHeaderRange, text, newRange, oldText);
@@ -1123,103 +1240,14 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
     return insertCSSOMRuleInMediaRule(toCSSMediaRule(rule.get()), sourceRange, ruleText, exceptionState);
 }
 
-bool InspectorStyleSheet::verifyRuleText(const String& ruleText)
-{
-    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
-    RuleSourceDataList sourceData;
-    String text = ruleText + " div { " + bogusPropertyName + ": none; }";
-    StyleSheetHandler handler(text, ownerDocument(), &sourceData);
-    CSSParser::parseSheetForInspector(parserContextForDocument(ownerDocument()), text, handler);
-    unsigned ruleCount = sourceData.size();
-
-    // Exactly two rules should be parsed.
-    if (ruleCount != 2)
-        return false;
-
-    // Added rule must be style rule.
-    if (!sourceData.at(0)->styleSourceData)
-        return false;
-
-    WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.at(1)->styleSourceData->propertyData;
-    unsigned propertyCount = propertyData.size();
-
-    // Exactly one property should be in rule.
-    if (propertyCount != 1)
-        return false;
-
-    // Check for the property name.
-    if (propertyData.at(0).name != bogusPropertyName)
-        return false;
-
-    return true;
-}
-
-bool InspectorStyleSheet::verifySelectorText(const String& selectorText)
-{
-    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
-    RuleSourceDataList sourceData;
-    String text = selectorText + " { " + bogusPropertyName + ": none; }";
-    StyleSheetHandler handler(text, ownerDocument(), &sourceData);
-    CSSParser::parseSheetForInspector(parserContextForDocument(ownerDocument()), text, handler);
-
-    // Exactly one rule should be parsed.
-    unsigned ruleCount = sourceData.size();
-    if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Style)
-        return false;
-
-    // Exactly one property should be in style rule.
-    WillBeHeapVector<CSSPropertySourceData>& propertyData = sourceData.at(0)->styleSourceData->propertyData;
-    unsigned propertyCount = propertyData.size();
-    if (propertyCount != 1)
-        return false;
-
-    // Check for the property name.
-    if (propertyData.at(0).name != bogusPropertyName)
-        return false;
-
-    return true;
-}
-
-bool InspectorStyleSheet::verifyMediaText(const String& mediaText)
-{
-    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
-    RuleSourceDataList sourceData;
-    String text = "@media " + mediaText + " { div { " + bogusPropertyName + ": none; } }";
-    StyleSheetHandler handler(text, ownerDocument(), &sourceData);
-    CSSParser::parseSheetForInspector(parserContextForDocument(ownerDocument()), text, handler);
-
-    // Exactly one media rule should be parsed.
-    unsigned ruleCount = sourceData.size();
-    if (ruleCount != 1 || sourceData.at(0)->type != StyleRule::Media)
-        return false;
-
-    // Media rule should have exactly one style rule child.
-    RuleSourceDataList& childSourceData = sourceData.at(0)->childRules;
-    ruleCount = childSourceData.size();
-    if (ruleCount != 1 || !childSourceData.at(0)->styleSourceData)
-        return false;
-
-    // Exactly one property should be in style rule.
-    WillBeHeapVector<CSSPropertySourceData>& propertyData = childSourceData.at(0)->styleSourceData->propertyData;
-    unsigned propertyCount = propertyData.size();
-    if (propertyCount != 1)
-        return false;
-
-    // Check for the property name.
-    if (propertyData.at(0).name != bogusPropertyName)
-        return false;
-
-    return true;
-}
-
-CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState& exceptionState)
+RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState& exceptionState)
 {
     if (location.start != location.end) {
         exceptionState.throwDOMException(NotFoundError, "Source range must be collapsed.");
         return nullptr;
     }
 
-    if (!verifyRuleText(ruleText)) {
+    if (!verifyRuleText(ownerDocument(), ruleText)) {
         exceptionState.throwDOMException(SyntaxError, "Rule text is not valid.");
         return nullptr;
     }
@@ -1230,7 +1258,7 @@ CSSStyleRule* InspectorStyleSheet::addRule(const String& ruleText, const SourceR
     }
     ensureFlatRules();
 
-    CSSStyleRule* styleRule = insertCSSOMRuleBySourceRange(location, ruleText, exceptionState);
+    RefPtrWillBeRawPtr<CSSStyleRule> styleRule = insertCSSOMRuleBySourceRange(location, ruleText, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -1614,6 +1642,25 @@ bool InspectorStyleSheet::findRuleByHeaderRange(const SourceRange& sourceRange, 
     return false;
 }
 
+bool InspectorStyleSheet::findRuleByBodyRange(const SourceRange& sourceRange, CSSRule** pRule, CSSRuleSourceData** pSourceData)
+{
+    if (!ensureParsedDataReady())
+        return false;
+    ensureFlatRules();
+
+    for (size_t i = 0; i < ruleCount() && i < m_flatRules.size(); ++i) {
+        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
+        if (ruleSourceData->ruleBodyRange.start == sourceRange.start && ruleSourceData->ruleBodyRange.end == sourceRange.end) {
+            *pRule = m_flatRules.at(i).get();
+            if (!(*pRule)->parentStyleSheet())
+                return false;
+            *pSourceData = ruleSourceData.get();
+            return true;
+        }
+    }
+    return false;
+}
+
 const CSSRuleVector& InspectorStyleSheet::flatRules()
 {
     ensureFlatRules();
@@ -1812,6 +1859,11 @@ void InspectorStyleSheetForInlineStyle::didModifyElementAttribute()
 
 bool InspectorStyleSheetForInlineStyle::setText(const String& text, ExceptionState& exceptionState)
 {
+    if (!verifyStyleText(ownerDocument(), text)) {
+        exceptionState.throwDOMException(SyntaxError, "Style text is not valid.");
+        return false;
+    }
+
     bool success = setStyleText(0, text);
     if (!success)
         exceptionState.throwDOMException(SyntaxError, "Style sheet text is invalid.");
@@ -1830,12 +1882,7 @@ bool InspectorStyleSheetForInlineStyle::getText(String* result) const
 
 bool InspectorStyleSheetForInlineStyle::setStyleText(unsigned ruleIndex, const String& text)
 {
-    CSSStyleDeclaration* style = styleAt(ruleIndex);
-    if (!style)
-        return false;
-    ASSERT_UNUSED(style, style == inlineStyle());
     TrackExceptionState exceptionState;
-
     {
         InspectorCSSAgent::InlineStyleOverrideScope overrideScope(m_element->ownerDocument());
         m_element->setAttribute("style", AtomicString(text), exceptionState);
