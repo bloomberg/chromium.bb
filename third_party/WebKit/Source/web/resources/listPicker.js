@@ -315,10 +315,10 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
     if (!styleConfig)
         return;
     var style = element.style;
-    style.visibility = styleConfig.visibility;
-    style.display = styleConfig.display;
-    style.direction = styleConfig.direction;
-    style.unicodeBidi = styleConfig.unicodeBidi;
+    style.visibility = styleConfig.visibility ? styleConfig.visibility : "";
+    style.display = styleConfig.display ? styleConfig.display : "";
+    style.direction = styleConfig.direction ? styleConfig.direction : "";
+    style.unicodeBidi = styleConfig.unicodeBidi ? styleConfig.unicodeBidi : "";
     if (!styleConfig.color)
         return;
     style.color = styleConfig.color;
@@ -335,9 +335,15 @@ ListPicker.prototype._configureItem = function(element, config, inGroup) {
     if (config.type === "option") {
         element.label = config.label;
         element.value = config.value;
-        element.title = config.title;
-        element.disabled = config.disabled;
-        element.setAttribute("aria-label", config.ariaLabel);
+        if (config.title)
+            element.title = config.title;
+        else
+            element.removeAttribute("title");
+        element.disabled = !!config.disabled
+        if (config.ariaLabel)
+            element.setAttribute("aria-label", config.ariaLabel);
+        else
+            element.removeAttribute("aria-label");
         element.style.webkitPaddingStart = this._config.paddingStart + "px";
         if (inGroup) {
             element.style.webkitMarginStart = (- this._config.paddingStart) + "px";

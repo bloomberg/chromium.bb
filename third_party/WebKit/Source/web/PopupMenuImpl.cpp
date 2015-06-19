@@ -83,6 +83,19 @@ DEFINE_TRACE(PopupMenuCSSFontSelector)
     CSSFontSelectorClient::trace(visitor);
 }
 
+class PopupMenuImpl::ItemIterationContext {
+    STACK_ALLOCATED();
+public:
+    ItemIterationContext(bool enableExtraStyling, TextDirection dir)
+        : m_enableExtraStyling(enableExtraStyling)
+        , m_direction(dir)
+    {
+    }
+
+    bool m_enableExtraStyling;
+    TextDirection m_direction;
+};
+
 PassRefPtrWillBeRawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, PopupMenuClient* client)
 {
     return adoptRefWillBeNoop(new PopupMenuImpl(chromeClient, client));
@@ -129,20 +142,20 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     PagePopupClient::addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
     addProperty("selectedIndex", m_client->selectedIndex(), data);
+    const ComputedStyle* ownerStyle = ownerElement().computedStyle();
     PagePopupClient::addString("children: [\n", data);
-    bool enableExtraStyling = !hasTooManyItemsForStyling();
+    ItemIterationContext context(!hasTooManyItemsForStyling(), ownerStyle->direction());
     int listIndex = 0;
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
         if (isHTMLOptionElement(child))
-            addOption(toHTMLOptionElement(child), listIndex, enableExtraStyling, data);
+            addOption(context, toHTMLOptionElement(child), listIndex, data);
         if (isHTMLOptGroupElement(child))
-            addOptGroup(toHTMLOptGroupElement(child), listIndex, enableExtraStyling, data);
+            addOptGroup(context, toHTMLOptGroupElement(child), listIndex, data);
         if (isHTMLHRElement(child))
-            addSeparator(toHTMLHRElement(child), listIndex, enableExtraStyling, data);
+            addSeparator(context, toHTMLHRElement(child), listIndex, data);
     }
     PagePopupClient::addString("],\n", data);
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
-    const ComputedStyle* ownerStyle = ownerElement().computedStyle();
     Color backgroundColor = ownerStyle->visitedDependentColor(CSSPropertyBackgroundColor);
 #if OS(LINUX)
     // On other platforms, the <option> background color is the same as the
@@ -234,16 +247,20 @@ static const char* textTransformToString(ETextTransform transform)
     return "";
 }
 
-void PopupMenuImpl::addElementStyle(HTMLElement& element, bool enableExtraStyling, SharedBuffer* data)
+void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element, SharedBuffer* data)
 {
     const ComputedStyle* style = m_client->computedStyleForItem(element);
     ASSERT(style);
     PagePopupClient::addString("style: {\n", data);
-    addProperty("visibility", String(style->visibility() == HIDDEN ? "hidden" : ""), data);
-    addProperty("display", String(style->display() == NONE ? "none" : ""), data);
-    addProperty("direction", String(style->direction() == RTL ? "rtl" : "ltr"), data);
-    addProperty("unicodeBidi", String(isOverride(style->unicodeBidi()) ? "bidi-override" : "normal"), data);
-    if (enableExtraStyling) {
+    if (style->visibility() == HIDDEN)
+        addProperty("visibility", String("hidden"), data);
+    if (style->display() == NONE)
+        addProperty("display", String("none"), data);
+    if (context.m_direction != style->direction())
+        addProperty("direction", String(style->direction() == RTL ? "rtl" : "ltr"), data);
+    if (isOverride(style->unicodeBidi()))
+        addProperty("unicodeBidi", String("bidi-override"), data);
+    if (context.m_enableExtraStyling) {
         addProperty("color", style->visitedDependentColor(CSSPropertyColor).serialized(), data);
         addProperty("backgroundColor", style->visitedDependentColor(CSSPropertyBackgroundColor).serialized(), data);
         const FontDescription& fontDescription = style->font().fontDescription();
@@ -263,21 +280,25 @@ void PopupMenuImpl::addElementStyle(HTMLElement& element, bool enableExtraStylin
     PagePopupClient::addString("},\n", data);
 }
 
-void PopupMenuImpl::addOption(HTMLOptionElement& element, int& listIndex, bool enableExtraStyling, SharedBuffer* data)
+void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& element, int& listIndex, SharedBuffer* data)
 {
     PagePopupClient::addString("{\n", data);
     PagePopupClient::addString("type: \"option\",\n", data);
     addProperty("label", element.text(), data);
-    addProperty("title", element.title(), data);
     ASSERT(listIndex == element.listIndex());
     addProperty("value", listIndex++, data);
-    addProperty("ariaLabel", element.fastGetAttribute(HTMLNames::aria_labelAttr), data);
-    addProperty("disabled", element.isDisabledFormControl(), data);
-    addElementStyle(element, enableExtraStyling, data);
+    if (!element.title().isEmpty())
+        addProperty("title", element.title(), data);
+    const AtomicString& ariaLabel = element.fastGetAttribute(HTMLNames::aria_labelAttr);
+    if (!ariaLabel.isEmpty())
+        addProperty("ariaLabel", ariaLabel, data);
+    if (element.isDisabledFormControl())
+        addProperty("disabled", true, data);
+    addElementStyle(context, element, data);
     PagePopupClient::addString("},\n", data);
 }
 
-void PopupMenuImpl::addOptGroup(HTMLOptGroupElement& element, int& listIndex, bool enableExtraStyling, SharedBuffer* data)
+void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupElement& element, int& listIndex, SharedBuffer* data)
 {
     ++listIndex;
     PagePopupClient::addString("{\n", data);
@@ -286,22 +307,22 @@ void PopupMenuImpl::addOptGroup(HTMLOptGroupElement& element, int& listIndex, bo
     addProperty("title", element.title(), data);
     addProperty("ariaLabel", element.fastGetAttribute(HTMLNames::aria_labelAttr), data);
     addProperty("disabled", element.isDisabledFormControl(), data);
-    addElementStyle(element, enableExtraStyling, data);
+    addElementStyle(context, element, data);
     PagePopupClient::addString("children: [", data);
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(element)) {
         if (isHTMLOptionElement(child))
-            addOption(toHTMLOptionElement(child), listIndex, enableExtraStyling, data);
+            addOption(context, toHTMLOptionElement(child), listIndex, data);
         // TODO(tkent): Ignore nested OPTGROUP. crbug.com/502101.
         if (isHTMLOptGroupElement(child))
-            addOptGroup(toHTMLOptGroupElement(child), listIndex, enableExtraStyling, data);
+            addOptGroup(context, toHTMLOptGroupElement(child), listIndex, data);
         if (isHTMLHRElement(child))
-            addSeparator(toHTMLHRElement(child), listIndex, enableExtraStyling, data);
+            addSeparator(context, toHTMLHRElement(child), listIndex, data);
     }
     PagePopupClient::addString("],\n", data);
     PagePopupClient::addString("},\n", data);
 }
 
-void PopupMenuImpl::addSeparator(HTMLHRElement& element, int& listIndex, bool enableExtraStyling, SharedBuffer* data)
+void PopupMenuImpl::addSeparator(ItemIterationContext& context, HTMLHRElement& element, int& listIndex, SharedBuffer* data)
 {
     ++listIndex;
     PagePopupClient::addString("{\n", data);
@@ -309,7 +330,7 @@ void PopupMenuImpl::addSeparator(HTMLHRElement& element, int& listIndex, bool en
     addProperty("title", element.title(), data);
     addProperty("ariaLabel", element.fastGetAttribute(HTMLNames::aria_labelAttr), data);
     addProperty("disabled", element.isDisabledFormControl(), data);
-    addElementStyle(element, enableExtraStyling, data);
+    addElementStyle(context, element, data);
     PagePopupClient::addString("},\n", data);
 }
 
@@ -415,15 +436,15 @@ void PopupMenuImpl::update()
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());
     PagePopupClient::addString("children: [", data.get());
-    bool enableExtraStyling = !hasTooManyItemsForStyling();
+    ItemIterationContext context(!hasTooManyItemsForStyling(), ownerElement().computedStyle()->direction());
     int listIndex = 0;
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
         if (isHTMLOptionElement(child))
-            addOption(toHTMLOptionElement(child), listIndex, enableExtraStyling, data.get());
+            addOption(context, toHTMLOptionElement(child), listIndex, data.get());
         if (isHTMLOptGroupElement(child))
-            addOptGroup(toHTMLOptGroupElement(child), listIndex, enableExtraStyling, data.get());
+            addOptGroup(context, toHTMLOptGroupElement(child), listIndex, data.get());
         if (isHTMLHRElement(child))
-            addSeparator(toHTMLHRElement(child), listIndex, enableExtraStyling, data.get());
+            addSeparator(context, toHTMLHRElement(child), listIndex, data.get());
     }
     PagePopupClient::addString("],\n", data.get());
     PagePopupClient::addString("}\n", data.get());

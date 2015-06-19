@@ -30,11 +30,12 @@ public:
 private:
     PopupMenuImpl(ChromeClientImpl*, PopupMenuClient*);
 
+    class ItemIterationContext;
     bool hasTooManyItemsForStyling();
-    void addOption(HTMLOptionElement&, int& listIndex, bool enableExtraStyling, SharedBuffer*);
-    void addOptGroup(HTMLOptGroupElement&, int& listIndex, bool enableExtraStyling, SharedBuffer*);
-    void addSeparator(HTMLHRElement&, int& listIndex, bool enableExtraStyling, SharedBuffer*);
-    void addElementStyle(HTMLElement&, bool enableExtraStyling, SharedBuffer*);
+    void addOption(ItemIterationContext&, HTMLOptionElement&, int& listIndex, SharedBuffer*);
+    void addOptGroup(ItemIterationContext&, HTMLOptGroupElement&, int& listIndex, SharedBuffer*);
+    void addSeparator(ItemIterationContext&, HTMLHRElement&, int& listIndex, SharedBuffer*);
+    void addElementStyle(ItemIterationContext&, HTMLElement&, SharedBuffer*);
 
     // PopupMenu functions:
     void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) override;
