@@ -1,39 +1,51 @@
 <html>
 <head>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
 <script type="text/javascript">
 
 function test()
 {
-    function sendCommand(command, properties, callback) {
-        InspectorTest.sendCommand(command, properties || {}, commandCallback);
-        function commandCallback(msg)
-        {
-            if (msg.error) {
-                InspectorTest.log(msg.error.message);
-                InspectorTest.completeTest();
-                return;
+    var documentNodeId;
+
+    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.runTestSuite([
+            function testFirstLetterPseudoClass(next)
+            {
+                platformFontsForElementWithSelector("#fancy", next);
+            },
+
+            function testSelectElementPlatformFonts(next)
+            {
+                platformFontsForElementWithSelector("select", next);
             }
-            callback(msg.result);
+        ]);
+    }
+
+
+    function platformFontsForElementWithSelector(selector, callback)
+    {
+        InspectorTest.requestNodeId(documentNodeId, selector, onNodeId);
+
+        function onNodeId(nodeId)
+        {
+            InspectorTest.sendCommandOrDie("CSS.getPlatformFontsForNode", { nodeId: nodeId }, onGotComputedFonts);
+        }
+
+        function onGotComputedFonts(response)
+        {
+            dumpComputedFonts(response);
+            callback();
         }
     }
-    sendCommand("DOM.getDocument", {}, onGotDocument);
 
-    function onGotDocument(result)
+    function dumpComputedFonts(response)
     {
-        var root = result.root;
-        sendCommand("DOM.querySelector", { "nodeId": root.nodeId , "selector": "#fancy" }, onGotNode);
-    }
-
-    function onGotNode(node)
-    {
-        sendCommand("CSS.getPlatformFontsForNode", { "nodeId": node.nodeId }, onGotComputedFonts);
-    }
-
-    function onGotComputedFonts(response)
-    {
-        var cssFamilyName = response.cssFamilyName;
-        InspectorTest.log("cssFamilyName: " + cssFamilyName);
         var fonts = response.fonts;
         fonts.sort(function(a, b) {
             return b.glyphCount - a.glyphCount;
@@ -41,7 +53,6 @@ function test()
         for (var i = 0; i < fonts.length; ++i)
             fonts[i].familyName = "<Some-family-name-" + i + ">";
         InspectorTest.log(JSON.stringify(fonts));
-        InspectorTest.completeTest();
     }
 };
 
@@ -70,10 +81,13 @@ window.addEventListener("DOMContentLoaded", function () {
 <body>
 
 <div id="fancy">
-First line.
-<br>
-Second line.
+7chars.<br>
+Some line with 29 characters.
 </div>
+<select>
+    <option>Short</option>
+    <option selected>Option with a lot of chars.</option>
+</select>
 
 </body>
 </html>

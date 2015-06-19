@@ -798,10 +798,13 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     style = inspectorStyle->buildArrayForComputedStyle();
 }
 
-void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutText* layoutObject, HashCountedSet<String>* fontStats)
+void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layoutObject, HashCountedSet<String>* fontStats)
 {
-    for (InlineTextBox* box = layoutObject->firstTextBox(); box; box = box->nextTextBox()) {
-        const ComputedStyle& style = layoutObject->styleRef(box->isFirstLineStyle());
+    if (!layoutObject->isText())
+        return;
+    LayoutText* layoutText = toLayoutText(layoutObject);
+    for (InlineTextBox* box = layoutText->firstTextBox(); box; box = box->nextTextBox()) {
+        const ComputedStyle& style = layoutText->styleRef(box->isFirstLineStyle());
         const Font& font = style.font();
         TextRun run = box->constructTextRunForInspector(style, font);
         SimpleShaper shaper(&font, run);
@@ -826,39 +829,17 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     *cssFamilyName = computedStyleInfo->getPropertyValue(CSSPropertyFontFamily);
 
-    WillBeHeapVector<RawPtrWillBeMember<Text> > textNodes;
-    if (node->nodeType() == Node::TEXT_NODE) {
-        if (node->layoutObject())
-            textNodes.append(toText(node));
-    } else {
-        for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-            if (child->nodeType() == Node::TEXT_NODE && child->layoutObject())
-                textNodes.append(toText(child));
+    HashCountedSet<String> fontStats;
+    LayoutObject* root = node->layoutObject();
+    if (root) {
+        collectPlatformFontsForLayoutObject(root, &fontStats);
+        // Iterate upto two layers deep.
+        for (LayoutObject* child = root->slowFirstChild(); child; child = child->nextSibling()) {
+            collectPlatformFontsForLayoutObject(child, &fontStats);
+            for (LayoutObject* child2 = child->slowFirstChild(); child2; child2 = child2->nextSibling())
+                collectPlatformFontsForLayoutObject(child2, &fontStats);
         }
     }
-
-    HashCountedSet<String> fontStats;
-    for (size_t i = 0; i < textNodes.size(); ++i) {
-        LayoutText* layoutObject = textNodes[i]->layoutObject();
-        collectPlatformFontsForLayoutObject(layoutObject, &fontStats);
-
-        if (!layoutObject->isTextFragment())
-            continue;
-
-        // If we're the remaining text from a first-letter then our previous
-        // sibling has to be the first-letter layoutObject.
-        LayoutObject* previous = layoutObject->previousSibling();
-        if (!previous)
-            continue;
-
-        if (!previous->isPseudoElement() || !previous->node()->isFirstLetterPseudoElement())
-            continue;
-
-        // The first-letter pseudoElement only has one child, which is the
-        // first-letter layoutObject.
-        collectPlatformFontsForLayoutObject(toLayoutText(previous->slowFirstChild()), &fontStats);
-    }
-
     platformFonts = TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>::create();
     for (auto& font : fontStats) {
         RefPtr<TypeBuilder::CSS::PlatformFontUsage> platformFont = TypeBuilder::CSS::PlatformFontUsage::create()
