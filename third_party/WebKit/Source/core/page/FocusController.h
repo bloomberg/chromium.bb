@@ -77,15 +77,15 @@ private:
     bool advanceFocusDirectionally(WebFocusType);
     bool advanceFocusInDocumentOrder(WebFocusType, bool initialFocus);
 
-    Node* findFocusableNodeAcrossFocusScopes(WebFocusType, const FocusNavigationScope&, Node*);
-    Node* findFocusableNodeAcrossFocusScopesForward(const FocusNavigationScope&, Node*);
-    Node* findFocusableNodeAcrossFocusScopesBackward(const FocusNavigationScope&, Node*);
+    Element* findFocusableElementAcrossFocusScopes(WebFocusType, const FocusNavigationScope&, Node*);
+    Element* findFocusableElementAcrossFocusScopesForward(const FocusNavigationScope&, Node*);
+    Element* findFocusableElementAcrossFocusScopesBackward(const FocusNavigationScope&, Node*);
 
     Element* findFocusableElementRecursively(WebFocusType, const FocusNavigationScope&, Node*);
     Element* findFocusableElementRecursivelyForward(const FocusNavigationScope&, Node*);
     Element* findFocusableElementRecursivelyBackward(const FocusNavigationScope&, Node*);
 
-    Node* findFocusableNodeDecendingDownIntoFrameDocument(WebFocusType, Node*);
+    Element* findFocusableElementDescendingDownIntoFrameDocument(WebFocusType, Element*);
 
     // Searches through the given tree scope, starting from start node, for the next/previous
     // selectable element that comes after/before start node.
