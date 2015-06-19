@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
@@ -40,7 +40,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   void SetBrowserContext(BrowserContext* browser_context) override;
   void Restore(int selected_navigation,
                RestoreType type,
-               std::vector<NavigationEntry*>* entries) override;
+               ScopedVector<NavigationEntry>* entries) override;
   NavigationEntryImpl* GetActiveEntry() const override;
   NavigationEntryImpl* GetVisibleEntry() const override;
   int GetCurrentEntryIndex() const override;
@@ -54,7 +54,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   NavigationEntryImpl* GetPendingEntry() const override;
   int GetPendingEntryIndex() const override;
   NavigationEntryImpl* GetTransientEntry() const override;
-  void SetTransientEntry(NavigationEntry* entry) override;
+  void SetTransientEntry(scoped_ptr<NavigationEntry> entry) override;
   void LoadURL(const GURL& url,
                const Referrer& referrer,
                ui::PageTransition type,
@@ -130,7 +130,7 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Allow renderer-initiated navigations to create a pending entry when the
   // provisional load starts.
-  void SetPendingEntry(content::NavigationEntryImpl* entry);
+  void SetPendingEntry(scoped_ptr<NavigationEntryImpl> entry);
 
   // Handles updating the navigation state after the renderer has navigated.
   // This is used by the WebContentsImpl.
@@ -249,7 +249,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Causes the controller to load the specified entry. The function assumes
   // ownership of the pointer since it is put in the navigation list.
   // NOTE: Do not pass an entry that the controller already owns!
-  void LoadEntry(NavigationEntryImpl* entry);
+  void LoadEntry(scoped_ptr<NavigationEntryImpl> entry);
 
   // Handlers for the different types of navigation types. They will actually
   // handle the navigations corresponding to the different NavClasses above.
@@ -306,7 +306,8 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Inserts a new entry or replaces the current entry with a new one, removing
   // all entries after it. The new entry will become the active one.
-  void InsertOrReplaceEntry(NavigationEntryImpl* entry, bool replace);
+  void InsertOrReplaceEntry(scoped_ptr<NavigationEntryImpl> entry,
+                            bool replace);
 
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
@@ -348,7 +349,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   BrowserContext* browser_context_;
 
   // List of NavigationEntry for this tab
-  typedef std::vector<linked_ptr<NavigationEntryImpl> > NavigationEntries;
+  using NavigationEntries = ScopedVector<NavigationEntryImpl>;
   NavigationEntries entries_;
 
   // An entry we haven't gotten a response for yet.  This will be discarded

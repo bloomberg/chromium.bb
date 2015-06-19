@@ -897,11 +897,12 @@ void NavigatorImpl::DidStartMainFrameNavigation(
   bool has_browser_initiated_pending_entry =
       pending_entry && !pending_entry->is_renderer_initiated();
   if (!has_browser_initiated_pending_entry) {
-    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-        controller_->CreateNavigationEntry(
-            url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
-            true /* is_renderer_initiated */, std::string(),
-            controller_->GetBrowserContext()));
+    scoped_ptr<NavigationEntryImpl> entry =
+        NavigationEntryImpl::FromNavigationEntry(
+            controller_->CreateNavigationEntry(
+                url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+                true /* is_renderer_initiated */, std::string(),
+                controller_->GetBrowserContext()));
     entry->set_site_instance(site_instance);
     // TODO(creis): If there's a pending entry already, find a safe way to
     // update it instead of replacing it and copying over things like this.
@@ -911,7 +912,7 @@ void NavigatorImpl::DidStartMainFrameNavigation(
       entry->set_should_replace_entry(pending_entry->should_replace_entry());
       entry->SetRedirectChain(pending_entry->GetRedirectChain());
     }
-    controller_->SetPendingEntry(entry);
+    controller_->SetPendingEntry(entry.Pass());
     if (delegate_)
       delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);
   }
