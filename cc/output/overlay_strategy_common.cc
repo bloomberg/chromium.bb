@@ -16,10 +16,32 @@
 
 namespace cc {
 
-OverlayStrategyCommon::OverlayStrategyCommon() {
+OverlayStrategyCommon::OverlayStrategyCommon(
+    OverlayCandidateValidator* capability_checker)
+    : capability_checker_(capability_checker) {
 }
 
 OverlayStrategyCommon::~OverlayStrategyCommon() {
+}
+
+bool OverlayStrategyCommon::Attempt(RenderPassList* render_passes_in_draw_order,
+                                    OverlayCandidateList* candidate_list) {
+  if (!capability_checker_)
+    return false;
+  RenderPass* root_render_pass = render_passes_in_draw_order->back();
+  DCHECK(root_render_pass);
+
+  QuadList& quad_list = root_render_pass->quad_list;
+  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
+    OverlayCandidate candidate;
+    const DrawQuad* draw_quad = *it;
+    if (IsOverlayQuad(draw_quad) &&
+        GetCandidateQuadInfo(*draw_quad, &candidate) &&
+        TryOverlay(capability_checker_, render_passes_in_draw_order,
+                   candidate_list, candidate, it))
+      return true;
+  }
+  return false;
 }
 
 bool OverlayStrategyCommon::IsOverlayQuad(const DrawQuad* draw_quad) {

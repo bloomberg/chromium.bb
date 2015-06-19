@@ -12,29 +12,18 @@ namespace cc {
 
 OverlayStrategyUnderlay::OverlayStrategyUnderlay(
     OverlayCandidateValidator* capability_checker)
-    : capability_checker_(capability_checker) {
+    : OverlayStrategyCommon(capability_checker) {
 }
 
-bool OverlayStrategyUnderlay::Attempt(
+bool OverlayStrategyUnderlay::TryOverlay(
+    OverlayCandidateValidator* capability_checker,
+
     RenderPassList* render_passes_in_draw_order,
-    OverlayCandidateList* candidate_list) {
-  if (!capability_checker_)
-    return false;
-
+    OverlayCandidateList* candidate_list,
+    const OverlayCandidate& candidate,
+    QuadList::Iterator candidate_iterator) {
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
-  DCHECK(root_render_pass);
-
-  OverlayCandidate candidate;
   QuadList& quad_list = root_render_pass->quad_list;
-  auto candidate_iterator = quad_list.end();
-  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
-    if (IsOverlayQuad(*it) && GetCandidateQuadInfo(**it, &candidate)) {
-      candidate_iterator = it;
-      break;
-    }
-  }
-  if (candidate_iterator == quad_list.end())
-    return false;
 
   // Add our primary surface.
   OverlayCandidateList candidates;
@@ -43,11 +32,11 @@ bool OverlayStrategyUnderlay::Attempt(
   candidates.push_back(main_image);
 
   // Add the overlay.
-  candidate.plane_z_order = -1;
   candidates.push_back(candidate);
+  candidates.back().plane_z_order = -1;
 
   // Check for support.
-  capability_checker_->CheckOverlaySupport(&candidates);
+  capability_checker->CheckOverlaySupport(&candidates);
 
   // If the candidate can be handled by an overlay, create a pass for it. We
   // need to switch out the video quad with a black transparent one.

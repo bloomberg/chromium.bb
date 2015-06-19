@@ -13,48 +13,31 @@ namespace cc {
 
 OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
     OverlayCandidateValidator* capability_checker)
-    : capability_checker_(capability_checker) {
+    : OverlayStrategyCommon(capability_checker) {
 }
 
-bool OverlayStrategySingleOnTop::Attempt(
+bool OverlayStrategySingleOnTop::TryOverlay(
+    OverlayCandidateValidator* capability_checker,
+
     RenderPassList* render_passes_in_draw_order,
-    OverlayCandidateList* candidate_list) {
-  // Only attempt to handle very simple case for now.
-  if (!capability_checker_)
-    return false;
-
+    OverlayCandidateList* candidate_list,
+    const OverlayCandidate& candidate,
+    QuadList::Iterator candidate_iterator) {
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
-  DCHECK(root_render_pass);
-
-  OverlayCandidate candidate;
   QuadList& quad_list = root_render_pass->quad_list;
-  auto candidate_iterator = quad_list.end();
-  for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
-    const DrawQuad* draw_quad = *it;
-    if (IsOverlayQuad(draw_quad)) {
-      // Check that no prior quads overlap it.
-      bool intersects = false;
-      gfx::RectF rect = draw_quad->rect;
-      draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(
-          &rect);
-      for (auto overlap_iter = quad_list.cbegin(); overlap_iter != it;
-           ++overlap_iter) {
-        gfx::RectF overlap_rect = overlap_iter->rect;
-        overlap_iter->shared_quad_state->quad_to_target_transform.TransformRect(
-            &overlap_rect);
-        if (rect.Intersects(overlap_rect) && !IsInvisibleQuad(*overlap_iter)) {
-          intersects = true;
-          break;
-        }
-      }
-      if (intersects || !GetCandidateQuadInfo(*draw_quad, &candidate))
-        continue;
-      candidate_iterator = it;
-      break;
-    }
+  const DrawQuad* draw_quad = *candidate_iterator;
+  gfx::RectF rect = draw_quad->rect;
+  draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(&rect);
+
+  // Check that no prior quads overlap it.
+  for (auto overlap_iter = quad_list.cbegin();
+       overlap_iter != candidate_iterator; ++overlap_iter) {
+    gfx::RectF overlap_rect = overlap_iter->rect;
+    overlap_iter->shared_quad_state->quad_to_target_transform.TransformRect(
+        &overlap_rect);
+    if (rect.Intersects(overlap_rect) && !IsInvisibleQuad(*overlap_iter))
+      return false;
   }
-  if (candidate_iterator == quad_list.end())
-    return false;
 
   // Add our primary surface.
   OverlayCandidateList candidates;
@@ -63,11 +46,11 @@ bool OverlayStrategySingleOnTop::Attempt(
   candidates.push_back(main_image);
 
   // Add the overlay.
-  candidate.plane_z_order = 1;
   candidates.push_back(candidate);
+  candidates.back().plane_z_order = 1;
 
   // Check for support.
-  capability_checker_->CheckOverlaySupport(&candidates);
+  capability_checker->CheckOverlaySupport(&candidates);
 
   // If the candidate can be handled by an overlay, create a pass for it.
   if (candidates[1].overlay_handled) {

@@ -20,12 +20,13 @@ class CC_EXPORT OverlayStrategyUnderlay : public OverlayStrategyCommon {
  public:
   explicit OverlayStrategyUnderlay(
       OverlayCandidateValidator* capability_checker);
-  bool Attempt(RenderPassList* render_passes_in_draw_order,
-               OverlayCandidateList* candidate_list) override;
+  bool TryOverlay(OverlayCandidateValidator* capability_checker,
+                  RenderPassList* render_passes_in_draw_order,
+                  OverlayCandidateList* candidate_list,
+                  const OverlayCandidate& candidate,
+                  QuadList::Iterator candidate_iterator) override;
 
  private:
-  OverlayCandidateValidator* capability_checker_;
-
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyUnderlay);
 };
 

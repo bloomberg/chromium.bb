@@ -17,8 +17,11 @@ class OverlayCandidate;
 
 class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
  public:
-  OverlayStrategyCommon();
+  explicit OverlayStrategyCommon(OverlayCandidateValidator* capability_checker);
   ~OverlayStrategyCommon() override;
+
+  bool Attempt(RenderPassList* render_passes_in_draw_order,
+               OverlayCandidateList* candidate_list) override;
 
  protected:
   bool GetCandidateQuadInfo(const DrawQuad& draw_quad,
@@ -37,7 +40,15 @@ class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
   bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
                         OverlayCandidate* quad_info);
 
+  virtual bool TryOverlay(OverlayCandidateValidator* capability_checker,
+                          RenderPassList* render_passes_in_draw_order,
+                          OverlayCandidateList* candidate_list,
+                          const OverlayCandidate& candidate,
+                          QuadList::Iterator iter) = 0;
+
  private:
+  OverlayCandidateValidator* capability_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyCommon);
 };
 }  // namespace cc
