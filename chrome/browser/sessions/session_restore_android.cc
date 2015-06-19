@@ -34,13 +34,16 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
   ScopedVector<content::NavigationEntry> scoped_entries =
       sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
           session_tab.navigations, profile);
+  // NavigationController::Restore() expects to take ownership of the entries.
+  std::vector<content::NavigationEntry*> entries;
+  scoped_entries.release(&entries);
   content::WebContents* new_web_contents = content::WebContents::Create(
       content::WebContents::CreateParams(context));
   int selected_index = session_tab.normalized_navigation_index();
   new_web_contents->GetController().Restore(
       selected_index,
       content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
-      &scoped_entries);
+      &entries);
 
   TabAndroid* current_tab = TabAndroid::FromWebContents(web_contents);
   DCHECK(current_tab);

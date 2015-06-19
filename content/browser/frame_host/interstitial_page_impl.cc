@@ -234,16 +234,15 @@ void InterstitialPageImpl::Show() {
   (*g_web_contents_to_interstitial_page)[web_contents_] = this;
 
   if (new_navigation_) {
-    scoped_ptr<NavigationEntryImpl> entry =
-        make_scoped_ptr(new NavigationEntryImpl);
+    NavigationEntryImpl* entry = new NavigationEntryImpl;
     entry->SetURL(url_);
     entry->SetVirtualURL(url_);
     entry->set_page_type(PAGE_TYPE_INTERSTITIAL);
 
     // Give delegates a chance to set some states on the navigation entry.
-    delegate_->OverrideEntry(entry.get());
+    delegate_->OverrideEntry(entry);
 
-    controller_->SetTransientEntry(entry.Pass());
+    controller_->SetTransientEntry(entry);
   }
 
   DCHECK(!render_view_host_);

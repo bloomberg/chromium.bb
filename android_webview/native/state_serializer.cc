@@ -110,7 +110,7 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
   controller.Restore(
       selected_entry,
       content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
-      &restored_entries);
+      &restored_entries.get());
   DCHECK_EQ(0u, restored_entries.size());
 
   if (controller.GetActiveEntry()) {

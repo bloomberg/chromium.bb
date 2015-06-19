@@ -243,27 +243,27 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
       TestSiteInstance::CreateTestSiteInstance(NULL, &site_delete_counter2,
                                                &browsing_delete_counter);
 
-  scoped_ptr<NavigationEntryImpl> e1 = make_scoped_ptr(new NavigationEntryImpl(
+  NavigationEntryImpl* e1 = new NavigationEntryImpl(
       instance1, 0, url, Referrer(), base::string16(), ui::PAGE_TRANSITION_LINK,
-      false));
-  // Clone the entry.
-  scoped_ptr<NavigationEntryImpl> e2 = e1->Clone();
+      false);
+  // Clone the entry
+  NavigationEntryImpl* e2 = e1->Clone();
 
   // Should be able to change the SiteInstance of the cloned entry.
   e2->set_site_instance(instance2);
 
-  // The first SiteInstance should go away after resetting e1, since e2 should
+  // The first SiteInstance should go away after deleting e1, since e2 should
   // no longer be referencing it.
-  e1.reset();
+  delete e1;
   EXPECT_EQ(1, site_delete_counter1);
   EXPECT_EQ(0, site_delete_counter2);
 
-  // The second SiteInstance should go away after resetting e2.
-  e2.reset();
+  // The second SiteInstance should go away after deleting e2.
+  delete e2;
   EXPECT_EQ(1, site_delete_counter1);
   EXPECT_EQ(1, site_delete_counter2);
 
-  // Both BrowsingInstances are also now deleted.
+  // Both BrowsingInstances are also now deleted
   EXPECT_EQ(2, browsing_delete_counter);
 
   DrainMessageLoops();

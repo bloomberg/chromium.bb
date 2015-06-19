@@ -804,22 +804,20 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   // SiteInstance.
   browser_client.set_assign_site_for_url(false);
   const GURL native_url("non-site-url://stuffandthings");
-  ScopedVector<NavigationEntry> entries;
-  scoped_ptr<NavigationEntry> new_entry =
-      NavigationControllerImpl::CreateNavigationEntry(
-          native_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,
-          std::string(), browser_context());
-  new_entry->SetPageID(0);
-  entries.push_back(new_entry.Pass());
+  std::vector<NavigationEntry*> entries;
+  NavigationEntry* entry = NavigationControllerImpl::CreateNavigationEntry(
+      native_url, Referrer(), ui::PAGE_TRANSITION_LINK, false, std::string(),
+      browser_context());
+  entry->SetPageID(0);
+  entries.push_back(entry);
   controller().Restore(
       0,
       NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
       &entries);
   ASSERT_EQ(0u, entries.size());
   ASSERT_EQ(1, controller().GetEntryCount());
-
   controller().GoToIndex(0);
-  NavigationEntry* entry = controller().GetPendingEntry();
+  entry = controller().GetPendingEntry();
   orig_rfh->PrepareForCommit();
   contents()->TestDidNavigate(orig_rfh, 0, entry->GetUniqueID(), false,
                               native_url, ui::PAGE_TRANSITION_RELOAD);
@@ -854,22 +852,20 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
   // ShouldAssignSiteForUrl override is disabled (i.e. returns true).
   browser_client.set_assign_site_for_url(true);
   const GURL regular_url("http://www.yahoo.com");
-  ScopedVector<NavigationEntry> entries;
-  scoped_ptr<NavigationEntry> new_entry =
-      NavigationControllerImpl::CreateNavigationEntry(
-          regular_url, Referrer(), ui::PAGE_TRANSITION_LINK, false,
-          std::string(), browser_context());
-  new_entry->SetPageID(0);
-  entries.push_back(new_entry.Pass());
+  std::vector<NavigationEntry*> entries;
+  NavigationEntry* entry = NavigationControllerImpl::CreateNavigationEntry(
+      regular_url, Referrer(), ui::PAGE_TRANSITION_LINK, false, std::string(),
+      browser_context());
+  entry->SetPageID(0);
+  entries.push_back(entry);
   controller().Restore(
       0,
       NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
       &entries);
   ASSERT_EQ(0u, entries.size());
-
   ASSERT_EQ(1, controller().GetEntryCount());
   controller().GoToIndex(0);
-  NavigationEntry* entry = controller().GetPendingEntry();
+  entry = controller().GetPendingEntry();
   orig_rfh->PrepareForCommit();
   contents()->TestDidNavigate(orig_rfh, 0, entry->GetUniqueID(), false,
                               regular_url, ui::PAGE_TRANSITION_RELOAD);

@@ -59,8 +59,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
   static const NavigationEntryImpl* FromNavigationEntry(
       const NavigationEntry* entry);
-  static scoped_ptr<NavigationEntryImpl> FromNavigationEntry(
-      scoped_ptr<NavigationEntry> entry);
 
   // The value of bindings() before it is set during commit.
   static int kInvalidBindings;
@@ -130,7 +128,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Creates a copy of this NavigationEntryImpl that can be modified
   // independently from the original.  Does not copy any value that would be
   // cleared in ResetForCommit.
-  scoped_ptr<NavigationEntryImpl> Clone() const;
+  NavigationEntryImpl* Clone() const;
 
   // Like |Clone|, but replaces the FrameNavigationEntry corresponding to
   // |frame_tree_node| (and all its children) with |frame_entry|.
@@ -138,8 +136,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   // NavigationEntryImpls, we will need to support two versions of Clone: one
   // that shares the existing FrameNavigationEntries (for use within the same
   // tab) and one that draws them from a different pool (for use in a new tab).
-  scoped_ptr<NavigationEntryImpl> CloneAndReplace(
-      FrameTreeNode* frame_tree_node, FrameNavigationEntry* frame_entry) const;
+  NavigationEntryImpl* CloneAndReplace(FrameTreeNode* frame_tree_node,
+                                       FrameNavigationEntry* frame_entry) const;
 
   // Helper functions to construct NavigationParameters for a navigation to this
   // NavigationEntry.
