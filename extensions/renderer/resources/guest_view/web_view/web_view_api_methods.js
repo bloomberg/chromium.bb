@@ -8,8 +8,22 @@ var WebViewInternal = require('webViewInternal').WebViewInternal;
 var WebViewImpl = require('webView').WebViewImpl;
 
 // An array of <webview>'s public-facing API methods. Methods without custom
-// implementations will be given default implementations. Default
-// implementations come from createDefaultApiMethod() in web_view.js.
+// implementations will be given default implementations that call into the
+// internal API method with the same name in |WebViewInternal|. For example, a
+// method called 'someApiMethod' would be given the following default
+// implementation:
+//
+// WebViewImpl.prototype.someApiMethod = function(var_args) {
+//   if (!this.guest.getId()) {
+//     return false;
+//   }
+//   var args = $Array.concat([this.guest.getId()], $Array.slice(arguments));
+//   $Function.apply(WebViewInternal.someApiMethod, null, args);
+//   return true;
+// };
+//
+// These default implementations come from createDefaultApiMethod() in
+// web_view.js.
 var WEB_VIEW_API_METHODS = [
   // Add content scripts for the guest page.
   'addContentScripts',
