@@ -78,6 +78,16 @@ public:
         return false;
     }
 
+    uint16_t glyphForTesting(unsigned runIndex, size_t glyphIndex)
+    {
+        return m_harfBuzzRuns[runIndex]->glyphData(glyphIndex).glyph;
+    }
+
+    float advanceForTesting(unsigned runIndex, size_t glyphIndex)
+    {
+        return m_harfBuzzRuns[runIndex]->glyphData(glyphIndex).advance;
+    }
+
 private:
     struct HarfBuzzRunGlyphData {
         uint16_t glyph;

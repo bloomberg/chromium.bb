@@ -1946,8 +1946,6 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailu
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 
-crbug.com/461371 [ Mac ] virtual/antialiasedtext/fast/text/unicode-variation-selector.html [ NeedsManualRebaseline ]
-
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-evenodd.html [ Pass ImageOnlyFailure ]
@@ -2015,6 +2013,9 @@ crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Pass Fa
 
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
+
+# Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
+crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ ImageOnlyFailure ]
 
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]

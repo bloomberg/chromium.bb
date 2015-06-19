@@ -85,8 +85,19 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants)
         EXPECT_EQ(1u, shaper.numberOfRunsForTesting()) << test.name;
         ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script)) << test.name;
         EXPECT_EQ(0u, startIndex) << test.name;
-        // TODO(kojii): HarfBuzzFace does not support UVS yet and numGlyphs becomes 2
-        // EXPECT_EQ(1u, numGlyphs) << test.name;
+        if (numGlyphs == 2) {
+            // If the specified VS is not in the font, it's mapped to .notdef.
+            // then hb_ot_hide_default_ignorables() swaps it to a space with zero-advance.
+            // http://lists.freedesktop.org/archives/harfbuzz/2015-May/004888.html
+            // OpenType recommends Glyph ID 3 for a space; not a hard requirement though.
+            // https://www.microsoft.com/typography/otspec/recom.htm
+#if !OS(MACOSX)
+            EXPECT_EQ(3u, shaper.glyphForTesting(0, 1)) << test.name;
+#endif
+            EXPECT_EQ(0.f, shaper.advanceForTesting(0, 1)) << test.name;
+        } else {
+            EXPECT_EQ(1u, numGlyphs) << test.name;
+        }
         EXPECT_EQ(test.script, script) << test.name;
     }
 }

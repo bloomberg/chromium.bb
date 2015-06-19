@@ -143,12 +143,23 @@ void HarfBuzzFace::setScriptForVerticalGlyphSubstitution(hb_buffer_t* buffer)
 }
 
 struct HarfBuzzFontData {
-    HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry)
+    HarfBuzzFontData(WTF::HashMap<uint32_t, uint16_t>* glyphCacheForFaceCacheEntry, hb_face_t* face)
         : m_glyphCacheForFaceCacheEntry(glyphCacheForFaceCacheEntry)
+        , m_face(face)
+        , m_hbOpenTypeFont(nullptr)
     { }
+
+    ~HarfBuzzFontData()
+    {
+        if (m_hbOpenTypeFont)
+            hb_font_destroy(m_hbOpenTypeFont);
+    }
+
     SkPaint m_paint;
     RefPtr<SimpleFontData> m_simpleFontData;
     WTF::HashMap<uint32_t, uint16_t>* m_glyphCacheForFaceCacheEntry;
+    hb_face_t* m_face;
+    hb_font_t* m_hbOpenTypeFont;
 };
 
 static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value)
@@ -179,11 +190,26 @@ static void SkiaGetGlyphWidthAndExtents(SkPaint* paint, hb_codepoint_t codepoint
 
 static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoint_t unicode, hb_codepoint_t variationSelector, hb_codepoint_t* glyph, void* userData)
 {
-    // Variation selectors not supported.
-    if (variationSelector)
-        return false;
-
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
+
+    if (variationSelector) {
+#if OS(LINUX)
+        // TODO(kojii): Linux non-official builds cannot use new HB APIs
+        // until crbug.com/462689 resolved or pangoft2 updates its HB.
+        return false;
+#else
+        // Skia does not support variation selectors, but hb does.
+        // We're not fully ready to switch to hb-ot-font yet,
+        // but are good enough to get glyph IDs for OpenType fonts.
+        if (!hbFontData->m_hbOpenTypeFont) {
+            hbFontData->m_hbOpenTypeFont = hb_font_create(hbFontData->m_face);
+            hb_ot_font_set_funcs(hbFontData->m_hbOpenTypeFont);
+        }
+        return hb_font_get_glyph(hbFontData->m_hbOpenTypeFont, unicode, variationSelector, glyph);
+        // When not found, glyph_func should return false rather than fallback to the base.
+        // http://lists.freedesktop.org/archives/harfbuzz/2015-May/004888.html
+#endif
+    }
 
     WTF::HashMap<uint32_t, uint16_t>::AddResult result = hbFontData->m_glyphCacheForFaceCacheEntry->add(unicode, 0);
     if (result.isNewEntry) {
@@ -333,7 +359,7 @@ hb_face_t* HarfBuzzFace::createFace()
 
 hb_font_t* HarfBuzzFace::createFont()
 {
-    HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry);
+    HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry, m_face);
     m_platformData->setupPaint(&hbFontData->m_paint);
     hbFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData);
     ASSERT(hbFontData->m_simpleFontData);
