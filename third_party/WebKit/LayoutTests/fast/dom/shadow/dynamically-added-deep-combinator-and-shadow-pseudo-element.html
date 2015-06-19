@@ -11,18 +11,6 @@
 <pre id='console'></pre>
 </body>
 <script>
-
-function backgroundColorOf(node)
-{
-    return document.defaultView.getComputedStyle(node, null).getPropertyValue('background-color');
-}
-
-function backgroundColorShouldBe(selector, color)
-{
-    var text = 'backgroundColorOf(getNodeInTreeOfTrees("' + selector + '"))';
-    shouldBeEqualToString(text, color);
-}
-
 var sandbox = document.getElementById('sandbox');
 sandbox.appendChild(
         createDOM('div', {'id': 'host'},

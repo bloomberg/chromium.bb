@@ -16,14 +16,6 @@ description('Test whether :host matches a shadow host correctly.');
 
 var sandbox = document.getElementById('sandbox');
 
-function backgroundColorOf(selector) {
-    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).backgroundColor;
-}
-
-function backgroundColorShouldBe(selector, expected) {
-    shouldBeEqualToString('backgroundColorOf(\'' + selector + '\')', expected);
-}
-
 function cleanUp() {
     sandbox.innerHTML = '';
 }

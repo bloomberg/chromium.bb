@@ -14,14 +14,6 @@ div#shadow-host:focus {
 <div id="sandbox"></div>
 </body>
 <script>
-function backgroundColorOf(selector) {
-    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).backgroundColor;
-}
-
-function backgroundColorShouldBe(selector, expected) {
-    shouldBeEqualToString('backgroundColorOf(\'' + selector + '\')', expected);
-}
-
 function testDistributedNodes() {
     debug('Testing shadow host :focus and distributed nodes');
 

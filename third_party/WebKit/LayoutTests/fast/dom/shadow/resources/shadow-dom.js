@@ -275,7 +275,25 @@ function showComposedShadowTree(node)
     debug('');
 }
 
-function showNextNode(node) {
+function showNextNode(node)
+{
     var next = internals.nextInComposedTree(node);
     debug('Next node of [' + dumpNode(node) + '] is [' + dumpNode(next) + ']');
+}
+
+function backgroundColorOf(selector)
+{
+    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).backgroundColor;
+}
+
+function backgroundColorShouldBe(selector, expected)
+{
+    shouldBeEqualToString('backgroundColorOf(\'' + selector + '\')', expected);
+}
+
+function backgroundColorShouldNotBe(selector, color)
+{
+    var text = 'backgroundColorOf(\'' + selector + '\')';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
 }

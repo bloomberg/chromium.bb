@@ -55,14 +55,6 @@ function RegisterXMenu() {
   });
 }
 
-function backgroundColorOf(selector) {
-    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).backgroundColor;
-}
-
-function backgroundColorShouldBe(selector, expected) {
-    shouldBeEqualToString('backgroundColorOf(\'' + selector + '\')', expected);
-}
-
 function test() {
     debug("crbug/474687 :focus style should properly be applied to shadow hosts.");
 

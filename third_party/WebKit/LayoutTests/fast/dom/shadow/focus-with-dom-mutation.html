@@ -11,14 +11,6 @@ div:focus { background-color: green; }
 <script>
 description('Test if :focus matching state of shadow host is properly handled in case of DOM mutation.');
 
-function backgroundColorOf(selector) {
-    return window.getComputedStyle(getNodeInTreeOfTrees(selector)).backgroundColor;
-}
-
-function backgroundColorShouldBe(selector, expected) {
-    shouldBeEqualToString('backgroundColorOf(\'' + selector + '\')', expected);
-}
-
 function buildTree(parent, delegatesFocus)
 {
     parent.innerHTML = '';

@@ -6,10 +6,10 @@ Test for http://crbug.com/35340: Style should not be conditioned by the presence
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS backgroundColorOf(getNodeInTreeOfTrees("host//target")) is "rgb(0, 128, 0)"
-PASS backgroundColorOf(getNodeInTreeOfTrees("host//target")) is "rgb(0, 128, 0)"
-PASS backgroundColorOf(getNodeInTreeOfTrees("host//target")) is not "rgb(0, 128, 0)"
-PASS backgroundColorOf(getNodeInTreeOfTrees("host")) is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host//target') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host//target') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host//target') is not "rgb(0, 128, 0)"
+PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 PASS successfullyParsed is true
 
 TEST COMPLETE

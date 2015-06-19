@@ -9,24 +9,6 @@
   <pre id='console'></pre>
 </body>
 <script>
-function backgroundColorOf(node)
-{
-    return document.defaultView.getComputedStyle(node, null).getPropertyValue('background-color');
-}
-
-function backgroundColorShouldBe(selector, color)
-{
-    var text = 'backgroundColorOf(getNodeInTreeOfTrees("' + selector + '"))';
-    shouldBeEqualToString(text, color);
-}
-
-function backgroundColorShouldNotBe(selector, color)
-{
-    var text = 'backgroundColorOf(getNodeInTreeOfTrees("' + selector + '"))';
-    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
-    shouldNotBe(text, unevaledString);
-}
-
 function cleanUp()
 {
     document.getElementById('sandbox').innerHTML = '';
@@ -95,4 +77,3 @@ backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
 cleanUp();
 </script>
 </html>
-
