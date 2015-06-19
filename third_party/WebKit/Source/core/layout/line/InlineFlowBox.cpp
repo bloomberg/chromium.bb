@@ -744,11 +744,13 @@ void InlineFlowBox::flipLinesInBlockDirection(LayoutUnit lineTop, LayoutUnit lin
 
 inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualOverflow)
 {
-    // box-shadow on root line boxes is applying to the block and not to the lines.
-    if (!parent())
+    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
+
+    // box-shadow on the block element applies to the block and not to the lines,
+    // unless it is modified by :first-line pseudo element.
+    if (!parent() && (!isFirstLineStyle() || &style == layoutObject().style()))
         return;
 
-    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
     WritingMode writingMode = style.writingMode();
     ShadowList* boxShadow = style.boxShadow();
     if (!boxShadow)
@@ -766,11 +768,13 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
 
 inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisualOverflow)
 {
-    // border-image-outset on root line boxes is applying to the block and not to the lines.
-    if (!parent())
+    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
+
+    // border-image-outset on the block element applies to the block and not to the lines,
+    // unless it is modified by :first-line pseudo element.
+    if (!parent() && (!isFirstLineStyle() || &style == layoutObject().style()))
         return;
 
-    const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
     if (!style.hasBorderImageOutsets())
         return;
 
