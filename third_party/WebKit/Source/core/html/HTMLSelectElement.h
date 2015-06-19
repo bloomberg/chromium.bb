@@ -134,6 +134,8 @@ protected:
     HTMLSelectElement(Document&, HTMLFormElement*);
 
 private:
+    virtual void willRecalcStyle(StyleRecalcChange) override;
+
     virtual const AtomicString& formControlType() const override;
 
     virtual bool shouldShowFocusRingOnMouseFocus() const override;

@@ -85,6 +85,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_suggestedIndex(-1)
     , m_isAutofilledByPreview(false)
 {
+    setHasCustomStyleCallbacks();
 }
 
 PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
@@ -1749,6 +1750,16 @@ DEFINE_TRACE(HTMLSelectElement)
     visitor->trace(m_listItems);
 #endif
     HTMLFormControlElementWithState::trace(visitor);
+}
+
+void HTMLSelectElement::willRecalcStyle(StyleRecalcChange change)
+{
+    // recalcListItems will update the selected state of the <option> elements
+    // in this <select> so we need to do it before we recalc their style so they
+    // match the right selectors (ex. :checked).
+    // TODO(esprehn): Find a way to avoid needing a willRecalcStyle callback.
+    if (m_shouldRecalcListItems)
+        recalcListItems();
 }
 
 void HTMLSelectElement::didAddUserAgentShadowRoot(ShadowRoot& root)

@@ -1754,8 +1754,13 @@ ElementShadow& Element::ensureShadow()
 
 void Element::pseudoStateChanged(CSSSelector::PseudoType pseudo)
 {
+    // We can't schedule invaliation sets from inside style recalc otherwise
+    // we'd never process them.
+    // TODO(esprehn): Make this an ASSERT and fix places that call into this
+    // like HTMLSelectElement.
+    if (document().inStyleRecalc())
+        return;
     StyleResolver* styleResolver = document().styleResolver();
-
     if (inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange)
         document().styleEngine().pseudoStateChangedForElement(pseudo, *this);
 }
