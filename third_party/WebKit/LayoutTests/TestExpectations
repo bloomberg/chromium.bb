@@ -1773,10 +1773,6 @@ crbug.com/493939 [ XP ] http/tests/security/cross-origin-css.html [ Timeout Pass
 
 crbug.com/321237 [ Mac ] fast/text/international/bidi-neutral-run.html [ Pass Crash NeedsManualRebaseline ]
 
-# This test will be affected by https://codereview.chromium.org/1183143006.
-# Disabling now; will re-enable later.
-crbug.com/501515 imported/web-platform-tests/html/browsers/history/the-history-interface/004.html [ Pass Failure ]
-
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
 crbug.com/321237 [ Mac ] fast/dom/shadow/shadow-insertion-point-rendering-multiple-shadow-roots.html [ ImageOnlyFailure ]
