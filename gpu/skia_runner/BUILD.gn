@@ -14,7 +14,7 @@ executable("skia_runner") {
 
   deps = [
     "//base",
-    "//gpu/command_buffer/common",
+    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/skia_bindings",
