@@ -71,12 +71,8 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
   // It is only used by unit tests.
   ExtensionThrottleEntry(ExtensionThrottleManager* manager,
                          const std::string& url_id,
-                         int sliding_window_period_ms,
-                         int max_send_threshold,
-                         int initial_backoff_ms,
-                         double multiply_factor,
-                         double jitter_factor,
-                         int maximum_backoff_ms);
+                         const net::BackoffEntry::Policy* backoff_policy,
+                         bool ignore_user_gesture_load_flag_for_tests);
 
   // Used by the manager, returns true if the entry needs to be garbage
   // collected.

@@ -85,8 +85,14 @@ ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
 
   // Create the entry if needed.
   if (entry.get() == NULL) {
-    entry = new ExtensionThrottleEntry(
-        this, url_id, ignore_user_gesture_load_flag_for_tests_);
+    if (backoff_policy_for_tests_) {
+      entry = new ExtensionThrottleEntry(
+          this, url_id, backoff_policy_for_tests_.get(),
+          ignore_user_gesture_load_flag_for_tests_);
+    } else {
+      entry = new ExtensionThrottleEntry(
+          this, url_id, ignore_user_gesture_load_flag_for_tests_);
+    }
 
     // We only disable back-off throttling on an entry that we have
     // just constructed.  This is to allow unit tests to explicitly override
@@ -107,6 +113,11 @@ ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
   }
 
   return entry;
+}
+
+void ExtensionThrottleManager::SetBackoffPolicyForTests(
+    scoped_ptr<net::BackoffEntry::Policy> policy) {
+  backoff_policy_for_tests_ = policy.Pass();
 }
 
 void ExtensionThrottleManager::OverrideEntryForTests(

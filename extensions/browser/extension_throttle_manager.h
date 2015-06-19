@@ -14,6 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/platform_thread.h"
 #include "extensions/browser/extension_throttle_entry.h"
+#include "net/base/backoff_entry.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
@@ -62,6 +63,8 @@ class ExtensionThrottleManager
   // informations.
   scoped_refptr<ExtensionThrottleEntryInterface> RegisterRequestUrl(
       const GURL& url);
+
+  void SetBackoffPolicyForTests(scoped_ptr<net::BackoffEntry::Policy> policy);
 
   // Registers a new entry in this service and overrides the existing entry (if
   // any) for the URL. The service will hold a reference to the entry.
@@ -170,6 +173,9 @@ class ExtensionThrottleManager
   base::PlatformThreadId registered_from_thread_;
 
   bool ignore_user_gesture_load_flag_for_tests_;
+
+  // This is NULL when it is not set for tests.
+  scoped_ptr<net::BackoffEntry::Policy> backoff_policy_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionThrottleManager);
 };

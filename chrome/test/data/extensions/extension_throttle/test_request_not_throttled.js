@@ -10,16 +10,19 @@ var numRequests = 0;
 
 chrome.webRequest.onCompleted.addListener(function(details) {
   chrome.test.assertEq(503, details.statusCode);
-  if (numRequests == 20) {
+  // If the third request goes through, it means that throttling logic did not
+  // apply.
+  if (numRequests == 3) {
      chrome.test.notifyPass();
   } else {
      numRequests++;
      chrome.runtime.sendMessage({type: 'xhr', method: 'GET', url: url});
-   }
+  }
 }, filter);
 
 chrome.webRequest.onErrorOccurred.addListener(function(details) {
   chrome.test.notifyFail('Unexpected error');
 }, filter);
 
+numRequests++;
 chrome.runtime.sendMessage({type: 'xhr', method: 'GET', url: url});

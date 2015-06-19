@@ -87,37 +87,26 @@ ExtensionThrottleEntry::ExtensionThrottleEntry(
 ExtensionThrottleEntry::ExtensionThrottleEntry(
     ExtensionThrottleManager* manager,
     const std::string& url_id,
-    int sliding_window_period_ms,
-    int max_send_threshold,
-    int initial_backoff_ms,
-    double multiply_factor,
-    double jitter_factor,
-    int maximum_backoff_ms)
+    const net::BackoffEntry::Policy* backoff_policy,
+    bool ignore_user_gesture_load_flag_for_tests)
     : sliding_window_period_(
-          base::TimeDelta::FromMilliseconds(sliding_window_period_ms)),
-      max_send_threshold_(max_send_threshold),
+          base::TimeDelta::FromMilliseconds(kDefaultSlidingWindowPeriodMs)),
+      max_send_threshold_(kDefaultMaxSendThreshold),
       is_backoff_disabled_(false),
       backoff_entry_(&backoff_policy_),
       manager_(manager),
       url_id_(url_id),
-      ignore_user_gesture_load_flag_for_tests_(false) {
-  DCHECK_GT(sliding_window_period_ms, 0);
-  DCHECK_GT(max_send_threshold_, 0);
-  DCHECK_GE(initial_backoff_ms, 0);
-  DCHECK_GT(multiply_factor, 0);
-  DCHECK_GE(jitter_factor, 0.0);
-  DCHECK_LT(jitter_factor, 1.0);
-  DCHECK_GE(maximum_backoff_ms, 0);
+      ignore_user_gesture_load_flag_for_tests_(
+          ignore_user_gesture_load_flag_for_tests) {
+  DCHECK_GE(backoff_policy->initial_delay_ms, 0);
+  DCHECK_GT(backoff_policy->multiply_factor, 0);
+  DCHECK_GE(backoff_policy->jitter_factor, 0.0);
+  DCHECK_LT(backoff_policy->jitter_factor, 1.0);
+  DCHECK_GE(backoff_policy->maximum_backoff_ms, 0);
   DCHECK(manager_);
 
   Initialize();
-  backoff_policy_.initial_delay_ms = initial_backoff_ms;
-  backoff_policy_.multiply_factor = multiply_factor;
-  backoff_policy_.jitter_factor = jitter_factor;
-  backoff_policy_.maximum_backoff_ms = maximum_backoff_ms;
-  backoff_policy_.entry_lifetime_ms = -1;
-  backoff_policy_.num_errors_to_ignore = 0;
-  backoff_policy_.always_use_initial_delay = false;
+  backoff_policy_ = *backoff_policy;
 }
 
 bool ExtensionThrottleEntry::IsEntryOutdated() const {

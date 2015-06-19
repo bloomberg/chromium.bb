@@ -12,6 +12,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/test/result_catcher.h"
+#include "net/base/backoff_entry.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -70,6 +71,33 @@ class ExtensionRequestLimitingThrottleBrowserTest
       // checking of the net::LOAD_MAYBE_USER_GESTURE load flag in the manager
       // in order to test the throttling logic.
       manager->SetIgnoreUserGestureLoadFlagForTests(true);
+      scoped_ptr<
+          net::BackoffEntry::Policy> policy(new net::BackoffEntry::Policy{
+          // Number of initial errors (in sequence) to ignore before applying
+          // exponential back-off rules.
+          1,
+
+          // Initial delay for exponential back-off in ms.
+          10 * 60 * 1000,
+
+          // Factor by which the waiting time will be multiplied.
+          10,
+
+          // Fuzzing percentage. ex: 10% will spread requests randomly
+          // between 90%-100% of the calculated time.
+          0.1,
+
+          // Maximum amount of time we are willing to delay our request in ms.
+          15 * 60 * 1000,
+
+          // Time to keep an entry from being discarded even when it
+          // has no significant state, -1 to never discard.
+          -1,
+
+          // Don't use initial delay unless the last request was an error.
+          false,
+      });
+      manager->SetBackoffPolicyForTests(policy.Pass());
     }
     // Requests to 127.0.0.1 bypass throttling, so set up a host resolver rule
     // to use a fake domain.
@@ -101,13 +129,10 @@ class ExtensionRequestLimitingThrottleCommandLineBrowserTest
   }
 };
 
-// Fails on msan bot: crbug.com/501362.
-// Flaky on Windows: crbug.com/501979.
-
 // Tests that if the same URL is requested repeatedly by an extension, it will
 // eventually be throttled.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       DISABLED_ThrottleRequest) {
+                       ThrottleRequest) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
   ASSERT_NO_FATAL_FAILURE(
@@ -128,12 +153,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                                  embedded_test_server()->port())));
 }
 
-// Fails on msan bot: crbug.com/501362.
-// Flaky on Windows: crbug.com/501979.
-
 // Tests that the redirected request is also being throttled.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       DISABLED_ThrottleRequest_Redirect) {
+                       ThrottleRequest_Redirect) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, false, false));
   // Issue a bunch of requests to a url which gets redirected to a new url that
@@ -163,14 +185,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                                  embedded_test_server()->port())));
 }
 
-// Fails on msan bot: crbug.com/501362.
-// Flaky on Windows: crbug.com/501979.
-
 // Tests that if the redirect (302) is served from cache, but the non-redirect
 // (503) is not, the extension throttle throttles the requests for the second
 // url.
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
-                       DISABLED_ThrottleRequest_RedirectCached) {
+                       ThrottleRequest_RedirectCached) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRequest, true, false));
   ASSERT_NO_FATAL_FAILURE(
