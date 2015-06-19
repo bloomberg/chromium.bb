@@ -548,7 +548,8 @@ static PositionType canonicalizeCandidate(const PositionType& candidate)
     return candidate;
 }
 
-static Position canonicalPosition(const Position& passedPosition)
+template <typename PositionType>
+static PositionType canonicalPosition(const PositionType& passedPosition)
 {
     // Sometimes updating selection positions can be extremely expensive and occur
     // frequently.  Often calling preventDefault on mousedown events can avoid
@@ -558,7 +559,7 @@ static Position canonicalPosition(const Position& passedPosition)
     // The updateLayout call below can do so much that even the position passed
     // in to us might get changed as a side effect. Specifically, there are code
     // paths that pass selection endpoints, and updateLayout can change the selection.
-    Position position = passedPosition;
+    PositionType position = passedPosition;
 
     // FIXME (9535):  Canonicalizing to the leftmost candidate means that if we're at a line wrap, we will
     // ask layoutObjects to paint downstream carets for other layoutObjects.
@@ -566,14 +567,14 @@ static Position canonicalPosition(const Position& passedPosition)
     // the appropriate layoutObject for VisiblePosition's like these, or b) canonicalize to the rightmost candidate
     // unless the affinity is upstream.
     if (position.isNull())
-        return Position();
+        return PositionType();
 
     ASSERT(position.document());
     position.document()->updateLayoutIgnorePendingStylesheets();
 
     Node* node = position.containerNode();
 
-    Position candidate = position.upstream();
+    PositionType candidate = position.upstream();
     if (candidate.isCandidate())
         return candidate;
     candidate = position.downstream();
@@ -582,8 +583,8 @@ static Position canonicalPosition(const Position& passedPosition)
 
     // When neither upstream or downstream gets us to a candidate (upstream/downstream won't leave
     // blocks or enter new ones), we search forward and backward until we find one.
-    Position next = canonicalizeCandidate(nextCandidate(position));
-    Position prev = canonicalizeCandidate(previousCandidate(position));
+    PositionType next = canonicalizeCandidate(nextCandidate(position));
+    PositionType prev = canonicalizeCandidate(previousCandidate(position));
     Node* nextNode = next.deprecatedNode();
     Node* prevNode = prev.deprecatedNode();
 
@@ -608,7 +609,7 @@ static Position canonicalPosition(const Position& passedPosition)
         return next;
 
     if (!nextIsInSameEditableElement && !prevIsInSameEditableElement)
-        return Position();
+        return PositionType();
 
     // The new position should be in the same block flow element. Favor that.
     Element* originalBlock = node ? enclosingBlockFlowElement(*node) : 0;
