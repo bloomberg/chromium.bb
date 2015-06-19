@@ -33,6 +33,7 @@ from pylib.device import device_errors
 from pylib.device import intent
 from pylib.device import logcat_monitor
 from pylib.device.commands import install_commands
+from pylib.sdk import split_select
 from pylib.utils import apk_helper
 from pylib.utils import base_error
 from pylib.utils import device_temp_file
@@ -339,14 +340,14 @@ class DeviceUtils(object):
     return value
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def GetApplicationPath(self, package, timeout=None, retries=None):
-    """Get the path of the installed apk on the device for the given package.
+  def GetApplicationPaths(self, package, timeout=None, retries=None):
+    """Get the paths of the installed apks on the device for the given package.
 
     Args:
       package: Name of the package.
 
     Returns:
-      Path to the apk on the device if it exists, None otherwise.
+      List of paths to the apks on the device for the given package.
     """
     # 'pm path' is liable to incorrectly exit with a nonzero number starting
     # in Lollipop.
@@ -354,14 +355,15 @@ class DeviceUtils(object):
     # released to put an upper bound on this.
     should_check_return = (self.build_version_sdk <
                            constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP)
-    output = self.RunShellCommand(['pm', 'path', package], single_line=True,
-                                  check_return=should_check_return)
-    if not output:
-      return None
-    if not output.startswith('package:'):
-      raise device_errors.CommandFailedError('pm path returned: %r' % output,
-                                             str(self))
-    return output[len('package:'):]
+    output = self.RunShellCommand(
+        ['pm', 'path', package], check_return=should_check_return)
+    apks = []
+    for line in output:
+      if not line.startswith('package:'):
+        raise device_errors.CommandFailedError(
+            'pm path returned: %r' % '\n'.join(output), str(self))
+      apks.append(line[len('package:'):])
+    return apks
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetApplicationDataDirectory(self, package, timeout=None, retries=None):
@@ -413,7 +415,7 @@ class DeviceUtils(object):
 
     def pm_ready():
       try:
-        return self.GetApplicationPath('android')
+        return self.GetApplicationPaths('android')
       except device_errors.CommandFailedError:
         return False
 
@@ -483,10 +485,14 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     package_name = apk_helper.GetPackageName(apk_path)
-    device_path = self.GetApplicationPath(package_name)
-    if device_path is not None:
+    device_paths = self.GetApplicationPaths(package_name)
+    if device_paths:
+      if len(device_paths) > 1:
+        logging.warning(
+            'Installing single APK (%s) when split APKs (%s) are currently '
+            'installed.', apk_path, ' '.join(device_paths))
       (files_to_push, _) = self._GetChangedAndStaleFiles(
-          apk_path, device_path)
+          apk_path, device_paths[0])
       should_install = bool(files_to_push)
       if should_install and not reinstall:
         self.adb.Uninstall(package_name)
@@ -494,6 +500,62 @@ class DeviceUtils(object):
       should_install = True
     if should_install:
       self.adb.Install(apk_path, reinstall=reinstall)
+
+  @decorators.WithTimeoutAndRetriesDefaults(
+      INSTALL_DEFAULT_TIMEOUT,
+      INSTALL_DEFAULT_RETRIES)
+  def InstallSplitApk(self, base_apk, split_apks, reinstall=False,
+                      timeout=None, retries=None):
+    """Install a split APK.
+
+    Noop if all of the APK splits are already installed.
+
+    Args:
+      base_apk: A string of the path to the base APK.
+      split_apks: A list of strings of paths of all of the APK splits.
+      reinstall: A boolean indicating if we should keep any existing app data.
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Raises:
+      CommandFailedError if the installation fails.
+      CommandTimeoutError if the installation times out.
+      DeviceUnreachableError on missing device.
+      DeviceVersionError if device SDK is less than Android L.
+    """
+    self._CheckSdkLevel(constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP)
+
+    all_apks = [base_apk] + split_select.SelectSplits(
+        self, base_apk, split_apks)
+    package_name = apk_helper.GetPackageName(base_apk)
+    device_apk_paths = self.GetApplicationPaths(package_name)
+
+    if device_apk_paths:
+      partial_install_package = package_name
+      device_checksums = md5sum.CalculateDeviceMd5Sums(device_apk_paths, self)
+      host_checksums = md5sum.CalculateHostMd5Sums(all_apks)
+      apks_to_install = [k for (k, v) in host_checksums.iteritems()
+                         if v not in device_checksums.values()]
+      if apks_to_install and not reinstall:
+        self.adb.Uninstall(package_name)
+        partial_install_package = None
+        apks_to_install = all_apks
+    else:
+      partial_install_package = None
+      apks_to_install = all_apks
+    if apks_to_install:
+      self.adb.InstallMultiple(
+          apks_to_install, partial=partial_install_package, reinstall=reinstall)
+
+  def _CheckSdkLevel(self, required_sdk_level):
+    """Raises an exception if the device does not have the required SDK level.
+    """
+    if self.build_version_sdk < required_sdk_level:
+      raise device_errors.DeviceVersionError(
+          ('Requires SDK level %s, device is SDK level %s' %
+           (required_sdk_level, self.build_version_sdk)),
+           device_serial=self.adb.GetDeviceSerial())
+
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def RunShellCommand(self, cmd, check_return=False, cwd=None, env=None,
@@ -806,7 +868,7 @@ class DeviceUtils(object):
     # may never return.
     if ((self.build_version_sdk >=
          constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN_MR2)
-        or self.GetApplicationPath(package)):
+        or self.GetApplicationPaths(package)):
       self.RunShellCommand(['pm', 'clear', package], check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -1293,6 +1355,28 @@ class DeviceUtils(object):
     else:
       return False
 
+  @property
+  def language(self):
+    """Returns the language setting on the device."""
+    return self.GetProp('persist.sys.language', cache=False)
+
+  @property
+  def country(self):
+    """Returns the country setting on the device."""
+    return self.GetProp('persist.sys.country', cache=False)
+
+  @property
+  def screen_density(self):
+    """Returns the screen density of the device."""
+    DPI_TO_DENSITY = {
+      120: 'ldpi',
+      160: 'mdpi',
+      240: 'hdpi',
+      320: 'xhdpi',
+      480: 'xxhdpi',
+    }
+    dpi = int(self.GetProp('ro.sf.lcd_density', cache=True))
+    return DPI_TO_DENSITY.get(dpi, 'tvdpi')
 
   @property
   def build_description(self):
@@ -1634,4 +1718,3 @@ class DeviceUtils(object):
 
     return [cls(adb) for adb in adb_wrapper.AdbWrapper.Devices()
             if not blacklisted(adb)]
-
