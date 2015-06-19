@@ -606,6 +606,11 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }
 
+// static
+void AutofillMetrics::LogSuggestionAcceptedIndex(int index) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex", index);
+}
+
 void AutofillMetrics::LogPasswordFormQueryVolume(
     PasswordFormQueryVolumeMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.PasswordFormQueryVolume", metric,

@@ -2383,7 +2383,8 @@ void AutofillDialogControllerImpl::DidSelectSuggestion(
 
 void AutofillDialogControllerImpl::DidAcceptSuggestion(
     const base::string16& value,
-    int identifier) {
+    int identifier,
+    int position) {
   DCHECK_NE(UNKNOWN_TYPE, popup_input_type_);
   // Because |HidePopup()| can be called from |UpdateSection()|, remember the
   // type of the input for later here.

@@ -26,7 +26,8 @@ class AutofillPopupDelegate {
 
   // Inform the delegate that a row in the popup has been chosen.
   virtual void DidAcceptSuggestion(const base::string16& value,
-                                   int identifier) = 0;
+                                   int identifier,
+                                   int position) = 0;
 
   // Returns whether the given value can be deleted, and if true,
   // fills out |title| and |body|.

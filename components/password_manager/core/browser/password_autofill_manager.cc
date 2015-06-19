@@ -212,7 +212,8 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
 }
 
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
-                                                  int identifier) {
+                                                  int identifier,
+                                                  int position) {
   bool success = FillSuggestion(form_data_key_, value);
   DCHECK(success);
   autofill_client_->HideAutofillPopup();

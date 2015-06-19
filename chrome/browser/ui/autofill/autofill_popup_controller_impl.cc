@@ -343,7 +343,8 @@ void AutofillPopupControllerImpl::SelectionCleared() {
 
 void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
   const autofill::Suggestion& suggestion = suggestions_[index];
-  delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id);
+  delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id,
+                                 index);
 }
 
 int AutofillPopupControllerImpl::GetIconResourceID(

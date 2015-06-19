@@ -181,7 +181,8 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
   // This should trigger a call to hide the popup since we've selected an
   // option.
   external_delegate_->DidAcceptSuggestion(autofill_item[0].value,
-                                          autofill_item[0].frontend_id);
+                                          autofill_item[0].frontend_id,
+                                          0);
 }
 
 // Test that data list elements for a node will appear in the Autofill popup.
@@ -325,7 +326,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   EXPECT_CALL(*autofill_manager_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
-  external_delegate_->DidAcceptSuggestion(base::string16(), -1);
+  external_delegate_->DidAcceptSuggestion(base::string16(), -1, 0);
 }
 
 // Test that the ClearPreview call is only sent if the form was being previewed
@@ -363,13 +364,32 @@ TEST_F(AutofillExternalDelegateUnitTest,
 
 // Test that the driver is directed to accept the data list after being notified
 // that the user accepted the data list suggestion.
-TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateAcceptSuggestion) {
+TEST_F(AutofillExternalDelegateUnitTest,
+       ExternalDelegateAcceptDatalistSuggestion) {
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   base::string16 dummy_string(ASCIIToUTF16("baz qux"));
   EXPECT_CALL(*autofill_driver_,
               RendererShouldAcceptDataListSuggestion(dummy_string));
   external_delegate_->DidAcceptSuggestion(dummy_string,
-                                          POPUP_ITEM_ID_DATALIST_ENTRY);
+                                          POPUP_ITEM_ID_DATALIST_ENTRY,
+                                          0);
+}
+
+// Test that an accepted autofill suggestion will fill the form and log the
+// proper metric.
+TEST_F(AutofillExternalDelegateUnitTest,
+       ExternalDelegateAcceptAutofillSuggestion) {
+  EXPECT_CALL(autofill_client_, HideAutofillPopup());
+  base::string16 dummy_string(ASCIIToUTF16("John Legend"));
+  EXPECT_CALL(*autofill_manager_,
+              FillOrPreviewForm(
+                  AutofillDriver::FORM_DATA_ACTION_FILL, _, _, _,
+                  kAutofillProfileId));
+  base::HistogramTester histogram;
+  external_delegate_->DidAcceptSuggestion(dummy_string,
+                                          kAutofillProfileId,
+                                          2);  // Row 2
+  histogram.ExpectUniqueSample("Autofill.SuggestionAcceptedIndex", 2, 1);
 }
 
 // Test that the driver is directed to clear the form after being notified that
@@ -379,7 +399,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearForm) {
   EXPECT_CALL(*autofill_driver_, RendererShouldClearFilledForm());
 
   external_delegate_->DidAcceptSuggestion(base::string16(),
-                                          POPUP_ITEM_ID_CLEAR_FORM);
+                                          POPUP_ITEM_ID_CLEAR_FORM,
+                                          0);
 }
 
 // Test that autofill client will scan a credit card after use accepted the
@@ -388,7 +409,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardMenuItem) {
   EXPECT_CALL(autofill_client_, ScanCreditCard(_));
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   external_delegate_->DidAcceptSuggestion(base::string16(),
-                                          POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+                                          POPUP_ITEM_ID_SCAN_CREDIT_CARD,
+                                          0);
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
@@ -411,7 +433,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
     IssueOnQuery(kQueryId);
     IssueOnSuggestionsReturned();
     external_delegate_->DidAcceptSuggestion(base::string16(),
-                                            POPUP_ITEM_ID_SCAN_CREDIT_CARD);
+                                            POPUP_ITEM_ID_SCAN_CREDIT_CARD,
+                                            0);
     histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
                                 AutofillMetrics::SCAN_CARD_ITEM_SHOWN, 1);
     histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
@@ -428,7 +451,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
     IssueOnQuery(kQueryId);
     IssueOnSuggestionsReturned();
     external_delegate_->DidAcceptSuggestion(base::string16(),
-                                            POPUP_ITEM_ID_CLEAR_FORM);
+                                            POPUP_ITEM_ID_CLEAR_FORM,
+                                            0);
     histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
                                 AutofillMetrics::SCAN_CARD_ITEM_SHOWN, 1);
     histogram.ExpectBucketCount("Autofill.ScanCreditCardPrompt",
@@ -445,7 +469,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
     IssueOnQuery(kQueryId);
     IssueOnSuggestionsReturned();
     external_delegate_->DidAcceptSuggestion(base::string16(),
-                                            POPUP_ITEM_ID_CLEAR_FORM);
+                                            POPUP_ITEM_ID_CLEAR_FORM,
+                                            0);
     histogram.ExpectTotalCount("Autofill.ScanCreditCardPrompt", 0);
   }
 }
@@ -490,7 +515,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
   EXPECT_CALL(*autofill_driver_,
               RendererShouldFillFieldWithValue(dummy_string));
   external_delegate_->DidAcceptSuggestion(dummy_string,
-                                          POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
+                                          POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY,
+                                          0);
 }
 
 }  // namespace autofill

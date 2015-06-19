@@ -704,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   view->ActivateInput(triggering_type);
 
   ASSERT_EQ(triggering_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
+  controller()->DidAcceptSuggestion(base::string16(), 0, 1);
 
   // All inputs should be filled.
   AutofillProfileWrapper wrapper(&full_profile);
@@ -754,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_type);
   ASSERT_EQ(triggering_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
+  controller()->DidAcceptSuggestion(base::string16(), 0, 1);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
     if (controller()->ComboboxModelForAutofillType(inputs[i].type))
@@ -799,7 +799,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   view->ActivateInput(triggering_type);
 
   ASSERT_EQ(triggering_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
+  controller()->DidAcceptSuggestion(base::string16(), 0, 1);
 
   // All inputs should be filled.
   AutofillCreditCardWrapper wrapper1(&card1);
@@ -815,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_type);
   ASSERT_EQ(triggering_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
+  controller()->DidAcceptSuggestion(base::string16(), 0, 1);
 
   AutofillCreditCardWrapper wrapper2(&card2);
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -843,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   view->ActivateInput(billing_triggering_type);
 
   ASSERT_EQ(billing_triggering_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
+  controller()->DidAcceptSuggestion(base::string16(), 0, 1);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
     const ServerFieldType type = inputs[i].type;
@@ -1679,7 +1679,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   view->SetTextContentsOfInput(input_type, name.substr(0, name.size() / 2));
   view->ActivateInput(input_type);
   ASSERT_EQ(input_type, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
+  controller()->DidAcceptSuggestion(base::string16(), 0, 1);
 
   EXPECT_EQ(ASCIIToUTF16("Germany"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
@@ -1706,7 +1706,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   view->SetTextContentsOfInput(NAME_FULL, name.substr(0, name.size() / 2));
   view->ActivateInput(NAME_FULL);
   ASSERT_EQ(NAME_FULL, controller()->popup_input_type());
-  controller()->DidAcceptSuggestion(base::string16(), 0);
+  controller()->DidAcceptSuggestion(base::string16(), 0, 1);
 
   EXPECT_EQ(ASCIIToUTF16("France"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));

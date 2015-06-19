@@ -199,7 +199,7 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   // Accepting a suggestion should trigger a call to hide the popup.
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
-      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
+      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, 1);
 }
 
 // Test that OnShowPasswordSuggestions correctly matches the given FormFieldData
