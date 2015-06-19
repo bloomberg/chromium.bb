@@ -788,11 +788,6 @@ crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2/deriveBits-rfc6070-test-vectors.
 crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2/deriveKey-aes.html [ Failure Pass ]
 crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2/deriveKey-failures.html [ Failure Pass ]
 
-crbug.com/497950 [ XP ] svg/as-background-image/svg-background-partial-redraw.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] svg/batik/text/textLength.svg [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] svg/text/text-viewbox-rescale.html [ NeedsRebaseline ]
-crbug.com/497950 [ XP ] svg/zoom/page/zoom-svg-float-border-padding.xml [ NeedsRebaseline ]
-
 # There are some unresolved problems with the teardown of WebWorkers that make
 # the "abandon" WebCrypto tests flaky-crash. This flakiness can also affect the
 # tests run immediately afterwards (the two AES-CBC decrypt tests).
