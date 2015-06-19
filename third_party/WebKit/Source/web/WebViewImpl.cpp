@@ -2856,102 +2856,88 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
     if (!frame || !frame->view() || !element)
         return false;
 
-    if (!m_webSettings->autoZoomFocusedNodeToLegibleScale()) {
-        frame->document()->updateLayoutIgnorePendingStylesheets();
-
-        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
-        FloatRect targetRectInRootFrame = pinchViewport.viewportToRootFrame(rectInViewport);
-
-        FrameView* elementView = element->document().view();
-        IntRect boundsInRootFrame = elementView->contentsToRootFrame(pixelSnappedIntRect(element->boundingBox()));
-        LayoutRect boundsInRootContent = LayoutRect(frame->view()->frameToContents(boundsInRootFrame));
-
-        frame->view()->scrollableArea()->scrollIntoRect(boundsInRootContent, targetRectInRootFrame);
-        return false;
-    }
+    bool zoomInToLegibleScale = m_webSettings->autoZoomFocusedNodeToLegibleScale() && !shouldDisableDesktopWorkarounds();
 
     float scale;
     IntPoint scroll;
     bool needAnimation;
-    computeScaleAndScrollForFocusedNode(element, scale, scroll, needAnimation);
+    computeScaleAndScrollForFocusedNode(element, zoomInToLegibleScale, scale, scroll, needAnimation);
     if (needAnimation)
         return startPageScaleAnimation(scroll, false, scale, scrollAndScaleAnimationDurationInSeconds);
 
     return false;
 }
 
-void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& newScale, IntPoint& newScroll, bool& needAnimation)
+void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, bool zoomInToLegibleScale, float& newScale, IntPoint& newScroll, bool& needAnimation)
 {
     focusedNode->document().updateLayoutIgnorePendingStylesheets();
 
-    // 'caret' is rect encompassing the blinking cursor.
-    IntRect textboxRectInRootFrame = focusedNode->document().view()->contentsToRootFrame(pixelSnappedIntRect(focusedNode->Node::boundingBox()));
-    WebRect caret, unusedEnd;
-    selectionBounds(caret, unusedEnd);
-    IntRect unscaledCaret = caret;
-    unscaledCaret.scale(1 / pageScaleFactor());
-    caret = unscaledCaret;
+    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
 
-    if (shouldDisableDesktopWorkarounds()) {
+    WebRect caretInViewport, unusedEnd;
+    selectionBounds(caretInViewport, unusedEnd);
+
+    // 'caretInDocument' is rect encompassing the blinking cursor relative to the root document.
+    IntRect caretInDocument = mainFrameImpl()->frameView()->frameToContents(pinchViewport.viewportToRootFrame(caretInViewport));
+    IntRect textboxRectInDocument = mainFrameImpl()->frameView()->frameToContents(
+        focusedNode->document().view()->contentsToRootFrame(pixelSnappedIntRect(focusedNode->Node::boundingBox())));
+
+    if (!zoomInToLegibleScale) {
         newScale = pageScaleFactor();
     } else {
         // Pick a scale which is reasonably readable. This is the scale at which
         // the caret height will become minReadableCaretHeightForNode (adjusted
         // for dpi and font scale factor).
-        const int minReadableCaretHeightForNode = textboxRectInRootFrame.height() >= 2 * caret.height ? minReadableCaretHeightForTextArea : minReadableCaretHeight;
-        newScale = clampPageScaleFactorToLimits(maximumLegiblePageScale() * minReadableCaretHeightForNode / caret.height);
+        const int minReadableCaretHeightForNode = textboxRectInDocument.height() >= 2 * caretInDocument.height() ? minReadableCaretHeightForTextArea : minReadableCaretHeight;
+        newScale = clampPageScaleFactorToLimits(maximumLegiblePageScale() * minReadableCaretHeightForNode / caretInDocument.height());
         newScale = std::max(newScale, pageScaleFactor());
     }
     const float deltaScale = newScale / pageScaleFactor();
 
     needAnimation = false;
+
     // If we are at less than the target zoom level, zoom in.
     if (deltaScale > minScaleChangeToTriggerZoom)
         needAnimation = true;
     else
         newScale = pageScaleFactor();
 
-    // Convert the rects to absolute space in the new scale.
-    IntRect textboxRectInDocumentCoordinates = mainFrameImpl()->frameView()->frameToContents(textboxRectInRootFrame);
-    IntRect caretInDocumentCoordinates = caret;
-    caretInDocumentCoordinates.move(mainFrame()->scrollOffset());
-
-    int viewWidth = m_size.width / newScale;
-    int viewHeight = m_size.height / newScale;
-
     // If the caret is offscreen, then animate.
-    IntRect sizeRect(0, 0, viewWidth, viewHeight);
-    sizeRect.scale(newScale / pageScaleFactor());
-    if (!sizeRect.contains(caret))
+    if (!pinchViewport.visibleRectInDocument().contains(caretInDocument))
         needAnimation = true;
 
     // If the box is partially offscreen and it's possible to bring it fully
     // onscreen, then animate.
-    if (sizeRect.contains(textboxRectInDocumentCoordinates.width(), textboxRectInDocumentCoordinates.height()) && !sizeRect.contains(textboxRectInRootFrame))
+    if (pinchViewport.visibleRect().width() >= textboxRectInDocument.width()
+        && pinchViewport.visibleRect().height() >= textboxRectInDocument.height()
+        && !pinchViewport.visibleRectInDocument().contains(textboxRectInDocument))
         needAnimation = true;
 
     if (!needAnimation)
         return;
 
-    if (textboxRectInDocumentCoordinates.width() <= viewWidth) {
+    FloatSize targetViewportSize = pinchViewport.size();
+    targetViewportSize.scale(1 / newScale);
+
+    if (textboxRectInDocument.width() <= targetViewportSize.width()) {
         // Field is narrower than screen. Try to leave padding on left so field's
         // label is visible, but it's more important to ensure entire field is
         // onscreen.
-        int idealLeftPadding = viewWidth * leftBoxRatio;
-        int maxLeftPaddingKeepingBoxOnscreen = viewWidth - textboxRectInDocumentCoordinates.width();
-        newScroll.setX(textboxRectInDocumentCoordinates.x() - std::min<int>(idealLeftPadding, maxLeftPaddingKeepingBoxOnscreen));
+        int idealLeftPadding = targetViewportSize.width() * leftBoxRatio;
+        int maxLeftPaddingKeepingBoxOnscreen = targetViewportSize.width() - textboxRectInDocument.width();
+        newScroll.setX(textboxRectInDocument.x() - std::min<int>(idealLeftPadding, maxLeftPaddingKeepingBoxOnscreen));
     } else {
         // Field is wider than screen. Try to left-align field, unless caret would
         // be offscreen, in which case right-align the caret.
-        newScroll.setX(std::max<int>(textboxRectInDocumentCoordinates.x(), caretInDocumentCoordinates.x() + caretInDocumentCoordinates.width() + caretPadding - viewWidth));
+        newScroll.setX(std::max<int>(textboxRectInDocument.x(), caretInDocument.x() + caretInDocument.width() + caretPadding - targetViewportSize.width()));
     }
-    if (textboxRectInDocumentCoordinates.height() <= viewHeight) {
+    if (textboxRectInDocument.height() <= targetViewportSize.height()) {
         // Field is shorter than screen. Vertically center it.
-        newScroll.setY(textboxRectInDocumentCoordinates.y() - (viewHeight - textboxRectInDocumentCoordinates.height()) / 2);
+        newScroll.setY(textboxRectInDocument.y() - (targetViewportSize.height() - textboxRectInDocument.height()) / 2);
     } else {
         // Field is taller than screen. Try to top align field, unless caret would
         // be offscreen, in which case bottom-align the caret.
-        newScroll.setY(std::max<int>(textboxRectInDocumentCoordinates.y(), caretInDocumentCoordinates.y() + caretInDocumentCoordinates.height() + caretPadding - viewHeight));
+        newScroll.setY(std::max<int>(textboxRectInDocument.y(), caretInDocument.y() + caretInDocument.height() + caretPadding - targetViewportSize.height()));
     }
 }
 

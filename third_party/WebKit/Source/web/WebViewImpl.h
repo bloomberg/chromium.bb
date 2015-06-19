@@ -464,7 +464,7 @@ public:
     Node* bestTapNode(const GestureEventWithHitTestResults& targetedTapEvent);
     void enableTapHighlightAtPoint(const GestureEventWithHitTestResults& targetedTapEvent);
     void enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>&);
-    void computeScaleAndScrollForFocusedNode(Node* focusedNode, float& scale, IntPoint& scroll, bool& needAnimation);
+    void computeScaleAndScrollForFocusedNode(Node* focusedNode, bool zoomInToLegibleScale, float& scale, IntPoint& scroll, bool& needAnimation);
 
     void animateDoubleTapZoom(const IntPoint&);
 
