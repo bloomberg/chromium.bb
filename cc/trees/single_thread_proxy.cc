@@ -13,7 +13,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/prioritized_resource_manager.h"
-#include "cc/resources/resource_update_controller.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -244,25 +243,6 @@ void SingleThreadProxy::DoCommit() {
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoCommit4"));
-    scoped_ptr<ResourceUpdateController> update_controller =
-        ResourceUpdateController::Create(
-            NULL,
-            MainThreadTaskRunner(),
-            queue_for_commit_.Pass(),
-            layer_tree_host_impl_->resource_provider());
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile5(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoCommit5"));
-    update_controller->Finalize();
-
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
     tracked_objects::ScopedTracker tracking_profile6(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "461509 SingleThreadProxy::DoCommit6"));
@@ -379,10 +359,6 @@ bool SingleThreadProxy::BeginMainFrameRequested() const {
   if (!scheduler_on_impl_thread_)
     return false;
   return commit_requested_;
-}
-
-size_t SingleThreadProxy::MaxPartialTextureUpdates() const {
-  return std::numeric_limits<size_t>::max();
 }
 
 void SingleThreadProxy::Stop() {
@@ -858,9 +834,6 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
   layer_tree_host_->Layout();
 
-  DCHECK(!queue_for_commit_);
-  queue_for_commit_ = make_scoped_ptr(new ResourceUpdateQueue);
-
   // New commits requested inside UpdateLayers should be respected.
   commit_requested_ = false;
 
@@ -937,9 +910,6 @@ void SingleThreadProxy::ScheduledActionPrepareTiles() {
 
 void SingleThreadProxy::ScheduledActionInvalidateOutputSurface() {
   NOTREACHED();
-}
-
-void SingleThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
 }
 
 base::TimeDelta SingleThreadProxy::DrawDurationEstimate() {

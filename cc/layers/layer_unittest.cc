@@ -10,7 +10,6 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/resources/layer_painter.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -54,11 +53,6 @@ class MockLayerTreeHost : public LayerTreeHost {
   MOCK_METHOD0(SetNeedsCommit, void());
   MOCK_METHOD0(SetNeedsUpdateLayers, void());
   MOCK_METHOD0(SetNeedsFullTreeSync, void());
-};
-
-class MockLayerPainter : public LayerPainter {
- public:
-  void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {}
 };
 
 class LayerTest : public testing::Test {

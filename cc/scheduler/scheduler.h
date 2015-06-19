@@ -43,7 +43,6 @@ class SchedulerClient {
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionPrepareTiles() = 0;
   virtual void ScheduledActionInvalidateOutputSurface() = 0;
-  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
   virtual base::TimeDelta DrawDurationEstimate() = 0;
   virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() = 0;
   virtual base::TimeDelta CommitToActivateDurationEstimate() = 0;
@@ -155,8 +154,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   bool ImplLatencyTakesPriority() const {
     return state_machine_.impl_latency_takes_priority();
   }
-
-  base::TimeTicks AnticipatedDrawTime() const;
 
   void NotifyBeginMainFrameStarted();
 

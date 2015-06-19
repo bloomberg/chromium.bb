@@ -274,19 +274,6 @@ void Scheduler::NotifyBeginMainFrameStarted() {
   state_machine_.NotifyBeginMainFrameStarted();
 }
 
-base::TimeTicks Scheduler::AnticipatedDrawTime() const {
-  if (!frame_source_->NeedsBeginFrames() ||
-      begin_impl_frame_tracker_.DangerousMethodHasFinished())
-    return base::TimeTicks();
-
-  base::TimeTicks now = Now();
-  BeginFrameArgs args = begin_impl_frame_tracker_.Current();
-  base::TimeTicks timebase = std::max(args.frame_time, args.deadline);
-  int64 intervals =
-      1 + ((now - timebase) / begin_impl_frame_tracker_.Interval());
-  return timebase + (begin_impl_frame_tracker_.Interval() * intervals);
-}
-
 base::TimeTicks Scheduler::LastBeginImplFrameTime() {
   return begin_impl_frame_tracker_.Current().frame_time;
 }
@@ -736,8 +723,6 @@ void Scheduler::ProcessScheduledActions() {
 
   SetupPollingMechanisms();
 
-  client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
-
   ScheduleBeginImplFrameDeadlineIfNeeded();
 
   SetupNextBeginFrameIfNeeded();
@@ -768,8 +753,6 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   }
 
   state->BeginDictionary("scheduler_state");
-  state->SetDouble("time_until_anticipated_draw_time_ms",
-                   (AnticipatedDrawTime() - Now()).InMillisecondsF());
   state->SetDouble("estimated_parent_draw_time_ms",
                    estimated_parent_draw_time_.InMillisecondsF());
   state->SetBoolean("last_set_needs_begin_frame_",

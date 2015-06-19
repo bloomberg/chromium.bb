@@ -96,9 +96,6 @@ void SurfacesScheduler::ScheduledActionPrepareTiles() {
 void SurfacesScheduler::ScheduledActionInvalidateOutputSurface() {
 }
 
-void SurfacesScheduler::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
-}
-
 base::TimeDelta SurfacesScheduler::DrawDurationEstimate() {
   return draw_estimate_;
 }

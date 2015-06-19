@@ -23,7 +23,6 @@ class BeginFrameSource;
 class ContextProvider;
 class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
-class ResourceUpdateQueue;
 
 class CC_EXPORT SingleThreadProxy : public Proxy,
                                     NON_EXPORTED_BASE(LayerTreeHostImplClient),
@@ -57,7 +56,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void MainThreadHasStoppedFlinging() override {}
   void Start() override;
   void Stop() override;
-  size_t MaxPartialTextureUpdates() const override;
   void ForceSerializeOnSwapBuffers() override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
@@ -76,7 +74,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionPrepareTiles() override;
   void ScheduledActionInvalidateOutputSurface() override;
-  void DidAnticipatedDrawTimeChange(base::TimeTicks time) override;
   base::TimeDelta DrawDurationEstimate() override;
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
   base::TimeDelta CommitToActivateDurationEstimate() override;
@@ -158,7 +155,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   ProxyTimingHistory timing_history_;
 
   scoped_ptr<BlockingTaskRunner::CapturePostTasks> commit_blocking_task_runner_;
-  scoped_ptr<ResourceUpdateQueue> queue_for_commit_;
   bool next_frame_is_newly_committed_frame_;
 
 #if DCHECK_IS_ON()

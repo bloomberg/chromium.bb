@@ -42,7 +42,6 @@ class FakeProxy : public Proxy {
   void Start() override {}
   void Stop() override {}
   void ForceSerializeOnSwapBuffers() override {}
-  size_t MaxPartialTextureUpdates() const override;
   bool SupportsImplScrolling() const override;
   void SetDebugState(const LayerTreeDebugState& debug_state) override {}
   bool MainFrameWillHappenForTesting() override;
@@ -51,11 +50,9 @@ class FakeProxy : public Proxy {
   }
 
   virtual RendererCapabilities& GetRendererCapabilities();
-  void SetMaxPartialTextureUpdates(size_t max);
 
  private:
   RendererCapabilities capabilities_;
-  size_t max_partial_texture_updates_;
   LayerTreeHost* layer_tree_host_;
 };
 

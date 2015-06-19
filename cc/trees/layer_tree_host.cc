@@ -111,7 +111,6 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
       gpu_rasterization_histogram_recorded_(false),
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
-      partial_texture_update_requests_(0),
       did_complete_scale_animation_(false),
       in_paint_layer_contents_(false),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
@@ -869,31 +868,6 @@ void LayerTreeHost::RateLimit() {
   // SwapBuffers.
   proxy_->ForceSerializeOnSwapBuffers();
   client_->RateLimitSharedMainThreadContext();
-}
-
-bool LayerTreeHost::AlwaysUsePartialTextureUpdates() {
-  if (!proxy_->GetRendererCapabilities().allow_partial_texture_updates)
-    return false;
-  return !proxy_->HasImplThread();
-}
-
-size_t LayerTreeHost::MaxPartialTextureUpdates() const {
-  size_t max_partial_texture_updates = 0;
-  if (proxy_->GetRendererCapabilities().allow_partial_texture_updates &&
-      !settings_.impl_side_painting) {
-    max_partial_texture_updates =
-        std::min(settings_.max_partial_texture_updates,
-                 proxy_->MaxPartialTextureUpdates());
-  }
-  return max_partial_texture_updates;
-}
-
-bool LayerTreeHost::RequestPartialTextureUpdate() {
-  if (partial_texture_update_requests_ >= MaxPartialTextureUpdates())
-    return false;
-
-  partial_texture_update_requests_++;
-  return true;
 }
 
 void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {

@@ -245,10 +245,6 @@ class CC_EXPORT LayerTreeHost {
 
   void RateLimit();
 
-  bool AlwaysUsePartialTextureUpdates();
-  size_t MaxPartialTextureUpdates() const;
-  bool RequestPartialTextureUpdate();
-
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -423,9 +419,6 @@ class CC_EXPORT LayerTreeHost {
 
   SkColor background_color_;
   bool has_transparent_background_;
-
-  typedef ScopedPtrVector<PrioritizedResource> TextureList;
-  size_t partial_texture_update_requests_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
 

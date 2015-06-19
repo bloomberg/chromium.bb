@@ -765,9 +765,6 @@ void ThreadProxy::BeginMainFrame(
       main().can_cancel_commit && !begin_main_frame_state->evicted_ui_resources;
   main().can_cancel_commit = true;
 
-  scoped_ptr<ResourceUpdateQueue> queue =
-      make_scoped_ptr(new ResourceUpdateQueue);
-
   bool updated = layer_tree_host()->UpdateLayers();
 
   layer_tree_host()->WillCommit();
@@ -818,11 +815,8 @@ void ThreadProxy::BeginMainFrame(
 
     CompletionEvent completion;
     Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::StartCommitOnImplThread,
-                   impl_thread_weak_ptr_,
-                   &completion,
-                   queue.release()));
+        FROM_HERE, base::Bind(&ThreadProxy::StartCommitOnImplThread,
+                              impl_thread_weak_ptr_, &completion));
     completion.Wait();
   }
 
@@ -836,8 +830,7 @@ void ThreadProxy::BeginMainFrameNotExpectedSoon() {
   layer_tree_host()->BeginMainFrameNotExpectedSoon();
 }
 
-void ThreadProxy::StartCommitOnImplThread(CompletionEvent* completion,
-                                          ResourceUpdateQueue* raw_queue) {
+void ThreadProxy::StartCommitOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::StartCommitOnImplThread");
   DCHECK(!impl().commit_completion_event);
   DCHECK(IsImplThread() && IsMainThreadBlocked());
@@ -854,17 +847,8 @@ void ThreadProxy::StartCommitOnImplThread(CompletionEvent* completion,
   // Ideally, we should inform to impl thread when BeginMainFrame is started.
   // But, we can avoid a PostTask in here.
   impl().scheduler->NotifyBeginMainFrameStarted();
-
-  scoped_ptr<ResourceUpdateQueue> queue(raw_queue);
-
   impl().commit_completion_event = completion;
-  impl().current_resource_update_controller = ResourceUpdateController::Create(
-      this,
-      Proxy::ImplThreadTaskRunner(),
-      queue.Pass(),
-      impl().layer_tree_host_impl->resource_provider());
-  impl().current_resource_update_controller->PerformMoreUpdates(
-      impl().scheduler->AnticipatedDrawTime());
+  impl().scheduler->NotifyReadyToCommit();
 }
 
 void ThreadProxy::BeginMainFrameAbortedOnImplThread(
@@ -912,11 +896,6 @@ void ThreadProxy::ScheduledActionCommit() {
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
   DCHECK(impl().commit_completion_event);
-  DCHECK(impl().current_resource_update_controller);
-
-  // Complete all remaining texture updates.
-  impl().current_resource_update_controller->Finalize();
-  impl().current_resource_update_controller = nullptr;
 
   blocked_main().main_thread_inside_commit = true;
   impl().layer_tree_host_impl->BeginCommit();
@@ -1063,11 +1042,6 @@ void ThreadProxy::ScheduledActionInvalidateOutputSurface() {
   impl().layer_tree_host_impl->output_surface()->Invalidate();
 }
 
-void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
-  if (impl().current_resource_update_controller)
-    impl().current_resource_update_controller->PerformMoreUpdates(time);
-}
-
 base::TimeDelta ThreadProxy::DrawDurationEstimate() {
   return impl().timing_history.DrawDurationEstimate();
 }
@@ -1091,11 +1065,6 @@ void ThreadProxy::SendBeginFramesToChildren(const BeginFrameArgs& args) {
 void ThreadProxy::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
   NOTREACHED() << "Only used by SingleThreadProxy";
-}
-
-void ThreadProxy::ReadyToFinalizeTextureUpdates() {
-  DCHECK(IsImplThread());
-  impl().scheduler->NotifyReadyToCommit();
 }
 
 void ThreadProxy::DidCommitAndDrawFrame() {
@@ -1172,7 +1141,6 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::LayerTreeHostClosedOnImplThread");
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
-  impl().current_resource_update_controller = nullptr;
   impl().scheduler = nullptr;
   impl().layer_tree_host_impl = nullptr;
   impl().weak_factory.InvalidateWeakPtrs();
@@ -1181,10 +1149,6 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   // callbacks holding a ThreadProxy pointer are cancelled.
   impl().smoothness_priority_expiration_notifier.Shutdown();
   completion->Signal();
-}
-
-size_t ThreadProxy::MaxPartialTextureUpdates() const {
-  return ResourceUpdateController::MaxPartialTextureUpdates();
 }
 
 ThreadProxy::BeginMainFrameAndCommitState::BeginMainFrameAndCommitState()

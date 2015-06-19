@@ -6,7 +6,6 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/debug/lap_timer.h"
-#include "cc/resources/layer_painter.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -21,12 +20,6 @@ namespace {
 static const int kTimeLimitMillis = 3000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
-
-class MockLayerPainter : public LayerPainter {
- public:
-  void Paint(SkCanvas* canvas, const gfx::Rect& content_rect) override {}
-};
-
 
 class LayerPerfTest : public testing::Test {
  public:

@@ -97,9 +97,6 @@ class CC_EXPORT Proxy {
   // to finish before executing in the GPU process.
   virtual void ForceSerializeOnSwapBuffers() = 0;
 
-  // Maximum number of sub-region texture updates supported for each commit.
-  virtual size_t MaxPartialTextureUpdates() const = 0;
-
   virtual bool SupportsImplScrolling() const = 0;
 
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) = 0;

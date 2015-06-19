@@ -60,17 +60,11 @@ class FakeSchedulerClient : public SchedulerClient {
     draw_will_happen_ = true;
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
-    log_anticipated_draw_time_change_ = false;
     begin_frame_args_sent_to_children_ = BeginFrameArgs();
   }
 
   void set_scheduler(TestScheduler* scheduler) { scheduler_ = scheduler; }
 
-  // Most tests don't care about DidAnticipatedDrawTimeChange, so only record it
-  // for tests that do.
-  void set_log_anticipated_draw_time_change(bool log) {
-    log_anticipated_draw_time_change_ = log;
-  }
   bool needs_begin_frames() {
     return scheduler_->frame_source().NeedsBeginFrames();
   }
@@ -147,10 +141,6 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionInvalidateOutputSurface");
     states_.push_back(scheduler_->AsValue());
   }
-  void DidAnticipatedDrawTimeChange(base::TimeTicks) override {
-    if (log_anticipated_draw_time_change_)
-      PushAction("DidAnticipatedDrawTimeChange");
-  }
   base::TimeDelta DrawDurationEstimate() override { return base::TimeDelta(); }
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
     return base::TimeDelta();
@@ -195,7 +185,6 @@ class FakeSchedulerClient : public SchedulerClient {
   bool swap_will_happen_if_draw_happens_;
   bool automatic_swap_ack_;
   int num_draws_;
-  bool log_anticipated_draw_time_change_;
   BeginFrameArgs begin_frame_args_sent_to_children_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
@@ -765,7 +754,6 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
   }
 
   void ScheduledActionCommit() override {}
-  void DidAnticipatedDrawTimeChange(base::TimeTicks) override {}
 
  private:
   bool request_redraws_;
@@ -877,7 +865,6 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
   }
 
   void ScheduledActionCommit() override {}
-  void DidAnticipatedDrawTimeChange(base::TimeTicks) override {}
 
   void SetNeedsCommitOnNextDraw() { set_needs_commit_on_next_draw_ = true; }
 
@@ -1395,74 +1382,6 @@ TEST_F(SchedulerTest, NotSkipMainFrameInPreferImplLatencyMode) {
   // before the deadline (~8ms by default), but also enable impl latency takes
   // priority mode.
   EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 1, true, true));
-}
-
-TEST_F(SchedulerTest,
-       Deadlock_NotifyReadyToCommitMakesProgressWhileSwapTrottled) {
-  // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
-  // thread. This prevents the scheduler from receiving any pending swap acks.
-  // This test makes sure that we keep updating the TextureUploader with
-  // DidAnticipatedDrawTimeChange's so that it can make forward progress and
-  // upload all the textures needed for the commit to complete.
-
-  // Since we are simulating a long commit, set up a client with draw duration
-  // estimates that prevent skipping main frames to get to low latency mode.
-  SchedulerClientWithFixedEstimates* client =
-      new SchedulerClientWithFixedEstimates(
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMilliseconds(32),
-          base::TimeDelta::FromMilliseconds(32));
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
-
-  client->set_log_anticipated_draw_time_change(true);
-
-  BeginFrameArgs frame_args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
-  frame_args.interval = base::TimeDelta::FromMilliseconds(1000);
-
-  // At this point, we've drawn a frame. Start another commit, but hold off on
-  // the NotifyReadyToCommit for now.
-  EXPECT_FALSE(scheduler_->CommitPending());
-  scheduler_->SetNeedsCommit();
-  fake_external_begin_frame_source()->TestOnBeginFrame(frame_args);
-  EXPECT_TRUE(scheduler_->CommitPending());
-
-  // Draw and swap the frame, but don't ack the swap to simulate the Browser
-  // blocking on the renderer.
-  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  scheduler_->DidSwapBuffers();
-
-  // Spin the event loop a few times and make sure we get more
-  // DidAnticipateDrawTimeChange calls every time.
-  int actions_so_far = client->num_actions_();
-
-  // Does three iterations to make sure that the timer is properly repeating.
-  for (int i = 0; i < 3; ++i) {
-    EXPECT_EQ((frame_args.interval * 2).InMicroseconds(),
-              task_runner().DelayToNextTaskTime().InMicroseconds())
-        << scheduler_->AsValue()->ToString();
-    task_runner().RunPendingTasks();
-    EXPECT_GT(client->num_actions_(), actions_so_far);
-    EXPECT_STREQ(client->Action(client->num_actions_() - 1),
-                 "DidAnticipatedDrawTimeChange");
-    actions_so_far = client->num_actions_();
-  }
-
-  // Do the same thing after BeginMainFrame starts but still before activation.
-  scheduler_->NotifyBeginMainFrameStarted();
-  for (int i = 0; i < 3; ++i) {
-    EXPECT_EQ((frame_args.interval * 2).InMicroseconds(),
-              task_runner().DelayToNextTaskTime().InMicroseconds())
-        << scheduler_->AsValue()->ToString();
-    task_runner().RunPendingTasks();
-    EXPECT_GT(client->num_actions_(), actions_so_far);
-    EXPECT_STREQ(client->Action(client->num_actions_() - 1),
-                 "DidAnticipatedDrawTimeChange");
-    actions_so_far = client->num_actions_();
-  }
 }
 
 TEST_F(

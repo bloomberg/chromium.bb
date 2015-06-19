@@ -7,7 +7,6 @@
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/texture_layer.h"
-#include "cc/resources/resource_update_queue.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
@@ -18,7 +17,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 
 using cc::TextureLayer;
-using cc::ResourceUpdateQueue;
 
 namespace cc_blink {
 

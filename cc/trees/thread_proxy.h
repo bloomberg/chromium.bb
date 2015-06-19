@@ -13,7 +13,6 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/delayed_unique_notifier.h"
-#include "cc/resources/resource_update_controller.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -31,14 +30,12 @@ class ContextProvider;
 class InputHandlerClient;
 class LayerTreeHost;
 class PrioritizedResourceManager;
-class ResourceUpdateQueue;
 class Scheduler;
 class ScopedThreadProxy;
 
 class CC_EXPORT ThreadProxy : public Proxy,
-                    NON_EXPORTED_BASE(LayerTreeHostImplClient),
-                    NON_EXPORTED_BASE(SchedulerClient),
-                    NON_EXPORTED_BASE(ResourceUpdateControllerClient) {
+                              NON_EXPORTED_BASE(LayerTreeHostImplClient),
+                              NON_EXPORTED_BASE(SchedulerClient) {
  public:
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
@@ -115,8 +112,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
     // Set when the main thread is waiting on a pending tree activation.
     CompletionEvent* completion_event_for_commit_held_on_tree_activation;
 
-    scoped_ptr<ResourceUpdateController> current_resource_update_controller;
-
     // Set when the next draw should post DidCommitAndDrawFrame to the main
     // thread.
     bool next_frame_is_newly_committed_frame;
@@ -170,7 +165,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void MainThreadHasStoppedFlinging() override;
   void Start() override;
   void Stop() override;
-  size_t MaxPartialTextureUpdates() const override;
   void ForceSerializeOnSwapBuffers() override;
   bool SupportsImplScrolling() const override;
   void SetDebugState(const LayerTreeDebugState& debug_state) override;
@@ -227,15 +221,11 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionPrepareTiles() override;
   void ScheduledActionInvalidateOutputSurface() override;
-  void DidAnticipatedDrawTimeChange(base::TimeTicks time) override;
   base::TimeDelta DrawDurationEstimate() override;
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
   base::TimeDelta CommitToActivateDurationEstimate() override;
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
   void SendBeginMainFrameNotExpectedSoon() override;
-
-  // ResourceUpdateControllerClient implementation
-  void ReadyToFinalizeTextureUpdates() override;
 
  protected:
   ThreadProxy(
@@ -264,8 +254,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   // Called on impl thread.
   struct SchedulerStateRequest;
 
-  void StartCommitOnImplThread(CompletionEvent* completion,
-                               ResourceUpdateQueue* queue);
+  void StartCommitOnImplThread(CompletionEvent* completion);
   void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
