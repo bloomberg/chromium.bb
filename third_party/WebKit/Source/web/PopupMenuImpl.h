@@ -31,9 +31,9 @@ private:
     PopupMenuImpl(ChromeClientImpl*, PopupMenuClient*);
 
     bool hasTooManyItemsForStyling();
-    void addOption(HTMLOptionElement&, bool enableExtraStyling, SharedBuffer*);
-    void addOptGroup(HTMLOptGroupElement&, bool enableExtraStyling, SharedBuffer*);
-    void addSeparator(HTMLHRElement&, bool enableExtraStyling, SharedBuffer*);
+    void addOption(HTMLOptionElement&, int& listIndex, bool enableExtraStyling, SharedBuffer*);
+    void addOptGroup(HTMLOptGroupElement&, int& listIndex, bool enableExtraStyling, SharedBuffer*);
+    void addSeparator(HTMLHRElement&, int& listIndex, bool enableExtraStyling, SharedBuffer*);
     void addElementStyle(HTMLElement&, bool enableExtraStyling, SharedBuffer*);
 
     // PopupMenu functions:
