@@ -282,8 +282,6 @@ class SyncBackendHostImpl
   void HandleLocalSetPassphraseEncryptionOnFrontendLoop(
       const syncer::SyncEncryptionHandler::NigoriState& nigori_state);
 
-  void HandleStopSyncingPermanentlyOnFrontendLoop();
-
   // Dispatched to from OnConnectionStatusChange to handle updating
   // frontend UI components.
   void HandleConnectionStatusChangeOnFrontendLoop(

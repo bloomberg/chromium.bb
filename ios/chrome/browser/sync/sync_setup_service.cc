@@ -192,5 +192,5 @@ void SyncSetupService::SetSyncEnabledWithoutChangingDatatypes(
   if (sync_enabled)
     sync_service_->RequestStart();
   else
-    sync_service_->RequestStop();
+    sync_service_->RequestStop(sync_driver::SyncService::KEEP_DATA);
 }

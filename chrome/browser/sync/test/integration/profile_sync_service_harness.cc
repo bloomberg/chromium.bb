@@ -180,6 +180,9 @@ bool ProfileSyncServiceHarness::SetupSync(
     LOG(ERROR) << "Unsupported profile signin type.";
   }
 
+  // Now that auth is completed, request that sync actually start.
+  service()->RequestStart();
+
   if (!AwaitBackendInitialization()) {
     return false;
   }
@@ -417,7 +420,7 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
     return false;
   }
 
-  service()->DisableForUser();
+  service()->RequestStop(ProfileSyncService::CLEAR_DATA);
 
   DVLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all "
            << "datatypes on " << profile_debug_name_;

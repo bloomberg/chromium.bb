@@ -450,7 +450,7 @@ TEST_F(SyncSetupHandlerTest,
   // It's important to tell sync the user cancelled the setup flow before we
   // tell it we're through with the setup progress.
   testing::InSequence seq;
-  EXPECT_CALL(*mock_pss_, DisableForUser());
+  EXPECT_CALL(*mock_pss_, RequestStop(ProfileSyncService::CLEAR_DATA));
   EXPECT_CALL(*mock_pss_, SetSetupInProgress(false));
 
   handler_->CloseSyncSetup();
@@ -558,7 +558,7 @@ TEST_F(SyncSetupHandlerTest, TestSyncNothing) {
       NULL, SYNC_NOTHING, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
   base::ListValue list_args;
   list_args.Append(new base::StringValue(args));
-  EXPECT_CALL(*mock_pss_, DisableForUser());
+  EXPECT_CALL(*mock_pss_, RequestStop(ProfileSyncService::CLEAR_DATA));
   SetupInitializedProfileSyncService();
   handler_->HandleConfigure(&list_args);
 

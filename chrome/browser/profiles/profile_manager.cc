@@ -1240,7 +1240,7 @@ void ProfileManager::FinishDeletingProfile(
     if (ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
         profile)) {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          profile)->DisableForUser();
+          profile)->RequestStop(ProfileSyncService::CLEAR_DATA);
     }
 
     ProfileMetrics::LogProfileDelete(cache.ProfileIsAuthenticatedAtIndex(

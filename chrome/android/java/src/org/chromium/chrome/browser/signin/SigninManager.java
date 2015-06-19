@@ -403,12 +403,13 @@ public class SigninManager {
             return;
         }
 
-        // Cache the signed-in account name.
-        ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
-
         // Tell the native side that sign-in has completed.
         nativeOnSignInCompleted(mNativeSigninManagerAndroid, mSignInAccount.name,
                                 accountIdsAndNames.mAccountIds, accountIdsAndNames.mAccountNames);
+
+        // Cache the signed-in account name. This must be done after the native call, otherwise
+        // sync tries to start without being signed in natively and crashes.
+        ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
 
         // Register for invalidations.
         InvalidationController invalidationController = InvalidationController.get(mContext);

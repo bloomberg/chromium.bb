@@ -311,7 +311,7 @@ void ProfileSyncService::Initialize() {
 
   // If sync isn't allowed, the only thing to do is to turn it off.
   if (!IsSyncAllowed()) {
-    DisableForUser();
+    RequestStop(CLEAR_DATA);
     return;
   }
 
@@ -319,7 +319,7 @@ void ProfileSyncService::Initialize() {
 
   if (!HasSyncSetupCompleted() || !IsSignedIn()) {
     // Clean up in case of previous crash / setup abort / signout.
-    DisableForUser();
+    StopImpl(CLEAR_DATA);
   }
 
   TrySyncDatatypePrefRecovery();
@@ -911,12 +911,24 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   sync_prefs_.SetCleanShutdown(true);
 }
 
-void ProfileSyncService::DisableForUser() {
-  // Clear prefs (including SyncSetupHasCompleted) before shutting down so
-  // PSS clients don't think we're set up while we're shutting down.
-  sync_prefs_.ClearPreferences();
-  ClearUnrecoverableError();
-  ShutdownImpl(syncer::DISABLE_SYNC);
+void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
+  switch (data_fate) {
+    case KEEP_DATA:
+      // TODO(maxbogue): Investigate whether this logic can/should be moved
+      // into ShutdownImpl or SyncBackendHost itself.
+      if (HasSyncingBackend()) {
+        backend_->UnregisterInvalidationIds();
+      }
+      ShutdownImpl(syncer::STOP_SYNC);
+      break;
+    case CLEAR_DATA:
+      // Clear prefs (including SyncSetupHasCompleted) before shutting down so
+      // PSS clients don't think we're set up while we're shutting down.
+      sync_prefs_.ClearPreferences();
+      ClearUnrecoverableError();
+      ShutdownImpl(syncer::DISABLE_SYNC);
+      break;
+  }
 }
 
 bool ProfileSyncService::HasSyncSetupCompleted() const {
@@ -1247,11 +1259,6 @@ void ProfileSyncService::OnConnectionStatusChange(
   }
 }
 
-void ProfileSyncService::StopSyncingPermanently() {
-  sync_prefs_.SetSyncRequested(false);
-  DisableForUser();
-}
-
 void ProfileSyncService::OnPassphraseRequired(
     syncer::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
@@ -1359,7 +1366,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.
       if (startup_controller_->setup_in_progress()) {
-        StopSyncingPermanently();
+        RequestStop(CLEAR_DATA);
         expect_sync_configuration_aborted_ = true;
       }
       // Trigger an unrecoverable error to stop syncing.
@@ -1372,7 +1379,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       backup_rollback_controller_->OnRollbackReceived();
       // Fall through to shutdown backend and sign user out.
     case syncer::DISABLE_SYNC_ON_CLIENT:
-      StopSyncingPermanently();
+      RequestStop(CLEAR_DATA);
 #if !defined(OS_CHROMEOS)
       // On desktop Chrome, sign out the user after a dashboard clear.
       // Skip sign out on ChromeOS/Android.
@@ -2218,7 +2225,7 @@ syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   if (is_sync_managed) {
-    DisableForUser();
+    StopImpl(CLEAR_DATA);
   } else {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
     startup_controller_->TryStart();
@@ -2247,7 +2254,7 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
 void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
                                          const std::string& username) {
   sync_disabled_by_admin_ = false;
-  DisableForUser();
+  RequestStop(CLEAR_DATA);
 
   if (browser_sync::BackupRollbackController::IsBackupEnabled()) {
     need_backup_ = true;
@@ -2440,12 +2447,9 @@ bool ProfileSyncService::IsManaged() const {
   return sync_prefs_.IsManaged() || sync_disabled_by_admin_;
 }
 
-void ProfileSyncService::RequestStop() {
+void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
   sync_prefs_.SetSyncRequested(false);
-  if (HasSyncingBackend()) {
-    backend_->UnregisterInvalidationIds();
-  }
-  ShutdownImpl(syncer::STOP_SYNC);
+  StopImpl(data_fate);
 }
 
 bool ProfileSyncService::IsSyncRequested() const {

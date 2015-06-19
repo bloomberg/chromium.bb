@@ -163,7 +163,7 @@ void ProfileSyncServiceAndroid::DisableSync(JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't need to do anything if we're already disabled.
   if (sync_service_->IsSyncRequested()) {
-    sync_service_->RequestStop();
+    sync_service_->RequestStop(ProfileSyncService::KEEP_DATA);
   } else {
     DVLOG(2)
         << "Ignoring call to DisableSync() because sync is already disabled";
@@ -190,10 +190,7 @@ void ProfileSyncServiceAndroid::SignInSync(JNIEnv* env, jobject) {
 void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
-  sync_service_->DisableForUser();
-
-  // Need to reset sync requested flag manually
-  sync_prefs_->SetSyncRequested(true);
+  sync_service_->RequestStop(ProfileSyncService::CLEAR_DATA);
 }
 
 void ProfileSyncServiceAndroid::FlushDirectory(JNIEnv* env, jobject) {

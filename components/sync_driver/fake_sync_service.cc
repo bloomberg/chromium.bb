@@ -44,10 +44,8 @@ bool FakeSyncService::CanSyncStart() const {
   return false;
 }
 
-void FakeSyncService::DisableForUser() {
-}
-
-void FakeSyncService::RequestStop() {
+void FakeSyncService::RequestStop(
+    sync_driver::SyncService::SyncStopDataFate data_fate) {
 }
 
 void FakeSyncService::RequestStart() {

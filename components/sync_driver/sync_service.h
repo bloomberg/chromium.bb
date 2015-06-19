@@ -27,6 +27,14 @@ class SyncService : public sync_driver::DataTypeEncryptionHandler {
                // during sync setup and provided a passphrase.
   };
 
+  // Passed as an argument to RequestStop to control whether or not the sync
+  // backend should clear its data directory when it shuts down. See
+  // RequestStop for more information.
+  enum SyncStopDataFate {
+    KEEP_DATA,
+    CLEAR_DATA,
+  };
+
   ~SyncService() override {}
 
   // Whether sync is enabled by user or not. This does not necessarily mean
@@ -73,11 +81,11 @@ class SyncService : public sync_driver::DataTypeEncryptionHandler {
   // due to http://crbug.com/121755).
   virtual bool CanSyncStart() const = 0;
 
-  // Disables sync for user. Use ShowLoginDialog to enable.
-  virtual void DisableForUser() = 0;
-
-  // Stops sync at the user's request.
-  virtual void RequestStop() = 0;
+  // Stops sync at the user's request. |data_fate| controls whether the sync
+  // backend should clear its data directory when it shuts down. Generally
+  // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
+  // when they sign out of the profile entirely.
+  virtual void RequestStop(SyncStopDataFate data_fate) = 0;
 
   // The user requests that sync start. This only actually starts sync if
   // IsSyncAllowed is true and the user is signed in. Once sync starts,

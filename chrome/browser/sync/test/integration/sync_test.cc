@@ -579,7 +579,7 @@ bool SyncTest::SetupSync() {
 
 void SyncTest::TearDownOnMainThread() {
   for (size_t i = 0; i < clients_.size(); ++i) {
-    clients_[i]->service()->DisableForUser();
+    clients_[i]->service()->RequestStop(ProfileSyncService::CLEAR_DATA);
   }
 
   content::WindowedNotificationObserver observer(

@@ -39,7 +39,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   static scoped_ptr<KeyedService> BuildMockProfileSyncService(
       content::BrowserContext* profile);
 
-  MOCK_METHOD0(DisableForUser, void());
   MOCK_METHOD4(OnBackendInitialized,
       void(const syncer::WeakHandle<syncer::JsBackend>&,
            const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
@@ -65,6 +64,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
   MOCK_METHOD1(DeactivateDataType, void(syncer::ModelType));
   MOCK_METHOD0(RequestStart, void());
+  MOCK_METHOD1(RequestStop, void(ProfileSyncService::SyncStopDataFate));
 
   MOCK_METHOD1(AddObserver, void(sync_driver::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(sync_driver::SyncServiceObserver*));

@@ -278,8 +278,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   bool CanSyncStart() const override;
-  void DisableForUser() override;
-  void RequestStop() override;
+  void RequestStop(SyncStopDataFate data_fate) override;
   void RequestStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
@@ -387,9 +386,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // sync, as well as their states.
   void GetDataTypeControllerStates(
       sync_driver::DataTypeController::StateMap* state_map) const;
-
-  // Disables sync for the user and prevents it from starting on next restart.
-  virtual void StopSyncingPermanently();
 
   // SyncFrontend implementation.
   void OnBackendInitialized(
@@ -786,6 +782,11 @@ class ProfileSyncService : public sync_driver::SyncService,
   friend class SyncTest;
   friend class TestProfileSyncService;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
+
+  // Stops the sync engine. Does NOT set IsSyncRequested to false. Use
+  // RequestStop for that. |data_fate| controls whether the local sync data is
+  // deleted or kept when the engine shuts down.
+  void StopImpl(SyncStopDataFate data_fate);
 
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);

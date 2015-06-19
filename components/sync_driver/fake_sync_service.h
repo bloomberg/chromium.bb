@@ -27,8 +27,8 @@ class FakeSyncService : public sync_driver::SyncService {
   bool HasObserver(
       const sync_driver::SyncServiceObserver* observer) const override;
   bool CanSyncStart() const override;
-  void DisableForUser() override;
-  void RequestStop() override;
+  void RequestStop(
+      sync_driver::SyncService::SyncStopDataFate data_fate) override;
   void RequestStart() override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
