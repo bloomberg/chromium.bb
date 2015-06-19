@@ -61,7 +61,9 @@ function createPlatformDelegate(strings) {
     strings: {
       UI_LOCALE: getString('language'),
       LINK_TO_WEBSTORE: getString('LINK_TO_WEBSTORE'),
-      INSTALLATION_FAILED_MESSAGE: getString('INSTALLATION_FAILED_MESSAGE')
+      INSTALLATION_FAILED_MESSAGE: getString('INSTALLATION_FAILED_MESSAGE'),
+      LOADING_SPINNER_ALT: getString('LOADING_SPINNER_ALT'),
+      INSTALLING_SPINNER_ALT: getString('INSTALLING_SPINNER_ALT')
     },
 
     metricsImpl: {

@@ -13,6 +13,7 @@
           '../../../../ui/webui/resources/js/load_time_data.js',
         ],
         'externs': [
+          '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/chrome_extensions.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
           '../externs/chrome_webstore_widget_private.js',

@@ -50,6 +50,10 @@ WebstoreWidgetPrivateGetStringsFunction::Run() {
                 IDS_FILE_BROWSER_SUGGEST_DIALOG_INSTALLATION_FAILED);
   SetL10nString(dict, "LINK_TO_WEBSTORE",
                 IDS_FILE_BROWSER_SUGGEST_DIALOG_LINK_TO_WEBSTORE);
+  SetL10nString(dict, "LOADING_SPINNER_ALT",
+                IDS_WEBSTORE_WIDGET_LOADING_SPINNER_ALT);
+  SetL10nString(dict, "INSTALLING_SPINNER_ALT",
+                IDS_WEBSTORE_WIDGET_INSTALLING_SPINNER_ALT);
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict);

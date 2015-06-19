@@ -87,9 +87,6 @@ function CWSWidgetContainer(document, parentNode, delegate, params) {
    */
   var spinnerLayer = document.createElement('div');
   spinnerLayer.className = 'cws-widget-spinner-layer';
-  spinnerLayer.setAttribute('role', 'img');
-  // TODO(tbarzic): Set something meaningfull.
-  spinnerLayer.setAttribute('alt', '');
   parentNode.appendChild(spinnerLayer);
 
   /** @private {!CWSWidgetContainer.SpinnerLayerController} */
@@ -224,7 +221,9 @@ function CWSWidgetContainer(document, parentNode, delegate, params) {
  * @typedef {{
  *   UI_LOCALE: string,
  *   LINK_TO_WEBSTORE: string,
- *   INSTALLATION_FAILED_MESSAGE: string
+ *   INSTALLATION_FAILED_MESSAGE: string,
+ *   LOADING_SPINNER_ALT: string,
+ *   INSTALLING_SPINNER_ALT: string
  * }}
  */
 CWSWidgetContainer.Strings;
@@ -369,6 +368,8 @@ CWSWidgetContainer.prototype.ready = function() {
       return;
     }
 
+    this.spinnerLayerController_.setAltText(
+        this.delegate_.strings.LOADING_SPINNER_ALT);
     this.spinnerLayerController_.setVisible(true);
 
     this.metricsRecorder_.recordShowDialog();
@@ -442,6 +443,8 @@ CWSWidgetContainer.prototype.start = function(options, webStoreUrl) {
     this.webviewContainer_.appendChild(this.webview_);
 
     this.spinnerLayerController_.setElementToFocusOnHide(this.webview_);
+    this.spinnerLayerController_.setAltText(
+        this.delegate_.strings.LOADING_SPINNER_ALT);
     this.spinnerLayerController_.setVisible(true);
 
     this.webviewClient_ = new CWSContainerClient(
@@ -545,6 +548,8 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
   this.appInstaller_ = new AppInstaller(itemId, this.delegate_);
   this.appInstaller_.install(this.onItemInstalled_.bind(this));
 
+  this.spinnerLayerController_.setAltText(
+      this.delegate_.strings.INSTALLING_SPINNER_ALT);
   this.spinnerLayerController_.setVisible(true);
   this.state_ = CWSWidgetContainer.State.INSTALLING;
 };
@@ -809,6 +814,15 @@ CWSWidgetContainer.SpinnerLayerController.prototype.reset = function() {
   this.focusOnHide_ = null;
   if (this.clearTransision_)
     this.clearTransition_();
+};
+
+/**
+ * Sets alt text for the spinner layer.
+ * @param {string} text
+ */
+CWSWidgetContainer.SpinnerLayerController.prototype.setAltText = function(
+    text) {
+  this.spinnerLayer_.setAttribute('aria-label', text);
 };
 
 /**

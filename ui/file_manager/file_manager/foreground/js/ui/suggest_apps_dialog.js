@@ -132,7 +132,9 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
     strings: {
       UI_LOCALE: util.getCurrentLocaleOrDefault(),
       LINK_TO_WEBSTORE: str('SUGGEST_DIALOG_LINK_TO_WEBSTORE'),
-      INSTALLATION_FAILED_MESSAGE: str('SUGGEST_DIALOG_INSTALLATION_FAILED')
+      INSTALLATION_FAILED_MESSAGE: str('SUGGEST_DIALOG_INSTALLATION_FAILED'),
+      LOADING_SPINNER_ALT: str('SUGGEST_DIALOG_LOADING_SPINNER_ALT'),
+      INSTALLING_SPINNER_ALT: str('SUGGEST_DIALOG_INSTALLING_SPINNER_ALT')
     },
 
     metricsImpl: metrics,
