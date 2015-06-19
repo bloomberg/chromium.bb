@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(shadi): create a common macro for end-to-end tests that need to be
+// disabled in regular bots.
+#define E2E_ONLY(x) DISABLED_E2ETest##x
+
+#include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -176,4 +181,28 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Merge) {
 
   ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
   ASSERT_EQ(3, GetPasswordCount(0));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(TwoClientAddPass)) {
+  ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
+  // All profiles should sync same passwords.
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms()) <<
+      "Initial password forms did not match for all profiles";
+  const int init_password_count = GetPasswordCount(0);
+
+  // Add one new password per profile. A unique form is created for each to
+  // prevent them from overwriting each other.
+  for (int i = 0; i < num_clients(); ++i) {
+    AddLogin(GetPasswordStore(i),
+             CreateTestPasswordForm(base::RandInt(0, kint32max)));
+  }
+
+  // Blocks and waits for password forms in all profiles to match.
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
+
+  // Check that total number of passwords is as expected.
+  for (int i = 0; i < num_clients(); ++i) {
+    ASSERT_EQ(GetPasswordCount(i), init_password_count + num_clients()) <<
+        "Total password count is wrong.";
+  }
 }
