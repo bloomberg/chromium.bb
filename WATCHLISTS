@@ -272,7 +272,7 @@
     'custom_tabs': {
       'filepath': 'chrome/android/java_staging/src/org/chromium/chrome/browser/customtabs/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/customtabs/',
-    }
+    },
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
