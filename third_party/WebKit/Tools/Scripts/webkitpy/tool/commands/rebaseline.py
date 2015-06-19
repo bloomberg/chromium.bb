@@ -347,8 +347,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             stderr = self._tool.executive.run_command([self._tool.path()] + verbose_args + args, cwd=self._tool.scm().checkout_root, return_stderr=True)
             for line in stderr.splitlines():
                 _log.warning(line)
-        except ScriptError, e:
-            _log.error(e)
+        except ScriptError:
+            traceback.print_exc(file=sys.stderr)
 
     def _builders_to_fetch_from(self, builders_to_check):
         # This routine returns the subset of builders that will cover all of the baseline search paths
@@ -533,6 +533,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._run_in_parallel_and_update_scm(self._optimize_baselines(test_prefix_list, options.verbose))
 
     def _suffixes_for_actual_failures(self, test, builder_name, existing_suffixes):
+        if builder_name not in self.builder_data():
+            return set()
         actual_results = self.builder_data()[builder_name].actual_results(test)
         if not actual_results:
             return set()
@@ -868,8 +870,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 tool.executive.run_command(['git', 'pull'])
 
                 self._run_git_cl_command(options, ['dcommit', '-f'])
-        except Exception as e:
-            _log.error(e)
+        except:
+            traceback.print_exc(file=sys.stderr)
         finally:
             if did_finish:
                 self._run_git_cl_command(options, ['set_close'])
