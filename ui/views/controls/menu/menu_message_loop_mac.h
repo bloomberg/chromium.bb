@@ -8,6 +8,10 @@
 #include "base/compiler_specific.h"
 #include "ui/views/controls/menu/menu_message_loop.h"
 
+namespace base {
+class RunLoop;
+}
+
 namespace views {
 
 class MenuMessageLoopMac : public MenuMessageLoop {
@@ -26,6 +30,8 @@ class MenuMessageLoopMac : public MenuMessageLoop {
   void ClearOwner() override;
 
  private:
+  base::RunLoop* run_loop_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(MenuMessageLoopMac);
 };
 

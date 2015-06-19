@@ -897,7 +897,6 @@
           # views_unittests not yet compiling on Mac. http://crbug.com/378134
           'sources!': [
             'bubble/bubble_window_targeter_unittest.cc',
-            'controls/menu/menu_controller_unittest.cc',
             'controls/native/native_view_host_unittest.cc',
             'focus/focus_manager_unittest.cc',
             'ime/input_method_bridge_unittest.cc',

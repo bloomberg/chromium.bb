@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_message_loop_mac.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -34,11 +35,13 @@ void MenuMessageLoopMac::Run(MenuController* controller,
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow(loop);
   base::RunLoop run_loop;
+  base::AutoReset<base::RunLoop*> reset_run_loop(&run_loop_, &run_loop);
   run_loop.Run();
 }
 
 void MenuMessageLoopMac::QuitNow() {
-  base::MessageLoop::current()->QuitNow();
+  DCHECK(run_loop_);
+  run_loop_->Quit();
 }
 
 void MenuMessageLoopMac::ClearOwner() {

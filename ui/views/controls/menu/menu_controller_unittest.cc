@@ -6,15 +6,18 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/scoped_window_targeter.h"
-#include "ui/aura/window.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/views_test_base.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/scoped_window_targeter.h"
+#include "ui/aura/window.h"
 #include "ui/wm/public/dispatcher_client.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/message_loop/message_pump_dispatcher.h"
@@ -26,6 +29,8 @@
 #include "ui/events/test/events_test_utils_x11.h"
 #elif defined(USE_OZONE)
 #include "ui/events/event.h"
+#elif defined(OS_MACOSX)
+#include "ui/events/test/event_generator.h"
 #endif
 
 namespace views {
@@ -58,6 +63,7 @@ class TestPlatformEventSource : public ui::PlatformEventSource {
   DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
 };
 
+#if defined(USE_AURA)
 class TestDispatcherClient : public aura::client::DispatcherClient {
  public:
   TestDispatcherClient() : dispatcher_(nullptr) {}
@@ -93,6 +99,7 @@ class TestDispatcherClient : public aura::client::DispatcherClient {
 
   DISALLOW_COPY_AND_ASSIGN(TestDispatcherClient);
 };
+#endif  // USE_AURA
 
 }  // namespace
 
@@ -150,8 +157,10 @@ class MenuControllerTest : public ViewsTestBase {
     widget->Init(params);
     widget->Show();
 
+#if defined(USE_AURA)
     aura::client::SetDispatcherClient(
         widget->GetNativeWindow()->GetRootWindow(), &dispatcher_client_);
+#endif
     return widget.Pass();
   }
 
@@ -228,6 +237,16 @@ class MenuControllerTest : public ViewsTestBase {
 #elif defined(USE_OZONE)
     ui::KeyEvent event(' ', ui::VKEY_SPACE, ui::EF_NONE);
     event_source_.Dispatch(&event);
+#elif defined(OS_MACOSX) && !defined(USE_AURA)
+    // Since this is not an interactive test, on Mac there will be no key
+    // window. Any system event will just get ignored, so use the EventGenerator
+    // to generate a dummy event. Without Aura, these will be native events.
+    gfx::NativeWindow window = controller_->owner()->GetNativeWindow();
+    ui::test::EventGenerator generator(window, window);
+    // Send "up", since this will not activate a menu item. But note that the
+    // test has already set exit_type_ = EXIT_ALL just before the first call
+    // to this function.
+    generator.PressKey(ui::VKEY_UP, 0);
 #else
 #error Unsupported platform
 #endif
@@ -249,7 +268,9 @@ class MenuControllerTest : public ViewsTestBase {
   MenuController* controller_;
   scoped_ptr<base::RunLoop> run_loop_;
   TestPlatformEventSource event_source_;
+#if defined(USE_AURA)
   TestDispatcherClient dispatcher_client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };
