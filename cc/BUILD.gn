@@ -433,8 +433,6 @@ component("cc") {
     "scheduler/video_frame_controller.h",
     "tiles/eviction_tile_priority_queue.cc",
     "tiles/eviction_tile_priority_queue.h",
-    "tiles/layer_tiling_data.cc",
-    "tiles/layer_tiling_data.h",
     "tiles/picture_layer_tiling.cc",
     "tiles/picture_layer_tiling.h",
     "tiles/picture_layer_tiling_set.cc",
