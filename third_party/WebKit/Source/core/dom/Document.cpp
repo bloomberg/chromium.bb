@@ -1711,6 +1711,30 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 }
 
+#if ENABLE(ASSERT)
+static void assertLayoutTreeUpdated(Node& root)
+{
+    for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
+        // We leave some nodes with dirty bits in the tree because they don't
+        // matter like Comment and ProcessingInstruction nodes.
+        // TODO(esprehn): Don't even mark those nodes as needing recalcs in the
+        // first place.
+        if (!node.isElementNode()
+            && !node.isTextNode()
+            && !node.isShadowRoot()
+            && !node.isDocumentNode())
+            continue;
+        ASSERT(!node.needsStyleRecalc());
+        ASSERT(!node.childNeedsStyleRecalc());
+        ASSERT(!node.childNeedsDistributionRecalc());
+        ASSERT(!node.needsStyleInvalidation());
+        ASSERT(!node.childNeedsStyleInvalidation());
+        for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+            assertLayoutTreeUpdated(*shadowRoot);
+    }
+}
+#endif
+
 void Document::updateLayoutTree(StyleRecalcChange change)
 {
     ASSERT(isMainThread());
@@ -1778,6 +1802,10 @@ void Document::updateLayoutTree(StyleRecalcChange change)
 
     TRACE_EVENT_END1("blink,devtools.timeline", "UpdateLayoutTree", "elementCount", m_styleRecalcElementCounter);
     InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);
+
+#if ENABLE(ASSERT)
+    assertLayoutTreeUpdated(*this);
+#endif
 }
 
 void Document::updateStyle(StyleRecalcChange change)
