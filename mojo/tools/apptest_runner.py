@@ -18,14 +18,18 @@ from mopy.config import Config
 
 def main():
   parser = argparse.ArgumentParser(description="An application test runner.")
-  parser.add_argument("test_list_file", type=file,
-                      help="a file listing apptests to run")
-  parser.add_argument("build_dir", type=str, help="the build output directory")
-  parser.add_argument("--verbose", default=False, action='store_true')
-  parser.add_argument('--repeat_count', default=1, metavar='INT',
-                      action='store', type=int)
+  parser.add_argument("build_dir", type=str, help="The build output directory.")
+  parser.add_argument("--verbose", default=False, action='store_true',
+                      help="Print additional logging information.")
+  parser.add_argument('--repeat-count', default=1, metavar='INT',
+                      action='store', type=int,
+                      help="The number of times to repeat the set of tests.")
   parser.add_argument('--write-full-results-to', metavar='FILENAME',
-                      help='Path to write the JSON list of full results.')
+                      help='The path to write the JSON list of full results.')
+  parser.add_argument("--test-list-file", metavar='FILENAME', type=file,
+                      default=os.path.abspath(os.path.join(__file__, os.pardir,
+                                                           "data", "apptests")),
+                      help="The file listing apptests to run.")
   args = parser.parse_args()
 
   gtest.set_color()

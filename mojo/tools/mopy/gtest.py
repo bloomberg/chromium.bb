@@ -74,8 +74,10 @@ def _run_apptest(config, shell, args, apptest):
 
 def _get_fixtures(config, shell, args, apptest):
   """Returns an apptest's "Suite.Fixture" list via --gtest_list_tests output."""
+  arguments = args + ["--gtest_list_tests"]
+  command = _build_command_line(config, args, apptest)
+  logging.getLogger().debug("Command: %s" % " ".join(command))
   try:
-    arguments = args + ["--gtest_list_tests"]
     tests = _run_test_with_timeout(config, shell, arguments, apptest)
     logging.getLogger().debug("Tests for %s:\n%s" % (apptest, tests))
     # Remove log lines from the output and ensure it matches known formatting.
@@ -93,7 +95,7 @@ def _get_fixtures(config, shell, args, apptest):
       test_list.append(suite + line.strip())
     return test_list
   except Exception as e:
-    _print_error(_build_command_line(config, arguments, apptest), e)
+    _print_error(command, e)
   return []
 
 
@@ -111,9 +113,10 @@ def _print_error(command_line, error):
 def _build_command_line(config, args, apptest):
   """Build the apptest command line. This value isn't executed on Android."""
   paths = Paths(config)
-  # On linux always run with xvfb.
-  prefix = [paths.xvfb, paths.build_dir] if (config.target_os ==
-                                             Config.OS_LINUX) else []
+  # On Linux, always run tests with xvfb, but not for --gtest_list_tests.
+  use_xvfb = (config.target_os == Config.OS_LINUX and
+              not "--gtest_list_tests" in args)
+  prefix = [paths.xvfb, paths.build_dir] if use_xvfb else []
   return prefix + [paths.mojo_runner] + args + [apptest]
 
 

@@ -13,11 +13,10 @@ import common
 
 def main_run(args):
   runner = os.path.join(common.SRC_DIR, 'mojo', 'tools', 'apptest_runner.py')
-  tests = os.path.join(common.SRC_DIR, 'mojo', 'tools', 'data', 'apptests')
   build_dir = os.path.join(common.SRC_DIR, 'out', args.build_config_fs)
 
   with common.temporary_file() as tempfile_path:
-    rc = common.run_command([runner, tests, build_dir, '--verbose',
+    rc = common.run_command([runner, build_dir, '--verbose',
                              '--write-full-results-to', tempfile_path])
     with open(tempfile_path) as f:
       results = json.load(f)
