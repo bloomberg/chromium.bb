@@ -87,7 +87,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/bookmark_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/certificate_mime_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/cert_verify_status_android_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/connection_security_helper_security_levels_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/connection_security_security_levels_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/console_message_level_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_gamepad_mapping"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_setting_java"/>
