@@ -706,7 +706,7 @@
         },
       ],
     }],
-    ['OS == "win" or OS == "linux"', {
+    ['OS == "win" or (OS == "linux" and use_x11==1)', {
       'targets': [
         {
           # TODO(kbr): port this target to the GN build.
