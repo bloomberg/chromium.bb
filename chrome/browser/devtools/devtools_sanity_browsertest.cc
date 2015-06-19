@@ -707,21 +707,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
-// Failing on msan bot: crbug.com/500777
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
-    DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh
-#else
-#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
-    TestScriptsTabIsPopulatedOnInspectedPageRefresh
-#endif
-
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(
     DevToolsSanityTest,
-    MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+    TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }
@@ -794,15 +785,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkTiming) {
   RunTest("testNetworkTiming", kSlowTestPage);
 }
 
-// Failing on msan bot: crbug.com/500777
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestNetworkSize DISABLED_TestNetworkSize
-#else
-#define MAYBE_TestNetworkSize TestNetworkSize
-#endif
-
 // Tests network size.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestNetworkSize) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSize) {
   RunTest("testNetworkSize", kChunkedTestPage);
 }
 
@@ -811,22 +795,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSyncSize) {
   RunTest("testNetworkSyncSize", kChunkedTestPage);
 }
 
-// Failing on msan bot: crbug.com/500777
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestNetworkRawHeadersText DISABLED_TestNetworkRawHeadersText
-#else
-#define MAYBE_TestNetworkRawHeadersText TestNetworkRawHeadersText
-#endif
-
 // Tests raw headers text.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestNetworkRawHeadersText) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
   RunTest("testNetworkRawHeadersText", kChunkedTestPage);
 }
 
 // Tests that console messages are not duplicated on navigation back.
-#if defined(OS_WIN) || defined(MEMORY_SANITIZER)
+#if defined(OS_WIN)
 // Flaking on windows swarm try runs: crbug.com/409285.
-// Failing on msan bot: crbug.com/500777
 #define MAYBE_TestConsoleOnNavigateBack DISABLED_TestConsoleOnNavigateBack
 #else
 #define MAYBE_TestConsoleOnNavigateBack TestConsoleOnNavigateBack
