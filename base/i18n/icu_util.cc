@@ -23,6 +23,10 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/apk_assets.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #endif
@@ -57,6 +61,9 @@ bool g_called_once = false;
 // build pkg configurations, etc). 'l' stands for Little Endian.
 // This variable is exported through the header file.
 const char kIcuDataFileName[] = "icudtl.dat";
+#if defined(OS_ANDROID)
+const char kAndroidAssetsIcuDataFileName[] = "assets/icudtl.dat";
+#endif
 
 // File handle intentionally never closed. Not using File here because its
 // Windows implementation guards against two instances owning the same
@@ -75,6 +82,15 @@ void LazyInitIcuDataFile() {
   if (g_icudtl_pf != kInvalidPlatformFile) {
     return;
   }
+#if defined(OS_ANDROID)
+  int fd = base::android::OpenApkAsset(kAndroidAssetsIcuDataFileName,
+                                       &g_icudtl_region);
+  g_icudtl_pf = fd;
+  if (fd != -1) {
+    return;
+  }
+// For unit tests, data file is located on disk, so try there as a fallback.
+#endif  // defined(OS_ANDROID)
 #if !defined(OS_MACOSX)
   FilePath data_path;
 #if defined(OS_WIN)

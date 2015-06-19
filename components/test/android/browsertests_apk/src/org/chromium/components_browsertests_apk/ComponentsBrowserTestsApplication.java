@@ -15,8 +15,8 @@ import org.chromium.base.ResourceExtractor;
  */
 public class ComponentsBrowserTestsApplication extends BaseChromiumApplication {
     private static final String[] MANDATORY_PAK_FILES =
-            new String[] {"components_tests_resources.pak", "content_shell.pak", "icudtl.dat",
-                    "natives_blob.bin", "snapshot_blob.bin"};
+            new String[] {"components_tests_resources.pak", "content_shell.pak", "natives_blob.bin",
+                    "snapshot_blob.bin"};
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "components_shell";
 
     @Override

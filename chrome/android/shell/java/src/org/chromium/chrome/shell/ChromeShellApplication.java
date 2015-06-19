@@ -42,7 +42,6 @@ public class ChromeShellApplication extends ChromiumApplication {
         "en-US.pak",
         "resources.pak",
         "chrome_100_percent.pak",
-        "icudtl.dat",
         "natives_blob.bin",
         "snapshot_blob.bin"
     };

@@ -17,7 +17,6 @@ public class ContentBrowserTestsApplication extends BaseChromiumApplication {
 
     private static final String[] MANDATORY_PAK_FILES = new String[] {
         "content_shell.pak",
-        "icudtl.dat",
         "natives_blob.bin",
         "snapshot_blob.bin"
     };

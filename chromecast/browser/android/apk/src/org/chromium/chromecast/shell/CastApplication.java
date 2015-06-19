@@ -26,7 +26,6 @@ public class CastApplication extends ContentApplication {
 
     private static final String[] MANDATORY_PAK_FILES = new String[] {
         "cast_shell.pak",
-        "icudtl.dat",
         "natives_blob.bin",
         "snapshot_blob.bin"
     };

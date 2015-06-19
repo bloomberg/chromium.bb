@@ -1609,6 +1609,12 @@ template("android_apk") {
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
     create_density_splits = _create_density_splits
+    if (defined(invoker.extensions_to_not_compress)) {
+      extensions_to_not_compress = invoker.extensions_to_not_compress
+    } else {
+      # Allow icu data to be loaded directly from the .apk.
+      extensions_to_not_compress = "dat"
+    }
 
     version_code = _version_code
     version_name = _version_name

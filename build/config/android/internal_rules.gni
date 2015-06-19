@@ -678,6 +678,12 @@ template("create_apk") {
         outputs += [ "${_resource_packaged_apk_path}-${_density}" ]
       }
     }
+    if (defined(invoker.extensions_to_not_compress)) {
+      args += [
+        "--no-compress",
+        invoker.extensions_to_not_compress,
+      ]
+    }
   }
 
   package_target = "${target_name}__package"
