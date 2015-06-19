@@ -685,8 +685,9 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
                                &fill_data);
       if (logger)
         logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
-      UMA_HISTOGRAM_BOOLEAN("PasswordManager.OfferedToFillAndroidCredentials",
-                            ContainsAndroidCredentials(fill_data));
+      UMA_HISTOGRAM_BOOLEAN(
+          "PasswordManager.FillSuggestionsIncludeAndroidAppCredentials",
+          ContainsAndroidCredentials(fill_data));
       driver->FillPasswordForm(fill_data);
       break;
     }
