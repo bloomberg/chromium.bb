@@ -339,15 +339,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Recent regressions have caused these to fail on multiple devices
     self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
         ['android', 'android-content-shell'], bug=499555)
-    self.Fail('conformance/textures/' +
-        'tex-image-and-sub-image-2d-with-video-rgb565.html',
-        ['android', 'android-content-shell'], bug=499555)
-    self.Fail('conformance/textures/' +
-        'tex-image-and-sub-image-2d-with-video-rgba4444.html',
-        ['android', 'android-content-shell'], bug=499555)
-    self.Fail('conformance/textures/' +
-        'tex-image-and-sub-image-2d-with-video-rgba5551.html',
-        ['android', 'android-content-shell'], bug=499555)
     # These are failing on the Nexus 5 and 6
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
               ['android', 'qualcomm'], bug=499555)
@@ -367,6 +358,18 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-video-rgb565.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-video-rgba4444.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/' +
+              'tex-image-and-sub-image-2d-with-video-rgba5551.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     # bindBufferBadArgs is causing the GPU thread to crash, taking
     # down the WebView shell, causing the next test to fail and
     # subsequent tests to be aborted.
@@ -429,8 +432,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/' +
               'tex-image-and-sub-image-2d-with-webgl-canvas-rgba5551.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/texture-npot-video.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     # Nexus 9 failures
     self.Fail('conformance/extensions/oes-texture-float-with-video.html',
               ['android', 'nvidia'], bug=499555) # flaky
@@ -438,13 +439,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
         ['android'])
-    # The following test times out on Android bot.
-    self.Fail('conformance/uniforms/gl-uniform-arrays.html',
-        ['android'], bug=369300)
-    self.Fail('conformance/glsl/misc/empty_main.vert.html',
-        ['android'], bug=315976)
-    self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
-        ['android'], bug=315976)
 
     # ChromeOS: affecting all devices.
     self.Fail('conformance/extensions/webgl-depth-texture.html',
