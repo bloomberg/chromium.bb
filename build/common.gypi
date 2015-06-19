@@ -5760,6 +5760,17 @@
                 ],
               },
             }],
+            ['clang==1 and "<!(python <(DEPTH)/build/win/use_ansi_codes.py)"=="True"', {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  # cmd.exe doesn't understand ANSI escape codes by default,
+                  # so only enable them if something emulating them is around.
+                  '-fansi-escape-codes',
+                  # Also see http://crbug.com/110262
+                  '-fcolor-diagnostics',
+                ],
+              },
+            }],
           ],
         },
       },

@@ -130,6 +130,14 @@ config("compiler") {
       } else {
         cflags += [ "-m64" ]
       }
+      if (exec_script("//build/win/use_ansi_codes.py", [], "trim string") ==
+          "True") {
+        cflags += [
+          # cmd.exe doesn't understand ANSI escape codes by default,
+          # so only enable them if something emulating them is around.
+          "-fansi-escape-codes",
+        ]
+      }
     }
   } else {
     # Common GCC compiler flags setup.
