@@ -24,6 +24,8 @@
 #include "base/process/process.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_utils.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
+#include "sandbox/linux/system_headers/linux_signal.h"
 
 namespace sandbox {
 
@@ -65,6 +67,7 @@ void SetEnvironForNamespaceType(base::EnvironmentMap* environ,
   // An empty string causes the env var to be unset in the child process.
   (*environ)[env_var] = value ? "1" : "";
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 // Linux supports up to 64 signals. This should be updated if that ever changes.
 int g_signal_exit_codes[64];
@@ -79,7 +82,6 @@ void TerminationSignalHandler(int sig) {
 
   _exit(NamespaceSandbox::kDefaultExitCode);
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace
 
@@ -129,11 +131,12 @@ base::Process NamespaceSandbox::LaunchProcess(
 
   return base::LaunchProcess(argv, launch_options);
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 // static
 pid_t NamespaceSandbox::ForkInNewPidNamespace(bool drop_capabilities_in_child) {
   const pid_t pid =
-      base::ForkWithFlags(CLONE_NEWPID | SIGCHLD, nullptr, nullptr);
+      base::ForkWithFlags(CLONE_NEWPID | LINUX_SIGCHLD, nullptr, nullptr);
   if (pid < 0) {
     return pid;
   }
@@ -153,7 +156,8 @@ pid_t NamespaceSandbox::ForkInNewPidNamespace(bool drop_capabilities_in_child) {
 // static
 void NamespaceSandbox::InstallDefaultTerminationSignalHandlers() {
   static const int kDefaultTermSignals[] = {
-      SIGHUP, SIGINT, SIGABRT, SIGQUIT, SIGPIPE, SIGTERM, SIGUSR1, SIGUSR2,
+      LINUX_SIGHUP,  LINUX_SIGINT,  LINUX_SIGABRT, LINUX_SIGQUIT,
+      LINUX_SIGPIPE, LINUX_SIGTERM, LINUX_SIGUSR1, LINUX_SIGUSR2,
   };
 
   for (const int sig : kDefaultTermSignals) {
@@ -166,12 +170,16 @@ bool NamespaceSandbox::InstallTerminationSignalHandler(
     int sig,
     int exit_code) {
   struct sigaction old_action;
-  PCHECK(sigaction(sig, nullptr, &old_action) == 0);
+  PCHECK(sys_sigaction(sig, nullptr, &old_action) == 0);
 
+#if !defined(OS_NACL_NONSFI)
   if (old_action.sa_flags & SA_SIGINFO &&
       old_action.sa_sigaction != nullptr) {
     return false;
-  } else if (old_action.sa_handler != SIG_DFL) {
+  }
+#endif
+
+  if (old_action.sa_handler != LINUX_SIG_DFL) {
     return false;
   }
 
@@ -185,10 +193,9 @@ bool NamespaceSandbox::InstallTerminationSignalHandler(
 
   struct sigaction action = {};
   action.sa_handler = &TerminationSignalHandler;
-  PCHECK(sigaction(sig, &action, nullptr) == 0);
+  PCHECK(sys_sigaction(sig, &action, nullptr) == 0);
   return true;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 // static
 bool NamespaceSandbox::InNewUserNamespace() {

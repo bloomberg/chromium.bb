@@ -37,9 +37,9 @@ namespace sandbox {
 //    Credentials::DropAllCapabilities().
 class SANDBOX_EXPORT NamespaceSandbox {
  public:
-#if !defined(OS_NACL_NONSFI)
   static const int kDefaultExitCode = 1;
 
+#if !defined(OS_NACL_NONSFI)
   // Launch a new process inside its own user/PID/network namespaces (depending
   // on kernel support). Requires at a minimum that user namespaces are
   // supported (use Credentials::CanCreateProcessInNewUserNS to check this).
@@ -51,6 +51,7 @@ class SANDBOX_EXPORT NamespaceSandbox {
                                      const base::LaunchOptions& options);
   static base::Process LaunchProcess(const std::vector<std::string>& argv,
                                      const base::LaunchOptions& options);
+#endif  // !defined(OS_NACL_NONSFI)
 
   // Forks a process in its own PID namespace. The child process is the init
   // process inside of the PID namespace, so if the child needs to fork further,
@@ -83,7 +84,6 @@ class SANDBOX_EXPORT NamespaceSandbox {
   // signal handler was already present for |sig|, does nothing and returns
   // false.
   static bool InstallTerminationSignalHandler(int sig, int exit_code);
-#endif  // !defined(OS_NACL_NONSFI)
 
   // Returns whether the namespace sandbox created a new user, PID, and network
   // namespace. In particular, InNewUserNamespace should return true iff the
