@@ -522,7 +522,7 @@ bool IsValidLocationName(const Word& word) {
     const char* string;
     char length;
     bool allow_plural;
-  } location_names[157] = {
+  } location_names[159] = {
     { "alley", 5, false }, { "annex", 5, false }, { "arcade", 6, false },
     { "ave", 3, false }, { "ave.", 4, false }, { "avenue", 6, false },
     { "alameda", 7, false },
@@ -566,9 +566,10 @@ bool IsValidLocationName(const Word& word) {
     { "point", 5, true }, { "port", 4, true }, { "prairie", 7, false },
     { "privada", 7, false },
     { "radial", 6, false }, { "ramp", 4, false }, { "ranch", 5, false },
-    { "rapid", 5, true }, { "rest", 4, false }, { "ridge", 5, true },
-    { "river", 5, false }, { "road", 4, true }, { "route", 5, false },
-    { "row", 3, false }, { "rue", 3, false }, { "run", 3, false },
+    { "rapid", 5, true }, { "rd", 2, false }, { "rd.", 3, false },
+    { "rest", 4, false }, { "ridge", 5, true }, { "river", 5, false },
+    { "road", 4, true }, { "route", 5, false }, { "row", 3, false },
+    { "rue", 3, false }, { "run", 3, false },
     { "shoal", 5, true }, { "shore", 5, true }, { "skyway", 6, false },
     { "spring", 6, true }, { "spur", 4, true }, { "square", 6, true },
     { "station", 7, false }, { "stravenue", 9, false }, { "stream", 6, false },
@@ -590,8 +591,8 @@ bool IsValidLocationName(const Word& word) {
       0,   7,  19,  40,  44,
      47,  57,  62,  68,  71,
      72,  74,  83,  92,  93,
-     96, 109, 109, 121, 135,
-    143, 145, 151, 155, 157
+     96, 109, 109, 123, 137,
+    145, 147, 153, 157, 159
   };
 
   DCHECK_EQ(

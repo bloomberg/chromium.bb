@@ -449,6 +449,8 @@ TEST_F(AddressParserTest, LocationName) {
   EXPECT_TRUE(IsLocationName("ranch"));
   EXPECT_TRUE(IsLocationName("rapid"));
   EXPECT_TRUE(IsLocationName("rapids"));
+  EXPECT_TRUE(IsLocationName("rd"));
+  EXPECT_TRUE(IsLocationName("rd."));
   EXPECT_TRUE(IsLocationName("rest"));
   EXPECT_TRUE(IsLocationName("ridge"));
   EXPECT_TRUE(IsLocationName("ridges"));
@@ -564,6 +566,10 @@ TEST_F(AddressParserTest, FullAddress) {
   EXPECT_EQ(FindAddress("2590 Pearl Street Suite 100 Boulder, CO 80302 6425 " \
       "Penn Ave. Suite 700 Pittsburgh, PA 15206"),
       "2590 Pearl Street Suite 100 Boulder, CO 80302");
+
+  EXPECT_TRUE(IsAddress("5400 Preston Oaks Rd Dallas TX 75254"));
+  EXPECT_TRUE(IsAddress("5400 Preston Oaks Road Dallas TX 75254"));
+  EXPECT_TRUE(IsAddress("5400 Preston Oaks Ave Dallas TX 75254"));
 
   EXPECT_TRUE(ContainsAddress(
       "住所は 1600 Amphitheatre Parkway Mountain View, CA 94043 です。"));
