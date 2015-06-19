@@ -4,10 +4,10 @@
 
 #include "chrome/browser/autocomplete/shortcuts_extensions_manager.h"
 
-#include "chrome/browser/autocomplete/shortcuts_backend.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/omnibox/shortcuts_backend.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 

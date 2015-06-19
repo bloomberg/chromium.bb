@@ -49,6 +49,8 @@ static_library("omnibox") {
     "search_provider.h",
     "search_suggestion_parser.cc",
     "search_suggestion_parser.h",
+    "shortcuts_backend.cc",
+    "shortcuts_backend.h",
     "shortcuts_database.cc",
     "shortcuts_database.h",
     "suggestion_answer.cc",

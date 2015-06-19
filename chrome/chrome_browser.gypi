@@ -1279,8 +1279,6 @@
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.h',
       'browser/autocomplete/in_memory_url_index_factory.cc',
       'browser/autocomplete/in_memory_url_index_factory.h',
-      'browser/autocomplete/shortcuts_backend.cc',
-      'browser/autocomplete/shortcuts_backend.h',
       'browser/autocomplete/shortcuts_backend_factory.cc',
       'browser/autocomplete/shortcuts_backend_factory.h',
       'browser/autocomplete/shortcuts_extensions_manager.cc',

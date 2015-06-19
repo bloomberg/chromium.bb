@@ -82,6 +82,8 @@
         'omnibox/search_provider.h',
         'omnibox/search_suggestion_parser.cc',
         'omnibox/search_suggestion_parser.h',
+        'omnibox/shortcuts_backend.cc',
+        'omnibox/shortcuts_backend.h',
         'omnibox/shortcuts_database.cc',
         'omnibox/shortcuts_database.h',
         'omnibox/suggestion_answer.cc',
