@@ -180,6 +180,7 @@ class BaseIdleHelperTest : public testing::Test {
             new SchedulerHelper(nestable_task_runner_,
                                 "test.idle",
                                 TRACE_DISABLED_BY_DEFAULT("test.idle"),
+                                TRACE_DISABLED_BY_DEFAULT("test.idle.debug"),
                                 SchedulerHelper::TASK_QUEUE_COUNT + 1)),
         idle_helper_(new IdleHelperForTest(
             scheduler_helper_.get(),

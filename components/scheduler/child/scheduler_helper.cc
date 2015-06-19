@@ -15,13 +15,15 @@ SchedulerHelper::SchedulerHelper(
     scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
+    const char* disabled_by_default_verbose_tracing_category,
     size_t total_task_queue_count)
     : task_queue_selector_(new PrioritizingTaskQueueSelector()),
       task_queue_manager_(
           new TaskQueueManager(total_task_queue_count,
                                main_task_runner,
                                task_queue_selector_.get(),
-                               disabled_by_default_tracing_category)),
+                               disabled_by_default_tracing_category,
+                               disabled_by_default_verbose_tracing_category)),
       quiescence_monitored_task_queue_mask_(
           ((1ull << total_task_queue_count) - 1ull) &
           ~(1ull << QueueId::CONTROL_TASK_QUEUE) &

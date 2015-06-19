@@ -19,6 +19,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
     : helper_(main_task_runner,
               "renderer.scheduler",
               TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+              TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
               TASK_QUEUE_COUNT),
       idle_helper_(&helper_,
                    this,

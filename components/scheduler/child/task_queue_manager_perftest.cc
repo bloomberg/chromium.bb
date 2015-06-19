@@ -69,7 +69,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
     selector_ = make_scoped_ptr(new SelectorForTest);
     manager_ = make_scoped_ptr(new TaskQueueManager(
         num_queues, SchedulerMessageLoopDelegate::Create(message_loop_.get()),
-        selector_.get(), "fake.category"));
+        selector_.get(), "fake.category", "fake.category.debug"));
   }
 
   void TestDelayedTask() {

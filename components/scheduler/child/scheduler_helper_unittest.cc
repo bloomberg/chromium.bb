@@ -52,6 +52,7 @@ class SchedulerHelperTest : public testing::Test {
             new SchedulerHelper(nestable_task_runner_,
                                 "test.scheduler",
                                 TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
+                                TRACE_DISABLED_BY_DEFAULT("test.scheduler.dbg"),
                                 SchedulerHelper::TASK_QUEUE_COUNT)),
         default_task_runner_(scheduler_helper_->DefaultTaskRunner()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));

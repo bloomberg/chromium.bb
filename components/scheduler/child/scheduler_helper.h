@@ -27,6 +27,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
       const char* tracing_category,
       const char* disabled_by_default_tracing_category,
+      const char* disabled_by_default_verbose_tracing_category,
       size_t total_task_queue_count);
   ~SchedulerHelper();
 

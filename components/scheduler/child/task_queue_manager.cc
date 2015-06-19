@@ -47,7 +47,8 @@ class LazyNow {
 class TaskQueue : public base::SingleThreadTaskRunner {
  public:
   TaskQueue(TaskQueueManager* task_queue_manager,
-            const char* disabled_by_default_tracing_category);
+            const char* disabled_by_default_tracing_category,
+            const char* disabled_by_default_verbose_tracing_category);
 
   // base::SingleThreadTaskRunner implementation.
   bool RunsTasksOnCurrentThread() const override;
@@ -144,6 +145,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   TaskQueueManager::PumpPolicy pump_policy_;
   const char* name_;
   const char* disabled_by_default_tracing_category_;
+  const char* disabled_by_default_verbose_tracing_category_;
   base::DelayedTaskQueue delayed_task_queue_;
   std::set<base::TimeTicks> in_flight_kick_delayed_tasks_;
 
@@ -155,13 +157,16 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 };
 
 TaskQueue::TaskQueue(TaskQueueManager* task_queue_manager,
-                     const char* disabled_by_default_tracing_category)
+                     const char* disabled_by_default_tracing_category,
+                     const char* disabled_by_default_verbose_tracing_category)
     : thread_id_(base::PlatformThread::CurrentId()),
       task_queue_manager_(task_queue_manager),
       pump_policy_(TaskQueueManager::PumpPolicy::AUTO),
       name_(nullptr),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
+      disabled_by_default_verbose_tracing_category_(
+          disabled_by_default_verbose_tracing_category),
       wakeup_policy_(TaskQueueManager::WakeupPolicy::CAN_WAKE_OTHER_QUEUES) {
 }
 
@@ -409,15 +414,23 @@ void TaskQueue::AsValueInto(base::trace_event::TracedValue* state) const {
                    TaskQueueManager::PumpPolicyToString(pump_policy_));
   state->SetString("wakeup_policy",
                    TaskQueueManager::WakeupPolicyToString(wakeup_policy_));
-  state->BeginArray("incoming_queue");
-  QueueAsValueInto(incoming_queue_, state);
-  state->EndArray();
-  state->BeginArray("work_queue");
-  QueueAsValueInto(work_queue_, state);
-  state->EndArray();
-  state->BeginArray("delayed_task_queue");
-  QueueAsValueInto(delayed_task_queue_, state);
-  state->EndArray();
+  bool verbose_tracing_enabled = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      disabled_by_default_verbose_tracing_category_, &verbose_tracing_enabled);
+  state->SetInteger("incoming_queue_size", incoming_queue_.size());
+  state->SetInteger("work_queue_size", work_queue_.size());
+  state->SetInteger("delayed_task_queue_size", delayed_task_queue_.size());
+  if (verbose_tracing_enabled) {
+    state->BeginArray("incoming_queue");
+    QueueAsValueInto(incoming_queue_, state);
+    state->EndArray();
+    state->BeginArray("work_queue");
+    QueueAsValueInto(work_queue_, state);
+    state->EndArray();
+    state->BeginArray("delayed_task_queue");
+    QueueAsValueInto(delayed_task_queue_, state);
+    state->EndArray();
+  }
   state->EndDictionary();
 }
 
@@ -461,7 +474,8 @@ TaskQueueManager::TaskQueueManager(
     size_t task_queue_count,
     scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
     TaskQueueSelector* selector,
-    const char* disabled_by_default_tracing_category)
+    const char* disabled_by_default_tracing_category,
+    const char* disabled_by_default_verbose_tracing_category)
     : main_task_runner_(main_task_runner),
       selector_(selector),
       task_was_run_bitmap_(0),
@@ -480,7 +494,9 @@ TaskQueueManager::TaskQueueManager(
 
   for (size_t i = 0; i < task_queue_count; i++) {
     scoped_refptr<internal::TaskQueue> queue(make_scoped_refptr(
-        new internal::TaskQueue(this, disabled_by_default_tracing_category)));
+        new internal::TaskQueue(this,
+                                disabled_by_default_tracing_category,
+                                disabled_by_default_verbose_tracing_category)));
     queues_.push_back(queue);
   }
 

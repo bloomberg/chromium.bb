@@ -125,7 +125,7 @@ class TaskQueueManagerTest : public testing::Test {
     selector_ = make_scoped_ptr(createSelectorForTest(type));
     manager_ = make_scoped_ptr(new TaskQueueManager(
         num_queues, NestableTaskRunnerForTest::Create(test_task_runner_.get()),
-        selector_.get(), "test.scheduler"));
+        selector_.get(), "test.scheduler", "test.scheduler.debug"));
     manager_->SetTimeSourceForTesting(
         make_scoped_ptr(new TestTimeSource(now_src_.get())));
 
@@ -137,7 +137,7 @@ class TaskQueueManagerTest : public testing::Test {
     selector_ = make_scoped_ptr(createSelectorForTest(type));
     manager_ = make_scoped_ptr(new TaskQueueManager(
         num_queues, SchedulerMessageLoopDelegate::Create(message_loop_.get()),
-        selector_.get(), "test.scheduler"));
+        selector_.get(), "test.scheduler", "test.scheduler.debug"));
     EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
 

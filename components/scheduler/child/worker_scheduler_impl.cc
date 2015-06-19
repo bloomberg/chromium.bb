@@ -16,6 +16,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
     : helper_(main_task_runner,
               "worker.scheduler",
               TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),
+              TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug"),
               TASK_QUEUE_COUNT),
       idle_helper_(&helper_,
                    this,

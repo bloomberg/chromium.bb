@@ -23,9 +23,14 @@ RendererScheduler::~RendererScheduler() {
 
 // static
 scoped_ptr<RendererScheduler> RendererScheduler::Create() {
-  // Ensure worker.scheduler appears as an option in about://tracing
+  // Ensure worker.scheduler, worker.scheduler.debug and
+  // renderer.scheduler.debug appear as an option in about://tracing
   base::trace_event::TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
+  base::trace_event::TraceLog::GetCategoryGroupEnabled(
+      TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug"));
+  base::trace_event::TraceLog::GetCategoryGroupEnabled(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableBlinkScheduler)) {

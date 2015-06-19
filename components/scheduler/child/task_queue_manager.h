@@ -102,7 +102,8 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
       size_t task_queue_count,
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
       TaskQueueSelector* selector,
-      const char* disabled_by_default_tracing_category);
+      const char* disabled_by_default_tracing_category,
+      const char* disabled_by_default_verbose_tracing_category);
   ~TaskQueueManager() override;
 
   // Returns the task runner which targets the queue selected by |queue_index|.
