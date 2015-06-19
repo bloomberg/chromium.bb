@@ -23,12 +23,8 @@ class NativeWebInterstitialImpl : public WebInterstitialImpl {
                             scoped_ptr<NativeWebInterstitialDelegate> delegate);
   ~NativeWebInterstitialImpl() override;
 
-  // WebInterstitial implementation:
-  void SetSize(const gfx::Size& size) override;
-
   // WebInterstitialImpl implementation:
-  UIView* GetView() const override;
-  UIScrollView* GetScrollView() const override;
+  CRWContentView* GetContentView() const override;
 
  protected:
   // WebInterstitialImpl implementation:
@@ -40,12 +36,8 @@ class NativeWebInterstitialImpl : public WebInterstitialImpl {
  private:
   // The native interstitial delegate.
   scoped_ptr<NativeWebInterstitialDelegate> delegate_;
-  // The top-level view containing the scroll view.
-  base::scoped_nsobject<UIView> container_view_;
-  // The scroll view used to display |content_view_|.
-  base::scoped_nsobject<UIScrollView> scroll_view_;
-  // The content view provided by |delegate_|.
-  base::WeakNSObject<UIView> content_view_;
+  // The transient content view containing interstitial content.
+  base::scoped_nsobject<CRWContentView> content_view_;
 };
 
 }  // namespace web

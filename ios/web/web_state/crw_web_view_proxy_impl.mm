@@ -7,6 +7,7 @@
 #include "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
 namespace {
@@ -64,12 +65,12 @@ UIView* GetFirstResponderSubview(UIView* view) {
 @end
 
 @implementation CRWWebViewProxyImpl {
-  base::WeakNSObject<UIView> _webView;
+  base::WeakNSObject<CRWContentView> _contentView;
   base::WeakNSObject<CRWWebController> _webController;
   base::scoped_nsobject<NSMutableDictionary> _registeredInsets;
   // The WebViewScrollViewProxy is a wrapper around the UIWebView's
   // UIScrollView to give components access in a limited and controlled manner.
-  base::scoped_nsobject<CRWWebViewScrollViewProxy> _webViewScrollViewProxy;
+  base::scoped_nsobject<CRWWebViewScrollViewProxy> _contentViewScrollViewProxy;
 }
 
 - (instancetype)initWithWebController:(CRWWebController*)webController {
@@ -78,21 +79,21 @@ UIView* GetFirstResponderSubview(UIView* view) {
     DCHECK(webController);
     _registeredInsets.reset([[NSMutableDictionary alloc] init]);
     _webController.reset(webController);
-    _webViewScrollViewProxy.reset([[CRWWebViewScrollViewProxy alloc] init]);
+    _contentViewScrollViewProxy.reset([[CRWWebViewScrollViewProxy alloc] init]);
   }
   return self;
 }
 
 - (CRWWebViewScrollViewProxy*)scrollViewProxy {
-  return _webViewScrollViewProxy.get();
+  return _contentViewScrollViewProxy.get();
 }
 
 - (CGRect)bounds {
-  return [_webView bounds];
+  return [_contentView bounds];
 }
 
 - (NSArray*)gestureRecognizers {
-  return [_webView gestureRecognizers];
+  return [_contentView gestureRecognizers];
 }
 
 - (web::WebViewType)webViewType {
@@ -115,25 +116,27 @@ UIView* GetFirstResponderSubview(UIView* view) {
   [_registeredInsets removeObjectForKey:callerValue];
 }
 
-- (void)setWebView:(UIView*)webView scrollView:(UIScrollView*)scrollView {
-  _webView.reset(webView);
-  if (webView)
-    DCHECK(scrollView);
-  [_webViewScrollViewProxy setScrollView:scrollView];
+- (CRWContentView*)contentView {
+  return _contentView.get();
+}
+
+- (void)setContentView:(CRWContentView*)contentView {
+  _contentView.reset(contentView);
+  [_contentViewScrollViewProxy setScrollView:contentView.scrollView];
 }
 
 - (void)addSubview:(UIView*)view {
-  return [_webView addSubview:view];
+  return [_contentView addSubview:view];
 }
 
 - (BOOL)hasSearchableTextContent {
-  return _webView != nil && [_webController contentIsHTML];
+  return _contentView != nil && [_webController contentIsHTML];
 }
 
 - (UIView*)getKeyboardAccessory {
-  if (!_webView)
+  if (!_contentView)
     return nil;
-  UIView* firstResponder = GetFirstResponderSubview(_webView);
+  UIView* firstResponder = GetFirstResponderSubview(_contentView);
   return firstResponder.inputAccessoryView;
 }
 

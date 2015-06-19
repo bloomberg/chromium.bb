@@ -114,6 +114,7 @@ void WebTestBase::LoadURL(const GURL& url) {
   while ([webController_ loadPhase] != PAGE_LOADED)
     WaitForBackgroundTasks();
   webController_.get().delegate = existingDelegate;
+  [[webController_ view] layoutIfNeeded];
 }
 
 void WebTestBase::WaitForBackgroundTasks() {

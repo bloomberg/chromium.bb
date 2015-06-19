@@ -19,6 +19,7 @@
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
+#import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/blocked_popup_info.h"
 #include "ios/web/web_state/frame_info.h"
@@ -268,9 +269,9 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 #pragma mark -
 #pragma mark Testing-Only Methods
 
-- (void)injectWebView:(id)webView {
-  [super injectWebView:webView];
-  [self setWebView:webView];
+- (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView {
+  [super injectWebViewContentView:webViewContentView];
+  [self setWebView:static_cast<WKWebView*>(webViewContentView.webView)];
 }
 
 #pragma mark - Protected property implementations

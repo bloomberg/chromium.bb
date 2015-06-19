@@ -18,8 +18,11 @@
 #include "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/referrer.h"
+#include "ios/web/public/test/test_web_view_content_view.h"
 #include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
+#import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/test/web_test.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
@@ -27,6 +30,7 @@
 #import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"
 #import "ios/web/web_state/ui/crw_ui_web_view_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
+#import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/ssl/ssl_info.h"
@@ -46,6 +50,7 @@ using web::NavigationManagerImpl;
 
 @interface CRWWebController (PrivateAPI)
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
+@property(nonatomic, readonly) CRWWebControllerContainerView* containerView;
 - (void)setJsMessageQueueThrottled:(BOOL)throttle;
 - (void)removeDocumentLoadCommandsFromQueue;
 - (GURL)updateURLForHistoryNavigationFromURL:(const GURL&)startURL
@@ -293,7 +298,10 @@ class WebControllerTest : public WebTestT {
     mockDelegate_.reset([[MockInteractionLoader alloc]
         initWithRepresentedObject:originalMockDelegate]);
     [WebTestT::webController_ setDelegate:mockDelegate_];
-    [WebTestT::webController_ injectWebView:(UIView*)mockWebView_];
+    base::scoped_nsobject<TestWebViewContentView> webViewContentView(
+        [[TestWebViewContentView alloc] initWithMockWebView:mockWebView_
+                                                 scrollView:mockScrollView_]);
+    [WebTestT::webController_ injectWebViewContentView:webViewContentView];
 
     NavigationManagerImpl& navigationManager =
         [WebTestT::webController_ webStateImpl]->GetNavigationManagerImpl();
@@ -315,7 +323,7 @@ class WebControllerTest : public WebTestT {
     EXPECT_OCMOCK_VERIFY(mockDelegate_);
     EXPECT_OCMOCK_VERIFY(mockChildWebController_.get());
     EXPECT_OCMOCK_VERIFY(mockWebView_);
-    [WebTestT::webController_ resetInjectedWebView];
+    [WebTestT::webController_ resetInjectedWebViewContentView];
     [WebTestT::webController_ setDelegate:nil];
     WebTestT::TearDown();
   }
@@ -1224,8 +1232,8 @@ TEST_F(WebControllerKeyboardTest, DismissKeyboard) {
            @"</body></html>");
 
   // Get the webview.
-  UIWebView* webView =
-      (UIWebView*)[[[webController_ view] subviews] objectAtIndex:0];
+  UIWebView* webView = static_cast<UIWebView*>(
+      [webController_ containerView].webViewContentView.webView);
   EXPECT_TRUE(webView);
 
   // Create the window and add the webview.
@@ -1473,7 +1481,11 @@ class CRWWKWebControllerWebProcessTest : public web::WKWebViewWebTest {
     CR_TEST_REQUIRES_WK_WEB_VIEW();
     WKWebViewWebTest::SetUp();
     webView_.reset(web::CreateTerminatedWKWebView());
-    [webController_ injectWebView:webView_];
+    base::scoped_nsobject<TestWebViewContentView> webViewContentView(
+        [[TestWebViewContentView alloc]
+            initWithMockWebView:webView_
+                     scrollView:[webView_ scrollView]]);
+    [webController_ injectWebViewContentView:webViewContentView];
   }
   base::scoped_nsobject<WKWebView> webView_;
 };

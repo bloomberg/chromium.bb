@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ios/web/public/interstitials/web_interstitial_delegate.h"
+#import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 #include "ios/web/web_state/web_state_impl.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -31,37 +32,14 @@ NativeWebInterstitialImpl::NativeWebInterstitialImpl(
 NativeWebInterstitialImpl::~NativeWebInterstitialImpl() {
 }
 
-void NativeWebInterstitialImpl::SetSize(const gfx::Size& size) {
-  if (!content_view_)
-    return;
-
-  // Resize container and scroll view.
-  CGSize cgSize = size.ToCGSize();
-  [container_view_ setFrame:{[container_view_ frame].origin, cgSize}];
-  [scroll_view_ setFrame:[container_view_ bounds]];
-
-  // Resize content.
-  CGSize contentSize = [content_view_ sizeThatFits:cgSize];
-  [content_view_ setFrame:{CGPointZero, contentSize}];
-  [scroll_view_ setContentSize:contentSize];
-}
-
-UIView* NativeWebInterstitialImpl::GetView() const {
-  return container_view_.get();
-}
-
-UIScrollView* NativeWebInterstitialImpl::GetScrollView() const {
-  return scroll_view_.get();
+CRWContentView* NativeWebInterstitialImpl::GetContentView() const {
+  return content_view_.get();
 }
 
 void NativeWebInterstitialImpl::PrepareForDisplay() {
   if (!content_view_) {
-    container_view_.reset([[UIView alloc] initWithFrame:CGRectZero]);
-    scroll_view_.reset([[UIScrollView alloc] initWithFrame:CGRectZero]);
-    content_view_.reset(delegate_->GetContentView());
-    [scroll_view_ addSubview:content_view_];
-    [scroll_view_ setBackgroundColor:delegate_->GetScrollViewBackgroundColor()];
-    [container_view_ addSubview:scroll_view_];
+    content_view_.reset([[CRWGenericContentView alloc]
+        initWithView:delegate_->GetContentView()]);
   }
 }
 

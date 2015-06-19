@@ -222,6 +222,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
+  void ShowTransientContentView(CRWContentView* content_view) override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
   void AddScriptCommandCallback(const ScriptCommandCallback& callback,
@@ -234,15 +235,11 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                     bool bypass_cache,
                     const ImageDownloadCallback& callback) override;
 
-  // Called before navigation events to clear the currently-displayed
-  // WebInterstitials.
-  void ClearWebInterstitialForNavigation();
-
   // Adds |interstitial|'s view to the web controller's content view.
-  void DisplayWebInterstitial(WebInterstitialImpl* interstitial);
+  void ShowWebInterstitial(WebInterstitialImpl* interstitial);
 
-  // Called to dismiss the currently-displayed WebInterstitial.
-  void DismissWebInterstitial();
+  // Called to dismiss the currently-displayed transient content view.
+  void ClearTransientContentView();
 
   // NavigationManagerDelegate:
   void NavigateToPendingEntry() override;
@@ -294,7 +291,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   std::string mime_type_;
   std::string content_language_header_;
 
-  // Weak pointer to the he interstital page being displayed, if any.
+  // Weak pointer to the interstitial page being displayed, if any.
   WebInterstitialImpl* interstitial_;
 
   // Returned by reference.

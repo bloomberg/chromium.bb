@@ -33,6 +33,7 @@ class TestWebState : public WebState {
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
+  void ShowTransientContentView(CRWContentView* content_view) override {}
   void AddScriptCommandCallback(const ScriptCommandCallback& callback,
                                 const std::string& command_prefix) override {}
   void RemoveScriptCommandCallback(const std::string& command_prefix) override {

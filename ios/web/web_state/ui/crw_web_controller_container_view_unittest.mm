@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #import "base/mac/scoped_nsobject.h"
+#import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 namespace {
 // The frame of CRWWebControllerContainerViewTest's |container_view_|.
@@ -31,10 +34,15 @@ class CRWWebControllerContainerViewTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
+    mock_web_view_proxy_.reset(
+        [[OCMockObject niceMockForClass:[CRWWebViewProxyImpl class]] retain]);
     container_view_.reset([[CRWWebControllerContainerView alloc]
-        initWithFrame:kContainerViewFrame]);
+        initWithContentViewProxy:mock_web_view_proxy_]);
+    [container_view_ setFrame:kContainerViewFrame];
   }
 
+  // The web view proxy object (required for designated initializer).
+  base::scoped_nsobject<id> mock_web_view_proxy_;
   // The container view being tested.
   base::scoped_nsobject<CRWWebControllerContainerView> container_view_;
 };

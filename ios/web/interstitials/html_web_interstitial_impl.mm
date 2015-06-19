@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/interstitials/web_interstitial_facade_delegate.h"
 #include "ios/web/public/interstitials/web_interstitial_delegate.h"
+#include "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #include "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_creation_utils.h"
@@ -82,22 +83,12 @@ void HtmlWebInterstitialImpl::CommandReceivedFromWebView(NSString* command) {
   delegate_->CommandReceived(base::SysNSStringToUTF8(command));
 }
 
-void HtmlWebInterstitialImpl::SetSize(const gfx::Size& size) {
-  CGRect frame = [web_view_controller_ view].frame;
-  frame.size = size.ToCGSize();
-  [[web_view_controller_ view] setFrame:frame];
-}
-
-UIView* HtmlWebInterstitialImpl::GetView() const {
-  return [web_view_controller_ view];
-}
-
-UIScrollView* HtmlWebInterstitialImpl::GetScrollView() const {
-  return [web_view_controller_ scrollView];
+CRWContentView* HtmlWebInterstitialImpl::GetContentView() const {
+  return content_view_.get();
 }
 
 void HtmlWebInterstitialImpl::PrepareForDisplay() {
-  if (!web_view_controller_) {
+  if (!content_view_) {
     web_view_controller_delegate_.reset(
         [[CRWWebInterstitialImplCRWSimpleWebViewDelegate alloc]
             initWithInterstitial:this]);
@@ -111,6 +102,9 @@ void HtmlWebInterstitialImpl::PrepareForDisplay() {
     NSString* html = base::SysUTF8ToNSString(delegate_->GetHtmlContents());
     [web_view_controller_ loadHTMLString:html
                                  baseURL:net::NSURLWithGURL(GetUrl())];
+    content_view_.reset([[CRWWebViewContentView alloc]
+        initWithWebView:[web_view_controller_ view]
+             scrollView:[web_view_controller_ scrollView]]);
   }
 }
 

@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/web/public/interstitials/web_interstitial.h"
+#include "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #include "url/gurl.h"
@@ -32,9 +33,8 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   WebInterstitialImpl(WebStateImpl* web_state, const GURL& url);
   ~WebInterstitialImpl() override;
 
-  // Returns the view and scroll view used to display the interstitial content.
-  virtual UIView* GetView() const = 0;
-  virtual UIScrollView* GetScrollView() const = 0;
+  // Returns the transient content view used to display interstitial content.
+  virtual CRWContentView* GetContentView() const = 0;
 
   // Returns the url corresponding to this interstitial.
   const GURL& GetUrl() const;

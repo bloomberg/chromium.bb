@@ -32,12 +32,8 @@ class HtmlWebInterstitialImpl : public WebInterstitialImpl {
   // receives a JavaScript command.
   void CommandReceivedFromWebView(NSString* command);
 
-  // WebInterstitial implementation:
-  void SetSize(const gfx::Size& size) override;
-
   // WebInterstitialImpl implementation:
-  UIView* GetView() const override;
-  UIScrollView* GetScrollView() const override;
+  CRWContentView* GetContentView() const override;
 
  protected:
   // WebInterstitialImpl implementation:
@@ -56,6 +52,8 @@ class HtmlWebInterstitialImpl : public WebInterstitialImpl {
   // The CRWSimpleWebViewController that contains the web view used to show the
   // content. View needs to be resized by the caller.
   base::scoped_nsprotocol<id<CRWSimpleWebViewController>> web_view_controller_;
+  // The CRWContentView used to display |web_view_controller_|'s view.
+  base::scoped_nsobject<CRWContentView> content_view_;
 };
 
 }  // namespace web

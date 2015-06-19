@@ -4,8 +4,13 @@
 
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 
+#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/ui/crw_native_content.h"
+#import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
+#import "ios/web/web_state/crw_web_view_proxy_impl.h"
 
 #pragma mark - CRWToolbarContainerView
 
@@ -84,9 +89,21 @@
 #pragma mark - CRWWebControllerContainerView
 
 @interface CRWWebControllerContainerView () {
-  // Backing object for |self.toolbarContainerView|.
+  // The proxy for the content added to the container.  It is owned by the web
+  // controller.
+  base::WeakNSObject<CRWWebViewProxyImpl> _webViewProxy;
+  // Backing objects for corresponding properties.
+  base::scoped_nsobject<CRWWebViewContentView> _webViewContentView;
+  base::scoped_nsprotocol<id<CRWNativeContent>> _nativeController;
+  base::scoped_nsobject<CRWContentView> _transientContentView;
   base::scoped_nsobject<CRWToolbarContainerView> _toolbarContainerView;
 }
+
+// Redefine properties as readwrite.
+@property(nonatomic, retain, readwrite)
+    CRWWebViewContentView* webViewContentView;
+@property(nonatomic, retain, readwrite) id<CRWNativeContent> nativeController;
+@property(nonatomic, retain, readwrite) CRWContentView* transientContentView;
 
 // Container view that displays any added toolbars.  It is always the top-most
 // subview, and is bottom aligned with the CRWWebControllerContainerView.
@@ -97,9 +114,11 @@
 
 @implementation CRWWebControllerContainerView
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
+- (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy {
+  self = [super initWithFrame:CGRectZero];
   if (self) {
+    DCHECK(proxy);
+    _webViewProxy.reset(proxy);
     self.backgroundColor = [UIColor whiteColor];
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -107,12 +126,56 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
+- (void)dealloc {
+  [_webViewProxy setContentView:nil];
+  [super dealloc];
 }
 
 #pragma mark Accessors
+
+- (CRWWebViewContentView*)webViewContentView {
+  return _webViewContentView.get();
+}
+
+- (void)setWebViewContentView:(CRWWebViewContentView*)webViewContentView {
+  if (![_webViewContentView isEqual:webViewContentView]) {
+    [_webViewContentView removeFromSuperview];
+    _webViewContentView.reset([webViewContentView retain]);
+    [self addSubview:_webViewContentView];
+  }
+}
+
+- (id<CRWNativeContent>)nativeController {
+  return _nativeController.get();
+}
+
+- (void)setNativeController:(id<CRWNativeContent>)nativeController {
+  if (![_nativeController isEqual:nativeController]) {
+    // TODO(kkhorimoto): This line isn't strictly necessary since all native
+    // controllers currently inherit from NativeContentController, which removes
+    // its view upon deallocation.  Consider moving NativeContentController into
+    // web/ so this behavior can be depended upon from within web/ without
+    // making assumptions about chrome/ code.
+    base::WeakNSProtocol<id> oldController(_nativeController);
+    [[_nativeController view] removeFromSuperview];
+    _nativeController.reset([nativeController retain]);
+    [self addSubview:[_nativeController view]];
+    [[_nativeController view] setNeedsUpdateConstraints];
+    DCHECK(!oldController);
+  }
+}
+
+- (CRWContentView*)transientContentView {
+  return _transientContentView.get();
+}
+
+- (void)setTransientContentView:(CRWContentView*)transientContentView {
+  if (![_transientContentView isEqual:transientContentView]) {
+    [_transientContentView removeFromSuperview];
+    _transientContentView.reset([transientContentView retain]);
+    [self addSubview:_transientContentView];
+  }
+}
 
 - (void)setToolbarContainerView:(CRWToolbarContainerView*)toolbarContainerView {
   if (![_toolbarContainerView isEqual:toolbarContainerView]) {
@@ -131,6 +194,12 @@
 - (void)layoutSubviews {
   [super layoutSubviews];
 
+  // Resize displayed content to the container's bounds.
+  self.webViewContentView.frame = self.bounds;
+  [self.nativeController view].frame = self.bounds;
+  self.transientContentView.frame = self.bounds;
+
+  // Bottom align the toolbars with the bottom of the container.
   if (self.toolbarContainerView) {
     [self bringSubviewToFront:self.toolbarContainerView];
     CGSize toolbarContainerSize =
@@ -140,6 +209,51 @@
                    CGRectGetMaxY(self.bounds) - toolbarContainerSize.height,
                    toolbarContainerSize.width, toolbarContainerSize.height);
   }
+}
+
+- (BOOL)isViewAlive {
+  return self.webViewContentView || self.transientContentView ||
+         [self.nativeController isViewAlive];
+}
+
+#pragma mark Content Setters
+
+- (void)resetContent {
+  self.webViewContentView = nil;
+  self.nativeController = nil;
+  self.transientContentView = nil;
+  [self removeAllToolbars];
+  [_webViewProxy setContentView:nil];
+}
+
+- (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView {
+  DCHECK(webViewContentView);
+  self.webViewContentView = webViewContentView;
+  self.nativeController = nil;
+  self.transientContentView = nil;
+  [_webViewProxy setContentView:self.webViewContentView];
+  [self setNeedsLayout];
+}
+
+- (void)displayNativeContent:(id<CRWNativeContent>)nativeController {
+  DCHECK(nativeController);
+  self.webViewContentView = nil;
+  self.nativeController = nativeController;
+  self.transientContentView = nil;
+  [_webViewProxy setContentView:nil];
+  [self setNeedsLayout];
+}
+
+- (void)displayTransientContent:(CRWContentView*)transientContentView {
+  DCHECK(transientContentView);
+  self.transientContentView = transientContentView;
+  [_webViewProxy setContentView:self.transientContentView];
+  [self setNeedsLayout];
+}
+
+- (void)clearTransientContentView {
+  self.transientContentView = nil;
+  [_webViewProxy setContentView:self.webViewContentView];
 }
 
 #pragma mark Toolbars

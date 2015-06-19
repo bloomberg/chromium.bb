@@ -46,11 +46,11 @@ WebInterstitialFacadeDelegate* WebInterstitialImpl::GetFacadeDelegate() const {
 
 void WebInterstitialImpl::Show() {
   PrepareForDisplay();
-  GetWebStateImpl()->DisplayWebInterstitial(this);
+  GetWebStateImpl()->ShowWebInterstitial(this);
 }
 
 void WebInterstitialImpl::Hide() {
-  GetWebStateImpl()->DismissWebInterstitial();
+  GetWebStateImpl()->ClearTransientContentView();
 }
 
 void WebInterstitialImpl::DontProceed() {

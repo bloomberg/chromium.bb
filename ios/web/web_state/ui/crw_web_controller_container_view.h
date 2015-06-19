@@ -7,9 +7,54 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/web/public/web_state/ui/crw_content_view.h"
+
+@class CRWWebViewContentView;
+@class CRWWebViewProxyImpl;
+@protocol CRWNativeContent;
+
 // Container view class that manages the display of content within
 // CRWWebController.
 @interface CRWWebControllerContainerView : UIView
+
+#pragma mark Content Views
+// The web view content view being displayed.
+@property(nonatomic, retain, readonly)
+    CRWWebViewContentView* webViewContentView;
+// The native controller whose content is being displayed.
+@property(nonatomic, retain, readonly) id<CRWNativeContent> nativeController;
+// The currently displayed transient content view.
+@property(nonatomic, retain, readonly) CRWContentView* transientContentView;
+
+// Designated initializer.  |proxy|'s content view will be updated as different
+// content is added to the container.
+- (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy
+    NS_DESIGNATED_INITIALIZER;
+
+// CRWWebControllerContainerView should be initialized via
+// |-initWithContentViewProxy:|.
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+
+// Returns YES if the container view is currently displaying content.
+- (BOOL)isViewAlive;
+
+// Removes all subviews and resets state to default.
+- (void)resetContent;
+
+// Replaces the currently displayed content with |webViewContentView|.
+- (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView;
+
+// Replaces the currently displayed content with |nativeController|'s view.
+- (void)displayNativeContent:(id<CRWNativeContent>)nativeController;
+
+// Adds |transientContentView| as a subview above previously displayed content.
+- (void)displayTransientContent:(CRWContentView*)transientContentView;
+
+// Removes the transient content view, if one is displayed.
+- (void)clearTransientContentView;
+
+#pragma mark Toolbars
 
 // |toolbar| will be resized to the container width, bottom-aligned, and added
 // as the topmost subview.

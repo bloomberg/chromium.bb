@@ -15,8 +15,10 @@
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/credential.h"
+#include "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
+#import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
 #import "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #import "ios/web/webui/web_ui_ios_impl.h"
@@ -265,6 +267,14 @@ const base::string16& WebStateImpl::GetTitle() const {
   return empty_string16_;
 }
 
+void WebStateImpl::ShowTransientContentView(CRWContentView* content_view) {
+  DCHECK(Configured());
+  DCHECK(content_view);
+  DCHECK(content_view.scrollView);
+  DCHECK([content_view.scrollView isDescendantOfView:content_view]);
+  [web_controller_ showTransientContentView:content_view];
+}
+
 bool WebStateImpl::IsShowingWebInterstitial() const {
   // Technically we could have |interstitial_| set but its view isn't
   // being displayed, but there's no code path where that could occur.
@@ -320,16 +330,15 @@ void WebStateImpl::UpdateHttpResponseHeaders(const GURL& url) {
   content_language_header_ = content_language;
 }
 
-void WebStateImpl::ClearWebInterstitialForNavigation() {
+void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
+  DCHECK(Configured());
+  DCHECK(interstitial);
+  interstitial_ = interstitial;
+  ShowTransientContentView(interstitial_->GetContentView());
+}
+
+void WebStateImpl::ClearTransientContentView() {
   if (interstitial_) {
-    // DontProceed() dismisses the interstitial page in the same way as if it
-    // was closed by user action. Clearing interstitial_ early makes
-    // IsShowingWebInterstitial() return false so the code that is triggered in
-    // DontProceed knows that the interstitial page is not visible anymore.
-    WebInterstitialImpl* interstitial = interstitial_;
-    DismissWebInterstitial();
-    // In this case, DontProceed() may not remove an unsafe page from the nav
-    // history.
     CRWSessionController* sessionController =
         navigation_manager_.GetSessionController();
     web::NavigationItem* currentItem =
@@ -342,27 +351,17 @@ void WebStateImpl::ClearWebInterstitialForNavigation() {
       [sessionController goBack];
     }
     [sessionController discardNonCommittedEntries];
-    interstitial->DontProceed();
-  }
-}
-
-void WebStateImpl::DisplayWebInterstitial(WebInterstitialImpl* interstitial) {
-  DCHECK(Configured());
-  DCHECK(interstitial);
-  interstitial_ = interstitial;
-  CGSize content_view_size = [web_controller_ view].bounds.size;
-  interstitial_->SetSize(
-      gfx::Size(content_view_size.width, content_view_size.height));
-  [web_controller_ displayInterstitialView:interstitial_->GetView()
-                            withScrollView:interstitial_->GetScrollView()];
-}
-
-void WebStateImpl::DismissWebInterstitial() {
-  if (interstitial_) {
-    FOR_EACH_OBSERVER(WebStateObserver, observers_, InsterstitialDismissed());
-    [interstitial_->GetView() removeFromSuperview];
+    // Store the currently displayed interstitial in a local variable and reset
+    // |interstitial_| early.  This is to prevent an infinite loop, as
+    // |DontProceed()| internally calls |ClearTransientContentView()|.
+    web::WebInterstitial* interstitial = interstitial_;
     interstitial_ = nullptr;
+    interstitial->DontProceed();
+    // Don't access |interstitial| after calling |DontProceed()|, as it triggers
+    // deletion.
+    FOR_EACH_OBSERVER(WebStateObserver, observers_, InsterstitialDismissed());
   }
+  [web_controller_ clearTransientContentView];
 }
 
 WebUIIOS* WebStateImpl::CreateWebUIIOS(const GURL& url) {
@@ -454,7 +453,7 @@ BrowserState* WebStateImpl::GetBrowserState() const {
 
 void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
   DCHECK(Configured());
-  ClearWebInterstitialForNavigation();
+  ClearTransientContentView();
   [[web_controller_ delegate] openURLWithParams:params];
 }
 

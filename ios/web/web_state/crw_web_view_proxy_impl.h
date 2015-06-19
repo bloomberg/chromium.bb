@@ -8,20 +8,23 @@
 #import <UIKit/UIKit.h>
 
 #include "ios/web/public/web_state/crw_web_view_proxy.h"
+#include "ios/web/public/web_state/ui/crw_content_view.h"
 
 @class CRWWebController;
 
+// TODO(kkhorimoto): Rename class to CRWContentViewProxyImpl.
 @interface CRWWebViewProxyImpl : NSObject<CRWWebViewProxy>
+
+// Used by CRWWebController to set the content view being managed.
+// |contentView|'s scroll view property will be managed by the
+// WebViewScrollViewProxy.
+@property(nonatomic, weak) CRWContentView* contentView;
 
 // TODO(justincohen): It would be better if we could use something like a
 // ScrollPositionController instead of passing in all of web controller.
 // crbug.com/227744
 // Init with a weak reference of web controller, used for passing thru calls.
 - (instancetype)initWithWebController:(CRWWebController*)webController;
-
-// Used by the CRWWebController to set the web view to be managed.
-// Also sets the UIScrollView to be managed inside the WebViewScrollViewProxy.
-- (void)setWebView:(UIView*)webView scrollView:(UIScrollView*)scrollView;
 
 @end
 

@@ -23,11 +23,14 @@ class SkBitmap;
 
 #if defined(__OBJC__)
 @class CRWJSInjectionReceiver;
+@protocol CRWScrollableContent;
 @protocol CRWWebViewProxy;
 typedef id<CRWWebViewProxy> CRWWebViewProxyType;
 @class UIView;
+typedef UIView<CRWScrollableContent> CRWContentView;
 #else
 class CRWJSInjectionReceiver;
+typedef void CRWContentView;
 typedef void* CRWWebViewProxyType;
 class UIView;
 #endif  // defined(__OBJC__)
@@ -136,6 +139,10 @@ class WebState : public base::SupportsUserData {
   // TODO(stuartmorgan): Figure out a clean API for this.
   // See http://crbug.com/457679
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;
+
+  // Resizes |content_view| to the content area's size and adds it to the
+  // hierarchy.  A navigation will remove the view from the hierarchy.
+  virtual void ShowTransientContentView(CRWContentView* content_view) = 0;
 
   // Returns true if a WebInterstitial is currently displayed.
   virtual bool IsShowingWebInterstitial() const = 0;

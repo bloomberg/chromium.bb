@@ -63,9 +63,6 @@ class WebInterstitial {
   // the target URL.
   // Warning: 'this' has been deleted when this method returns.
   virtual void Proceed() = 0;
-
-  // Sizes the view showing the actual interstitial page contents.
-  virtual void SetSize(const gfx::Size& size) = 0;
 };
 
 }  // namespace web

@@ -24,6 +24,7 @@
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"
@@ -439,9 +440,9 @@ const size_t kMaxMessageQueueSize = 262144;
 #pragma mark -
 #pragma mark Testing-Only Methods
 
-- (void)injectWebView:(id)webView {
-  [super injectWebView:webView];
-  [self setWebView:webView];
+- (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView {
+  [super injectWebViewContentView:webViewContentView];
+  [self setWebView:static_cast<UIWebView*>(webViewContentView.webView)];
 }
 
 #pragma mark CRWJSInjectionEvaluatorMethods
