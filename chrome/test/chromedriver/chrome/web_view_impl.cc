@@ -293,14 +293,15 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
 Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
                                         const std::string& frame) {
   double page_scale_factor = 1.0;
-  if (browser_info_->build_no >= 2358 &&
+  if (browser_info_->build_no >= 2358 && browser_info_->build_no <= 2430 &&
       (browser_info_->is_android ||
        mobile_emulation_override_manager_->IsEmulatingTouch())) {
     // As of crrev.com/323900, on Android and under mobile emulation,
     // Input.dispatchMouseEvent fails to apply the page scale factor to the
     // mouse event coordinates. This leads to the MouseEvent being triggered on
-    // the wrong location on the page.
-    // TODO(samuong): remove once crbug.com/490157 is fixed on the browser side.
+    // the wrong location on the page. This was fixed on the browser side in
+    // crrev.com/333979.
+    // TODO(samuong): remove once we stop supporting M45.
     scoped_ptr<base::Value> value;
     Status status = EvaluateScript(
         std::string(), "window.screen.width / window.innerWidth;", &value);
