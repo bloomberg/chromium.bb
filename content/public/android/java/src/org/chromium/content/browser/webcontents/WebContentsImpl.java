@@ -5,6 +5,7 @@
 package org.chromium.content.browser.webcontents;
 
 import android.graphics.Color;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
@@ -30,7 +31,11 @@ import java.util.UUID;
 //TODO(tedchoc): Remove the package restriction once this class moves to a non-public content
 //               package whose visibility will be enforced via DEPS.
 /* package */ class WebContentsImpl implements WebContents {
-    private static final long sParcelableVersionID = 0;
+    private static final String PARCEL_VERSION_KEY = "version";
+    private static final String PARCEL_WEBCONTENTS_KEY = "webcontents";
+    private static final String PARCEL_PROCESS_GUARD_KEY = "processguard";
+
+    private static final long PARCELABLE_VERSION_ID = 0;
     // Non-final for testing purposes, so resetting of the UUID can happen.
     private static UUID sParcelableUUID = UUID.randomUUID();
 
@@ -51,17 +56,17 @@ import java.util.UUID;
             new Parcelable.Creator<WebContents>() {
                 @Override
                 public WebContents createFromParcel(Parcel source) {
-                    // Read version code and check for mismatch.
-                    long version = source.readLong();
-                    if (version != 0) return null;
+                    Bundle bundle = source.readBundle();
 
-                    // Read UUID to check for application restart (in this case pointers are
-                    // invalid).
-                    ParcelUuid parcelUuid = source.readParcelable(null);
+                    // Check the version.
+                    if (bundle.getLong(PARCEL_VERSION_KEY, -1) != 0) return null;
+
+                    // Check that we're in the same process.
+                    ParcelUuid parcelUuid = bundle.getParcelable(PARCEL_PROCESS_GUARD_KEY);
                     if (sParcelableUUID.compareTo(parcelUuid.getUuid()) != 0) return null;
 
-                    // Grab the WebContents object from the native WebContentsAndroid pointer.
-                    return nativeFromNativePtr(source.readLong());
+                    // Attempt to retrieve the WebContents object from the native pointer.
+                    return nativeFromNativePtr(bundle.getLong(PARCEL_WEBCONTENTS_KEY));
                 }
 
                 @Override
@@ -105,9 +110,14 @@ import java.util.UUID;
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(sParcelableVersionID);
-        dest.writeParcelable(new ParcelUuid(sParcelableUUID), 0);
-        dest.writeLong(mNativeWebContentsAndroid);
+        // This is wrapped in a Bundle so that failed deserialization attempts don't corrupt the
+        // overall Parcel.  If we failed a UUID or Version check and didn't read the rest of the
+        // fields it would corrupt the serialized stream.
+        Bundle data = new Bundle();
+        data.putLong(PARCEL_VERSION_KEY, PARCELABLE_VERSION_ID);
+        data.putParcelable(PARCEL_PROCESS_GUARD_KEY, new ParcelUuid(sParcelableUUID));
+        data.putLong(PARCEL_WEBCONTENTS_KEY, mNativeWebContentsAndroid);
+        dest.writeBundle(data);
     }
 
     @CalledByNative

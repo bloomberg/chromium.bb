@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 public class WebContentsTest extends ContentShellTestBase {
     private static final String TEST_URL_1 = "about://blank";
     private static final String WEB_CONTENTS_KEY = "WEBCONTENTSKEY";
+    private static final String PARCEL_STRING_TEST_DATA = "abcdefghijklmnopqrstuvwxyz";
 
     /**
      * Check that {@link WebContents#isDestroyed()} works as expected.
@@ -253,6 +254,46 @@ public class WebContentsTest extends ContentShellTestBase {
             // Make sure we weren't able to deserialize the WebContents.
             assertNull("Unexpectedly deserialized a destroyed WebContents",
                     deserializedWebContents);
+        } finally {
+            parcel.recycle();
+        }
+    }
+
+    /**
+     * Check that failing a WebContents deserialization doesn't corrupt subsequent data in the
+     * Parcel.
+     * @throws InterruptedException
+     */
+    @SmallTest
+    public void testFailedDeserializationDoesntCorruptParcel()
+            throws InterruptedException {
+        launchContentShellWithUrl(TEST_URL_1);
+        waitForActiveShellToBeDoneLoading();
+        WebContents webContents = getWebContents();
+
+        Parcel parcel = Parcel.obtain();
+
+        try {
+            // Serialize the WebContents.
+            parcel.writeParcelable(webContents, 0);
+
+            // Serialize a String after the WebContents.
+            parcel.writeString(PARCEL_STRING_TEST_DATA);
+
+            // Invalidate all serialized WebContents.
+            WebContentsImpl.invalidateSerializedWebContentsForTesting();
+
+            // Try to read back the WebContents.
+            parcel.setDataPosition(0);
+            WebContents deserializedWebContents = parcel.readParcelable(
+                    WebContents.class.getClassLoader());
+
+            // Make sure we weren't able to deserialize the WebContents.
+            assertNull("Unexpectedly deserialized a WebContents", deserializedWebContents);
+
+            // Make sure we can properly deserialize the String after the WebContents.
+            assertEquals("Failing to read the WebContents corrupted the parcel",
+                    PARCEL_STRING_TEST_DATA, parcel.readString());
         } finally {
             parcel.recycle();
         }
