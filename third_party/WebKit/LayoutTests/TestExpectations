@@ -731,11 +731,6 @@ crbug.com/307777 [ Android ] tables/hittesting/filltable-levels.html [ Timeout P
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
-crbug.com/501485 fast/text/caps-lock-indicator-disabled.html [ NeedsRebaseline ]
-crbug.com/501485 fast/text/caps-lock-indicator-enabled.html [ NeedsRebaseline ]
-crbug.com/501485 virtual/antialiasedtext/fast/text/caps-lock-indicator-disabled.html [ NeedsRebaseline ]
-crbug.com/501485 virtual/antialiasedtext/fast/text/caps-lock-indicator-enabled.html [ NeedsRebaseline ]
-
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
