@@ -22,19 +22,37 @@ public:
     };
 #endif
 
-    DrawingDisplayItem(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
-        : DisplayItem(client, type)
-        , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
+    static PassOwnPtr<DrawingDisplayItem> create(const DisplayItemClientWrapper& client
+        , Type type
+        , PassRefPtr<const SkPicture> picture
 #if ENABLE(ASSERT)
-        , m_underInvalidationCheckingMode(CheckPicture)
+        , UnderInvalidationCheckingMode underInvalidationCheckingMode = CheckPicture
 #endif
+        )
     {
-        ASSERT(isDrawingType(type));
+        return adoptPtr(new DrawingDisplayItem(client
+            , type
+            , picture
+#if ENABLE(ASSERT)
+            , underInvalidationCheckingMode
+#endif
+            ));
     }
 
-    static PassOwnPtr<DrawingDisplayItem> create(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
+    DrawingDisplayItem(const DisplayItemClientWrapper& client
+        , Type type
+        , PassRefPtr<const SkPicture> picture
+#if ENABLE(ASSERT)
+        , UnderInvalidationCheckingMode underInvalidationCheckingMode
+#endif
+        )
+        : DisplayItem(client, type)
+        , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
     {
-        return adoptPtr(new DrawingDisplayItem(client, type, picture));
+#if ENABLE(ASSERT)
+        m_underInvalidationCheckingMode = underInvalidationCheckingMode;
+#endif
+        ASSERT(isDrawingType(type));
     }
 
     virtual void replay(GraphicsContext&);
@@ -44,7 +62,6 @@ public:
     const SkPicture* picture() const { return m_picture.get(); }
 
 #if ENABLE(ASSERT)
-    void setUnderInvalidationCheckingMode(UnderInvalidationCheckingMode mode) { m_underInvalidationCheckingMode = mode; }
     UnderInvalidationCheckingMode underInvalidationCheckingMode() const { return m_underInvalidationCheckingMode; }
 #endif
 

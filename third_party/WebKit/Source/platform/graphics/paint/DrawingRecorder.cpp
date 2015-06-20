@@ -93,10 +93,13 @@ DrawingRecorder::~DrawingRecorder()
 #endif
         m_context.displayItemList()->add(CachedDisplayItem::create(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType)));
     } else {
-        OwnPtr<DrawingDisplayItem> drawingDisplayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, m_context.endRecording());
+        OwnPtr<DrawingDisplayItem> drawingDisplayItem = DrawingDisplayItem::create(m_displayItemClient
+            , m_displayItemType
+            , m_context.endRecording()
 #if ENABLE(ASSERT)
-        drawingDisplayItem->setUnderInvalidationCheckingMode(m_underInvalidationCheckingMode);
+            , m_underInvalidationCheckingMode
 #endif
+            );
         m_context.displayItemList()->add(drawingDisplayItem.release());
     }
 }
