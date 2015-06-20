@@ -106,8 +106,6 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
     int outlineWidth = styleToUse.outlineWidth();
     EBorderStyle outlineStyle = styleToUse.outlineStyle();
 
-    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
-
     int offset = m_layoutInline.style()->outlineOffset();
 
     LayoutRect box(LayoutPoint(paintOffset.x() + thisline.x() - offset, paintOffset.y() + thisline.y() - offset),
@@ -133,7 +131,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
         outlineColor, outlineStyle,
         (lastline.isEmpty() || thisline.x() < lastline.x() || (lastline.maxX() - 1) <= thisline.x() ? outlineWidth : -outlineWidth),
         (nextline.isEmpty() || thisline.x() <= nextline.x() || (nextline.maxX() - 1) <= thisline.x() ? outlineWidth : -outlineWidth),
-        antialias);
+        false);
 
     // right edge
     ObjectPainter::drawLineForBoxSide(graphicsContext,
@@ -145,7 +143,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
         outlineColor, outlineStyle,
         (lastline.isEmpty() || lastline.maxX() < thisline.maxX() || (thisline.maxX() - 1) <= lastline.x() ? outlineWidth : -outlineWidth),
         (nextline.isEmpty() || nextline.maxX() <= thisline.maxX() || (thisline.maxX() - 1) <= nextline.x() ? outlineWidth : -outlineWidth),
-        antialias);
+        false);
     // upper edge
     if (thisline.x() < lastline.x()) {
         ObjectPainter::drawLineForBoxSide(graphicsContext,
@@ -156,7 +154,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
             BSTop, outlineColor, outlineStyle,
             outlineWidth,
             (!lastline.isEmpty() && paintOffset.x() + lastline.x() + 1 < pixelSnappedBox.maxX() + outlineWidth) ? -outlineWidth : outlineWidth,
-            antialias);
+            false);
     }
 
     if (lastline.maxX() < thisline.maxX()) {
@@ -167,7 +165,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
             pixelSnappedBox.y(),
             BSTop, outlineColor, outlineStyle,
             (!lastline.isEmpty() && pixelSnappedBox.x() - outlineWidth < paintOffset.x() + lastline.maxX()) ? -outlineWidth : outlineWidth,
-            outlineWidth, antialias);
+            outlineWidth, false);
     }
 
     if (thisline.x() == thisline.maxX()) {
@@ -179,7 +177,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
             BSTop, outlineColor, outlineStyle,
             outlineWidth,
             outlineWidth,
-            antialias);
+            false);
     }
 
     // lower edge
@@ -192,7 +190,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
             BSBottom, outlineColor, outlineStyle,
             outlineWidth,
             (!nextline.isEmpty() && paintOffset.x() + nextline.x() + 1 < pixelSnappedBox.maxX() + outlineWidth) ? -outlineWidth : outlineWidth,
-            antialias);
+            false);
     }
 
     if (nextline.maxX() < thisline.maxX()) {
@@ -203,7 +201,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
             pixelSnappedBox.maxY() + outlineWidth,
             BSBottom, outlineColor, outlineStyle,
             (!nextline.isEmpty() && pixelSnappedBox.x() - outlineWidth < paintOffset.x() + nextline.maxX()) ? -outlineWidth : outlineWidth,
-            outlineWidth, antialias);
+            outlineWidth, false);
     }
 
     if (thisline.x() == thisline.maxX()) {
@@ -215,7 +213,7 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
             BSBottom, outlineColor, outlineStyle,
             outlineWidth,
             outlineWidth,
-            antialias);
+            false);
     }
 }
 

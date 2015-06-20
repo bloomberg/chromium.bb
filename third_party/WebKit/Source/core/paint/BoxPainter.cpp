@@ -878,6 +878,8 @@ bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext*
 
 bool BoxPainter::shouldAntialiasLines(GraphicsContext* context)
 {
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return true;
     // FIXME: We may want to not antialias when scaled by an integral value,
     // and we may want to antialias when translated by a non-integral value.
     // FIXME: See crbug.com/382491. getCTM does not include scale factors applied at raster time, such
