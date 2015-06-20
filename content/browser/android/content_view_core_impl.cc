@@ -391,6 +391,8 @@ void ContentViewCoreImpl::UpdateFrameInfo(
   window_android_->set_content_offset(
       gfx::ScaleVector2d(content_offset, dpi_scale_));
 
+  page_scale_ = page_scale_factor;
+
   Java_ContentViewCore_updateFrameInfo(
       env, obj.obj(),
       scroll_offset.x(),
@@ -1389,6 +1391,10 @@ void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
   Java_ContentViewCore_onShowUnhandledTapUIIfNeeded(
       env, obj.obj(), static_cast<jint>(x_dip * dpi_scale()),
       static_cast<jint>(y_dip * dpi_scale()));
+}
+
+float ContentViewCoreImpl::GetScaleFactor() const {
+  return page_scale_ * dpi_scale_;
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(

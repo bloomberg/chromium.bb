@@ -297,6 +297,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
+  // returns page density (dpi) X page scale
+  float GetScaleFactor() const;
  private:
   class ContentViewUserData;
 
@@ -351,6 +353,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Device scale factor.
   float dpi_scale_;
+
+  // Page scale factor.
+  float page_scale_;
 
   // The Android view that can be used to add and remove decoration layers
   // like AutofillPopup.

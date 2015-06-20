@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -31,6 +32,7 @@
 #include "jni/WebContentsImpl_jni.h"
 #include "net/android/network_library.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/gfx/android/device_display_info.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -60,13 +62,12 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
 }
 
 ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(JNIEnv* env,
-      BrowserAccessibilityAndroid* node) {
-
+      BrowserAccessibilityAndroid* node, float scale_factor) {
   ScopedJavaLocalRef<jstring> j_text =
       ConvertUTF16ToJavaString(env, node->GetText());
   ScopedJavaLocalRef<jstring> j_class =
       ConvertUTF8ToJavaString(env, node->GetClassName());
-  const gfx::Rect& location = node->GetLocation();
+  const gfx::Rect& location = node->GetLocalBoundsRect();
   // The style attributes exists and valid if size attribute exists. Otherwise,
   // they are not. Use a negative size information to indicate the existence
   // of style information.
@@ -83,8 +84,9 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(JNIEnv* env,
 
   ScopedJavaLocalRef<jobject> j_node =
       Java_WebContentsImpl_createAccessibilitySnapshotNode(env,
-          location.x(), location.y(), node->GetScrollX(),
-          node->GetScrollY(), location.width(), location.height(),
+          scale_factor * location.x(), scale_factor * location.y(),
+          scale_factor * node->GetScrollX(), scale_factor * node->GetScrollY(),
+          scale_factor * location.width(), scale_factor * location.height(),
           j_text.obj(), color, bgcolor, size, text_style, j_class.obj());
 
   for(uint32 i = 0; i < node->PlatformChildCount(); i++) {
@@ -92,13 +94,14 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(JNIEnv* env,
         static_cast<BrowserAccessibilityAndroid*>(
             node->PlatformGetChild(i));
     Java_WebContentsImpl_addAccessibilityNodeAsChild(env,
-        j_node.obj(), WalkAXTreeDepthFirst(env, child).obj());
+        j_node.obj(), WalkAXTreeDepthFirst(env, child, scale_factor).obj());
   }
   return j_node;
 }
 
 // Walks over the AXTreeUpdate and creates a light weight snapshot.
 void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
+                            float scale_factor,
                             const ui::AXTreeUpdate& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (result.nodes.empty()) {
@@ -111,7 +114,8 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
   manager->set_prune_tree_for_screen_reader(false);
   BrowserAccessibilityAndroid* root =
       static_cast<BrowserAccessibilityAndroid*>(manager->GetRoot());
-  ScopedJavaLocalRef<jobject> j_root = WalkAXTreeDepthFirst(env, root);
+  ScopedJavaLocalRef<jobject> j_root =
+      WalkAXTreeDepthFirst(env, root, scale_factor);
   Java_WebContentsImpl_onAccessibilitySnapshot(
       env, j_root.obj(), callback.obj());
 }
@@ -434,9 +438,12 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(JNIEnv* env,
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
+  gfx::DeviceDisplayInfo device_info;
+  ContentViewCoreImpl* contentViewCore =
+      ContentViewCoreImpl::FromWebContents(web_contents_);
   WebContentsImpl::AXTreeSnapshotCallback snapshot_callback =
-      base::Bind(&AXTreeSnapshotCallback, j_callback);
-
+      base::Bind(&AXTreeSnapshotCallback, j_callback,
+          contentViewCore->GetScaleFactor());
   static_cast<WebContentsImpl*>(web_contents_)->RequestAXTreeSnapshot(
       snapshot_callback);
 }
