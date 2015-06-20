@@ -294,6 +294,12 @@ public:
     // See comments on ImageDecoder::m_maxDecodedBytes.
     virtual size_t maxDecodedImageBytes() { return noDecodedImageByteLimit; }
 
+    // Process -------------------------------------------------------------
+
+    // Returns a unique identifier for a process. This may not necessarily be
+    // the process's process ID.
+    virtual uint32_t getUniqueIdForProcess() { return 0; }
+
 
     // Message Ports -------------------------------------------------------
 
