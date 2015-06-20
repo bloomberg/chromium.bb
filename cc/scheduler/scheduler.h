@@ -213,10 +213,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   base::Closure begin_retro_frame_closure_;
   base::Closure begin_impl_frame_deadline_closure_;
-  base::Closure advance_commit_state_closure_;
   base::CancelableClosure begin_retro_frame_task_;
   base::CancelableClosure begin_impl_frame_deadline_task_;
-  base::CancelableClosure advance_commit_state_task_;
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;
@@ -227,7 +225,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void ScheduleBeginImplFrameDeadlineIfNeeded();
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
-  void SetupPollingMechanisms();
   void DrawAndSwapIfPossible();
   void ProcessScheduledActions();
   bool CanCommitAndActivateBeforeDeadline() const;

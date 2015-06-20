@@ -94,8 +94,6 @@ Scheduler::Scheduler(
       base::Bind(&Scheduler::BeginRetroFrame, weak_factory_.GetWeakPtr());
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
-  advance_commit_state_closure_ = base::Bind(
-      &Scheduler::PollToAdvanceCommitState, weak_factory_.GetWeakPtr());
 
   frame_source_ = BeginFrameSourceMultiplexer::Create();
   frame_source_->AddObserver(this);
@@ -300,32 +298,6 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   PostBeginRetroFrameIfNeeded();
 }
 
-// We may need to poll when we can't rely on BeginFrame to advance certain
-// state or to avoid deadlock.
-void Scheduler::SetupPollingMechanisms() {
-  // At this point we'd prefer to advance through the commit flow by
-  // drawing a frame, however it's possible that the frame rate controller
-  // will not give us a BeginFrame until the commit completes.  See
-  // crbug.com/317430 for an example of a swap ack being held on commit. Thus
-  // we set a repeating timer to poll on ProcessScheduledActions until we
-  // successfully reach BeginFrame. Synchronous compositor does not use
-  // frame rate controller or have the circular wait in the bug.
-  if (IsBeginMainFrameSentOrStarted() &&
-      !settings_.using_synchronous_renderer_compositor) {
-    if (advance_commit_state_task_.IsCancelled() &&
-        begin_impl_frame_tracker_.DangerousMethodCurrentOrLast().IsValid()) {
-      // Since we'd rather get a BeginImplFrame by the normal mechanism, we
-      // set the interval to twice the interval from the previous frame.
-      advance_commit_state_task_.Reset(advance_commit_state_closure_);
-      task_runner_->PostDelayedTask(FROM_HERE,
-                                    advance_commit_state_task_.callback(),
-                                    begin_impl_frame_tracker_.Interval() * 2);
-    }
-  } else {
-    advance_commit_state_task_.Cancel();
-  }
-}
-
 // BeginFrame is the mechanism that tells us that now is a good time to start
 // making a frame. Usually this means that user input for the frame is complete.
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
@@ -492,8 +464,6 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "MainThreadLatency", main_thread_is_in_high_latency_mode);
 
-  advance_commit_state_task_.Cancel();
-
   BeginFrameArgs adjusted_args = args;
   adjusted_args.deadline -= client_->DrawDurationEstimate();
 
@@ -534,7 +504,6 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(!BeginImplFrameDeadlinePending());
   DCHECK(state_machine_.HasInitializedOutputSurface());
-  DCHECK(advance_commit_state_task_.IsCancelled());
 
   begin_impl_frame_tracker_.Start(args);
   state_machine_.OnBeginImplFrame();
@@ -630,13 +599,6 @@ void Scheduler::OnBeginImplFrameDeadline() {
   FinishImplFrame();
 }
 
-
-void Scheduler::PollToAdvanceCommitState() {
-  TRACE_EVENT0("cc", "Scheduler::PollToAdvanceCommitState");
-  advance_commit_state_task_.Cancel();
-  ProcessScheduledActions();
-}
-
 void Scheduler::DrawAndSwapIfPossible() {
   DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
   state_machine_.DidDrawIfPossibleCompleted(result);
@@ -721,10 +683,7 @@ void Scheduler::ProcessScheduledActions() {
     }
   } while (action != SchedulerStateMachine::ACTION_NONE);
 
-  SetupPollingMechanisms();
-
   ScheduleBeginImplFrameDeadlineIfNeeded();
-
   SetupNextBeginFrameIfNeeded();
 }
 
@@ -763,8 +722,6 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
                     !begin_retro_frame_task_.IsCancelled());
   state->SetBoolean("begin_impl_frame_deadline_task",
                     !begin_impl_frame_deadline_task_.IsCancelled());
-  state->SetBoolean("advance_commit_state_task",
-                    !advance_commit_state_task_.IsCancelled());
   state->SetString("inside_action",
                    SchedulerStateMachine::ActionToString(inside_action_));
   state->BeginDictionary("begin_impl_frame_args");
