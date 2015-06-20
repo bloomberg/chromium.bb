@@ -1,20 +1,20 @@
 {
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "top_10_mobile_002.wpr": [
-            "https://www.google.com/#hl=en&q=science", 
-            "https://m.facebook.com/rihanna", 
-            "http://m.youtube.com/results?q=science", 
-            "http://search.yahoo.com/search;_ylt=?p=google", 
-            "http://www.baidu.com/s?word=google", 
-            "http://en.m.wikipedia.org/wiki/Science", 
-            "https://mobile.twitter.com/justinbieber?skip_interstitial=true", 
-            "http://www.amazon.com/gp/aw/s/?k=nexus", 
-            "http://m.taobao.com/channel/act/mobile/20131111-women.html", 
-            "http://yandex.ru/touchsearch?text=science"
-        ], 
         "top_10_mobile_000.wpr": [
             "https://mobile.twitter.com/justinbieber&"
+        ], 
+        "top_10_mobile_003.wpr": [
+            "http://m.youtube.com/results?q=science", 
+            "http://yandex.ru/touchsearch?text=science", 
+            "http://m.taobao.com/channel/act/mobile/20131111-women.html", 
+            "http://search.yahoo.com/search;_ylt=?p=google", 
+            "http://www.baidu.com/s?word=google", 
+            "http://www.amazon.com/gp/aw/s/?k=nexus", 
+            "http://en.m.wikipedia.org/wiki/Science", 
+            "https://mobile.twitter.com/justinbieber?skip_interstitial=true", 
+            "https://www.google.com/#hl=en&q=science", 
+            "https://m.facebook.com/rihanna"
         ]
     }
 }
