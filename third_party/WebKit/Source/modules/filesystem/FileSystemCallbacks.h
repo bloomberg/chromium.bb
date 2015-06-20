@@ -67,16 +67,8 @@ protected:
 
     bool shouldScheduleCallback() const;
 
-#if !ENABLE(OILPAN)
-    template <typename CB, typename CBArg>
-    void handleEventOrScheduleCallback(RawPtr<CB>, RawPtr<CBArg>);
-#endif
-
     template <typename CB, typename CBArg>
     void handleEventOrScheduleCallback(RawPtr<CB>, CBArg*);
-
-    template <typename CB, typename CBArg>
-    void handleEventOrScheduleCallback(RawPtr<CB>, PassRefPtrWillBeRawPtr<CBArg>);
 
     template <typename CB>
     void handleEventOrScheduleCallback(RawPtr<CB>);
@@ -148,11 +140,11 @@ private:
 
 class FileWriterBaseCallbacks final : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<FileWriterBase>, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(FileWriterBase*, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
     virtual void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) override;
 
 private:
-    FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase>, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
+    FileWriterBaseCallbacks(FileWriterBase*, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
     Persistent<FileWriterBase> m_fileWriter;
     Persistent<FileWriterBaseCallback> m_successCallback;
 };

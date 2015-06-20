@@ -44,7 +44,6 @@
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -87,14 +87,6 @@ bool FileSystemCallbacksBase::shouldScheduleCallback() const
     return !shouldBlockUntilCompletion() && m_executionContext && m_executionContext->activeDOMObjectsAreSuspended();
 }
 
-#if !ENABLE(OILPAN)
-template <typename CB, typename CBArg>
-void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback, RawPtr<CBArg> arg)
-{
-    handleEventOrScheduleCallback(callback, arg.get());
-}
-#endif
-
 template <typename CB, typename CBArg>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback, CBArg* arg)
 {
@@ -104,19 +96,6 @@ void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback,
         DOMFileSystem::scheduleCallback(m_executionContext.get(), callback.get(), arg);
     else if (callback)
         callback->handleEvent(arg);
-    m_executionContext.clear();
-    InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
-}
-
-template <typename CB, typename CBArg>
-void FileSystemCallbacksBase::handleEventOrScheduleCallback(RawPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
-{
-    ASSERT(callback);
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(m_executionContext.get(), m_asyncOperationId);
-    if (shouldScheduleCallback())
-        DOMFileSystem::scheduleCallback(m_executionContext.get(), callback.get(), arg);
-    else if (callback)
-        callback->handleEvent(arg.get());
     m_executionContext.clear();
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
@@ -268,14 +247,14 @@ void MetadataCallbacks::didReadMetadata(const FileMetadata& metadata)
 
 // FileWriterBaseCallbacks ----------------------------------------------------
 
-PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
+PassOwnPtr<AsyncFileSystemCallbacks> FileWriterBaseCallbacks::create(FileWriterBase* fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
 {
     return adoptPtr(new FileWriterBaseCallbacks(fileWriter, successCallback, errorCallback, context));
 }
 
-FileWriterBaseCallbacks::FileWriterBaseCallbacks(PassRefPtrWillBeRawPtr<FileWriterBase> fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
+FileWriterBaseCallbacks::FileWriterBaseCallbacks(FileWriterBase* fileWriter, FileWriterBaseCallback* successCallback, ErrorCallback* errorCallback, ExecutionContext* context)
     : FileSystemCallbacksBase(errorCallback, nullptr, context)
-    , m_fileWriter(fileWriter.get())
+    , m_fileWriter(fileWriter)
     , m_successCallback(successCallback)
 {
 }
@@ -284,7 +263,7 @@ void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebFileWriter> file
 {
     m_fileWriter->initialize(fileWriter, length);
     if (m_successCallback)
-        handleEventOrScheduleCallback(m_successCallback.release(), m_fileWriter.release());
+        handleEventOrScheduleCallback(m_successCallback.release(), m_fileWriter.release().get());
 }
 
 // SnapshotFileCallback -------------------------------------------------------

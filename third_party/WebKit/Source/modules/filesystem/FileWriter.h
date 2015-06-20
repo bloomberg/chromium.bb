@@ -38,7 +38,6 @@
 #include "modules/filesystem/FileWriterBase.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFileWriterClient.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -61,6 +60,7 @@ class FileWriter final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:
     static FileWriter* create(ExecutionContext*);
+    virtual ~FileWriter();
 
     enum ReadyState {
         INIT = 0,
@@ -105,9 +105,7 @@ private:
         OperationAbort
     };
 
-    FileWriter(ExecutionContext*);
-
-    virtual ~FileWriter();
+    explicit FileWriter(ExecutionContext*);
 
     void completeAbort();
 

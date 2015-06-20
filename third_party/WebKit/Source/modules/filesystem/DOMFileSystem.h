@@ -73,9 +73,6 @@ public:
     // Schedule a callback. This should not cross threads (should be called on the same context thread).
     // FIXME: move this to a more generic place.
     template <typename CB, typename CBArg>
-    static void scheduleCallback(ExecutionContext*, CB*, PassRefPtrWillBeRawPtr<CBArg>);
-
-    template <typename CB, typename CBArg>
     static void scheduleCallback(ExecutionContext*, CB*, CBArg*);
 
     template <typename CB, typename CBArg>
@@ -89,12 +86,6 @@ public:
 
     template <typename CB>
     static void scheduleCallback(ExecutionContext*, CB*);
-
-    template <typename CB, typename CBArg>
-    void scheduleCallback(CB* callback, PassRefPtrWillBeRawPtr<CBArg> callbackArg)
-    {
-        scheduleCallback(executionContext(), callback, callbackArg);
-    }
 
     template <typename CB, typename CBArg>
     void scheduleCallback(CB* callback, CBArg* callbackArg)
@@ -119,26 +110,6 @@ private:
         {
             return "FileSystem";
         }
-    };
-
-    // A helper template to schedule a callback task.
-    template <typename CB, typename CBArg>
-    class DispatchCallbackRefPtrArgTask final : public DispatchCallbackTaskBase {
-    public:
-        DispatchCallbackRefPtrArgTask(CB* callback, PassRefPtrWillBeRawPtr<CBArg> arg)
-            : m_callback(callback)
-            , m_callbackArg(arg)
-        {
-        }
-
-        virtual void performTask(ExecutionContext*) override
-        {
-            m_callback->handleEvent(m_callbackArg.get());
-        }
-
-    private:
-        Persistent<CB> m_callback;
-        RefPtrWillBePersistent<CBArg> m_callbackArg;
     };
 
     template <typename CB, typename CBArg>
@@ -199,14 +170,6 @@ private:
     int m_numberOfPendingCallbacks;
     Member<DirectoryEntry> m_rootEntry;
 };
-
-template <typename CB, typename CBArg>
-void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback, PassRefPtrWillBeRawPtr<CBArg> arg)
-{
-    ASSERT(executionContext->isContextThread());
-    if (callback)
-        executionContext->postTask(FROM_HERE, adoptPtr(new DispatchCallbackRefPtrArgTask<CB, CBArg>(callback, arg)));
-}
 
 template <typename CB, typename CBArg>
 void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* callback, CBArg* arg)
