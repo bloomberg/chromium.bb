@@ -160,7 +160,7 @@ void BlockPainter::paintAsInlineBlock(LayoutObject& layoutObject, const PaintInf
 
 void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    PaintPhase paintPhase = paintInfo.phase;
+    const PaintPhase paintPhase = paintInfo.phase;
 
     LayoutRect bounds;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
@@ -174,9 +174,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask && m_layoutBlock.style()->visibility() == VISIBLE) {
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, paintPhase, bounds);
-        if (!recorder.canUseCachedDrawing())
-            m_layoutBlock.paintMask(paintInfo, paintOffset);
+        m_layoutBlock.paintMask(paintInfo, paintOffset);
         return;
     }
 
