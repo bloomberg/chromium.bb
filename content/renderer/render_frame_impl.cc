@@ -3868,10 +3868,18 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that committed entry has it at all times.
   HistoryEntry* entry = render_view_->history_controller()->GetCurrentEntry();
-  if (entry)
-    params.page_state = HistoryEntryToPageState(entry);
-  else
-    params.page_state = PageState::CreateFromURL(request.url());
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    if (entry)
+      params.page_state = HistoryEntryToPageState(entry);
+    else
+      params.page_state = PageState::CreateFromURL(request.url());
+  } else {
+    // In --site-per-process, just send a single HistoryItem for this frame,
+    // rather than the whole tree.  It will be stored in the corresponding
+    // FrameNavigationEntry.
+    params.page_state = SingleHistoryItemToPageState(item);
+  }
   params.item_sequence_number = item.itemSequenceNumber();
   params.document_sequence_number = item.documentSequenceNumber();
 
@@ -4424,8 +4432,39 @@ void RenderFrameImpl::NavigateInternal(
       if (!browser_side_navigation) {
         scoped_ptr<NavigationParams> navigation_params(
             new NavigationParams(*pending_navigation_params_.get()));
-        render_view_->history_controller()->GoToEntry(
-            entry.Pass(), navigation_params.Pass(), cache_policy);
+        if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kSitePerProcess)) {
+          // By default, tell the HistoryController to go the deserialized
+          // HistoryEntry.  This only works if all frames are in the same
+          // process.
+          DCHECK(!frame_->parent());
+          render_view_->history_controller()->GoToEntry(
+              entry.Pass(), navigation_params.Pass(), cache_policy);
+        } else {
+          // In --site-per-process, the browser process sends a single
+          // WebHistoryItem destined for this frame.
+          // TODO(creis): Change PageState to FrameState.  In the meantime, we
+          // store the relevant frame's WebHistoryItem in the root of the
+          // PageState.
+          SetPendingNavigationParams(navigation_params.Pass());
+          blink::WebHistoryItem history_item = entry->root();
+          blink::WebHistoryLoadType load_type =
+              request_params.is_same_document_history_load
+                  ? blink::WebHistorySameDocumentLoad
+                  : blink::WebHistoryDifferentDocumentLoad;
+
+          // Let the history controller know the provisional entry, since it is
+          // used at commit time.  Otherwise skip GoToEntry and navigate the
+          // frame directly.
+          // TODO(creis): Consider cloning the current entry to handle subframe
+          // cases.  Changes to SendUpdateState might affect this.
+          render_view_->history_controller()->set_provisional_entry(
+              entry.Pass());
+          WebURLRequest request =
+              frame_->requestFromHistoryItem(history_item, cache_policy);
+          frame_->load(request, blink::WebFrameLoadType::BackForward,
+                       history_item, load_type);
+        }
       } else {
         // TODO(clamy): this should be set to the HistoryItem sent by the
         // browser once the HistoryController has moved to the browser.

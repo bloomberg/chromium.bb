@@ -221,6 +221,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ClockBackwardsJump);
 
+  // Used for identifying which frames need to navigate.
+  using FrameLoadVector =
+      std::vector<std::pair<FrameTreeNode*, FrameNavigationEntry*>>;
+
   // Helper class to smooth out runs of duplicate timestamps while still
   // allowing time to jump backwards.
   class CONTENT_EXPORT TimeSmoother {
@@ -235,6 +239,23 @@ class CONTENT_EXPORT NavigationControllerImpl
     base::Time high_water_mark_;
   };
 
+  // Causes the controller to load the specified entry. The function assumes
+  // ownership of the pointer since it is put in the navigation list.
+  // NOTE: Do not pass an entry that the controller already owns!
+  void LoadEntry(NavigationEntryImpl* entry);
+
+  // Identifies which frames need to be navigated for the pending
+  // NavigationEntry and instructs their Navigator to navigate them.  Returns
+  // whether any frame successfully started a navigation.
+  bool NavigateToPendingEntryInternal(ReloadType reload_type);
+
+  // Recursively identifies which frames need to be navigated for the pending
+  // NavigationEntry, starting at |frame| and exploring its children.  Only used
+  // in --site-per-process.
+  void FindFramesToNavigate(FrameTreeNode* frame,
+                            FrameLoadVector* sameDocumentLoads,
+                            FrameLoadVector* differentDocumentLoads);
+
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
       RenderFrameHostImpl* rfh,
@@ -245,11 +266,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   NavigationType ClassifyNavigationWithoutPageID(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const;
-
-  // Causes the controller to load the specified entry. The function assumes
-  // ownership of the pointer since it is put in the navigation list.
-  // NOTE: Do not pass an entry that the controller already owns!
-  void LoadEntry(NavigationEntryImpl* entry);
 
   // Handlers for the different types of navigation types. They will actually
   // handle the navigations corresponding to the different NavClasses above.

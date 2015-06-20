@@ -23,6 +23,7 @@ class TimeTicks;
 
 namespace content {
 
+class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationControllerImpl;
 class NavigationEntryImpl;
@@ -88,7 +89,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // initialization of Navigator and NavigationController is properly done.
   virtual bool NavigateToPendingEntry(
       FrameTreeNode* frame_tree_node,
-      NavigationController::ReloadType reload_type);
+      const FrameNavigationEntry& frame_entry,
+      NavigationController::ReloadType reload_type,
+      bool is_same_document_history_load);
 
   // Navigation requests -------------------------------------------------------
 

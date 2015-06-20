@@ -170,6 +170,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           const PageState& page_state,
                           int32 page_id,
                           int nav_entry_id,
+                          bool is_same_document_history_load,
                           bool has_committed_real_load,
                           bool intended_as_new_entry,
                           int pending_history_list_offset,
@@ -211,6 +212,10 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // is 0.) If the load succeeds, then this nav_entry_id will be reflected in
   // the resulting FrameHostMsg_DidCommitProvisionalLoad message.
   int nav_entry_id;
+
+  // For history navigations, this indicates whether the load will stay within
+  // the same document.  Defaults to false.
+  bool is_same_document_history_load;
 
   // Whether the frame being navigated has already committed a real page, which
   // affects how new navigations are classified in the renderer process.

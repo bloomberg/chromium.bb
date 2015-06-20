@@ -53,6 +53,9 @@ chrome/utility/importer/nss_decryptor_system_nss.cc
 chrome/utility/importer/nss_decryptor_win.h
 # Copyright Google Inc; BSD license. Test code only.
 chrome/tools/test/generate_mime_tests.pl
+# Copyright Apple Inc, Nokia Corporation and Torch Mobile Inc; BSD license.
+# Contains code moved from third_party/WebKit/.
+content/browser/frame_host/navigation_controller_impl.cc
 # Copyright Alf Watt; BSD license. Not used on Android.
 content/browser/geolocation/osx_wifi.h
 # Copyright Apple Inc and Torch Mobile Inc; BSD license. Moved from

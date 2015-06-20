@@ -631,19 +631,6 @@ class CONTENT_EXPORT WebContentsImpl
   // |web_contents|.
   void CopyMaxPageIDsFrom(WebContents* web_contents) override;
 
-  // Called by the NavigationController to cause the WebContentsImpl to navigate
-  // to the current pending entry. The NavigationController should be called
-  // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
-  // The callbacks can be inside of this function, or at some future time.
-  //
-  // The entry has a PageID of -1 if newly created (corresponding to navigation
-  // to a new URL).
-  //
-  // If this method returns false, then the navigation is discarded (equivalent
-  // to calling DiscardPendingEntry on the NavigationController).
-  bool NavigateToPendingEntry(
-      NavigationController::ReloadType reload_type) override;
-
   // Sets the history for this WebContentsImpl to |history_length| entries, with
   // an offset of |history_offset|.
   void SetHistoryOffsetAndLength(int history_offset,

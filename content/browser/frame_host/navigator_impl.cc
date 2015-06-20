@@ -224,13 +224,15 @@ void NavigatorImpl::DidFailLoadWithError(
 
 bool NavigatorImpl::NavigateToEntry(
     FrameTreeNode* frame_tree_node,
+    const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
-    NavigationController::ReloadType reload_type) {
+    NavigationController::ReloadType reload_type,
+    bool is_same_document_history_load) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
 
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
-  if (entry.GetURL().spec().size() > GetMaxURLChars()) {
+  if (frame_entry.url().spec().size() > GetMaxURLChars()) {
     LOG(WARNING) << "Refusing to load URL as it exceeds " << GetMaxURLChars()
                  << " characters.";
     return false;
@@ -248,17 +250,21 @@ bool NavigatorImpl::NavigateToEntry(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     navigation_data_.reset(new NavigationMetricsData(
-        navigation_start, entry.GetURL(), entry.restore_type()));
-    RequestNavigation(frame_tree_node, entry, reload_type, navigation_start);
+        navigation_start, frame_entry.url(), entry.restore_type()));
+    RequestNavigation(frame_tree_node, frame_entry, entry, reload_type,
+                      is_same_document_history_load, navigation_start);
 
     // Notify observers about navigation.
-    if (delegate_)
-      delegate_->DidStartNavigationToPendingEntry(entry.GetURL(), reload_type);
+    if (delegate_) {
+      delegate_->DidStartNavigationToPendingEntry(frame_entry.url(),
+                                                  reload_type);
+    }
 
     return true;
   }
 
-  RenderFrameHostImpl* dest_render_frame_host = manager->Navigate(entry);
+  RenderFrameHostImpl* dest_render_frame_host =
+      manager->Navigate(frame_entry, entry);
   if (!dest_render_frame_host)
     return false;  // Unable to create the desired RenderFrameHost.
 
@@ -267,8 +273,8 @@ bool NavigatorImpl::NavigateToEntry(
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
-  CheckWebUIRendererDoesNotDisplayNormalURL(
-      dest_render_frame_host, entry.GetURL());
+  CheckWebUIRendererDoesNotDisplayNormalURL(dest_render_frame_host,
+                                            frame_entry.url());
 
   // Notify observers that we will navigate in this RenderFrame.
   if (delegate_) {
@@ -286,17 +292,17 @@ bool NavigatorImpl::NavigateToEntry(
           dest_render_frame_host->GetProcess()->GetID();
   if (!is_transfer_to_same) {
     navigation_data_.reset(new NavigationMetricsData(
-        navigation_start, entry.GetURL(), entry.restore_type()));
+        navigation_start, frame_entry.url(), entry.restore_type()));
     // Create the navigation parameters.
     // TODO(vitalybuka): Move this before AboutToNavigateRenderFrame once
     // http://crbug.com/408684 is fixed.
     FrameMsg_Navigate_Type::Value navigation_type =
         GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
     dest_render_frame_host->Navigate(
-        entry.ConstructCommonNavigationParams(navigation_type),
+        entry.ConstructCommonNavigationParams(frame_entry, navigation_type),
         entry.ConstructStartNavigationParams(),
         entry.ConstructRequestNavigationParams(
-            navigation_start,
+            frame_entry, navigation_start, is_same_document_history_load,
             controller_->HasCommittedRealLoad(frame_tree_node),
             controller_->GetPendingEntryIndex() == -1,
             controller_->GetIndexOfEntry(&entry),
@@ -317,22 +323,26 @@ bool NavigatorImpl::NavigateToEntry(
     // do not generate content.  What we really need is a message from the
     // renderer telling us that a new page was not created.  The same message
     // could be used for mailto: URLs and the like.
-    if (entry.GetURL().SchemeIs(url::kJavaScriptScheme))
+    if (frame_entry.url().SchemeIs(url::kJavaScriptScheme))
       return false;
   }
 
   // Notify observers about navigation.
-  if (delegate_)
-    delegate_->DidStartNavigationToPendingEntry(entry.GetURL(), reload_type);
+  if (delegate_) {
+    delegate_->DidStartNavigationToPendingEntry(frame_entry.url(), reload_type);
+  }
 
   return true;
 }
 
 bool NavigatorImpl::NavigateToPendingEntry(
     FrameTreeNode* frame_tree_node,
-    NavigationController::ReloadType reload_type) {
-  return NavigateToEntry(frame_tree_node, *controller_->GetPendingEntry(),
-                         reload_type);
+    const FrameNavigationEntry& frame_entry,
+    NavigationController::ReloadType reload_type,
+    bool is_same_document_history_load) {
+  return NavigateToEntry(frame_tree_node, frame_entry,
+                         *controller_->GetPendingEntry(), reload_type,
+                         is_same_document_history_load);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -798,8 +808,10 @@ void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
 // PlzNavigate
 void NavigatorImpl::RequestNavigation(
     FrameTreeNode* frame_tree_node,
+    const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type,
+    bool is_same_document_history_load,
     base::TimeTicks navigation_start) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
@@ -812,9 +824,9 @@ void NavigatorImpl::RequestNavigation(
   FrameMsg_Navigate_Type::Value navigation_type =
       GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
   frame_tree_node->CreatedNavigationRequest(
-      NavigationRequest::CreateBrowserInitiated(frame_tree_node, entry,
-                                                navigation_type,
-                                                navigation_start, controller_));
+      NavigationRequest::CreateBrowserInitiated(
+          frame_tree_node, frame_entry, entry, navigation_type,
+          is_same_document_history_load, navigation_start, controller_));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // Have the current renderer execute its beforeunload event if needed. If it

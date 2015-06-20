@@ -61,8 +61,10 @@ bool NavigationRequest::ShouldMakeNetworkRequest(const GURL& url) {
 // static
 scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
+    const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
     FrameMsg_Navigate_Type::Value navigation_type,
+    bool is_same_document_history_load,
     base::TimeTicks navigation_start,
     NavigationControllerImpl* controller) {
   std::string method = entry.GetHasPostData() ? "POST" : "GET";
@@ -87,11 +89,13 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   }
 
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, entry.ConstructCommonNavigationParams(navigation_type),
+      frame_tree_node,
+      entry.ConstructCommonNavigationParams(frame_entry, navigation_type),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type), false),
       entry.ConstructRequestNavigationParams(
-          navigation_start, controller->HasCommittedRealLoad(frame_tree_node),
+          frame_entry, navigation_start, is_same_document_history_load,
+          controller->HasCommittedRealLoad(frame_tree_node),
           controller->GetPendingEntryIndex() == -1,
           controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),

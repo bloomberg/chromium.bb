@@ -2,6 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/*
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ *     (http://www.torchmobile.com/)
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1.  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include "content/browser/frame_host/navigation_controller_impl.h"
 
 #include "base/bind.h"
@@ -24,6 +55,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_entry_screenshot_manager.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
@@ -695,23 +727,41 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       break;
   }
 
-  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-      CreateNavigationEntry(
-          params.url,
-          params.referrer,
-          params.transition_type,
-          params.is_renderer_initiated,
-          params.extra_headers,
-          browser_context_));
-  if (!params.frame_name.empty()) {
-    // This is only used for navigating subframes in tests.
-    FrameTreeNode* named_frame =
-        delegate_->GetFrameTree()->FindByName(params.frame_name);
-    if (named_frame)
-      entry->set_frame_tree_node_id(named_frame->frame_tree_node_id());
+  NavigationEntryImpl* entry = nullptr;
+
+  // For subframes, create a pending entry with a corresponding frame entry.
+  int frame_tree_node_id = params.frame_tree_node_id;
+  if (frame_tree_node_id != -1 || !params.frame_name.empty()) {
+    FrameTreeNode* node =
+        params.frame_tree_node_id != -1
+            ? delegate_->GetFrameTree()->FindByID(params.frame_tree_node_id)
+            : delegate_->GetFrameTree()->FindByName(params.frame_name);
+    if (node && !node->IsMainFrame()) {
+      DCHECK(GetLastCommittedEntry());
+
+      // Update the FTN ID to use below in case we found a named frame.
+      frame_tree_node_id = node->frame_tree_node_id();
+
+      // In --site-per-process, create an identical NavigationEntry with a
+      // new FrameNavigationEntry for the target subframe.
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kSitePerProcess)) {
+        entry = GetLastCommittedEntry()->Clone();
+        entry->SetPageID(-1);
+        entry->AddOrUpdateFrameEntry(node, -1, -1, nullptr, params.url,
+                                     params.referrer, PageState());
+      }
+    }
   }
-  if (params.frame_tree_node_id != -1)
-    entry->set_frame_tree_node_id(params.frame_tree_node_id);
+
+  // Otherwise, create a pending entry for the main frame.
+  if (!entry) {
+    entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
+        params.url, params.referrer, params.transition_type,
+        params.is_renderer_initiated, params.extra_headers, browser_context_));
+  }
+  // Set the FTN ID (only used in non-site-per-process, for tests).
+  entry->set_frame_tree_node_id(frame_tree_node_id);
   entry->set_source_site_instance(
       static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
   if (params.redirect_chain.size() > 0)
@@ -808,8 +858,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
                      new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
   ignore_mismatch |= details->type == NAVIGATION_TYPE_NAV_IGNORE &&
                      new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kSitePerProcess)) {
+  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+  if (is_site_per_process) {
     // We know that the old classifier is wrong for OOPIFs, so use the new one
     // in --site-per-process mode.
     details->type = new_type;
@@ -877,9 +928,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry = GetLastCommittedEntry();
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
-  // TODO(creis): Do this on the frame entry instead, once we have them for
-  // manual subframe navigations in --site-per-process.
-  active_entry->SetPageState(params.page_state);
+  if (is_site_per_process) {
+    // Update the frame-specific PageState.
+    FrameNavigationEntry* frame_entry =
+        active_entry->GetFrameEntry(rfh->frame_tree_node());
+    frame_entry->set_page_state(params.page_state);
+  } else {
+    active_entry->SetPageState(params.page_state);
+  }
   active_entry->SetRedirectChain(params.redirects);
 
   // Use histogram to track memory impact of redirect chain because it's now
@@ -1851,7 +1907,7 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
   // This call does not support re-entrancy.  See http://crbug.com/347742.
   CHECK(!in_navigate_to_pending_entry_);
   in_navigate_to_pending_entry_ = true;
-  bool success = delegate_->NavigateToPendingEntry(reload_type);
+  bool success = NavigateToPendingEntryInternal(reload_type);
   in_navigate_to_pending_entry_ = false;
 
   if (!success)
@@ -1864,6 +1920,97 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
     pending_entry_->set_site_instance(static_cast<SiteInstanceImpl*>(
         delegate_->GetPendingSiteInstance()));
     pending_entry_->set_restore_type(NavigationEntryImpl::RESTORE_NONE);
+  }
+}
+
+bool NavigationControllerImpl::NavigateToPendingEntryInternal(
+    ReloadType reload_type) {
+  DCHECK(pending_entry_);
+  FrameTreeNode* root = delegate_->GetFrameTree()->root();
+
+  // In default Chrome, there are no subframe FrameNavigationEntries.  Either
+  // navigate the main frame or use the main frame's FrameNavigationEntry to
+  // tell the indicated frame where to go.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    FrameNavigationEntry* frame_entry = GetPendingEntry()->GetFrameEntry(root);
+    FrameTreeNode* frame = root;
+    int ftn_id = GetPendingEntry()->frame_tree_node_id();
+    if (ftn_id != -1) {
+      frame = delegate_->GetFrameTree()->FindByID(ftn_id);
+      DCHECK(frame);
+    }
+    return frame->navigator()->NavigateToPendingEntry(frame, *frame_entry,
+                                                      reload_type, false);
+  }
+
+  // In --site-per-process, we compare FrameNavigationEntries to see which
+  // frames in the tree need to be navigated.
+  FrameLoadVector same_document_loads;
+  FrameLoadVector different_document_loads;
+  if (GetLastCommittedEntry()) {
+    FindFramesToNavigate(root, &same_document_loads, &different_document_loads);
+  }
+
+  if (same_document_loads.empty() && different_document_loads.empty()) {
+    // If we don't have any frames to navigate at this point, either
+    // (1) there is no previous history entry to compare against, or
+    // (2) we were unable to match any frames by name. In the first case,
+    // doing a different document navigation to the root item is the only valid
+    // thing to do. In the second case, we should have been able to find a
+    // frame to navigate based on names if this were a same document
+    // navigation, so we can safely assume this is the different document case.
+    different_document_loads.push_back(
+        std::make_pair(root, pending_entry_->GetFrameEntry(root)));
+  }
+
+  // If all the frame loads fail, we will discard the pending entry.
+  bool success = false;
+
+  // Send all the same document frame loads before the different document loads.
+  for (const auto& item : same_document_loads) {
+    FrameTreeNode* frame = item.first;
+    success |= frame->navigator()->NavigateToPendingEntry(frame, *item.second,
+                                                          reload_type, true);
+  }
+  for (const auto& item : different_document_loads) {
+    FrameTreeNode* frame = item.first;
+    success |= frame->navigator()->NavigateToPendingEntry(frame, *item.second,
+                                                          reload_type, false);
+  }
+  return success;
+}
+
+void NavigationControllerImpl::FindFramesToNavigate(
+    FrameTreeNode* frame,
+    FrameLoadVector* same_document_loads,
+    FrameLoadVector* different_document_loads) {
+  DCHECK(pending_entry_);
+  DCHECK_GE(last_committed_entry_index_, 0);
+  FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
+  FrameNavigationEntry* old_item =
+      GetLastCommittedEntry()->GetFrameEntry(frame);
+  if (!new_item)
+    return;
+
+  // Schedule a load in this frame if the new item isn't for the same item
+  // sequence number in the same SiteInstance.
+  if (!old_item ||
+      new_item->item_sequence_number() != old_item->item_sequence_number() ||
+      new_item->site_instance() != old_item->site_instance()) {
+    if (old_item &&
+        new_item->document_sequence_number() ==
+            old_item->document_sequence_number()) {
+      same_document_loads->push_back(std::make_pair(frame, new_item));
+    } else {
+      different_document_loads->push_back(std::make_pair(frame, new_item));
+    }
+    return;
+  }
+
+  for (size_t i = 0; i < frame->child_count(); i++) {
+    FindFramesToNavigate(frame->child_at(i), same_document_loads,
+                         different_document_loads);
   }
 }
 

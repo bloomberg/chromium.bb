@@ -419,12 +419,14 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   RenderFrameHostImpl* NavigateToEntry(
       RenderFrameHostManager* manager,
       const NavigationEntryImpl& entry) {
+    // Tests currently only navigate using main frame FrameNavigationEntries.
+    FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBrowserSideNavigation)) {
       scoped_ptr<NavigationRequest> navigation_request =
           NavigationRequest::CreateBrowserInitiated(
-              manager->frame_tree_node_, entry, FrameMsg_Navigate_Type::NORMAL,
-              base::TimeTicks::Now(),
+              manager->frame_tree_node_, *frame_entry, entry,
+              FrameMsg_Navigate_Type::NORMAL, false, base::TimeTicks::Now(),
               static_cast<NavigationControllerImpl*>(&controller()));
       TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
           manager->GetFrameHostForNavigation(*navigation_request));
@@ -432,7 +434,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
       frame_host->set_pending_commit(true);
       return frame_host;
     }
-    return manager->Navigate(entry);
+
+    return manager->Navigate(*frame_entry, entry);
   }
 
   // Returns the pending RenderFrameHost.

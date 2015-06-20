@@ -25,6 +25,7 @@ namespace content {
 class BrowserContext;
 class CrossProcessFrameConnector;
 class CrossSiteTransferringRequest;
+class FrameNavigationEntry;
 class FrameTreeNode;
 class InterstitialPageImpl;
 class NavigationControllerImpl;
@@ -251,7 +252,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // navigation entry. It may create a new RenderFrameHost or re-use an existing
   // one. The RenderFrameHost to navigate will be returned. Returns NULL if one
   // could not be created.
-  RenderFrameHostImpl* Navigate(const NavigationEntryImpl& entry);
+  RenderFrameHostImpl* Navigate(const FrameNavigationEntry& frame_entry,
+                                const NavigationEntryImpl& entry);
 
   // Instructs the various live views to stop. Called when the user directed the
   // page to stop loading.

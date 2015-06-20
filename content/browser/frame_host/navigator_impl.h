@@ -49,9 +49,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void DidNavigate(RenderFrameHostImpl* render_frame_host,
                    const FrameHostMsg_DidCommitProvisionalLoad_Params&
                        input_params) override;
-  bool NavigateToPendingEntry(
-      FrameTreeNode* frame_tree_node,
-      NavigationController::ReloadType reload_type) override;
+  bool NavigateToPendingEntry(FrameTreeNode* frame_tree_node,
+                              const FrameNavigationEntry& frame_entry,
+                              NavigationController::ReloadType reload_type,
+                              bool is_same_document_history_load) override;
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                       const GURL& url,
                       SiteInstance* source_site_instance,
@@ -97,10 +98,11 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
 
   // Navigates to the given entry, which must be the pending entry.  Private
   // because all callers should use NavigateToPendingEntry.
-  bool NavigateToEntry(
-      FrameTreeNode* frame_tree_node,
-      const NavigationEntryImpl& entry,
-      NavigationController::ReloadType reload_type);
+  bool NavigateToEntry(FrameTreeNode* frame_tree_node,
+                       const FrameNavigationEntry& frame_entry,
+                       const NavigationEntryImpl& entry,
+                       NavigationController::ReloadType reload_type,
+                       bool is_same_document_history_load);
 
   bool ShouldAssignSiteForURL(const GURL& url);
 
@@ -112,8 +114,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // to execute the beforeUnload event. Otherwise, the navigation request will
   // be started.
   void RequestNavigation(FrameTreeNode* frame_tree_node,
+                         const FrameNavigationEntry& frame_entry,
                          const NavigationEntryImpl& entry,
                          NavigationController::ReloadType reload_type,
+                         bool is_same_document_history_load,
                          base::TimeTicks navigation_start);
 
   void RecordNavigationMetrics(

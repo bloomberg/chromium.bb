@@ -51,8 +51,6 @@ class NavigationControllerDelegate {
   virtual void NotifyBeforeFormRepostWarningShow() = 0;
   virtual void NotifyNavigationEntryCommitted(
       const LoadCommittedDetails& load_details) = 0;
-  virtual bool NavigateToPendingEntry(
-      NavigationController::ReloadType reload_type) = 0;
   virtual void SetHistoryOffsetAndLength(int history_offset,
                                          int history_length) = 0;
   virtual void CopyMaxPageIDsFrom(WebContents* web_contents) = 0;

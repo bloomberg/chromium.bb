@@ -417,6 +417,7 @@ NavigationEntryImpl* NavigationEntryImpl::CloneAndReplace(
 }
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
+    const FrameNavigationEntry& frame_entry,
     FrameMsg_Navigate_Type::Value navigation_type) const {
   FrameMsg_UILoadMetricsReportType::Value report_type =
       FrameMsg_UILoadMetricsReportType::NO_REPORT;
@@ -428,9 +429,9 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
 #endif
 
   return CommonNavigationParams(
-      GetURL(), GetReferrer(), GetTransitionType(), navigation_type,
-      !IsViewSourceMode(), ui_timestamp, report_type, GetBaseURLForDataURL(),
-      GetHistoryURLForDataURL());
+      frame_entry.url(), frame_entry.referrer(), GetTransitionType(),
+      navigation_type, !IsViewSourceMode(), ui_timestamp, report_type,
+      GetBaseURLForDataURL(), GetHistoryURLForDataURL());
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
@@ -450,7 +451,9 @@ StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
 }
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
+    const FrameNavigationEntry& frame_entry,
     base::TimeTicks navigation_start,
+    bool is_same_document_history_load,
     bool has_committed_real_load,
     bool intended_as_new_entry,
     int pending_history_list_offset,
@@ -476,10 +479,11 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
   }
   return RequestNavigationParams(
       GetIsOverridingUserAgent(), navigation_start, redirects,
-      GetCanLoadLocalResources(), base::Time::Now(), GetPageState(),
-      GetPageID(), GetUniqueID(), has_committed_real_load,
-      intended_as_new_entry, pending_offset_to_send, current_offset_to_send,
-      current_length_to_send, should_clear_history_list());
+      GetCanLoadLocalResources(), base::Time::Now(), frame_entry.page_state(),
+      GetPageID(), GetUniqueID(), is_same_document_history_load,
+      has_committed_real_load, intended_as_new_entry, pending_offset_to_send,
+      current_offset_to_send, current_length_to_send,
+      should_clear_history_list());
 }
 
 void NavigationEntryImpl::ResetForCommit() {

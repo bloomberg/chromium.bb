@@ -142,10 +142,13 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Helper functions to construct NavigationParameters for a navigation to this
   // NavigationEntry.
   CommonNavigationParams ConstructCommonNavigationParams(
+      const FrameNavigationEntry& frame_entry,
       FrameMsg_Navigate_Type::Value navigation_type) const;
   StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(
+      const FrameNavigationEntry& frame_entry,
       base::TimeTicks navigation_start,
+      bool is_same_document_history_load,
       bool has_committed_real_load,
       bool intended_as_new_entry,
       int pending_offset_to_send,
