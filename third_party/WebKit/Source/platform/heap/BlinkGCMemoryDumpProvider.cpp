@@ -9,6 +9,7 @@
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
 
 namespace blink {
 
@@ -20,11 +21,13 @@ BlinkGCMemoryDumpProvider* BlinkGCMemoryDumpProvider::instance()
 
 bool BlinkGCMemoryDumpProvider::onMemoryDump(blink::WebProcessMemoryDump* memoryDump)
 {
-    WebMemoryAllocatorDump* allocatorDump = memoryDump->createMemoryAllocatorDump("blink_gc");
+    String dumpName = String::format("blink_gc/thread_%lu", static_cast<unsigned long>(WTF::currentThread()));
+    WebMemoryAllocatorDump* allocatorDump = memoryDump->createMemoryAllocatorDump(dumpName);
     allocatorDump->AddScalar("size", "bytes", Heap::allocatedSpace());
 
-    WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump("blink_gc/allocated_objects");
-    objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize());
+    dumpName.append("/allocated_objects");
+    WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump(dumpName);
+    objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
     objectsDump->AddScalar("estimated_live_object_size", "bytes", Heap::estimatedLiveObjectSize());
 
     return true;

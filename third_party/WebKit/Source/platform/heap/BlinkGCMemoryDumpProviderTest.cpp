@@ -7,6 +7,7 @@
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebProcessMemoryDump.h"
+#include "wtf/Threading.h"
 
 #include <gtest/gtest.h>
 
@@ -17,8 +18,8 @@ TEST(BlinkGCDumpProviderTest, MemoryDump)
     WebProcessMemoryDump* dump  = Platform::current()->createProcessMemoryDump();
     ASSERT(dump);
     BlinkGCMemoryDumpProvider::instance()->onMemoryDump(dump);
-    ASSERT(dump->getMemoryAllocatorDump("blink_gc"));
-    ASSERT(dump->getMemoryAllocatorDump("blink_gc/allocated_objects"));
+    ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc/thread_%lu", static_cast<unsigned long>(WTF::currentThread()))));
+    ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc/thread_%lu/allocated_objects", static_cast<unsigned long>(WTF::currentThread()))));
 }
 
 } // namespace blink
