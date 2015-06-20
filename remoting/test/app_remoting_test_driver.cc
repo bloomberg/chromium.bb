@@ -175,14 +175,13 @@ int main(int argc, char** argv) {
   }
 
   // Verify we received the required input from the command line.
-  if (!command_line->HasSwitch(switches::kUserNameSwitchName)) {
+  std::string user_name(
+      command_line->GetSwitchValueASCII(switches::kUserNameSwitchName));
+  if (user_name.empty()) {
     LOG(ERROR) << "No user name passed in, can't authenticate without that!";
     PrintUsage();
     return -1;
   }
-
-  std::string user_name(
-      command_line->GetSwitchValueASCII(switches::kUserNameSwitchName));
   DVLOG(1) << "Running tests as: " << user_name;
 
   // Check to see if the user passed in a one time use auth_code for

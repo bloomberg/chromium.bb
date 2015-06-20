@@ -51,8 +51,9 @@ class RefreshTokenStoreOnDisk : public RefreshTokenStore {
 
 RefreshTokenStoreOnDisk::RefreshTokenStoreOnDisk(
     const std::string& user_name,
-    const base::FilePath& refresh_token_file_path)
-    : user_name_(user_name), refresh_token_file_path_(refresh_token_file_path) {
+    const base::FilePath& refresh_token_path)
+    : user_name_(user_name),
+    refresh_token_file_path_(base::MakeAbsoluteFilePath(refresh_token_path)) {
 }
 
 RefreshTokenStoreOnDisk::~RefreshTokenStoreOnDisk() {
