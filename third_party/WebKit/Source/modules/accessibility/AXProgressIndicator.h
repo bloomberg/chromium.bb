@@ -31,7 +31,7 @@ class LayoutProgress;
 
 class AXProgressIndicator final : public AXLayoutObject {
 public:
-    static PassRefPtr<AXProgressIndicator> create(LayoutProgress*, AXObjectCacheImpl*);
+    static PassRefPtr<AXProgressIndicator> create(LayoutProgress*, AXObjectCacheImpl&);
 
 private:
     virtual AccessibilityRole determineAccessibilityRole() override final;
@@ -42,7 +42,7 @@ private:
     virtual float maxValueForRange() const override;
     virtual float minValueForRange() const override;
 
-    AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl*);
+    AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl&);
 
     HTMLProgressElement* element() const;
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;

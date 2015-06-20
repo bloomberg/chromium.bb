@@ -40,7 +40,7 @@ class AXObjectCacheImpl;
 class AccessibilityMediaControl : public AXLayoutObject {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AccessibilityMediaControl() { }
 
     virtual AccessibilityRole roleValue() const override;
@@ -50,7 +50,7 @@ public:
     virtual String deprecatedHelpText() const override;
 
 protected:
-    AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl*);
+    AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl&);
     MediaControlElementType controlType() const;
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
@@ -59,7 +59,7 @@ protected:
 class AccessibilityMediaTimeline final : public AXSlider {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AccessibilityMediaTimeline() { }
 
     virtual String deprecatedHelpText() const override;
@@ -67,14 +67,14 @@ public:
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
 private:
-    AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl*);
+    AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl&);
 };
 
 
 class AXMediaControlsContainer final : public AccessibilityMediaControl {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXMediaControlsContainer() { }
 
     virtual AccessibilityRole roleValue() const override { return ToolbarRole; }
@@ -83,7 +83,7 @@ public:
     virtual String deprecatedAccessibilityDescription() const override;
 
 private:
-    AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl*);
+    AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
     bool controllingVideoElement() const;
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
@@ -92,7 +92,7 @@ private:
 class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AccessibilityMediaTimeDisplay() { }
 
     virtual AccessibilityRole roleValue() const override { return StaticTextRole; }
@@ -101,7 +101,7 @@ public:
     virtual String deprecatedAccessibilityDescription() const override;
 
 private:
-    AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl*);
+    AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl&);
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 

@@ -41,10 +41,10 @@ class AXTableCell;
 class MODULES_EXPORT AXTable : public AXLayoutObject {
 
 protected:
-    AXTable(LayoutObject*, AXObjectCacheImpl*);
+    AXTable(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXTable> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXTable> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXTable();
 
     virtual void init() override final;

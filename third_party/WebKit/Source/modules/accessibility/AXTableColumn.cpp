@@ -38,7 +38,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableColumn::AXTableColumn(AXObjectCacheImpl* axObjectCache)
+AXTableColumn::AXTableColumn(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache)
 {
 }
@@ -47,7 +47,7 @@ AXTableColumn::~AXTableColumn()
 {
 }
 
-PassRefPtr<AXTableColumn> AXTableColumn::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTableColumn> AXTableColumn::create(AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXTableColumn(axObjectCache));
 }
@@ -101,7 +101,7 @@ void AXTableColumn::headerObjectsForColumn(AccessibilityChildrenVector& headers)
             if (!layoutCell)
                 continue;
 
-            AXObject* cell = axObjectCache()->getOrCreate(layoutCell->node());
+            AXObject* cell = axObjectCache().getOrCreate(layoutCell->node());
             if (!cell || !cell->isTableCell() || headers.contains(cell))
                 continue;
 

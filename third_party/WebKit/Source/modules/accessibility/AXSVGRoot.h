@@ -38,10 +38,10 @@ class AXObjectCacheImpl;
 class AXSVGRoot final : public AXLayoutObject {
 
 protected:
-    AXSVGRoot(LayoutObject*, AXObjectCacheImpl*);
+    AXSVGRoot(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXSVGRoot> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXSVGRoot> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXSVGRoot();
 
     void setParent(AXObject*) override;

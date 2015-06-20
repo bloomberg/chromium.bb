@@ -41,10 +41,10 @@ class LayoutTableSection;
 class MODULES_EXPORT AXTableColumn final : public AXMockObject {
 
 private:
-    explicit AXTableColumn(AXObjectCacheImpl*);
+    explicit AXTableColumn(AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXTableColumn> create(AXObjectCacheImpl*);
+    static PassRefPtr<AXTableColumn> create(AXObjectCacheImpl&);
     virtual ~AXTableColumn();
 
     // retrieves the topmost "column" header (th)

@@ -38,12 +38,12 @@ class Scrollbar;
 
 class AXScrollbar final : public AXMockObject {
 public:
-    static PassRefPtr<AXScrollbar> create(Scrollbar*, AXObjectCacheImpl*);
+    static PassRefPtr<AXScrollbar> create(Scrollbar*, AXObjectCacheImpl&);
 
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
 
 private:
-    AXScrollbar(Scrollbar*, AXObjectCacheImpl*);
+    AXScrollbar(Scrollbar*, AXObjectCacheImpl&);
 
     virtual void detachFromParent() override;
 

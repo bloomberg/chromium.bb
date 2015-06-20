@@ -35,7 +35,7 @@
 
 namespace blink {
 
-AXScrollbar::AXScrollbar(Scrollbar* scrollbar, AXObjectCacheImpl* axObjectCache)
+AXScrollbar::AXScrollbar(Scrollbar* scrollbar, AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache)
     , m_scrollbar(scrollbar)
 {
@@ -48,7 +48,7 @@ void AXScrollbar::detachFromParent()
     AXMockObject::detachFromParent();
 }
 
-PassRefPtr<AXScrollbar> AXScrollbar::create(Scrollbar* scrollbar, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXScrollbar> AXScrollbar::create(Scrollbar* scrollbar, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXScrollbar(scrollbar, axObjectCache));
 }

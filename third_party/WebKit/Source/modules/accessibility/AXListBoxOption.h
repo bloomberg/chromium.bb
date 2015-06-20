@@ -41,10 +41,10 @@ class HTMLSelectElement;
 class AXListBoxOption final : public AXLayoutObject {
 
 private:
-    AXListBoxOption(LayoutObject*, AXObjectCacheImpl*);
+    AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXListBoxOption();
 
     virtual bool isAXListBoxOption() const override { return true; }

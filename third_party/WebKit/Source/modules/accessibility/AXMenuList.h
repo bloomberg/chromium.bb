@@ -35,7 +35,7 @@ class LayoutMenuList;
 
 class AXMenuList final : public AXLayoutObject {
 public:
-    static PassRefPtr<AXMenuList> create(LayoutMenuList* layoutObject, AXObjectCacheImpl*);
+    static PassRefPtr<AXMenuList> create(LayoutMenuList* layoutObject, AXObjectCacheImpl&);
 
     virtual bool isCollapsed() const override;
     virtual AccessibilityExpanded isExpanded() const override final;
@@ -47,7 +47,7 @@ public:
     void didHidePopup();
 
 private:
-    AXMenuList(LayoutMenuList*, AXObjectCacheImpl*);
+    AXMenuList(LayoutMenuList*, AXObjectCacheImpl&);
 
     virtual bool isMenuList() const override { return true; }
     virtual AccessibilityRole determineAccessibilityRole() override final;

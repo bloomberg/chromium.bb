@@ -33,7 +33,7 @@
 
 namespace blink {
 
-AXTableHeaderContainer::AXTableHeaderContainer(AXObjectCacheImpl* axObjectCache)
+AXTableHeaderContainer::AXTableHeaderContainer(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache)
 {
 }
@@ -42,7 +42,7 @@ AXTableHeaderContainer::~AXTableHeaderContainer()
 {
 }
 
-PassRefPtr<AXTableHeaderContainer> AXTableHeaderContainer::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTableHeaderContainer> AXTableHeaderContainer::create(AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXTableHeaderContainer(axObjectCache));
 }

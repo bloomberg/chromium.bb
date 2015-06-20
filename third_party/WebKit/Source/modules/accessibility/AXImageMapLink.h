@@ -40,10 +40,10 @@ class AXObjectCacheImpl;
 class AXImageMapLink final : public AXMockObject {
 
 private:
-    explicit AXImageMapLink(AXObjectCacheImpl*);
+    explicit AXImageMapLink(AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXImageMapLink> create(AXObjectCacheImpl*);
+    static PassRefPtr<AXImageMapLink> create(AXObjectCacheImpl&);
     virtual ~AXImageMapLink();
 
     void setHTMLAreaElement(HTMLAreaElement* element) { m_areaElement = element; }

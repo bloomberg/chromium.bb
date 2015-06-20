@@ -35,10 +35,10 @@ class AXObjectCacheImpl;
 
 class AXMenuListOption final : public AXMockObject {
 public:
-    static PassRefPtr<AXMenuListOption> create(HTMLOptionElement* element, AXObjectCacheImpl* axObjectCache) { return adoptRef(new AXMenuListOption(element, axObjectCache)); }
+    static PassRefPtr<AXMenuListOption> create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return adoptRef(new AXMenuListOption(element, axObjectCache)); }
 
 private:
-    explicit AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl*);
+    explicit AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
 
     virtual bool isMenuListOption() const override { return true; }
 

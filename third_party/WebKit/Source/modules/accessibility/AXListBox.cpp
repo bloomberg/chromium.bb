@@ -39,7 +39,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXListBox::AXListBox(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+AXListBox::AXListBox(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
     : AXLayoutObject(layoutObject, axObjectCache)
     , m_activeIndex(-1)
 {
@@ -50,7 +50,7 @@ AXListBox::~AXListBox()
 {
 }
 
-PassRefPtr<AXListBox> AXListBox::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXListBox> AXListBox::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXListBox(layoutObject, axObjectCache));
 }
@@ -72,7 +72,7 @@ AXObject* AXListBox::activeDescendant() const
     int activeIndex = select->activeSelectionEndListIndex();
     if (activeIndex >= 0 && activeIndex < static_cast<int>(select->length())) {
         HTMLOptionElement* option = select->item(m_activeIndex);
-        return axObjectCache()->get(option);
+        return axObjectCache().get(option);
     }
 
     return nullptr;
@@ -94,9 +94,9 @@ void AXListBox::activeIndexChanged()
 
     if (m_activeIndex >= 0 && m_activeIndex < static_cast<int>(select->length())) {
         HTMLOptionElement* option = select->item(m_activeIndex);
-        axObjectCache()->postNotification(option, AXObjectCacheImpl::AXFocusedUIElementChanged);
+        axObjectCache().postNotification(option, AXObjectCacheImpl::AXFocusedUIElementChanged);
     } else {
-        axObjectCache()->postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
+        axObjectCache().postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
     }
 }
 

@@ -38,10 +38,10 @@ class AXObjectCacheImpl;
 class AXListBox final : public AXLayoutObject {
 
 private:
-    AXListBox(LayoutObject*, AXObjectCacheImpl*);
+    AXListBox(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXListBox> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXListBox> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXListBox();
 
     virtual AccessibilityRole determineAccessibilityRole() override final;

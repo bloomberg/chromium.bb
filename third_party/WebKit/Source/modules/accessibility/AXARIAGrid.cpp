@@ -37,7 +37,7 @@
 
 namespace blink {
 
-AXARIAGrid::AXARIAGrid(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+AXARIAGrid::AXARIAGrid(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
     : AXTable(layoutObject, axObjectCache)
 {
 }
@@ -46,7 +46,7 @@ AXARIAGrid::~AXARIAGrid()
 {
 }
 
-PassRefPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXARIAGrid(layoutObject, axObjectCache));
 }
@@ -92,7 +92,7 @@ void AXARIAGrid::addChildren()
     if (!m_layoutObject)
         return;
 
-    AXObjectCacheImpl* axCache = axObjectCache();
+    AXObjectCacheImpl& axCache = axObjectCache();
 
     // add only rows that are labeled as aria rows
     HashSet<AXObject*> appendedRows;
@@ -114,7 +114,7 @@ void AXARIAGrid::addChildren()
 
     // make the columns based on the number of columns in the first body
     for (unsigned i = 0; i < columnCount; ++i) {
-        AXTableColumn* column = toAXTableColumn(axCache->getOrCreate(ColumnRole));
+        AXTableColumn* column = toAXTableColumn(axCache.getOrCreate(ColumnRole));
         column->setColumnIndex((int)i);
         column->setParent(this);
         m_columns.append(column);

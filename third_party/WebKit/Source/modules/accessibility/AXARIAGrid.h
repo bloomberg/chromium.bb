@@ -38,10 +38,10 @@ class AXObjectCacheImpl;
 
 class AXARIAGrid final : public AXTable {
 private:
-    AXARIAGrid(LayoutObject*, AXObjectCacheImpl*);
+    AXARIAGrid(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXARIAGrid> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXARIAGrid> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXARIAGrid();
 
     virtual bool isAriaTable() const override { return true; }

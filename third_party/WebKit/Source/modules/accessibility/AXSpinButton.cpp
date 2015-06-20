@@ -31,12 +31,12 @@
 
 namespace blink {
 
-PassRefPtr<AXSpinButton> AXSpinButton::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSpinButton> AXSpinButton::create(AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXSpinButton(axObjectCache));
 }
 
-AXSpinButton::AXSpinButton(AXObjectCacheImpl* axObjectCache)
+AXSpinButton::AXSpinButton(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache)
     , m_spinButtonElement(0)
 {
@@ -75,12 +75,12 @@ void AXSpinButton::addChildren()
 {
     m_haveChildren = true;
 
-    AXSpinButtonPart* incrementor = toAXSpinButtonPart(axObjectCache()->getOrCreate(SpinButtonPartRole));
+    AXSpinButtonPart* incrementor = toAXSpinButtonPart(axObjectCache().getOrCreate(SpinButtonPartRole));
     incrementor->setIsIncrementor(true);
     incrementor->setParent(this);
     m_children.append(incrementor);
 
-    AXSpinButtonPart* decrementor = toAXSpinButtonPart(axObjectCache()->getOrCreate(SpinButtonPartRole));
+    AXSpinButtonPart* decrementor = toAXSpinButtonPart(axObjectCache().getOrCreate(SpinButtonPartRole));
     decrementor->setIsIncrementor(false);
     decrementor->setParent(this);
     m_children.append(decrementor);
@@ -97,13 +97,13 @@ void AXSpinButton::step(int amount)
 
 // AXSpinButtonPart
 
-AXSpinButtonPart::AXSpinButtonPart(AXObjectCacheImpl* axObjectCache)
+AXSpinButtonPart::AXSpinButtonPart(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache)
     , m_isIncrementor(false)
 {
 }
 
-PassRefPtr<AXSpinButtonPart> AXSpinButtonPart::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSpinButtonPart> AXSpinButtonPart::create(AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXSpinButtonPart(axObjectCache));
 }

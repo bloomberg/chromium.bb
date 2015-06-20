@@ -43,10 +43,10 @@ class Node;
 
 class MODULES_EXPORT AXNodeObject : public AXObject {
 protected:
-    AXNodeObject(Node*, AXObjectCacheImpl*);
+    AXNodeObject(Node*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXNodeObject> create(Node*, AXObjectCacheImpl*);
+    static PassRefPtr<AXNodeObject> create(Node*, AXObjectCacheImpl&);
     virtual ~AXNodeObject();
 
 protected:

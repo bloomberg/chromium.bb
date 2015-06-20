@@ -38,10 +38,10 @@ class AXObjectCacheImpl;
 class AXList final : public AXLayoutObject {
 
 private:
-    AXList(LayoutObject*, AXObjectCacheImpl*);
+    AXList(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXList> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXList> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXList();
 
     virtual bool isList() const override { return true; }

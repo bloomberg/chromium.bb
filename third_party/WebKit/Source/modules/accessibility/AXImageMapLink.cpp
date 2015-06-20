@@ -36,7 +36,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXImageMapLink::AXImageMapLink(AXObjectCacheImpl* axObjectCache)
+AXImageMapLink::AXImageMapLink(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache)
     , m_areaElement(nullptr)
     , m_mapElement(nullptr)
@@ -54,7 +54,7 @@ void AXImageMapLink::detachFromParent()
     m_mapElement = nullptr;
 }
 
-PassRefPtr<AXImageMapLink> AXImageMapLink::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXImageMapLink> AXImageMapLink::create(AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXImageMapLink(axObjectCache));
 }
@@ -67,7 +67,7 @@ AXObject* AXImageMapLink::computeParent() const
     if (!m_mapElement.get() || !m_mapElement->layoutObject())
         return 0;
 
-    return axObjectCache()->getOrCreate(m_mapElement->layoutObject());
+    return axObjectCache().getOrCreate(m_mapElement->layoutObject());
 }
 
 AccessibilityRole AXImageMapLink::roleValue() const

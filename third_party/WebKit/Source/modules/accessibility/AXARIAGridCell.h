@@ -38,10 +38,10 @@ class AXObjectCacheImpl;
 class AXARIAGridCell final : public AXTableCell {
 
 private:
-    AXARIAGridCell(LayoutObject*, AXObjectCacheImpl*);
+    AXARIAGridCell(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXARIAGridCell> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXARIAGridCell> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXARIAGridCell();
 
     // fills in the start location and row span of cell

@@ -48,10 +48,10 @@ class Widget;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 protected:
-    AXLayoutObject(LayoutObject*, AXObjectCacheImpl*);
+    AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXLayoutObject> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXLayoutObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXLayoutObject();
 
     // Public, overridden from AXObject.

@@ -30,7 +30,7 @@
 
 namespace blink {
 
-AXMockObject::AXMockObject(AXObjectCacheImpl* axObjectCache)
+AXMockObject::AXMockObject(AXObjectCacheImpl& axObjectCache)
     : AXObject(axObjectCache)
 {
 }

@@ -37,7 +37,7 @@ class FrameView;
 
 class AXScrollView final : public AXObject {
 public:
-    static PassRefPtr<AXScrollView> create(FrameView*, AXObjectCacheImpl*);
+    static PassRefPtr<AXScrollView> create(FrameView*, AXObjectCacheImpl&);
     virtual AccessibilityRole roleValue() const override { return ScrollAreaRole; }
     FrameView* scrollView() const { return m_scrollView; }
 
@@ -48,7 +48,7 @@ protected:
     virtual ScrollableArea* getScrollableAreaIfScrollable() const override;
 
 private:
-    AXScrollView(FrameView*, AXObjectCacheImpl*);
+    AXScrollView(FrameView*, AXObjectCacheImpl&);
 
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
     virtual bool isAXScrollView() const override { return true; }

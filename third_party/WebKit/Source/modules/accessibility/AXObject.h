@@ -374,7 +374,7 @@ public:
     };
 
 protected:
-    AXObject(AXObjectCacheImpl*);
+    AXObject(AXObjectCacheImpl&);
 
 public:
     virtual ~AXObject();
@@ -394,7 +394,11 @@ public:
     virtual void setParent(AXObject* parent) { m_parent = parent; }
 
     // The AXObjectCacheImpl that owns this object, and its unique ID within this cache.
-    AXObjectCacheImpl* axObjectCache() const { return m_axObjectCache; }
+    AXObjectCacheImpl& axObjectCache() const
+    {
+        ASSERT(m_axObjectCache);
+        return *m_axObjectCache;
+    }
 
     AXID axObjectID() const { return m_id; }
 
@@ -767,8 +771,6 @@ protected:
     AccessibilityRole buttonRoleType() const;
 
     unsigned getLengthForTextRange() const { return text().length(); }
-
-    bool m_detached;
 
     mutable AXObject* m_parent;
 

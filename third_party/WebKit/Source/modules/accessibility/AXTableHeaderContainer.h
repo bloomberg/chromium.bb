@@ -39,10 +39,10 @@ class AXObjectCacheImpl;
 class AXTableHeaderContainer final : public AXMockObject {
 
 private:
-    explicit AXTableHeaderContainer(AXObjectCacheImpl*);
+    explicit AXTableHeaderContainer(AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXTableHeaderContainer> create(AXObjectCacheImpl*);
+    static PassRefPtr<AXTableHeaderContainer> create(AXObjectCacheImpl&);
     virtual ~AXTableHeaderContainer();
 
     virtual AccessibilityRole roleValue() const override { return TableHeaderContainerRole; }

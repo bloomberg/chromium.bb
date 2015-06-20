@@ -37,7 +37,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableCell::AXTableCell(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+AXTableCell::AXTableCell(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
     : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
@@ -46,7 +46,7 @@ AXTableCell::~AXTableCell()
 {
 }
 
-PassRefPtr<AXTableCell> AXTableCell::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTableCell> AXTableCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXTableCell(layoutObject, axObjectCache));
 }
@@ -88,7 +88,7 @@ AXObject* AXTableCell::parentTable() const
         return 0;
 
     // If the document no longer exists, we might not have an axObjectCache.
-    if (!axObjectCache())
+    if (isDetached())
         return 0;
 
     // Do not use getOrCreate. parentTable() can be called while the layout tree is being modified
@@ -96,7 +96,7 @@ AXObject* AXTableCell::parentTable() const
     // By using only get() implies that the AXTable must be created before AXTableCells. This should
     // always be the case when AT clients access a table.
     // https://bugs.webkit.org/show_bug.cgi?id=42652
-    return axObjectCache()->get(toLayoutTableCell(m_layoutObject)->table());
+    return axObjectCache().get(toLayoutTableCell(m_layoutObject)->table());
 }
 
 bool AXTableCell::isTableCell() const
@@ -252,7 +252,7 @@ AXObject* AXTableCell::deprecatedTitleUIElement() const
     if (!cellElement || !cellElement->hasTagName(thTag))
         return 0;
 
-    return axObjectCache()->getOrCreate(headerCell);
+    return axObjectCache().getOrCreate(headerCell);
 }
 
 } // namespace blink

@@ -370,12 +370,11 @@ HTMLDialogElement* getActiveDialogElement(Node* node)
 
 } // namespace
 
-AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
+AXObject::AXObject(AXObjectCacheImpl& axObjectCache)
     : m_id(0)
     , m_haveChildren(false)
     , m_role(UnknownRole)
     , m_lastKnownIsIgnoredValue(DefaultBehavior)
-    , m_detached(false)
     , m_parent(0)
     , m_lastModificationCount(-1)
     , m_cachedIsIgnored(false)
@@ -385,7 +384,7 @@ AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     , m_cachedHasInheritedPresentationalRole(false)
     , m_cachedIsPresentationalChild(false)
     , m_cachedLiveRegionRoot(0)
-    , m_axObjectCache(axObjectCache)
+    , m_axObjectCache(&axObjectCache)
 {
 }
 
@@ -400,12 +399,12 @@ void AXObject::detach()
     // no children are left with dangling pointers to their parent.
     clearChildren();
 
-    m_detached = true;
+    m_axObjectCache = nullptr;
 }
 
 bool AXObject::isDetached() const
 {
-    return m_detached;
+    return !m_axObjectCache;
 }
 
 bool AXObject::isARIATextControl() const
@@ -495,14 +494,15 @@ bool AXObject::accessibilityIsIgnored() const
 
 void AXObject::updateCachedAttributeValuesIfNeeded() const
 {
-    AXObjectCacheImpl* cache = axObjectCache();
-    if (!cache)
+    if (isDetached())
         return;
 
-    if (cache->modificationCount() == m_lastModificationCount)
+    AXObjectCacheImpl& cache = axObjectCache();
+
+    if (cache.modificationCount() == m_lastModificationCount)
         return;
 
-    m_lastModificationCount = cache->modificationCount();
+    m_lastModificationCount = cache.modificationCount();
     m_cachedIsInertOrAriaHidden = computeIsInertOrAriaHidden();
     m_cachedIsDescendantOfLeafNode = (leafNodeAncestor() != 0);
     m_cachedIsDescendantOfDisabledNode = (disabledAncestor() != 0);
@@ -559,7 +559,7 @@ bool AXObject::computeIsInertOrAriaHidden(IgnoredReasons* ignoredReasons) const
             if (ignoredReasons) {
                 HTMLDialogElement* dialog = getActiveDialogElement(node());
                 if (dialog) {
-                    AXObject* dialogObject = axObjectCache()->getOrCreate(dialog);
+                    AXObject* dialogObject = axObjectCache().getOrCreate(dialog);
                     if (dialogObject)
                         ignoredReasons->append(IgnoredReason(AXActiveModalDialog, dialogObject));
                     else
@@ -898,7 +898,7 @@ AXObject* AXObject::elementAccessibilityHitTest(const IntPoint& point) const
         Widget* widget = widgetForAttachmentView();
         // Normalize the point for the widget's bounds.
         if (widget && widget->isFrameView())
-            return axObjectCache()->getOrCreate(widget)->accessibilityHitTest(IntPoint(point - widget->frameRect().location()));
+            return axObjectCache().getOrCreate(widget)->accessibilityHitTest(IntPoint(point - widget->frameRect().location()));
     }
 
     // Check if there are any mock elements that need to be handled.
@@ -919,21 +919,21 @@ const AXObject::AccessibilityChildrenVector& AXObject::children()
 
 AXObject* AXObject::parentObject() const
 {
-    if (m_detached)
+    if (isDetached())
         return 0;
 
     if (m_parent)
         return m_parent;
 
-    if (axObjectCache()->isAriaOwned(this))
-        return axObjectCache()->getAriaOwnedParent(this);
+    if (axObjectCache().isAriaOwned(this))
+        return axObjectCache().getAriaOwnedParent(this);
 
     return computeParent();
 }
 
 AXObject* AXObject::parentObjectIfExists() const
 {
-    if (m_detached)
+    if (isDetached())
         return 0;
 
     if (m_parent)
@@ -977,7 +977,7 @@ AXObject* AXObject::focusedUIElement() const
     if (!page)
         return 0;
 
-    return axObjectCache()->focusedUIElementForPage(page);
+    return axObjectCache().focusedUIElementForPage(page);
 }
 
 Document* AXObject::document() const
@@ -1316,7 +1316,7 @@ void AXObject::notifyIfIgnoredValueChanged()
 {
     bool isIgnored = accessibilityIsIgnored();
     if (lastKnownIsIgnoredValue() != isIgnored) {
-        axObjectCache()->childrenChanged(parentObject());
+        axObjectCache().childrenChanged(parentObject());
         setLastKnownIsIgnoredValue(isIgnored);
     }
 }

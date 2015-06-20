@@ -32,12 +32,12 @@
 
 namespace blink {
 
-AXMenuList::AXMenuList(LayoutMenuList* layoutObject, AXObjectCacheImpl* axObjectCache)
+AXMenuList::AXMenuList(LayoutMenuList* layoutObject, AXObjectCacheImpl& axObjectCache)
     : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXMenuList(layoutObject, axObjectCache));
 }
@@ -80,15 +80,15 @@ void AXMenuList::addChildren()
 {
     m_haveChildren = true;
 
-    AXObjectCacheImpl* cache = axObjectCache();
+    AXObjectCacheImpl& cache = axObjectCache();
 
-    AXObject* list = cache->getOrCreate(MenuListPopupRole);
+    AXObject* list = cache.getOrCreate(MenuListPopupRole);
     if (!list)
         return;
 
     toAXMockObject(list)->setParent(this);
     if (list->accessibilityIsIgnored()) {
-        cache->remove(list->axObjectID());
+        cache.remove(list->axObjectID());
         return;
     }
 
@@ -136,7 +136,7 @@ void AXMenuList::didUpdateActiveOption(int optionIndex)
         }
     }
 
-    axObjectCache()->postNotification(this, AXObjectCacheImpl::AXMenuListValueChanged);
+    axObjectCache().postNotification(this, AXObjectCacheImpl::AXMenuListValueChanged);
 }
 
 void AXMenuList::didShowPopup()
@@ -157,7 +157,7 @@ void AXMenuList::didHidePopup()
     popup->didHide();
 
     if (node() && node()->focused())
-        axObjectCache()->postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
+        axObjectCache().postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
 }
 
 } // namespace blink

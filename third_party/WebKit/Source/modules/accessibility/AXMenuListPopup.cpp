@@ -34,7 +34,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl* axObjectCache)
+AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache), m_activeIndex(-1)
 {
 }
@@ -71,7 +71,7 @@ AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) 
     if (!isHTMLOptionElement(*element))
         return 0;
 
-    AXObject* object = axObjectCache()->getOrCreate(element);
+    AXObject* object = axObjectCache().getOrCreate(element);
     if (!object || !object->isMenuListOption())
         return 0;
 
@@ -139,16 +139,16 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
 {
     updateChildrenIfNecessary();
 
-    AXObjectCacheImpl* cache = axObjectCache();
+    AXObjectCacheImpl& cache = axObjectCache();
     if (m_activeIndex != optionIndex && m_activeIndex >= 0 && m_activeIndex < static_cast<int>(m_children.size())) {
         RefPtr<AXObject> previousChild = m_children[m_activeIndex].get();
-        cache->postNotification(previousChild.get(), AXObjectCacheImpl::AXMenuListItemUnselected);
+        cache.postNotification(previousChild.get(), AXObjectCacheImpl::AXMenuListItemUnselected);
     }
 
     if (optionIndex >= 0 && optionIndex < static_cast<int>(m_children.size())) {
         RefPtr<AXObject> child = m_children[optionIndex].get();
-        cache->postNotification(child.get(), AXObjectCacheImpl::AXFocusedUIElementChanged);
-        cache->postNotification(child.get(), AXObjectCacheImpl::AXMenuListItemSelected);
+        cache.postNotification(child.get(), AXObjectCacheImpl::AXFocusedUIElementChanged);
+        cache.postNotification(child.get(), AXObjectCacheImpl::AXMenuListItemSelected);
     }
 
     m_activeIndex = optionIndex;
@@ -156,10 +156,10 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
 
 void AXMenuListPopup::didHide()
 {
-    AXObjectCacheImpl* cache = axObjectCache();
-    cache->postNotification(this, AXObjectCacheImpl::AXHide);
+    AXObjectCacheImpl& cache = axObjectCache();
+    cache.postNotification(this, AXObjectCacheImpl::AXHide);
     if (activeChild())
-        cache->postNotification(activeChild(), AXObjectCacheImpl::AXMenuListItemUnselected);
+        cache.postNotification(activeChild(), AXObjectCacheImpl::AXMenuListItemUnselected);
 }
 
 void AXMenuListPopup::didShow()
@@ -167,13 +167,13 @@ void AXMenuListPopup::didShow()
     if (!m_haveChildren)
         addChildren();
 
-    AXObjectCacheImpl* cache = axObjectCache();
-    cache->postNotification(this, AXObjectCacheImpl::AXShow);
+    AXObjectCacheImpl& cache = axObjectCache();
+    cache.postNotification(this, AXObjectCacheImpl::AXShow);
     int selectedIndex = getSelectedIndex();
     if (selectedIndex >= 0 && selectedIndex < static_cast<int>(m_children.size()))
         didUpdateActiveOption(selectedIndex);
     else
-        cache->postNotification(m_parent, AXObjectCacheImpl::AXFocusedUIElementChanged);
+        cache.postNotification(m_parent, AXObjectCacheImpl::AXFocusedUIElementChanged);
 }
 
 AXObject* AXMenuListPopup::activeChild()

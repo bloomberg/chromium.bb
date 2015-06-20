@@ -39,10 +39,10 @@ class AXObjectCacheImpl;
 class AXInlineTextBox final : public AXObject {
 
 private:
-    AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl*);
+    AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXInlineTextBox> create(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl*);
+    static PassRefPtr<AXInlineTextBox> create(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
     virtual ~AXInlineTextBox();
 
     virtual void init() override;

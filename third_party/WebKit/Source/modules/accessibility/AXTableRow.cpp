@@ -38,7 +38,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableRow::AXTableRow(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+AXTableRow::AXTableRow(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
     : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
@@ -47,7 +47,7 @@ AXTableRow::~AXTableRow()
 {
 }
 
-PassRefPtr<AXTableRow> AXTableRow::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXTableRow> AXTableRow::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXTableRow(layoutObject, axObjectCache));
 }

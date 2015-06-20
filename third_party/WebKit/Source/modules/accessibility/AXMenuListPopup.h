@@ -36,7 +36,7 @@ class HTMLElement;
 
 class AXMenuListPopup final : public AXMockObject {
 public:
-    static PassRefPtr<AXMenuListPopup> create(AXObjectCacheImpl* axObjectCache) { return adoptRef(new AXMenuListPopup(axObjectCache)); }
+    static PassRefPtr<AXMenuListPopup> create(AXObjectCacheImpl& axObjectCache) { return adoptRef(new AXMenuListPopup(axObjectCache)); }
 
     virtual bool isEnabled() const override;
     virtual bool isOffScreen() const override;
@@ -47,7 +47,7 @@ public:
     AXObject* activeChild();
 
 private:
-    explicit AXMenuListPopup(AXObjectCacheImpl*);
+    explicit AXMenuListPopup(AXObjectCacheImpl&);
 
     virtual bool isMenuListPopup() const override { return true; }
 

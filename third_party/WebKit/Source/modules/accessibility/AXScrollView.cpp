@@ -34,7 +34,7 @@
 
 namespace blink {
 
-AXScrollView::AXScrollView(FrameView* view, AXObjectCacheImpl* axObjectCache)
+AXScrollView::AXScrollView(FrameView* view, AXObjectCacheImpl& axObjectCache)
     : AXObject(axObjectCache)
     , m_scrollView(view)
     , m_childrenDirty(false)
@@ -52,7 +52,7 @@ void AXScrollView::detach()
     m_scrollView = 0;
 }
 
-PassRefPtr<AXScrollView> AXScrollView::create(FrameView* view, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXScrollView> AXScrollView::create(FrameView* view, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXScrollView(view, axObjectCache));
 }
@@ -131,7 +131,7 @@ AXScrollbar* AXScrollView::addChildScrollbar(Scrollbar* scrollbar)
     if (!scrollbar)
         return 0;
 
-    AXScrollbar* scrollBarObject = toAXScrollbar(axObjectCache()->getOrCreate(scrollbar));
+    AXScrollbar* scrollBarObject = toAXScrollbar(axObjectCache().getOrCreate(scrollbar));
     scrollBarObject->setParent(this);
     m_children.append(scrollBarObject);
     return scrollBarObject;
@@ -154,7 +154,7 @@ bool AXScrollView::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons)
     // Instead, we first update the cached accessibilityIsIgnored value for this node to
     // false, call accessibilityIsIgnored on the web area, then return the mathcing value.
     m_cachedIsIgnored = false;
-    m_lastModificationCount = axObjectCache()->modificationCount();
+    m_lastModificationCount = axObjectCache().modificationCount();
 
     AXObject* webArea = webAreaObject();
     if (!webArea)
@@ -190,7 +190,7 @@ AXObject* AXScrollView::webAreaObject() const
     if (!doc || !doc->layoutView())
         return 0;
 
-    return axObjectCache()->getOrCreate(doc);
+    return axObjectCache().getOrCreate(doc);
 }
 
 AXObject* AXScrollView::accessibilityHitTest(const IntPoint& point) const
@@ -231,9 +231,9 @@ AXObject* AXScrollView::computeParent() const
     // FIXME: Broken for OOPI.
     HTMLFrameOwnerElement* owner = m_scrollView->frame().deprecatedLocalOwner();
     if (owner && owner->layoutObject())
-        return axObjectCache()->getOrCreate(owner);
+        return axObjectCache().getOrCreate(owner);
 
-    return axObjectCache()->getOrCreate(m_scrollView->frame().pagePopupOwner());
+    return axObjectCache().getOrCreate(m_scrollView->frame().pagePopupOwner());
 }
 
 AXObject* AXScrollView::computeParentIfExists() const
@@ -243,9 +243,9 @@ AXObject* AXScrollView::computeParentIfExists() const
 
     HTMLFrameOwnerElement* owner = m_scrollView->frame().deprecatedLocalOwner();
     if (owner && owner->layoutObject())
-        return axObjectCache()->get(owner);
+        return axObjectCache().get(owner);
 
-    return axObjectCache()->get(m_scrollView->frame().pagePopupOwner());
+    return axObjectCache().get(m_scrollView->frame().pagePopupOwner());
 }
 
 ScrollableArea* AXScrollView::getScrollableAreaIfScrollable() const

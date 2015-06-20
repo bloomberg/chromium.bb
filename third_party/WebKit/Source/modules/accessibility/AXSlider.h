@@ -40,11 +40,11 @@ class HTMLInputElement;
 class AXSlider : public AXLayoutObject {
 
 public:
-    static PassRefPtr<AXSlider> create(LayoutObject*, AXObjectCacheImpl*);
+    static PassRefPtr<AXSlider> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXSlider() { }
 
 protected:
-    AXSlider(LayoutObject*, AXObjectCacheImpl*);
+    AXSlider(LayoutObject*, AXObjectCacheImpl&);
 
 private:
     HTMLInputElement* element() const;
@@ -66,7 +66,7 @@ private:
 class AXSliderThumb final : public AXMockObject {
 
 public:
-    static PassRefPtr<AXSliderThumb> create(AXObjectCacheImpl*);
+    static PassRefPtr<AXSliderThumb> create(AXObjectCacheImpl&);
     virtual ~AXSliderThumb() { }
 
     virtual AccessibilityRole roleValue() const override { return SliderThumbRole; }
@@ -74,7 +74,7 @@ public:
     virtual LayoutRect elementRect() const override;
 
 private:
-    explicit AXSliderThumb(AXObjectCacheImpl*);
+    explicit AXSliderThumb(AXObjectCacheImpl&);
 
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };

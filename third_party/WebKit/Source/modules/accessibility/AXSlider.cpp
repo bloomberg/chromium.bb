@@ -39,12 +39,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXSlider::AXSlider(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+AXSlider::AXSlider(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
     : AXLayoutObject(layoutObject, axObjectCache)
 {
 }
 
-PassRefPtr<AXSlider> AXSlider::create(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSlider> AXSlider::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXSlider(layoutObject, axObjectCache));
 }
@@ -91,15 +91,15 @@ void AXSlider::addChildren()
 
     m_haveChildren = true;
 
-    AXObjectCacheImpl* cache = axObjectCache();
+    AXObjectCacheImpl& cache = axObjectCache();
 
-    AXSliderThumb* thumb = static_cast<AXSliderThumb*>(cache->getOrCreate(SliderThumbRole));
+    AXSliderThumb* thumb = static_cast<AXSliderThumb*>(cache.getOrCreate(SliderThumbRole));
     thumb->setParent(this);
 
     // Before actually adding the value indicator to the hierarchy,
     // allow the platform to make a final decision about it.
     if (thumb->accessibilityIsIgnored())
-        cache->remove(thumb->axObjectID());
+        cache.remove(thumb->axObjectID());
     else
         m_children.append(thumb);
 }
@@ -117,7 +117,7 @@ AXObject* AXSlider::elementAccessibilityHitTest(const IntPoint& point) const
             return m_children[0].get();
     }
 
-    return axObjectCache()->getOrCreate(m_layoutObject);
+    return axObjectCache().getOrCreate(m_layoutObject);
 }
 
 void AXSlider::setValue(const String& value)
@@ -138,12 +138,12 @@ HTMLInputElement* AXSlider::element() const
     return toHTMLInputElement(m_layoutObject->node());
 }
 
-AXSliderThumb::AXSliderThumb(AXObjectCacheImpl* axObjectCache)
+AXSliderThumb::AXSliderThumb(AXObjectCacheImpl& axObjectCache)
     : AXMockObject(axObjectCache)
 {
 }
 
-PassRefPtr<AXSliderThumb> AXSliderThumb::create(AXObjectCacheImpl* axObjectCache)
+PassRefPtr<AXSliderThumb> AXSliderThumb::create(AXObjectCacheImpl& axObjectCache)
 {
     return adoptRef(new AXSliderThumb(axObjectCache));
 }

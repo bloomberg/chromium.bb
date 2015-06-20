@@ -36,7 +36,7 @@ class AXObjectCacheImpl;
 class MODULES_EXPORT AXMockObject : public AXObject {
 
 protected:
-    explicit AXMockObject(AXObjectCacheImpl*);
+    explicit AXMockObject(AXObjectCacheImpl&);
 
 public:
     virtual ~AXMockObject();

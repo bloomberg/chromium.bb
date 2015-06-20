@@ -275,64 +275,64 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutO
     // ul/ol/dl type (it shouldn't be a list if aria says otherwise).
     if (nodeHasRole(node, "list") || nodeHasRole(node, "directory")
         || (nodeHasRole(node, nullAtom) && (isHTMLUListElement(node) || isHTMLOListElement(node) || isHTMLDListElement(node))))
-        return AXList::create(layoutObject, this);
+        return AXList::create(layoutObject, *this);
 
     // aria tables
     if (nodeHasRole(node, "grid") || nodeHasRole(node, "treegrid"))
-        return AXARIAGrid::create(layoutObject, this);
+        return AXARIAGrid::create(layoutObject, *this);
     if (nodeHasRole(node, "row"))
-        return AXARIAGridRow::create(layoutObject, this);
+        return AXARIAGridRow::create(layoutObject, *this);
     if (nodeHasRole(node, "gridcell") || nodeHasRole(node, "columnheader") || nodeHasRole(node, "rowheader"))
-        return AXARIAGridCell::create(layoutObject, this);
+        return AXARIAGridCell::create(layoutObject, *this);
 
     // media controls
     if (node && node->isMediaControlElement())
-        return AccessibilityMediaControl::create(layoutObject, this);
+        return AccessibilityMediaControl::create(layoutObject, *this);
 
     if (isHTMLOptionElement(node))
-        return AXListBoxOption::create(layoutObject, this);
+        return AXListBoxOption::create(layoutObject, *this);
 
     if (layoutObject->isSVGRoot())
-        return AXSVGRoot::create(layoutObject, this);
+        return AXSVGRoot::create(layoutObject, *this);
 
     if (layoutObject->isBoxModelObject()) {
         LayoutBoxModelObject* cssBox = toLayoutBoxModelObject(layoutObject);
         if (cssBox->isListBox())
-            return AXListBox::create(toLayoutListBox(cssBox), this);
+            return AXListBox::create(toLayoutListBox(cssBox), *this);
         if (cssBox->isMenuList())
-            return AXMenuList::create(toLayoutMenuList(cssBox), this);
+            return AXMenuList::create(toLayoutMenuList(cssBox), *this);
 
         // standard tables
         if (cssBox->isTable())
-            return AXTable::create(toLayoutTable(cssBox), this);
+            return AXTable::create(toLayoutTable(cssBox), *this);
         if (cssBox->isTableRow())
-            return AXTableRow::create(toLayoutTableRow(cssBox), this);
+            return AXTableRow::create(toLayoutTableRow(cssBox), *this);
         if (cssBox->isTableCell())
-            return AXTableCell::create(toLayoutTableCell(cssBox), this);
+            return AXTableCell::create(toLayoutTableCell(cssBox), *this);
 
         // progress bar
         if (cssBox->isProgress())
-            return AXProgressIndicator::create(toLayoutProgress(cssBox), this);
+            return AXProgressIndicator::create(toLayoutProgress(cssBox), *this);
 
         // input type=range
         if (cssBox->isSlider())
-            return AXSlider::create(toLayoutSlider(cssBox), this);
+            return AXSlider::create(toLayoutSlider(cssBox), *this);
     }
 
-    return AXLayoutObject::create(layoutObject, this);
+    return AXLayoutObject::create(layoutObject, *this);
 }
 
 PassRefPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
 {
     if (isMenuListOption(node))
-        return AXMenuListOption::create(toHTMLOptionElement(node), this);
+        return AXMenuListOption::create(toHTMLOptionElement(node), *this);
 
-    return AXNodeObject::create(node, this);
+    return AXNodeObject::create(node, *this);
 }
 
 PassRefPtr<AXObject> AXObjectCacheImpl::createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
 {
-    return AXInlineTextBox::create(inlineTextBox, this);
+    return AXInlineTextBox::create(inlineTextBox, *this);
 }
 
 AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
@@ -352,9 +352,10 @@ AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
         if (frameView->frame().view() != frameView || !frameView->layoutView())
             return 0;
 
-        newObj = AXScrollView::create(toFrameView(widget), this);
-    } else if (widget->isScrollbar())
-        newObj = AXScrollbar::create(toScrollbar(widget), this);
+        newObj = AXScrollView::create(toFrameView(widget), *this);
+    } else if (widget->isScrollbar()) {
+        newObj = AXScrollbar::create(toScrollbar(widget), *this);
+    }
 
     // Will crash later if we have two objects for the same widget.
     ASSERT(!get(widget));
@@ -468,25 +469,25 @@ AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
     // will be filled in...
     switch (role) {
     case ImageMapLinkRole:
-        obj = AXImageMapLink::create(this);
+        obj = AXImageMapLink::create(*this);
         break;
     case ColumnRole:
-        obj = AXTableColumn::create(this);
+        obj = AXTableColumn::create(*this);
         break;
     case TableHeaderContainerRole:
-        obj = AXTableHeaderContainer::create(this);
+        obj = AXTableHeaderContainer::create(*this);
         break;
     case SliderThumbRole:
-        obj = AXSliderThumb::create(this);
+        obj = AXSliderThumb::create(*this);
         break;
     case MenuListPopupRole:
-        obj = AXMenuListPopup::create(this);
+        obj = AXMenuListPopup::create(*this);
         break;
     case SpinButtonRole:
-        obj = AXSpinButton::create(this);
+        obj = AXSpinButton::create(*this);
         break;
     case SpinButtonPartRole:
-        obj = AXSpinButtonPart::create(this);
+        obj = AXSpinButtonPart::create(*this);
         break;
     default:
         obj = nullptr;
@@ -712,7 +713,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
         if (!obj->axObjectID())
             continue;
 
-        if (!obj->axObjectCache())
+        if (obj->isDetached())
             continue;
 
 #if ENABLE(ASSERT)
