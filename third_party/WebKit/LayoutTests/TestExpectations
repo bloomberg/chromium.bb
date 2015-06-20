@@ -1651,31 +1651,23 @@ crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline
 
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/45621.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/45621.html [ Pass ImageOnlyFailure ]
 #crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-2.html [ Pass ImageOnlyFailure ]
 # Reinstate after crbug.com/17217 rebaselines.
 #crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug1188.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug4382.html [ Pass ImageOnlyFailure ]
 #crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-3.html [ Pass ImageOnlyFailure ]
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug59354.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug59354.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-2.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug24200.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug55545.html [ Pass ImageOnlyFailure ]
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug51037.html [ Pass ImageOnlyFailure ]
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug18359.html [ Pass ImageOnlyFailure ]
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailure ]
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug51037.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug18359.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
 
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
@@ -1753,9 +1745,8 @@ crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ ImageOnly
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 
 crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
-# TODO(chrishtr): mark as failing again after rebaseline.
-#crbug.com/486962 [ Win7 Debug ] svg/W3C-SVG-1.1/animate-elem-36-t.svg [ Pass ImageOnlyFailure ]
-#crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
+crbug.com/486962 [ Win7 Debug ] svg/W3C-SVG-1.1/animate-elem-36-t.svg [ Pass ImageOnlyFailure ]
+crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
 
 #crbug.com/321237 crbug.com/478014 [ SnowLeopard ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 #crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
@@ -1769,8 +1760,7 @@ crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/487878 [ Linux ] compositing/video-frame-size-change.html [ Pass ImageOnlyFailure ]
 
-# TODO(schenney) renable this once rebaselines land
-# crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass ImageOnlyFailure ]
+crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass ImageOnlyFailure ]
 
 crbug.com/488101 fast/loader/unload-form-post-about-blank.html [ Pass Failure ]
 
