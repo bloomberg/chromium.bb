@@ -37,6 +37,7 @@
 #include "ui/events/event_processor.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_X11)
@@ -1407,5 +1408,98 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
               ui::A11Y_ALERT_WINDOW_NEEDED);
   }
 }
+
+#if defined(OS_CHROMEOS)
+namespace {
+
+// defines a class to test the behavior of deprecated accelerators.
+class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
+ public:
+  DeprecatedAcceleratorTester() {}
+  ~DeprecatedAcceleratorTester() override {}
+
+  ui::Accelerator CreateAccelerator(const AcceleratorData& data) const {
+    ui::Accelerator result(data.keycode, data.modifiers);
+    result.set_type(data.trigger_on_press ? ui::ET_KEY_PRESSED
+                                          : ui::ET_KEY_RELEASED);
+    return result;
+  }
+
+  void ResetStateIfNeeded() {
+    Shell* shell = Shell::GetInstance();
+    if (shell->session_state_delegate()->IsScreenLocked() ||
+        shell->session_state_delegate()->IsUserSessionBlocked()) {
+      UnblockUserSession();
+    }
+  }
+
+  bool ContainsDeprecatedAcceleratorNotification() const {
+    return nullptr !=
+           message_center()->FindVisibleNotificationById(
+               kDeprecatedAcceleratorNotificationId);
+  }
+
+  bool IsMessageCenterEmpty() const {
+    return message_center()->GetVisibleNotifications().empty();
+  }
+
+  void RemoveAllNotifications() const {
+    message_center()->RemoveAllNotifications(false);
+  }
+
+  message_center::MessageCenter* message_center() const {
+    return message_center::MessageCenter::Get();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorTester);
+};
+
+}  // namespace
+
+TEST_F(DeprecatedAcceleratorTester, TestDeprecatedAcceleratorsBehavior) {
+  for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
+    const DeprecatedAcceleratorData& data = kDeprecatedAccelerators[i];
+
+    EXPECT_TRUE(IsMessageCenterEmpty());
+
+    ui::Accelerator deprecated_accelerator =
+        CreateAccelerator(data.deprecated_accelerator);
+    if (data.deprecated_enabled)
+      EXPECT_TRUE(ProcessInController(deprecated_accelerator));
+    else
+      EXPECT_FALSE(ProcessInController(deprecated_accelerator));
+
+    // We expect to see a notification in the message center.
+    EXPECT_TRUE(ContainsDeprecatedAcceleratorNotification());
+    RemoveAllNotifications();
+
+    // If the action is LOCK_SCREEN, we must reset the state by unlocking the
+    // screen before we proceed testing the rest of accelerators.
+    ResetStateIfNeeded();
+  }
+}
+
+TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
+  // Add below the new accelerators that replaced the deprecated ones (if any).
+  const AcceleratorData kNewAccelerators[] = {
+    { true, ui::VKEY_L, ui::EF_COMMAND_DOWN, LOCK_SCREEN },
+    { true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER },
+  };
+
+  EXPECT_TRUE(IsMessageCenterEmpty());
+
+  for (auto data : kNewAccelerators) {
+    EXPECT_TRUE(ProcessInController(CreateAccelerator(data)));
+
+    // Expect no notifications from the new accelerators.
+    EXPECT_TRUE(IsMessageCenterEmpty());
+
+    // If the action is LOCK_SCREEN, we must reset the state by unlocking the
+    // screen before we proceed testing the rest of accelerators.
+    ResetStateIfNeeded();
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

@@ -41,6 +41,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
@@ -1403,6 +1404,8 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
   // What we have to do here is as follows:
   // - If the |browser_| is for an app, do nothing.
+  // - On CrOS if |accelerator| is deprecated, we allow web contents to consume
+  //   it if needed.
   // - If the |browser_| is not for an app, and the |accelerator| is not
   //   associated with the browser (e.g. an Ash shortcut), process it.
   // - If the |browser_| is not for an app, and the |accelerator| is associated
@@ -1417,6 +1420,14 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
     // in content/renderer/render_widget.cc for details.
     return false;
   }
+
+#if defined(OS_CHROMEOS)
+  if (chrome::IsAcceleratorDeprecated(accelerator)) {
+    if (event.type == blink::WebInputEvent::RawKeyDown)
+      *is_keyboard_shortcut = true;
+    return false;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   chrome::BrowserCommandController* controller = browser_->command_controller();
 

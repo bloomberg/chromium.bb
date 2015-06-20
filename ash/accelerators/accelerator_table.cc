@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_table.h"
 
+#include "ash/strings/grit/ash_strings.h"
 #include "base/basictypes.h"
 
 namespace ash {
@@ -53,7 +54,7 @@ const AcceleratorData kAcceleratorData[] = {
     MAGNIFY_SCREEN_ZOOM_OUT},
   { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     MAGNIFY_SCREEN_ZOOM_IN},
-  { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
+  { true, ui::VKEY_L, ui::EF_COMMAND_DOWN, LOCK_SCREEN },
   // The lock key on Chrome OS keyboards produces F13 scancodes.
   { true, ui::VKEY_F13, ui::EF_NONE, LOCK_PRESSED },
   { false, ui::VKEY_F13, ui::EF_NONE, LOCK_RELEASED },
@@ -100,6 +101,12 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE },
   { true, ui::VKEY_VOLUME_DOWN, ui::EF_NONE, VOLUME_DOWN },
   { true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP },
+  { true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER },
+#else   // defined(OS_CHROMEOS)
+  // This key has been deprecated on CrOS. It is instead included below in the
+  // |kDeprecatedAccelerators|, and above in the CrOS accelerators as
+  // Search+Esc.
+  { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)
@@ -140,7 +147,6 @@ const AcceleratorData kAcceleratorData[] = {
     SHOW_MESSAGE_CENTER_BUBBLE },
   { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     SHOW_SYSTEM_TRAY_BUBBLE },
-  { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
   { true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0 },
   { true, ui::VKEY_2, ui::EF_ALT_DOWN, LAUNCH_APP_1 },
   { true, ui::VKEY_3, ui::EF_ALT_DOWN, LAUNCH_APP_2 },
@@ -181,6 +187,43 @@ const AcceleratorData kAcceleratorData[] = {
 };
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
+
+// Instructions for how to deprecate and replace an Accelerator:
+//
+// 1- Replace the old deprecated accelerator from the above list with the new
+//    accelerator that will take its place.
+// 2- Add an entry for it in the following |kDeprecatedAccelerators| list.
+// 3- That entry should contain the following:
+//    - The deprecated accelerator data you removed from above.
+//    - Define a histogram for this action in |histograms.xml| in the form
+//      "Ash.Accelerators.{ActionName}" and include the name of this histogram
+//      in this entry.
+//    - The ID of the localized notification message to give the users telling
+//      them about the deprecation (Add one in |ash_chromeos_strings.grdp|.
+//      Search for the comment <!-- Deprecated Accelerators Messages -->).
+//    - {true or false} whether the deprecated accelerator is still enabled (we
+//      don't disable a deprecated accelerator abruptly).
+// 4- Don't forget to update the keyboard overlay.
+#if defined(OS_CHROMEOS)
+
+const DeprecatedAcceleratorData kDeprecatedAccelerators[] = {
+  {
+    { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
+    "Ash.Accelerators.LockScreen",
+    IDS_DEPRECATED_LOCK_SCREEN_MSG,
+    true
+  },
+  {
+    { true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER },
+    "Ash.Accelerators.ShowTaskManager",
+    IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG,
+    true
+  },
+};
+
+const size_t kDeprecatedAcceleratorsLength = arraysize(kDeprecatedAccelerators);
+
+#endif  // defined(OS_CHROMEOS)
 
 const AcceleratorData kDebugAcceleratorData[] = {
 #if defined(OS_CHROMEOS)

@@ -421,4 +421,14 @@ Press Shift + Alt to switch.
   <message name="IDS_ASH_STATUS_TRAY_NEW_LOGIN_UI_DISABLED" desc="The text shown in the tray menu when the WebView-based sign-in is disabled.">
     New login UI is OFF
   </message>
+  
+  <!-- Deprecated Accelerators Messages -->
+  <message name="IDS_DEPRECATED_LOCK_SCREEN_MSG"
+           desc="Notification message to tell users about the deprecation of Ctrl+Shift+L shortcut to lock the screen.">
+    Ctrl+Shift+L is deprecated. Please use Search+L instead.
+  </message>
+  <message name="IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG"
+           desc="Notification message to tell users about the deprecation of Shift+ESC shortcut to show the task manager.">
+    Shift+Esc is deprecated. Please use Search+Esc instead.
+  </message>
 </grit-part>

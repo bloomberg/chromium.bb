@@ -76,4 +76,24 @@ TEST(AcceleratorTableTest, CheckDuplicatedNonrepeatableActions) {
   }
 }
 
+#if defined(OS_CHROMEOS)
+
+TEST(AcceleratorTableTest, CheckDeprecatedAccelerators) {
+  std::set<AcceleratorAction> deprecated_actions;
+  for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
+    // A deprecated action can never appear twice in the list.
+    AcceleratorAction deprecated_action =
+        kDeprecatedAccelerators[i].deprecated_accelerator.action;
+    EXPECT_TRUE(deprecated_actions.insert(deprecated_action).second)
+        << "Duplicated action: " << deprecated_action << " at index: " << i;
+
+    // The UMA histogram name must be of the format "Ash.Accelerators.*"
+    std::string uma_histogram(kDeprecatedAccelerators[i].uma_histogram_name);
+    EXPECT_TRUE(uma_histogram.find("Ash.Accelerators.") != std::string::npos);
+    EXPECT_TRUE(uma_histogram.find("Ash.Accelerators.") == 0);
+  }
+}
+
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace ash

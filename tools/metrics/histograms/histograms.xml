@@ -600,6 +600,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.Accelerators.LockScreen" enum="DeprecatedAcceleratorUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    The lock screen action has two accelerators:   - Ctrl+Shift+L which is
+    deprecated.   - Search+L which is new. This histogram shows the number of
+    times each accelerator (deprecated and new) is used.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Accelerators.ShowTaskManager"
+    enum="DeprecatedAcceleratorUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    Opening the task manager has two accelerators:   - Shift+Esc which is
+    deprecated.   - Search+Esc which is new. This histogram shows the number of
+    times each accelerator (deprecated and new) is used.
+  </summary>
+</histogram>
+
 <histogram name="Ash.ActiveTouchPoints">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
@@ -51800,6 +51819,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Echo Cancellation likely fails unless user is using headset.
   </int>
   <int value="3" label="Invalid delays">Insufficient amount of data.</int>
+</enum>
+
+<enum name="DeprecatedAcceleratorUsage" type="int">
+  <int value="0" label="Deprecated key accelerator is used"/>
+  <int value="1" label="New key accelerator is used"/>
 </enum>
 
 <enum name="DesktopCaptureCounters" type="int">

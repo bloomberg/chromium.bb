@@ -88,6 +88,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // is always handled and will never be passed to an window/web contents.
   bool IsReserved(const ui::Accelerator& accelerator) const;
 
+  // Returns true if the |accelerator| is deprecated. Deprecated accelerators
+  // can be consumed by web contents if needed.
+  bool IsDeprecated(const ui::Accelerator& accelerator) const;
+
   // Performs the specified action if it is enabled. Returns whether the action
   // was performed successfully.
   bool PerformActionIfEnabled(AcceleratorAction action);
@@ -133,6 +137,11 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   void RegisterAccelerators(const AcceleratorData accelerators[],
                             size_t accelerators_length);
 
+  // Registers the deprecated and their replacing accelerators.
+  void RegisterDeprecatedAccelerators(
+      const DeprecatedAcceleratorData deprecated_accelerators[],
+      size_t length);
+
   // Returns whether |action| can be performed. The |accelerator| may provide
   // additional data the action needs.
   bool CanPerformAction(AcceleratorAction action,
@@ -175,6 +184,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.
   std::map<ui::Accelerator, AcceleratorAction> accelerators_;
+
+  std::map<AcceleratorAction, const DeprecatedAcceleratorData*>
+      actions_with_deprecations_;
+  std::set<ui::Accelerator> deprecated_accelerators_;
 
   // Actions allowed when the user is not signed in.
   std::set<int> actions_allowed_at_login_screen_;

@@ -135,7 +135,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F6, ui::EF_SHIFT_DOWN, IDC_FOCUS_PREVIOUS_PANE },
   { ui::VKEY_F10, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
   { ui::VKEY_F11, ui::EF_NONE, IDC_FULLSCREEN },
-  { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
 
   // Platform-specific key maps.
 #if defined(OS_LINUX)
@@ -159,6 +158,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_P, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     IDC_TOUCH_HUD_PROJECTION_TOGGLE },
 #else  // OS_CHROMEOS
+  { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
   { ui::VKEY_DELETE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_CLEAR_BROWSING_DATA },
   { ui::VKEY_LMENU, ui::EF_NONE, IDC_FOCUS_MENU_BAR },
