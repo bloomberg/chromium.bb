@@ -57,6 +57,8 @@ class TestStorageMonitor : public StorageMonitor {
 
   const std::string& ejected_device() const { return ejected_device_; }
 
+  void AddRemovablePath(const base::FilePath& path);
+
   bool init_called() const { return init_called_; }
 
  private:
@@ -65,6 +67,9 @@ class TestStorageMonitor : public StorageMonitor {
 
   // The last device to be ejected.
   std::string ejected_device_;
+
+  // Paths considered for testing purposes to be on removable storage.
+  std::vector<base::FilePath> removable_paths_;
 
 #if defined(OS_LINUX)
   scoped_ptr<device::MediaTransferProtocolManager>

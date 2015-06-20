@@ -433,11 +433,12 @@ void GalleryWatchManager::OnRemovableStorageDetached(
         preferences->LookUpGalleriesByDeviceId(info.device_id());
 
     if (ContainsKey(detached_ids, it->first.gallery_id)) {
-      DeactivateFileWatch(it->first, it->second);
+      WatchOwner owner = it->first;
+      DeactivateFileWatch(owner, it->second);
       // Post increment moves iterator to next element while deleting current.
       watches_.erase(it++);
       observers_[preferences->profile()]->OnGalleryWatchDropped(
-          it->first.extension_id, it->first.gallery_id);
+          owner.extension_id, owner.gallery_id);
     } else {
       ++it;
     }

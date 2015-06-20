@@ -84,8 +84,18 @@ bool TestStorageMonitor::GetStorageInfoForPath(
   if (!path.IsAbsolute())
     return false;
 
+  bool is_removable = false;
+  for (const base::FilePath& removable : removable_paths_) {
+    if (path == removable || removable.IsParent(path)) {
+      is_removable = true;
+      break;
+    }
+  }
+
   std::string device_id = StorageInfo::MakeDeviceId(
-      StorageInfo::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+      is_removable ? StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM
+                   : StorageInfo::FIXED_MASS_STORAGE,
+      path.AsUTF8Unsafe());
   *device_info =
       StorageInfo(device_id, path.value(), base::string16(), base::string16(),
                   base::string16(), 0);
@@ -117,6 +127,11 @@ void TestStorageMonitor::EjectDevice(
     base::Callback<void(EjectStatus)> callback) {
   ejected_device_ = device_id;
   callback.Run(EJECT_OK);
+}
+
+void TestStorageMonitor::AddRemovablePath(const base::FilePath& path) {
+  CHECK(path.IsAbsolute());
+  removable_paths_.push_back(path);
 }
 
 }  // namespace storage_monitor
