@@ -87,8 +87,6 @@ void SavePasswordProgressLogger::LogPasswordForm(
                 ScrubElementID(form.username_element));
   log.SetString(GetStringFromID(STRING_PASSWORD_ELEMENT),
                 ScrubElementID(form.password_element));
-  log.SetBoolean(GetStringFromID(STRING_PASSWORD_AUTOCOMPLETE_SET),
-                 form.password_autocomplete_set);
   log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT),
                 ScrubElementID(form.new_password_element));
   log.SetBoolean(GetStringFromID(STRING_SSL_VALID), form.ssl_valid);
@@ -195,8 +193,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Username element";
     case SavePasswordProgressLogger::STRING_PASSWORD_ELEMENT:
       return "Password element";
-    case SavePasswordProgressLogger::STRING_PASSWORD_AUTOCOMPLETE_SET:
-      return "Password autocomplete set";
     case SavePasswordProgressLogger::STRING_NEW_PASSWORD_ELEMENT:
       return "New password element";
     case SavePasswordProgressLogger::STRING_SSL_VALID:

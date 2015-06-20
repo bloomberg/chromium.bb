@@ -164,10 +164,6 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   base::string16 password_value;
 
-  // False if autocomplete is set to "off" for the password input element;
-  // True otherwise.
-  bool password_autocomplete_set;
-
   // If the form was a sign-up or a change password form, the name of the input
   // element corresponding to the new password. Optional, and not persisted.
   base::string16 new_password_element;

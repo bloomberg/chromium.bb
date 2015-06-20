@@ -132,8 +132,6 @@ class PasswordManagerTest : public testing::Test {
     form.password_element = ASCIIToUTF16("Passwd");
     form.username_value = ASCIIToUTF16("google");
     form.password_value = ASCIIToUTF16("password");
-    // Default to true so we only need to add tests in autocomplete=off cases.
-    form.password_autocomplete_set = true;
     form.submit_element = ASCIIToUTF16("signIn");
     form.signon_realm = "http://www.google.com";
     return form;
@@ -156,7 +154,6 @@ class PasswordManagerTest : public testing::Test {
     form.password_element = ASCIIToUTF16("Passwd");
     form.username_value = ASCIIToUTF16("twitter");
     form.password_value = ASCIIToUTF16("password");
-    form.password_autocomplete_set = true;
     form.submit_element = ASCIIToUTF16("signIn");
     form.signon_realm = "https://twitter.com";
     return form;
@@ -171,7 +168,6 @@ class PasswordManagerTest : public testing::Test {
     form.password_element = ASCIIToUTF16("PasswdField");
     form.username_value = ASCIIToUTF16("twitter");
     form.password_value = ASCIIToUTF16("password");
-    form.password_autocomplete_set = true;
     form.submit_element = ASCIIToUTF16("signIn");
     form.signon_realm = "https://twitter.com";
     return form;
@@ -201,8 +197,6 @@ class PasswordManagerTest : public testing::Test {
     if (lhs.password_value != rhs.password_value)
       return false;
     if (lhs.new_password_value != rhs.new_password_value)
-      return false;
-    if (lhs.password_autocomplete_set != rhs.password_autocomplete_set)
       return false;
     if (lhs.submit_element != rhs.submit_element)
       return false;
@@ -241,7 +235,6 @@ MATCHER_P(FormMatches, form, "") {
          form.username_element == arg.username_element &&
          form.password_element == arg.password_element &&
          form.new_password_element == arg.new_password_element &&
-         form.password_autocomplete_set == arg.password_autocomplete_set &&
          form.submit_element == arg.submit_element;
 }
 
@@ -595,78 +588,6 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   manager()->OnPasswordFormsParsed(&driver_, observed);
 }
 
-TEST_F(PasswordManagerTest, FormSavedWithAutocompleteOff) {
-  // Test password form with non-generated password will be saved even if
-  // autocomplete=off.
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
-  std::vector<PasswordForm> observed;
-  PasswordForm form(MakeSimpleForm());
-  form.password_autocomplete_set = false;
-  observed.push_back(form);
-  manager()->OnPasswordFormsParsed(&driver_, observed);  // The initial load.
-  manager()->OnPasswordFormsRendered(&driver_, observed,
-                                     true);  // The initial layout.
-
-  // And the form submit contract is to call ProvisionallySavePassword.
-  manager()->ProvisionallySavePassword(form);
-
-  // Password form should be saved.
-  scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
-                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
-      .Times(Exactly(1))
-      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
-  EXPECT_CALL(*store_, AddLogin(FormMatches(form))).Times(Exactly(0));
-
-  // Now the password manager waits for the navigation to complete.
-  observed.clear();
-  manager()->OnPasswordFormsParsed(&driver_,
-                                   observed);  // The post-navigation load.
-  manager()->OnPasswordFormsRendered(&driver_, observed,
-                                     true);  // The post-navigation layout.
-
-  ASSERT_TRUE(form_to_save.get());
-}
-
-TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
-  // Test password form with generated password will still be saved if
-  // autocomplete=off.
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
-  std::vector<PasswordForm> observed;
-  PasswordForm form(MakeSimpleForm());
-  form.password_autocomplete_set = false;
-  observed.push_back(form);
-  manager()->OnPasswordFormsParsed(&driver_, observed);  // The initial load.
-  manager()->OnPasswordFormsRendered(&driver_, observed,
-                                     true);  // The initial layout.
-
-  // Simulate the user generating the password and submitting the form.
-  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
-  manager()->ProvisionallySavePassword(form);
-
-  // The user should not be presented with an infobar as they have already given
-  // consent by using the generated password. The form should be saved once
-  // navigation occurs. The client will be informed that automatic saving has
-  // occured.
-  EXPECT_CALL(client_,
-              PromptUserToSavePasswordPtr(
-                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
-      .Times(Exactly(0));
-  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
-  scoped_ptr<PasswordFormManager> saved_form_manager;
-  EXPECT_CALL(client_, AutomaticPasswordSavePtr(_))
-      .Times(Exactly(1))
-      .WillOnce(WithArg<0>(SaveToScopedPtr(&saved_form_manager)));
-
-  // Now the password manager waits for the navigation to complete.
-  observed.clear();
-  manager()->OnPasswordFormsParsed(&driver_,
-                                   observed);  // The post-navigation load.
-  manager()->OnPasswordFormsRendered(&driver_, observed,
-                                     true);  // The post-navigation layout.
-}
-
 TEST_F(PasswordManagerTest, SubmissionCallbackTest) {
   manager()->AddSubmissionCallback(SubmissionCallback());
   PasswordForm form = MakeSimpleForm();
@@ -706,7 +627,6 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
-  form.password_autocomplete_set = false;
   observed.push_back(form);
   manager()->OnPasswordFormsParsed(&driver_, observed);  // The initial load.
   manager()->OnPasswordFormsRendered(&driver_, observed,

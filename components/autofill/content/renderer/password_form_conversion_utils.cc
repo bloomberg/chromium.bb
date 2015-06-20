@@ -416,7 +416,6 @@ void GetPasswordForm(
         password_value = password_iterator->second;
     }
     password_form->password_value = password_value;
-    password_form->password_autocomplete_set = password.autoComplete();
   }
   if (!new_password.isNull()) {
     password_form->new_password_element = new_password.nameForAutofill();
