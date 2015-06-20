@@ -375,8 +375,9 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // details of the UI's state for a given CRWSessionEntry/URL.
 // TODO(stuartmorgan): Move the pushState/replaceState logic into
 // NavigationManager.
-- (void)pushStateWithPageURL:(const GURL&)pageUrl
-                 stateObject:(NSString*)stateObject;
+- (void)pushStateWithPageURL:(const GURL&)pageURL
+                 stateObject:(NSString*)stateObject
+                  transition:(ui::PageTransition)transition;
 // Assigns the given URL and state object to the current CRWSessionEntry.
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
                     stateObject:(NSString*)stateObject;
@@ -1043,11 +1044,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                        web::ReferrerPolicyAlways);
 }
 
-- (void)pushStateWithPageURL:(const GURL&)pageUrl
-                 stateObject:(NSString*)stateObject {
-  [[self sessionController] pushNewEntryWithURL:pageUrl
-                                    stateObject:stateObject];
-  [self didUpdateHistoryStateWithPageURL:pageUrl];
+- (void)pushStateWithPageURL:(const GURL&)pageURL
+                 stateObject:(NSString*)stateObject
+                  transition:(ui::PageTransition)transition {
+  [[self sessionController] pushNewEntryWithURL:pageURL
+                                    stateObject:stateObject
+                                     transition:transition];
+  [self didUpdateHistoryStateWithPageURL:pageURL];
 }
 
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
@@ -2492,7 +2495,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSString* stateObject = base::SysUTF8ToNSString(stateObjectJSON);
   _URLOnStartLoading = pushURL;
   _lastRegisteredRequestURL = pushURL;
-  [self pushStateWithPageURL:pushURL stateObject:stateObject];
+
+  // If the user interacted with the page, categorize it as a link navigation.
+  // If not, categorize it is a client redirect as it occurred without user
+  // input and should not be added to the history stack.
+  // TODO(ios): Improve transition detection.
+  ui::PageTransition transition =
+      [context[web::kUserIsInteractingKey] boolValue]
+          ? ui::PAGE_TRANSITION_LINK
+          : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  [self pushStateWithPageURL:pushURL
+                 stateObject:stateObject
+                  transition:transition];
 
   NSString* replaceWebViewJS =
       [self javascriptToReplaceWebViewURL:pushURL stateObjectJSON:stateObject];

@@ -837,7 +837,9 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
 
   GURL pushPageGurl1("http://www.firstpage.com/#push1");
   NSString* stateObject1 = @"{'foo': 1}";
-  [controller pushNewEntryWithURL:pushPageGurl1 stateObject:stateObject1];
+  [controller pushNewEntryWithURL:pushPageGurl1
+                      stateObject:stateObject1
+                       transition:ui::PAGE_TRANSITION_LINK];
   CRWSessionEntry* pushedEntry = [controller currentEntry];
   web::NavigationItemImpl* pushedItem = pushedEntry.navigationItemImpl;
   NSUInteger expectedCount = 2;
@@ -850,7 +852,9 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
 
   // Add another new entry and check size and fields again.
   GURL pushPageGurl2("http://www.firstpage.com/push2");
-  [controller pushNewEntryWithURL:pushPageGurl2 stateObject:nil];
+  [controller pushNewEntryWithURL:pushPageGurl2
+                      stateObject:nil
+                       transition:ui::PAGE_TRANSITION_LINK];
   pushedEntry = [controller currentEntry];
   pushedItem = pushedEntry.navigationItemImpl;
   expectedCount = 3;

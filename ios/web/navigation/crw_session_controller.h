@@ -94,7 +94,10 @@ struct SSLStatus;
 // object is a serialized generic JavaScript object that contains details of the
 // UI's state for a given CRWSessionEntry/URL. The current entry's URL is the
 // new entry's referrer.
-- (void)pushNewEntryWithURL:(const GURL&)url stateObject:(NSString*)stateObject;
+- (void)pushNewEntryWithURL:(const GURL&)URL
+                stateObject:(NSString*)stateObject
+                 transition:(ui::PageTransition)transition;
+
 // Updates the URL and state object for the current entry.
 - (void)updateCurrentEntryWithURL:(const GURL&)url
                       stateObject:(NSString*)stateObject;

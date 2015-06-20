@@ -525,19 +525,20 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     _navigationManager->OnNavigationItemChanged();
 }
 
-- (void)pushNewEntryWithURL:(const GURL&)url
-                stateObject:(NSString*)stateObject {
+- (void)pushNewEntryWithURL:(const GURL&)URL
+                stateObject:(NSString*)stateObject
+                 transition:(ui::PageTransition)transition {
   DCHECK([self currentEntry]);
   web::NavigationItem* item = [self currentEntry].navigationItem;
   CHECK(
-      web::history_state_util::IsHistoryStateChangeValid(item->GetURL(), url));
+      web::history_state_util::IsHistoryStateChangeValid(item->GetURL(), URL));
   web::Referrer referrer(item->GetURL(), web::ReferrerPolicyDefault);
   bool overrideUserAgent =
       self.currentEntry.navigationItem->IsOverridingUserAgent();
   base::scoped_nsobject<CRWSessionEntry> pushedEntry(
-      [[self sessionEntryWithURL:url
+      [[self sessionEntryWithURL:URL
                         referrer:referrer
-                      transition:ui::PAGE_TRANSITION_LINK
+                      transition:transition
              useDesktopUserAgent:overrideUserAgent
                rendererInitiated:NO] retain]);
   web::NavigationItemImpl* pushedItem = [pushedEntry navigationItemImpl];
