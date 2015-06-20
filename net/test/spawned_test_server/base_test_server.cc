@@ -236,6 +236,13 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
 
   scoped_ptr<HostResolver> resolver(HostResolver::CreateDefaultResolver(NULL));
   HostResolver::RequestInfo info(host_port_pair_);
+  // Limit the lookup to IPv4. When started with the default
+  // address of kLocalhost, testserver.py only supports IPv4.
+  // If a custom hostname is used, it's possible that the test
+  // server will listen on both IPv4 and IPv6, so this will
+  // still work. The testserver does not support explicit
+  // IPv6 literal hostnames.
+  info.set_address_family(ADDRESS_FAMILY_IPV4);
   TestCompletionCallback callback;
   int rv = resolver->Resolve(info,
                              DEFAULT_PRIORITY,

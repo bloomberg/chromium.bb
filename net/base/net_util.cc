@@ -45,6 +45,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/values.h"
+#include "net/base/address_list.h"
 #include "net/base/dns_util.h"
 #include "net/base/ip_address_number.h"
 #include "net/base/net_module.h"
@@ -145,6 +146,28 @@ static const int kAllowedFtpPorts[] = {
   21,   // ftp data
   22,   // ssh
 };
+
+std::string NormalizeHostname(const std::string& host) {
+  std::string result = base::StringToLowerASCII(host);
+  if (!result.empty() && *result.rbegin() == '.')
+    result.resize(result.size() - 1);
+  return result;
+}
+
+bool IsNormalizedLocalhostTLD(const std::string& host) {
+  return base::EndsWith(host, ".localhost", true);
+}
+
+// |host| should be normalized.
+bool IsLocalHostname(const std::string& host) {
+  return host == "localhost" || host == "localhost.localdomain" ||
+         IsNormalizedLocalhostTLD(host);
+}
+
+// |host| should be normalized.
+bool IsLocal6Hostname(const std::string& host) {
+  return host == "localhost6" || host == "localhost6.localdomain6";
+}
 
 }  // namespace
 
@@ -726,10 +749,38 @@ int GetPortFromSockaddr(const struct sockaddr* address, socklen_t address_len) {
   return base::NetToHost16(*port_field);
 }
 
+bool ResolveLocalHostname(const std::string& host,
+                          uint16_t port,
+                          AddressList* address_list) {
+  static const unsigned char kLocalhostIPv4[] = {127, 0, 0, 1};
+  static const unsigned char kLocalhostIPv6[] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+
+  std::string normalized_host = NormalizeHostname(host);
+
+  address_list->clear();
+
+  bool is_local6 = IsLocal6Hostname(normalized_host);
+  if (!is_local6 && !IsLocalHostname(normalized_host))
+    return false;
+
+  address_list->push_back(
+      IPEndPoint(IPAddressNumber(kLocalhostIPv6,
+                                 kLocalhostIPv6 + arraysize(kLocalhostIPv6)),
+                 port));
+  if (!is_local6) {
+    address_list->push_back(
+        IPEndPoint(IPAddressNumber(kLocalhostIPv4,
+                                   kLocalhostIPv4 + arraysize(kLocalhostIPv4)),
+                   port));
+  }
+
+  return true;
+}
+
 bool IsLocalhost(const std::string& host) {
-  if (host == "localhost" || host == "localhost.localdomain" ||
-      host == "localhost6" || host == "localhost6.localdomain6" ||
-      IsLocalhostTLD(host))
+  std::string normalized_host = NormalizeHostname(host);
+  if (IsLocalHostname(normalized_host) || IsLocal6Hostname(normalized_host))
     return true;
 
   IPAddressNumber ip_number;
@@ -760,21 +811,7 @@ bool IsLocalhost(const std::string& host) {
 }
 
 bool IsLocalhostTLD(const std::string& host) {
-  const char kLocalhostTLD[] = ".localhost";
-  const size_t kLocalhostTLDLength = arraysize(kLocalhostTLD) - 1;
-
-  if (host.empty())
-    return false;
-
-  size_t host_len = host.size();
-  if (*host.rbegin() == '.')
-    --host_len;
-  if (host_len < kLocalhostTLDLength)
-    return false;
-
-  const char* host_suffix = host.data() + host_len - kLocalhostTLDLength;
-  return base::strncasecmp(host_suffix, kLocalhostTLD, kLocalhostTLDLength) ==
-         0;
+  return IsNormalizedLocalhostTLD(NormalizeHostname(host));
 }
 
 bool HasGoogleHost(const GURL& url) {

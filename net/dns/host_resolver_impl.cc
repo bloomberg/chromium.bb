@@ -74,8 +74,6 @@ const unsigned kNegativeCacheEntryTTLSeconds = 0;
 // Minimum TTL for successful resolutions with DnsTask.
 const unsigned kMinimumTTLSeconds = kCacheEntryTTLSeconds;
 
-const char kLocalhost[] = "localhost.";
-
 // Time between IPv6 probes, i.e. for how long results of each IPv6 probe are
 // cached.
 const int kIPv6ProbePeriodMs = 1000;
@@ -1318,13 +1316,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
   void AddRequest(scoped_ptr<Request> req) {
-    // .localhost queries are redirected to "localhost." to make sure
-    // that they are never sent out on the network, per RFC 6761.
-    if (IsLocalhostTLD(req->info().hostname())) {
-      DCHECK_EQ(key_.hostname, kLocalhost);
-    } else {
-      DCHECK_EQ(key_.hostname, req->info().hostname());
-    }
+    DCHECK_EQ(key_.hostname, req->info().hostname());
 
     req->set_job(this);
     priority_tracker_.Add(req->priority());
@@ -1997,6 +1989,10 @@ int HostResolverImpl::ResolveHelper(const Key& key,
     source_net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_HOSTS_HIT);
     return OK;
   }
+
+  if (ServeLocalhost(key, info, addresses))
+    return OK;
+
   return ERR_DNS_CACHE_MISS;
 }
 
@@ -2159,6 +2155,35 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
   return !addresses->empty();
 }
 
+bool HostResolverImpl::ServeLocalhost(const Key& key,
+                                      const RequestInfo& info,
+                                      AddressList* addresses) {
+  AddressList resolved_addresses;
+  if (!ResolveLocalHostname(key.hostname, info.port(), &resolved_addresses))
+    return false;
+
+  addresses->clear();
+
+  for (const auto& address : resolved_addresses) {
+    // Include the address if:
+    // - caller didn't specify an address family, or
+    // - caller specifically asked for the address family of this address, or
+    // - this is an IPv6 address and caller specifically asked for IPv4 due
+    //   to lack of detected IPv6 support. (See SystemHostResolverCall for
+    //   rationale).
+    if (key.address_family == ADDRESS_FAMILY_UNSPECIFIED ||
+        key.address_family == address.GetFamily() ||
+        (address.GetFamily() == ADDRESS_FAMILY_IPV6 &&
+         key.address_family == ADDRESS_FAMILY_IPV4 &&
+         (key.host_resolver_flags &
+          HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6))) {
+      addresses->push_back(address);
+    }
+  }
+
+  return true;
+}
+
 void HostResolverImpl::CacheResult(const Key& key,
                                    const HostCache::Entry& entry,
                                    base::TimeDelta ttl) {
@@ -2205,13 +2230,7 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     }
   }
 
-  std::string hostname = info.hostname();
-  // Redirect .localhost queries to "localhost." to make sure that they
-  // are never sent out on the network, per RFC 6761.
-  if (IsLocalhostTLD(info.hostname()))
-    hostname = kLocalhost;
-
-  return Key(hostname, effective_address_family, effective_flags);
+  return Key(info.hostname(), effective_address_family, effective_flags);
 }
 
 bool HostResolverImpl::IsIPv6Reachable(const BoundNetLog& net_log) {

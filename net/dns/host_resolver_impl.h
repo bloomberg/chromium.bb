@@ -161,7 +161,8 @@ class NET_EXPORT HostResolverImpl
   // Helper used by |Resolve()| and |ResolveFromCache()|.  Performs IP
   // literal, cache and HOSTS lookup (if enabled), returns OK if successful,
   // ERR_NAME_NOT_RESOLVED if either hostname is invalid or IP literal is
-  // incompatible, ERR_DNS_CACHE_MISS if entry was not found in cache and HOSTS.
+  // incompatible, ERR_DNS_CACHE_MISS if entry was not found in cache and
+  // HOSTS and is not localhost.
   int ResolveHelper(const Key& key,
                     const RequestInfo& info,
                     const IPAddressNumber* ip_address,
@@ -187,6 +188,12 @@ class NET_EXPORT HostResolverImpl
   // If we have a DnsClient with a valid DnsConfig, and |key| is found in the
   // HOSTS file, returns true and fills |addresses|. Otherwise returns false.
   bool ServeFromHosts(const Key& key,
+                      const RequestInfo& info,
+                      AddressList* addresses);
+
+  // If |key| is for a localhost name (RFC 6761), returns true and fills
+  // |addresses| with the loopback IP. Otherwise returns false.
+  bool ServeLocalhost(const Key& key,
                       const RequestInfo& info,
                       AddressList* addresses);
 

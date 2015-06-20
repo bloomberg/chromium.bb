@@ -582,15 +582,51 @@ TEST_F(HostResolverImplTest, AsynchronousLookup) {
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 }
 
+// RFC 6761 localhost names should always resolve to loopback.
 TEST_F(HostResolverImplTest, LocalhostLookup) {
-  proc_->SignalMultiple(1u);
-  Request* req = CreateRequest("foo.localhost", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  // Add a rule resolving localhost names to a non-loopback IP and test
+  // that they still resolves to loopback.
+  proc_->AddRuleForAllFamilies("foo.localhost", "192.168.1.42");
+  proc_->AddRuleForAllFamilies("localhost", "192.168.1.42");
+  proc_->AddRuleForAllFamilies("localhost.", "192.168.1.42");
 
-  EXPECT_TRUE(req->HasOneAddress("127.0.0.1", 80));
+  Request* req0 = CreateRequest("foo.localhost", 80);
+  EXPECT_EQ(OK, req0->Resolve());
+  EXPECT_TRUE(req0->HasAddress("127.0.0.1", 80));
+  EXPECT_TRUE(req0->HasAddress("::1", 80));
 
-  EXPECT_EQ("localhost.", proc_->GetCaptureList()[0].hostname);
+  Request* req1 = CreateRequest("localhost", 80);
+  EXPECT_EQ(OK, req1->Resolve());
+  EXPECT_TRUE(req1->HasAddress("127.0.0.1", 80));
+  EXPECT_TRUE(req1->HasAddress("::1", 80));
+
+  Request* req2 = CreateRequest("localhost.", 80);
+  EXPECT_EQ(OK, req2->Resolve());
+  EXPECT_TRUE(req2->HasAddress("127.0.0.1", 80));
+  EXPECT_TRUE(req2->HasAddress("::1", 80));
+}
+
+TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup) {
+  Request* req1 = CreateRequest("localhost6", 80, MEDIUM, ADDRESS_FAMILY_IPV4);
+  EXPECT_EQ(OK, req1->Resolve());
+  EXPECT_EQ(0u, req1->NumberOfAddresses());
+
+  Request* req2 = CreateRequest("localhost6", 80, MEDIUM, ADDRESS_FAMILY_IPV6);
+  EXPECT_EQ(OK, req2->Resolve());
+  EXPECT_TRUE(req2->HasOneAddress("::1", 80));
+
+  Request* req3 =
+      CreateRequest("localhost6", 80, MEDIUM, ADDRESS_FAMILY_UNSPECIFIED);
+  EXPECT_EQ(OK, req3->Resolve());
+  EXPECT_TRUE(req3->HasOneAddress("::1", 80));
+
+  Request* req4 = CreateRequest("localhost", 80, MEDIUM, ADDRESS_FAMILY_IPV4);
+  EXPECT_EQ(OK, req4->Resolve());
+  EXPECT_TRUE(req4->HasOneAddress("127.0.0.1", 80));
+
+  Request* req5 = CreateRequest("localhost", 80, MEDIUM, ADDRESS_FAMILY_IPV6);
+  EXPECT_EQ(OK, req5->Resolve());
+  EXPECT_TRUE(req5->HasOneAddress("::1", 80));
 }
 
 TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved) {
@@ -1790,12 +1826,10 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   info_proc.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
   Request* req = CreateRequest(info_proc, DEFAULT_PRIORITY);
 
-  // It is resolved via getaddrinfo, so expect asynchronous result.
-  EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
-  EXPECT_EQ(OK, req->WaitForResult());
+  EXPECT_EQ(OK, req->Resolve());
 
-  EXPECT_EQ(saw_ipv4, req->HasAddress("127.0.0.1", 80));
-  EXPECT_EQ(saw_ipv6, req->HasAddress("::1", 80));
+  EXPECT_TRUE(req->HasAddress("127.0.0.1", 80));
+  EXPECT_TRUE(req->HasAddress("::1", 80));
 
   // Configure DnsClient with dual-host HOSTS file.
   DnsConfig config_hosts = CreateValidDnsConfig();

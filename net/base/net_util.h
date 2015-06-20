@@ -42,6 +42,8 @@ struct Parsed;
 
 namespace net {
 
+class AddressList;
+
 // This is a "forward declaration" to avoid including ip_address_number.h
 // Keep this in sync.
 typedef std::vector<unsigned char> IPAddressNumber;
@@ -349,8 +351,17 @@ const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
 NET_EXPORT_PRIVATE int GetPortFromSockaddr(const struct sockaddr* address,
                                            socklen_t address_len);
 
-// Returns true if |host| is one of the names (e.g. "localhost") or IP
-// addresses (IPv4 127.0.0.0/8 or IPv6 ::1) that indicate a loopback.
+// Resolves a local hostname (such as "localhost" or "localhost6") into
+// IP endpoints with the given port. Returns true if |host| is a local
+// hostname and false otherwise. Special IPv6 names (e.g. "localhost6")
+// will resolve to an IPv6 address only, whereas other names will
+// resolve to both IPv4 and IPv6.
+NET_EXPORT_PRIVATE bool ResolveLocalHostname(const std::string& host,
+                                             uint16_t port,
+                                             AddressList* address_list);
+
+// Returns true if |host| is one of the local hostnames
+// (e.g. "localhost") or IP addresses (IPv4 127.0.0.0/8 or IPv6 ::1).
 //
 // Note that this function does not check for IP addresses other than
 // the above, although other IP addresses may point to the local
