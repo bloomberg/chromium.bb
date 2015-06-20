@@ -9,7 +9,6 @@ import android.content.Intent;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -30,6 +29,7 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromeshell";
     private static final String[] CHROME_MANDATORY_PAKS = {
+        "en-US.pak",
         "resources.pak",
         "chrome_100_percent.pak",
     };
@@ -62,7 +62,7 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks, CHROME_MANDATORY_PAKS);
+        ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

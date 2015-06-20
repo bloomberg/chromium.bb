@@ -46,7 +46,8 @@ public class AwShellApplication extends ContentApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceExtractor.setMandatoryPaksToExtract(0);
+        ResourceExtractor.setMandatoryPaksToExtract("");
+        ResourceExtractor.setExtractImplicitLocaleForTesting(false);
     }
 
     @Override

@@ -544,69 +544,6 @@ template("jinja_template_resources") {
   }
 }
 
-# Creates a resources.zip with locale.pak files placed into appropriate
-# resource configs (e.g. en-GB.pak -> res/raw-en/en_gb.pak). Also generates
-# a locale_paks TypedArray so that resource files can be enumerated at runtime.
-#
-# If this target is included in the deps of an android resources/library/apk,
-# the resources will be included with that target.
-#
-# Variables:
-#   sources: List of .pak files. Names must be of the form "en.pak" or
-#       "en-US.pak".
-#   deps: (optional) List of dependencies that might be needed to generate
-#       the .pak files.
-#
-# Example
-#   locale_pak_resources("locale_paks") {
-#     sources = [ "path/en-US.pak", "path/fr.pak", ... ]
-#   }
-template("locale_pak_resources") {
-  set_sources_assignment_filter([])
-  assert(defined(invoker.sources))
-
-  _base_path = "$target_gen_dir/$target_name"
-  _resources_zip = _base_path + ".resources.zip"
-  _build_config = _base_path + ".build_config"
-
-  write_build_config("${target_name}__build_config") {
-    build_config = _build_config
-    resources_zip = _resources_zip
-    type = "android_resources"
-  }
-
-  action("${target_name}__create_resources_zip") {
-    sources = invoker.sources
-    script = "//build/android/gyp/locale_pak_resources.py"
-    depfile = "$target_gen_dir/$target_name.d"
-
-    outputs = [
-      depfile,
-      _resources_zip,
-    ]
-
-    _rebased_sources = rebase_path(invoker.sources, root_build_dir)
-    args = [
-      "--locale-paks=${_rebased_sources}",
-      "--resources-zip",
-      rebase_path(_resources_zip, root_build_dir),
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-    ]
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-  }
-
-  group(target_name) {
-    deps = [
-      ":${target_name}__build_config",
-      ":${target_name}__create_resources_zip",
-    ]
-  }
-}
-
 # Declare an Android resources target
 #
 # This creates a resources zip file that will be used when building an Android

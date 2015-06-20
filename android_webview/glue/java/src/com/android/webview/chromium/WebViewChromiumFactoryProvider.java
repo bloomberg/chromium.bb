@@ -232,7 +232,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         // We don't need to extract any paks because for WebView, they are
         // in the system image.
-        ResourceExtractor.setMandatoryPaksToExtract(0);
+        ResourceExtractor.setMandatoryPaksToExtract("");
 
         try {
             LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
