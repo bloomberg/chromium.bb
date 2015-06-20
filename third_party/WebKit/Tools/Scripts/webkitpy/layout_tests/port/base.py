@@ -224,7 +224,9 @@ class Port(object):
 
     def additional_driver_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
-            return ['--run-layout-test', '--disable-slimming-paint']
+            # TODO(wangxianzhu): Remove --enable-slimming-paint when we enable
+            # it by default.
+            return ['--run-layout-test', '--enable-slimming-paint']
         return []
 
     def supports_per_test_timeout(self):
@@ -1569,23 +1571,7 @@ class Port(object):
     def physical_test_suites(self):
         return [
             # For example, to turn on force-compositing-mode in the svg/ directory:
-            # PhysicalTestSuite('svg',
-            #                   ['--force-compositing-mode']),
-            PhysicalTestSuite('compositing', ['--enable-slimming-paint']),
-            PhysicalTestSuite('css1', ['--enable-slimming-paint']),
-            PhysicalTestSuite('css2.1', ['--enable-slimming-paint']),
-            PhysicalTestSuite('css3', ['--enable-slimming-paint']),
-            PhysicalTestSuite('editing', ['--enable-slimming-paint']),
-            PhysicalTestSuite('fast', ['--enable-slimming-paint']),
-            PhysicalTestSuite('media', ['--enable-slimming-paint']),
-            PhysicalTestSuite('paint', ['--enable-slimming-paint']),
-            PhysicalTestSuite('plugins', ['--enable-slimming-paint']),
-            PhysicalTestSuite('printing', ['--enable-slimming-paint']),
-            PhysicalTestSuite('scrollbars', ['--enable-slimming-paint']),
-            PhysicalTestSuite('selection', ['--enable-slimming-paint']),
-            PhysicalTestSuite('svg', ['--enable-slimming-paint']),
-            PhysicalTestSuite('tables', ['--enable-slimming-paint']),
-            PhysicalTestSuite('transforms', ['--enable-slimming-paint']),
+            # PhysicalTestSuite('svg', ['--force-compositing-mode']),
         ]
 
     def virtual_test_suites(self):

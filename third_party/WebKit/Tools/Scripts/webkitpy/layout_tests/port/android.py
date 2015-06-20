@@ -1071,6 +1071,7 @@ class ChromiumAndroidDriver(driver.Driver):
         if '--enable-slimming-paint' in cmd_line:
             _log.warning('Android port doesn\'t support slimming paint because of crbug.com/439457')
             cmd_line.remove('--enable-slimming-paint')
+        cmd_line.append('--disable-slimming-paint')
         return cmd_line
 
     @staticmethod
