@@ -554,6 +554,8 @@ template("jinja_template_resources") {
 # Variables:
 #   sources: List of .pak files. Names must be of the form "en.pak" or
 #       "en-US.pak".
+#   deps: (optional) List of dependencies that might be needed to generate
+#       the .pak files.
 #
 # Example
 #   locale_pak_resources("locale_paks") {
@@ -591,6 +593,10 @@ template("locale_pak_resources") {
       "--depfile",
       rebase_path(depfile, root_build_dir),
     ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
   }
 
   group(target_name) {

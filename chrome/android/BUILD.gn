@@ -35,6 +35,10 @@ chrome_android_paks_gypi =
 
 locale_pak_resources("chrome_locale_paks") {
   sources = chrome_android_paks_gypi.chrome_android_pak_locale_resources
+
+  deps = [
+    "//chrome:packed_resources",
+  ]
 }
 
 # GYP: //chrome/chrome.gyp:chrome_java (resources part)
