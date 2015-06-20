@@ -209,15 +209,14 @@ scoped_ptr<SyntheticBeginFrameSource> SyntheticBeginFrameSource::Create(
     base::SingleThreadTaskRunner* task_runner,
     base::TimeTicks initial_vsync_timebase,
     base::TimeDelta initial_vsync_interval) {
-  scoped_refptr<DelayBasedTimeSource> time_source;
-  time_source =
+  scoped_ptr<DelayBasedTimeSource> time_source =
       DelayBasedTimeSource::Create(initial_vsync_interval, task_runner);
-  return make_scoped_ptr(new SyntheticBeginFrameSource(time_source));
+  return make_scoped_ptr(new SyntheticBeginFrameSource(time_source.Pass()));
 }
 
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(
-    scoped_refptr<DelayBasedTimeSource> time_source)
-    : BeginFrameSourceBase(), time_source_(time_source) {
+    scoped_ptr<DelayBasedTimeSource> time_source)
+    : BeginFrameSourceBase(), time_source_(time_source.Pass()) {
   time_source_->SetActive(false);
   time_source_->SetClient(this);
 }

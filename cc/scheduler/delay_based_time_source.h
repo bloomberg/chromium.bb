@@ -31,11 +31,15 @@ class CC_EXPORT TimeSourceClient {
 // This timer implements a time source that achieves the specified interval
 // in face of millisecond-precision delayed callbacks and random queueing
 // delays. DelayBasedTimeSource uses base::TimeTicks::Now as its timebase.
-class CC_EXPORT DelayBasedTimeSource
-    : public base::RefCounted<DelayBasedTimeSource> {
+class CC_EXPORT DelayBasedTimeSource {
  public:
-  static scoped_refptr<DelayBasedTimeSource> Create(
-      base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner);
+  static scoped_ptr<DelayBasedTimeSource> Create(
+      base::TimeDelta interval,
+      base::SingleThreadTaskRunner* task_runner) {
+    return make_scoped_ptr(new DelayBasedTimeSource(interval, task_runner));
+  }
+
+  virtual ~DelayBasedTimeSource();
 
   virtual void SetClient(TimeSourceClient* client);
 
@@ -60,7 +64,6 @@ class CC_EXPORT DelayBasedTimeSource
  protected:
   DelayBasedTimeSource(base::TimeDelta interval,
                        base::SingleThreadTaskRunner* task_runner);
-  virtual ~DelayBasedTimeSource();
 
   virtual std::string TypeString() const;
 
@@ -91,7 +94,6 @@ class CC_EXPORT DelayBasedTimeSource
   base::WeakPtrFactory<DelayBasedTimeSource> weak_factory_;
 
  private:
-  friend class base::RefCounted<DelayBasedTimeSource>;
   DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSource);
 };
 

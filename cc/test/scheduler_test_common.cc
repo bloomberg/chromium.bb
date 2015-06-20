@@ -58,8 +58,8 @@ base::TimeTicks TestBackToBackBeginFrameSource::Now() {
 }
 
 TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
-    scoped_refptr<DelayBasedTimeSource> time_source)
-    : SyntheticBeginFrameSource(time_source) {
+    scoped_ptr<DelayBasedTimeSource> time_source)
+    : SyntheticBeginFrameSource(time_source.Pass()) {
 }
 
 TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {

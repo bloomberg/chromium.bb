@@ -37,12 +37,6 @@ static const double kPhaseChangeThreshold = 0.25;
 
 // The following methods correspond to the DelayBasedTimeSource that uses
 // the base::TimeTicks::Now as the timebase.
-scoped_refptr<DelayBasedTimeSource> DelayBasedTimeSource::Create(
-    base::TimeDelta interval,
-    base::SingleThreadTaskRunner* task_runner) {
-  return make_scoped_refptr(new DelayBasedTimeSource(interval, task_runner));
-}
-
 DelayBasedTimeSource::DelayBasedTimeSource(
     base::TimeDelta interval,
     base::SingleThreadTaskRunner* task_runner)

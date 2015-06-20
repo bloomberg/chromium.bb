@@ -35,11 +35,13 @@ class FakeTimeSourceClient : public TimeSourceClient {
 
 class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
  public:
-  static scoped_refptr<FakeDelayBasedTimeSource> Create(
-      base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner) {
-    return make_scoped_refptr(new FakeDelayBasedTimeSource(interval,
-                                                           task_runner));
+  static scoped_ptr<FakeDelayBasedTimeSource> Create(
+      base::TimeDelta interval,
+      base::SingleThreadTaskRunner* task_runner) {
+    return make_scoped_ptr(new FakeDelayBasedTimeSource(interval, task_runner));
   }
+
+  ~FakeDelayBasedTimeSource() override {}
 
   void SetNow(base::TimeTicks time) { now_ = time; }
   base::TimeTicks Now() const override;
@@ -48,7 +50,6 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
   FakeDelayBasedTimeSource(base::TimeDelta interval,
                            base::SingleThreadTaskRunner* task_runner)
       : DelayBasedTimeSource(interval, task_runner) {}
-  ~FakeDelayBasedTimeSource() override {}
 
   base::TimeTicks now_;
 
@@ -58,13 +59,15 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
 
 class TestDelayBasedTimeSource : public DelayBasedTimeSource {
  public:
-  static scoped_refptr<TestDelayBasedTimeSource> Create(
+  static scoped_ptr<TestDelayBasedTimeSource> Create(
       base::SimpleTestTickClock* now_src,
       base::TimeDelta interval,
       OrderedSimpleTaskRunner* task_runner) {
-    return make_scoped_refptr(
+    return make_scoped_ptr(
         new TestDelayBasedTimeSource(now_src, interval, task_runner));
   }
+
+  ~TestDelayBasedTimeSource() override;
 
  protected:
   TestDelayBasedTimeSource(base::SimpleTestTickClock* now_src,
@@ -72,9 +75,9 @@ class TestDelayBasedTimeSource : public DelayBasedTimeSource {
                            OrderedSimpleTaskRunner* task_runner);
 
   // Overridden from DelayBasedTimeSource
-  ~TestDelayBasedTimeSource() override;
   base::TimeTicks Now() const override;
   std::string TypeString() const override;
+
   // Not owned.
   base::SimpleTestTickClock* now_src_;
 
@@ -141,14 +144,16 @@ class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
       base::SimpleTestTickClock* now_src,
       OrderedSimpleTaskRunner* task_runner,
       base::TimeDelta initial_interval) {
+    scoped_ptr<TestDelayBasedTimeSource> time_source =
+        TestDelayBasedTimeSource::Create(now_src, initial_interval,
+                                         task_runner);
     return make_scoped_ptr(
-        new TestSyntheticBeginFrameSource(TestDelayBasedTimeSource::Create(
-            now_src, initial_interval, task_runner)));
+        new TestSyntheticBeginFrameSource(time_source.Pass()));
   }
 
  protected:
-  TestSyntheticBeginFrameSource(
-      scoped_refptr<DelayBasedTimeSource> time_source);
+  explicit TestSyntheticBeginFrameSource(
+      scoped_ptr<DelayBasedTimeSource> time_source);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSyntheticBeginFrameSource);

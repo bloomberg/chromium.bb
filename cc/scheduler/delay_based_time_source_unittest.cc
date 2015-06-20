@@ -21,7 +21,7 @@ TEST(DelayBasedTimeSourceTest, TaskPostedAndTickCalled) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
 
@@ -39,7 +39,7 @@ TEST(DelayBasedTimeSourceTest, TickNotCalledWithTaskPosted) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -53,7 +53,7 @@ TEST(DelayBasedTimeSourceTest, StartTwiceEnqueuesOneTask) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -67,7 +67,7 @@ TEST(DelayBasedTimeSourceTest, StartWhenRunningDoesntTick) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -84,7 +84,7 @@ TEST(DelayBasedTimeSourceTest, NextDelaySaneWhenExactlyOnRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -105,7 +105,7 @@ TEST(DelayBasedTimeSourceTest, NextDelaySaneWhenSlightlyAfterRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -128,7 +128,7 @@ TEST(DelayBasedTimeSourceTest,
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -150,7 +150,7 @@ TEST(DelayBasedTimeSourceTest,
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -172,7 +172,7 @@ TEST(DelayBasedTimeSourceTest, NextDelaySaneWhenHalfAfterRequestedTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -194,7 +194,7 @@ TEST(DelayBasedTimeSourceTest, SaneHandlingOfJitteryTimebase) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -225,7 +225,7 @@ TEST(DelayBasedTimeSourceTest, HandlesSignificantTimebaseChangesImmediately) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -269,7 +269,7 @@ TEST(DelayBasedTimeSourceTest, HanldlesSignificantIntervalChangesImmediately) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -311,7 +311,7 @@ TEST(DelayBasedTimeSourceTest, JitteryRuntimeWithFutureTimebases) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -422,7 +422,7 @@ TEST(DelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
@@ -447,7 +447,7 @@ TEST(DelayBasedTimeSourceTest, TestDeactivateWhilePending) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);  // Should post a task.
@@ -462,7 +462,7 @@ TEST(DelayBasedTimeSourceTest, TestDeactivateAndReactivateBeforeNextTickTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
 
@@ -487,7 +487,7 @@ TEST(DelayBasedTimeSourceTest, TestDeactivateAndReactivateAfterNextTickTime) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
 
@@ -512,7 +512,7 @@ TEST(DelayBasedTimeSourceTest, TestReturnValueWhenTimerIsDeActivated) {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner =
       new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
-  scoped_refptr<FakeDelayBasedTimeSource> timer =
+  scoped_ptr<FakeDelayBasedTimeSource> timer =
       FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
 

@@ -229,7 +229,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
 
  protected:
   explicit SyntheticBeginFrameSource(
-      scoped_refptr<DelayBasedTimeSource> time_source);
+      scoped_ptr<DelayBasedTimeSource> time_source);
 
   BeginFrameArgs CreateBeginFrameArgs(base::TimeTicks frame_time,
                                       BeginFrameArgs::BeginFrameArgsType type);
@@ -237,7 +237,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
   // BeginFrameSourceBase
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
-  scoped_refptr<DelayBasedTimeSource> time_source_;
+  scoped_ptr<DelayBasedTimeSource> time_source_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticBeginFrameSource);
