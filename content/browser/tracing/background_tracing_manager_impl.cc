@@ -490,7 +490,7 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
              "disabled-by-default-toplevel.flow,"
              "disabled-by-default-ipc.flow";
     case BackgroundTracingConfig::CategoryPreset::BENCHMARK_DEEP:
-      return "*,disabled-by-default-blink.debug.layout";
+      return "*,disabled-by-default-benchmark.detailed";
   }
   NOTREACHED();
   return "";

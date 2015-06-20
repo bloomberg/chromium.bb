@@ -132,6 +132,7 @@ extern const char kEnableLinkableEphemeralApps[];
 extern const char kEnableMaterialDesignSettings[];
 extern const char kEnableMediaRouter[];
 extern const char kEnableNaCl[];
+extern const char kEnableNavigationTracing[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNewBookmarkApps[];
 extern const char kEnableOfflineAutoReload[];

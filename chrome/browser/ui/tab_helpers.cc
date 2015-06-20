@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
+#include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -240,5 +241,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents->GetBrowserContext())) {
     predictors::ResourcePrefetchPredictorTabHelper::CreateForWebContents(
         web_contents);
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNavigationTracing) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTraceUploadURL)) {
+    tracing::NavigationTracingObserver::CreateForWebContents(web_contents);
   }
 }

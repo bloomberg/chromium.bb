@@ -785,6 +785,8 @@
       'browser/tracing/chrome_tracing_delegate.h',
       'browser/tracing/crash_service_uploader.cc',
       'browser/tracing/crash_service_uploader.h',
+      'browser/tracing/navigation_tracing.cc',
+      'browser/tracing/navigation_tracing.h',
       'browser/translate/chrome_translate_client.cc',
       'browser/translate/chrome_translate_client.h',
       'browser/translate/translate_accept_languages_factory.cc',

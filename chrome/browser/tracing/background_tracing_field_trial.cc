@@ -27,13 +27,8 @@ const char kBackgroundTracingUploadUrl[] = "upload_url";
 
 ConfigTextFilterForTesting g_config_text_filter_for_testing = nullptr;
 
-void OnUploadProgress(int64, int64) {
-  // We don't actually care about the progress, but TraceUploader::DoUpload
-  // requires we pass something valid.
-}
-
 void OnUploadComplete(TraceCrashServiceUploader* uploader,
-                      base::Closure done_callback,
+                      const base::Closure& done_callback,
                       bool success,
                       const std::string& feedback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -51,7 +46,8 @@ void UploadCallback(const std::string& upload_url,
     uploader->SetUploadURL(upload_url);
 
   uploader->DoUpload(
-      file_contents->data(), metadata.Pass(), base::Bind(&OnUploadProgress),
+      file_contents->data(), metadata.Pass(),
+      content::TraceUploader::UploadProgressCallback(),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
 }
 

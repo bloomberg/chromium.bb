@@ -92,6 +92,9 @@ void TraceCrashServiceUploader::OnURLFetchUploadProgress(
   DCHECK(url_fetcher_.get());
 
   LOG(WARNING) << "Upload progress: " << current << " of " << total;
+
+  if (progress_callback_.is_null())
+    return;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(progress_callback_, current, total));
