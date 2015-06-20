@@ -195,10 +195,11 @@
   if ([[req URL] isFileURL]) {
     [[req HTTPBody] writeToURL:[req URL] options:0 error:error];
   } else {
+    NSURLResponse *response = nil;
     data = [NSURLConnection sendSynchronousRequest:req
-                                 returningResponse:&response_
+                                 returningResponse:&response
                                              error:error];
-    [response_ retain];
+    response_ = (NSHTTPURLResponse *)[response retain];
   }
   [req release];
 
