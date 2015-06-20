@@ -298,6 +298,9 @@ int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyp
 
 CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
 {
+    if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled())
+        return ComplexPath;
+
     const TextRun& run = runInfo.run;
 
     if (fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != run.length()))

@@ -1819,6 +1819,8 @@ int LayoutText::nextOffset(int current) const
 
 bool LayoutText::computeCanUseSimpleFontCodePath() const
 {
+    if (RuntimeEnabledFeatures::alwaysUseComplexTextEnabled())
+        return false;
     if (m_text.is8Bit())
         return true;
     return Character::characterRangeCodePath(characters16(), length()) == SimplePath;

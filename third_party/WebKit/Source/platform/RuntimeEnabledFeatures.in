@@ -17,6 +17,7 @@
 // #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
 
 AppBanner status=stable
+AlwaysUseComplexText
 ApplicationCache status=stable
 AudioOutputDevices status=test
 AudioVideoTracks depends_on=Media, status=experimental
