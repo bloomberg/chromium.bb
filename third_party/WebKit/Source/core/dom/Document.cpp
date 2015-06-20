@@ -1836,9 +1836,11 @@ void Document::updateStyle(StyleRecalcChange change)
 
     clearNeedsStyleRecalc();
 
+    StyleResolver& resolver = ensureStyleResolver();
+
     bool shouldRecordStats;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &shouldRecordStats);
-    ensureStyleResolver().setStatsEnabled(shouldRecordStats);
+    resolver.setStatsEnabled(shouldRecordStats);
 
     if (Element* documentElement = this->documentElement()) {
         inheritHtmlAndBodyElementStyles(change);
@@ -1853,20 +1855,19 @@ void Document::updateStyle(StyleRecalcChange change)
 
     clearChildNeedsStyleRecalc();
 
-    if (styleEngine().hasResolver()) {
-        // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
-        StyleResolver& resolver = styleEngine().ensureResolver();
-        styleEngine().resetCSSFeatureFlags(resolver.ensureUpdatedRuleFeatureSet());
-        resolver.clearStyleSharingList();
-    }
+    // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
+    styleEngine().resetCSSFeatureFlags(resolver.ensureUpdatedRuleFeatureSet());
+    resolver.clearStyleSharingList();
 
     ASSERT(!needsStyleRecalc());
     ASSERT(!childNeedsStyleRecalc());
     ASSERT(inStyleRecalc());
+    ASSERT(styleResolver() == &resolver);
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
+    RefPtr<TracedValue> counters = shouldRecordStats ? resolver.stats()->toTracedValue() : nullptr;
     TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
         "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount,
-        "counters", ensureStyleResolver().stats()->toTracedValue());
+        "counters", counters);
 }
 
 void Document::notifyLayoutTreeOfSubtreeChanges()
