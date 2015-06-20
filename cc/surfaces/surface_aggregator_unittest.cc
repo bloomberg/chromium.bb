@@ -1049,12 +1049,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
 
 // Tests that damage rects are aggregated correctly when surfaces change.
 TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
-  SurfaceId child_surface_id = allocator_.GenerateId();
-  factory_.Create(child_surface_id);
-  RenderPassId child_pass_id = RenderPassId(1, 1);
-  test::Quad child_quads[] = {test::Quad::RenderPassQuad(child_pass_id)};
+  test::Quad child_quads[] = {test::Quad::RenderPassQuad(RenderPassId(1, 1))};
   test::Pass child_passes[] = {
-      test::Pass(child_quads, arraysize(child_quads), child_pass_id)};
+      test::Pass(child_quads, arraysize(child_quads), RenderPassId(1, 1))};
 
   RenderPassList child_pass_list;
   AddPasses(&child_pass_list,
@@ -1073,16 +1070,47 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
   scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
   child_frame->delegated_frame_data = child_frame_data.Pass();
 
+  SurfaceId child_surface_id = allocator_.GenerateId();
+  factory_.Create(child_surface_id);
   factory_.SubmitFrame(child_surface_id, child_frame.Pass(),
                        SurfaceFactory::DrawCallback());
 
-  RenderPassId pass_id(5, 10);
-  test::Quad first_quads[] = {test::Quad::SurfaceQuad(child_surface_id, 1.f)};
-  test::Quad root_quads[] = {test::Quad::RenderPassQuad(pass_id)};
+  test::Quad parent_surface_quads[] = {
+      test::Quad::SurfaceQuad(child_surface_id, 1.f)};
+  test::Pass parent_surface_passes[] = {
+      test::Pass(parent_surface_quads, arraysize(parent_surface_quads),
+                 RenderPassId(1, 1))};
+
+  RenderPassList parent_surface_pass_list;
+  AddPasses(&parent_surface_pass_list,
+            gfx::Rect(SurfaceSize()),
+            parent_surface_passes,
+            arraysize(parent_surface_passes));
+
+  // Parent surface is only used to test if the transform is applied correctly
+  // to the child surface's damage.
+  scoped_ptr<DelegatedFrameData> parent_surface_frame_data(
+      new DelegatedFrameData);
+  parent_surface_pass_list.swap(parent_surface_frame_data->render_pass_list);
+
+  scoped_ptr<CompositorFrame> parent_surface_frame(new CompositorFrame);
+  parent_surface_frame->delegated_frame_data = parent_surface_frame_data.Pass();
+
+  SurfaceId parent_surface_id = allocator_.GenerateId();
+  factory_.Create(parent_surface_id);
+  factory_.SubmitFrame(parent_surface_id, parent_surface_frame.Pass(),
+                       SurfaceFactory::DrawCallback());
+
+  test::Quad root_surface_quads[] = {
+      test::Quad::SurfaceQuad(parent_surface_id, 1.f)};
+  test::Quad root_render_pass_quads[] = {
+      test::Quad::RenderPassQuad(RenderPassId(1, 1))};
 
   test::Pass root_passes[] = {
-      test::Pass(first_quads, arraysize(first_quads), pass_id),
-      test::Pass(root_quads, arraysize(root_quads))};
+      test::Pass(root_surface_quads, arraysize(root_surface_quads),
+                 RenderPassId(1, 1)),
+      test::Pass(root_render_pass_quads, arraysize(root_render_pass_quads),
+                 RenderPassId(2, 1))};
 
   RenderPassList root_pass_list;
   AddPasses(&root_pass_list,

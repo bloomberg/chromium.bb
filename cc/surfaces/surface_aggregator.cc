@@ -274,14 +274,14 @@ void SurfaceAggregator::HandleSurfaceQuad(
     dest_pass_list_->push_back(copy_pass.Pass());
   }
 
+  gfx::Transform surface_transform =
+      surface_quad->shared_quad_state->quad_to_target_transform;
+  surface_transform.ConcatTransform(target_transform);
+
   const RenderPass& last_pass = *render_pass_list.back();
   if (merge_pass) {
     // TODO(jamesr): Clean up last pass special casing.
     const QuadList& quads = last_pass.quad_list;
-
-    gfx::Transform surface_transform =
-        surface_quad->shared_quad_state->quad_to_target_transform;
-    surface_transform.ConcatTransform(target_transform);
 
     // Intersect the transformed visible rect and the clip rect to create a
     // smaller cliprect for the quad.
@@ -321,11 +321,10 @@ void SurfaceAggregator::HandleSurfaceQuad(
                  gfx::Vector2dF(),
                  FilterOperations());
   }
+
   dest_pass->damage_rect = gfx::UnionRects(
       dest_pass->damage_rect,
-      MathUtil::MapEnclosingClippedRect(
-          surface_quad->shared_quad_state->quad_to_target_transform,
-          surface_damage));
+      MathUtil::MapEnclosingClippedRect(surface_transform, surface_damage));
 
   referenced_surfaces_.erase(it);
 }
