@@ -8,6 +8,9 @@
 // NOTE: On some toolchains, signal related ABI is incompatible with Linux's
 // (not undefined, but defined different values and in different memory
 // layouts). So, fill the gap here.
+#if defined(__i386__) || defined(__x86_64__) || defined(__arm__) || \
+    defined(__aarch64__)
+
 #define LINUX_SIGHUP 1
 #define LINUX_SIGINT 2
 #define LINUX_SIGQUIT 3
@@ -29,6 +32,34 @@
 #define LINUX_SA_RESTART 0x10000000
 
 #define LINUX_SIG_DFL 0
+
+#elif defined(__mips__)
+
+#define LINUX_SIGHUP 1
+#define LINUX_SIGINT 2
+#define LINUX_SIGQUIT 3
+#define LINUX_SIGABRT 6
+#define LINUX_SIGBUS 10
+#define LINUX_SIGSEGV 11
+#define LINUX_SIGSYS 12
+#define LINUX_SIGPIPE 13
+#define LINUX_SIGTERM 15
+#define LINUX_SIGUSR1 16
+#define LINUX_SIGUSR2 17
+#define LINUX_SIGCHLD 18
+
+#define LINUX_SIG_BLOCK 1
+#define LINUX_SIG_UNBLOCK 2
+
+#define LINUX_SA_SIGINFO 0x00000008
+#define LINUX_SA_NODEFER 0x40000000
+#define LINUX_SA_RESTART 0x10000000
+
+#define LINUX_SIG_DFL 0
+
+#else
+#error "Unsupported platform"
+#endif
 
 #if defined(__native_client_nonsfi__)
 #if !defined(__i386__) && !defined(__arm__)
