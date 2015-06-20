@@ -277,7 +277,6 @@ void RenderWidgetCompositor::Initialize() {
 
   settings.gpu_rasterization_msaa_sample_count =
       compositor_deps_->GetGpuRasterizationMSAASampleCount();
-  settings.impl_side_painting = true;
   settings.gpu_rasterization_forced =
       compositor_deps_->IsGpuRasterizationForced();
   settings.gpu_rasterization_enabled =
@@ -312,8 +311,7 @@ void RenderWidgetCompositor::Initialize() {
   }
 
   settings.verify_property_trees =
-      cmd->HasSwitch(cc::switches::kEnablePropertyTreeVerification) &&
-      settings.impl_side_painting;
+      cmd->HasSwitch(cc::switches::kEnablePropertyTreeVerification);
   settings.renderer_settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   // The means the renderer compositor has 2 possible modes:

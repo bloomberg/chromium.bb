@@ -20,8 +20,7 @@ LayerSettings::~LayerSettings() {
 }
 
 LayerTreeSettings::LayerTreeSettings()
-    : impl_side_painting(true),
-      single_thread_proxy_scheduler(true),
+    : single_thread_proxy_scheduler(true),
       use_external_begin_frame_source(false),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
@@ -83,7 +82,6 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
       use_external_begin_frame_source;
   scheduler_settings.main_frame_before_activation_enabled =
       main_frame_before_activation_enabled;
-  scheduler_settings.impl_side_painting = impl_side_painting;
   scheduler_settings.timeout_and_draw_when_animation_checkerboards =
       timeout_and_draw_when_animation_checkerboards;
   scheduler_settings.using_synchronous_renderer_compositor =

@@ -29,7 +29,6 @@ class CC_EXPORT LayerTreeSettings {
   ~LayerTreeSettings();
 
   RendererSettings renderer_settings;
-  bool impl_side_painting;
   bool single_thread_proxy_scheduler;
   bool use_external_begin_frame_source;
   bool main_frame_before_activation_enabled;

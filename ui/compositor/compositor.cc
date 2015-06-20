@@ -123,7 +123,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
 
-  settings.impl_side_painting = true;
   settings.use_display_lists = IsUISlimmingPaintEnabled();
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();

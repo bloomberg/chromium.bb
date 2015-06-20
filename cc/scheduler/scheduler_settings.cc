@@ -12,7 +12,6 @@ SchedulerSettings::SchedulerSettings()
     : use_external_begin_frame_source(false),
       main_frame_while_swap_throttled_enabled(false),
       main_frame_before_activation_enabled(false),
-      impl_side_painting(true),
       commit_to_active_tree(false),
       timeout_and_draw_when_animation_checkerboards(true),
       using_synchronous_renderer_compositor(false),
@@ -33,7 +32,6 @@ SchedulerSettings::AsValue() const {
                     main_frame_while_swap_throttled_enabled);
   state->SetBoolean("main_frame_before_activation_enabled",
                     main_frame_before_activation_enabled);
-  state->SetBoolean("impl_side_painting", impl_side_painting);
   state->SetBoolean("commit_to_active_tree", commit_to_active_tree);
   state->SetBoolean("timeout_and_draw_when_animation_checkerboards",
                     timeout_and_draw_when_animation_checkerboards);

@@ -233,7 +233,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_likely_to_require_a_draw_(false),
       frame_timing_tracker_(FrameTimingTracker::Create(this)) {
   DCHECK(proxy_->IsImplThread());
-  DCHECK_IMPLIES(settings.impl_side_painting, task_graph_runner_);
   DCHECK_IMPLIES(settings.use_one_copy, !settings.use_zero_copy);
   DCHECK_IMPLIES(settings.use_zero_copy, !settings.use_one_copy);
   DidVisibilityChange(this, visible_);

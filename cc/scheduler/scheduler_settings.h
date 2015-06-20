@@ -26,7 +26,6 @@ class CC_EXPORT SchedulerSettings {
   bool use_external_begin_frame_source;
   bool main_frame_while_swap_throttled_enabled;
   bool main_frame_before_activation_enabled;
-  bool impl_side_painting;
   bool commit_to_active_tree;
   bool timeout_and_draw_when_animation_checkerboards;
   bool using_synchronous_renderer_compositor;

@@ -120,7 +120,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
       task_graph_runner_(params->task_graph_runner),
       surface_id_namespace_(0u),
       next_surface_sequence_(1u) {
-  DCHECK_IMPLIES(settings_.impl_side_painting, task_graph_runner_);
+  DCHECK(task_graph_runner_);
   if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   rendering_stats_instrumentation_->set_record_rendering_stats(

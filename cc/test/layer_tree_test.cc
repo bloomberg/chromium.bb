@@ -803,7 +803,6 @@ void LayerTreeTest::RunTest(bool threaded, bool delegating_renderer) {
   settings_.background_animation_rate = 200.0;
   settings_.verify_property_trees = verify_property_trees_;
   InitializeSettings(&settings_);
-  DCHECK(settings_.impl_side_painting);
   InitializeLayerSettings(&layer_settings_);
 
   main_task_runner_->PostTask(

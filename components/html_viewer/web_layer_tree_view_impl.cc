@@ -32,7 +32,6 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 
   cc::LayerTreeSettings settings;
 
-  settings.impl_side_painting = true;
   settings.use_image_texture_target = GL_TEXTURE_2D;
   settings.use_one_copy = true;
   // TODO(jam): use multiple compositor raster threads and set gather_pixel_refs
