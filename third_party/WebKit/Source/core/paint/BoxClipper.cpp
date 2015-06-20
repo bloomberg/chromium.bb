@@ -52,14 +52,15 @@ BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutP
             return;
     }
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        m_clipType = m_paintInfo.displayItemTypeForClipping();
+    OwnPtr<Vector<FloatRoundedRect>> roundedRects;
+    if (hasBorderRadius) {
+        roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
+        roundedRects->append(clipRoundedRect);
+    }
 
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect));
-    if (hasBorderRadius)
-        clipDisplayItem->roundedRectClips().append(clipRoundedRect);
-
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        m_clipType = m_paintInfo.displayItemTypeForClipping();
         ASSERT(m_paintInfo.context->displayItemList());
         if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled())
             m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());

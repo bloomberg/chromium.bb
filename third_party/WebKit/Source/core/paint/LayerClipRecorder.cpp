@@ -24,9 +24,13 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
     , m_clipType(clipType)
 {
     IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(layoutObject, clipType, snappedClipRect);
-    if (localPaintingInfo && clipRect.hasRadius())
-        collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, clipDisplayItem->roundedRectClips());
+    OwnPtr<Vector<FloatRoundedRect>> roundedRects;
+    if (localPaintingInfo && clipRect.hasRadius()) {
+        roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
+        collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, *roundedRects);
+    }
+
+    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(layoutObject, clipType, snappedClipRect, roundedRects.release());
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         clipDisplayItem->replay(graphicsContext);
     } else {

@@ -18,14 +18,15 @@ namespace blink {
 class PLATFORM_EXPORT ClipDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED(ClipDisplayItem);
 public:
-    static PassOwnPtr<ClipDisplayItem> create(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect)
+    static PassOwnPtr<ClipDisplayItem> create(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, PassOwnPtr<Vector<FloatRoundedRect>> roundedRectClips = nullptr)
     {
-        return adoptPtr(new ClipDisplayItem(client, type, clipRect));
+        return adoptPtr(new ClipDisplayItem(client, type, clipRect, roundedRectClips));
     }
 
-    ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect)
+    ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, PassOwnPtr<Vector<FloatRoundedRect>> roundedRectClips = nullptr)
         : PairedBeginDisplayItem(client, type)
         , m_clipRect(clipRect)
+        , m_roundedRectClips(roundedRectClips)
     {
         ASSERT(isClipType(type));
     }
@@ -33,14 +34,12 @@ public:
     virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
-    Vector<FloatRoundedRect>& roundedRectClips() { return m_roundedRectClips; }
-
 private:
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
     IntRect m_clipRect;
-    Vector<FloatRoundedRect> m_roundedRectClips;
+    OwnPtr<Vector<FloatRoundedRect>> m_roundedRectClips;
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public PairedEndDisplayItem {
