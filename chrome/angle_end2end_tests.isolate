@@ -7,7 +7,7 @@
     '../third_party/angle/angle.isolate',
   ],
   'conditions': [
-    ['OS=="win"', {
+    ['OS=="win" or OS=="linux"', {
       'variables': {
         'command': [
           '<(PRODUCT_DIR)/angle_end2end_tests<(EXECUTABLE_SUFFIX)',
