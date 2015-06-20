@@ -436,16 +436,6 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
     return ret;
 }
 
-static ALWAYS_INLINE size_t partitionBucketBytes(const PartitionBucket* bucket)
-{
-    return bucket->numSystemPagesPerSlotSpan * kSystemPageSize;
-}
-
-static ALWAYS_INLINE uint16_t partitionBucketSlots(const PartitionBucket* bucket)
-{
-    return static_cast<uint16_t>(partitionBucketBytes(bucket) / bucket->slotSize);
-}
-
 static ALWAYS_INLINE uint16_t partitionBucketPartitionPages(const PartitionBucket* bucket)
 {
     return (bucket->numSystemPagesPerSlotSpan + (kNumSystemPagesPerPartitionPage - 1)) / kNumSystemPagesPerPartitionPage;
@@ -619,12 +609,19 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
 static ALWAYS_INLINE PartitionDirectMapExtent* partitionPageToDirectMapExtent(PartitionPage* page)
 {
     ASSERT(partitionBucketIsDirectMapped(page->bucket));
-    return reinterpret_cast<PartitionDirectMapExtent*>(reinterpret_cast<char*>(page) + 2 * kPageMetadataSize);
+    return reinterpret_cast<PartitionDirectMapExtent*>(reinterpret_cast<char*>(page) + 3 * kPageMetadataSize);
 }
 
-static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags, size_t size)
+static ALWAYS_INLINE void partitionPageSetRawSize(PartitionPage* page, size_t size)
 {
-    size = partitionDirectMapSize(size);
+    size_t* rawSizePtr = partitionPageGetRawSizePtr(page);
+    if (UNLIKELY(rawSizePtr != nullptr))
+        *rawSizePtr = size;
+}
+
+static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags, size_t rawSize)
+{
+    size_t size = partitionDirectMapSize(rawSize);
 
     // Because we need to fake looking like a super page, we need to allocate
     // a bunch of system pages more than "size":
@@ -667,7 +664,7 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     extent->superPagesEnd = 0;
     extent->next = 0;
     PartitionPage* page = partitionPointerToPageNoAlignmentCheck(ret);
-    PartitionBucket* bucket = reinterpret_cast<PartitionBucket*>(reinterpret_cast<char*>(page) + kPageMetadataSize);
+    PartitionBucket* bucket = reinterpret_cast<PartitionBucket*>(reinterpret_cast<char*>(page) + (kPageMetadataSize * 2));
     page->freelistHead = 0;
     page->nextPage = 0;
     page->bucket = bucket;
@@ -681,6 +678,9 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     bucket->slotSize = size;
     bucket->numSystemPagesPerSlotSpan = 0;
     bucket->numFullPages = 0;
+
+    partitionPageSetRawSize(page, rawSize);
+    ASSERT(partitionPageGetRawSize(page) == rawSize);
 
     PartitionDirectMapExtent* mapExtent = partitionPageToDirectMapExtent(page);
     mapExtent->mapSize = mapSize - kPartitionPageSize - kSystemPageSize;
@@ -731,35 +731,6 @@ static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
     ptr -= kPartitionPageSize;
 
     freePages(ptr, unmapSize);
-}
-
-static ALWAYS_INLINE size_t* partitionPageGetRawSizePtr(PartitionPage* page)
-{
-    // For single-slot buckets which span more than one partition page, we
-    // have some spare metadata space to store the raw allocation size. We
-    // can use this to report better statistics.
-    PartitionBucket* bucket = page->bucket;
-    if (bucket->slotSize <= kMaxSystemPagesPerSlotSpan * kSystemPageSize)
-        return nullptr;
-
-    ASSERT(partitionBucketSlots(bucket) == 1);
-    page++;
-    return reinterpret_cast<size_t*>(&page->freelistHead);
-}
-
-static ALWAYS_INLINE void partitionPageSetRawSize(PartitionPage* page, size_t size)
-{
-    size_t* rawSizePtr = partitionPageGetRawSizePtr(page);
-    if (UNLIKELY(rawSizePtr != nullptr))
-        *rawSizePtr = size;
-}
-
-static size_t partitionPageGetRawSize(PartitionPage* page)
-{
-    size_t* rawSizePtr = partitionPageGetRawSizePtr(page);
-    if (UNLIKELY(rawSizePtr != nullptr))
-        return *rawSizePtr;
-    return 0;
 }
 
 void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, PartitionBucket* bucket)
@@ -930,8 +901,21 @@ void partitionFreeSlowPath(PartitionPage* page)
             partitionDirectUnmap(page);
             return;
         }
-        // If it's the current active page, attempt to change it. We'd prefer to leave
-        // the page empty as a gentle force towards defragmentation.
+        // Make sure all large allocations always bounce through the slow path,
+        // so that we correctly update size metadata.
+        // TODO(cevans): remove this special case when we start bouncing empty
+        // pages straight to the empty list. This will happen soon.
+        if (UNLIKELY(partitionPageGetRawSize(page))) {
+            // We can make that allocations from this empty page bounce
+            // through the slow path by marking the freelist head as null. To
+            // get the single slot filled correctly, we also have to tag the
+            // page as having a single unprovisioned slot.
+            ASSERT(partitionBucketSlots(bucket) == 1);
+            page->numUnprovisionedSlots = 1;
+            page->freelistHead = nullptr;
+        }
+        // If it's the current active page, attempt to change it. We'd prefer to
+        // leave the page empty as a gentle force towards defragmentation.
         if (LIKELY(page == bucket->activePagesHead) && page->nextPage) {
             if (partitionSetNewActivePage(page->nextPage)) {
                 ASSERT(bucket->activePagesHead != page);
@@ -975,15 +959,15 @@ void partitionFreeSlowPath(PartitionPage* page)
     }
 }
 
-bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPage* page, size_t newSize)
+bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPage* page, size_t rawSize)
 {
     ASSERT(partitionBucketIsDirectMapped(page->bucket));
 
-    newSize = partitionCookieSizeAdjustAdd(newSize);
+    rawSize = partitionCookieSizeAdjustAdd(rawSize);
 
     // Note that the new size might be a bucketed size; this function is called
     // whenever we're reallocating a direct mapped allocation.
-    newSize = partitionDirectMapSize(newSize);
+    size_t newSize = partitionDirectMapSize(rawSize);
     if (newSize < kGenericMinDirectMappedDownsize)
         return false;
 
@@ -1025,8 +1009,11 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
 
 #if ENABLE(ASSERT)
     // Write a new trailing cookie.
-    partitionCookieWriteValue(charPtr + newSize - kCookieSize);
+    partitionCookieWriteValue(charPtr + rawSize - kCookieSize);
 #endif
+
+    partitionPageSetRawSize(page, rawSize);
+    ASSERT(partitionPageGetRawSize(page) == rawSize);
 
     page->bucket->slotSize = newSize;
     return true;

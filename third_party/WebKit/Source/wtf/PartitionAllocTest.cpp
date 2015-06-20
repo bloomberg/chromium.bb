@@ -651,7 +651,8 @@ TEST(PartitionAllocTest, GenericAllocSizes)
     partitionFreeGeneric(genericAllocator.root(), ptr4);
 
     // Can we allocate a massive (512MB) size?
-    ptr = partitionAllocGeneric(genericAllocator.root(), 512 * 1024 * 1024);
+    // Allocate 512MB, but +1, to test for cookie writing alignment issues.
+    ptr = partitionAllocGeneric(genericAllocator.root(), 512 * 1024 * 1024 + 1);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
     // Check a more reasonable, but still direct mapped, size.
@@ -1479,7 +1480,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
     // This test checks large-but-not-quite-direct allocations.
     {
-        void* ptr = partitionAllocGeneric(genericAllocator.root(), 65537);
+        void* ptr = partitionAllocGeneric(genericAllocator.root(), 65536 + 1);
 
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
@@ -1502,6 +1503,31 @@ TEST(PartitionAllocTest, DumpMemoryStats)
         }
 
         partitionFreeGeneric(genericAllocator.root(), ptr);
+
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), 65536 + kSystemPageSize + 1);
+        EXPECT_EQ(ptr, ptr2);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            size_t slotSize = 65536 + (65536 / kGenericNumBucketsPerOrder);
+            const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(slotSize);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_FALSE(stats->isDirectMap);
+            EXPECT_EQ(slotSize, stats->bucketSlotSize);
+            EXPECT_EQ(slotSize, stats->activeBytes);
+            EXPECT_EQ(slotSize, stats->residentBytes);
+            EXPECT_EQ(0u, stats->decommittableBytes);
+            EXPECT_EQ(1u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(0u, stats->numEmptyPages);
+            EXPECT_EQ(0u, stats->numDecommittedPages);
+        }
+
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
     }
 
     TestShutdown();

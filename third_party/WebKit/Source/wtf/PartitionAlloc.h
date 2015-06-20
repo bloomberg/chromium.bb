@@ -218,8 +218,8 @@ static const size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024; // 1GiB
 // These two byte values match tcmalloc.
 static const unsigned char kUninitializedByte = 0xAB;
 static const unsigned char kFreedByte = 0xCD;
-static const uint32_t kCookieValue = 0xDEADBEEFu;
 static const size_t kCookieSize = 16; // Handles alignment up to XMM instructions on Intel.
+static const unsigned char kCookieValue[kCookieSize] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE, 0xD0, 0x0D, 0x13, 0x37, 0xF0, 0x05, 0xBA, 0x11, 0xAB, 0x1E };
 #endif
 
 struct PartitionBucket;
@@ -437,18 +437,18 @@ ALWAYS_INLINE void* partitionCookieFreePointerAdjust(void* ptr)
 ALWAYS_INLINE void partitionCookieWriteValue(void* ptr)
 {
 #if ENABLE(ASSERT)
-    uint32_t* cookiePtr = reinterpret_cast<uint32_t*>(ptr);
-    for (size_t i = 0; i < kCookieSize / sizeof(kCookieValue); ++i, ++cookiePtr)
-        *cookiePtr = kCookieValue;
+    unsigned char* cookiePtr = reinterpret_cast<unsigned char*>(ptr);
+    for (size_t i = 0; i < kCookieSize; ++i, ++cookiePtr)
+        *cookiePtr = kCookieValue[i];
 #endif
 }
 
 ALWAYS_INLINE void partitionCookieCheckValue(void* ptr)
 {
 #if ENABLE(ASSERT)
-    uint32_t* cookiePtr = reinterpret_cast<uint32_t*>(ptr);
-    for (size_t i = 0; i < kCookieSize / sizeof(kCookieValue); ++i, ++cookiePtr)
-        ASSERT(*cookiePtr == kCookieValue);
+    unsigned char* cookiePtr = reinterpret_cast<unsigned char*>(ptr);
+    for (size_t i = 0; i < kCookieSize; ++i, ++cookiePtr)
+        ASSERT(*cookiePtr == kCookieValue[i]);
 #endif
 }
 
@@ -500,6 +500,43 @@ ALWAYS_INLINE PartitionPage* partitionPointerToPage(void* ptr)
     return page;
 }
 
+ALWAYS_INLINE bool partitionBucketIsDirectMapped(const PartitionBucket* bucket)
+{
+    return !bucket->numSystemPagesPerSlotSpan;
+}
+
+ALWAYS_INLINE size_t partitionBucketBytes(const PartitionBucket* bucket)
+{
+    return bucket->numSystemPagesPerSlotSpan * kSystemPageSize;
+}
+
+ALWAYS_INLINE uint16_t partitionBucketSlots(const PartitionBucket* bucket)
+{
+    return static_cast<uint16_t>(partitionBucketBytes(bucket) / bucket->slotSize);
+}
+
+ALWAYS_INLINE size_t* partitionPageGetRawSizePtr(PartitionPage* page)
+{
+    // For single-slot buckets which span more than one partition page, we
+    // have some spare metadata space to store the raw allocation size. We
+    // can use this to report better statistics.
+    PartitionBucket* bucket = page->bucket;
+    if (bucket->slotSize <= kMaxSystemPagesPerSlotSpan * kSystemPageSize)
+        return nullptr;
+
+    ASSERT(partitionBucketIsDirectMapped(bucket) || partitionBucketSlots(bucket) == 1);
+    page++;
+    return reinterpret_cast<size_t*>(&page->freelistHead);
+}
+
+ALWAYS_INLINE size_t partitionPageGetRawSize(PartitionPage* page)
+{
+    size_t* rawSizePtr = partitionPageGetRawSizePtr(page);
+    if (UNLIKELY(rawSizePtr != nullptr))
+        return *rawSizePtr;
+    return 0;
+}
+
 ALWAYS_INLINE PartitionRootBase* partitionPageToRoot(PartitionPage* page)
 {
     PartitionSuperPageExtentEntry* extentEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
@@ -522,6 +559,9 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, siz
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
         ASSERT(partitionPointerIsValid(ret));
+        // All large allocations must go through the slow path to correctly
+        // update the size metadata.
+        ASSERT(partitionPageGetRawSize(page) == 0);
         PartitionFreelistEntry* newHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
         page->freelistHead = newHead;
         page->numAllocatedSlots++;
@@ -532,14 +572,21 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, siz
 #if ENABLE(ASSERT)
     if (!ret)
         return 0;
-    // Fill the uninitialized pattern. and write the cookies.
+    // Fill the uninitialized pattern, and write the cookies.
     page = partitionPointerToPage(ret);
-    size_t bucketSize = page->bucket->slotSize;
-    memset(ret, kUninitializedByte, bucketSize);
-    partitionCookieWriteValue(ret);
-    partitionCookieWriteValue(reinterpret_cast<char*>(ret) + bucketSize - kCookieSize);
+    size_t slotSize = page->bucket->slotSize;
+    size_t rawSize = partitionPageGetRawSize(page);
+    if (rawSize) {
+        ASSERT(rawSize == size);
+        slotSize = rawSize;
+    }
+    size_t noCookieSize = partitionCookieSizeAdjustSubtract(slotSize);
+    char* charRet = static_cast<char*>(ret);
     // The value given to the application is actually just after the cookie.
-    ret = static_cast<char*>(ret) + kCookieSize;
+    ret = charRet + kCookieSize;
+    memset(ret, kUninitializedByte, noCookieSize);
+    partitionCookieWriteValue(charRet);
+    partitionCookieWriteValue(charRet + kCookieSize + noCookieSize);
 #endif
     return ret;
 }
@@ -565,10 +612,13 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
 {
     // If these asserts fire, you probably corrupted memory.
 #if ENABLE(ASSERT)
-    size_t bucketSize = page->bucket->slotSize;
+    size_t slotSize = page->bucket->slotSize;
+    size_t rawSize = partitionPageGetRawSize(page);
+    if (rawSize)
+        slotSize = rawSize;
     partitionCookieCheckValue(ptr);
-    partitionCookieCheckValue(reinterpret_cast<char*>(ptr) + bucketSize - kCookieSize);
-    memset(ptr, kFreedByte, bucketSize);
+    partitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slotSize - kCookieSize);
+    memset(ptr, kFreedByte, slotSize);
 #endif
     ASSERT(page->numAllocatedSlots);
     PartitionFreelistEntry* freelistHead = page->freelistHead;
@@ -647,11 +697,6 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
     partitionFreeWithPage(ptr, page);
     spinLockUnlock(&root->lock);
 #endif
-}
-
-ALWAYS_INLINE bool partitionBucketIsDirectMapped(const PartitionBucket* bucket)
-{
-    return !bucket->numSystemPagesPerSlotSpan;
 }
 
 ALWAYS_INLINE size_t partitionDirectMapSize(size_t size)
