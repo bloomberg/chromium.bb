@@ -492,14 +492,12 @@ bool SchedulerStateMachine::ShouldCommit() const {
     return false;
   }
 
-  // If impl-side-painting, commit to the pending tree as soon as we can.
-  if (settings_.impl_side_painting)
-    return true;
-
   // If we only have an active tree, it is incorrect to replace it
-  // before we've drawn it when we aren't impl-side-painting.
-  DCHECK(!settings_.impl_side_painting);
-  return !active_tree_needs_first_draw_;
+  // before we've drawn it.
+  DCHECK_IMPLIES(settings_.commit_to_active_tree,
+                 !active_tree_needs_first_draw_);
+
+  return true;
 }
 
 bool SchedulerStateMachine::ShouldPrepareTiles() const {
@@ -640,17 +638,12 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
 
   if (commit_has_no_updates || settings_.main_frame_before_activation_enabled) {
     commit_state_ = COMMIT_STATE_IDLE;
-  } else if (settings_.impl_side_painting) {
-    commit_state_ = COMMIT_STATE_WAITING_FOR_ACTIVATION;
   } else {
-    commit_state_ = settings_.main_thread_should_always_be_low_latency
-                        ? COMMIT_STATE_WAITING_FOR_DRAW
-                        : COMMIT_STATE_IDLE;
+    commit_state_ = COMMIT_STATE_WAITING_FOR_ACTIVATION;
   }
 
-  // If we are impl-side-painting but the commit was aborted, then we behave
-  // mostly as if we are not impl-side-painting since there is no pending tree.
-  has_pending_tree_ = settings_.impl_side_painting && !commit_has_no_updates;
+  // If the commit was aborted, then there is no pending tree.
+  has_pending_tree_ = !commit_has_no_updates;
 
   // Update state related to forced draws.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT) {
@@ -689,7 +682,7 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
 
 void SchedulerStateMachine::UpdateStateOnActivation() {
   if (commit_state_ == COMMIT_STATE_WAITING_FOR_ACTIVATION) {
-    commit_state_ = settings_.main_thread_should_always_be_low_latency
+    commit_state_ = settings_.commit_to_active_tree
                         ? COMMIT_STATE_WAITING_FOR_DRAW
                         : COMMIT_STATE_IDLE;
   }
@@ -1005,7 +998,6 @@ void SchedulerStateMachine::SetNeedsAnimate() {
 }
 
 void SchedulerStateMachine::SetWaitForReadyToDraw() {
-  DCHECK(settings_.impl_side_painting);
   wait_for_active_tree_ready_to_draw_ = true;
 }
 
@@ -1090,10 +1082,10 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
   DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED)
       << AsValue()->ToString();
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
-  // In main thread low latency mode, commit should happen right after
+  // In commit_to_active_tree mode, commit should happen right after
   // BeginFrame, meaning when this function is called, next action should be
   // commit.
-  if (settings_.main_thread_should_always_be_low_latency)
+  if (settings_.commit_to_active_tree)
     DCHECK(ShouldCommit());
 }
 

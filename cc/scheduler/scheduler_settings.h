@@ -27,15 +27,10 @@ class CC_EXPORT SchedulerSettings {
   bool main_frame_while_swap_throttled_enabled;
   bool main_frame_before_activation_enabled;
   bool impl_side_painting;
+  bool commit_to_active_tree;
   bool timeout_and_draw_when_animation_checkerboards;
   bool using_synchronous_renderer_compositor;
   bool throttle_frame_production;
-
-  // In main thread low latency mode the entire
-  // BeginMainFrame->Commit->Activation->Draw cycle should complete before
-  // starting the next cycle.  Additionally, BeginMainFrame and Commit are
-  // completed atomically with no other tasks or actions occuring between them.
-  bool main_thread_should_always_be_low_latency;
 
   int maximum_number_of_failed_draws_before_draw_is_forced;
   base::TimeDelta background_frame_interval;

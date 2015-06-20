@@ -90,7 +90,6 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
       using_synchronous_renderer_compositor;
   scheduler_settings.throttle_frame_production =
       !renderer_settings.disable_gpu_vsync;
-  scheduler_settings.main_thread_should_always_be_low_latency = false;
   scheduler_settings.background_frame_interval =
       base::TimeDelta::FromSecondsD(1.0 / background_animation_rate);
   return scheduler_settings;

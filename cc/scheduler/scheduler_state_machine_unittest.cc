@@ -918,9 +918,67 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
   EXPECT_FALSE(state.needs_redraw());
 }
 
-TEST(SchedulerStateMachineTest, TestFullCycleWithMainThreadLowLatencyMode) {
+TEST(SchedulerStateMachineTest, CommitWithoutDrawWithPendingTree) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  SET_UP_STATE(state)
+
+  // Start clean and set commit.
+  state.SetNeedsCommit();
+
+  // Make a main frame, commit and activate it. But don't draw it.
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+
+  // Try to make a new main frame before drawing. Since we will commit it to a
+  // pending tree and not clobber the active tree, we're able to start a new
+  // begin frame and commit it.
+  state.SetNeedsCommit();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+}
+
+TEST(SchedulerStateMachineTest, DontCommitWithoutDrawWithoutPendingTree) {
   SchedulerSettings scheduler_settings;
-  scheduler_settings.main_thread_should_always_be_low_latency = true;
+  scheduler_settings.commit_to_active_tree = true;
+  StateMachine state(scheduler_settings);
+  SET_UP_STATE(state)
+
+  // Start clean and set commit.
+  state.SetNeedsCommit();
+
+  // Make a main frame, commit and activate it. But don't draw it.
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+
+  // Try to make a new main frame before drawing, but since we would clobber the
+  // active tree, we will not do so.
+  state.SetNeedsCommit();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
+TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.commit_to_active_tree = true;
   StateMachine state(scheduler_settings);
   SET_UP_STATE(state)
 

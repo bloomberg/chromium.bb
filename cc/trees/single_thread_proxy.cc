@@ -61,8 +61,7 @@ SingleThreadProxy::SingleThreadProxy(
       !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(
         layer_tree_host->settings().ToSchedulerSettings());
-    // SingleThreadProxy should run in main thread low latency mode.
-    scheduler_settings.main_thread_should_always_be_low_latency = true;
+    scheduler_settings.commit_to_active_tree = CommitToActiveTree();
     scheduler_on_impl_thread_ = Scheduler::Create(
         this, scheduler_settings, layer_tree_host_->id(),
         MainThreadTaskRunner(), external_begin_frame_source.Pass());
