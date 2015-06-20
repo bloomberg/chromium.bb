@@ -36,6 +36,18 @@ namespace media {
 namespace {
 enum JpegMarker {
   SOF0 = 0xC0,     // start of frame (baseline)
+  SOF1 = 0xC1,     // start of frame (extended sequential)
+  SOF2 = 0xC2,     // start of frame (progressive)
+  SOF3 = 0xC3,     // start of frame (lossless))
+  SOF5 = 0xC5,     // start of frame (differential, sequential)
+  SOF6 = 0xC6,     // start of frame (differential, progressive)
+  SOF7 = 0xC7,     // start of frame (differential, lossless)
+  SOF9 = 0xC9,     // start of frame (arithmetic coding, extended)
+  SOF10 = 0xCA,    // start of frame (arithmetic coding, progressive)
+  SOF11 = 0xCB,    // start of frame (arithmetic coding, lossless)
+  SOF13 = 0xCD,    // start of frame (differential, arithmetic, sequential)
+  SOF14 = 0xCE,    // start of frame (differential, arithmetic, progressive)
+  SOF15 = 0xCF,    // start of frame (differential, arithmetic, lossless)
   DHT = 0xC4,      // define huffman table
   SOI = 0xD8,      // start of image
   SOS = 0xDA,      // start of scan
@@ -327,6 +339,21 @@ static bool ParseSOI(const char* buffer,
           return false;
         }
         break;
+      case SOF1:
+      case SOF2:
+      case SOF3:
+      case SOF5:
+      case SOF6:
+      case SOF7:
+      case SOF9:
+      case SOF10:
+      case SOF11:
+      case SOF13:
+      case SOF14:
+      case SOF15:
+        DLOG(ERROR) << "Only SOF0 (baseline) is supported, but got SOF"
+                    << (marker2 - SOF0);
+        return false;
       case DQT:
         if (!ParseDQT(reader.ptr(), size, result->q_table)) {
           DLOG(ERROR) << "ParseDQT failed";
