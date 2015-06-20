@@ -148,14 +148,14 @@ def main(argv):
                                  'glibc_%s' % arch_suffix, 'Release')
     toolchain = '%s_x86_glibc' % osname
     toolchain_dir = os.path.join(NACL_SDK_ROOT, 'toolchain', toolchain)
-    sdk_lib_dir = os.path.join(toolchain_dir, 'x86_64-nacl')
+    lib_dir = os.path.join(toolchain_dir, 'x86_64-nacl')
     if arch == 'x86-64':
-      lib_dir = os.path.join(sdk_lib_dir, 'lib')
+      lib_dir = os.path.join(lib_dir, 'lib')
       usr_lib_dir = os.path.join(toolchain_dir, 'x86_64-nacl', 'usr', 'lib')
     else:
-      lib_dir = os.path.join(sdk_lib_dir, 'lib32')
+      lib_dir = os.path.join(lib_dir, 'lib32')
       usr_lib_dir = os.path.join(toolchain_dir, 'i686-nacl', 'usr', 'lib')
-    ldso = os.path.join(sdk_lib_dir, 'runnable-ld.so')
+    ldso = os.path.join(lib_dir, 'runnable-ld.so')
     cmd.append(ldso)
     Log('LD.SO = %s' % ldso)
     libpath = [usr_lib_dir, sdk_lib_dir, lib_dir]
