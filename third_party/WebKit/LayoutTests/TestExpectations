@@ -30,11 +30,6 @@ crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/497950 http/tests/loading/simple-subframe.html [ NeedsManualRebaseline ]
-crbug.com/497950 http/tests/local/file-url-sent-as-referer.html [ NeedsRebaseline ]
-crbug.com/497950 http/tests/mime/png-image-with-x-png-mime-type.html [ NeedsRebaseline ]
-crbug.com/497950 http/tests/misc/acid2-pixel.html [ NeedsRebaseline ]
-crbug.com/497950 http/tests/misc/iframe404.html [ NeedsRebaseline ]
-crbug.com/497950 http/tests/misc/location-replace-crossdomain.html [ NeedsRebaseline ]
 
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
