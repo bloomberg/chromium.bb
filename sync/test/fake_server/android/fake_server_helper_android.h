@@ -41,6 +41,13 @@ class FakeServerHelperAndroid {
                                           jstring model_type_string,
                                           jstring name);
 
+  // Returns true iff |fake_server| has exactly one window of sessions with
+  // tabs matching |url_array|. The order of the array does not matter.
+  jboolean VerifySessions(JNIEnv* env,
+                          jobject obj,
+                          jlong fake_server,
+                          jobjectArray url_array);
+
   // Injects a UniqueClientEntity into |fake_server|.
   void InjectUniqueClientEntity(JNIEnv* env,
                                 jobject obj,

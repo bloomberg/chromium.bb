@@ -84,6 +84,31 @@ jboolean FakeServerHelperAndroid::VerifyEntityCountByTypeAndName(
   return result;
 }
 
+jboolean FakeServerHelperAndroid::VerifySessions(
+    JNIEnv* env,
+    jobject obj,
+    jlong fake_server,
+    jobjectArray url_array) {
+  std::multiset<std::string> tab_urls;
+  for (int i = 0; i < env->GetArrayLength(url_array); i++) {
+    jstring s = (jstring) env->GetObjectArrayElement(url_array, i);
+    tab_urls.insert(base::android::ConvertJavaStringToUTF8(env, s));
+  }
+  fake_server::SessionsHierarchy expected_sessions;
+  expected_sessions.AddWindow(tab_urls);
+
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+  fake_server::FakeServerVerifier fake_server_verifier(fake_server_ptr);
+  testing::AssertionResult result =
+      fake_server_verifier.VerifySessions(expected_sessions);
+
+  if (!result)
+    LOG(WARNING) << result.message();
+
+  return result;
+}
+
 void FakeServerHelperAndroid::InjectUniqueClientEntity(
     JNIEnv* env,
     jobject obj,

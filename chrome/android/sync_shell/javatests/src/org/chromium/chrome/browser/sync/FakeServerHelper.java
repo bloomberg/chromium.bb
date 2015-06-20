@@ -130,6 +130,12 @@ public class FakeServerHelper {
             sNativeFakeServer, count, modelType.toString(), name);
     }
 
+    public boolean verifySessions(String[] urls) {
+        checkFakeServerInitialized(
+                "useFakeServer must be called before data verification.");
+        return nativeVerifySessions(mNativeFakeServerHelperAndroid, sNativeFakeServer, urls);
+    }
+
     /**
      * Injects an entity into the fake Sync server. This method only works for entities that will
      * eventually contain a unique client tag (e.g., preferences, typed URLs).
@@ -199,6 +205,8 @@ public class FakeServerHelper {
     private native boolean nativeVerifyEntityCountByTypeAndName(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, int count, String modelType,
             String name);
+    private native boolean nativeVerifySessions(
+            long nativeFakeServerHelperAndroid, long nativeFakeServer, String[] urlArray);
     private native void nativeInjectUniqueClientEntity(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String name,
             byte[] serializedEntitySpecifics);
