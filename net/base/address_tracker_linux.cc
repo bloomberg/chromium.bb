@@ -20,6 +20,20 @@ namespace internal {
 
 namespace {
 
+// Some kernel functions such as wireless_send_event and rtnetlink_ifinfo_prep
+// may send spurious messages over rtnetlink. RTM_NEWLINK messages where
+// ifi_change == 0 and rta_type == IFLA_WIRELESS should be ignored.
+bool IgnoreWirelessChange(const struct nlmsghdr* header,
+                          const struct ifinfomsg* msg) {
+  size_t length = IFLA_PAYLOAD(header);
+  for (const struct rtattr* attr = IFLA_RTA(msg); RTA_OK(attr, length);
+       attr = RTA_NEXT(attr, length)) {
+    if (attr->rta_type == IFLA_WIRELESS && msg->ifi_change == 0)
+      return true;
+  }
+  return false;
+}
+
 // Retrieves address from NETLINK address message.
 // Sets |really_deprecated| for IPv6 addresses with preferred lifetimes of 0.
 bool GetAddress(const struct nlmsghdr* header,
@@ -355,6 +369,10 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
             reinterpret_cast<struct ifinfomsg*>(NLMSG_DATA(header));
         if (IsInterfaceIgnored(msg->ifi_index))
           break;
+        if (IgnoreWirelessChange(header, msg)) {
+          VLOG(2) << "Ignoring RTM_NEWLINK message";
+          break;
+        }
         if (!(msg->ifi_flags & IFF_LOOPBACK) && (msg->ifi_flags & IFF_UP) &&
             (msg->ifi_flags & IFF_LOWER_UP) && (msg->ifi_flags & IFF_RUNNING)) {
           AddressTrackerAutoLock lock(*this, online_links_lock_);
