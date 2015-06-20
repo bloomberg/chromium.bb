@@ -450,7 +450,7 @@
     #
     
     'remoting_webapp_credits_html_all_js_files': [
-      'webapp/base/js/credits.js',
+      'webapp/base/js/credits_js.js',
     ],
 
     #
@@ -503,7 +503,7 @@
       'resources/reload.webp',
       'resources/tick.webp',
       'webapp/base/html/connection_stats.css',
-      'webapp/base/html/credits.css',
+      'webapp/base/html/credits_css.css',
       'webapp/base/html/main.css',
       'webapp/base/html/message_window.css',
       'webapp/base/resources/open_sans.css',

@@ -439,7 +439,7 @@ remoting_webapp_message_window_html_all_js_files =
 # All the JavaScript files required by credits.html
 #
 
-remoting_webapp_credits_html_all_js_files = [ "base/js/credits.js" ]
+remoting_webapp_credits_html_all_js_files = [ "base/js/credits_js.js" ]
 
 #
 # DesktopRemoting webapp JS and resource files.
@@ -487,7 +487,7 @@ remoting_webapp_resource_files = [
   "../resources/reload.webp",
   "../resources/tick.webp",
   "base/html/connection_stats.css",
-  "base/html/credits.css",
+  "base/html/credits_css.css",
   "base/html/main.css",
   "base/html/message_window.css",
   "base/resources/open_sans.css",
