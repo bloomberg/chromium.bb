@@ -151,6 +151,14 @@ base::HistogramBase* GetMediumTimeHistogram(const std::string& name) {
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
+std::string AsUTF8ForSQL(const base::FilePath& path) {
+#if defined(OS_WIN)
+  return base::WideToUTF8(path.value());
+#elif defined(OS_POSIX)
+  return path.value();
+#endif
+}
+
 }  // namespace
 
 namespace sql {
@@ -312,11 +320,7 @@ bool Connection::Open(const base::FilePath& path) {
     }
   }
 
-#if defined(OS_WIN)
-  return OpenInternal(base::WideToUTF8(path.value()), RETRY_ON_POISON);
-#elif defined(OS_POSIX)
-  return OpenInternal(path.value(), RETRY_ON_POISON);
-#endif
+  return OpenInternal(AsUTF8ForSQL(path), RETRY_ON_POISON);
 }
 
 bool Connection::OpenInMemory() {
@@ -624,13 +628,38 @@ bool Connection::Delete(const base::FilePath& path) {
   base::FilePath journal_path(path.value() + FILE_PATH_LITERAL("-journal"));
   base::FilePath wal_path(path.value() + FILE_PATH_LITERAL("-wal"));
 
-  base::DeleteFile(journal_path, false);
-  base::DeleteFile(wal_path, false);
-  base::DeleteFile(path, false);
+  std::string journal_str = AsUTF8ForSQL(journal_path);
+  std::string wal_str = AsUTF8ForSQL(wal_path);
+  std::string path_str = AsUTF8ForSQL(path);
 
-  return !base::PathExists(journal_path) &&
-      !base::PathExists(wal_path) &&
-      !base::PathExists(path);
+  sqlite3_vfs* vfs = sqlite3_vfs_find(NULL);
+  CHECK(vfs);
+  CHECK(vfs->xDelete);
+  CHECK(vfs->xAccess);
+
+  // We only work with unix, win32 and mojo filesystems. If you're trying to
+  // use this code with any other VFS, you're not in a good place.
+  CHECK(strncmp(vfs->zName, "unix", 4) == 0 ||
+        strncmp(vfs->zName, "win32", 5) == 0 ||
+        strcmp(vfs->zName, "mojo") == 0);
+
+  vfs->xDelete(vfs, journal_str.c_str(), 0);
+  vfs->xDelete(vfs, wal_str.c_str(), 0);
+  vfs->xDelete(vfs, path_str.c_str(), 0);
+
+  int journal_exists = 0;
+  vfs->xAccess(vfs, journal_str.c_str(), SQLITE_ACCESS_EXISTS,
+               &journal_exists);
+
+  int wal_exists = 0;
+  vfs->xAccess(vfs, wal_str.c_str(), SQLITE_ACCESS_EXISTS,
+               &wal_exists);
+
+  int path_exists = 0;
+  vfs->xAccess(vfs, path_str.c_str(), SQLITE_ACCESS_EXISTS,
+               &path_exists);
+
+  return !journal_exists && !wal_exists && !path_exists;
 }
 
 bool Connection::BeginTransaction() {

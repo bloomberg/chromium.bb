@@ -33,6 +33,11 @@ namespace test {
 // Returns false if any error occurs accessing the file.
 bool CorruptSizeInHeader(const base::FilePath& db_path) WARN_UNUSED_RESULT;
 
+// Common implementation of CorruptSizeInHeader() which operates on loaded
+// memory. Shared between CorruptSizeInHeader() and the the mojo proxy testing
+// code.
+void CorruptSizeInHeaderMemory(unsigned char* header, int64_t db_size);
+
 // Frequently corruption is a result of failure to atomically update
 // pages in different structures.  For instance, if an index update
 // takes effect but the corresponding table update does not.  This

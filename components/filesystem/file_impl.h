@@ -47,6 +47,7 @@ class FileImpl : public File {
              const TouchCallback& callback) override;
   void Dup(mojo::InterfaceRequest<File> file,
            const DupCallback& callback) override;
+  void Flush(const FlushCallback& callback) override;
   void AsHandle(const AsHandleCallback& callback) override;
 
  private:

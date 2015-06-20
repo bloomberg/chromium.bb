@@ -44,6 +44,11 @@ class DirectoryImpl : public Directory {
   void Delete(const mojo::String& path,
               uint32_t delete_flags,
               const DeleteCallback& callback) override;
+  void Exists(const mojo::String& path,
+              const ExistsCallback& callback) override;
+  void IsWritable(const mojo::String& path,
+                  const IsWritableCallback& callback) override;
+  void Flush(const FlushCallback& callback) override;
 
  private:
   mojo::StrongBinding<Directory> binding_;

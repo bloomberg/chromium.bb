@@ -10,6 +10,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/histogram_tester.h"
 #include "sql/connection.h"
+#include "sql/correct_sql_test_base.h"
 #include "sql/meta_table.h"
 #include "sql/proxy.h"
 #include "sql/statement.h"
@@ -207,33 +208,21 @@ class ScopedUmaskSetter {
 };
 #endif
 
-class SQLConnectionTest : public testing::Test {
+class SQLConnectionTest : public sql::SQLTestBase {
  public:
   void SetUp() override {
     // Any macro histograms which fire before the recorder is initialized cannot
     // be tested.  So this needs to be ahead of Open().
     base::StatisticsRecorder::Initialize();
 
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    db_path_ = temp_dir_.path().AppendASCII("SQLConnectionTest.db");
-    ASSERT_TRUE(db_.Open(db_path_));
+    SQLTestBase::SetUp();
   }
-
-  void TearDown() override { db_.Close(); }
-
-  sql::Connection& db() { return db_; }
-  const base::FilePath& db_path() { return db_path_; }
 
   // Handle errors by blowing away the database.
   void RazeErrorCallback(int expected_error, int error, sql::Statement* stmt) {
     EXPECT_EQ(expected_error, error);
-    db_.RazeAndClose();
+    db().RazeAndClose();
   }
-
- private:
-  sql::Connection db_;
-  base::FilePath db_path_;
-  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(SQLConnectionTest, Execute) {
@@ -366,7 +355,7 @@ TEST_F(SQLConnectionTest, ScopedIgnoreUntracked) {
   db().Close();
 
   // Corrupt the database so that nothing works, including PRAGMAs.
-  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path()));
+  ASSERT_TRUE(CorruptSizeInHeaderOfDB());
 
   {
     sql::ScopedErrorIgnorer ignore_errors;
@@ -534,6 +523,8 @@ TEST_F(SQLConnectionTest, RazeMultiple) {
   ASSERT_EQ(0, SqliteMasterCount(&other_db));
 }
 
+// TODO(erg): Enable this in the next patch once I add locking.
+#if !defined(MOJO_APPTEST_IMPL)
 TEST_F(SQLConnectionTest, RazeLocked) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
@@ -568,6 +559,7 @@ TEST_F(SQLConnectionTest, RazeLocked) {
   ASSERT_FALSE(s.Step());
   ASSERT_TRUE(db().Raze());
 }
+#endif
 
 // Verify that Raze() can handle an empty file.  SQLite should treat
 // this as an empty database.
@@ -576,12 +568,7 @@ TEST_F(SQLConnectionTest, RazeEmptyDB) {
   ASSERT_TRUE(db().Execute(kCreateSql));
   db().Close();
 
-  {
-    base::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
-    ASSERT_TRUE(file.get() != NULL);
-    ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
-    ASSERT_TRUE(base::TruncateFile(file.get()));
-  }
+  TruncateDatabase();
 
   ASSERT_TRUE(db().Open(db_path()));
   ASSERT_TRUE(db().Raze());
@@ -592,16 +579,10 @@ TEST_F(SQLConnectionTest, RazeEmptyDB) {
 TEST_F(SQLConnectionTest, RazeNOTADB) {
   db().Close();
   sql::Connection::Delete(db_path());
-  ASSERT_FALSE(base::PathExists(db_path()));
+  ASSERT_FALSE(GetPathExists(db_path()));
 
-  {
-    base::ScopedFILE file(base::OpenFile(db_path(), "wb"));
-    ASSERT_TRUE(file.get() != NULL);
-
-    const char* kJunk = "This is the hour of our discontent.";
-    fputs(kJunk, file.get());
-  }
-  ASSERT_TRUE(base::PathExists(db_path()));
+  WriteJunkToDatabase(SQLTestBase::TYPE_OVERWRITE_AND_TRUNCATE);
+  ASSERT_TRUE(GetPathExists(db_path()));
 
   // SQLite will successfully open the handle, but fail when running PRAGMA
   // statements that access the database.
@@ -635,14 +616,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
   ASSERT_EQ(1, SqliteMasterCount(&db()));
   db().Close();
 
-  {
-    base::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
-    ASSERT_TRUE(file.get() != NULL);
-    ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
-
-    const char* kJunk = "This is the hour of our discontent.";
-    fputs(kJunk, file.get());
-  }
+  WriteJunkToDatabase(SQLTestBase::TYPE_OVERWRITE);
 
   // SQLite will successfully open the handle, but will fail with
   // SQLITE_NOTADB on pragma statemenets which attempt to read the
@@ -672,7 +646,7 @@ TEST_F(SQLConnectionTest, RazeCallbackReopen) {
   db().Close();
 
   // Corrupt the database so that nothing works, including PRAGMAs.
-  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path()));
+  ASSERT_TRUE(CorruptSizeInHeaderOfDB());
 
   // Open() will succeed, even though the PRAGMA calls within will
   // fail with SQLITE_CORRUPT, as will this PRAGMA.
@@ -817,15 +791,17 @@ TEST_F(SQLConnectionTest, Delete) {
   // Should have both a main database file and a journal file because
   // of journal_mode TRUNCATE.
   base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
-  ASSERT_TRUE(base::PathExists(db_path()));
-  ASSERT_TRUE(base::PathExists(journal));
+  ASSERT_TRUE(GetPathExists(db_path()));
+  ASSERT_TRUE(GetPathExists(journal));
 
   sql::Connection::Delete(db_path());
-  EXPECT_FALSE(base::PathExists(db_path()));
-  EXPECT_FALSE(base::PathExists(journal));
+  EXPECT_FALSE(GetPathExists(db_path()));
+  EXPECT_FALSE(GetPathExists(journal));
 }
 
-#if defined(OS_POSIX)
+// This test manually sets on disk permissions; this doesn't apply to the mojo
+// fork.
+#if defined(OS_POSIX) && !defined(MOJO_APPTEST_IMPL)
 // Test that set_restrict_to_user() trims database permissions so that
 // only the owner (and root) can read.
 TEST_F(SQLConnectionTest, UserPermission) {
@@ -835,7 +811,7 @@ TEST_F(SQLConnectionTest, UserPermission) {
   // Temporarily provide a more permissive umask.
   db().Close();
   sql::Connection::Delete(db_path());
-  ASSERT_FALSE(base::PathExists(db_path()));
+  ASSERT_FALSE(GetPathExists(db_path()));
   ScopedUmaskSetter permissive_umask(S_IWGRP | S_IWOTH);
   ASSERT_TRUE(db().Open(db_path()));
 
@@ -849,8 +825,8 @@ TEST_F(SQLConnectionTest, UserPermission) {
 
   // Given a permissive umask, the database is created with permissive
   // read access for the database and journal.
-  ASSERT_TRUE(base::PathExists(db_path()));
-  ASSERT_TRUE(base::PathExists(journal));
+  ASSERT_TRUE(GetPathExists(db_path()));
+  ASSERT_TRUE(GetPathExists(journal));
   mode = base::FILE_PERMISSION_MASK;
   EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
   ASSERT_NE((mode & base::FILE_PERMISSION_USER_MASK), mode);
@@ -863,8 +839,8 @@ TEST_F(SQLConnectionTest, UserPermission) {
   db().Close();
   db().set_restrict_to_user();
   ASSERT_TRUE(db().Open(db_path()));
-  ASSERT_TRUE(base::PathExists(db_path()));
-  ASSERT_TRUE(base::PathExists(journal));
+  ASSERT_TRUE(GetPathExists(db_path()));
+  ASSERT_TRUE(GetPathExists(journal));
   mode = base::FILE_PERMISSION_MASK;
   EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
   ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
@@ -876,15 +852,15 @@ TEST_F(SQLConnectionTest, UserPermission) {
   db().Close();
   sql::Connection::Delete(db_path());
   ASSERT_TRUE(db().Open(db_path()));
-  ASSERT_TRUE(base::PathExists(db_path()));
-  ASSERT_FALSE(base::PathExists(journal));
+  ASSERT_TRUE(GetPathExists(db_path()));
+  ASSERT_FALSE(GetPathExists(journal));
   mode = base::FILE_PERMISSION_MASK;
   EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
   ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 
   // Verify that journal creation inherits the restriction.
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
-  ASSERT_TRUE(base::PathExists(journal));
+  ASSERT_TRUE(GetPathExists(journal));
   mode = base::FILE_PERMISSION_MASK;
   EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
   ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
@@ -990,7 +966,7 @@ TEST_F(SQLConnectionTest, Basic_QuickIntegrityCheck) {
   EXPECT_TRUE(db().QuickIntegrityCheck());
   db().Close();
 
-  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path()));
+  ASSERT_TRUE(CorruptSizeInHeaderOfDB());
 
   {
     sql::ScopedErrorIgnorer ignore_errors;
@@ -1012,7 +988,7 @@ TEST_F(SQLConnectionTest, Basic_FullIntegrityCheck) {
   EXPECT_EQ(kOk, messages[0]);
   db().Close();
 
-  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path()));
+  ASSERT_TRUE(CorruptSizeInHeaderOfDB());
 
   {
     sql::ScopedErrorIgnorer ignore_errors;

@@ -69,10 +69,6 @@ namespace test {
 bool CorruptSizeInHeader(const base::FilePath& db_path) {
   // See http://www.sqlite.org/fileformat.html#database_header
   const size_t kHeaderSize = 100;
-  const size_t kPageSizeOffset = 16;
-  const size_t kFileChangeCountOffset = 24;
-  const size_t kPageCountOffset = 28;
-  const size_t kVersionValidForOffset = 92;  // duplicate kFileChangeCountOffset
 
   unsigned char header[kHeaderSize];
 
@@ -89,6 +85,22 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
   if (!base::GetFileSize(db_path, &db_size))
     return false;
 
+  CorruptSizeInHeaderMemory(header, db_size);
+
+  if (0 != fseek(file.get(), 0, SEEK_SET))
+    return false;
+  if (1u != fwrite(header, sizeof(header), 1, file.get()))
+    return false;
+
+  return true;
+}
+
+void CorruptSizeInHeaderMemory(unsigned char* header, int64_t db_size) {
+  const size_t kPageSizeOffset = 16;
+  const size_t kFileChangeCountOffset = 24;
+  const size_t kPageCountOffset = 28;
+  const size_t kVersionValidForOffset = 92;  // duplicate kFileChangeCountOffset
+
   const unsigned page_size = ReadBigEndian(header + kPageSizeOffset, 2);
 
   // One larger than the expected size.
@@ -101,13 +113,6 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
   unsigned change_count = ReadBigEndian(header + kFileChangeCountOffset, 4);
   WriteBigEndian(change_count + 1, header + kFileChangeCountOffset, 4);
   WriteBigEndian(change_count + 1, header + kVersionValidForOffset, 4);
-
-  if (0 != fseek(file.get(), 0, SEEK_SET))
-    return false;
-  if (1u != fwrite(header, sizeof(header), 1, file.get()))
-    return false;
-
-  return true;
 }
 
 bool CorruptTableOrIndex(const base::FilePath& db_path,

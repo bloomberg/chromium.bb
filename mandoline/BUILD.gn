@@ -35,6 +35,7 @@ group("tests") {
       "//components/resource_provider:apptests",
       "//components/resource_provider:resource_provider_unittests",
       "//components/view_manager:tests",
+      "//sql/mojo:apptests",
       "//mandoline/tab:mandoline_frame_apptests",
       "//media/mojo/services:media_apptests",
     ]

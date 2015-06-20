@@ -5,24 +5,19 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
+#include "sql/correct_sql_test_base.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
-class SQLTransactionTest : public testing::Test {
+class SQLTransactionTest : public sql::SQLTestBase {
  public:
   void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(db_.Open(
-        temp_dir_.path().AppendASCII("SQLTransactionTest.db")));
+    SQLTestBase::SetUp();
 
     ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   }
-
-  void TearDown() override { db_.Close(); }
-
-  sql::Connection& db() { return db_; }
 
   // Returns the number of rows in table "foo".
   int CountFoo() {
@@ -30,10 +25,6 @@ class SQLTransactionTest : public testing::Test {
     count.Step();
     return count.ColumnInt(0);
   }
-
- private:
-  base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
 };
 
 TEST_F(SQLTransactionTest, Commit) {

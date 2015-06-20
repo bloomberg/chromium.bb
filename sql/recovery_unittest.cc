@@ -16,6 +16,7 @@
 #include "sql/statement.h"
 #include "sql/test/paths.h"
 #include "sql/test/scoped_error_ignorer.h"
+#include "sql/test/sql_test_base.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -61,32 +62,7 @@ std::string GetSchema(sql::Connection* db) {
   return ExecuteWithResults(db, kSql, "|", "\n");
 }
 
-class SQLRecoveryTest : public testing::Test {
- public:
-  SQLRecoveryTest() {}
-
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(db_.Open(db_path()));
-  }
-
-  void TearDown() override { db_.Close(); }
-
-  sql::Connection& db() { return db_; }
-
-  base::FilePath db_path() {
-    return temp_dir_.path().AppendASCII("SQLRecoveryTest.db");
-  }
-
-  bool Reopen() {
-    db_.Close();
-    return db_.Open(db_path());
-  }
-
- private:
-  base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
-};
+using SQLRecoveryTest = sql::SQLTestBase;
 
 TEST_F(SQLRecoveryTest, RecoverBasic) {
   const char kCreateSql[] = "CREATE TABLE x (t TEXT)";

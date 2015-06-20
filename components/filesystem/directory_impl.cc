@@ -171,4 +171,42 @@ void DirectoryImpl::Delete(const mojo::String& raw_path,
   callback.Run(FILE_ERROR_OK);
 }
 
+void DirectoryImpl::Exists(const mojo::String& raw_path,
+                           const ExistsCallback& callback) {
+  base::FilePath path;
+  if (FileError error = ValidatePath(raw_path, directory_path_, &path)) {
+    callback.Run(error, false);
+    return;
+  }
+
+  bool exists = base::PathExists(path);
+  callback.Run(FILE_ERROR_OK, exists);
+}
+
+void DirectoryImpl::IsWritable(const mojo::String& raw_path,
+                               const IsWritableCallback& callback) {
+  base::FilePath path;
+  if (FileError error = ValidatePath(raw_path, directory_path_, &path)) {
+    callback.Run(error, false);
+    return;
+  }
+
+  callback.Run(FILE_ERROR_OK, base::PathIsWritable(path));
+}
+
+void DirectoryImpl::Flush(const FlushCallback& callback) {
+  base::File file(directory_path_, base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    callback.Run(FILE_ERROR_FAILED);
+    return;
+  }
+
+  if (!file.Flush()) {
+    callback.Run(FILE_ERROR_FAILED);
+    return;
+  }
+
+  callback.Run(FILE_ERROR_OK);
+}
+
 }  // namespace filesystem

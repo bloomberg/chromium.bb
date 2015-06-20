@@ -92,6 +92,7 @@ source_set("lib") {
     "//net",
     "//net:http_server",
     "//url",
+    "//sql/mojo",
   ]
 }
 

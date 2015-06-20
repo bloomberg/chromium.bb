@@ -55,13 +55,17 @@ if config.target_os != config.OS_ANDROID:
       "args": ["--use-test-config"]
     },
     {
+      "test": "mojo:mandoline_frame_apptests",
+      "type": "gtest_isolated",
+      "args": ["--use-headless-config"]
+    },
+    {
       "test": "mojo:resource_provider_apptests",
       "type": "gtest_isolated",
     },
     {
-      "test": "mojo:mandoline_frame_apptests",
+      "test": "mojo:sql_apptests",
       "type": "gtest_isolated",
-      "args": ["--use-headless-config"]
     },
     # TODO(xhwang): Fix and enable the media_apptests. http://crbug.com/501417
     #{

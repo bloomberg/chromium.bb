@@ -42,6 +42,16 @@ interface Directory {
   // |kDeleteFlag...| for details).
   Delete(string path, uint32 delete_flags) => (FileError error);
 
+  // Returns true if |path| exists.
+  Exists(string path) => (FileError error, bool exists);
+
+  // Returns true if |path| is writable.
+  IsWritable(string path) => (FileError error, bool is_writable);
+
+  // Opens a file descriptor on this directory and calls
+  // fsync()/FlushFileBuffers().
+  Flush() => (FileError error);
+
   // TODO(vtl): directory "streaming"?
   // TODO(vtl): "make root" (i.e., prevent cd-ing, etc., to parent); note that
   // this would require a much more complicated implementation (e.g., it needs

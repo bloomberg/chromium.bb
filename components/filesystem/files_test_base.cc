@@ -7,6 +7,7 @@
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/util/capture_util.h"
 
 namespace filesystem {
 
@@ -26,7 +27,7 @@ void FilesTestBase::SetUp() {
 
 void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
   FileError error = FILE_ERROR_FAILED;
-  files()->OpenFileSystem("temp", GetProxy(directory), Capture(&error));
+  files()->OpenFileSystem("temp", GetProxy(directory), mojo::Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(FILE_ERROR_OK, error);
 }

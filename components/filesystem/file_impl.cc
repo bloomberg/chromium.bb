@@ -260,6 +260,16 @@ void FileImpl::Dup(mojo::InterfaceRequest<File> file,
   callback.Run(FILE_ERROR_OK);
 }
 
+void FileImpl::Flush(const FlushCallback& callback) {
+  if (!file_.IsValid()) {
+    callback.Run(GetError(file_));
+    return;
+  }
+
+  bool ret = file_.Flush();
+  callback.Run(ret ? FILE_ERROR_OK : FILE_ERROR_FAILED);
+}
+
 void FileImpl::AsHandle(const AsHandleCallback& callback) {
   if (!file_.IsValid()) {
     callback.Run(GetError(file_), ScopedHandle());

@@ -6,6 +6,9 @@
 #include <string>
 
 #include "components/filesystem/files_test_base.h"
+#include "mojo/util/capture_util.h"
+
+using mojo::Capture;
 
 namespace filesystem {
 namespace {

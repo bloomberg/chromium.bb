@@ -59,6 +59,9 @@ interface File {
   // |open_flags| argument) as well as file position.
   Dup(File& file) => (FileError error);
 
+  // Syncs data to disk.
+  Flush() => (FileError error);
+
   // Returns a handle to the file for raw access.
   AsHandle() => (FileError error, handle file_handle);
 };

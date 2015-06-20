@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
+#include "sql/correct_sql_test_base.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_ignorer.h"
@@ -16,21 +17,7 @@
 
 namespace {
 
-class SQLStatementTest : public testing::Test {
- public:
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(db_.Open(temp_dir_.path().AppendASCII("SQLStatementTest.db")));
-  }
-
-  void TearDown() override { db_.Close(); }
-
-  sql::Connection& db() { return db_; }
-
- private:
-  base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
-};
+using SQLStatementTest = sql::SQLTestBase;
 
 }  // namespace
 

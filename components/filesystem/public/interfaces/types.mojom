@@ -77,6 +77,8 @@ const uint32 kFlagOpenTruncated = 0x10;
 const uint32 kFlagRead = 0x20;
 const uint32 kFlagWrite = 0x40;
 const uint32 kFlagAppend = 0x80;
+// Deletes the file when closed.
+const uint32 kDeleteOnClose = 0x2000;
 
 // File types.
 //

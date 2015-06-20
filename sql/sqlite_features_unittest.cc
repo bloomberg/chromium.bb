@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/test/sql_test_base.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -24,34 +25,30 @@ void CaptureErrorCallback(int* error_pointer, std::string* sql_text,
   *sql_text = text ? text : "no statement available";
 }
 
-class SQLiteFeaturesTest : public testing::Test {
+class SQLiteFeaturesTest : public sql::SQLTestBase {
  public:
   SQLiteFeaturesTest() : error_(SQLITE_OK) {}
 
   void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(db_.Open(temp_dir_.path().AppendASCII("SQLStatementTest.db")));
+    SQLTestBase::SetUp();
 
     // The error delegate will set |error_| and |sql_text_| when any sqlite
     // statement operation returns an error code.
-    db_.set_error_callback(base::Bind(&CaptureErrorCallback,
-                                      &error_, &sql_text_));
+    db().set_error_callback(
+        base::Bind(&CaptureErrorCallback, &error_, &sql_text_));
   }
 
   void TearDown() override {
     // If any error happened the original sql statement can be found in
     // |sql_text_|.
     EXPECT_EQ(SQLITE_OK, error_) << sql_text_;
-    db_.Close();
+
+    SQLTestBase::TearDown();
   }
 
-  sql::Connection& db() { return db_; }
   int error() { return error_; }
 
  private:
-  base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
-
   // The error code of the most recent error.
   int error_;
   // Original statement which has caused the error.

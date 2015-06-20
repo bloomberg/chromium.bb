@@ -8,25 +8,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/test/sql_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class SQLMetaTableTest : public testing::Test {
- public:
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(db_.Open(temp_dir_.path().AppendASCII("SQLMetaTableTest.db")));
-  }
-
-  void TearDown() override { db_.Close(); }
-
-  sql::Connection& db() { return db_; }
-
- private:
-  base::ScopedTempDir temp_dir_;
-  sql::Connection db_;
-};
+using SQLMetaTableTest = sql::SQLTestBase;
 
 TEST_F(SQLMetaTableTest, DoesTableExist) {
   EXPECT_FALSE(sql::MetaTable::DoesTableExist(&db()));
