@@ -177,23 +177,18 @@ void SetMediaKeysHandler::clearExistingMediaKeys()
 
     // 3.2 If the mediaKeys attribute is not null, run the following steps:
     if (thisElement.m_mediaKeys) {
-        // 3.2.1 If the user agent or CDM do not support removing the
-        //       association, return a promise rejected with a new DOMException
-        //       whose name is "NotSupportedError".
-        //       (supported by blink).
-        // 3.2.2 If the association cannot currently be removed (i.e. during
-        //       playback), return a promise rejected with a new DOMException
-        //       whose name is "InvalidStateError".
         WebMediaPlayer* mediaPlayer = m_element->webMediaPlayer();
         if (mediaPlayer) {
-            if (!mediaPlayer->paused()) {
-                fail(InvalidStateError, "The existing MediaKeys object cannot be removed while a media resource is playing.");
-                return;
-            }
-
+            // 3.2.1 If the user agent or CDM do not support removing the
+            //       association, return a promise rejected with a new
+            //       DOMException whose name is "NotSupportedError".
+            // 3.2.2 If the association cannot currently be removed (i.e.
+            //       during playback), return a promise rejected with a new
+            //       DOMException whose name is "InvalidStateError".
             // 3.2.3 Stop using the CDM instance represented by the mediaKeys
             //       attribute to decrypt media data and remove the association
             //       with the media element.
+            // (All 3 steps handled as needed in Chromium.)
             OwnPtr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::setNewMediaKeys, this);
             OwnPtr<FailureCallback> failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::clearFailed, this);
             ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(successCallback.release(), failureCallback.release());
