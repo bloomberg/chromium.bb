@@ -30,6 +30,8 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/test_screen.h"
+#include "ui/gfx/screen.h"
 
 namespace chromeos {
 
@@ -37,6 +39,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
  public:
   ExtensionEventObserverTest()
       : power_manager_client_(new FakePowerManagerClient()),
+        test_screen_(aura::TestScreen::Create(gfx::Size())),
         fake_user_manager_(new FakeChromeUserManager()),
         scoped_user_manager_enabler_(fake_user_manager_) {
     DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
@@ -59,6 +62,8 @@ class ExtensionEventObserverTest : public ::testing::Test {
   void SetUp() override {
     ::testing::Test::SetUp();
 
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
+
     // Must be called from ::testing::Test::SetUp.
     ASSERT_TRUE(profile_manager_->SetUp());
 
@@ -72,7 +77,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
   void TearDown() override {
     profile_ = NULL;
     profile_manager_->DeleteAllTestingProfiles();
-
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
     ::testing::Test::TearDown();
   }
 
@@ -122,6 +127,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
   scoped_ptr<TestingProfileManager> profile_manager_;
 
  private:
+  scoped_ptr<aura::TestScreen> test_screen_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
 
   // Needed to ensure we don't end up creating actual RenderViewHosts

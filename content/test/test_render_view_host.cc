@@ -61,7 +61,7 @@ TestRenderWidgetHostView::~TestRenderWidgetHostView() {
 }
 
 RenderWidgetHost* TestRenderWidgetHostView::GetRenderWidgetHost() const {
-  return NULL;
+  return rwh_;
 }
 
 gfx::Vector2dF TestRenderWidgetHostView::GetLastScrollOffset() const {

@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -49,13 +50,17 @@ void TabLoader::Observe(int type,
 }
 
 void TabLoader::SetTabLoadingEnabled(bool enable_tab_loading) {
+  // TODO(chrisha): Make the SessionRestoreStatsCollector aware that tab loading
+  // was explicitly stopped or restarted. This can make be used to invalidate
+  // various metrics.
   if (enable_tab_loading == loading_enabled_)
     return;
   loading_enabled_ = enable_tab_loading;
-  if (loading_enabled_)
+  if (loading_enabled_) {
     LoadNextTab();
-  else
+  } else {
     force_load_timer_.Stop();
+  }
 }
 
 // static
@@ -64,6 +69,7 @@ void TabLoader::RestoreTabs(const std::vector<RestoredTab>& tabs,
   if (!shared_tab_loader_)
     shared_tab_loader_ = new TabLoader(restore_started);
 
+  shared_tab_loader_->stats_collector_->TrackTabs(tabs);
   shared_tab_loader_->StartLoading(tabs);
 }
 
@@ -73,6 +79,10 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
       force_load_delay_multiplier_(1),
       loading_enabled_(true),
       restore_started_(restore_started) {
+  stats_collector_ = new SessionRestoreStatsCollector(
+      restore_started,
+      make_scoped_ptr(
+          new SessionRestoreStatsCollector::UmaStatsReportingDelegate()));
   shared_tab_loader_ = this;
   this_retainer_ = this;
 }
@@ -221,9 +231,13 @@ void TabLoader::OnMemoryPressure(
   // Stop the timer and suppress any tab loads while we clean the list.
   SetTabLoadingEnabled(false);
   while (!tabs_to_load_.empty()) {
-    NavigationController* controller = tabs_to_load_.front();
+    NavigationController* tab = tabs_to_load_.front();
     tabs_to_load_.pop_front();
-    RemoveTab(controller);
+    RemoveTab(tab);
+
+    // Notify the stats collector that a tab's loading has been deferred due to
+    // memory pressure.
+    stats_collector_->DeferTab(tab);
   }
   // By calling |LoadNextTab| explicitly, we make sure that the
   // |NOTIFICATION_SESSION_RESTORE_DONE| event gets sent.

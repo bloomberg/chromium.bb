@@ -1095,6 +1095,7 @@
       'browser/captive_portal/captive_portal_tab_reloader_unittest.cc',
     ],
     'chrome_unit_tests_session_service_sources': [
+      'browser/sessions/session_restore_stats_collector_unittest.cc',
       'browser/sessions/session_service_unittest.cc',
       'browser/ui/startup/session_crashed_infobar_delegate_unittest.cc',
     ],

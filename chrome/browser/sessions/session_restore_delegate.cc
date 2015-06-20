@@ -69,22 +69,38 @@ bool SessionRestoreDelegate::RestoredTab::operator<(
 void SessionRestoreDelegate::RestoreTabs(
     const std::vector<RestoredTab>& tabs,
     const base::TimeTicks& restore_started) {
+  // Restore the favicon for all tabs. Any tab may end up being deferred due
+  // to memory pressure so it's best to have some visual indication of its
+  // contents.
+  for (const auto& restored_tab : tabs) {
+    // Restore the favicon for deferred tabs.
+    favicon::ContentFaviconDriver* favicon_driver =
+        favicon::ContentFaviconDriver::FromWebContents(restored_tab.contents());
+    favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
+  }
+
   // This experiment allows us to have comparative numbers for session restore
   // metrics. It will be removed once those numbers are obtained.
   // TODO(georgesak): Remove this experiment when stats are collected.
   base::FieldTrial* trial =
       base::FieldTrialList::Find("IntelligentSessionRestore");
   if (!trial || trial->group_name() != "DontRestoreBackgroundTabs") {
-    SessionRestoreStatsCollector::TrackTabs(tabs, restore_started);
     TabLoader::RestoreTabs(tabs, restore_started);
   } else {
-    SessionRestoreStatsCollector::TrackActiveTabs(tabs, restore_started);
-    for (auto& restored_tab : tabs) {
+    // A TabLoader will not be used for this session restore, so manually create
+    // and use a SessionRestoreStatsCollector, normally owned by the TabLoader.
+    scoped_ptr<SessionRestoreStatsCollector::StatsReportingDelegate>
+        reporting_delegate(
+            new SessionRestoreStatsCollector::UmaStatsReportingDelegate());
+    scoped_refptr<SessionRestoreStatsCollector> stats_collector =
+        new SessionRestoreStatsCollector(restore_started,
+                                         reporting_delegate.Pass());
+    stats_collector->TrackTabs(tabs);
+    for (const auto& restored_tab : tabs) {
       if (!restored_tab.is_active()) {
-        favicon::ContentFaviconDriver* favicon_driver =
-            favicon::ContentFaviconDriver::FromWebContents(
-                restored_tab.contents());
-        favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
+        // Non-active tabs aren't being loaded, so mark them as deferred.
+        auto tab_controller = &restored_tab.contents()->GetController();
+        stats_collector->DeferTab(tab_controller);
       }
     }
   }

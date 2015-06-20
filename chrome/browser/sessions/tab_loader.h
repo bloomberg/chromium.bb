@@ -21,6 +21,8 @@ class NavigationController;
 class RenderWidgetHost;
 }
 
+class SessionRestoreStatsCollector;
+
 // TabLoader is responsible for loading tabs after session restore has finished
 // creating all the tabs. Tabs are loaded after a previously tab finishes
 // loading or a timeout is reached. If the timeout is reached before a tab
@@ -131,6 +133,11 @@ class TabLoader : public content::NotificationObserver,
   // For keeping TabLoader alive while it's loading even if no
   // SessionRestoreImpls reference it.
   scoped_refptr<TabLoader> this_retainer_;
+
+  // The SessionRestoreStatsCollector associated with this TabLoader. This is
+  // explicitly referenced so that it can be notified of deferred tab loads due
+  // to memory pressure.
+  scoped_refptr<SessionRestoreStatsCollector> stats_collector_;
 
   static TabLoader* shared_tab_loader_;
 

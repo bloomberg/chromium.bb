@@ -37533,6 +37533,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>How did the user interact with the SessionCrashed Bubble?</summary>
 </histogram>
 
+<histogram name="SessionRestore.Actions" enum="SessionRestoreActions">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The actions that have occurred in a session restore timeline. These are to
+    be interpreted as raw event counts. Tabs are almost certainly deferred due
+    to the existence memory pressure, but this may not always be the case.
+  </summary>
+</histogram>
+
 <histogram name="SessionRestore.AllTabsLoaded" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
@@ -37551,7 +37560,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SessionRestore.FirstTabPainted" units="milliseconds">
   <obsolete>
-    Deprecated 2014-10 in favor of SessionRestore.ForegroundTabFirstPaint.
+    Deprecated 2014-10 in favor of SessionRestore.ForegroundTabFirstPaint and
+    ultimately SessionRestore.ForegroundTabFirstPaint3.
   </obsolete>
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
@@ -37570,11 +37580,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
-    Deprecated 2015-03-13 in favor of SessionRestore.ForegroundTabFirstPaint2.
+    Deprecated 2015-03-13 in favor of SessionRestore.ForegroundTabFirstPaint2
+    and ultimately SessionRestore.ForegroundTabFirstPaint3.
   </summary>
 </histogram>
 
 <histogram name="SessionRestore.ForegroundTabFirstPaint2" units="milliseconds">
+  <obsolete>
+    Deprecated 2015-05 in favor of SessionRestore.ForegroundTabFirstPaint3.
+  </obsolete>
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The time from SessionRestore start until a visible tab's first paint. This
+    metric only records paints that have occurred after a tab has loaded.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.ForegroundTabFirstPaint3" units="milliseconds">
+  <owner>chrisha@chromium.org</owner>
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -37663,6 +37687,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="SessionRestore.TabActions" enum="SessionRestoreTabActions">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    A breakdown of key events that occur to individual tabs as they are
+    processed by an ongoing session restore.
+  </summary>
+</histogram>
+
 <histogram name="SessionRestore.TabClosedLongPeriod">
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
@@ -37677,6 +37709,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>sky@chromium.org</owner>
   <summary>
     Milliseconds between subsequent Save() operations due to a tab being closed.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.TabCount" units="tabs">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The number of tabs involved in a single session restore event.
   </summary>
 </histogram>
 
@@ -65420,6 +65459,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="The bar with UMA opt-in option was shown."/>
 </enum>
 
+<enum name="SessionRestoreActions" type="int">
+  <int value="0" label="A session restore was started"/>
+  <int value="1" label="A session restore deferred one or more tabs"/>
+</enum>
+
+<enum name="SessionRestoreTabActions" type="int">
+  <int value="0" label="A tab was created"/>
+  <int value="1" label="A tab's content was automatically loaded"/>
+  <int value="2" label="The loading of a tab's content was deferred"/>
+  <int value="3" label="A deferred tab's content was loaded via user action"/>
+</enum>
+
 <enum name="SessionStartupPref" type="int">
   <int value="0" label="Open home page (unused)"/>
   <int value="1" label="Continue from last opened pages"/>
@@ -72834,6 +72885,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SessionRestore.ForegroundTabFirstLoaded"/>
   <affected-histogram name="SessionRestore.ForegroundTabFirstPaint"/>
   <affected-histogram name="SessionRestore.ForegroundTabFirstPaint2"/>
+  <affected-histogram name="SessionRestore.ForegroundTabFirstPaint3"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ShillWiFiRememberedNetworkSecurityMode" separator=".">
