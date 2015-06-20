@@ -68,7 +68,7 @@ public:
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
     ServiceWorkerRegistration* registration();
-    PassRefPtrWillBeRawPtr<StashedPortCollection> ports();
+    StashedPortCollection* ports();
 
     ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
@@ -104,7 +104,7 @@ private:
 
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
     PersistentWillBeMember<ServiceWorkerRegistration> m_registration;
-    RefPtrWillBeMember<StashedPortCollection> m_ports;
+    PersistentWillBeMember<StashedPortCollection> m_ports;
     bool m_didEvaluateScript;
     bool m_hadErrorInTopLevelEventHandler;
     unsigned m_eventNestingLevel;

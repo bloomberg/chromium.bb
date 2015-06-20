@@ -6,6 +6,7 @@
 // TODO(mek): Link to actual spec when this is added there.
 [
     Exposed=ServiceWorker,
+    GarbageCollected,
     RuntimeEnabled=NavigatorConnect,
     TypeChecking=Interface,
 ] interface StashedPortCollection : EventTarget {

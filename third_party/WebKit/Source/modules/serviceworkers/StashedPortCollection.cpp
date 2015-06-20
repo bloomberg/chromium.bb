@@ -13,9 +13,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<StashedPortCollection> StashedPortCollection::create(ExecutionContext* context)
+StashedPortCollection* StashedPortCollection::create(ExecutionContext* context)
 {
-    return adoptRefWillBeNoop(new StashedPortCollection(context));
+    return new StashedPortCollection(context);
 }
 
 StashedPortCollection::StashedPortCollection(ExecutionContext* context)
@@ -54,9 +54,8 @@ ExecutionContext* StashedPortCollection::executionContext() const
 DEFINE_TRACE(StashedPortCollection)
 {
     visitor->trace(m_ports);
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink
-

@@ -9,23 +9,21 @@
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/StashedMessagePort.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 class ScriptState;
-class ScriptValue;
-class ServiceWorkerGlobalScope;
 
 class MODULES_EXPORT StashedPortCollection final
-    : public EventTargetWithInlineData
-    , public RefCountedWillBeNoBase<StashedPortCollection>
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<StashedPortCollection>
     , public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(StashedPortCollection);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(StashedPortCollection);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StashedPortCollection);
     WTF_MAKE_NONCOPYABLE(StashedPortCollection);
 public:
-    static PassRefPtrWillBeRawPtr<StashedPortCollection> create(ExecutionContext*);
+    static StashedPortCollection* create(ExecutionContext*);
     virtual ~StashedPortCollection();
 
     void addPorts(const StashedMessagePortArray&);

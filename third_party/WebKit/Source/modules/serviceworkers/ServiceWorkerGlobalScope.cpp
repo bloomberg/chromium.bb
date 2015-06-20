@@ -117,7 +117,7 @@ void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
     m_didEvaluateScript = true;
 }
 
-PassRefPtrWillBeRawPtr<StashedPortCollection> ServiceWorkerGlobalScope::ports()
+StashedPortCollection* ServiceWorkerGlobalScope::ports()
 {
     if (!m_ports)
         m_ports = StashedPortCollection::create(this);
