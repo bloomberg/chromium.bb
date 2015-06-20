@@ -21,10 +21,6 @@ MEDIA_EXPORT bool ValidatePsshInput(const std::vector<uint8_t>& input);
 // more concatenated 'pssh' boxes. If |input| looks valid, then true is
 // returned and |key_ids| is updated to contain the values found. Otherwise
 // return false.
-// TODO(jrummell): This returns true if no Common SystemID 'pssh' boxes are
-// found, or are included but don't contain any key IDs. This should be
-// fixed once the test files are updated to include correct 'pssh' boxes.
-// http://crbug.com/460308
 MEDIA_EXPORT bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& input,
                                              KeyIdList* key_ids);
 

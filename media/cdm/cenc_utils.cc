@@ -89,12 +89,8 @@ bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& input,
     }
   }
 
-  // No matching 'pssh' box found.
-  // TODO(jrummell): This should return true only if there was at least one
-  // key ID present. However, numerous test files don't contain the 'pssh' box
-  // for Common Format, so no keys are found. http://crbug.com/460308
   key_ids->swap(result);
-  return true;
+  return key_ids->size() > 0;
 }
 
 bool GetPsshData(const std::vector<uint8_t>& input,

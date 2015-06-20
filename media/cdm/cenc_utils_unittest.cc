@@ -180,24 +180,21 @@ class CencUtilsTest : public testing::Test {
 TEST_F(CencUtilsTest, EmptyPSSH) {
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(std::vector<uint8_t>()));
-  EXPECT_TRUE(GetKeyIdsForCommonSystemId(std::vector<uint8_t>(), &key_ids));
-  EXPECT_EQ(0u, key_ids.size());
+  EXPECT_FALSE(GetKeyIdsForCommonSystemId(std::vector<uint8_t>(), &key_ids));
 }
 
 TEST_F(CencUtilsTest, PSSHVersion0) {
   std::vector<uint8_t> box = MakePSSHBox(0);
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box));
-  EXPECT_TRUE(GetKeyIdsForCommonSystemId(box, &key_ids));
-  EXPECT_EQ(0u, key_ids.size());
+  EXPECT_FALSE(GetKeyIdsForCommonSystemId(box, &key_ids));
 }
 
 TEST_F(CencUtilsTest, PSSHVersion1WithNoKeys) {
   std::vector<uint8_t> box = MakePSSHBox(1);
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box));
-  EXPECT_TRUE(GetKeyIdsForCommonSystemId(box, &key_ids));
-  EXPECT_EQ(0u, key_ids.size());
+  EXPECT_FALSE(GetKeyIdsForCommonSystemId(box, &key_ids));
 }
 
 TEST_F(CencUtilsTest, PSSHVersion1WithOneKey) {
@@ -258,6 +255,9 @@ TEST_F(CencUtilsTest, MultiplePSSHVersion1) {
 
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box));
+  // TODO(jrummell): GetKeyIdsForCommonSystemId() returns the key IDs out of
+  // all matching boxes. It should only return the key IDs from the first
+  // matching box.
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(box, &key_ids));
   EXPECT_EQ(4u, key_ids.size());
   EXPECT_EQ(key_ids[0], Key1());
@@ -266,31 +266,45 @@ TEST_F(CencUtilsTest, MultiplePSSHVersion1) {
   EXPECT_EQ(key_ids[3], Key4());
 }
 
-TEST_F(CencUtilsTest, InvalidPSSH) {
+TEST_F(CencUtilsTest, PsshBoxSmallerThanSize) {
   std::vector<uint8_t> box = MakePSSHBox(1, Key1(), Key2());
   KeyIdList key_ids;
+
+  // Tries every buffer size less than the indicated 'pssh' box size.
   for (size_t i = 1; i < box.size(); ++i) {
-    // Modify size of data passed to be less than real size.
+    // Truncate the box to be less than the specified box size.
     std::vector<uint8_t> truncated(&box[0], &box[0] + i);
     EXPECT_FALSE(ValidatePsshInput(truncated)) << "Failed for length " << i;
     EXPECT_FALSE(GetKeyIdsForCommonSystemId(truncated, &key_ids));
-    // Modify starting point.
-    std::vector<uint8_t> changed_offset(&box[i], &box[i] + box.size() - i);
-    EXPECT_FALSE(ValidatePsshInput(changed_offset)) << "Failed for offset "
-                                                    << i;
-    EXPECT_FALSE(GetKeyIdsForCommonSystemId(changed_offset, &key_ids));
   }
 }
 
-TEST_F(CencUtilsTest, InvalidSystemID) {
+TEST_F(CencUtilsTest, PsshBoxLargerThanSize) {
+  std::vector<uint8_t> box = MakePSSHBox(1, Key1(), Key2());
+  KeyIdList key_ids;
+
+  // Add 20 additional bytes to |box|.
+  size_t original_size = box.size();
+  for (size_t i = 0; i < 20; ++i)
+    box.push_back(i);
+
+  // Tries every size greater than |original_size|.
+  for (size_t i = original_size + 1; i < box.size(); ++i) {
+    // Modify size of box passed to be less than current size.
+    std::vector<uint8_t> truncated(&box[0], &box[0] + i);
+    EXPECT_FALSE(ValidatePsshInput(truncated)) << "Failed for length " << i;
+    EXPECT_FALSE(GetKeyIdsForCommonSystemId(truncated, &key_ids));
+  }
+}
+
+TEST_F(CencUtilsTest, UnrecognizedSystemID) {
   std::vector<uint8_t> box = MakePSSHBox(1, Key1(), Key2());
 
   // Modify the System ID.
   ++box[20];
 
   KeyIdList key_ids;
-  EXPECT_TRUE(GetKeyIdsForCommonSystemId(box, &key_ids));
-  EXPECT_EQ(0u, key_ids.size());
+  EXPECT_FALSE(GetKeyIdsForCommonSystemId(box, &key_ids));
 }
 
 TEST_F(CencUtilsTest, InvalidFlags) {
@@ -328,7 +342,7 @@ TEST_F(CencUtilsTest, LongSize) {
   EXPECT_EQ(2u, key_ids.size());
 }
 
-TEST_F(CencUtilsTest, NoSize) {
+TEST_F(CencUtilsTest, SizeIsZero) {
   const uint8_t data[] = {
       0x00, 0x00, 0x00, 0x00,                          // size = 0
       0x70, 0x73, 0x73, 0x68,                          // 'pssh'
@@ -370,6 +384,8 @@ TEST_F(CencUtilsTest, HugeSize) {
   };
 
   KeyIdList key_ids;
+  // These calls fail as the box size is huge (0xffffffffffffffff) and there
+  // is not enough bytes in |data|.
   EXPECT_FALSE(
       ValidatePsshInput(std::vector<uint8_t>(data, data + arraysize(data))));
   EXPECT_FALSE(GetKeyIdsForCommonSystemId(

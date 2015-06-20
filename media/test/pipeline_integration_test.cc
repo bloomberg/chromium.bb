@@ -77,13 +77,13 @@ const char kMP3[] = "audio/mpeg";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Key used to encrypt test files.
-const uint8 kSecretKey[] = {
+const uint8_t kSecretKey[] = {
   0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
   0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c
 };
 
 // The key ID for all encrypted files.
-const uint8 kKeyId[] = {
+const uint8_t kKeyId[] = {
   0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
   0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
 };
@@ -153,8 +153,9 @@ class FakeEncryptedMedia {
 
     virtual void OnSessionMessage(const std::string& session_id,
                                   MediaKeys::MessageType message_type,
-                                  const std::vector<uint8>& message,
-                                  const GURL& legacy_destination_url) = 0;
+                                  const std::vector<uint8_t>& message,
+                                  const GURL& legacy_destination_url,
+                                  AesDecryptor* decryptor) = 0;
 
     virtual void OnSessionClosed(const std::string& session_id) = 0;
 
@@ -165,13 +166,13 @@ class FakeEncryptedMedia {
     // Errors are not expected unless overridden.
     virtual void OnLegacySessionError(const std::string& session_id,
                                       const std::string& error_name,
-                                      uint32 system_code,
+                                      uint32_t system_code,
                                       const std::string& error_message) {
       FAIL() << "Unexpected Key Error";
     }
 
     virtual void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
-                                          const std::vector<uint8>& init_data,
+                                          const std::vector<uint8_t>& init_data,
                                           AesDecryptor* decryptor) = 0;
   };
 
@@ -191,10 +192,10 @@ class FakeEncryptedMedia {
   // Callbacks for firing session events. Delegate to |app_|.
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message,
+                        const std::vector<uint8_t>& message,
                         const GURL& legacy_destination_url) {
     app_->OnSessionMessage(session_id, message_type, message,
-                           legacy_destination_url);
+                           legacy_destination_url, &decryptor_);
   }
 
   void OnSessionClosed(const std::string& session_id) {
@@ -210,14 +211,14 @@ class FakeEncryptedMedia {
 
   void OnLegacySessionError(const std::string& session_id,
                             const std::string& error_name,
-                            uint32 system_code,
+                            uint32_t system_code,
                             const std::string& error_message) {
     app_->OnLegacySessionError(session_id, error_name, system_code,
                                error_message);
   }
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
-                                const std::vector<uint8>& init_data) {
+                                const std::vector<uint8_t>& init_data) {
     app_->OnEncryptedMediaInitData(init_data_type, init_data, &decryptor_);
   }
 
@@ -258,7 +259,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   void OnReject(PromiseResult expected,
                 media::MediaKeys::Exception exception_code,
-                uint32 system_code,
+                uint32_t system_code,
                 const std::string& error_message) {
     EXPECT_EQ(expected, REJECTED) << error_message;
   }
@@ -286,11 +287,35 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message,
-                        const GURL& legacy_destination_url) override {
+                        const std::vector<uint8_t>& message,
+                        const GURL& legacy_destination_url,
+                        AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
     EXPECT_EQ(current_session_id_, session_id);
+    EXPECT_EQ(MediaKeys::MessageType::LICENSE_REQUEST, message_type);
+
+    // Extract the key ID from |message|. For Clear Key this is a JSON object
+    // containing a set of "kids". There should only be 1 key ID in |message|.
+    std::string message_string(message.begin(), message.end());
+    KeyIdList key_ids;
+    std::string error_message;
+    EXPECT_TRUE(ExtractKeyIdsFromKeyIdsInitData(message_string, &key_ids,
+                                                &error_message))
+        << error_message;
+    EXPECT_EQ(1u, key_ids.size());
+
+    // Determine the key that matches the key ID |key_ids[0]|.
+    std::vector<uint8_t> key;
+    EXPECT_TRUE(LookupKey(key_ids[0], &key));
+
+    // Update the session with the key ID and key.
+    std::string jwk =
+        GenerateJWKSet(vector_as_array(&key), key.size(),
+                       vector_as_array(&key_ids[0]), key_ids[0].size());
+    decryptor->UpdateSession(session_id,
+                             std::vector<uint8_t>(jwk.begin(), jwk.end()),
+                             CreatePromise(RESOLVED));
   }
 
   void OnSessionClosed(const std::string& session_id) override {
@@ -305,7 +330,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   }
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
-                                const std::vector<uint8>& init_data,
+                                const std::vector<uint8_t>& init_data,
                                 AesDecryptor* decryptor) override {
     // Since only 1 session is created, skip the request if the |init_data|
     // has been seen before (no need to add the same key again).
@@ -314,114 +339,62 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     prev_init_data_ = init_data;
 
     if (current_session_id_.empty()) {
-      if (init_data_type == EmeInitDataType::CENC) {
-        // Since the 'cenc' files are not created with proper 'pssh' boxes,
-        // simply pretend that this is a webm file and pass the expected
-        // key ID as the init_data.
-        // http://crbug.com/460308
-        decryptor->CreateSessionAndGenerateRequest(
-            MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-            std::vector<uint8>(kKeyId, kKeyId + arraysize(kKeyId)),
-            CreateSessionPromise(RESOLVED));
-      } else {
-        decryptor->CreateSessionAndGenerateRequest(
-            MediaKeys::TEMPORARY_SESSION, init_data_type, init_data,
-            CreateSessionPromise(RESOLVED));
-      }
+      decryptor->CreateSessionAndGenerateRequest(
+          MediaKeys::TEMPORARY_SESSION, init_data_type, init_data,
+          CreateSessionPromise(RESOLVED));
       EXPECT_FALSE(current_session_id_.empty());
     }
+  }
 
-    // Clear Key really needs the key ID from |init_data|. For WebM, they are
-    // the same, but this is not the case for ISO CENC (key ID embedded in a
-    // 'pssh' box). Therefore, provide the correct key ID.
-    const uint8* key_id = vector_as_array(&init_data);
-    size_t key_id_length = init_data.size();
-    if (init_data_type == EmeInitDataType::CENC) {
-      key_id = kKeyId;
-      key_id_length = arraysize(kKeyId);
-    }
-
-    // Convert key into a JSON structure and then add it.
-    std::string jwk = GenerateJWKSet(
-        kSecretKey, arraysize(kSecretKey), key_id, key_id_length);
-    decryptor->UpdateSession(current_session_id_,
-                             std::vector<uint8>(jwk.begin(), jwk.end()),
-                             CreatePromise(RESOLVED));
+  virtual bool LookupKey(const std::vector<uint8_t>& key_id,
+                         std::vector<uint8_t>* key) {
+    // As there is no key rotation, the key ID provided should be |kKeyId|
+    // which uses |kSecretKey| as the key.
+    EXPECT_EQ(std::vector<uint8_t>(kKeyId, kKeyId + arraysize(kKeyId)), key_id);
+    key->assign(kSecretKey, kSecretKey + arraysize(kSecretKey));
+    return true;
   }
 
   std::string current_session_id_;
-  std::vector<uint8> prev_init_data_;
+  std::vector<uint8_t> prev_init_data_;
 };
 
 class RotatingKeyProvidingApp : public KeyProvidingApp {
  public:
-  RotatingKeyProvidingApp() : num_distint_need_key_calls_(0) {}
+  RotatingKeyProvidingApp() : num_distinct_need_key_calls_(0) {}
   ~RotatingKeyProvidingApp() override {
     // Expect that OnEncryptedMediaInitData is fired multiple times with
     // different |init_data|.
-    EXPECT_GT(num_distint_need_key_calls_, 1u);
+    EXPECT_GT(num_distinct_need_key_calls_, 1u);
   }
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
-                                const std::vector<uint8>& init_data,
+                                const std::vector<uint8_t>& init_data,
                                 AesDecryptor* decryptor) override {
     // Skip the request if the |init_data| has been seen.
     if (init_data == prev_init_data_)
       return;
     prev_init_data_ = init_data;
-    ++num_distint_need_key_calls_;
+    ++num_distinct_need_key_calls_;
 
-    std::vector<uint8> key_id;
-    std::vector<uint8> key;
-    EXPECT_TRUE(GetKeyAndKeyId(init_data, &key, &key_id));
-
-    if (init_data_type == EmeInitDataType::CENC) {
-      // Since the 'cenc' files are not created with proper 'pssh' boxes,
-      // simply pretend that this is a webm file and pass the expected
-      // key ID as the init_data.
-      // http://crbug.com/460308
-      decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, key_id,
-          CreateSessionPromise(RESOLVED));
-    } else {
-      decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, init_data_type, init_data,
-          CreateSessionPromise(RESOLVED));
-    }
-
-    // Convert key into a JSON structure and then add it.
-    std::string jwk = GenerateJWKSet(vector_as_array(&key),
-                                     key.size(),
-                                     vector_as_array(&key_id),
-                                     key_id.size());
-    decryptor->UpdateSession(current_session_id_,
-                             std::vector<uint8>(jwk.begin(), jwk.end()),
-                             CreatePromise(RESOLVED));
+    decryptor->CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                               init_data_type, init_data,
+                                               CreateSessionPromise(RESOLVED));
   }
 
- private:
-  bool GetKeyAndKeyId(std::vector<uint8> init_data,
-                      std::vector<uint8>* key,
-                      std::vector<uint8>* key_id) {
-    // For WebM, init_data is key_id; for ISO CENC, init_data should contain
-    // the key_id. We assume key_id is in the end of init_data here (that is
-    // only a reasonable assumption for WebM and clear key ISO CENC).
-    DCHECK_GE(init_data.size(), arraysize(kKeyId));
-    std::vector<uint8> key_id_from_init_data(
-        init_data.end() - arraysize(kKeyId), init_data.end());
-
-    key->assign(kSecretKey, kSecretKey + arraysize(kSecretKey));
-    key_id->assign(kKeyId, kKeyId + arraysize(kKeyId));
-
+  bool LookupKey(const std::vector<uint8_t>& key_id,
+                 std::vector<uint8_t>* key) override {
     // The Key and KeyId for this testing key provider are created by left
-    // rotating kSecretKey and kKeyId. Note that this implementation is only
-    // intended for testing purpose. The actual key rotation algorithm can be
-    // much more complicated.
-    // Find out the rotating position from |key_id_from_init_data| and apply on
-    // |key|.
-    for (size_t pos = 0; pos < arraysize(kKeyId); ++pos) {
-      std::rotate(key_id->begin(), key_id->begin() + pos, key_id->end());
-      if (*key_id == key_id_from_init_data) {
+    // rotating |kSecretKey| and |kKeyId|. Note that this implementation is
+    // only intended for testing purpose. The actual key rotation algorithm
+    // can be much more complicated.
+    // Find out the rotating position from |starting_key_id| and apply on |key|.
+    std::vector<uint8_t> starting_key_id(kKeyId, kKeyId + arraysize(kKeyId));
+    for (size_t pos = 0; pos < starting_key_id.size(); ++pos) {
+      std::rotate(starting_key_id.begin(), starting_key_id.begin() + pos,
+                  starting_key_id.end());
+      if (key_id == starting_key_id) {
+        key->assign(kSecretKey, kSecretKey + arraysize(kSecretKey));
         std::rotate(key->begin(), key->begin() + pos, key->end());
         return true;
       }
@@ -429,8 +402,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     return false;
   }
 
-  std::vector<uint8> prev_init_data_;
-  uint32 num_distint_need_key_calls_;
+  uint32_t num_distinct_need_key_calls_;
 };
 
 // Ignores needkey and does not perform a license request
@@ -438,8 +410,9 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message,
-                        const GURL& legacy_destination_url) override {
+                        const std::vector<uint8_t>& message,
+                        const GURL& legacy_destination_url,
+                        AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
     FAIL() << "Unexpected Message";
@@ -458,7 +431,7 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
   }
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
-                                const std::vector<uint8>& init_data,
+                                const std::vector<uint8_t>& init_data,
                                 AesDecryptor* decryptor) override {}
 };
 
@@ -526,7 +499,7 @@ class MockMediaSource {
   }
 
   void AppendAtTime(base::TimeDelta timestamp_offset,
-                    const uint8* pData,
+                    const uint8_t* pData,
                     int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
     chunk_demuxer_->AppendData(kSourceId, pData, size,
@@ -540,7 +513,7 @@ class MockMediaSource {
   void AppendAtTimeWithWindow(base::TimeDelta timestamp_offset,
                               base::TimeDelta append_window_start,
                               base::TimeDelta append_window_end,
-                              const uint8* pData,
+                              const uint8_t* pData,
                               int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
     chunk_demuxer_->AppendData(kSourceId,
@@ -602,7 +575,7 @@ class MockMediaSource {
   }
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
-                                const std::vector<uint8>& init_data) {
+                                const std::vector<uint8_t>& init_data) {
     DCHECK(!init_data.empty());
     CHECK(!encrypted_media_init_data_cb_.is_null());
     encrypted_media_init_data_cb_.Run(init_data_type, init_data);
