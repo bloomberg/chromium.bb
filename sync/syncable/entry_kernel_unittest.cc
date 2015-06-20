@@ -26,6 +26,61 @@ TEST_F(EntryKernelTest, ToValue) {
   }
 }
 
+bool ProtoFieldValuesEqual(const sync_pb::EntitySpecifics& v1,
+                           const sync_pb::EntitySpecifics& v2) {
+  return v1.SerializeAsString() == v2.SerializeAsString();
+}
+
+bool ProtoFieldValuesAreSame(const sync_pb::EntitySpecifics& v1,
+                             const sync_pb::EntitySpecifics& v2) {
+  return &v1 == &v2;
+}
+
+bool ProtoFieldValueIsDefault(const sync_pb::EntitySpecifics& v) {
+  return ProtoFieldValuesAreSame(v,
+                                 sync_pb::EntitySpecifics::default_instance());
+}
+
+// Tests default value, assignment, and sharing of proto fields.
+TEST_F(EntryKernelTest, ProtoFieldTest) {
+  EntryKernel kernel;
+
+  // Check default values.
+  EXPECT_TRUE(ProtoFieldValueIsDefault(kernel.ref(SPECIFICS)));
+  EXPECT_TRUE(ProtoFieldValueIsDefault(kernel.ref(SERVER_SPECIFICS)));
+  EXPECT_TRUE(ProtoFieldValueIsDefault(kernel.ref(BASE_SERVER_SPECIFICS)));
+
+  sync_pb::EntitySpecifics specifics;
+
+  // Assign empty value and verify that the field still returns the
+  // default value.
+  kernel.put(SPECIFICS, specifics);
+  EXPECT_TRUE(ProtoFieldValueIsDefault(kernel.ref(SPECIFICS)));
+  EXPECT_TRUE(ProtoFieldValuesEqual(kernel.ref(SPECIFICS), specifics));
+
+  // Verifies that the kernel holds the copy of the value assigned to it.
+  specifics.mutable_bookmark()->set_url("http://demo/");
+  EXPECT_FALSE(ProtoFieldValuesEqual(kernel.ref(SPECIFICS), specifics));
+
+  // Put the new value and verify the equality.
+  kernel.put(SPECIFICS, specifics);
+  EXPECT_TRUE(ProtoFieldValuesEqual(kernel.ref(SPECIFICS), specifics));
+  EXPECT_FALSE(ProtoFieldValueIsDefault(kernel.ref(SPECIFICS)));
+
+  // Copy the value between the fields and verify that exactly the same
+  // underlying value is shared.
+  kernel.copy(SPECIFICS, SERVER_SPECIFICS);
+  EXPECT_TRUE(ProtoFieldValuesEqual(kernel.ref(SERVER_SPECIFICS), specifics));
+  EXPECT_TRUE(ProtoFieldValuesAreSame(kernel.ref(SPECIFICS),
+                                      kernel.ref(SERVER_SPECIFICS)));
+
+  // Put the new value into SPECIFICS and verify that that stops sharing even
+  // though the values are still equal.
+  kernel.put(SPECIFICS, specifics);
+  EXPECT_FALSE(ProtoFieldValuesAreSame(kernel.ref(SPECIFICS),
+                                       kernel.ref(SERVER_SPECIFICS)));
+}
+
 }  // namespace syncable
 
 }  // namespace syncer

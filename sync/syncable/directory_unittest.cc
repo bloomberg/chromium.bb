@@ -1768,18 +1768,27 @@ TEST_F(SyncableDirectoryTest, MutableEntry_UpdateAttachmentId) {
   entry.PutId(TestIdFactory::FromNumber(-1));
   entry.PutAttachmentMetadata(attachment_metadata);
 
-  const sync_pb::AttachmentMetadata& entry_metadata =
-      entry.GetAttachmentMetadata();
-  ASSERT_EQ(2, entry_metadata.record_size());
-  ASSERT_FALSE(entry_metadata.record(0).is_on_server());
-  ASSERT_FALSE(entry_metadata.record(1).is_on_server());
-  ASSERT_FALSE(entry.GetIsUnsynced());
+  {
+    const sync_pb::AttachmentMetadata& entry_metadata =
+        entry.GetAttachmentMetadata();
+    ASSERT_EQ(2, entry_metadata.record_size());
+    ASSERT_FALSE(entry_metadata.record(0).is_on_server());
+    ASSERT_FALSE(entry_metadata.record(1).is_on_server());
+    ASSERT_FALSE(entry.GetIsUnsynced());
+  }
 
   entry.MarkAttachmentAsOnServer(attachment_id_proto);
 
-  ASSERT_TRUE(entry_metadata.record(0).is_on_server());
-  ASSERT_FALSE(entry_metadata.record(1).is_on_server());
-  ASSERT_TRUE(entry.GetIsUnsynced());
+  {
+    // Re-get entry_metadata because it is immutable in the directory and
+    // entry_metadata reference has been made invalid by
+    // MarkAttachmentAsOnServer call above.
+    const sync_pb::AttachmentMetadata& entry_metadata =
+        entry.GetAttachmentMetadata();
+    ASSERT_TRUE(entry_metadata.record(0).is_on_server());
+    ASSERT_FALSE(entry_metadata.record(1).is_on_server());
+    ASSERT_TRUE(entry.GetIsUnsynced());
+  }
 }
 
 // Verify that deleted entries with attachments will retain the attachments.
@@ -2041,6 +2050,60 @@ TEST_F(SyncableDirectoryTest, CatastrophicError) {
 
   // See that the unrecoverable error handler has been invoked twice.
   ASSERT_EQ(2, unrecoverable_error_handler.invocation_count());
+}
+
+bool EntitySpecificsValuesAreSame(const sync_pb::EntitySpecifics& v1,
+                                  const sync_pb::EntitySpecifics& v2) {
+  return &v1 == &v2;
+}
+
+// Verifies that server and client specifics are shared when their values
+// are equal.
+TEST_F(SyncableDirectoryTest, SharingOfClientAndServerSpecifics) {
+  sync_pb::EntitySpecifics specifics1;
+  sync_pb::EntitySpecifics specifics2;
+  sync_pb::EntitySpecifics specifics3;
+  AddDefaultFieldValue(BOOKMARKS, &specifics1);
+  AddDefaultFieldValue(BOOKMARKS, &specifics2);
+  AddDefaultFieldValue(BOOKMARKS, &specifics3);
+  specifics1.mutable_bookmark()->set_url("foo");
+  specifics2.mutable_bookmark()->set_url("bar");
+  // specifics3 has the same URL as specifics1
+  specifics3.mutable_bookmark()->set_url("foo");
+
+  WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+  MutableEntry item(&trans, CREATE, BOOKMARKS, trans.root_id(), "item");
+  item.PutId(TestIdFactory::FromNumber(1));
+  item.PutBaseVersion(10);
+
+  // Verify sharing.
+  item.PutSpecifics(specifics1);
+  item.PutServerSpecifics(specifics1);
+  EXPECT_TRUE(EntitySpecificsValuesAreSame(item.GetSpecifics(),
+                                           item.GetServerSpecifics()));
+
+  // Verify that specifics are no longer shared.
+  item.PutServerSpecifics(specifics2);
+  EXPECT_FALSE(EntitySpecificsValuesAreSame(item.GetSpecifics(),
+                                            item.GetServerSpecifics()));
+
+  // Verify that specifics are shared again because specifics3 matches
+  // specifics1.
+  item.PutServerSpecifics(specifics3);
+  EXPECT_TRUE(EntitySpecificsValuesAreSame(item.GetSpecifics(),
+                                           item.GetServerSpecifics()));
+
+  // Verify that copying the same value back to SPECIFICS is still OK.
+  item.PutSpecifics(specifics3);
+  EXPECT_TRUE(EntitySpecificsValuesAreSame(item.GetSpecifics(),
+                                           item.GetServerSpecifics()));
+
+  // Verify sharing with BASE_SERVER_SPECIFICS.
+  EXPECT_FALSE(EntitySpecificsValuesAreSame(item.GetServerSpecifics(),
+                                            item.GetBaseServerSpecifics()));
+  item.PutBaseServerSpecifics(specifics3);
+  EXPECT_TRUE(EntitySpecificsValuesAreSame(item.GetServerSpecifics(),
+                                           item.GetBaseServerSpecifics()));
 }
 
 }  // namespace syncable

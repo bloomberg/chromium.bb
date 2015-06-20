@@ -14,7 +14,7 @@ namespace syncable {
 
 EntryKernel::EntryKernel() : dirty_(false) {
   // Everything else should already be default-initialized.
-  for (int i = INT64_FIELDS_BEGIN; i < INT64_FIELDS_END; ++i) {
+  for (int i = 0; i < INT64_FIELDS_COUNT; ++i) {
     int64_fields[i] = 0;
   }
 }
