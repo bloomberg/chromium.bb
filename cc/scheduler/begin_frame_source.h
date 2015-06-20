@@ -84,6 +84,9 @@ class CC_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
 
   BeginFrameArgs last_begin_frame_args_;
   int64_t dropped_begin_frame_args_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BeginFrameObserverBase);
 };
 
 // Interface for a class which produces BeginFrame calls to a
@@ -164,6 +167,8 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
 
  private:
   bool inside_as_value_into_;
+
+  DISALLOW_COPY_AND_ASSIGN(BeginFrameSourceBase);
 };
 
 // A frame source which calls BeginFrame (at the next possible time) as soon as
@@ -196,6 +201,8 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
 
  private:
   base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackToBackBeginFrameSource);
 };
 
 // A frame source which is locked to an external parameters provides from a
@@ -231,6 +238,9 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   scoped_refptr<DelayBasedTimeSource> time_source_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyntheticBeginFrameSource);
 };
 
 // A "virtual" frame source which lets you switch between multiple other frame
@@ -276,6 +286,9 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceBase,
 
   BeginFrameSource* active_source_;
   std::set<BeginFrameSource*> source_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BeginFrameSourceMultiplexer);
 };
 
 }  // namespace cc

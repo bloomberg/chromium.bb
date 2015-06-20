@@ -37,6 +37,7 @@ TestDelayBasedTimeSource::~TestDelayBasedTimeSource() {
 void FakeBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
   remaining_frames_ = remaining_frames;
 }
+
 void FakeBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "FakeBeginFrameSource");
@@ -69,6 +70,7 @@ TestSchedulerFrameSourcesConstructor::TestSchedulerFrameSourcesConstructor(
     base::SimpleTestTickClock* now_src)
     : test_task_runner_(test_task_runner), now_src_(now_src) {
 }
+
 TestSchedulerFrameSourcesConstructor::~TestSchedulerFrameSourcesConstructor() {
 }
 

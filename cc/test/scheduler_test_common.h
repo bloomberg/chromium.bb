@@ -28,6 +28,9 @@ class FakeTimeSourceClient : public TimeSourceClient {
 
  protected:
   bool tick_called_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeTimeSourceClient);
 };
 
 class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
@@ -48,6 +51,9 @@ class FakeDelayBasedTimeSource : public DelayBasedTimeSource {
   ~FakeDelayBasedTimeSource() override {}
 
   base::TimeTicks now_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeDelayBasedTimeSource);
 };
 
 class TestDelayBasedTimeSource : public DelayBasedTimeSource {
@@ -71,10 +77,15 @@ class TestDelayBasedTimeSource : public DelayBasedTimeSource {
   std::string TypeString() const override;
   // Not owned.
   base::SimpleTestTickClock* now_src_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestDelayBasedTimeSource);
 };
 
-struct FakeBeginFrameSource : public BeginFrameSourceBase {
-  bool remaining_frames_ = false;
+class FakeBeginFrameSource : public BeginFrameSourceBase {
+ public:
+  FakeBeginFrameSource() : remaining_frames_(false) {}
+  ~FakeBeginFrameSource() override {}
 
   BeginFrameObserver* GetObserver() { return observer_; }
 
@@ -84,6 +95,7 @@ struct FakeBeginFrameSource : public BeginFrameSourceBase {
     }
     return BeginFrameArgs();
   }
+
   void TestOnBeginFrame(const BeginFrameArgs& args) {
     return CallOnBeginFrame(args);
   }
@@ -92,7 +104,10 @@ struct FakeBeginFrameSource : public BeginFrameSourceBase {
   void DidFinishFrame(size_t remaining_frames) override;
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
-  ~FakeBeginFrameSource() override {}
+ private:
+  bool remaining_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBeginFrameSource);
 };
 
 class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
@@ -113,6 +128,9 @@ class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
   base::TimeTicks Now() override;
   // Not owned.
   base::SimpleTestTickClock* now_src_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestBackToBackBeginFrameSource);
 };
 
 class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
@@ -131,6 +149,9 @@ class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
  protected:
   TestSyntheticBeginFrameSource(
       scoped_refptr<DelayBasedTimeSource> time_source);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSyntheticBeginFrameSource);
 };
 
 class TestScheduler;
@@ -153,6 +174,9 @@ class TestSchedulerFrameSourcesConstructor
       OrderedSimpleTaskRunner* test_task_runner,
       base::SimpleTestTickClock* now_src);
   friend class TestScheduler;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSchedulerFrameSourcesConstructor);
 };
 
 class TestScheduler : public Scheduler {
@@ -207,6 +231,8 @@ class TestScheduler : public Scheduler {
 
   // Not owned.
   base::SimpleTestTickClock* now_src_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestScheduler);
 };
 
 }  // namespace cc
