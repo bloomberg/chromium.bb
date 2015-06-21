@@ -468,7 +468,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
 
   prefs.slimming_paint_enabled = command_line.HasSwitch(
-      switches::kEnableSlimmingPaint);
+      switches::kEnableSlimmingPaint) ||
+      !command_line.HasSwitch(switches::kDisableSlimmingPaint);
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   bool default_enable_scroll_animator = true;
