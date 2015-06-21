@@ -657,27 +657,26 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
 
     PartitionSuperPageExtentEntry* extent = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionSuperPageToMetadataArea(ptr));
     extent->root = root;
-    // Most new extents will be part of a larger extent, and these three fields
-    // are unused, but we initialize them to 0 so that we get a clear signal
-    // in case they are accidentally used.
-    extent->superPageBase = 0;
-    extent->superPagesEnd = 0;
-    extent->next = 0;
+    // The new structures are all located inside a fresh system page so they
+    // will all be zeroed out. These ASSERTs are for documentation.
+    ASSERT(!extent->superPageBase);
+    ASSERT(!extent->superPagesEnd);
+    ASSERT(!extent->next);
     PartitionPage* page = partitionPointerToPageNoAlignmentCheck(ret);
     PartitionBucket* bucket = reinterpret_cast<PartitionBucket*>(reinterpret_cast<char*>(page) + (kPageMetadataSize * 2));
-    page->freelistHead = 0;
-    page->nextPage = 0;
+    ASSERT(!page->freelistHead);
+    ASSERT(!page->nextPage);
+    ASSERT(!page->numUnprovisionedSlots);
+    ASSERT(!page->pageOffset);
+    ASSERT(!page->emptyCacheIndex);
     page->bucket = bucket;
     page->numAllocatedSlots = 1;
-    page->numUnprovisionedSlots = 0;
-    page->pageOffset = 0;
-    page->emptyCacheIndex = 0;
 
-    bucket->activePagesHead = 0;
-    bucket->emptyPagesHead = 0;
+    ASSERT(!bucket->activePagesHead);
+    ASSERT(!bucket->emptyPagesHead);
+    ASSERT(!bucket->numSystemPagesPerSlotSpan);
+    ASSERT(!bucket->numFullPages);
     bucket->slotSize = size;
-    bucket->numSystemPagesPerSlotSpan = 0;
-    bucket->numFullPages = 0;
 
     partitionPageSetRawSize(page, rawSize);
     ASSERT(partitionPageGetRawSize(page) == rawSize);
