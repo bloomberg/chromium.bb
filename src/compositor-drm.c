@@ -2202,6 +2202,10 @@ create_output_for_connector(struct drm_compositor *ec,
 				    connector->count_modes == 0 ?
 				    ", built-in" : "");
 
+	/* Set native_ fields, so weston_output_mode_switch_to_native() works */
+	output->base.native_mode = output->base.current_mode;
+	output->base.native_scale = output->base.current_scale;
+
 	return 0;
 
 err_output:
