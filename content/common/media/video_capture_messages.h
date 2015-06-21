@@ -22,7 +22,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::ResolutionChangePolicy,
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
                           media::VideoFrame::FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::StorageType,
-                          media::VideoFrame::STORAGE_LAST);
+                          media::VideoFrame::STORAGE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
   IPC_STRUCT_TRAITS_MEMBER(requested_format)
