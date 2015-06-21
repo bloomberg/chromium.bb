@@ -258,8 +258,8 @@ bool ThemePainterMac::paintProgressBar(LayoutObject* layoutObject, const PaintIn
         paintInfo.context->scale(-1, 1);
     }
 
-    paintInfo.context->drawImageBuffer(imageBuffer.get(),
-        FloatRect(inflatedRect.location(), imageBuffer->size()));
+    if (!paintInfo.context->contextDisabled())
+        imageBuffer->draw(paintInfo.context, FloatRect(inflatedRect.location(), imageBuffer->size()), nullptr, SkXfermode::kSrcOver_Mode);
     return false;
 }
 

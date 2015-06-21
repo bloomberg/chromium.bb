@@ -148,13 +148,10 @@ public:
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
     String debugName() const { return "ImageBuffer"; }
 
-private:
-    ImageBuffer(PassOwnPtr<ImageBufferSurface>);
-
     void draw(GraphicsContext*, const FloatRect&, const FloatRect*, SkXfermode::Mode);
 
-    friend class GraphicsContext;
-    friend class SkiaImageFilterBuilder;
+private:
+    ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 
     OwnPtr<ImageBufferSurface> m_surface;
     ImageBufferClient* m_client;

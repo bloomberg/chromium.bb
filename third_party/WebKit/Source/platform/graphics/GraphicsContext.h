@@ -195,8 +195,6 @@ public:
         const FloatSize& tileScaleFactor, Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
 
-    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect* srcRect = 0, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
-
     // These methods write to the canvas.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
     void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);

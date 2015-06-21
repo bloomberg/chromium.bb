@@ -309,11 +309,6 @@ void GraphicsContext::clearDrawLooper()
 
 SkMatrix GraphicsContext::getTotalMatrix() const
 {
-    // FIXME: this is a hack to avoid changing all call sites of getTotalMatrix() to not use this method.
-    // The code needs to be cleand up after Slimming Paint is launched.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return SkMatrix::I();
-
     if (contextDisabled() || !m_canvas)
         return SkMatrix::I();
 
@@ -940,10 +935,6 @@ void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const Float
     imagePaint.setXfermodeMode(op);
     imagePaint.setColor(SK_ColorBLACK);
     imagePaint.setFilterQuality(computeFilterQuality(image, dest, src));
-    // Disable anti-aliasing if we're not rotated or skewed.
-    // TODO(junov): crbug.com/492187 This code will disable antialiasing
-    // regardless of whether content is pixel aligned. Is this correct?
-    // For now, just preserving legacy behavior.
     imagePaint.setAntiAlias(shouldAntialias());
     image->draw(m_canvas, imagePaint, dest, src, shouldRespectImageOrientation, Image::ClampImageToSourceRect);
 }
@@ -992,15 +983,6 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const In
     }
 
     image->drawTiled(this, dest, srcRect, tileScaleFactor, hRule, vRule, op);
-}
-
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
-    const FloatRect* src, SkXfermode::Mode op)
-{
-    if (contextDisabled() || !image)
-        return;
-
-    image->draw(this, dest, src, op);
 }
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
