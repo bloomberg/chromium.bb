@@ -46,6 +46,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
+#include "components/omnibox/omnibox_pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/power/origin_power_map.h"
 #include "components/power/origin_power_map_factory.h"
@@ -713,7 +714,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   // Remove omnibox zero-suggest cache results.
   if ((remove_mask & (REMOVE_CACHE | REMOVE_COOKIES)))
-    prefs->SetString(prefs::kZeroSuggestCachedResults, std::string());
+    prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
 
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).

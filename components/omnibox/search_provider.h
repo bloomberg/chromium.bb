@@ -55,8 +55,7 @@ class SearchProvider : public BaseSearchProvider,
                        public net::URLFetcherDelegate {
  public:
   SearchProvider(AutocompleteProviderClient* client,
-                 AutocompleteProviderListener* listener,
-                 TemplateURLService* template_url_service);
+                 AutocompleteProviderListener* listener);
 
   // Extracts the suggest response metadata which SearchProvider previously
   // stored for |match|.

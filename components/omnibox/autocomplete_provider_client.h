@@ -8,13 +8,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/keyword_id.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/shortcuts_backend.h"
 
 class AutocompleteController;
 struct AutocompleteMatch;
+class AutocompleteClassifier;
 class AutocompleteSchemeClassifier;
 class GURL;
+class PrefService;
 class ShortcutsBackend;
 
 namespace bookmarks {
@@ -38,26 +41,30 @@ class AutocompleteProviderClient {
   virtual ~AutocompleteProviderClient() {}
 
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
-  virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() = 0;
+  virtual PrefService* GetPrefs() = 0;
+  virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
+  virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
+  virtual scoped_refptr<history::TopSites> GetTopSites() = 0;
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual history::URLDatabase* GetInMemoryDatabase() = 0;
   virtual TemplateURLService* GetTemplateURLService() = 0;
-  virtual const SearchTermsData& GetSearchTermsData() = 0;
+  virtual const TemplateURLService* GetTemplateURLService() const = 0;
+  virtual const SearchTermsData& GetSearchTermsData() const = 0;
   virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackend() = 0;
   virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() = 0;
 
   // The value to use for Accept-Languages HTTP header when making an HTTP
   // request.
-  virtual std::string GetAcceptLanguages() = 0;
+  virtual std::string GetAcceptLanguages() const = 0;
 
-  virtual bool IsOffTheRecord() = 0;
-  virtual bool SearchSuggestEnabled() = 0;
+  virtual bool IsOffTheRecord() const = 0;
+  virtual bool SearchSuggestEnabled() const = 0;
 
   // Returns whether the bookmark bar is visible on all tabs.
-  virtual bool ShowBookmarkBar() = 0;
+  virtual bool BookmarkBarIsVisible() const = 0;
 
-  virtual bool TabSyncEnabledAndUnencrypted() = 0;
+  virtual bool TabSyncEnabledAndUnencrypted() const = 0;
 
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.

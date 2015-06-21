@@ -74,7 +74,6 @@ class SearchProviderForTest : public SearchProvider {
  public:
   SearchProviderForTest(ChromeAutocompleteProviderClient* client,
                         AutocompleteProviderListener* listener,
-                        TemplateURLService* template_url_service,
                         Profile* profile);
   bool is_success() { return is_success_; }
 
@@ -90,10 +89,8 @@ class SearchProviderForTest : public SearchProvider {
 SearchProviderForTest::SearchProviderForTest(
     ChromeAutocompleteProviderClient* client,
     AutocompleteProviderListener* listener,
-    TemplateURLService* template_url_service,
     Profile* profile)
-    : SearchProvider(client, listener, template_url_service),
-      is_success_(false) {
+    : SearchProvider(client, listener), is_success_(false) {
 }
 
 SearchProviderForTest::~SearchProviderForTest() {
@@ -323,8 +320,7 @@ void SearchProviderTest::SetUp() {
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
 
-  provider_ =
-      new SearchProviderForTest(client_.get(), this, turl_model, &profile_);
+  provider_ = new SearchProviderForTest(client_.get(), this, &profile_);
   OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 0;
 }
 

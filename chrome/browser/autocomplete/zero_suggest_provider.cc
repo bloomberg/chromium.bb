@@ -15,13 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/history/top_sites_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -30,6 +23,7 @@
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/history_url_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/omnibox_pref_names.h"
 #include "components/omnibox/search_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/search_engines/template_url_service.h"
@@ -77,17 +71,15 @@ const int kDefaultZeroSuggestRelevance = 100;
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
     AutocompleteProviderClient* client,
-    AutocompleteProviderListener* listener,
-    TemplateURLService* template_url_service,
-    Profile* profile) {
-  return new ZeroSuggestProvider(client, listener, template_url_service,
-                                 profile);
+    AutocompleteProviderListener* listener) {
+  return new ZeroSuggestProvider(client, listener);
 }
 
 // static
 void ZeroSuggestProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kZeroSuggestCachedResults, std::string());
+  registry->RegisterStringPref(omnibox::kZeroSuggestCachedResults,
+                               std::string());
 }
 
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
@@ -98,23 +90,24 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
     return;
 
   Stop(true, false);
-  field_trial_triggered_ = false;
-  field_trial_triggered_in_session_ = false;
+  set_field_trial_triggered(false);
+  set_field_trial_triggered_in_session(false);
   results_from_cache_ = false;
   permanent_text_ = input.text();
   current_query_ = input.current_url().spec();
   current_page_classification_ = input.current_page_classification();
   current_url_match_ = MatchForCurrentURL();
+  TemplateURLService* template_url_service = client()->GetTemplateURLService();
 
   const TemplateURL* default_provider =
-     template_url_service_->GetDefaultSearchProvider();
+      template_url_service->GetDefaultSearchProvider();
   if (default_provider == NULL)
     return;
 
   base::string16 prefix;
   TemplateURLRef::SearchTermsArgs search_term_args(prefix);
   GURL suggest_url(default_provider->suggestions_url_ref().ReplaceSearchTerms(
-      search_term_args, template_url_service_->search_terms_data()));
+      search_term_args, template_url_service->search_terms_data()));
   if (!suggest_url.is_valid())
     return;
 
@@ -122,15 +115,14 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   // most visited field trials.
   if (CanSendURL(input.current_url(), suggest_url, default_provider,
                  current_page_classification_,
-                 template_url_service_->search_terms_data(), client_) &&
+                 template_url_service->search_terms_data(), client()) &&
       !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() &&
       !OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
     // Update suggest_url to include the current_page_url.
     search_term_args.current_page_url = current_query_;
-    suggest_url = GURL(default_provider->suggestions_url_ref().
-                       ReplaceSearchTerms(
-                           search_term_args,
-                           template_url_service_->search_terms_data()));
+    suggest_url =
+        GURL(default_provider->suggestions_url_ref().ReplaceSearchTerms(
+            search_term_args, template_url_service->search_terms_data()));
   } else if (!ShouldShowNonContextualZeroSuggest(suggest_url,
                                                  input.current_url())) {
     return;
@@ -168,7 +160,7 @@ void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
     // Remove the deleted match from the cache, so it is not shown to the user
     // again. Since we cannot remove just one result, blow away the cache.
-    profile_->GetPrefs()->SetString(prefs::kZeroSuggestCachedResults,
+    client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
                                     std::string());
   }
   BaseSearchProvider::DeleteMatch(match);
@@ -184,22 +176,15 @@ void ZeroSuggestProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 
 void ZeroSuggestProvider::ResetSession() {
   // The user has started editing in the omnibox, so leave
-  // |field_trial_triggered_in_session_| unchanged and set
-  // |field_trial_triggered_| to false since zero suggest is inactive now.
-  field_trial_triggered_ = false;
+  // |field_trial_triggered_in_session| unchanged and set
+  // |field_trial_triggered| to false since zero suggest is inactive now.
+  set_field_trial_triggered(false);
 }
 
-ZeroSuggestProvider::ZeroSuggestProvider(
-    AutocompleteProviderClient* client,
-
-    AutocompleteProviderListener* listener,
-    TemplateURLService* template_url_service,
-    Profile* profile)
-    : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST,
-                         client,
-                         template_url_service),
+ZeroSuggestProvider::ZeroSuggestProvider(AutocompleteProviderClient* client,
+                                         AutocompleteProviderListener* listener)
+    : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client),
       listener_(listener),
-      profile_(profile),
       results_from_cache_(false),
       waiting_for_most_visited_urls_request_(false),
       weak_ptr_factory_(this) {
@@ -211,16 +196,16 @@ ZeroSuggestProvider::~ZeroSuggestProvider() {
 const TemplateURL* ZeroSuggestProvider::GetTemplateURL(bool is_keyword) const {
   // Zero suggest provider should not receive keyword results.
   DCHECK(!is_keyword);
-  return template_url_service_->GetDefaultSearchProvider();
+  return client()->GetTemplateURLService()->GetDefaultSearchProvider();
 }
 
 const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
   // The callers of this method won't look at the AutocompleteInput's
   // |from_omnibox_focus| member, so we can set its value to false.
-  return AutocompleteInput(
-      base::string16(), base::string16::npos, std::string(),
-      GURL(current_query_), current_page_classification_, true, false, false,
-      true, false, ChromeAutocompleteSchemeClassifier(profile_));
+  return AutocompleteInput(base::string16(), base::string16::npos,
+                           std::string(), GURL(current_query_),
+                           current_page_classification_, true, false, false,
+                           true, false, client()->GetSchemeClassifier());
 }
 
 bool ZeroSuggestProvider::ShouldAppendExtraParams(
@@ -269,7 +254,8 @@ bool ZeroSuggestProvider::StoreSuggestionResponse(
   if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() ||
       json_data.empty())
     return false;
-  profile_->GetPrefs()->SetString(prefs::kZeroSuggestCachedResults, json_data);
+  client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
+                                  json_data);
 
   // If we received an empty result list, we should update the display, as it
   // may be showing cached results that should not be shown.
@@ -301,13 +287,12 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   match.destination_url = navigation.url();
 
   // Zero suggest results should always omit protocols and never appear bold.
-  const std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  const std::string languages(client()->GetAcceptLanguages());
   match.contents = net::FormatUrl(navigation.url(), languages,
       net::kFormatUrlOmitAll, net::UnescapeRule::SPACES, NULL, NULL, NULL);
   match.fill_into_edit +=
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
-          match.contents, ChromeAutocompleteSchemeClassifier(profile_));
+      AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          navigation.url(), match.contents, client()->GetSchemeClassifier());
 
   AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
       match.contents.length(), ACMatchClassification::URL,
@@ -324,8 +309,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
 void ZeroSuggestProvider::Run(const GURL& suggest_url) {
   if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
     most_visited_urls_.clear();
-    scoped_refptr<history::TopSites> ts =
-        TopSitesFactory::GetForProfile(profile_);
+    scoped_refptr<history::TopSites> ts = client()->GetTopSites();
     if (ts) {
       waiting_for_most_visited_urls_request_ = true;
       ts->GetMostVisitedURLs(
@@ -336,12 +320,12 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
     const int kFetcherID = 1;
     fetcher_ = net::URLFetcher::Create(kFetcherID, suggest_url,
                                        net::URLFetcher::GET, this);
-    fetcher_->SetRequestContext(profile_->GetRequestContext());
+    fetcher_->SetRequestContext(client()->GetRequestContext());
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     // Add Chrome experiment state to the request headers.
     net::HttpRequestHeaders headers;
     variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-        fetcher_->GetOriginalURL(), profile_->IsOffTheRecord(), false,
+        fetcher_->GetOriginalURL(), client()->IsOffTheRecord(), false,
         &headers);
     fetcher_->SetExtraRequestHeaders(headers.ToString());
     fetcher_->Start();
@@ -362,11 +346,13 @@ void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(
 void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   matches_.clear();
 
+  TemplateURLService* template_url_service = client()->GetTemplateURLService();
   const TemplateURL* default_provider =
-      template_url_service_->GetDefaultSearchProvider();
+      template_url_service->GetDefaultSearchProvider();
   // Fail if we can't set the clickthrough URL for query suggestions.
-  if (default_provider == NULL || !default_provider->SupportsReplacement(
-          template_url_service_->search_terms_data()))
+  if (default_provider == NULL ||
+      !default_provider->SupportsReplacement(
+          template_url_service->search_terms_data()))
     return;
 
   MatchMap map;
@@ -392,12 +378,11 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     }
     const base::string16 current_query_string16(
         base::ASCIIToUTF16(current_query_));
-    const std::string languages(
-        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+    const std::string languages(client()->GetAcceptLanguages());
     for (size_t i = 0; i < most_visited_urls_.size(); i++) {
       const history::MostVisitedURL& url = most_visited_urls_[i];
       SearchSuggestionParser::NavigationResult nav(
-          ChromeAutocompleteSchemeClassifier(profile_), url.url,
+          client()->GetSchemeClassifier(), url.url,
           AutocompleteMatchType::NAVSUGGEST, url.title, std::string(), false,
           relevance, true, current_query_string16, languages);
       matches_.push_back(NavigationToMatch(nav));
@@ -425,7 +410,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
   AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
+  client()->GetAutocompleteClassifier()->Classify(
       permanent_text_, false, true, current_page_classification_, &match, NULL);
   match.allowed_to_be_default_match = true;
 
@@ -445,10 +430,12 @@ int ZeroSuggestProvider::GetVerbatimRelevance() const {
 bool ZeroSuggestProvider::ShouldShowNonContextualZeroSuggest(
     const GURL& suggest_url,
     const GURL& current_page_url) const {
+  const TemplateURLService* template_url_service =
+      client()->GetTemplateURLService();
   if (!ZeroSuggestEnabled(suggest_url,
-                          template_url_service_->GetDefaultSearchProvider(),
+                          template_url_service->GetDefaultSearchProvider(),
                           current_page_classification_,
-                          template_url_service_->search_terms_data(), client_))
+                          template_url_service->search_terms_data(), client()))
     return false;
 
   // If we cannot send URLs, then only the MostVisited and Personalized
@@ -467,8 +454,9 @@ bool ZeroSuggestProvider::ShouldShowNonContextualZeroSuggest(
     return false;
 
   if (OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() &&
-      template_url_service_->
-          IsSearchResultsPageFromDefaultSearchProvider(current_page_url))
+      client()
+          ->GetTemplateURLService()
+          ->IsSearchResultsPageFromDefaultSearchProvider(current_page_url))
     return false;
 
   return true;
@@ -478,8 +466,8 @@ void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
   if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
     return;
 
-  std::string json_data = profile_->GetPrefs()->GetString(
-      prefs::kZeroSuggestCachedResults);
+  std::string json_data =
+      client()->GetPrefs()->GetString(omnibox::kZeroSuggestCachedResults);
   if (!json_data.empty()) {
     scoped_ptr<base::Value> data(
         SearchSuggestionParser::DeserializeJsonData(json_data));

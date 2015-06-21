@@ -80,6 +80,10 @@ static_library("browser") {
     "web_history_service.h",
   ]
 
+  public_deps = [
+    "//skia",
+  ]
+
   deps = [
     "//base",
     "//base:i18n",
@@ -91,7 +95,6 @@ static_library("browser") {
     "//components/signin/core/browser",
     "//google_apis",
     "//net",
-    "//skia",
     "//sql",
     "//sync",
     "//third_party/sqlite",

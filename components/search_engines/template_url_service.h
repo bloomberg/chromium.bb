@@ -215,11 +215,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   // loaded, the default search provider is pulled from preferences.
   //
   // NOTE: At least in unittest mode, this may return NULL.
+  // TODO(blundell): See if all callers can be converted to take in const
+  // pointers and eliminate this version of the method.
   TemplateURL* GetDefaultSearchProvider();
+  const TemplateURL* GetDefaultSearchProvider() const;
 
   // Returns true if the |url| is a search results page from the default search
   // provider.
-  bool IsSearchResultsPageFromDefaultSearchProvider(const GURL& url);
+  bool IsSearchResultsPageFromDefaultSearchProvider(const GURL& url) const;
 
   // Returns true if the default search is managed through group policy.
   bool is_default_search_managed() const {

@@ -38,6 +38,7 @@ class DestinationURLEqualsURL {
   bool operator()(const AutocompleteMatch& match) const {
     return match.destination_url == url_;
   }
+
  private:
   const GURL url_;
 };
@@ -74,7 +75,7 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
   if (input.text().length() < 6) {
     base::TimeTicks end_time = base::TimeTicks::Now();
     std::string name = "ShortcutsProvider.QueryIndexTime." +
-        base::IntToString(input.text().size());
+                       base::IntToString(input.text().size());
     base::HistogramBase* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
@@ -128,7 +129,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
 
   int max_relevance;
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
-      input.current_page_classification(), &max_relevance))
+          input.current_page_classification(), &max_relevance))
     max_relevance = kShortcutsProviderDefaultMaxRelevance;
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
   const base::string16 fixed_up_input(FixupUserInput(input).second);
@@ -140,8 +141,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     // Don't return shortcuts with zero relevance.
     int relevance = CalculateScore(term_string, it->second, max_relevance);
     if (relevance) {
-      matches_.push_back(ShortcutToACMatch(it->second, relevance, input,
-                                           fixed_up_input));
+      matches_.push_back(
+          ShortcutToACMatch(it->second, relevance, input, fixed_up_input));
       matches_.back().ComputeStrippedDestinationURL(template_url_service);
     }
   }
@@ -151,7 +152,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   AutocompleteResult::DedupMatchesByDestination(
       input.current_page_classification(), false, &matches_);
   // Find best matches.
-  std::partial_sort(matches_.begin(),
+  std::partial_sort(
+      matches_.begin(),
       matches_.begin() +
           std::min(AutocompleteProvider::kMaxMatches, matches_.size()),
       matches_.end(), &AutocompleteMatch::MoreRelevant);
@@ -233,10 +235,10 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   const base::string16 term_string = base::i18n::ToLower(input.text());
   WordMap terms_map(CreateWordMapForString(term_string));
   if (!terms_map.empty()) {
-    match.contents_class = ClassifyAllMatchesInString(term_string, terms_map,
-        match.contents, match.contents_class);
-    match.description_class = ClassifyAllMatchesInString(term_string, terms_map,
-        match.description, match.description_class);
+    match.contents_class = ClassifyAllMatchesInString(
+        term_string, terms_map, match.contents, match.contents_class);
+    match.description_class = ClassifyAllMatchesInString(
+        term_string, terms_map, match.description, match.description_class);
   }
   return match;
 }
@@ -332,8 +334,8 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
         if (match_class.back().offset == last_position)
           match_class.pop_back();
 
-        AutocompleteMatch::AddLastClassificationIfNecessary(&match_class,
-            last_position, ACMatchClassification::MATCH);
+        AutocompleteMatch::AddLastClassificationIfNecessary(
+            &match_class, last_position, ACMatchClassification::MATCH);
         if (word_end < text_lowercase.length()) {
           match_class.push_back(
               ACMatchClassification(word_end, ACMatchClassification::NONE));
@@ -348,9 +350,9 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   return AutocompleteMatch::MergeClassifications(original_class, match_class);
 }
 
-ShortcutsBackend::ShortcutMap::const_iterator
-    ShortcutsProvider::FindFirstMatch(const base::string16& keyword,
-                                      ShortcutsBackend* backend) {
+ShortcutsBackend::ShortcutMap::const_iterator ShortcutsProvider::FindFirstMatch(
+    const base::string16& keyword,
+    ShortcutsBackend* backend) {
   DCHECK(backend);
   ShortcutsBackend::ShortcutMap::const_iterator it =
       backend->shortcuts_map().lower_bound(keyword);
@@ -375,15 +377,16 @@ int ShortcutsProvider::CalculateScore(
   // directly. This makes sense since the first characters typed are much more
   // important for determining how likely it is a user wants a particular
   // shortcut than are the remaining continued characters.
-  double base_score = max_relevance *
-      sqrt(static_cast<double>(terms.length()) / shortcut.text.length());
+  double base_score = max_relevance * sqrt(static_cast<double>(terms.length()) /
+                                           shortcut.text.length());
 
   // Then we decay this by half each week.
   const double kLn2 = 0.6931471805599453;
   base::TimeDelta time_passed = base::Time::Now() - shortcut.last_access_time;
   // Clamp to 0 in case time jumps backwards (e.g. due to DST).
-  double decay_exponent = std::max(0.0, kLn2 * static_cast<double>(
-      time_passed.InMicroseconds()) / base::Time::kMicrosecondsPerWeek);
+  double decay_exponent =
+      std::max(0.0, kLn2 * static_cast<double>(time_passed.InMicroseconds()) /
+                        base::Time::kMicrosecondsPerWeek);
 
   // We modulate the decay factor based on how many times the shortcut has been
   // used. Newly created shortcuts decay at full speed; otherwise, decaying by
@@ -391,10 +394,11 @@ int ShortcutsProvider::CalculateScore(
   // (1.0 / each 5 additional hits), up to a maximum of 5x as long.
   const double kMaxDecaySpeedDivisor = 5.0;
   const double kNumUsesPerDecaySpeedDivisorIncrement = 5.0;
-  double decay_divisor = std::min(kMaxDecaySpeedDivisor,
+  double decay_divisor = std::min(
+      kMaxDecaySpeedDivisor,
       (shortcut.number_of_hits + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
-      kNumUsesPerDecaySpeedDivisorIncrement);
+          kNumUsesPerDecaySpeedDivisorIncrement);
 
   return static_cast<int>((base_score / exp(decay_exponent / decay_divisor)) +
-      0.5);
+                          0.5);
 }

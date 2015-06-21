@@ -1199,9 +1199,6 @@ const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 // in order to use Easy Unlock.
 const char kEasyUnlockProximityRequired[] = "easy_unlock.proximity_required";
 
-// A cache of zero suggest results using JSON serialized into a string.
-const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
-
 #if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 // These device IDs are used by the copresence component, to uniquely identify
 // this device to the server. For privacy, authenticated and unauthenticated

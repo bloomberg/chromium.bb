@@ -19,6 +19,7 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/omnibox_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
@@ -180,8 +181,7 @@ void ZeroSuggestProviderTest::SetUp() {
 
   TopSitesFactory* top_sites_factory = TopSitesFactory::GetInstance();
   top_sites_factory->SetTestingFactory(&profile_, BuildFakeEmptyTopSites);
-  provider_ =
-      ZeroSuggestProvider::Create(client_.get(), this, turl_model, &profile_);
+  provider_ = ZeroSuggestProvider::Create(client_.get(), this);
 }
 
 void ZeroSuggestProviderTest::TearDown() {
@@ -237,7 +237,7 @@ TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
       "[],[],{\"google:suggestrelevance\":[602, 601, 600],"
       "\"google:verbatimrelevance\":1300}]");
   PrefService* prefs = profile_.GetPrefs();
-  prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
+  prefs->SetString(omnibox::kZeroSuggestCachedResults, json_response);
 
   provider_->Start(input, false);
 
@@ -322,7 +322,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 
   // Ensure the cache is empty.
   PrefService* prefs = profile_.GetPrefs();
-  prefs->SetString(prefs::kZeroSuggestCachedResults, std::string());
+  prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
 
   std::string url("http://www.cnn.com/");
   AutocompleteInput input(
@@ -332,7 +332,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 
   provider_->Start(input, false);
 
-  EXPECT_TRUE(prefs->GetString(prefs::kZeroSuggestCachedResults).empty());
+  EXPECT_TRUE(prefs->GetString(omnibox::kZeroSuggestCachedResults).empty());
   EXPECT_TRUE(provider_->matches().empty());
 
   net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
@@ -347,7 +347,8 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(4U, provider_->matches().size());  // 3 results + verbatim
-  EXPECT_EQ(json_response, prefs->GetString(prefs::kZeroSuggestCachedResults));
+  EXPECT_EQ(json_response,
+            prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
@@ -364,7 +365,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
       "[],[],{\"google:suggestrelevance\":[602, 601, 600],"
       "\"google:verbatimrelevance\":1300}]");
   PrefService* prefs = profile_.GetPrefs();
-  prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
+  prefs->SetString(omnibox::kZeroSuggestCachedResults, json_response);
 
   provider_->Start(input, false);
 
@@ -393,7 +394,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
   // Expect the new results have been stored.
   EXPECT_EQ(json_response2,
-            prefs->GetString(prefs::kZeroSuggestCachedResults));
+            prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }
 
 TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
@@ -410,7 +411,7 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
       "[],[],{\"google:suggestrelevance\":[602, 601, 600],"
       "\"google:verbatimrelevance\":1300}]");
   PrefService* prefs = profile_.GetPrefs();
-  prefs->SetString(prefs::kZeroSuggestCachedResults, json_response);
+  prefs->SetString(omnibox::kZeroSuggestCachedResults, json_response);
 
   provider_->Start(input, false);
 
@@ -434,5 +435,5 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
 
   // Expect the new results have been stored.
   EXPECT_EQ(empty_response,
-            prefs->GetString(prefs::kZeroSuggestCachedResults));
+            prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }

@@ -549,13 +549,18 @@ void TemplateURLService::SetUserSelectedDefaultSearchProvider(
 }
 
 TemplateURL* TemplateURLService::GetDefaultSearchProvider() {
-  return loaded_ ?
-    default_search_provider_ : initial_default_search_provider_.get();
+  return const_cast<TemplateURL*>(
+      static_cast<const TemplateURLService*>(this)->GetDefaultSearchProvider());
+}
+
+const TemplateURL* TemplateURLService::GetDefaultSearchProvider() const {
+  return loaded_ ? default_search_provider_
+                 : initial_default_search_provider_.get();
 }
 
 bool TemplateURLService::IsSearchResultsPageFromDefaultSearchProvider(
-    const GURL& url) {
-  TemplateURL* default_provider = GetDefaultSearchProvider();
+    const GURL& url) const {
+  const TemplateURL* default_provider = GetDefaultSearchProvider();
   return default_provider &&
       default_provider->IsSearchURL(url, search_terms_data());
 }

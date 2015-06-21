@@ -215,7 +215,7 @@ class AutocompleteProviderTest : public testing::Test,
                          base::TimeDelta query_formulation_time) const;
 
   void set_search_provider_field_trial_triggered_in_session(bool val) {
-    controller_->search_provider_->field_trial_triggered_in_session_ = val;
+    controller_->search_provider_->set_field_trial_triggered_in_session(val);
   }
   bool search_provider_field_trial_triggered_in_session() {
     return controller_->search_provider_->field_trial_triggered_in_session();

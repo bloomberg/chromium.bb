@@ -207,7 +207,7 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
 
 // TemplateURLRef -------------------------------------------------------------
 
-TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
+TemplateURLRef::TemplateURLRef(const TemplateURL* owner, Type type)
     : owner_(owner),
       type_(type),
       index_in_owner_(0),
@@ -221,7 +221,7 @@ TemplateURLRef::TemplateURLRef(TemplateURL* owner, Type type)
   DCHECK_NE(INDEXED, type_);
 }
 
-TemplateURLRef::TemplateURLRef(TemplateURL* owner, size_t index_in_owner)
+TemplateURLRef::TemplateURLRef(const TemplateURL* owner, size_t index_in_owner)
     : owner_(owner),
       type_(INDEXED),
       index_in_owner_(index_in_owner),
@@ -1331,13 +1331,12 @@ const std::string& TemplateURL::GetURL(size_t index) const {
 bool TemplateURL::ExtractSearchTermsFromURL(
     const GURL& url,
     const SearchTermsData& search_terms_data,
-    base::string16* search_terms) {
+    base::string16* search_terms) const {
   return FindSearchTermsInURL(url, search_terms_data, search_terms, NULL, NULL);
 }
 
-bool TemplateURL::IsSearchURL(
-    const GURL& url,
-    const SearchTermsData& search_terms_data) {
+bool TemplateURL::IsSearchURL(const GURL& url,
+                              const SearchTermsData& search_terms_data) const {
   base::string16 search_terms;
   return ExtractSearchTermsFromURL(url, search_terms_data, &search_terms) &&
       !search_terms.empty();
@@ -1494,7 +1493,7 @@ bool TemplateURL::FindSearchTermsInURL(
     const SearchTermsData& search_terms_data,
     base::string16* search_terms,
     url::Parsed::ComponentType* search_term_component,
-    url::Component* search_terms_position) {
+    url::Component* search_terms_position) const {
   DCHECK(search_terms);
   search_terms->clear();
 

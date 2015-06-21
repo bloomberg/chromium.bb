@@ -20,9 +20,8 @@ class ShortcutsProviderTest;
 // from previously selected suggestions. The more often a user selects a
 // suggestion for a given search term the higher will be that suggestion's
 // ranking for future uses of that search term.
-class ShortcutsProvider
-    : public AutocompleteProvider,
-      public ShortcutsBackend::ShortcutsBackendObserver {
+class ShortcutsProvider : public AutocompleteProvider,
+                          public ShortcutsBackend::ShortcutsBackendObserver {
  public:
   explicit ShortcutsProvider(AutocompleteProviderClient* client);
 

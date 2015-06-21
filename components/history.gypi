@@ -30,6 +30,9 @@
         'query_parser',
         'signin_core_browser',
       ],
+      'export_dependent_settings': [
+        '../skia/skia.gyp:skia',
+      ],
       'sources': [
         # Note: sources list duplicated in GN build.
         'history/core/browser/delete_directive_handler.cc',

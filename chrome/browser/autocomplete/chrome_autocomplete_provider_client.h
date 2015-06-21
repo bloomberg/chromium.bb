@@ -18,19 +18,23 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
 
   // AutocompleteProviderClient:
   net::URLRequestContextGetter* GetRequestContext() override;
-  const AutocompleteSchemeClassifier& GetSchemeClassifier() override;
+  PrefService* GetPrefs() override;
+  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
+  AutocompleteClassifier* GetAutocompleteClassifier() override;
   history::HistoryService* GetHistoryService() override;
+  scoped_refptr<history::TopSites> GetTopSites() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   history::URLDatabase* GetInMemoryDatabase() override;
   TemplateURLService* GetTemplateURLService() override;
-  const SearchTermsData& GetSearchTermsData() override;
+  const TemplateURLService* GetTemplateURLService() const override;
+  const SearchTermsData& GetSearchTermsData() const override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
-  std::string GetAcceptLanguages() override;
-  bool IsOffTheRecord() override;
-  bool SearchSuggestEnabled() override;
-  bool ShowBookmarkBar() override;
-  bool TabSyncEnabledAndUnencrypted() override;
+  std::string GetAcceptLanguages() const override;
+  bool IsOffTheRecord() const override;
+  bool SearchSuggestEnabled() const override;
+  bool BookmarkBarIsVisible() const override;
+  bool TabSyncEnabledAndUnencrypted() const override;
   void Classify(
       const base::string16& text,
       bool prefer_keyword,

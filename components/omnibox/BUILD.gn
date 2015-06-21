@@ -41,6 +41,8 @@ static_library("omnibox") {
     "omnibox_field_trial.h",
     "omnibox_log.cc",
     "omnibox_log.h",
+    "omnibox_pref_names.cc",
+    "omnibox_pref_names.h",
     "omnibox_switches.cc",
     "omnibox_switches.h",
     "scored_history_match.cc",
@@ -64,6 +66,7 @@ static_library("omnibox") {
   ]
 
   public_deps = [
+    "//components/history/core/browser",
     "//components/metrics/proto",
   ]
   deps = [
@@ -71,7 +74,6 @@ static_library("omnibox") {
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
-    "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/query_parser",
     "//components/resources",

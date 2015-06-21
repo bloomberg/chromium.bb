@@ -411,8 +411,6 @@ extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockPairing[];
 extern const char kEasyUnlockProximityRequired[];
 
-extern const char kZeroSuggestCachedResults[];
-
 #if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kCopresenceAuthenticatedDeviceId[];
 extern const char kCopresenceAnonymousDeviceId[];

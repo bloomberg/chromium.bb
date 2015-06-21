@@ -31,6 +31,7 @@
       ],
       'export_dependent_settings': [
         'component_metrics_proto',
+        'history_core_browser',
       ],
       'include_dirs': [
         '..',
@@ -74,6 +75,8 @@
         'omnibox/omnibox_field_trial.h',
         'omnibox/omnibox_log.cc',
         'omnibox/omnibox_log.h',
+        'omnibox/omnibox_pref_names.cc',
+        'omnibox/omnibox_pref_names.h',
         'omnibox/omnibox_switches.cc',
         'omnibox/omnibox_switches.h',
         'omnibox/scored_history_match.cc',

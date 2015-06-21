@@ -19,8 +19,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class AutocompleteProviderListener;
-class Profile;
-class TemplateURLService;
 
 namespace base {
 class ListValue;
@@ -50,9 +48,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
  public:
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
-                                     AutocompleteProviderListener* listener,
-                                     TemplateURLService* template_url_service,
-                                     Profile* profile);
+                                     AutocompleteProviderListener* listener);
 
   // Registers a preference used to cache zero suggest results.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -69,9 +65,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
 
  private:
   ZeroSuggestProvider(AutocompleteProviderClient* client,
-                      AutocompleteProviderListener* listener,
-                      TemplateURLService* template_url_service,
-                      Profile* profile);
+                      AutocompleteProviderListener* listener);
 
   ~ZeroSuggestProvider() override;
 
@@ -133,7 +127,6 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   void MaybeUseCachedSuggestions();
 
   AutocompleteProviderListener* listener_;
-  Profile* profile_;
 
   // The URL for which a suggestion fetch is pending.
   std::string current_query_;

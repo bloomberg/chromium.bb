@@ -42,6 +42,7 @@
 #include "components/domain_reliability/service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/omnibox/omnibox_pref_names.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
@@ -1882,14 +1883,14 @@ TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
 
 TEST_F(BrowsingDataRemoverTest, ZeroSuggestCacheClear) {
   PrefService* prefs = GetProfile()->GetPrefs();
-  prefs->SetString(prefs::kZeroSuggestCachedResults,
+  prefs->SetString(omnibox::kZeroSuggestCachedResults,
                    "[\"\", [\"foo\", \"bar\"]]");
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
                                 BrowsingDataRemover::REMOVE_COOKIES,
                                 false);
 
   // Expect the prefs to be cleared when cookies are removed.
-  EXPECT_TRUE(prefs->GetString(prefs::kZeroSuggestCachedResults).empty());
+  EXPECT_TRUE(prefs->GetString(omnibox::kZeroSuggestCachedResults).empty());
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
 }

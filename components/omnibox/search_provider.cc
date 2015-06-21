@@ -119,17 +119,16 @@ class SearchProvider::CompareScoredResults {
 // SearchProvider -------------------------------------------------------------
 
 SearchProvider::SearchProvider(AutocompleteProviderClient* client,
-                               AutocompleteProviderListener* listener,
-                               TemplateURLService* template_url_service)
-    : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH,
-                         client,
-                         template_url_service),
+                               AutocompleteProviderListener* listener)
+    : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH, client),
       listener_(listener),
-      providers_(template_url_service),
+      providers_(client->GetTemplateURLService()),
       answers_cache_(10) {
-  // |template_url_service_| can be null in tests.
-  if (template_url_service_)
-    template_url_service_->AddObserver(this);
+  TemplateURLService* template_url_service = client->GetTemplateURLService();
+
+  // |template_url_service| can be null in tests.
+  if (template_url_service)
+    template_url_service->AddObserver(this);
 }
 
 // static
@@ -138,7 +137,7 @@ std::string SearchProvider::GetSuggestMetadata(const AutocompleteMatch& match) {
 }
 
 void SearchProvider::ResetSession() {
-  field_trial_triggered_in_session_ = false;
+  set_field_trial_triggered_in_session(false);
 }
 
 void SearchProvider::OnTemplateURLServiceChanged() {
@@ -159,7 +158,10 @@ void SearchProvider::OnTemplateURLServiceChanged() {
   if (!template_url) {
     CancelFetcher(&default_fetcher_);
     default_results_.Clear();
-    providers_.set(template_url_service_->GetDefaultSearchProvider()->keyword(),
+    providers_.set(client()
+                       ->GetTemplateURLService()
+                       ->GetDefaultSearchProvider()
+                       ->keyword(),
                    providers_.keyword_provider());
   }
   template_url = providers_.GetKeywordProviderURL();
@@ -179,8 +181,9 @@ void SearchProvider::OnTemplateURLServiceChanged() {
 }
 
 SearchProvider::~SearchProvider() {
-  if (template_url_service_)
-    template_url_service_->RemoveObserver(this);
+  TemplateURLService* template_url_service = client()->GetTemplateURLService();
+  if (template_url_service)
+    template_url_service->RemoveObserver(this);
 }
 
 // static
@@ -234,12 +237,12 @@ void SearchProvider::Start(const AutocompleteInput& input,
                            bool minimal_changes) {
   // Do our best to load the model as early as possible.  This will reduce
   // odds of having the model not ready when really needed (a non-empty input).
-  TemplateURLService* model = providers_.template_url_service();
+  TemplateURLService* model = client()->GetTemplateURLService();
   DCHECK(model);
   model->Load();
 
   matches_.clear();
-  field_trial_triggered_ = false;
+  set_field_trial_triggered(false);
 
   // Can't return search/suggest results for bogus input.
   if (input.from_omnibox_focus() ||
@@ -417,7 +420,7 @@ void SearchProvider::UpdateMatchContentsClass(
        sug_it != results->suggest_results.end(); ++sug_it) {
     sug_it->ClassifyMatchContents(false, input_text);
   }
-  const std::string languages(client_->GetAcceptLanguages());
+  const std::string languages(client()->GetAcceptLanguages());
   for (SearchSuggestionParser::NavigationResults::iterator nav_it =
            results->navigation_results.begin();
        nav_it != results->navigation_results.end(); ++nav_it) {
@@ -460,8 +463,8 @@ void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (!is_keyword && default_url &&
       (TemplateURLPrepopulateData::GetEngineType(
-          *default_url,
-          providers_.template_url_service()->search_terms_data()) ==
+           *default_url,
+           client()->GetTemplateURLService()->search_terms_data()) ==
        SEARCH_ENGINE_GOOGLE)) {
     const base::TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;
@@ -588,7 +591,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
       input_.current_page_classification()))
     return;
 
-  history::URLDatabase* url_db = client_->GetInMemoryDatabase();
+  history::URLDatabase* url_db = client()->GetInMemoryDatabase();
   if (!url_db)
     return;
 
@@ -706,10 +709,10 @@ bool SearchProvider::IsQuerySuitableForSuggest(bool* query_is_private) const {
   // keyword input to a keyword suggest server, if any.)
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  return !client_->IsOffTheRecord() && client_->SearchSuggestEnabled() &&
-      ((default_url && !default_url->suggestions_url().empty() &&
-        !*query_is_private) ||
-       (keyword_url && !keyword_url->suggestions_url().empty()));
+  return !client()->IsOffTheRecord() && client()->SearchSuggestEnabled() &&
+         ((default_url && !default_url->suggestions_url().empty() &&
+           !*query_is_private) ||
+          (keyword_url && !keyword_url->suggestions_url().empty()));
 }
 
 bool SearchProvider::IsQueryPotentionallyPrivate() const {
@@ -842,32 +845,32 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
   }
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
       search_term_args,
-      providers_.template_url_service()->search_terms_data()));
+      client()->GetTemplateURLService()->search_terms_data()));
   if (!suggest_url.is_valid())
     return NULL;
   // Send the current page URL if user setting and URL requirements are met and
   // the user is in the field trial.
+  TemplateURLService* template_url_service = client()->GetTemplateURLService();
   if (CanSendURL(input.current_url(), suggest_url, template_url,
                  input.current_page_classification(),
-                 template_url_service_->search_terms_data(), client_) &&
+                 template_url_service->search_terms_data(), client()) &&
       OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial()) {
     search_term_args.current_page_url = input.current_url().spec();
     // Create the suggest URL again with the current page URL.
     suggest_url = GURL(template_url->suggestions_url_ref().ReplaceSearchTerms(
-        search_term_args,
-        providers_.template_url_service()->search_terms_data()));
+        search_term_args, template_url_service->search_terms_data()));
   }
 
   LogOmniboxSuggestRequest(REQUEST_SENT);
 
   scoped_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(id, suggest_url, net::URLFetcher::GET, this);
-  fetcher->SetRequestContext(client_->GetRequestContext());
+  fetcher->SetRequestContext(client()->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
   variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-      fetcher->GetOriginalURL(), client_->IsOffTheRecord(), false, &headers);
+      fetcher->GetOriginalURL(), client()->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();
   return fetcher;
@@ -1185,8 +1188,8 @@ SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
   if (!base_prevent_inline_autocomplete && !found_what_you_typed_match &&
       scored_results.front().relevance() >= 1200) {
     AutocompleteMatch match;
-    client_->Classify(scored_results.front().suggestion(), false, false,
-                      input_.current_page_classification(), &match, NULL);
+    client()->Classify(scored_results.front().suggestion(), false, false,
+                       input_.current_page_classification(), &match, NULL);
     // Demote this match that would normally be interpreted as a URL to have
     // the highest score a previously-issued search query could have when
     // scoring with the non-aggressive method.  A consequence of demoting
@@ -1397,7 +1400,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   const net::FormatUrlTypes format_types =
       net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
 
-  const std::string languages(client_->GetAcceptLanguages());
+  const std::string languages(client()->GetAcceptLanguages());
   size_t inline_autocomplete_offset = (prefix == NULL) ?
       base::string16::npos : (match_start + input.length());
   match.fill_into_edit +=
@@ -1406,7 +1409,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
           net::FormatUrl(navigation.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset),
-          client_->GetSchemeClassifier());
+          client()->GetSchemeClassifier());
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.
   if (input_.type() == metrics::OmniboxInputType::FORCED_QUERY) {
@@ -1435,8 +1438,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       !navigation.received_after_last_keystroke() &&
       (match.inline_autocompletion.empty() ||
       (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
-  match.EnsureUWYTIsAllowedToBeDefault(
-      input_.canonicalized_url(), providers_.template_url_service());
+  match.EnsureUWYTIsAllowedToBeDefault(input_.canonicalized_url(),
+                                       client()->GetTemplateURLService());
 
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();

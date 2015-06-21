@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -36,14 +37,28 @@ ChromeAutocompleteProviderClient::GetRequestContext() {
   return profile_->GetRequestContext();
 }
 
+PrefService* ChromeAutocompleteProviderClient::GetPrefs() {
+  return profile_->GetPrefs();
+}
+
 const AutocompleteSchemeClassifier&
-ChromeAutocompleteProviderClient::GetSchemeClassifier() {
+ChromeAutocompleteProviderClient::GetSchemeClassifier() const {
   return scheme_classifier_;
+}
+
+AutocompleteClassifier*
+ChromeAutocompleteProviderClient::GetAutocompleteClassifier() {
+  return AutocompleteClassifierFactory::GetForProfile(profile_);
 }
 
 history::HistoryService* ChromeAutocompleteProviderClient::GetHistoryService() {
   return HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+scoped_refptr<history::TopSites>
+ChromeAutocompleteProviderClient::GetTopSites() {
+  return TopSitesFactory::GetForProfile(profile_);
 }
 
 bookmarks::BookmarkModel* ChromeAutocompleteProviderClient::GetBookmarkModel() {
@@ -62,7 +77,13 @@ TemplateURLService* ChromeAutocompleteProviderClient::GetTemplateURLService() {
   return TemplateURLServiceFactory::GetForProfile(profile_);
 }
 
-const SearchTermsData& ChromeAutocompleteProviderClient::GetSearchTermsData() {
+const TemplateURLService*
+ChromeAutocompleteProviderClient::GetTemplateURLService() const {
+  return TemplateURLServiceFactory::GetForProfile(profile_);
+}
+
+const
+SearchTermsData& ChromeAutocompleteProviderClient::GetSearchTermsData() const {
   return search_terms_data_;
 }
 
@@ -76,23 +97,23 @@ ChromeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
   return ShortcutsBackendFactory::GetForProfileIfExists(profile_);
 }
 
-std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() {
+std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() const {
   return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 
-bool ChromeAutocompleteProviderClient::IsOffTheRecord() {
+bool ChromeAutocompleteProviderClient::IsOffTheRecord() const {
   return profile_->IsOffTheRecord();
 }
 
-bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() {
+bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
-bool ChromeAutocompleteProviderClient::ShowBookmarkBar() {
+bool ChromeAutocompleteProviderClient::BookmarkBarIsVisible() const {
   return profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
 }
 
-bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() {
+bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() const {
   // Check field trials and settings allow sending the URL on suggest requests.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
@@ -110,8 +131,7 @@ void ChromeAutocompleteProviderClient::Classify(
     metrics::OmniboxEventProto::PageClassification page_classification,
     AutocompleteMatch* match,
     GURL* alternate_nav_url) {
-  AutocompleteClassifier* classifier =
-      AutocompleteClassifierFactory::GetForProfile(profile_);
+  AutocompleteClassifier* classifier = GetAutocompleteClassifier();
   DCHECK(classifier);
   classifier->Classify(text, prefer_keyword, allow_exact_keyword_match,
                        page_classification, match, alternate_nav_url);

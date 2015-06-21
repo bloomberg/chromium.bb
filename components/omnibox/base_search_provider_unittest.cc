@@ -24,14 +24,33 @@ using testing::_;
 
 class MockAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
-  MockAutocompleteProviderClient() {}
+  MockAutocompleteProviderClient() {
+    template_url_service_.reset(new TemplateURLService(
+        nullptr, scoped_ptr<SearchTermsData>(new SearchTermsData), nullptr,
+        scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
+        base::Closure()));
+  }
   MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
-  MOCK_METHOD0(GetSchemeClassifier, const AutocompleteSchemeClassifier&());
+  MOCK_METHOD0(GetPrefs, PrefService*());
+  MOCK_CONST_METHOD0(GetSchemeClassifier,
+                     const AutocompleteSchemeClassifier&());
+  MOCK_METHOD0(GetAutocompleteClassifier, AutocompleteClassifier*());
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());
+
+  // Can't mock scoped_refptr :\.
+  scoped_refptr<history::TopSites> GetTopSites() override { return nullptr; }
+
   MOCK_METHOD0(GetBookmarkModel, bookmarks::BookmarkModel*());
   MOCK_METHOD0(GetInMemoryDatabase, history::URLDatabase*());
-  MOCK_METHOD0(GetTemplateURLService, TemplateURLService*());
-  MOCK_METHOD0(GetSearchTermsData, const SearchTermsData&());
+
+  TemplateURLService* GetTemplateURLService() override {
+    return template_url_service_.get();
+  }
+  const TemplateURLService* GetTemplateURLService() const override {
+    return template_url_service_.get();
+  }
+
+  MOCK_CONST_METHOD0(GetSearchTermsData, const SearchTermsData&());
 
   // Can't mock scoped_refptr :\.
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override {
@@ -41,11 +60,11 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
     return nullptr;
   }
 
-  MOCK_METHOD0(GetAcceptLanguages, std::string());
-  MOCK_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD0(SearchSuggestEnabled, bool());
-  MOCK_METHOD0(ShowBookmarkBar, bool());
-  MOCK_METHOD0(TabSyncEnabledAndUnencrypted, bool());
+  MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());
+  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
+  MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
+  MOCK_CONST_METHOD0(BookmarkBarIsVisible, bool());
+  MOCK_CONST_METHOD0(TabSyncEnabledAndUnencrypted, bool());
   MOCK_METHOD6(
       Classify,
       void(const base::string16& text,
@@ -59,6 +78,8 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   MOCK_METHOD1(PrefetchImage, void(const GURL& url));
 
  private:
+  scoped_ptr<TemplateURLService> template_url_service_;
+
   DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);
 };
 
@@ -67,9 +88,8 @@ class TestBaseSearchProvider : public BaseSearchProvider {
   typedef BaseSearchProvider::MatchMap MatchMap;
 
   TestBaseSearchProvider(AutocompleteProvider::Type type,
-                         AutocompleteProviderClient* client,
-                         TemplateURLService* template_url_service)
-      : BaseSearchProvider(type, client, template_url_service) {}
+                         AutocompleteProviderClient* client)
+      : BaseSearchProvider(type, client) {}
   MOCK_METHOD1(DeleteMatch, void(const AutocompleteMatch& match));
   MOCK_CONST_METHOD1(AddProviderInfo, void(ProvidersInfo* provider_info));
   MOCK_CONST_METHOD1(GetTemplateURL, const TemplateURL*(bool is_keyword));
@@ -107,21 +127,12 @@ class BaseSearchProviderTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    service_.reset(
-        new TemplateURLService(NULL,
-                               scoped_ptr<SearchTermsData>(new SearchTermsData),
-                               NULL,
-                               scoped_ptr<TemplateURLServiceClient>(),
-                               NULL,
-                               NULL,
-                               base::Closure()));
     client_.reset(new NiceMock<MockAutocompleteProviderClient>());
     provider_ = new NiceMock<TestBaseSearchProvider>(
-        AutocompleteProvider::TYPE_SEARCH, client_.get(), service_.get());
+        AutocompleteProvider::TYPE_SEARCH, client_.get());
   }
 
   scoped_refptr<NiceMock<TestBaseSearchProvider> > provider_;
-  scoped_ptr<TemplateURLService> service_;
   scoped_ptr<NiceMock<MockAutocompleteProviderClient>> client_;
 };
 

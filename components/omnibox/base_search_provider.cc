@@ -82,12 +82,9 @@ const int BaseSearchProvider::kKeywordProviderURLFetcherID = 2;
 const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
 BaseSearchProvider::BaseSearchProvider(AutocompleteProvider::Type type,
-                                       AutocompleteProviderClient* client,
-
-                                       TemplateURLService* template_url_service)
+                                       AutocompleteProviderClient* client)
     : AutocompleteProvider(type),
       client_(client),
-      template_url_service_(template_url_service),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false) {
 }
@@ -129,7 +126,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   }
 
   TemplateURL* template_url =
-      match.GetTemplateURL(template_url_service_, false);
+      match.GetTemplateURL(client_->GetTemplateURLService(), false);
   // This may be NULL if the template corresponding to the keyword has been
   // deleted or there is no keyword set.
   if (template_url != NULL) {
@@ -174,11 +171,13 @@ void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
                                         AutocompleteMatch* match) {
   if (deletion_url.empty())
     return;
-  if (!template_url_service_)
+
+  TemplateURLService* template_url_service = client_->GetTemplateURLService();
+  if (!template_url_service)
     return;
   GURL url =
-      template_url_service_->GetDefaultSearchProvider()->GenerateSearchURL(
-          template_url_service_->search_terms_data());
+      template_url_service->GetDefaultSearchProvider()->GenerateSearchURL(
+          template_url_service->search_terms_data());
   url = url.GetOrigin().Resolve(deletion_url);
   if (url.is_valid()) {
     match->RecordAdditionalInfo(BaseSearchProvider::kDeletionUrlKey,
@@ -282,7 +281,7 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
     const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
-    AutocompleteProviderClient* client) {
+    const AutocompleteProviderClient* client) {
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
 
@@ -360,11 +359,12 @@ void BaseSearchProvider::AddMatchToMap(
   AutocompleteMatch match = CreateSearchSuggestion(
       this, GetInput(result.from_keyword_provider()), in_keyword_mode, result,
       GetTemplateURL(result.from_keyword_provider()),
-      template_url_service_->search_terms_data(), accepted_suggestion,
-      ShouldAppendExtraParams(result));
+      client_->GetTemplateURLService()->search_terms_data(),
+      accepted_suggestion, ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;
-  match.search_terms_args->bookmark_bar_pinned = client_->ShowBookmarkBar();
+  match.search_terms_args->bookmark_bar_pinned =
+      client_->BookmarkBarIsVisible();
   match.RecordAdditionalInfo(kRelevanceFromServerKey,
                              result.relevance_from_server() ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey,
