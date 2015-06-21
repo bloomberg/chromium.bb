@@ -309,17 +309,29 @@ static bool
 shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
 {
 	struct desktop_shell *shell;
-	struct weston_view *top_fs_ev;
+	struct weston_view *view;
+	struct shell_surface *top_fs_shsurf = NULL;
 
 	shell = shell_surface_get_shell(shsurf);
 
 	if (wl_list_empty(&shell->fullscreen_layer.view_list.link))
 		return false;
 
-	top_fs_ev = container_of(shell->fullscreen_layer.view_list.link.next,
-			         struct weston_view,
-				 layer_link.link);
-	return (shsurf == get_shell_surface(top_fs_ev->surface));
+	/* Find topmost shsurf on the same fullscreen output on which shsurf
+	 * is displaying. We don't care about other outputs.
+	 */
+	wl_list_for_each(view, &shell->fullscreen_layer.view_list.link,
+					 layer_link.link) {
+		struct shell_surface *cand_shsurf = get_shell_surface(view->surface);
+
+		if (cand_shsurf &&
+			(cand_shsurf->fullscreen_output == shsurf->fullscreen_output)) {
+			top_fs_shsurf = cand_shsurf;
+			break;
+		}
+	}
+
+	return (shsurf == top_fs_shsurf);
 }
 
 static void
@@ -4980,10 +4992,14 @@ rotate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
  * and this is reversed when such a surface is re-configured, see
  * shell_configure_fullscreen() and shell_ensure_fullscreen_black_view().
  *
+ * lowering_output = NULL - Lower on all outputs, else only lower on the
+ *                   specified output.
+ *
  * This should be used when implementing shell-wide overlays, such as
  * the alt-tab switcher, which need to de-promote fullscreen layers. */
 void
-lower_fullscreen_layer(struct desktop_shell *shell)
+lower_fullscreen_layer(struct desktop_shell *shell,
+					   struct weston_output *lowering_output)
 {
 	struct workspace *ws;
 	struct weston_view *view, *prev;
@@ -4995,6 +5011,12 @@ lower_fullscreen_layer(struct desktop_shell *shell)
 		struct shell_surface *shsurf = get_shell_surface(view->surface);
 
 		if (!shsurf)
+			continue;
+
+		/* Only lower surfaces which have lowering_output as their fullscreen
+		 * output, unless a NULL output asks for lowering on all outputs.
+		 */
+		if (lowering_output && (shsurf->fullscreen_output != lowering_output))
 			continue;
 
 		/* We can have a non-fullscreen popup for a fullscreen surface
@@ -5027,9 +5049,13 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	struct weston_surface *old_es;
 	struct shell_surface *shsurf;
 
-	lower_fullscreen_layer(shell);
-
 	main_surface = weston_surface_get_main_surface(es);
+	shsurf = get_shell_surface(main_surface);
+	assert(shsurf);
+
+	/* Only demote fullscreen surfaces on the output of activated shsurf.
+	 * Leave fullscreen surfaces on unrelated outputs alone. */
+	lower_fullscreen_layer(shell, shsurf->output);
 
 	weston_surface_activate(es, seat);
 
@@ -5039,9 +5065,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 
 	old_es = state->keyboard_focus;
 	focus_state_set_focus(state, es);
-
-	shsurf = get_shell_surface(main_surface);
-	assert(shsurf);
 
 	if (shsurf->state.fullscreen && configure)
 		shell_configure_fullscreen(shsurf);
@@ -6013,7 +6036,7 @@ switcher_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 	wl_array_init(&switcher->minimized_array);
 
 	restore_all_output_modes(shell->compositor);
-	lower_fullscreen_layer(switcher->shell);
+	lower_fullscreen_layer(switcher->shell, NULL);
 	switcher->grab.interface = &switcher_grab;
 	weston_keyboard_start_grab(seat->keyboard, &switcher->grab);
 	weston_keyboard_set_focus(seat->keyboard, NULL);

@@ -222,7 +222,8 @@ struct workspace *
 get_current_workspace(struct desktop_shell *shell);
 
 void
-lower_fullscreen_layer(struct desktop_shell *shell);
+lower_fullscreen_layer(struct desktop_shell *shell,
+		       struct weston_output *lowering_output);
 
 void
 activate(struct desktop_shell *shell, struct weston_surface *es,
