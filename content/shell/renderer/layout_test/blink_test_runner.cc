@@ -798,7 +798,7 @@ void BlinkTestRunner::CaptureDump() {
       return;
     }
   }
-
+#ifndef NDEBUG
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSlimmingPaint)) {
       // Force a layout/paint by the end of the test to ensure test coverage of
@@ -807,7 +807,7 @@ void BlinkTestRunner::CaptureDump() {
           &BlinkTestRunner::CaptureDumpComplete, base::Unretained(this)));
       return;
   }
-
+#endif
   CaptureDumpComplete();
 }
 
