@@ -164,7 +164,9 @@ TEST_F(CertVerifyProcTest, DISABLED_WithoutRevocationChecking) {
 // TODO(jnd): http://crbug.com/117478 - EV verification is not yet supported.
 #define MAYBE_EVVerification DISABLED_EVVerification
 #else
-#define MAYBE_EVVerification EVVerification
+// TODO(rsleevi): Reenable this test once comodo.chaim.pem is no longer
+// expired, http://crbug.com/502818
+#define MAYBE_EVVerification DISABLED_EVVerification
 #endif
 TEST_F(CertVerifyProcTest, MAYBE_EVVerification) {
   CertificateList certs = CreateCertificateListFromFile(
