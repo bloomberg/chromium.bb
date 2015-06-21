@@ -269,8 +269,6 @@ public:
     // for testing where a point will appear on screen or how large it will be.
     AffineTransform getCTM() const;
     void concatCTM(const AffineTransform&);
-    void setCTM(const AffineTransform&);
-    void setMatrix(const SkMatrix&);
 
     void scale(float x, float y);
     void rotate(float angleInRadians);

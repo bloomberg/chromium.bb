@@ -309,6 +309,8 @@ void GraphicsContext::clearDrawLooper()
 
 SkMatrix GraphicsContext::getTotalMatrix() const
 {
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
+
     if (contextDisabled() || !m_canvas)
         return SkMatrix::I();
 
@@ -336,16 +338,6 @@ void GraphicsContext::setColorFilter(ColorFilter colorFilter)
     // we should switch to using color filter chains (Skia work in progress).
     ASSERT(!stateToSet->colorFilter());
     stateToSet->setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter));
-}
-
-void GraphicsContext::setMatrix(const SkMatrix& matrix)
-{
-    if (contextDisabled())
-        return;
-
-    ASSERT(m_canvas);
-
-    m_canvas->setMatrix(matrix);
 }
 
 void GraphicsContext::concat(const SkMatrix& matrix)
@@ -1346,6 +1338,8 @@ void GraphicsContext::addURLTargetAtPoint(const String& name, const IntPoint& po
 
 AffineTransform GraphicsContext::getCTM() const
 {
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
+
     if (contextDisabled())
         return AffineTransform();
 
@@ -1361,11 +1355,6 @@ AffineTransform GraphicsContext::getCTM() const
 void GraphicsContext::concatCTM(const AffineTransform& affine)
 {
     concat(affineTransformToSkMatrix(affine));
-}
-
-void GraphicsContext::setCTM(const AffineTransform& affine)
-{
-    setMatrix(affineTransformToSkMatrix(affine));
 }
 
 void GraphicsContext::fillRectWithRoundedHole(const FloatRect& rect, const FloatRoundedRect& roundedHoleRect, const Color& color)
