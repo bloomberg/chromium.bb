@@ -3,57 +3,48 @@
     "prefix": "gpu",
     "base": "fast/canvas",
     "args": ["--enable-accelerated-2d-canvas",
-             "--disable-display-list-2d-canvas",
-             "--enable-slimming-paint"]
+             "--disable-display-list-2d-canvas"]
   },
   {
     "prefix": "display_list_2d_canvas",
     "base": "fast/canvas",
-    "args": ["--force-display-list-2d-canvas",
-             "--enable-slimming-paint"]
+    "args": ["--force-display-list-2d-canvas"]
   },
   {
     "prefix": "threaded",
     "base": "compositing/visibility",
-    "args": ["--enable-threaded-compositing",
-             "--enable-slimming-paint"]
+    "args": ["--enable-threaded-compositing"]
   },
   {
     "prefix": "threaded",
     "base": "compositing/webgl",
-    "args": ["--enable-threaded-compositing",
-             "--enable-slimming-paint"]
+    "args": ["--enable-threaded-compositing"]
   },
   {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "compositing/overflow",
-    "args": ["--enable-prefer-compositing-to-lcd-text",
-             "--enable-slimming-paint"]
+    "args": ["--enable-prefer-compositing-to-lcd-text"]
   },
   {
     "prefix": "prefer_compositing_to_lcd_text",
     "base": "scrollbars",
-    "args": ["--enable-prefer-compositing-to-lcd-text",
-             "--enable-slimming-paint"]
+    "args": ["--enable-prefer-compositing-to-lcd-text"]
   },
   {
     "prefix": "threaded",
     "base": "animations",
-    "args": ["--enable-threaded-compositing",
-             "--enable-slimming-paint"]
+    "args": ["--enable-threaded-compositing"]
   },
   {
     "prefix": "threaded",
     "base": "transitions",
-    "args": ["--enable-threaded-compositing",
-             "--enable-slimming-paint"]
+    "args": ["--enable-threaded-compositing"]
   },
   {
     "prefix": "threaded",
     "base": "fast/scroll-behavior",
     "args": ["--enable-threaded-compositing",
-             "--enable-prefer-compositing-to-lcd-text",
-             "--enable-slimming-paint"]
+             "--enable-prefer-compositing-to-lcd-text"]
   },
   {
     "prefix": "stable",
@@ -93,27 +84,23 @@
   {
     "prefix": "linux-subpixel",
     "base": "platform/linux/fast/text/subpixel",
-    "args": ["--enable-webkit-text-subpixel-positioning",
-             "--enable-slimming-paint"]
+    "args": ["--enable-webkit-text-subpixel-positioning"]
   },
   {
     "prefix": "antialiasedtext",
     "base": "fast/text",
     "args": ["--enable-direct-write",
-             "--enable-font-antialiasing",
-             "--enable-slimming-paint"]
+             "--enable-font-antialiasing"]
   },
   {
     "prefix": "threaded",
     "base": "printing",
-    "args": ["--enable-threaded-compositing",
-             "--enable-slimming-paint"]
+    "args": ["--enable-threaded-compositing"]
   },
   {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
-    "args": ["--root-layer-scrolls",
-             "--enable-slimming-paint"]
+    "args": ["--root-layer-scrolls"]
   },
   {
     "prefix": "scroll_customization",
@@ -138,13 +125,11 @@
   {
     "prefix": "pointerevent",
     "base": "fast/events",
-    "args": ["--enable-blink-features=PointerEvent",
-             "--enable-slimming-paint"]
+    "args": ["--enable-blink-features=PointerEvent"]
   },
   {
     "prefix": "pointerevent",
     "base": "imported/web-platform-tests/pointerevents",
-    "args": ["--enable-blink-features=PointerEvent",
-             "--enable-slimming-paint"]
+    "args": ["--enable-blink-features=PointerEvent"]
   }
 ]

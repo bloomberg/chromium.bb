@@ -1,7 +1,3 @@
-#
-# turn off Slimming Paint tests for all platforms, except tests with explicit expectations.
-crbug.com/453972 virtual/slimmingpaint/ [ Skip ]
-
 crbug.com/486920 [ Mac Win ] plugins/destroy-on-setwindow.html [ Crash ]
 
 crbug.com/382491 css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ ImageOnlyFailure ]
