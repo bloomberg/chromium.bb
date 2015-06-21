@@ -1225,8 +1225,8 @@ choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 	wl_list_for_each(mode, &output->base.mode_list, base.link) {
 		if (mode->mode_info.hdisplay == target_mode->width &&
 		    mode->mode_info.vdisplay == target_mode->height) {
-			if (mode->mode_info.vrefresh == target_mode->refresh ||
-          		    target_mode->refresh == 0) {
+			if (mode->base.refresh == target_mode->refresh ||
+			    target_mode->refresh == 0) {
 				return mode;
 			} else if (!tmp_mode)
 				tmp_mode = mode;
