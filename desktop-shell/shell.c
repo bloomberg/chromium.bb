@@ -2963,6 +2963,7 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 							 output->y - surf_y);
 				break;
 			} else {
+				weston_log("shell: Can't switch to temporary mode.\n");
 				restore_output_mode(output);
 				center_on_output(shsurf->view, output);
 			}
@@ -5069,7 +5070,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	if (shsurf->state.fullscreen && configure)
 		shell_configure_fullscreen(shsurf);
 	else
-		restore_all_output_modes(shell->compositor);
+		restore_output_mode(shsurf->output);
 
 	/* Update the surface’s layer. This brings it to the top of the stacking
 	 * order as appropriate. */
