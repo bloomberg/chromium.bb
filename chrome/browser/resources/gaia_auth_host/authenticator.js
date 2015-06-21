@@ -487,17 +487,23 @@ cr.define('cr.login', function() {
       return;
     }
 
-    if (this.authFlow != AuthFlow.SAML) {
-      this.onAuthCompleted_();
-      return;
-    }
-
     if (this.samlHandler_.samlApiUsed) {
       if (this.samlApiUsedCallback) {
         this.samlApiUsedCallback();
       }
       this.password_ = this.samlHandler_.apiPasswordBytes;
-    } else if (this.samlHandler_.scrapedPasswordCount == 0) {
+      this.onAuthCompleted_();
+      return;
+    }
+
+    // TODO(achuith): Eliminate this branch when credential passing api is
+    // stable on prod. crbug.com/467778.
+    if (this.authFlow != AuthFlow.SAML) {
+      this.onAuthCompleted_();
+      return;
+    }
+
+    if (this.samlHandler_.scrapedPasswordCount == 0) {
       if (this.noPasswordCallback) {
         this.noPasswordCallback(this.email_);
         return;
