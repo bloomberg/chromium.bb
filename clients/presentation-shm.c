@@ -101,6 +101,7 @@ struct window {
 	int num_buffers;
 	int next;
 	int refresh_nsec;
+	int commit_delay_msecs;
 
 	struct wl_callback *callback;
 	struct wl_list feedback_list;
@@ -201,19 +202,21 @@ static const struct wl_shell_surface_listener shell_surface_listener = {
 
 static struct window *
 create_window(struct display *display, int width, int height,
-	      enum run_mode mode)
+	      enum run_mode mode, int commit_delay_msecs)
 {
 	struct window *window;
 	char title[128];
 	int ret;
 
 	snprintf(title, sizeof(title),
-		 "presentation-shm: %s", run_mode_name[mode]);
+		 "presentation-shm: %s [Delay %i msecs]", run_mode_name[mode],
+		 commit_delay_msecs);
 
 	window = calloc(1, sizeof *window);
 	if (!window)
 		return NULL;
 
+	window->commit_delay_msecs = commit_delay_msecs;
 	window->mode = mode;
 	window->callback = NULL;
 	wl_list_init(&window->feedback_list);
@@ -469,6 +472,23 @@ static const struct presentation_feedback_listener feedback_listener = {
 };
 
 static void
+window_emulate_rendering(struct window *window)
+{
+	struct timespec delay;
+	int ret;
+
+	if (window->commit_delay_msecs <= 0)
+		return;
+
+	delay.tv_sec = window->commit_delay_msecs / 1000;
+	delay.tv_nsec = (window->commit_delay_msecs % 1000) * 1000000;
+
+	ret = nanosleep(&delay, NULL);
+	if (ret)
+		printf("nanosleep failed: %m\n");
+}
+
+static void
 window_create_feedback(struct window *window, uint32_t frame_stamp)
 {
 	static unsigned seq;
@@ -490,6 +510,7 @@ window_create_feedback(struct window *window, uint32_t frame_stamp)
 					   &feedback_listener, feedback);
 
 	feedback->frame_no = seq;
+
 	clock_gettime(window->display->clk_id, &feedback->commit);
 	feedback->frame_stamp = frame_stamp;
 	feedback->target = feedback->commit;
@@ -523,6 +544,8 @@ redraw_mode_feedback(void *data, struct wl_callback *callback, uint32_t time)
 
 	if (callback)
 		wl_callback_destroy(callback);
+
+	window_emulate_rendering(window);
 
 	window->callback = wl_surface_frame(window->surface);
 	wl_callback_add_listener(window->callback,
@@ -566,6 +589,7 @@ feedkick_presented(void *data,
 
 	switch (window->mode) {
 	case RUN_MODE_PRESENT:
+		window_emulate_rendering(window);
 		window_create_feedback(window, 0);
 		window_feedkick(window);
 		window_commit_next(window);
@@ -586,6 +610,7 @@ feedkick_discarded(void *data,
 
 	switch (window->mode) {
 	case RUN_MODE_PRESENT:
+		window_emulate_rendering(window);
 		window_create_feedback(window, 0);
 		window_feedkick(window);
 		window_commit_next(window);
@@ -605,6 +630,8 @@ static const struct presentation_feedback_listener feedkick_listener = {
 static void
 firstdraw_mode_burst(struct window *window)
 {
+	window_emulate_rendering(window);
+
 	switch (window->mode) {
 	case RUN_MODE_PRESENT:
 		window_create_feedback(window, 0);
@@ -807,10 +834,12 @@ usage(const char *prog, int exit_code)
 {
 	fprintf(stderr, "Usage: %s [mode] [options]\n"
 		"where 'mode' is one of\n"
-		"  -f\trun in feedback mode (default)\n"
-		"  -i\trun in feedback-idle mode; sleep 1s between frames\n"
-		"  -p\trun in low-latency presentation mode\n"
-		"and 'options' may include\n",
+		"  -f\t\trun in feedback mode (default)\n"
+		"  -i\t\trun in feedback-idle mode; sleep 1s between frames\n"
+		"  -p\t\trun in low-latency presentation mode\n"
+		"and 'options' may include\n"
+		"  -d msecs\temulate the time used for rendering by a delay \n"
+		"\t\tof the given milliseconds before commit\n\n",
 		prog);
 
 	fprintf(stderr, "Printed timing statistics, depending on mode:\n"
@@ -835,6 +864,7 @@ main(int argc, char **argv)
 	int ret = 0;
 	enum run_mode mode = RUN_MODE_FEEDBACK;
 	int i;
+	int commit_delay_msecs = 0;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp("-f", argv[i]) == 0)
@@ -843,12 +873,16 @@ main(int argc, char **argv)
 			mode = RUN_MODE_FEEDBACK_IDLE;
 		else if (strcmp("-p", argv[i]) == 0)
 			mode = RUN_MODE_PRESENT;
+		else if ((strcmp("-d", argv[i]) == 0) && (i + 1 < argc)) {
+			i++;
+			commit_delay_msecs = atoi(argv[i]);
+		}
 		else
 			usage(argv[0], EXIT_FAILURE);
 	}
 
 	display = create_display();
-	window = create_window(display, 250, 250, mode);
+	window = create_window(display, 250, 250, mode, commit_delay_msecs);
 	if (!window)
 		return 1;
 
