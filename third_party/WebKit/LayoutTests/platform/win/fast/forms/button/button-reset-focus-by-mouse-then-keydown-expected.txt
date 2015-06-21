@@ -7,6 +7,12 @@
       "drawsContent": true,
       "repaintRects": [
         [7, 7, 52, 24]
+      ],
+      "paintInvalidationClients": [
+        "LayoutButton BUTTON",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text",
+        "LayoutButton BUTTON"
       ]
     }
   ]

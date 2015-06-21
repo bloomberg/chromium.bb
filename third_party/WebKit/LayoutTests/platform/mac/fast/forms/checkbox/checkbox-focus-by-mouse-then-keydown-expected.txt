@@ -7,6 +7,10 @@
       "drawsContent": true,
       "repaintRects": [
         [6, 7, 22, 22]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow INPUT",
+        "LayoutBlockFlow INPUT"
       ]
     }
   ]

@@ -85,10 +85,6 @@ crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
-crbug.com/497950 fast/repaint/float-overflow-right.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/repaint/float-overflow.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/repaint/transform-inline-layered-child.html [ NeedsManualRebaseline ]
-
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
@@ -98,12 +94,12 @@ crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ P
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
-#crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure Pass ]
-#crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
+crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure Pass ]
+crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
-#crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
-#crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
+crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
+crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
@@ -360,24 +356,11 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-r
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-003.htm [ Pass ImageOnlyFailure ]
 
-crbug.com/497950 fast/encoding/invalid-UTF-8.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/events/scale-and-scroll-iframe-body.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/events/scale-and-scroll-iframe-window.html [ NeedsManualRebaseline ]
-crbug.com/497950 virtual/pointerevent/fast/events/scale-and-scroll-iframe-body.html [ NeedsManualRebaseline ]
-crbug.com/497950 virtual/pointerevent/fast/events/scale-and-scroll-iframe-window.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/text/atsui-small-caps-punctuation-size.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/text/atsui-spacing-features.html [ NeedsManualRebaseline ]
-crbug.com/497950 fast/text/international/text-spliced-font.html [ NeedsManualRebaseline ]
-
 crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-long.html [ ImageOnlyFailure ]
 crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-tall.html [ ImageOnlyFailure ]
 crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-transform.html [ ImageOnlyFailure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
-
-crbug.com/501169 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure ]
 
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
@@ -643,8 +626,6 @@ crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
-crbug.com/497950 [ Win Linux Mac ] compositing/repaint/invalidations-on-composited-layers.html [ NeedsManualRebaseline ]
-
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
@@ -830,11 +811,6 @@ crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/469190 [ XP ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]
 
-# TODO(enne): rebaseline these and leave them as flaky timeouts
-crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout NeedsManualRebaseline ]
-crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout NeedsManualRebaseline ]
-crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout NeedsManualRebaseline ]
-
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
@@ -1008,15 +984,6 @@ crbug.com/474121 [ Debug Win7 ] editing/deleting/password-delete-performance.htm
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
-crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/012.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/013.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/014.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/018.html [ NeedsManualRebaseline ]
-
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/line-break-after-question-mark.html [ Pass Failure ]
-
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
@@ -1057,9 +1024,8 @@ crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352801 [ Linux Mac ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
-# TODO(enne): rebaseline these and leave as flaky
-crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Pass Failure NeedsManualRebaseline ]
-crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure NeedsManualRebaseline ]
+crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Pass Failure ]
+crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure ]
 
 crbug.com/453944 [ Mac ] fast/images/png-suite/test.html [ Crash Pass ]
 
@@ -1166,8 +1132,7 @@ crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
 
 # Failures that need further investigation.
-# TODO(fmalita): re-enable after http://crrev.com/1167293004
-# crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
+crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
 crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
 
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
@@ -1232,39 +1197,39 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-async/async-ca
 crbug.com/464741 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline  ]
 crbug.com/464741 css3/filters/effect-combined-hw.html [ NeedsManualRebaseline  ]
 
-# Ahem font is sometimes not loaded on Windows.
+# Ahem font is sometimes not loaded on Windows and Mac.
 crbug.com/392046 [ Win ] editing/selection/move-by-line-006.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/dynamic/first-letter-after-list-marker.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/dynamic/first-letter-display-change.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/flexbox/overhanging-floats-removed.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/repaint/float-overflow-right.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/repaint/float-overflow.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/repaint/float-overflow-right.html [ Pass Failure ]
+crbug.com/392046 [ Win ] fast/repaint/float-overflow.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/repaint/inline-relative-positioned.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/repaint/layoutstate-invalid-invalidation-inline-relative-positioned.html [ Pass Failure ]
-#crbug.com/392046 [ Win ] fast/repaint/transform-inline-layered-child.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/repaint/transform-inline-layered-child.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/table/table-cell-offset-width.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/table/table-row-before-after-content-around-table-cell.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/003.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/004.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/005.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/006.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/007.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/008.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/009.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/010.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/011.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/012.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/013.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/014.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/015.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/016.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/017.html [ Pass Failure ]
-crbug.com/392046 [ Win ] fast/text/whitespace/018.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/002.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/003.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/004.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/005.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/006.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/007.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/008.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/009.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/010.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/011.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/012.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/013.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/014.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/015.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/016.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/017.html [ Pass Failure ]
+crbug.com/392046 [ Win Mac ] fast/text/whitespace/018.html [ Pass Failure ]
 crbug.com/392046 [ Win ] ietestcenter/css3/text/textshadow-005.htm [ Pass Failure ]
 crbug.com/392046 [ Win ] ietestcenter/css3/text/textshadow-007.htm [ Pass Failure ]
 crbug.com/392046 [ Win ] ietestcenter/css3/text/textshadow-008.htm [ Pass Failure ]
@@ -1326,7 +1291,7 @@ crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pas
 
 crbug.com/437131 [ Win Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass ImageOnlyFailure ]
 
-#crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
+crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
@@ -1367,6 +1332,7 @@ crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ P
 crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnlyFailure ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
+crbug.com/425345 [ Mac ] virtual/antialiasedtext/fast/text/line-break-after-question-mark.html [ Failure ]
 
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 
@@ -1443,8 +1409,6 @@ crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-2
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-3.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/soft-hyphen-4.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/splitText-dirty-lines.html [ Pass Failure ]
-
-crbug.com/502051 fast/text/ellipsis-platform-font-change.html [ NeedsManualRebaseline ]
 
 crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
@@ -1639,7 +1603,7 @@ crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ ImageOnlyFailur
 crbug.com/498021 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] editing/pasteboard/4944770-2.html [ Failure ]
-#crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
+crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
@@ -1773,8 +1737,8 @@ crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Fai
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 
 # Temporarily disabled after chromium change
-#crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ ImageOnlyFailure ]
-#crbug.com/492511 [ Mac ] fast/text/atsui-spacing-features.html [ ImageOnlyFailure ]
+crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ ImageOnlyFailure ]
+crbug.com/492511 [ Mac ] fast/text/atsui-spacing-features.html [ ImageOnlyFailure ]
 crbug.com/492511 [ Mac ] fast/text/vertical-rl-rtl-linebreak.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ ImageOnlyFailure ]
 crbug.com/492511 [ Mac ] virtual/antialiasedtext/fast/text/atsui-negative-spacing-features.html [ ImageOnlyFailure ]
@@ -1816,7 +1780,7 @@ crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/424338 [ XP ] tables/mozilla/bugs/bug3037-1.html [ Failure ]
 
-#crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Failure ]
+crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Failure ]
 
 crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Timeout ]
 
