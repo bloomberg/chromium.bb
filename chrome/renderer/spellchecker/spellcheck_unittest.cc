@@ -17,8 +17,6 @@
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
-#define TYPOGRAPHICAL_APOSTROPHE L"\x2019"
-
 namespace {
 
 base::FilePath GetHunspellDirectory() {
@@ -80,10 +78,6 @@ class SpellCheckTest : public testing::Test {
   bool CheckSpelling(const std::string& word, int tag) {
     return spell_check_->spellcheck_.platform_spelling_engine_->CheckSpelling(
         base::ASCIIToUTF16(word), tag);
-  }
-
-  bool IsValidContraction(const base::string16& word, int tag) {
-    return spell_check_->spellcheck_.IsValidContraction(word, tag);
   }
 
 #if !defined(OS_MACOSX)
@@ -207,7 +201,7 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     // A valid English contraction
     {L"isn't", true},
     // A valid English contraction with a typographical apostrophe.
-    {L"isn" TYPOGRAPHICAL_APOSTROPHE L"t", true},
+    {L"isn\x2019t", true},
     // A valid English word enclosed with underscores.
     {L"_hello_", true},
 
@@ -1146,7 +1140,7 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
                                              text,
                                              spellcheck_results,
                                              &textcheck_results);
-    ASSERT_EQ(spellcheck_results.size(), textcheck_results.size());
+    EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
     EXPECT_EQ(blink::WebTextDecorationTypeSpelling,
               textcheck_results[0].decoration);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
@@ -1166,77 +1160,11 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
                                              text,
                                              spellcheck_results,
                                              &textcheck_results);
-    ASSERT_EQ(spellcheck_results.size(), textcheck_results.size());
+    EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
     EXPECT_EQ(blink::WebTextDecorationTypeGrammar,
               textcheck_results[0].decoration);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
     EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);
-  }
-
-  // Verify that the SpellCheck preserves the original apostrophe type in the
-  // checked text, regardless of the type of apostrophe the browser returns.
-  {
-    base::string16 text = base::WideToUTF16(
-        L"Ik've havn" TYPOGRAPHICAL_APOSTROPHE L"t ni'n"
-        TYPOGRAPHICAL_APOSTROPHE L"out-s I've I" TYPOGRAPHICAL_APOSTROPHE
-        L"ve");
-    std::vector<SpellCheckResult> spellcheck_results;
-
-    // All typewriter apostrophe results.
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 0, 5, base::UTF8ToUTF16("I've")));
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 6, 6, base::UTF8ToUTF16("haven't")));
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 13, 10, base::UTF8ToUTF16("in'n'out's")));
-
-    // Replacements that differ only by apostrophe type should be ignored.
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 24, 4, base::UTF8ToUTF16("I've")));
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 29, 4, base::UTF8ToUTF16("I've")));
-
-    // All typographical apostrophe results.
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 0, 5,
-        base::WideToUTF16(L"I" TYPOGRAPHICAL_APOSTROPHE L"ve")));
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 6, 6,
-        base::WideToUTF16(L"haven" TYPOGRAPHICAL_APOSTROPHE L"t")));
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 13, 10, base::WideToUTF16(
-            L"in" TYPOGRAPHICAL_APOSTROPHE L"n" TYPOGRAPHICAL_APOSTROPHE L"out"
-            TYPOGRAPHICAL_APOSTROPHE L"s")));
-
-    // Replacements that differ only by apostrophe type should be ignored.
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 24, 4,
-        base::WideToUTF16(L"I" TYPOGRAPHICAL_APOSTROPHE L"ve")));
-    spellcheck_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING, 29, 4,
-        base::WideToUTF16(L"I" TYPOGRAPHICAL_APOSTROPHE L"ve")));
-
-    blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
-    spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER, 0,
-                                             text, spellcheck_results,
-                                             &textcheck_results);
-
-    static const wchar_t* kExpectedReplacements[] = {
-        L"I've",
-        L"haven" TYPOGRAPHICAL_APOSTROPHE L"t",
-        L"in'n" TYPOGRAPHICAL_APOSTROPHE L"out's",
-        L"I've",
-        L"haven" TYPOGRAPHICAL_APOSTROPHE L"t",
-        L"in'n" TYPOGRAPHICAL_APOSTROPHE L"out" TYPOGRAPHICAL_APOSTROPHE L"s",
-    };
-
-    ASSERT_EQ(arraysize(kExpectedReplacements), textcheck_results.size());
-    for (size_t i = 0; i < arraysize(kExpectedReplacements); ++i) {
-      EXPECT_EQ(base::WideToUTF16(kExpectedReplacements[i]),
-                textcheck_results[i].replacement)
-          << "i=" << i << "\nactual: \""
-          << base::string16(textcheck_results[i].replacement) << "\"";
-    }
   }
 }
 
@@ -1443,26 +1371,5 @@ TEST_F(SpellCheckTest, LogicalSuggestions) {
     EXPECT_GE(suggestions.size(), static_cast<size_t>(1));
     if (suggestions.size() > 0)
       EXPECT_EQ(suggestions[0], base::ASCIIToUTF16(kTestCases[i].suggestion));
-  }
-}
-
-// Words with apostrophes should be valid contractions.
-TEST_F(SpellCheckTest, IsValidContraction) {
-  static const char* kLanguages[] = {
-    "en-AU",
-    "en-CA",
-    "en-GB",
-    "en-US",
-  };
-
-  static const wchar_t* kWords[] = {
-    L"in'n'out",
-    L"in" TYPOGRAPHICAL_APOSTROPHE L"n" TYPOGRAPHICAL_APOSTROPHE L"out",
-  };
-
-  for (size_t i = 0; i < arraysize(kLanguages); ++i) {
-    ReinitializeSpellCheck(kLanguages[i]);
-    for (size_t j = 0; j < arraysize(kWords); ++j)
-      EXPECT_TRUE(IsValidContraction(base::WideToUTF16(kWords[j]), 0));
   }
 }

@@ -34,14 +34,14 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
                          const GURL& url,
                          net::URLFetcherDelegate* d,
                          int version,
-                         const std::string& sanitized_text,
+                         const std::string& text,
                          const std::string& language,
                          int status,
                          const std::string& response)
       : net::TestURLFetcher(0, url, d),
         version_(base::StringPrintf("v%d", version)),
         language_(language.empty() ? std::string("en") : language),
-        sanitized_text_(sanitized_text) {
+        text_(text) {
     set_response_code(status);
     SetResponseString(response);
   }
@@ -64,9 +64,9 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     std::string version;
     EXPECT_TRUE(value->GetString("apiVersion", &version));
     EXPECT_EQ(version_, version);
-    std::string sanitized_text;
-    EXPECT_TRUE(value->GetString("params.text", &sanitized_text));
-    EXPECT_EQ(sanitized_text_, sanitized_text);
+    std::string text;
+    EXPECT_TRUE(value->GetString("params.text", &text));
+    EXPECT_EQ(text_, text);
     std::string language;
     EXPECT_TRUE(value->GetString("params.language", &language));
     EXPECT_EQ(language_, language);
@@ -106,7 +106,7 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
   std::string version_;
   std::string language_;
   std::string country_;
-  std::string sanitized_text_;
+  std::string text_;
 };
 
 // A class derived from the SpellingServiceClient class used by the
@@ -124,10 +124,10 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   ~TestingSpellingServiceClient() override {}
 
   void SetHTTPRequest(int type,
-                      const std::string& sanitized_text,
+                      const std::string& text,
                       const std::string& language) {
     request_type_ = type;
-    sanitized_request_text_ = sanitized_text;
+    request_text_ = text;
     request_language_ = language;
   }
 
@@ -151,7 +151,8 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
                       const base::string16& request_text,
                       const std::vector<SpellCheckResult>& results) {
     EXPECT_EQ(success_, success);
-    base::string16 text(base::UTF8ToUTF16(sanitized_request_text_));
+    base::string16 text(base::UTF8ToUTF16(request_text_));
+    EXPECT_EQ(text, request_text);
     for (std::vector<SpellCheckResult>::const_iterator it = results.begin();
          it != results.end(); ++it) {
       text.replace(it->location, it->length, it->replacement);
@@ -167,14 +168,15 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
  private:
   scoped_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url) override {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
-    fetcher_ = new TestSpellingURLFetcher(
-        0, url, this, request_type_, sanitized_request_text_, request_language_,
-        response_status_, response_data_);
+    fetcher_ = new TestSpellingURLFetcher(0, url, this,
+                                          request_type_, request_text_,
+                                          request_language_,
+                                          response_status_, response_data_);
     return scoped_ptr<net::URLFetcher>(fetcher_);
   }
 
   int request_type_;
-  std::string sanitized_request_text_;
+  std::string request_text_;
   std::string request_language_;
   int response_status_;
   std::string response_data_;
@@ -215,8 +217,7 @@ class SpellingServiceClientTest : public testing::Test {
 // misspelled words, |corrected_text| should be equal to |request_text|.)
 TEST_F(SpellingServiceClientTest, RequestTextCheck) {
   static const struct {
-    const wchar_t* request_text;
-    const char* sanitized_request_text;
+    const char* request_text;
     SpellingServiceClient::ServiceType request_type;
     int response_status;
     const char* response_data;
@@ -225,7 +226,6 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     const char* language;
   } kTests[] = {
     {
-      L"",
       "",
       SpellingServiceClient::SUGGEST,
       500,
@@ -234,7 +234,6 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "",
       "af",
     }, {
-      L"chromebook",
       "chromebook",
       SpellingServiceClient::SUGGEST,
       200,
@@ -243,7 +242,6 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "chromebook",
       "af",
     }, {
-      L"chrombook",
       "chrombook",
       SpellingServiceClient::SUGGEST,
       200,
@@ -263,7 +261,6 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "chromebook",
       "af",
     }, {
-      L"",
       "",
       SpellingServiceClient::SPELLCHECK,
       500,
@@ -272,7 +269,6 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "",
       "en",
     }, {
-      L"I have been to USA.",
       "I have been to USA.",
       SpellingServiceClient::SPELLCHECK,
       200,
@@ -281,7 +277,6 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       "I have been to USA.",
       "en",
     }, {
-      L"I have bean to USA.",
       "I have bean to USA.",
       SpellingServiceClient::SPELLCHECK,
       200,
@@ -300,27 +295,6 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
       true,
       "I have been to USA.",
       "en",
-    }, {
-      L"I\x2019mattheIn'n'Out.",
-      "I'mattheIn'n'Out.",
-      SpellingServiceClient::SPELLCHECK,
-      200,
-      "{\n"
-      "  \"result\": {\n"
-      "    \"spellingCheckResponse\": {\n"
-      "      \"misspellings\": [{\n"
-      "        \"charStart\": 0,\n"
-      "        \"charLength\": 16,\n"
-      "        \"suggestions\":"
-      " [{ \"suggestion\": \"I'm at the In'N'Out\" }],\n"
-      "        \"canAutoCorrect\": false\n"
-      "      }]\n"
-      "    }\n"
-      "  }\n"
-      "}",
-      true,
-      "I'm at the In'N'Out.",
-      "en",
     },
   };
 
@@ -329,8 +303,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
   pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
 
   for (size_t i = 0; i < arraysize(kTests); ++i) {
-    client_.SetHTTPRequest(kTests[i].request_type,
-                           kTests[i].sanitized_request_text,
+    client_.SetHTTPRequest(kTests[i].request_type, kTests[i].request_text,
                            kTests[i].language);
     client_.SetHTTPResponse(kTests[i].response_status, kTests[i].response_data);
     client_.SetExpectedTextCheckResult(kTests[i].success,
@@ -339,7 +312,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     client_.RequestTextCheck(
         &profile_,
         kTests[i].request_type,
-        base::WideToUTF16(kTests[i].request_text),
+        base::ASCIIToUTF16(kTests[i].request_text),
         base::Bind(&SpellingServiceClientTest::OnTextCheckComplete,
                    base::Unretained(this), 0));
     client_.CallOnURLFetchComplete();

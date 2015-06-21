@@ -4,8 +4,6 @@
 
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 
-#include <algorithm>
-
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
@@ -68,16 +66,8 @@ bool SpellingServiceClient::RequestTextCheck(
       &language_code,
       &country_code);
 
-  // Replace typographical apostrophes with typewriter apostrophes, so that
-  // server word breaker behaves correctly.
-  const base::char16 kApostrophe = 0x27;
-  const base::char16 kRightSingleQuotationMark = 0x2019;
-  base::string16 text_copy = text;
-  std::replace(text_copy.begin(), text_copy.end(), kRightSingleQuotationMark,
-               kApostrophe);
-
   // Format the JSON request to be sent to the Spelling service.
-  std::string encoded_text = base::GetQuotedJSONString(text_copy);
+  std::string encoded_text = base::GetQuotedJSONString(text);
 
   static const char kSpellingRequest[] =
       "{"

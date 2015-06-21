@@ -97,29 +97,6 @@ bool DocumentMarkersRemover::Visit(content::RenderView* render_view) {
   return true;
 }
 
-bool IsApostrophe(base::char16 c) {
-  const base::char16 kApostrophe = 0x27;
-  const base::char16 kRightSingleQuotationMark = 0x2019;
-  return c == kApostrophe || c == kRightSingleQuotationMark;
-}
-
-// Makes sure that the apostrophes in the |spelling_suggestion| are the same
-// type as in the |misspelled_word| and in the same order. Ignore differences in
-// the number of apostrophes.
-void PreserveOriginalApostropheTypes(const base::string16& misspelled_word,
-                                     base::string16* spelling_suggestion) {
-  auto it = spelling_suggestion->begin();
-  for (const base::char16& c : misspelled_word) {
-    if (IsApostrophe(c)) {
-      it = std::find_if(it, spelling_suggestion->end(), IsApostrophe);
-      if (it == spelling_suggestion->end())
-        return;
-
-      *it++ = c;
-    }
-  }
-}
-
 }  // namespace
 
 class SpellCheck::SpellcheckRequest {
@@ -406,44 +383,33 @@ void SpellCheck::CreateTextCheckingResults(
     const base::string16& line_text,
     const std::vector<SpellCheckResult>& spellcheck_results,
     WebVector<WebTextCheckingResult>* textcheck_results) {
-  std::vector<WebTextCheckingResult> results;
-  for (const SpellCheckResult& spellcheck_result : spellcheck_results) {
-    const base::string16& misspelled_word =
-        line_text.substr(spellcheck_result.location, spellcheck_result.length);
-
-    // Ignore words in custom dictionary.
-    if (custom_dictionary_.SpellCheckWord(misspelled_word, 0,
-                                          misspelled_word.length())) {
-      continue;
-    }
-
-    // Use the same types of appostrophes as in the mispelled word.
-    base::string16 replacement = spellcheck_result.replacement;
-    PreserveOriginalApostropheTypes(misspelled_word, &replacement);
-
-    // Ignore misspellings due the typographical apostrophe.
-    if (misspelled_word == replacement)
-      continue;
-
-    // Double-check misspelled words with out spellchecker and attach grammar
-    // markers to them if our spellchecker tells us they are correct words,
-    // i.e. they are probably contextually-misspelled words.
-    SpellCheckResult::Decoration decoration = spellcheck_result.decoration;
-    int unused_misspelling_start = 0;
-    int unused_misspelling_length = 0;
+  // Double-check misspelled words with our spellchecker and attach grammar
+  // markers to them if our spellchecker tells they are correct words, i.e. they
+  // are probably contextually-misspelled words.
+  const base::char16* text = line_text.c_str();
+  std::vector<WebTextCheckingResult> list;
+  for (size_t i = 0; i < spellcheck_results.size(); ++i) {
+    SpellCheckResult::Decoration decoration = spellcheck_results[i].decoration;
+    int word_location = spellcheck_results[i].location;
+    int word_length = spellcheck_results[i].length;
+    int misspelling_start = 0;
+    int misspelling_length = 0;
     if (decoration == SpellCheckResult::SPELLING &&
-        filter == USE_NATIVE_CHECKER &&
-        SpellCheckWord(misspelled_word.c_str(), misspelled_word.length(), 0,
-                       &unused_misspelling_start, &unused_misspelling_length,
-                       nullptr)) {
-      decoration = SpellCheckResult::GRAMMAR;
+        filter == USE_NATIVE_CHECKER) {
+      if (SpellCheckWord(text + word_location, word_length, 0,
+                         &misspelling_start, &misspelling_length, NULL)) {
+        decoration = SpellCheckResult::GRAMMAR;
+      }
     }
-
-    results.push_back(WebTextCheckingResult(
-        static_cast<WebTextDecorationType>(decoration),
-        line_offset + spellcheck_result.location, spellcheck_result.length,
-        replacement, spellcheck_result.hash));
+    if (!custom_dictionary_.SpellCheckWord(
+            line_text, word_location, word_length)) {
+      list.push_back(WebTextCheckingResult(
+          static_cast<WebTextDecorationType>(decoration),
+          word_location + line_offset,
+          word_length,
+          spellcheck_results[i].replacement,
+          spellcheck_results[i].hash));
+    }
   }
-
-  textcheck_results->assign(results);
+  textcheck_results->assign(list);
 }
