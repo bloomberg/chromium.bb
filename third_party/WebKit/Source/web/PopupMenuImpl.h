@@ -32,10 +32,10 @@ private:
 
     class ItemIterationContext;
     bool hasTooManyItemsForStyling();
-    void addOption(ItemIterationContext&, HTMLOptionElement&, int& listIndex, SharedBuffer*);
-    void addOptGroup(ItemIterationContext&, HTMLOptGroupElement&, int& listIndex, SharedBuffer*);
-    void addSeparator(ItemIterationContext&, HTMLHRElement&, int& listIndex, SharedBuffer*);
-    void addElementStyle(ItemIterationContext&, HTMLElement&, SharedBuffer*);
+    void addOption(ItemIterationContext&, HTMLOptionElement&);
+    void addOptGroup(ItemIterationContext&, HTMLOptGroupElement&);
+    void addSeparator(ItemIterationContext&, HTMLHRElement&);
+    void addElementStyle(ItemIterationContext&, HTMLElement&);
 
     // PopupMenu functions:
     void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) override;

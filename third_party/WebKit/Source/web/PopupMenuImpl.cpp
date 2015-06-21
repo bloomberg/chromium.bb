@@ -86,14 +86,20 @@ DEFINE_TRACE(PopupMenuCSSFontSelector)
 class PopupMenuImpl::ItemIterationContext {
     STACK_ALLOCATED();
 public:
-    ItemIterationContext(bool enableExtraStyling, TextDirection dir)
+    ItemIterationContext(bool enableExtraStyling, TextDirection dir, SharedBuffer* buffer)
         : m_enableExtraStyling(enableExtraStyling)
         , m_direction(dir)
+        , m_listIndex(0)
+        , m_buffer(buffer)
     {
+        ASSERT(m_buffer);
     }
 
     bool m_enableExtraStyling;
     TextDirection m_direction;
+
+    int m_listIndex;
+    SharedBuffer* m_buffer;
 };
 
 PassRefPtrWillBeRawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, PopupMenuClient* client)
@@ -144,15 +150,14 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     addProperty("selectedIndex", m_client->selectedIndex(), data);
     const ComputedStyle* ownerStyle = ownerElement().computedStyle();
     PagePopupClient::addString("children: [\n", data);
-    ItemIterationContext context(!hasTooManyItemsForStyling(), ownerStyle->direction());
-    int listIndex = 0;
+    ItemIterationContext context(!hasTooManyItemsForStyling(), ownerStyle->direction(), data);
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
         if (isHTMLOptionElement(child))
-            addOption(context, toHTMLOptionElement(child), listIndex, data);
+            addOption(context, toHTMLOptionElement(child));
         if (isHTMLOptGroupElement(child))
-            addOptGroup(context, toHTMLOptGroupElement(child), listIndex, data);
+            addOptGroup(context, toHTMLOptGroupElement(child));
         if (isHTMLHRElement(child))
-            addSeparator(context, toHTMLHRElement(child), listIndex, data);
+            addSeparator(context, toHTMLHRElement(child));
     }
     PagePopupClient::addString("],\n", data);
     addProperty("anchorRectInScreen", anchorRectInScreen, data);
@@ -247,10 +252,11 @@ static const char* textTransformToString(ETextTransform transform)
     return "";
 }
 
-void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element, SharedBuffer* data)
+void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element)
 {
     const ComputedStyle* style = m_client->computedStyleForItem(element);
     ASSERT(style);
+    SharedBuffer* data = context.m_buffer;
     PagePopupClient::addString("style: {\n", data);
     if (style->visibility() == HIDDEN)
         addProperty("visibility", String("hidden"), data);
@@ -280,13 +286,14 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
     PagePopupClient::addString("},\n", data);
 }
 
-void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& element, int& listIndex, SharedBuffer* data)
+void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& element)
 {
+    SharedBuffer* data = context.m_buffer;
     PagePopupClient::addString("{\n", data);
     PagePopupClient::addString("type: \"option\",\n", data);
     addProperty("label", element.text(), data);
-    ASSERT(listIndex == element.listIndex());
-    addProperty("value", listIndex++, data);
+    ASSERT(context.m_listIndex == element.listIndex());
+    addProperty("value", context.m_listIndex++, data);
     if (!element.title().isEmpty())
         addProperty("title", element.title(), data);
     const AtomicString& ariaLabel = element.fastGetAttribute(HTMLNames::aria_labelAttr);
@@ -294,43 +301,45 @@ void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& 
         addProperty("ariaLabel", ariaLabel, data);
     if (element.isDisabledFormControl())
         addProperty("disabled", true, data);
-    addElementStyle(context, element, data);
+    addElementStyle(context, element);
     PagePopupClient::addString("},\n", data);
 }
 
-void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupElement& element, int& listIndex, SharedBuffer* data)
+void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupElement& element)
 {
-    ++listIndex;
+    SharedBuffer* data = context.m_buffer;
+    ++context.m_listIndex;
     PagePopupClient::addString("{\n", data);
     PagePopupClient::addString("type: \"optgroup\",\n", data);
     addProperty("label", element.groupLabelText(), data);
     addProperty("title", element.title(), data);
     addProperty("ariaLabel", element.fastGetAttribute(HTMLNames::aria_labelAttr), data);
     addProperty("disabled", element.isDisabledFormControl(), data);
-    addElementStyle(context, element, data);
+    addElementStyle(context, element);
     PagePopupClient::addString("children: [", data);
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(element)) {
         if (isHTMLOptionElement(child))
-            addOption(context, toHTMLOptionElement(child), listIndex, data);
+            addOption(context, toHTMLOptionElement(child));
         // TODO(tkent): Ignore nested OPTGROUP. crbug.com/502101.
         if (isHTMLOptGroupElement(child))
-            addOptGroup(context, toHTMLOptGroupElement(child), listIndex, data);
+            addOptGroup(context, toHTMLOptGroupElement(child));
         if (isHTMLHRElement(child))
-            addSeparator(context, toHTMLHRElement(child), listIndex, data);
+            addSeparator(context, toHTMLHRElement(child));
     }
     PagePopupClient::addString("],\n", data);
     PagePopupClient::addString("},\n", data);
 }
 
-void PopupMenuImpl::addSeparator(ItemIterationContext& context, HTMLHRElement& element, int& listIndex, SharedBuffer* data)
+void PopupMenuImpl::addSeparator(ItemIterationContext& context, HTMLHRElement& element)
 {
-    ++listIndex;
+    SharedBuffer* data = context.m_buffer;
+    ++context.m_listIndex;
     PagePopupClient::addString("{\n", data);
     PagePopupClient::addString("type: \"separator\",\n", data);
     addProperty("title", element.title(), data);
     addProperty("ariaLabel", element.fastGetAttribute(HTMLNames::aria_labelAttr), data);
     addProperty("disabled", element.isDisabledFormControl(), data);
-    addElementStyle(context, element, data);
+    addElementStyle(context, element);
     PagePopupClient::addString("},\n", data);
 }
 
@@ -436,15 +445,14 @@ void PopupMenuImpl::update()
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());
     PagePopupClient::addString("children: [", data.get());
-    ItemIterationContext context(!hasTooManyItemsForStyling(), ownerElement().computedStyle()->direction());
-    int listIndex = 0;
+    ItemIterationContext context(!hasTooManyItemsForStyling(), ownerElement().computedStyle()->direction(), data.get());
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
         if (isHTMLOptionElement(child))
-            addOption(context, toHTMLOptionElement(child), listIndex, data.get());
+            addOption(context, toHTMLOptionElement(child));
         if (isHTMLOptGroupElement(child))
-            addOptGroup(context, toHTMLOptGroupElement(child), listIndex, data.get());
+            addOptGroup(context, toHTMLOptGroupElement(child));
         if (isHTMLHRElement(child))
-            addSeparator(context, toHTMLHRElement(child), listIndex, data.get());
+            addSeparator(context, toHTMLHRElement(child));
     }
     PagePopupClient::addString("],\n", data.get());
     PagePopupClient::addString("}\n", data.get());
