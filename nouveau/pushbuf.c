@@ -234,6 +234,8 @@ pushbuf_krel(struct nouveau_pushbuf *push, struct nouveau_bo *bo,
 	bkref = cli_kref_get(push->client, bo);
 	krel  = &krec->reloc[krec->nr_reloc++];
 
+	assert(pkref);
+	assert(bkref);
 	krel->reloc_bo_index = pkref - krec->buffer;
 	krel->reloc_bo_offset = (push->cur - nvpb->ptr) * 4;
 	krel->bo_index = bkref - krec->buffer;
@@ -721,6 +723,7 @@ nouveau_pushbuf_data(struct nouveau_pushbuf *push, struct nouveau_bo *bo,
 
 	if (bo) {
 		kref = cli_kref_get(push->client, bo);
+		assert(kref);
 		kpsh = &krec->push[krec->nr_push++];
 		kpsh->bo_index = kref - krec->buffer;
 		kpsh->offset   = offset;
@@ -757,6 +760,7 @@ nouveau_pushbuf_refd(struct nouveau_pushbuf *push, struct nouveau_bo *bo)
 
 	if (cli_push_get(push->client, bo) == push) {
 		kref = cli_kref_get(push->client, bo);
+		assert(kref);
 		if (kref->read_domains)
 			flags |= NOUVEAU_BO_RD;
 		if (kref->write_domains)
