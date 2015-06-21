@@ -12,4 +12,4 @@ layer at (8,52) size 340x340
       LayoutBlockFlow {DIV} at (50,50) size 220x220 [border: (10px solid #FFA500)]
       LayoutTableSection (anonymous) at (0,320) size 320x0
         LayoutTableRow {DIV} at (0,0) size 320x0
-          LayoutTableCell {DIV} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
+          LayoutTableCell {DIV} at (0,0) size 320x0 [r=0 c=0 rs=1 cs=1]

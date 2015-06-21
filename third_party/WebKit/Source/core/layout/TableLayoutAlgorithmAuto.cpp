@@ -63,15 +63,10 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
 
                 if (current.inColSpan || !cell)
                     continue;
+                columnLayout.columnHasNoCells = false;
 
-                bool cellHasContent = cell->children()->firstChild() || cell->style()->hasBorder() || cell->style()->hasPadding() || cell->style()->hasBackground();
-                if (cellHasContent)
+                if (cell->maxPreferredLogicalWidth())
                     columnLayout.emptyCellsOnly = false;
-
-                // A cell originates in this column. Ensure we have
-                // a min/max width of at least 1px for this column now.
-                columnLayout.minLogicalWidth = std::max<int>(columnLayout.minLogicalWidth, cellHasContent ? 1 : 0);
-                columnLayout.maxLogicalWidth = std::max<int>(columnLayout.maxLogicalWidth, 1);
 
                 if (cell->colSpan() == 1) {
                     columnLayout.minLogicalWidth = std::max<int>(cell->minPreferredLogicalWidth(), columnLayout.minLogicalWidth);
@@ -120,6 +115,9 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
                         break;
                     }
                 } else if (!effCol || section->primaryCellAt(i, effCol - 1) != cell) {
+                    // If a cell originates in this spanning column ensure we have a min/max width of at least 1px for it.
+                    columnLayout.minLogicalWidth = std::max<int>(columnLayout.minLogicalWidth, cell->maxPreferredLogicalWidth() ? 1 : 0);
+
                     // This spanning cell originates in this column. Insert the cell into spanning cells list.
                     insertSpanCell(cell);
                 }
@@ -373,13 +371,13 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
                 int totalWidth = 0;
                 for (unsigned pos = effCol; pos < lastCol; ++pos) {
                     if (!m_layoutStruct[pos].effectiveLogicalWidth.hasPercent())
-                        totalWidth += m_layoutStruct[pos].effectiveMaxLogicalWidth;
+                        totalWidth += m_layoutStruct[pos].clampedEffectiveMaxLogicalWidth();
                 }
 
                 for (unsigned pos = effCol; pos < lastCol && totalWidth > 0; ++pos) {
                     if (!m_layoutStruct[pos].effectiveLogicalWidth.hasPercent()) {
                         float percent = percentMissing * static_cast<float>(m_layoutStruct[pos].effectiveMaxLogicalWidth) / totalWidth;
-                        totalWidth -= m_layoutStruct[pos].effectiveMaxLogicalWidth;
+                        totalWidth -= m_layoutStruct[pos].clampedEffectiveMaxLogicalWidth();
                         percentMissing -= percent;
                         if (percent > 0)
                             m_layoutStruct[pos].effectiveLogicalWidth.setValue(Percent, percent);
@@ -538,7 +536,7 @@ void TableLayoutAlgorithmAuto::layout()
             break;
         case Fixed:
             numFixed++;
-            totalFixed += m_layoutStruct[i].effectiveMaxLogicalWidth;
+            totalFixed += m_layoutStruct[i].clampedEffectiveMaxLogicalWidth();
             // fall through
             break;
         case Auto:
@@ -546,7 +544,7 @@ void TableLayoutAlgorithmAuto::layout()
                 numAutoEmptyCellsOnly++;
             } else {
                 numAuto++;
-                totalAuto += m_layoutStruct[i].effectiveMaxLogicalWidth;
+                totalAuto += m_layoutStruct[i].clampedEffectiveMaxLogicalWidth();
                 allocAuto += cellLogicalWidth;
             }
             break;
@@ -594,13 +592,17 @@ void TableLayoutAlgorithmAuto::layout()
         }
     }
 
-    // Give each auto width column its share of the available width.
+    // Give each auto width column its share of the available width, non-empty columns then empty columns.
     if (available > 0 && numAuto) {
         available += allocAuto;
         distributeWidthToColumns<float, Auto, NonEmptyCells, InitialWidth, StartToEnd>(available, totalAuto);
     }
+    if (available > 0 && numAutoEmptyCellsOnly) {
+        unsigned total = numAutoEmptyCellsOnly;
+        distributeWidthToColumns<unsigned, Auto, EmptyCells, InitialWidth, StartToEnd>(available, total);
+    }
 
-    // Any remaining available width expands fixed width, percent width and non-empty auto width columns, in that order.
+    // Any remaining available width expands fixed width, percent width, and non-empty auto width columns, in that order.
     if (available > 0 && numFixed)
         distributeWidthToColumns<float, Fixed, AllCells, ExtraWidth, StartToEnd>(available, totalFixed);
 
@@ -643,6 +645,10 @@ void TableLayoutAlgorithmAuto::distributeWidthToColumns(int& available, Total& t
         const Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
         if (cellsToProcess == NonEmptyCells && logicalWidth.isAuto() && m_layoutStruct[i].emptyCellsOnly)
             continue;
+        // When allocating width to columns with nothing but empty cells we avoid
+        // columns that exist only to flesh out a colspan and have no actual cells.
+        if (cellsToProcess == EmptyCells && logicalWidth.isAuto() && (!m_layoutStruct[i].emptyCellsOnly || m_layoutStruct[i].columnHasNoCells))
+            continue;
         if (distributionMode != LeftoverWidth && logicalWidth.type() != lengthType)
             continue;
 
@@ -651,7 +657,7 @@ void TableLayoutAlgorithmAuto::distributeWidthToColumns(int& available, Total& t
             if (lengthType == Percent)
                 factor = logicalWidth.percent();
             else if (lengthType == Auto || lengthType == Fixed)
-                factor = m_layoutStruct[i].effectiveMaxLogicalWidth;
+                factor = m_layoutStruct[i].clampedEffectiveMaxLogicalWidth();
         }
 
         int newWidth = available * factor / total;

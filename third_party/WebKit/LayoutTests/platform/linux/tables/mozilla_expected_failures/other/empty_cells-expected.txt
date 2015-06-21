@@ -10,17 +10,17 @@ layer at (0,0) size 785x2678 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTable {TABLE} at (0,20) size 100x0 [bgcolor=#FFA500]
           LayoutTableSection {TBODY} at (0,0) size 100x0
             LayoutTableRow {TR} at (0,0) size 100x0
-              LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,0) size 100x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,0) size 100x0
-              LayoutTableCell {TD} at (0,0) size 0x0 [r=1 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,0) size 100x0 [r=1 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,0) size 100x0
-              LayoutTableCell {TD} at (0,0) size 0x0 [r=2 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,0) size 100x0 [r=2 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,0) size 100x0
-              LayoutTableCell {TD} at (0,0) size 0x0 [r=3 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,0) size 100x0 [r=3 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,0) size 100x0
-              LayoutTableCell {TD} at (0,0) size 0x0 [r=4 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,0) size 100x0 [r=4 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,0) size 100x0
-              LayoutTableCell {TD} at (0,0) size 0x0 [r=5 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,0) size 100x0 [r=5 c=0 rs=1 cs=1]
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
           LayoutBR {BR} at (0,0) size 0x19
       LayoutBlockFlow {P} at (0,56) size 769x54
@@ -50,17 +50,17 @@ layer at (0,0) size 785x2678 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTable {TABLE} at (0,20) size 100x12 [bgcolor=#FFA500]
           LayoutTableSection {TBODY} at (0,0) size 100x12
             LayoutTableRow {TR} at (0,0) size 100x2
-              LayoutTableCell {TD} at (0,1) size 0x0 [r=0 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,1) size 100x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,2) size 100x2
-              LayoutTableCell {TD} at (0,3) size 0x0 [r=1 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,3) size 100x0 [r=1 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,4) size 100x2
-              LayoutTableCell {TD} at (0,5) size 0x0 [r=2 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,5) size 100x0 [r=2 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,6) size 100x2
-              LayoutTableCell {TD} at (0,7) size 0x0 [r=3 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,7) size 100x0 [r=3 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,8) size 100x2
-              LayoutTableCell {TD} at (0,9) size 0x0 [r=4 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,9) size 100x0 [r=4 c=0 rs=1 cs=1]
             LayoutTableRow {TR} at (0,10) size 100x2
-              LayoutTableCell {TD} at (0,11) size 0x0 [r=5 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (0,11) size 100x0 [r=5 c=0 rs=1 cs=1]
         LayoutBlockFlow (anonymous) at (0,32) size 769x20
           LayoutBR {BR} at (0,0) size 0x19
       LayoutBlockFlow {P} at (0,194) size 769x54
@@ -222,13 +222,13 @@ layer at (0,0) size 785x2678 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
           LayoutText {#text} at (0,0) size 382x19
             text run at (0,0) width 382: "this table should be about 8 pixels wide (nested without border)"
-        LayoutTable {TABLE} at (0,20) size 10x4 [border: (1px outset #808080)]
-          LayoutTableSection {TBODY} at (1,1) size 8x2
-            LayoutTableRow {TR} at (0,0) size 8x2
-              LayoutTableCell {TD} at (0,0) size 8x2 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                LayoutTable {TABLE} at (1,1) size 6x0 [bgcolor=#FFA500]
-                  LayoutTableSection {TBODY} at (0,0) size 6x0
-                    LayoutTableRow {TR} at (0,0) size 6x0
+        LayoutTable {TABLE} at (0,20) size 4x4 [border: (1px outset #808080)]
+          LayoutTableSection {TBODY} at (1,1) size 2x2
+            LayoutTableRow {TR} at (0,0) size 2x2
+              LayoutTableCell {TD} at (0,0) size 2x2 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                LayoutTable {TABLE} at (1,1) size 0x0 [bgcolor=#FFA500]
+                  LayoutTableSection {TBODY} at (0,0) size 0x0
+                    LayoutTableRow {TR} at (0,0) size 0x0
                       LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
                       LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=1 rs=1 cs=1]
                       LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=2 rs=1 cs=1]
@@ -548,24 +548,24 @@ layer at (0,0) size 785x2678 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
           LayoutText {#text} at (0,0) size 429x19
             text run at (0,0) width 429: "this table should be about 92 pixels wide (nested, colspan=15 with BR)"
-        LayoutTable {TABLE} at (0,20) size 10x24 [border: (1px outset #808080)]
-          LayoutTableSection {TBODY} at (1,1) size 8x22
-            LayoutTableRow {TR} at (0,0) size 8x22
-              LayoutTableCell {TD} at (0,0) size 8x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-                LayoutTable {TABLE} at (1,1) size 6x20 [bgcolor=#FFA500]
-                  LayoutTableSection {TBODY} at (0,0) size 6x20
-                    LayoutTableRow {TR} at (0,0) size 6x20
-                      LayoutTableCell {TD} at (0,0) size 1x20 [r=0 c=0 rs=1 cs=15]
+        LayoutTable {TABLE} at (0,20) size 4x24 [border: (1px outset #808080)]
+          LayoutTableSection {TBODY} at (1,1) size 2x22
+            LayoutTableRow {TR} at (0,0) size 2x22
+              LayoutTableCell {TD} at (0,0) size 2x22 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                LayoutTable {TABLE} at (1,1) size 0x20 [bgcolor=#FFA500]
+                  LayoutTableSection {TBODY} at (0,0) size 0x20
+                    LayoutTableRow {TR} at (0,0) size 0x20
+                      LayoutTableCell {TD} at (0,0) size 0x20 [r=0 c=0 rs=1 cs=15]
                         LayoutBR {BR} at (0,0) size 0x19
-                      LayoutTableCell {TD} at (1,0) size 1x20 [r=0 c=15 rs=1 cs=15]
+                      LayoutTableCell {TD} at (0,0) size 0x20 [r=0 c=15 rs=1 cs=15]
                         LayoutBR {BR} at (0,0) size 0x19
-                      LayoutTableCell {TD} at (2,0) size 1x20 [r=0 c=30 rs=1 cs=15]
+                      LayoutTableCell {TD} at (0,0) size 0x20 [r=0 c=30 rs=1 cs=15]
                         LayoutBR {BR} at (0,0) size 0x19
-                      LayoutTableCell {TD} at (3,0) size 1x20 [r=0 c=45 rs=1 cs=15]
+                      LayoutTableCell {TD} at (0,0) size 0x20 [r=0 c=45 rs=1 cs=15]
                         LayoutBR {BR} at (0,0) size 0x19
-                      LayoutTableCell {TD} at (4,0) size 1x20 [r=0 c=60 rs=1 cs=15]
+                      LayoutTableCell {TD} at (0,0) size 0x20 [r=0 c=60 rs=1 cs=15]
                         LayoutBR {BR} at (0,0) size 0x19
-                      LayoutTableCell {TD} at (5,0) size 1x20 [r=0 c=75 rs=1 cs=15]
+                      LayoutTableCell {TD} at (0,0) size 0x20 [r=0 c=75 rs=1 cs=15]
                         LayoutBR {BR} at (0,0) size 0x19
         LayoutBlockFlow (anonymous) at (0,44) size 769x20
           LayoutBR {BR} at (0,0) size 0x19
