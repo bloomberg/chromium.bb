@@ -320,13 +320,6 @@ static NEVER_INLINE void partitionBucketFull()
     IMMEDIATE_CRASH();
 }
 
-// TODO(haraken): This is never inlined to investigate issue 479580.
-// Remove this function once the issue is fixed.
-static NEVER_INLINE void partitionInvalidNumPartitionPages()
-{
-    IMMEDIATE_CRASH();
-}
-
 static void partitionIncreaseCommittedPages(PartitionRootBase* root, size_t len)
 {
     root->totalSizeOfCommittedPages += len;
@@ -355,8 +348,7 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
 {
     ASSERT(!(reinterpret_cast<uintptr_t>(root->nextPartitionPage) % kPartitionPageSize));
     ASSERT(!(reinterpret_cast<uintptr_t>(root->nextPartitionPageEnd) % kPartitionPageSize));
-    if (numPartitionPages > kNumPartitionPagesPerSuperPage)
-        partitionInvalidNumPartitionPages();
+    ASSERT(numPartitionPages <= kNumPartitionPagesPerSuperPage);
     size_t totalSize = kPartitionPageSize * numPartitionPages;
     size_t numPartitionPagesLeft = (root->nextPartitionPageEnd - root->nextPartitionPage) >> kPartitionPageShift;
     if (LIKELY(numPartitionPagesLeft >= numPartitionPages)) {
