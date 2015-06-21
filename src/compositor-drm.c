@@ -597,6 +597,17 @@ drm_output_set_gamma(struct weston_output *output_base,
 		weston_log("set gamma failed: %m\n");
 }
 
+static unsigned int drm_waitvblank_pipe(struct drm_output *output)
+{
+	if (output->pipe > 1)
+		return (output->pipe << DRM_VBLANK_HIGH_CRTC_SHIFT) &
+				DRM_VBLANK_HIGH_CRTC_MASK;
+	else if (output->pipe > 0)
+		return DRM_VBLANK_SECONDARY;
+	else
+		return 0;
+}
+
 static int
 drm_output_repaint(struct weston_output *output_base,
 		   pixman_region32_t *damage)
@@ -668,8 +679,7 @@ drm_output_repaint(struct weston_output *output_base,
 			weston_log("setplane failed: %d: %s\n",
 				ret, strerror(errno));
 
-		if (output->pipe > 0)
-			vbl.request.type |= DRM_VBLANK_SECONDARY;
+		vbl.request.type |= drm_waitvblank_pipe(output);
 
 		/*
 		 * Queue a vblank signal so we know when the surface
