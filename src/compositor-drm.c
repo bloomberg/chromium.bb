@@ -47,6 +47,7 @@
 #include <libudev.h>
 
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 #include "libbacklight.h"
 #include "compositor.h"
 #include "gl-renderer.h"
@@ -229,6 +230,9 @@ static const char default_seat[] = "seat0";
 
 static void
 drm_output_set_cursor(struct drm_output *output);
+
+static void
+drm_output_update_msc(struct drm_output *output, unsigned int seq);
 
 static int
 drm_sprite_crtc_supported(struct drm_output *output, uint32_t supported)
@@ -732,7 +736,15 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	struct drm_backend *backend = (struct drm_backend *)
 		output_base->compositor->backend;
 	uint32_t fb_id;
-	struct timespec ts;
+	struct timespec ts, tnow;
+	struct timespec vbl2now;
+	int64_t refresh_nsec;
+	int ret;
+	drmVBlank vbl = {
+		.request.type = DRM_VBLANK_RELATIVE,
+		.request.sequence = 0,
+		.request.signal = 0,
+	};
 
 	if (output->destroy_pending)
 		return;
@@ -742,6 +754,35 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 		goto finish_frame;
 	}
 
+	/* Try to get current msc and timestamp via instant query */
+	vbl.request.type |= drm_waitvblank_pipe(output);
+	ret = drmWaitVBlank(backend->drm.fd, &vbl);
+
+	/* Error ret or zero timestamp means failure to get valid timestamp */
+	if ((ret == 0) && (vbl.reply.tval_sec > 0 || vbl.reply.tval_usec > 0)) {
+		ts.tv_sec = vbl.reply.tval_sec;
+		ts.tv_nsec = vbl.reply.tval_usec * 1000;
+
+		/* Valid timestamp for most recent vblank - not stale?
+		 * Stale ts could happen on Linux 3.17+, so make sure it
+		 * is not older than 1 refresh duration since now.
+		 */
+		weston_compositor_read_presentation_clock(backend->compositor,
+							  &tnow);
+		timespec_sub(&vbl2now, &tnow, &ts);
+		refresh_nsec =
+			millihz_to_nsec(output->base.current_mode->refresh);
+		if (timespec_to_nsec(&vbl2now) < refresh_nsec) {
+			drm_output_update_msc(output, vbl.reply.sequence);
+			weston_output_finish_frame(output_base, &ts,
+						PRESENTATION_FEEDBACK_INVALID);
+			return;
+		}
+	}
+
+	/* Immediate query didn't provide valid timestamp.
+	 * Use pageflip fallback.
+	 */
 	fb_id = output->current->fb_id;
 
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id, fb_id,

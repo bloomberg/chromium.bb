@@ -254,6 +254,7 @@ drm_backend_la_SOURCES =			\
 	src/compositor-drm.c			\
 	$(INPUT_BACKEND_SOURCES)		\
 	shared/helpers.h			\
+	shared/timespec-util.h			\
 	src/libbacklight.c			\
 	src/libbacklight.h
 
