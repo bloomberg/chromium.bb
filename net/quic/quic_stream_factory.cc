@@ -146,6 +146,7 @@ class QuicStreamFactory::Job {
       bool is_https,
       bool was_alternative_service_recently_broken,
       PrivacyMode privacy_mode,
+      int cert_verify_flags,
       bool is_post,
       QuicServerInfo* server_info,
       const BoundNetLog& net_log);
@@ -198,6 +199,7 @@ class QuicStreamFactory::Job {
   QuicStreamFactory* factory_;
   SingleRequestHostResolver host_resolver_;
   QuicServerId server_id_;
+  int cert_verify_flags_;
   // True if and only if server and origin have the same hostname.
   bool server_and_origin_have_same_host_;
   bool is_post_;
@@ -221,6 +223,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             bool is_https,
                             bool was_alternative_service_recently_broken,
                             PrivacyMode privacy_mode,
+                            int cert_verify_flags,
                             bool is_post,
                             QuicServerInfo* server_info,
                             const BoundNetLog& net_log)
@@ -228,6 +231,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       factory_(factory),
       host_resolver_(host_resolver),
       server_id_(host_port_pair, is_https, privacy_mode),
+      cert_verify_flags_(cert_verify_flags),
       server_and_origin_have_same_host_(server_and_origin_have_same_host),
       is_post_(is_post),
       was_alternative_service_recently_broken_(
@@ -247,6 +251,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       factory_(factory),
       host_resolver_(host_resolver),  // unused
       server_id_(server_id),
+      cert_verify_flags_(0),                            // unused
       server_and_origin_have_same_host_(false),         // unused
       is_post_(false),                                  // unused
       was_alternative_service_recently_broken_(false),  // unused
@@ -400,8 +405,9 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
     // If we are waiting to load server config from the disk cache, then start
     // another job.
     started_another_job_ = true;
-    factory_->CreateAuxilaryJob(server_id_, server_and_origin_have_same_host_,
-                                is_post_, net_log_);
+    factory_->CreateAuxilaryJob(server_id_, cert_verify_flags_,
+                                server_and_origin_have_same_host_, is_post_,
+                                net_log_);
   }
   return rv;
 }
@@ -430,9 +436,9 @@ int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
 int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
-  int rv =
-      factory_->CreateSession(server_id_, server_info_.Pass(), address_list_,
-                              dns_resolution_end_time_, net_log_, &session_);
+  int rv = factory_->CreateSession(
+      server_id_, cert_verify_flags_, server_info_.Pass(), address_list_,
+      dns_resolution_end_time_, net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -496,6 +502,7 @@ QuicStreamRequest::~QuicStreamRequest() {
 int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
                                bool is_https,
                                PrivacyMode privacy_mode,
+                               int cert_verify_flags,
                                base::StringPiece origin_host,
                                base::StringPiece method,
                                const BoundNetLog& net_log,
@@ -505,8 +512,9 @@ int QuicStreamRequest::Request(const HostPortPair& host_port_pair,
   DCHECK(factory_);
   origin_host_ = origin_host.as_string();
   privacy_mode_ = privacy_mode;
-  int rv = factory_->Create(host_port_pair, is_https, privacy_mode, origin_host,
-                            method, net_log, this);
+  int rv =
+      factory_->Create(host_port_pair, is_https, privacy_mode,
+                       cert_verify_flags, origin_host, method, net_log, this);
   if (rv == ERR_IO_PENDING) {
     host_port_pair_ = host_port_pair;
     net_log_ = net_log;
@@ -635,6 +643,7 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
 int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
                               bool is_https,
                               PrivacyMode privacy_mode,
+                              int cert_verify_flags,
                               base::StringPiece origin_host,
                               base::StringPiece method,
                               const BoundNetLog& net_log,
@@ -681,10 +690,11 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   }
 
   bool server_and_origin_have_same_host = host_port_pair.host() == origin_host;
-  scoped_ptr<Job> job(new Job(
-      this, host_resolver_, host_port_pair, server_and_origin_have_same_host,
-      is_https, WasQuicRecentlyBroken(server_id), privacy_mode,
-      method == "POST" /* is_post */, quic_server_info, net_log));
+  scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_pair,
+                              server_and_origin_have_same_host, is_https,
+                              WasQuicRecentlyBroken(server_id), privacy_mode,
+                              cert_verify_flags, method == "POST" /* is_post */,
+                              quic_server_info, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -705,13 +715,15 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
 }
 
 void QuicStreamFactory::CreateAuxilaryJob(const QuicServerId server_id,
+                                          int cert_verify_flags,
                                           bool server_and_origin_have_same_host,
                                           bool is_post,
                                           const BoundNetLog& net_log) {
-  Job* aux_job = new Job(this, host_resolver_, server_id.host_port_pair(),
-                         server_and_origin_have_same_host, server_id.is_https(),
-                         WasQuicRecentlyBroken(server_id),
-                         server_id.privacy_mode(), is_post, nullptr, net_log);
+  Job* aux_job =
+      new Job(this, host_resolver_, server_id.host_port_pair(),
+              server_and_origin_have_same_host, server_id.is_https(),
+              WasQuicRecentlyBroken(server_id), server_id.privacy_mode(),
+              cert_verify_flags, is_post, nullptr, net_log);
   active_jobs_[server_id].insert(aux_job);
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&QuicStreamFactory::Job::RunAuxilaryJob,
@@ -1002,6 +1014,7 @@ bool QuicStreamFactory::HasActiveJob(const QuicServerId& key) const {
 }
 
 int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
+                                     int cert_verify_flags,
                                      scoped_ptr<QuicServerInfo> server_info,
                                      const AddressList& address_list,
                                      base::TimeTicks dns_resolution_end_time,
@@ -1112,10 +1125,10 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
 
   *session = new QuicClientSession(
       connection, socket.Pass(), this, quic_crypto_client_stream_factory_,
-      transport_security_state_, server_info.Pass(), server_id, config,
-      &crypto_config_, network_connection_.GetDescription(),
-      dns_resolution_end_time, base::ThreadTaskRunnerHandle::Get().get(),
-      net_log.net_log());
+      transport_security_state_, server_info.Pass(), server_id,
+      cert_verify_flags, config, &crypto_config_,
+      network_connection_.GetDescription(), dns_resolution_end_time,
+      base::ThreadTaskRunnerHandle::Get().get(), net_log.net_log());
 
   all_sessions_[*session] = server_id;  // owning pointer
 

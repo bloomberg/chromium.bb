@@ -213,9 +213,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      /*is_secure=*/false, PRIVACY_MODE_DISABLED),
-        DefaultQuicConfig(), &crypto_config_, "CONNECTION_UNKNOWN",
-        base::TimeTicks::Now(), base::ThreadTaskRunnerHandle::Get().get(),
-        nullptr));
+        /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
+        "CONNECTION_UNKNOWN", base::TimeTicks::Now(),
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
     session_->Initialize();
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());

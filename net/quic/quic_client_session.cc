@@ -100,6 +100,7 @@ void RecordHandshakeState(HandshakeState state) {
 
 scoped_ptr<base::Value> NetLogQuicClientSessionCallback(
     const QuicServerId* server_id,
+    int cert_verify_flags,
     bool require_confirmation,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -109,6 +110,7 @@ scoped_ptr<base::Value> NetLogQuicClientSessionCallback(
   dict->SetBoolean("privacy_mode",
                    server_id->privacy_mode() == PRIVACY_MODE_ENABLED);
   dict->SetBoolean("require_confirmation", require_confirmation);
+  dict->SetInteger("cert_verify_flags", cert_verify_flags);
   return dict.Pass();
 }
 
@@ -161,6 +163,7 @@ QuicClientSession::QuicClientSession(
     TransportSecurityState* transport_security_state,
     scoped_ptr<QuicServerInfo> server_info,
     const QuicServerId& server_id,
+    int cert_verify_flags,
     const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     const char* const connection_description,
@@ -183,17 +186,17 @@ QuicClientSession::QuicClientSession(
       going_away_(false),
       weak_factory_(this) {
   crypto_stream_.reset(
-      crypto_client_stream_factory ?
-          crypto_client_stream_factory->CreateQuicCryptoClientStream(
-              server_id, this, crypto_config) :
-          new QuicCryptoClientStream(server_id, this,
-                                     new ProofVerifyContextChromium(net_log_),
-                                     crypto_config));
+      crypto_client_stream_factory
+          ? crypto_client_stream_factory->CreateQuicCryptoClientStream(
+                server_id, this, crypto_config)
+          : new QuicCryptoClientStream(
+                server_id, this,
+                new ProofVerifyContextChromium(cert_verify_flags, net_log_),
+                crypto_config));
   connection->set_debug_visitor(logger_.get());
   net_log_.BeginEvent(NetLog::TYPE_QUIC_SESSION,
-                      base::Bind(NetLogQuicClientSessionCallback,
-                                 &server_id,
-                                 require_confirmation_));
+                      base::Bind(NetLogQuicClientSessionCallback, &server_id,
+                                 cert_verify_flags, require_confirmation_));
   IPEndPoint address;
   if (socket && socket->GetLocalAddress(&address) == OK &&
       address.GetFamily() == ADDRESS_FAMILY_IPV6) {

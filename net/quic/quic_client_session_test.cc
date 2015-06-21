@@ -55,6 +55,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
                               kServerPort,
                               /*is_secure=*/false,
                               PRIVACY_MODE_DISABLED),
+                 /*cert_verify_flags=*/0,
                  DefaultQuicConfig(),
                  &crypto_config_,
                  "CONNECTION_UNKNOWN",

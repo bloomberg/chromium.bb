@@ -44,9 +44,10 @@ class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
 // ProofVerifierChromium needs in order to log correctly.
 struct ProofVerifyContextChromium : public ProofVerifyContext {
  public:
-  explicit ProofVerifyContextChromium(const BoundNetLog& net_log)
-      : net_log(net_log) {}
+  ProofVerifyContextChromium(int cert_verify_flags, const BoundNetLog& net_log)
+      : cert_verify_flags(cert_verify_flags), net_log(net_log) {}
 
+  int cert_verify_flags;
   BoundNetLog net_log;
 };
 

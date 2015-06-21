@@ -47,6 +47,7 @@ class ProofVerifierChromium::Job {
   Job(ProofVerifierChromium* proof_verifier,
       CertVerifier* cert_verifier,
       TransportSecurityState* transport_security_state,
+      int cert_verify_flags,
       const BoundNetLog& net_log);
 
   // Starts the proof verification.  If |QUIC_PENDING| is returned, then
@@ -94,6 +95,10 @@ class ProofVerifierChromium::Job {
   // X509Certificate from a chain of DER encoded certificates.
   scoped_refptr<X509Certificate> cert_;
 
+  // |cert_verify_flags| is bitwise OR'd of CertVerifier::VerifyFlags and it is
+  // passed to CertVerifier::Verify.
+  int cert_verify_flags_;
+
   State next_state_;
 
   BoundNetLog net_log_;
@@ -105,10 +110,12 @@ ProofVerifierChromium::Job::Job(
     ProofVerifierChromium* proof_verifier,
     CertVerifier* cert_verifier,
     TransportSecurityState* transport_security_state,
+    int cert_verify_flags,
     const BoundNetLog& net_log)
     : proof_verifier_(proof_verifier),
       verifier_(cert_verifier),
       transport_security_state_(transport_security_state),
+      cert_verify_flags_(cert_verify_flags),
       next_state_(STATE_NONE),
       net_log_(net_log) {
 }
@@ -222,13 +229,12 @@ void ProofVerifierChromium::Job::OnIOComplete(int result) {
 int ProofVerifierChromium::Job::DoVerifyCert(int result) {
   next_state_ = STATE_VERIFY_CERT_COMPLETE;
 
-  int flags = 0;
-  return verifier_->Verify(cert_.get(), hostname_, std::string(), flags,
-                           SSLConfigService::GetCRLSet().get(),
-                           &verify_details_->cert_verify_result,
-                           base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
-                                      base::Unretained(this)),
-                           &cert_verifier_request_, net_log_);
+  return verifier_->Verify(
+      cert_.get(), hostname_, std::string(), cert_verify_flags_,
+      SSLConfigService::GetCRLSet().get(), &verify_details_->cert_verify_result,
+      base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
+                 base::Unretained(this)),
+      &cert_verifier_request_, net_log_);
 }
 
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
@@ -380,13 +386,12 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
   }
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
-  scoped_ptr<Job> job(new Job(this,
-                              cert_verifier_,
-                              transport_security_state_,
+  scoped_ptr<Job> job(new Job(this, cert_verifier_, transport_security_state_,
+                              chromium_context->cert_verify_flags,
                               chromium_context->net_log));
-  QuicAsyncStatus status = job->VerifyProof(hostname, server_config, certs,
-                                            signature, error_details,
-                                            verify_details, callback);
+  QuicAsyncStatus status =
+      job->VerifyProof(hostname, server_config, certs, signature, error_details,
+                       verify_details, callback);
   if (status == QUIC_PENDING) {
     active_jobs_.insert(job.release());
   }

@@ -20,8 +20,7 @@ MockCryptoClientStream::MockCryptoClientStream(
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode,
     const ProofVerifyDetails* proof_verify_details)
-    : QuicCryptoClientStream(server_id, session, verify_context,
-                             crypto_config),
+    : QuicCryptoClientStream(server_id, session, verify_context, crypto_config),
       handshake_mode_(handshake_mode),
       proof_verify_details_(proof_verify_details) {
 }

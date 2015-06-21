@@ -113,16 +113,15 @@ ProofSource* CryptoTestUtils::ProofSourceForTesting() {
 
 // static
 ProofVerifier* CryptoTestUtils::ProofVerifierForTesting() {
-  TestProofVerifierChromium* proof_verifier =
-      new TestProofVerifierChromium(CertVerifier::CreateDefault(),
-                                    new TransportSecurityState,
-                                    "quic_root.crt");
+  TestProofVerifierChromium* proof_verifier = new TestProofVerifierChromium(
+      CertVerifier::CreateDefault(), new TransportSecurityState,
+      "quic_root.crt");
   return proof_verifier;
 }
 
 // static
 ProofVerifyContext* CryptoTestUtils::ProofVerifyContextForTesting() {
-  return new ProofVerifyContextChromium(BoundNetLog());
+  return new ProofVerifyContextChromium(/*cert_verify_flags=*/0, BoundNetLog());
 }
 
 // static

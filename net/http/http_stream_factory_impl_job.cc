@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "net/base/connection_type_histograms.h"
 #include "net/base/net_util.h"
+#include "net/cert/cert_verifier.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
@@ -803,6 +804,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     DCHECK(session_->params().enable_quic_for_proxies);
   }
 
+  if (proxy_info_.is_https() || proxy_info_.is_quic()) {
+    InitSSLConfig(proxy_info_.proxy_server().host_port_pair(),
+                  &proxy_ssl_config_, /*is_proxy=*/true);
+    // Disable revocation checking for HTTPS proxies since the revocation
+    // requests are probably going to need to go through the proxy too.
+    proxy_ssl_config_.rev_checking_enabled = false;
+  }
+  if (using_ssl_) {
+    InitSSLConfig(server_, &server_ssl_config_, /*is_proxy=*/false);
+  }
+
   if (using_quic_) {
     if (proxy_info_.is_quic() && !request_info_.url.SchemeIs("http")) {
       NOTREACHED();
@@ -812,11 +824,13 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     HostPortPair destination;
     std::string origin_host;
     bool secure_quic;
+    SSLConfig* ssl_config;
     if (proxy_info_.is_quic()) {
       // A proxy's certificate is expected to be valid for the proxy hostname.
       destination = proxy_info_.proxy_server().host_port_pair();
       origin_host = destination.host();
       secure_quic = true;
+      ssl_config = &proxy_ssl_config_;
     } else {
       // The certificate of a QUIC alternative server is expected to be valid
       // for the origin of the request (in addition to being valid for the
@@ -824,10 +838,21 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       destination = server_;
       origin_host = origin_url_.host();
       secure_quic = using_ssl_;
+      ssl_config = &server_ssl_config_;
     }
+    // TODO(rtenneti): Move the cert_verify_flags code into SSLConfig class.
+    int flags = 0;
+    if (ssl_config->rev_checking_enabled)
+      flags |= CertVerifier::VERIFY_REV_CHECKING_ENABLED;
+    if (ssl_config->verify_ev_cert)
+      flags |= CertVerifier::VERIFY_EV_CERT;
+    if (ssl_config->cert_io_enabled)
+      flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
+    if (ssl_config->rev_checking_required_local_anchors)
+      flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
     int rv = quic_request_.Request(
-        destination, secure_quic, request_info_.privacy_mode, origin_host,
-        request_info_.method, net_log_, io_callback_);
+        destination, secure_quic, request_info_.privacy_mode, flags,
+        origin_host, request_info_.method, net_log_, io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;
     } else {
@@ -878,18 +903,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     establishing_tunnel_ = using_ssl_;
 
   const bool expect_spdy = IsSpdyAlternative();
-
-  if (proxy_info_.is_https()) {
-    InitSSLConfig(proxy_info_.proxy_server().host_port_pair(),
-                  &proxy_ssl_config_,
-                  true /* is a proxy server */);
-    // Disable revocation checking for HTTPS proxies since the revocation
-    // requests are probably going to need to go through the proxy too.
-    proxy_ssl_config_.rev_checking_enabled = false;
-  }
-  if (using_ssl_) {
-    InitSSLConfig(server_, &server_ssl_config_, false /* not a proxy server */);
-  }
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session_->http_server_properties();
