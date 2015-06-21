@@ -2373,6 +2373,13 @@ weston_output_finish_frame(struct weston_output *output,
 		msec = 0;
 	}
 
+	/* Called from restart_repaint_loop and restart happens already after
+	 * the deadline given by repaint_msec? In that case we delay until
+	 * the deadline of the next frame, to give clients a more predictable
+	 * timing of the repaint cycle to lock on. */
+	if (presented_flags == PRESENTATION_FEEDBACK_INVALID && msec < 0)
+		msec += refresh_nsec / 1000000;
+
 	if (msec < 1)
 		output_repaint_timer_handler(output);
 	else
