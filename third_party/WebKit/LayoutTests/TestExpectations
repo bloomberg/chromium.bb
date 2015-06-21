@@ -1235,6 +1235,26 @@ crbug.com/392046 [ Win ] ietestcenter/css3/text/textshadow-007.htm [ Pass Failur
 crbug.com/392046 [ Win ] ietestcenter/css3/text/textshadow-008.htm [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
 
+# Try @font-face to load Ahem font to see it produces different flakiness from pre-registered Ahem font.
+crbug.com/392046 fast/text/whitespace-try-ahem/002.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/003.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/004.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/005.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/006.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/007.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/008.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/009.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/010.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/011.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/012.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/013.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/014.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/015.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/016.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/017.html [ NeedsRebaseline ]
+crbug.com/392046 fast/text/whitespace-try-ahem/018.html [ NeedsRebaseline ]
+crbug.com/392046 virtual/antialiasedtext/fast/text/whitespace-try-ahem/ [ Skip ]
+
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
