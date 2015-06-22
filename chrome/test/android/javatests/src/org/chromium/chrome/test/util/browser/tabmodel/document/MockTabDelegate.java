@@ -39,9 +39,8 @@ public class MockTabDelegate implements TabDelegate {
     }
 
     @Override
-    public Tab createTabWithWebContents(
+    public void createTabWithWebContents(
             WebContents webContents, int parentId, TabLaunchType type, int startedBy) {
-        return null;
     }
 
     @Override
@@ -52,5 +51,10 @@ public class MockTabDelegate implements TabDelegate {
     @Override
     public Tab launchNTP() {
         return null;
+    }
+
+    @Override
+    public void createNewDocumentTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
+            int documentLaunchMode, int documentStartedBy, Integer requestId) {
     }
 }

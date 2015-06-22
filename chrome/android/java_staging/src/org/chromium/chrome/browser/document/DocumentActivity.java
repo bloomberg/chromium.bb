@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
@@ -58,6 +57,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.InitializationObserver;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -763,17 +763,22 @@ public class DocumentActivity extends ChromeActivity {
         return true;
     }
 
+
+    @Override
+    public TabDelegate getTabCreator(boolean incognito) {
+        return (TabDelegate) super.getTabCreator(incognito);
+    }
+
     @Override
     public boolean createContextualSearchTab(ContentViewCore searchContentViewCore) {
         NavigationEntry entry =
                 searchContentViewCore.getWebContents().getNavigationController().getPendingEntry();
         String url = entry != null
                 ? entry.getUrl() : searchContentViewCore.getWebContents().getUrl();
-        PendingDocumentData documentData = new PendingDocumentData();
-        ChromeLauncherActivity.launchDocumentInstance(this, false,
-                ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url,
-                DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH,
-                PageTransition.LINK, documentData);
+        getTabCreator(false).createNewDocumentTab(new LoadUrlParams(url, PageTransition.LINK),
+                TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab(),
+                ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND,
+                DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH, null);
         return false;
     }
 
@@ -958,8 +963,6 @@ public class DocumentActivity extends ChromeActivity {
      */
     private void launchNtp(boolean incognito) {
         if (incognito && !PrefServiceBridge.getInstance().isIncognitoModeEnabled()) return;
-        ChromeLauncherActivity.launchDocumentInstance(this, incognito,
-                ChromeLauncherActivity.LAUNCH_MODE_RETARGET, UrlConstants.NTP_URL,
-                DocumentMetricIds.STARTED_BY_OPTIONS_MENU, PageTransition.AUTO_TOPLEVEL, null);
+        getTabCreator(incognito).launchNTP();
     }
 }

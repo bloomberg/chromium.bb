@@ -184,22 +184,17 @@ public class DocumentTab extends ChromeTab {
 
         @Override
         public void onOpenInNewTab(String url, Referrer referrer) {
-            PendingDocumentData params = new PendingDocumentData();
-            params.referrer = referrer;
-            ChromeLauncherActivity.launchDocumentInstance(
-                    getWindowAndroid().getActivity().get(), isIncognito(),
-                    ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED, url,
-                    DocumentMetricIds.STARTED_BY_CONTEXT_MENU,
-                    PageTransition.AUTO_TOPLEVEL, params);
+            LoadUrlParams params = new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL);
+            params.setReferrer(referrer);
+            mActivity.getTabModelSelector().openNewTab(params,
+                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, DocumentTab.this, isIncognito());
         }
 
         @Override
         public void onOpenInNewIncognitoTab(String url) {
-            ChromeLauncherActivity.launchDocumentInstance(
-                    getWindowAndroid().getActivity().get(), true,
-                    ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND,
-                    url, DocumentMetricIds.STARTED_BY_CONTEXT_MENU,
-                    PageTransition.AUTO_TOPLEVEL, null);
+            mActivity.getTabModelSelector().openNewTab(
+                    new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL),
+                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, DocumentTab.this, true);
         }
 
         @Override

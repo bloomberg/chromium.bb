@@ -10,9 +10,11 @@ import android.net.Uri;
 
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
-import org.chromium.chrome.browser.document.PendingDocumentData;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 
@@ -37,16 +39,15 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
         int intentSource = DocumentMetricIds.STARTED_BY_WINDOW_OPEN;
 
         if (FeatureUtilities.isDocumentMode(context)) {
-            PendingDocumentData data = new PendingDocumentData();
-            data.url = url;
-            data.postData = postData;
-            data.extraHeaders = extraHeaders;
-            data.referrer = new Referrer(referrerUrl, referrerPolicy);
-            data.requestId = requestId;
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
+            loadUrlParams.setPostData(postData);
+            loadUrlParams.setVerbatimHeaders(extraHeaders);
+            loadUrlParams.setReferrer(new Referrer(referrerUrl, referrerPolicy));
 
-            ChromeLauncherActivity.launchDocumentInstance(null /* activity */, incognito,
-                    ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, intentSource,
-                    PageTransition.LINK, data);
+            TabDelegate tabDelegate =
+                    ChromeMobileApplication.getDocumentTabModelSelector().getTabCreator(incognito);
+            tabDelegate.createNewDocumentTab(loadUrlParams, TabLaunchType.FROM_MENU_OR_OVERVIEW,
+                    null, ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, intentSource, requestId);
             return;
         }
 

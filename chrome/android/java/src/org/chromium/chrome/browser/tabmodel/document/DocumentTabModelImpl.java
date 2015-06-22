@@ -339,9 +339,10 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         // session restore tabs.  Differs from TabModelImpl because we explicitly open tabs in the
         // foreground -- opening tabs in affiliated mode is disallowed by ChromeLauncherActivity
         // when a WebContents has already been created.
-        return getTabDelegate(isIncognito).createTabWithWebContents(
+        getTabDelegate(isIncognito).createTabWithWebContents(
                 webContents, parentTabId, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
                 DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS);
+        return null;
     }
 
     @Override

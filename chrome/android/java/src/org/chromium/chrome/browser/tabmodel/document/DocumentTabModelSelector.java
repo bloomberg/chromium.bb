@@ -184,22 +184,8 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
     @Override
     public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
             boolean incognito) {
-        PendingDocumentData params = null;
-        if (loadUrlParams.getPostData() != null
-                || loadUrlParams.getVerbatimHeaders() != null
-                || loadUrlParams.getReferrer() != null) {
-            params = new PendingDocumentData();
-            params.postData = loadUrlParams.getPostData();
-            params.extraHeaders = loadUrlParams.getVerbatimHeaders();
-            params.referrer = loadUrlParams.getReferrer();
-        }
-
-        Activity parentActivity =
-                parent == null ? null : parent.getWindowAndroid().getActivity().get();
-
         TabDelegate delegate = getTabCreator(incognito);
-        Tab parentTab = delegate.getActivityTab(mActivityDelegate, parentActivity);
-        delegate.createNewTab(loadUrlParams, type, parentTab);
+        delegate.createNewTab(loadUrlParams, type, parent);
         return null;
     }
 

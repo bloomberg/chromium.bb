@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.document;
 
 import android.app.Activity;
+import android.text.TextUtils;
 
 import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.Tab;
@@ -56,12 +57,13 @@ public class TabDelegateImpl implements TabDelegate {
     @Override
     public Tab createTabWithWebContents(
             WebContents webContents, int parentId, TabLaunchType type) {
-        return createTabWithWebContents(
+        createTabWithWebContents(
                 webContents, parentId, type, DocumentMetricIds.STARTED_BY_WINDOW_OPEN);
+        return null;
     }
 
     @Override
-    public Tab createTabWithWebContents(
+    public void createTabWithWebContents(
             WebContents webContents, int parentId, TabLaunchType type, int startedBy) {
         // Tabs can't be launched in affiliated mode when a webcontents exists.
         assert type != TabLaunchType.FROM_LONGPRESS_BACKGROUND;
@@ -84,8 +86,6 @@ public class TabDelegateImpl implements TabDelegate {
         ChromeLauncherActivity.launchDocumentInstance(activity, mIsIncognito,
                 ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, startedBy, pageTransition,
                 data);
-
-        return null;
     }
 
     @Override
@@ -95,31 +95,58 @@ public class TabDelegateImpl implements TabDelegate {
 
     @Override
     public Tab launchNTP() {
-        return launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_MENU_OR_OVERVIEW);
+        return createNewTab(new LoadUrlParams(UrlConstants.NTP_URL, PageTransition.AUTO_TOPLEVEL),
+                TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
     }
 
     @Override
     public Tab createNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent) {
+        // Figure out how the page will be launched.
+        int launchMode;
+        if (TextUtils.equals(UrlConstants.NTP_URL, loadUrlParams.getUrl())) {
+            launchMode = ChromeLauncherActivity.LAUNCH_MODE_RETARGET;
+        } else if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND && !mIsIncognito) {
+            launchMode = ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED;
+        } else {
+            launchMode = ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
+        }
+
+        // Classify the startup type.
+        int documentStartedBy = DocumentMetricIds.STARTED_BY_UNKNOWN;
+        if (parent != null && TextUtils.equals(UrlConstants.NTP_URL, parent.getUrl())) {
+            documentStartedBy = DocumentMetricIds.STARTED_BY_CHROME_HOME_MOST_VISITED;
+        } else if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND) {
+            documentStartedBy = DocumentMetricIds.STARTED_BY_CONTEXT_MENU;
+        } else if (type == TabLaunchType.FROM_MENU_OR_OVERVIEW) {
+            documentStartedBy = DocumentMetricIds.STARTED_BY_OPTIONS_MENU;
+        }
+
+        createNewDocumentTab(loadUrlParams, type, parent, launchMode, documentStartedBy, null);
+
+        // Tab is created aysnchronously.  Can't return it yet.
+        return null;
+    }
+
+    @Override
+    public void createNewDocumentTab(LoadUrlParams loadUrlParams, TabLaunchType type,
+            Tab parent, int documentLaunchMode, int documentStartedBy, Integer requestId) {
+        // Pack up everything.
         PendingDocumentData params = null;
         if (loadUrlParams.getPostData() != null
                 || loadUrlParams.getVerbatimHeaders() != null
-                || loadUrlParams.getReferrer() != null) {
+                || loadUrlParams.getReferrer() != null
+                || requestId != null) {
             params = new PendingDocumentData();
             params.postData = loadUrlParams.getPostData();
             params.extraHeaders = loadUrlParams.getVerbatimHeaders();
             params.referrer = loadUrlParams.getReferrer();
+            params.requestId = requestId == null ? 0 : requestId.intValue();
         }
 
-        // TODO(dfalcantara): Is this really only triggered via NTP/Recent Tabs?
-        Activity parentActivity = getActivityFromTab(parent);
-        int launchMode = type == TabLaunchType.FROM_LONGPRESS_BACKGROUND && !mIsIncognito
-                ? ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED
-                : ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
-        ChromeLauncherActivity.launchDocumentInstance(
-                parentActivity, mIsIncognito, launchMode, loadUrlParams.getUrl(),
-                DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS,
-                PageTransition.RELOAD, params);
-        return null;
+        ChromeLauncherActivity.launchDocumentInstance(getActivityFromTab(parent), mIsIncognito,
+                documentLaunchMode, loadUrlParams.getUrl(), documentStartedBy,
+                loadUrlParams.getTransitionType(), params);
     }
 
     private Activity getActivityFromTab(Tab tab) {

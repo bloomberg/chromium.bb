@@ -429,7 +429,8 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
-     * Starts a Document for the given URL.
+     * Starts a Document for the given URL. Generally, you should be using the TabCreator attached
+     * to the DocumentTabModelSelector.
      *
      * NOTE: this method adds trusted intent extra to authenticate that Chrome set the
      * EXTRA_PAGE_TRANSITION_TYPE extra which we only want Chrome to do.
