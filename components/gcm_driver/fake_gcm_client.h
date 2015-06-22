@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_H_
 #define COMPONENTS_GCM_DRIVER_FAKE_GCM_CLIENT_H_
 
+#include <map>
+
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -111,6 +113,7 @@ class FakeGCMClient : public GCMClient {
   StartModeOverridding start_mode_overridding_;
   scoped_refptr<base::SequencedTaskRunner> ui_thread_;
   scoped_refptr<base::SequencedTaskRunner> io_thread_;
+  std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;
   base::WeakPtrFactory<FakeGCMClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMClient);

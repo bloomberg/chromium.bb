@@ -926,6 +926,28 @@ void GCMDriverDesktop::AddInstanceIDData(
     const std::string& extra_data) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
+  if (result != GCMClient::SUCCESS)
+    return;
+
+  // Delay the operation until GCMClient is ready.
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::DoAddInstanceIDData,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   app_id,
+                   instance_id,
+                   extra_data));
+    return;
+  }
+
+  DoAddInstanceIDData(app_id, instance_id, extra_data);
+}
+
+void GCMDriverDesktop::DoAddInstanceIDData(
+    const std::string& app_id,
+    const std::string& instance_id,
+    const std::string& extra_data) {
   io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::IOWorker::AddInstanceIDData,
@@ -938,6 +960,23 @@ void GCMDriverDesktop::AddInstanceIDData(
 void GCMDriverDesktop::RemoveInstanceIDData(const std::string& app_id) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
+  if (result != GCMClient::SUCCESS)
+    return;
+
+  // Delay the operation until GCMClient is ready.
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::DoRemoveInstanceIDData,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   app_id));
+    return;
+  }
+
+  DoRemoveInstanceIDData(app_id);
+}
+
+void GCMDriverDesktop::DoRemoveInstanceIDData(const std::string& app_id) {
   io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::IOWorker::RemoveInstanceIDData,
@@ -949,7 +988,29 @@ void GCMDriverDesktop::GetInstanceIDData(
     const std::string& app_id,
     const GetInstanceIDDataCallback& callback) {
   DCHECK(!get_instance_id_data_callbacks_.count(app_id));
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
+  if (result != GCMClient::SUCCESS) {
+    callback.Run(std::string(), std::string());
+    return;
+  }
+
   get_instance_id_data_callbacks_[app_id] = callback;
+
+  // Delay the operation until GCMClient is ready.
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::DoGetInstanceIDData,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   app_id));
+    return;
+  }
+
+  DoGetInstanceIDData(app_id);
+}
+
+void GCMDriverDesktop::DoGetInstanceIDData(const std::string& app_id) {
   io_thread_->PostTask(
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::IOWorker::GetInstanceIDData,

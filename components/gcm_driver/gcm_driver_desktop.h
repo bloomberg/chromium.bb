@@ -142,6 +142,11 @@ class GCMDriverDesktop : public GCMDriver,
   void DoSend(const std::string& app_id,
               const std::string& receiver_id,
               const GCMClient::OutgoingMessage& message);
+  void DoAddInstanceIDData(const std::string& app_id,
+                           const std::string& instance_id,
+                           const std::string& extra_data);
+  void DoRemoveInstanceIDData(const std::string& app_id);
+  void DoGetInstanceIDData(const std::string& app_id);
   void DoGetToken(const std::string& app_id,
                   const std::string& authorized_entity,
                   const std::string& scope,

@@ -1473,7 +1473,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
 }
 
-TEST_F(GCMClientInstanceIDTest, DeleteMultiTokens) {
+TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
   AddInstanceID(kAppId, kInstanceID);
 
   // Get a token.
@@ -1510,6 +1510,20 @@ TEST_F(GCMClientInstanceIDTest, DeleteMultiTokens) {
   // All tokens are gone now.
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+}
+
+TEST_F(GCMClientInstanceIDTest, DeleteAllTokensBeforeGetAnyToken) {
+  AddInstanceID(kAppId, kInstanceID);
+
+  // Delete all tokens without getting a token first.
+  DeleteToken(kAppId, "*", "*");
+  // No need to call CompleteDeleteToken since unregistration request should
+  // not be triggered.
+  PumpLoopUntilIdle();
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
 }
 
 }  // namespace gcm

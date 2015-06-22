@@ -40,6 +40,8 @@ const char kTestAppID1[] = "TestApp1";
 const char kTestAppID2[] = "TestApp2";
 const char kUserID1[] = "user1";
 const char kScope[] = "GCM";
+const char kInstanceID1[] = "IID1";
+const char kInstanceID2[] = "IID2";
 
 class FakeGCMConnectionObserver : public GCMConnectionObserver {
  public:
@@ -144,6 +146,9 @@ class GCMDriverTest : public testing::Test {
   void SendCompleted(const std::string& message_id, GCMClient::Result result);
   void UnregisterCompleted(GCMClient::Result result);
 
+  const base::Closure& async_operation_completed_callback() const {
+    return async_operation_completed_callback_;
+  }
   void set_async_operation_completed_callback(const base::Closure& callback) {
     async_operation_completed_callback_ = callback;
   }
@@ -1073,6 +1078,9 @@ class GCMDriverInstanceIDTest : public GCMDriverTest {
   ~GCMDriverInstanceIDTest() override;
 
   void GetReady();
+  void GetInstanceID(const std::string& app_id, WaitToFinish wait_to_finish);
+  void GetInstanceIDDataCompleted(const std::string& instance_id,
+                                  const std::string& extra_data);
   void GetToken(const std::string& app_id,
                 const std::string& authorized_entity,
                 const std::string& scope,
@@ -1082,7 +1090,13 @@ class GCMDriverInstanceIDTest : public GCMDriverTest {
                    const std::string& scope,
                    WaitToFinish wait_to_finish);
 
+  std::string instance_id() const { return instance_id_; }
+  std::string extra_data() const { return extra_data_; }
+
  private:
+  std::string instance_id_;
+  std::string extra_data_;
+
   DISALLOW_COPY_AND_ASSIGN(GCMDriverInstanceIDTest);
 };
 
@@ -1097,6 +1111,25 @@ void GCMDriverInstanceIDTest::GetReady() {
   AddAppHandlers();
   PumpIOLoop();
   PumpUILoop();
+}
+
+void GCMDriverInstanceIDTest::GetInstanceID(const std::string& app_id,
+                                            WaitToFinish wait_to_finish) {
+  base::RunLoop run_loop;
+  set_async_operation_completed_callback(run_loop.QuitClosure());
+  driver()->GetInstanceIDData(app_id,
+      base::Bind(&GCMDriverInstanceIDTest::GetInstanceIDDataCompleted,
+                 base::Unretained(this)));
+  if (wait_to_finish == WAIT)
+    run_loop.Run();
+}
+
+void GCMDriverInstanceIDTest::GetInstanceIDDataCompleted(
+    const std::string& instance_id, const std::string& extra_data) {
+  instance_id_ = instance_id;
+  extra_data_ = extra_data;
+  if (!async_operation_completed_callback().is_null())
+    async_operation_completed_callback().Run();
 }
 
 void GCMDriverInstanceIDTest::GetToken(const std::string& app_id,
@@ -1129,6 +1162,50 @@ void GCMDriverInstanceIDTest::DeleteToken(const std::string& app_id,
                                    base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
+}
+
+TEST_F(GCMDriverInstanceIDTest, InstanceIDData) {
+  GetReady();
+
+  driver()->AddInstanceIDData(kTestAppID1, kInstanceID1, "Foo");
+  GetInstanceID(kTestAppID1, GCMDriverTest::WAIT);
+
+  EXPECT_EQ(kInstanceID1, instance_id());
+  EXPECT_EQ("Foo", extra_data());
+
+  driver()->RemoveInstanceIDData(kTestAppID1);
+  GetInstanceID(kTestAppID1, GCMDriverTest::WAIT);
+
+  EXPECT_TRUE(instance_id().empty());
+  EXPECT_TRUE(extra_data().empty());
+}
+
+TEST_F(GCMDriverInstanceIDTest, GCMClientNotReadyBeforeInstanceIDData) {
+  CreateDriver();
+  PumpIOLoop();
+  PumpUILoop();
+
+  // Make GCMClient not ready until PerformDelayedStart is called.
+  GetGCMClient()->set_start_mode_overridding(
+      FakeGCMClient::FORCE_TO_ALWAYS_DELAY_START_GCM);
+
+  AddAppHandlers();
+
+  // All operations are on hold until GCMClient is ready.
+  driver()->AddInstanceIDData(kTestAppID1, kInstanceID1, "Foo");
+  driver()->AddInstanceIDData(kTestAppID2, kInstanceID2, "Bar");
+  driver()->RemoveInstanceIDData(kTestAppID1);
+  GetInstanceID(kTestAppID2, GCMDriverTest::DO_NOT_WAIT);
+  PumpIOLoop();
+  PumpUILoop();
+  EXPECT_TRUE(instance_id().empty());
+  EXPECT_TRUE(extra_data().empty());
+
+  // All operations will be performed after GCMClient becomes ready.
+  GetGCMClient()->PerformDelayedStart();
+  WaitForAsyncOperation();
+  EXPECT_EQ(kInstanceID2, instance_id());
+  EXPECT_EQ("Bar", extra_data());
 }
 
 TEST_F(GCMDriverInstanceIDTest, GetToken) {

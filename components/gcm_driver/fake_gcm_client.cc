@@ -184,14 +184,25 @@ void FakeGCMClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
 void FakeGCMClient::AddInstanceIDData(const std::string& app_id,
                                       const std::string& instance_id,
                                       const std::string& extra_data) {
+  instance_id_data_[app_id] = make_pair(instance_id, extra_data);
 }
 
 void FakeGCMClient::RemoveInstanceIDData(const std::string& app_id) {
+  instance_id_data_.erase(app_id);
 }
 
 void FakeGCMClient::GetInstanceIDData(const std::string& app_id,
                                       std::string* instance_id,
                                       std::string* extra_data) {
+  auto iter = instance_id_data_.find(app_id);
+  if (iter == instance_id_data_.end()) {
+    instance_id->clear();
+    extra_data->clear();
+    return;
+  }
+
+  *instance_id = iter->second.first;
+  *extra_data = iter->second.second;
 }
 
 void FakeGCMClient::AddHeartbeatInterval(const std::string& scope,

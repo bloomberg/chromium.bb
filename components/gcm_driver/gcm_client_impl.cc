@@ -1014,12 +1014,14 @@ void GCMClientImpl::Unregister(
     // and scope are set to '*'.
     if (instance_id_token_info->authorized_entity == "*" &&
         instance_id_token_info->scope == "*") {
+      bool token_found = false;
       for (auto iter = registrations_.begin();
            iter != registrations_.end();) {
         InstanceIDTokenInfo* cached_instance_id_token_info =
             InstanceIDTokenInfo::FromRegistrationInfo(iter->first.get());
         if (cached_instance_id_token_info &&
             cached_instance_id_token_info->app_id == app_id) {
+          token_found = true;
           gcm_store_->RemoveRegistration(
               cached_instance_id_token_info->GetSerializedKey(),
               base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
@@ -1028,6 +1030,14 @@ void GCMClientImpl::Unregister(
         } else {
           ++iter;
         }
+      }
+
+      // If no token is found for the Instance ID, don't need to unregister
+      // since the Instance ID is not sent to the server yet.
+      if (!token_found) {
+        OnUnregisterCompleted(registration_info,
+                              UnregistrationRequest::SUCCESS);
+        return;
       }
     }
 
