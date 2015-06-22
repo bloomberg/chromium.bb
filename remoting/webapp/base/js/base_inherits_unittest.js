@@ -145,8 +145,8 @@ QUnit.test('should be able to access parent class methods', function(assert) {
 QUnit.test('parent ctor should have access to parent methods',
     function(assert) {
   var child = new base_inherits.ChildClass();
-  assert.ok(child.parentMethodDuringCtor);
+  assert.ok(!!child.parentMethodDuringCtor);
 
   var parent = new base_inherits.ParentClass('blah');
-  assert.ok(parent.parentMethodDuringCtor);
+  assert.ok(!!parent.parentMethodDuringCtor);
 });

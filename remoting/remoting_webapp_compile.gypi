@@ -9,11 +9,15 @@
     'success_stamp': '<(PRODUCT_DIR)/<(_target_name)_jscompile.stamp',
     'success_stamp_bt': '<(PRODUCT_DIR)/<(_target_name)_bt_jscompile.stamp',
     'success_stamp_ut': '<(PRODUCT_DIR)/<(_target_name)_ut_jscompile.stamp',
+    'externs': [
+      '<(DEPTH)/third_party/closure_compiler/externs/chrome_extensions.js',
+      '<@(remoting_webapp_js_externs_files)',
+    ],
     'compiler_flags': [
       '--strict',
       '--no-single-file',
       '--externs',
-      '<(DEPTH)/third_party/closure_compiler/externs/chrome_extensions.js',
+      '<(externs)',
     ],
   },
   'actions': [
@@ -23,6 +27,7 @@
         'remoting_webapp_compile.gypi',
         'remoting_webapp_files.gypi',
         '<@(remoting_webapp_crd_js_files)',
+        '<@(remoting_webapp_js_externs_files)',
         '<@(remoting_webapp_js_proto_files)',
       ],
       'outputs': [
