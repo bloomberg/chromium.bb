@@ -570,6 +570,7 @@
       'graphics/UnacceleratedImageBufferSurface.cpp',
       'graphics/UnacceleratedImageBufferSurface.h',
       'graphics/cpu/arm/WebGLImageConversionNEON.h',
+      'graphics/cpu/x86/WebGLImageConversionSSE.h',
       'graphics/filters/DistantLightSource.cpp',
       'graphics/filters/DistantLightSource.h',
       'graphics/filters/FEBlend.cpp',

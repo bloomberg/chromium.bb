@@ -8,6 +8,7 @@
 #include "platform/CheckedInt.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
+#include "platform/graphics/cpu/x86/WebGLImageConversionSSE.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -395,6 +396,10 @@ template<> void unpack<WebGLImageConversion::DataFormatBGRA8, uint8_t, uint8_t>(
 {
     const uint32_t* source32 = reinterpret_cast_ptr<const uint32_t*>(source);
     uint32_t* destination32 = reinterpret_cast_ptr<uint32_t*>(destination);
+
+#if CPU(X86) || CPU(X86_64)
+    SIMD::unpackOneRowOfBGRA8LittleToRGBA8(source32, destination32, pixelsPerRow);
+#endif
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         uint32_t bgra = source32[i];
 #if CPU(BIG_ENDIAN)
@@ -578,6 +583,9 @@ template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::A
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatR8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
+#if CPU(X86) || CPU(X86_64)
+    SIMD::packOneRowOfRGBA8LittleToR8(source, destination, pixelsPerRow);
+#endif
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
@@ -689,6 +697,9 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
+#if CPU(X86) || CPU(X86_64)
+    SIMD::packOneRowOfRGBA8LittleToRGBA8(source, destination, pixelsPerRow);
+#else
     for (unsigned i = 0; i < pixelsPerRow; ++i) {
         float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
         uint8_t sourceR = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
@@ -701,6 +712,7 @@ template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion
         source += 4;
         destination += 4;
     }
+#endif
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA4444, WebGLImageConversion::AlphaDoNothing, uint8_t, uint16_t>(const uint8_t* source, uint16_t* destination, unsigned pixelsPerRow)

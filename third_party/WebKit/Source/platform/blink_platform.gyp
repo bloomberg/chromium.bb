@@ -246,6 +246,11 @@
     # compiler optimizations, see crbug.com/237063
     'msvs_disabled_warnings': [ 4267, 4334, 4724 ],
     'conditions': [
+      ['target_arch == "ia32" or target_arch == "x64"', {
+        'sources/': [
+          ['include', 'graphics/cpu/x86/WebGLImageConversionSSE\\.h$'],
+        ],
+      }],
       ['OS=="linux" or OS=="android" or OS=="win"', {
         'sources/': [
           # Cherry-pick files excluded by the broader regular expressions above.

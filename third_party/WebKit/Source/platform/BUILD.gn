@@ -25,6 +25,10 @@ blink_platform_neon_files = [
   "graphics/cpu/arm/WebGLImageConversionNEON.h",
 ]
 
+blink_platform_sse_files = [
+  "graphics/cpu/x86/WebGLImageConversionSSE.h",
+]
+
 # blink_common in blink_platform.gyp
 component("blink_common") {
   visibility = []  # Allow re-assignment of list.
@@ -168,6 +172,7 @@ component("platform") {
 
   sources = platform_files
   sources -= blink_platform_neon_files
+  sources -= blink_platform_sse_files
 
   # Add in the generated files.
   sources +=
@@ -299,6 +304,10 @@ component("platform") {
     deps += [ ":blink_arm_neon" ]
   }
 
+  if (current_cpu == "x86" || current_cpu == "x64") {
+    deps += [ ":blink_x86_sse" ]
+  }
+
   if (use_webaudio_ffmpeg) {
     include_dirs += [ "//third_party/ffmpeg" ]
     deps += [ "//third_party/ffmpeg" ]
@@ -396,6 +405,14 @@ if (current_cpu == "arm") {
     #      }],
     #    ],
 
+    deps = [ ":blink_common" ]
+  }
+}
+
+
+if (current_cpu == "x86" || current_cpu == "x64") {
+  source_set("blink_x86_sse") {
+    sources = blink_platform_sse_files
     deps = [ ":blink_common" ]
   }
 }
