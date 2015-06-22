@@ -52,6 +52,11 @@ def main(argv):
     required=True,
   )
   put_parser.add_argument(
+    '-c',
+    '--changes',
+    help='A flie to load a JSON list of changes dicts from.',
+  )
+  put_parser.add_argument(
     '-n',
     '--builder-name',
     help='The builder to schedule the build on.',
@@ -65,6 +70,15 @@ def main(argv):
   args = parser.parse_args()
   # TODO(smut): When more commands are implemented, refactor this.
   assert args.command == 'put'
+
+  changes = []
+  if args.changes:
+    try:
+      with open(args.changes) as fp:
+        changes.extend(json.load(fp))
+    except (TypeError, ValueError):
+      sys.stderr.write('%s contained invalid JSON list.\n' % args.changes)
+      raise
 
   properties = {}
   if args.properties:
@@ -88,6 +102,7 @@ def main(argv):
       'bucket': args.bucket,
       'parameters_json': json.dumps({
         'builder_name': args.builder_name,
+        'changes': changes,
         'properties': properties,
       }),
     }),
