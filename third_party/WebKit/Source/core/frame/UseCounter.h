@@ -745,6 +745,8 @@ public:
         FormDataAppendBlob = 841,
         FormDataAppendBlobWithFilename = 842,
         FormDataAppendNull = 843,
+        HTMLDocumentCreateAttributeNameNotLowercase = 844,
+        NonHTMLElementSetAttributeNodeFromHTMLDocumentNameNotLowercase = 845,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

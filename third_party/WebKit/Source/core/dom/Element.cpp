@@ -2002,6 +2002,9 @@ PassRefPtrWillBeRawPtr<Attr> Element::setAttributeNode(Attr* attrNode, Exception
         return nullptr;
     }
 
+    if (!isHTMLElement() && attrNode->document().isHTMLDocument() && attrNode->name() != attrNode->name().lower())
+        UseCounter::count(document(), UseCounter::NonHTMLElementSetAttributeNodeFromHTMLDocumentNameNotLowercase);
+
     synchronizeAllAttributes();
     const UniqueElementData& elementData = ensureUniqueElementData();
 
