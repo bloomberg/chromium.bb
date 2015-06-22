@@ -195,6 +195,17 @@ const char * const basic_test_names[] = {
 	"surface_position",
 	"surface_destination_rectangle",
 	"surface_source_rectangle",
+	"surface_bad_opacity",
+};
+
+const char * const surface_property_commit_changes_test_names[] = {
+	"commit_changes_after_visibility_set_surface_destroy",
+	"commit_changes_after_opacity_set_surface_destroy",
+	"commit_changes_after_orientation_set_surface_destroy",
+	"commit_changes_after_dimension_set_surface_destroy",
+	"commit_changes_after_position_set_surface_destroy",
+	"commit_changes_after_source_rectangle_set_surface_destroy",
+	"commit_changes_after_destination_rectangle_set_surface_destroy",
 };
 
 TEST_P(ivi_layout_runner, basic_test_names)
@@ -235,5 +246,67 @@ TEST(ivi_layout_surface_create)
 	runner_run(runner, "surface_create_p2");
 
 	ivi_window_destroy(winds[1]);
+	runner_destroy(runner);
+}
+
+TEST_P(commit_changes_after_properties_set_surface_destroy, surface_property_commit_changes_test_names)
+{
+	/* an element from surface_property_commit_changes_test_names */
+	const char * const *test_name = data;
+	struct client *client;
+	struct runner *runner;
+	struct ivi_window *wnd;
+
+	client = create_client();
+	runner = client_create_runner(client);
+
+	wnd = client_create_ivi_window(client, IVI_TEST_SURFACE_ID(0));
+
+	runner_run(runner, *test_name);
+
+	ivi_window_destroy(wnd);
+
+	runner_run(runner, "ivi_layout_commit_changes");
+
+	runner_destroy(runner);
+}
+
+TEST(get_surface_after_destroy_ivi_surface)
+{
+	struct client *client;
+	struct runner *runner;
+	struct ivi_window *wnd;
+
+	client = create_client();
+	runner = client_create_runner(client);
+
+	wnd = client_create_ivi_window(client, IVI_TEST_SURFACE_ID(0));
+
+	ivi_surface_destroy(wnd->ivi_surface);
+
+	runner_run(runner, "get_surface_after_destroy_surface");
+
+	wl_surface_destroy(wnd->wl_surface);
+	free(wnd);
+	runner_destroy(runner);
+}
+
+TEST(get_surface_after_destroy_wl_surface)
+{
+	struct client *client;
+	struct runner *runner;
+	struct ivi_window *wnd;
+
+	client = create_client();
+	runner = client_create_runner(client);
+
+	wnd = client_create_ivi_window(client, IVI_TEST_SURFACE_ID(0));
+
+	wl_surface_destroy(wnd->wl_surface);
+
+	runner_run(runner, "get_surface_after_destroy_surface");
+
+	ivi_surface_destroy(wnd->ivi_surface);
+	free(wnd);
 	runner_destroy(runner);
 }
