@@ -1863,9 +1863,9 @@ TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   WaitForSwap();
   EXPECT_EQ(1u, animation_observer.animation_step_count());
 
-  EXPECT_EQ(false, animation_observer.shutdown());
+  EXPECT_FALSE(animation_observer.shutdown());
   ResetCompositor();
-  EXPECT_EQ(true, animation_observer.shutdown());
+  EXPECT_TRUE(animation_observer.shutdown());
 }
 
 }  // namespace ui
