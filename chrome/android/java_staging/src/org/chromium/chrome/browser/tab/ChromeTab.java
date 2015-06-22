@@ -1351,7 +1351,7 @@ public class ChromeTab extends Tab {
     }
 
     public ReaderModeActivityDelegate getReaderModeActivityDelegate() {
-        return mActivity.getReaderModeActivityDelegate();
+        return mActivity == null ? null : mActivity.getReaderModeActivityDelegate();
     }
 
     /**
