@@ -432,24 +432,14 @@ static int ToMessageID(WebLocalizedString::Name name) {
 // TODO(skyostil): Ensure that we always have an active task runner when
 // constructing the platform.
 BlinkPlatformImpl::BlinkPlatformImpl()
-    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::IsSet()
-                                   ? base::ThreadTaskRunnerHandle::Get()
-                                   : nullptr),
-      shared_timer_func_(NULL),
-      shared_timer_fire_time_(0.0),
-      shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0) {
-  InternalInit();
+    : BlinkPlatformImpl(base::ThreadTaskRunnerHandle::IsSet()
+                            ? base::ThreadTaskRunnerHandle::Get()
+                            : nullptr) {
 }
 
 BlinkPlatformImpl::BlinkPlatformImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
-    : main_thread_task_runner_(main_thread_task_runner),
-      shared_timer_func_(NULL),
-      shared_timer_fire_time_(0.0),
-      shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0) {
-  // TODO(alexclarke): Use c++11 delegated constructors when allowed.
+    : main_thread_task_runner_(main_thread_task_runner) {
   InternalInit();
 }
 
@@ -468,10 +458,6 @@ void BlinkPlatformImpl::InternalInit() {
         ChildThreadImpl::current()->service_registry()));
     sync_provider_.reset(new BackgroundSyncProvider(
         ChildThreadImpl::current()->service_registry()));
-  }
-
-  if (main_thread_task_runner_.get()) {
-    shared_timer_.SetTaskRunner(main_thread_task_runner_);
   }
 }
 
@@ -1106,45 +1092,6 @@ void BlinkPlatformImpl::cryptographicallyRandomValues(
   base::RandBytes(buffer, length);
 }
 
-void BlinkPlatformImpl::setSharedTimerFiredFunction(void (*func)()) {
-  shared_timer_func_ = func;
-}
-
-void BlinkPlatformImpl::setSharedTimerFireInterval(
-    double interval_seconds) {
-  shared_timer_fire_time_ = interval_seconds + monotonicallyIncreasingTime();
-  if (shared_timer_suspended_) {
-    shared_timer_fire_time_was_set_while_suspended_ = true;
-    return;
-  }
-
-  // By converting between double and int64 representation, we run the risk
-  // of losing precision due to rounding errors. Performing computations in
-  // microseconds reduces this risk somewhat. But there still is the potential
-  // of us computing a fire time for the timer that is shorter than what we
-  // need.
-  // As the event loop will check event deadlines prior to actually firing
-  // them, there is a risk of needlessly rescheduling events and of
-  // needlessly looping if sleep times are too short even by small amounts.
-  // This results in measurable performance degradation unless we use ceil() to
-  // always round up the sleep times.
-  int64 interval = static_cast<int64>(
-      ceil(interval_seconds * base::Time::kMillisecondsPerSecond)
-      * base::Time::kMicrosecondsPerMillisecond);
-
-  if (interval < 0)
-    interval = 0;
-
-  shared_timer_.Stop();
-  shared_timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
-                      this, &BlinkPlatformImpl::DoTimeout);
-  OnStartSharedTimer(base::TimeDelta::FromMicroseconds(interval));
-}
-
-void BlinkPlatformImpl::stopSharedTimer() {
-  shared_timer_.Stop();
-}
-
 blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
@@ -1355,23 +1302,6 @@ size_t BlinkPlatformImpl::maxDecodedImageBytes() {
 #else
   return noDecodedImageByteLimit;
 #endif
-}
-
-void BlinkPlatformImpl::SuspendSharedTimer() {
-  ++shared_timer_suspended_;
-}
-
-void BlinkPlatformImpl::ResumeSharedTimer() {
-  DCHECK_GT(shared_timer_suspended_, 0);
-
-  // The shared timer may have fired or been adjusted while we were suspended.
-  if (--shared_timer_suspended_ == 0 &&
-      (!shared_timer_.IsRunning() ||
-       shared_timer_fire_time_was_set_while_suspended_)) {
-    shared_timer_fire_time_was_set_while_suspended_ = false;
-    setSharedTimerFireInterval(
-        shared_timer_fire_time_ - monotonicallyIncreasingTime());
-  }
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

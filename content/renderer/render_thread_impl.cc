@@ -839,8 +839,6 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 #endif
 
   if (pumping_events) {
-    // TODO(alexclarke): Remove the shared timer.
-    blink_platform_impl_->SuspendSharedTimer();
     renderer_scheduler_->SuspendTimerQueue();
 
     if (notify_webkit_of_modal_loop)
@@ -869,8 +867,6 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     if (notify_webkit_of_modal_loop)
       WebView::didExitModalLoop();
 
-    // TODO(alexclarke): Remove the shared timer.
-    blink_platform_impl_->ResumeSharedTimer();
     renderer_scheduler_->ResumeTimerQueue();
   }
 
@@ -1702,12 +1698,9 @@ void RenderThreadImpl::OnUpdateTimezone(const std::string& zone_id) {
 #if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
   EnsureWebKitInitialized();
-  // TODO(alexclarke): Remove the shared timer.
   if (suspend) {
-    blink_platform_impl_->SuspendSharedTimer();
     renderer_scheduler_->SuspendTimerQueue();
   } else {
-    blink_platform_impl_->ResumeSharedTimer();
     renderer_scheduler_->ResumeTimerQueue();
   }
   webkit_shared_timer_suspended_ = suspend;

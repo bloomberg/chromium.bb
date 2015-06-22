@@ -156,9 +156,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual double systemTraceTime();
   virtual void cryptographicallyRandomValues(
       unsigned char* buffer, size_t length);
-  virtual void setSharedTimerFiredFunction(void (*func)());
-  virtual void setSharedTimerFireInterval(double interval_seconds);
-  virtual void stopSharedTimer();
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
@@ -174,19 +171,10 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebPermissionClient* permissionClient();
   virtual blink::WebSyncProvider* backgroundSyncProvider();
 
-  void SuspendSharedTimer();
-  void ResumeSharedTimer();
-  virtual void OnStartSharedTimer(base::TimeDelta delay) {}
-
   virtual blink::WebString domCodeStringFromEnum(int dom_code);
   virtual int domEnumFromCodeString(const blink::WebString& codeString);
 
  private:
-  void DoTimeout() {
-    if (shared_timer_func_ && !shared_timer_suspended_)
-      shared_timer_func_();
-  }
-
   void InternalInit();
   void UpdateWebThreadTLS(blink::WebThread* thread);
 
@@ -197,11 +185,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;
-  base::OneShotTimer<BlinkPlatformImpl> shared_timer_;
-  void (*shared_timer_func_)();
-  double shared_timer_fire_time_;
-  bool shared_timer_fire_time_was_set_while_suspended_;
-  int shared_timer_suspended_;  // counter
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
   scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;

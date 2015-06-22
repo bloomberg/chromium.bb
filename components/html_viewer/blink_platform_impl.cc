@@ -62,12 +62,8 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     mojo::ApplicationImpl* app,
     scheduler::RendererScheduler* renderer_scheduler)
     : main_thread_task_runner_(renderer_scheduler->DefaultTaskRunner()),
-      main_thread_(
-          new scheduler::WebThreadImplForRendererScheduler(renderer_scheduler)),
-      shared_timer_func_(NULL),
-      shared_timer_fire_time_(0.0),
-      shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0) {
+      main_thread_(new scheduler::WebThreadImplForRendererScheduler(
+          renderer_scheduler)) {
   if (app) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:network_service");
@@ -86,7 +82,6 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     app->ConnectToService(request2.Pass(), &clipboard);
     clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
   }
-  shared_timer_.SetTaskRunner(main_thread_task_runner_);
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
@@ -128,44 +123,6 @@ double BlinkPlatformImpl::monotonicallyIncreasingTime() {
 void BlinkPlatformImpl::cryptographicallyRandomValues(unsigned char* buffer,
                                                       size_t length) {
   base::RandBytes(buffer, length);
-}
-
-void BlinkPlatformImpl::setSharedTimerFiredFunction(void (*func)()) {
-  shared_timer_func_ = func;
-}
-
-void BlinkPlatformImpl::setSharedTimerFireInterval(
-    double interval_seconds) {
-  shared_timer_fire_time_ = interval_seconds + monotonicallyIncreasingTime();
-  if (shared_timer_suspended_) {
-    shared_timer_fire_time_was_set_while_suspended_ = true;
-    return;
-  }
-
-  // By converting between double and int64 representation, we run the risk
-  // of losing precision due to rounding errors. Performing computations in
-  // microseconds reduces this risk somewhat. But there still is the potential
-  // of us computing a fire time for the timer that is shorter than what we
-  // need.
-  // As the event loop will check event deadlines prior to actually firing
-  // them, there is a risk of needlessly rescheduling events and of
-  // needlessly looping if sleep times are too short even by small amounts.
-  // This results in measurable performance degradation unless we use ceil() to
-  // always round up the sleep times.
-  int64 interval = static_cast<int64>(
-      ceil(interval_seconds * base::Time::kMillisecondsPerSecond)
-      * base::Time::kMicrosecondsPerMillisecond);
-
-  if (interval < 0)
-    interval = 0;
-
-  shared_timer_.Stop();
-  shared_timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
-                      this, &BlinkPlatformImpl::DoTimeout);
-}
-
-void BlinkPlatformImpl::stopSharedTimer() {
-  shared_timer_.Stop();
 }
 
 bool BlinkPlatformImpl::isThreadedCompositingEnabled() {

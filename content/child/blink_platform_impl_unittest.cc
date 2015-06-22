@@ -13,63 +13,8 @@
 
 namespace content {
 
-// Derives BlinkPlatformImpl for testing shared timers.
-class TestBlinkPlatformImpl : public BlinkPlatformImpl {
- public:
-  TestBlinkPlatformImpl() : mock_monotonically_increasing_time_(0) {}
-
-  // Returns mock time when enabled.
-  double monotonicallyIncreasingTime() override {
-    if (mock_monotonically_increasing_time_ > 0.0)
-      return mock_monotonically_increasing_time_;
-    return BlinkPlatformImpl::monotonicallyIncreasingTime();
-  }
-
-  void OnStartSharedTimer(base::TimeDelta delay) override {
-    shared_timer_delay_ = delay;
-  }
-
-  base::TimeDelta shared_timer_delay() { return shared_timer_delay_; }
-
-  void set_mock_monotonically_increasing_time(double mock_time) {
-    mock_monotonically_increasing_time_ = mock_time;
-  }
-
- private:
-  base::TimeDelta shared_timer_delay_;
-  double mock_monotonically_increasing_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBlinkPlatformImpl);
-};
-
-TEST(BlinkPlatformTest, SuspendResumeSharedTimer) {
-  base::MessageLoop message_loop;
-
-  TestBlinkPlatformImpl platform_impl;
-
-  // Set a timer to fire as soon as possible.
-  platform_impl.setSharedTimerFireInterval(0);
-
-  // Suspend timers immediately so the above timer wouldn't be fired.
-  platform_impl.SuspendSharedTimer();
-
-  // The above timer would have posted a task which can be processed out of the
-  // message loop.
-  base::RunLoop().RunUntilIdle();
-
-  // Set a mock time after 1 second to simulate timers suspended for 1 second.
-  double new_time = base::Time::Now().ToDoubleT() + 1;
-  platform_impl.set_mock_monotonically_increasing_time(new_time);
-
-  // Resume timers so that the timer set above will be set again to fire
-  // immediately.
-  platform_impl.ResumeSharedTimer();
-
-  EXPECT_TRUE(base::TimeDelta() == platform_impl.shared_timer_delay());
-}
-
 TEST(BlinkPlatformTest, IsReservedIPAddress) {
-  TestBlinkPlatformImpl platform_impl;
+  BlinkPlatformImpl platform_impl;
 
   // Unreserved IPv4 addresses (in various forms).
   EXPECT_FALSE(platform_impl.isReservedIPAddress("8.8.8.8"));
@@ -121,7 +66,7 @@ TEST(BlinkPlatformTest, IsReservedIPAddress) {
 }
 
 TEST(BlinkPlatformTest, portAllowed) {
-  TestBlinkPlatformImpl platform_impl;
+  BlinkPlatformImpl platform_impl;
   EXPECT_TRUE(platform_impl.portAllowed(GURL("http://example.com")));
   EXPECT_TRUE(platform_impl.portAllowed(GURL("file://example.com")));
   EXPECT_TRUE(platform_impl.portAllowed(GURL("file://example.com:87")));
