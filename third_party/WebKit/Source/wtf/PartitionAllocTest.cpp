@@ -1504,6 +1504,21 @@ TEST(PartitionAllocTest, DumpMemoryStats)
 
         partitionFreeGeneric(genericAllocator.root(), ptr);
 
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            size_t slotSize = 65536 + (65536 / kGenericNumBucketsPerOrder);
+            const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(slotSize);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_FALSE(stats->isDirectMap);
+            EXPECT_EQ(slotSize, stats->bucketSlotSize);
+            // TODO(cevans): add in the extra EXPECTs once
+            // https://codereview.chromium.org/1198803002/ lands.
+        }
+
         void* ptr2 = partitionAllocGeneric(genericAllocator.root(), 65536 + kSystemPageSize + 1);
         EXPECT_EQ(ptr, ptr2);
 

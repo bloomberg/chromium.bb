@@ -1066,8 +1066,7 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
 {
     uint16_t bucketNumSlots = partitionBucketSlots(page->bucket);
 
-    if (!page->freelistHead && page->numAllocatedSlots == 0) {
-        ASSERT(!page->numUnprovisionedSlots);
+    if (!page->freelistHead && page->numAllocatedSlots == 0 && !page->numUnprovisionedSlots) {
         ++statsOut->numDecommittedPages;
     } else {
         size_t rawSize = partitionPageGetRawSize(const_cast<PartitionPage*>(page));
