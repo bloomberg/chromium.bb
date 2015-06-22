@@ -207,6 +207,7 @@
 #include "public/web/WebRange.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSerializedScriptValue.h"
+#include "public/web/WebTestInterfaceFactory.h"
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_device.h"
 #include "web/AssociatedURLLoader.h"
@@ -1581,6 +1582,18 @@ WebString WebLocalFrameImpl::layoutTreeAsText(LayoutAsTextControls toShow) const
         behavior |= LayoutAsTextPrintingMode;
 
     return externalRepresentation(frame(), behavior);
+}
+
+void WebLocalFrameImpl::registerTestInterface(const WebString& name, WebTestInterfaceFactory* factory)
+{
+    m_testInterfaces.set(name, adoptPtr(factory));
+}
+
+v8::Local<v8::Value> WebLocalFrameImpl::createTestInterface(const AtomicString& name)
+{
+    if (WebTestInterfaceFactory* factory = m_testInterfaces.get(name))
+        return factory->createInstance(mainWorldScriptContext());
+    return v8::Local<v8::Value>();
 }
 
 WebString WebLocalFrameImpl::markerTextForListItem(const WebElement& webElement) const

@@ -895,6 +895,11 @@ void FrameLoaderClientImpl::dispatchWillInsertBody()
         m_webFrame->viewImpl()->willInsertBody(m_webFrame);
 }
 
+v8::Local<v8::Value> FrameLoaderClientImpl::createTestInterface(const AtomicString& name)
+{
+    return m_webFrame->createTestInterface(name);
+}
+
 PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerProvider()
 {
     if (!m_webFrame->client())

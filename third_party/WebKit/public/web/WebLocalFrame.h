@@ -21,6 +21,7 @@ class WebFrameClient;
 class WebNode;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
+class WebTestInterfaceFactory;
 struct WebPrintPresetOptions;
 
 // Interface for interacting with in process frames. This contains methods that
@@ -152,6 +153,11 @@ public:
 
     // If the provided node is an image, reload the image bypassing the cache.
     virtual void reloadImage(const WebNode&) = 0;
+
+    // Testing ----------------------------------------------------------------
+
+    // Registers a test interface factory. Takes ownership of the factory.
+    virtual void registerTestInterface(const WebString& name, WebTestInterfaceFactory*) = 0;
 
 protected:
     explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) { }

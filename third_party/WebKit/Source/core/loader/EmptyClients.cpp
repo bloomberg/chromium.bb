@@ -142,6 +142,11 @@ void EmptyFrameLoaderClient::didRequestAutocomplete(HTMLFormElement*)
 {
 }
 
+v8::Local<v8::Value> EmptyFrameLoaderClient::createTestInterface(const AtomicString& name)
+{
+    return v8::Local<v8::Value>();
+}
+
 PassOwnPtr<WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
 {
     return nullptr;

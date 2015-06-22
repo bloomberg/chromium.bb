@@ -244,6 +244,8 @@ public:
     virtual void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override { }
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) override { return false; }
 
+    virtual v8::Local<v8::Value> createTestInterface(const AtomicString& name) override;
+
     virtual WebCookieJar* cookieJar() const override { return 0; }
 
     virtual void didRequestAutocomplete(HTMLFormElement*) override;

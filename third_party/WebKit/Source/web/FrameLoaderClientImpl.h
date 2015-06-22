@@ -163,6 +163,8 @@ public:
 
     virtual void dispatchWillInsertBody() override;
 
+    virtual v8::Local<v8::Value> createTestInterface(const AtomicString& name) override;
+
     virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
     virtual bool isControlledByServiceWorker(DocumentLoader&) override;
     virtual int64_t serviceWorkerID(DocumentLoader&) override;

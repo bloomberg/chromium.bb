@@ -228,6 +228,12 @@ public:
     virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const override;
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
+    virtual void registerTestInterface(const WebString& name, WebTestInterfaceFactory*) override;
+
+    // Creates a test interface by name if available, returns an empty handle
+    // for unknown names.
+    v8::Local<v8::Value> createTestInterface(const AtomicString& name);
+
     // WebLocalFrame methods:
     virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*, const WebString& name, WebSandboxFlags) override;
     virtual void setAutofillClient(WebAutofillClient*) override;
@@ -385,6 +391,8 @@ private:
     OwnPtrWillBeMember<GeolocationClientProxy> m_geolocationClientProxy;
 
     WebDevToolsFrontendImpl* m_webDevToolsFrontend;
+
+    HashMap<AtomicString, OwnPtr<WebTestInterfaceFactory>> m_testInterfaces;
 
 #if ENABLE(OILPAN)
     // Oilpan: to provide the guarantee of having the frame live until
