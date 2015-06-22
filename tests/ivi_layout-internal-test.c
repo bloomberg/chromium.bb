@@ -33,6 +33,7 @@
 
 #include "src/compositor.h"
 #include "ivi-shell/ivi-layout-export.h"
+#include "ivi-test.h"
 
 struct test_context {
 	struct weston_compositor *compositor;
@@ -144,6 +145,273 @@ test_surface_bad_properties(struct test_context *ctx)
 	iassert(ctl->get_properties_of_surface(NULL) == NULL);
 }
 
+static void
+test_layer_create(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	uint32_t id1;
+	uint32_t id2;
+	struct ivi_layout_layer *ivilayer;
+	struct ivi_layout_layer *new_ivilayer;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	iassert(IVI_TEST_LAYER_ID(0) == ctl->get_id_of_layer(ivilayer));
+
+	new_ivilayer = ctl->get_layer_from_id(IVI_TEST_LAYER_ID(0));
+	iassert(ivilayer == new_ivilayer);
+
+	id1 = ctl->get_id_of_layer(ivilayer);
+	id2 = ctl->get_id_of_layer(new_ivilayer);
+	iassert(id1 == id2);
+
+	ctl->layer_destroy(ivilayer);
+	iassert(ctl->get_layer_from_id(IVI_TEST_LAYER_ID(0)) == NULL);
+}
+
+static void
+test_layer_visibility(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	iassert(ctl->layer_get_visibility(ivilayer) == false);
+
+	iassert(ctl->layer_set_visibility(ivilayer, true) == IVI_SUCCEEDED);
+
+	iassert(ctl->layer_get_visibility(ivilayer) == false);
+
+	ctl->commit_changes();
+
+	iassert(ctl->layer_get_visibility(ivilayer) == true);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->visibility == true);
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_layer_opacity(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	iassert(ctl->layer_get_opacity(ivilayer) == wl_fixed_from_double(1.0));
+
+	iassert(ctl->layer_set_opacity(
+		ivilayer, wl_fixed_from_double(0.5)) == IVI_SUCCEEDED);
+
+	iassert(ctl->layer_get_opacity(ivilayer) == wl_fixed_from_double(1.0));
+
+	ctl->commit_changes();
+
+	iassert(ctl->layer_get_opacity(ivilayer) == wl_fixed_from_double(0.5));
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->opacity == wl_fixed_from_double(0.5));
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_layer_orientation(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	iassert(ctl->layer_get_orientation(ivilayer) == WL_OUTPUT_TRANSFORM_NORMAL);
+
+	iassert(ctl->layer_set_orientation(
+		ivilayer, WL_OUTPUT_TRANSFORM_90) == IVI_SUCCEEDED);
+
+	iassert(ctl->layer_get_orientation(ivilayer) == WL_OUTPUT_TRANSFORM_NORMAL);
+
+	ctl->commit_changes();
+
+	iassert(ctl->layer_get_orientation(ivilayer) == WL_OUTPUT_TRANSFORM_90);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->orientation == WL_OUTPUT_TRANSFORM_90);
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_layer_dimension(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
+	int32_t dest_width;
+	int32_t dest_height;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	iassert(ctl->layer_get_dimension(
+		ivilayer, &dest_width, &dest_height) == IVI_SUCCEEDED);
+	iassert(dest_width == 200);
+	iassert(dest_height == 300);
+
+	iassert(ctl->layer_set_dimension(ivilayer, 400, 600) == IVI_SUCCEEDED);
+
+	iassert(ctl->layer_get_dimension(
+		ivilayer, &dest_width, &dest_height) == IVI_SUCCEEDED);
+	iassert(dest_width == 200);
+	iassert(dest_height == 300);
+
+	ctl->commit_changes();
+
+	iassert(IVI_SUCCEEDED == ctl->layer_get_dimension(
+		ivilayer, &dest_width, &dest_height));
+	iassert(dest_width == 400);
+	iassert(dest_height == 600);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->dest_width == 400);
+	iassert(prop->dest_height == 600);
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_layer_position(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
+	int32_t dest_x;
+	int32_t dest_y;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	iassert(ctl->layer_get_position(
+		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
+	iassert(dest_x == 0);
+	iassert(dest_y == 0);
+
+	iassert(ctl->layer_set_position(ivilayer, 20, 30) == IVI_SUCCEEDED);
+
+	iassert(ctl->layer_get_position(
+		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
+	iassert(dest_x == 0);
+	iassert(dest_y == 0);
+
+	ctl->commit_changes();
+
+	iassert(ctl->layer_get_position(
+		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
+	iassert(dest_x == 20);
+	iassert(dest_y == 30);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->dest_x == 20);
+	iassert(prop->dest_y == 30);
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_layer_destination_rectangle(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
+	int32_t dest_width;
+	int32_t dest_height;
+	int32_t dest_x;
+	int32_t dest_y;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->dest_width == 200);
+	iassert(prop->dest_height == 300);
+	iassert(prop->dest_x == 0);
+	iassert(prop->dest_y == 0);
+
+	iassert(ctl->layer_set_destination_rectangle(
+		ivilayer, 20, 30, 400, 600) == IVI_SUCCEEDED);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->dest_width == 200);
+	iassert(prop->dest_height == 300);
+	iassert(prop->dest_x == 0);
+	iassert(prop->dest_y == 0);
+
+	ctl->commit_changes();
+
+	iassert(ctl->layer_get_dimension(
+		ivilayer, &dest_width, &dest_height) == IVI_SUCCEEDED);
+	iassert(dest_width == 400);
+	iassert(dest_height == 600);
+
+	iassert(ctl->layer_get_position(
+		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
+	iassert(dest_x == 20);
+	iassert(dest_y == 30);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->dest_width == 400);
+	iassert(prop->dest_height == 600);
+	iassert(prop->dest_x == 20);
+	iassert(prop->dest_y == 30);
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_layer_source_rectangle(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+	iassert(ivilayer != NULL);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->source_width == 200);
+	iassert(prop->source_height == 300);
+	iassert(prop->source_x == 0);
+	iassert(prop->source_y == 0);
+
+	iassert(ctl->layer_set_source_rectangle(
+		ivilayer, 20, 30, 400, 600) == IVI_SUCCEEDED);
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->source_width == 200);
+	iassert(prop->source_height == 300);
+	iassert(prop->source_x == 0);
+	iassert(prop->source_y == 0);
+
+	ctl->commit_changes();
+
+	prop = ctl->get_properties_of_layer(ivilayer);
+	iassert(prop->source_width == 400);
+	iassert(prop->source_height == 600);
+	iassert(prop->source_x == 20);
+	iassert(prop->source_y == 30);
+
+	ctl->layer_destroy(ivilayer);
+}
+
 /************************ tests end ********************************/
 
 static void
@@ -158,6 +426,15 @@ run_internal_tests(void *data)
 	test_surface_bad_position(ctx);
 	test_surface_bad_source_rectangle(ctx);
 	test_surface_bad_properties(ctx);
+
+	test_layer_create(ctx);
+	test_layer_visibility(ctx);
+	test_layer_opacity(ctx);
+	test_layer_orientation(ctx);
+	test_layer_dimension(ctx);
+	test_layer_position(ctx);
+	test_layer_destination_rectangle(ctx);
+	test_layer_source_rectangle(ctx);
 
 	weston_compositor_exit_with_code(ctx->compositor, EXIT_SUCCESS);
 	free(ctx);
