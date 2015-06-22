@@ -44,9 +44,9 @@ TEST(ProcessUtilsTest, ProcessReturnsError) {
 
   // Execute the command and collect the output. Verify that the output of the
   // process is collected, even when the process returns an error code.
-  std::string stderr;
-  ASSERT_FALSE(GetAppOutput(args, &stderr));
-  ASSERT_FALSE(stderr.empty());
+  std::string stderr_result;
+  ASSERT_FALSE(GetAppOutput(args, &stderr_result));
+  ASSERT_FALSE(stderr_result.empty());
 }
 
 }  // namespace chromecast
