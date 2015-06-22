@@ -1177,32 +1177,52 @@ bool IsAutoReloadVisibleOnlyEnabled() {
 void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     const base::CommandLine& browser_command_line,
     base::CommandLine* command_line) {
-  // Calling GetVariationParams has the side-effect of assigning the client to a
-  // field trial group. It is important that we call this first (for example,
-  // before checking HasSwitch() below), so we're sure to assign users that
-  // specify the blink-settings flag to the flag forced field trial group.
-  std::map<std::string, std::string> params;
-  if (!variations::GetVariationParams(
-          "BackgroundHtmlParserTokenLimits", &params)) {
+  // List of field trials that modify the blink-settings command line flag. No
+  // two field trials in the list should specify the same keys, otherwise one
+  // field trial may overwrite another. See Source/core/frame/Settings.in in
+  // Blink for the list of valid keys.
+  static const char* const kBlinkSettingsFieldTrials[] = {
+    // Keys: backgroundHtmlParserOutstandingTokenLimit
+    //       backgroundHtmlParserPendingTokenLimit
+    "BackgroundHtmlParserTokenLimits",
+
+    // Keys: lowPriorityIframes
+    "LowPriorityIFrames",
+  };
+
+  std::vector<std::string> blink_settings;
+  for (const char* field_trial_name : kBlinkSettingsFieldTrials) {
+    // Each blink-settings field trial should include a forcing_flag group,
+    // to make sure that clients that specify the blink-settings flag on the
+    // command line are excluded from the experiment groups. To make
+    // sure we assign clients that specify this flag to the forcing_flag
+    // group, we must call GetVariationParams for each field trial first
+    // (for example, before checking HasSwitch() and returning), since
+    // GetVariationParams has the side-effect of assigning the client to
+    // a field trial group.
+    std::map<std::string, std::string> params;
+    if (variations::GetVariationParams(field_trial_name, &params)) {
+      for (const auto& param : params) {
+        blink_settings.push_back(base::StringPrintf(
+            "%s=%s", param.first.c_str(), param.second.c_str()));
+      }
+    }
+  }
+  if (blink_settings.empty()) {
     return;
   }
 
   if (browser_command_line.HasSwitch(switches::kBlinkSettings) ||
       command_line->HasSwitch(switches::kBlinkSettings)) {
     // The field trial is configured to force users that specify the
-    // blink-settings flag into a group with no params, so it's an
-    // error if this happens.
+    // blink-settings flag into a group with no params, and we return
+    // above if no params were specified, so it's an error if we reach
+    // this point.
     LOG(WARNING) << "Received field trial params, "
                     "but blink-settings switch already specified.";
     return;
   }
 
-  // The blink-settings flag is of the form key1=value1,key2=value2,...
-  std::vector<std::string> blink_settings;
-  for (const auto& param : params) {
-    blink_settings.push_back(base::StringPrintf(
-        "%s=%s", param.first.c_str(), param.second.c_str()));
-  }
   command_line->AppendSwitchASCII(switches::kBlinkSettings,
                                   JoinString(blink_settings, ','));
 }

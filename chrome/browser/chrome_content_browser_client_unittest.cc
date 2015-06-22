@@ -149,6 +149,9 @@ TEST_F(DisableWebRtcEncryptionFlagTest, StableChannel) {
 
 class BlinkSettingsFieldTrialTest : public testing::Test {
  public:
+  static const char kParserFieldTrialName[];
+  static const char kIFrameFieldTrialName[];
+
   BlinkSettingsFieldTrialTest()
       : trial_list_(NULL),
         command_line_(base::CommandLine::NO_PROGRAM) {}
@@ -162,16 +165,19 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
     variations::testing::ClearAllVariationParams();
   }
 
-  void CreateFieldTrial() {
-    base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kGroupName);
+  void CreateFieldTrial(const char* trial_name) {
+    base::FieldTrialList::CreateFieldTrial(trial_name, kGroupName);
   }
 
-  void CreateFieldTrialWithParams() {
-    CreateFieldTrial();
+  void CreateFieldTrialWithParams(
+      const char* trial_name,
+      const char* key1, const char* value1,
+      const char* key2, const char* value2) {
     std::map<std::string, std::string> params;
-    params.insert(std::make_pair("key1", "value1"));
-    params.insert(std::make_pair("key2", "value2"));
-    variations::AssociateVariationParams(kFieldTrialName, kGroupName, params);
+    params.insert(std::make_pair(key1, value1));
+    params.insert(std::make_pair(key2, value2));
+    CreateFieldTrial(trial_name);
+    variations::AssociateVariationParams(trial_name, kGroupName, params);
   }
 
   void AppendContentBrowserClientSwitches() {
@@ -188,7 +194,6 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
 
  private:
   static const int kFakeChildProcessId = 1;
-  static const char kFieldTrialName[];
   static const char kGroupName[];
 
   ChromeContentBrowserClient client_;
@@ -198,8 +203,10 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-const char BlinkSettingsFieldTrialTest::kFieldTrialName[] =
+const char BlinkSettingsFieldTrialTest::kParserFieldTrialName[] =
     "BackgroundHtmlParserTokenLimits";
+const char BlinkSettingsFieldTrialTest::kIFrameFieldTrialName[] =
+    "LowPriorityIFrames";
 const char BlinkSettingsFieldTrialTest::kGroupName[] = "FakeGroup";
 
 TEST_F(BlinkSettingsFieldTrialTest, NoFieldTrial) {
@@ -208,14 +215,15 @@ TEST_F(BlinkSettingsFieldTrialTest, NoFieldTrial) {
 }
 
 TEST_F(BlinkSettingsFieldTrialTest, FieldTrialWithoutParams) {
-  CreateFieldTrial();
+  CreateFieldTrial(kParserFieldTrialName);
   AppendContentBrowserClientSwitches();
   EXPECT_FALSE(command_line().HasSwitch(switches::kBlinkSettings));
 }
 
 TEST_F(BlinkSettingsFieldTrialTest, BlinkSettingsSwitchAlreadySpecified) {
   AppendBlinkSettingsSwitch("foo");
-  CreateFieldTrialWithParams();
+  CreateFieldTrialWithParams(kParserFieldTrialName,
+                             "key1", "value1", "key2", "value2");
   AppendContentBrowserClientSwitches();
   EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
   EXPECT_EQ("foo",
@@ -223,10 +231,33 @@ TEST_F(BlinkSettingsFieldTrialTest, BlinkSettingsSwitchAlreadySpecified) {
 }
 
 TEST_F(BlinkSettingsFieldTrialTest, FieldTrialEnabled) {
-  CreateFieldTrialWithParams();
+  CreateFieldTrialWithParams(kParserFieldTrialName,
+                             "key1", "value1", "key2", "value2");
   AppendContentBrowserClientSwitches();
   EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
   EXPECT_EQ("key1=value1,key2=value2",
+            command_line().GetSwitchValueASCII(switches::kBlinkSettings));
+}
+
+TEST_F(BlinkSettingsFieldTrialTest, MultipleFieldTrialsEnabled) {
+  CreateFieldTrialWithParams(kParserFieldTrialName,
+                             "key1", "value1", "key2", "value2");
+  CreateFieldTrialWithParams(kIFrameFieldTrialName,
+                             "keyA", "valueA", "keyB", "valueB");
+  AppendContentBrowserClientSwitches();
+  EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
+  EXPECT_EQ("key1=value1,key2=value2,keyA=valueA,keyB=valueB",
+            command_line().GetSwitchValueASCII(switches::kBlinkSettings));
+}
+
+TEST_F(BlinkSettingsFieldTrialTest, MultipleFieldTrialsDuplicateKeys) {
+  CreateFieldTrialWithParams(kParserFieldTrialName,
+                             "key1", "value1", "key2", "value2");
+  CreateFieldTrialWithParams(kIFrameFieldTrialName,
+                             "key2", "duplicate", "key3", "value3");
+  AppendContentBrowserClientSwitches();
+  EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
+  EXPECT_EQ("key1=value1,key2=value2,key2=duplicate,key3=value3",
             command_line().GetSwitchValueASCII(switches::kBlinkSettings));
 }
 
