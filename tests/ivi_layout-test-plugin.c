@@ -82,6 +82,7 @@ struct test_launcher {
 struct test_context {
 	const struct ivi_controller_interface *controller_interface;
 	struct wl_resource *runner_resource;
+	uint32_t user_flags;
 };
 
 static struct test_context static_context;
@@ -877,3 +878,174 @@ RUNNER_TEST(cleanup_layer)
 	ctl->layer_destroy(ivilayer);
 }
 
+static void
+test_surface_properties_changed_notification_callback(struct ivi_layout_surface *ivisurf,
+						      const struct ivi_layout_surface_properties *prop,
+						      enum ivi_layout_notification_mask mask,
+						      void *userdata)
+{
+	struct test_context *ctx = userdata;
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert_or_return(ctl->get_id_of_surface(ivisurf) == IVI_TEST_SURFACE_ID(0));
+
+	ctx->user_flags = 1;
+}
+
+RUNNER_TEST(surface_properties_changed_notification)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	const uint32_t id_surface = IVI_TEST_SURFACE_ID(0);
+	struct ivi_layout_surface *ivisurf;
+
+	ctx->user_flags = 0;
+
+	ivisurf = ctl->get_surface_from_id(id_surface);
+	runner_assert(ivisurf != NULL);
+
+	runner_assert(ctl->surface_add_notification(
+		      ivisurf, test_surface_properties_changed_notification_callback, ctx) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	runner_assert(ctx->user_flags == 0);
+
+	runner_assert(ctl->surface_set_destination_rectangle(
+		      ivisurf, 20, 30, 200, 300) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	runner_assert(ctx->user_flags == 1);
+
+	ctx->user_flags = 0;
+	runner_assert(ctl->surface_set_destination_rectangle(
+		      ivisurf, 20, 30, 200, 300) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	runner_assert(ctx->user_flags == 0);
+
+	ctl->surface_remove_notification(ivisurf);
+	ctx->user_flags = 0;
+	runner_assert(ctl->surface_set_destination_rectangle(
+		      ivisurf, 40, 50, 400, 500) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	runner_assert(ctx->user_flags == 0);
+}
+
+static void
+test_surface_configure_notification_callback(struct ivi_layout_surface *ivisurf,
+					     void *userdata)
+{
+	struct test_context *ctx = userdata;
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert_or_return(ctl->get_id_of_surface(ivisurf) == IVI_TEST_SURFACE_ID(0));
+
+	ctx->user_flags = 1;
+}
+
+RUNNER_TEST(surface_configure_notification_p1)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert(IVI_SUCCEEDED == ctl->add_notification_configure_surface(test_surface_configure_notification_callback, ctx));
+	ctl->commit_changes();
+
+	ctx->user_flags = 0;
+}
+
+RUNNER_TEST(surface_configure_notification_p2)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert(ctx->user_flags == 1);
+
+	ctl->remove_notification_configure_surface(test_surface_configure_notification_callback, ctx);
+	ctx->user_flags = 0;
+}
+
+RUNNER_TEST(surface_configure_notification_p3)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	ctl->commit_changes();
+	runner_assert(ctx->user_flags == 0);
+}
+
+static void
+test_surface_create_notification_callback(struct ivi_layout_surface *ivisurf,
+					  void *userdata)
+{
+	struct test_context *ctx = userdata;
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert_or_return(ctl->get_id_of_surface(ivisurf) == IVI_TEST_SURFACE_ID(0));
+
+	ctx->user_flags = 1;
+}
+
+RUNNER_TEST(surface_create_notification_p1)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert(ctl->add_notification_create_surface(
+		      test_surface_create_notification_callback, ctx) == IVI_SUCCEEDED);
+
+	ctx->user_flags = 0;
+}
+
+RUNNER_TEST(surface_create_notification_p2)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert(ctx->user_flags == 1);
+
+	ctl->remove_notification_create_surface(
+		test_surface_create_notification_callback, ctx);
+	ctx->user_flags = 0;
+}
+
+RUNNER_TEST(surface_create_notification_p3)
+{
+	runner_assert(ctx->user_flags == 0);
+}
+
+static void
+test_surface_remove_notification_callback(struct ivi_layout_surface *ivisurf,
+					  void *userdata)
+{
+	struct test_context *ctx = userdata;
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert_or_return(ctl->get_id_of_surface(ivisurf) == IVI_TEST_SURFACE_ID(0));
+
+	ctx->user_flags = 1;
+}
+
+RUNNER_TEST(surface_remove_notification_p1)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert(ctl->add_notification_remove_surface(
+		      test_surface_remove_notification_callback, ctx) == IVI_SUCCEEDED);
+
+	ctx->user_flags = 0;
+}
+
+RUNNER_TEST(surface_remove_notification_p2)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	runner_assert(ctx->user_flags == 1);
+
+	ctl->remove_notification_remove_surface(test_surface_remove_notification_callback, ctx);
+	ctx->user_flags = 0;
+}
+
+RUNNER_TEST(surface_remove_notification_p3)
+{
+	runner_assert(ctx->user_flags == 0);
+}
