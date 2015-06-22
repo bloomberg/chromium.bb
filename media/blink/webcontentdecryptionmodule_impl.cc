@@ -56,7 +56,7 @@ void WebContentDecryptionModuleImpl::Create(
   if (security_origin.isUnique() || security_origin.toString() == "null") {
     result.completeWithError(
         blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
-        "CDM use not allowed for unique security origin.");
+        "EME use is not allowed on unique origins.");
     return;
   }
 
