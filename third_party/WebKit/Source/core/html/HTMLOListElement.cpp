@@ -64,8 +64,9 @@ void HTMLOListElement::collectStyleForPresentationAttribute(const QualifiedName&
             addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueUpperRoman);
         else if (value == "1")
             addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueDecimal);
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLOListElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -85,8 +86,9 @@ void HTMLOListElement::parseAttribute(const QualifiedName& name, const AtomicStr
             return;
         m_isReversed = reversed;
         updateItemValues();
-    } else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLOListElement::setStart(int start)

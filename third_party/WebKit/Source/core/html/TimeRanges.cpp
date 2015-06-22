@@ -67,9 +67,9 @@ void TimeRanges::invert()
     double posInf = std::numeric_limits<double>::infinity();
     double negInf = -std::numeric_limits<double>::infinity();
 
-    if (!m_ranges.size())
+    if (!m_ranges.size()) {
         inverted->add(negInf, posInf);
-    else {
+    } else {
         double start = m_ranges.first().m_start;
         if (start != negInf)
             inverted->add(negInf, start);
@@ -145,7 +145,7 @@ void TimeRanges::add(double start, double end)
 
     for (overlappingArcIndex = 0; overlappingArcIndex < m_ranges.size(); overlappingArcIndex++) {
         if (addedRange.isOverlappingRange(m_ranges[overlappingArcIndex])
-         || addedRange.isContiguousWithRange(m_ranges[overlappingArcIndex])) {
+            || addedRange.isContiguousWithRange(m_ranges[overlappingArcIndex])) {
             // We need to merge the addedRange and that range.
             addedRange = addedRange.unionWithOverlappingOrContiguousRange(m_ranges[overlappingArcIndex]);
             m_ranges.remove(overlappingArcIndex);
@@ -160,7 +160,7 @@ void TimeRanges::add(double start, double end)
                 }
             } else {
                 if (m_ranges[overlappingArcIndex - 1].isBeforeRange(addedRange)
-                 && addedRange.isBeforeRange(m_ranges[overlappingArcIndex])) {
+                    && addedRange.isBeforeRange(m_ranges[overlappingArcIndex])) {
                     // We are exactly after the current previous range, and before the current range, while
                     // not overlapping with none of them. Insert here.
                     break;

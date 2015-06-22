@@ -186,13 +186,14 @@ void HTMLFontElement::collectStyleForPresentationAttribute(const QualifiedName& 
         CSSValueID size = CSSValueInvalid;
         if (cssValueFromFontSizeNumber(value, size))
             addPropertyToPresentationAttributeStyle(style, CSSPropertyFontSize, size);
-    } else if (name == colorAttr)
+    } else if (name == colorAttr) {
         addHTMLColorToStyle(style, CSSPropertyColor, value);
-    else if (name == faceAttr && !value.isEmpty()) {
+    } else if (name == faceAttr && !value.isEmpty()) {
         if (RefPtrWillBeRawPtr<CSSValueList> fontFaceValue = cssValuePool().createFontFaceValue(value))
             style->setProperty(CSSProperty(CSSPropertyFontFamily, fontFaceValue.release()));
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 }

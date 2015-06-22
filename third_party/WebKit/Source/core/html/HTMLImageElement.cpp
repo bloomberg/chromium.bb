@@ -176,24 +176,25 @@ bool HTMLImageElement::isPresentationAttribute(const QualifiedName& name) const
 
 void HTMLImageElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == widthAttr)
+    if (name == widthAttr) {
         addHTMLLengthToStyle(style, CSSPropertyWidth, value);
-    else if (name == heightAttr)
+    } else if (name == heightAttr) {
         addHTMLLengthToStyle(style, CSSPropertyHeight, value);
-    else if (name == borderAttr)
+    } else if (name == borderAttr) {
         applyBorderAttributeToStyle(value, style);
-    else if (name == vspaceAttr) {
+    } else if (name == vspaceAttr) {
         addHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
         addHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
     } else if (name == hspaceAttr) {
         addHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
         addHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
-    } else if (name == alignAttr)
+    } else if (name == alignAttr) {
         applyAlignmentAttributeToStyle(value, style);
-    else if (name == valignAttr)
+    } else if (name == valignAttr) {
         addPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign, value);
-    else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 const AtomicString HTMLImageElement::imageSourceURL() const

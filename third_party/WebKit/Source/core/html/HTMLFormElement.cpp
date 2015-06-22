@@ -250,7 +250,8 @@ void HTMLFormElement::submitImplicitly(Event* event, bool fromImplicitSubmission
             if (control->isSuccessfulSubmitButton()) {
                 control->dispatchSimulatedClick(event);
                 return;
-            } else if (fromImplicitSubmissionTrigger) {
+            }
+            if (fromImplicitSubmissionTrigger) {
                 // Default (submit) button is not activated; no implicit submission.
                 return;
             }
@@ -516,20 +517,21 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         KURL actionURL = document().completeURL(m_attributes.action().isEmpty() ? document().url().string() : m_attributes.action());
         if (MixedContentChecker::isMixedFormAction(document().frame(), actionURL))
             UseCounter::count(document().frame(), UseCounter::MixedContentFormPresent);
-    } else if (name == targetAttr)
+    } else if (name == targetAttr) {
         m_attributes.setTarget(value);
-    else if (name == methodAttr)
+    } else if (name == methodAttr) {
         m_attributes.updateMethodType(value);
-    else if (name == enctypeAttr)
+    } else if (name == enctypeAttr) {
         m_attributes.updateEncodingType(value);
-    else if (name == accept_charsetAttr)
+    } else if (name == accept_charsetAttr) {
         m_attributes.setAcceptCharset(value);
-    else if (name == onautocompleteAttr)
+    } else if (name == onautocompleteAttr) {
         setAttributeEventListener(EventTypeNames::autocomplete, createAttributeEventListener(this, name, value, eventParameterName()));
-    else if (name == onautocompleteerrorAttr)
+    } else if (name == onautocompleteerrorAttr) {
         setAttributeEventListener(EventTypeNames::autocompleteerror, createAttributeEventListener(this, name, value, eventParameterName()));
-    else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLFormElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)

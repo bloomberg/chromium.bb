@@ -34,8 +34,8 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTableCell.h"
 
-using std::max;
-using std::min;
+using namespace std;
+using namespace std;
 
 namespace blink {
 
@@ -94,9 +94,9 @@ bool HTMLTableCellElement::isPresentationAttribute(const QualifiedName& name) co
 
 void HTMLTableCellElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == nowrapAttr)
+    if (name == nowrapAttr) {
         addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace, CSSValueWebkitNowrap);
-    else if (name == widthAttr) {
+    } else if (name == widthAttr) {
         if (!value.isEmpty()) {
             int widthInt = value.toInt();
             if (widthInt > 0) // width="0" is ignored for compatibility with WinIE.
@@ -108,8 +108,9 @@ void HTMLTableCellElement::collectStyleForPresentationAttribute(const QualifiedN
             if (heightInt > 0) // height="0" is ignored for compatibility with WinIE.
                 addHTMLLengthToStyle(style, CSSPropertyHeight, value);
         }
-    } else
+    } else {
         HTMLTablePartElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -120,8 +121,9 @@ void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const Atomi
     } else if (name == colspanAttr) {
         if (layoutObject() && layoutObject()->isTableCell())
             toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
-    } else
+    } else {
         HTMLTablePartElement::parseAttribute(name, value);
+    }
 }
 
 const StylePropertySet* HTMLTableCellElement::additionalPresentationAttributeStyle()

@@ -128,8 +128,9 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const Atomi
     } else if (name == onbeforeunloadAttr) {
         // FIXME: should <frame> elements have beforeunload handlers?
         setAttributeEventListener(EventTypeNames::beforeunload, createAttributeEventListener(this, name, value, eventParameterName()));
-    } else
+    } else {
         HTMLFrameOwnerElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLFrameElementBase::setNameAndOpenURL()

@@ -181,9 +181,9 @@ bool HTMLSelectElement::valueMissing() const
 
 void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
 {
-    if (!multiple())
+    if (!multiple()) {
         optionSelectedByUser(listToOptionIndex(listIndex), fireOnChangeNow, false);
-    else {
+    } else {
         updateSelectedState(listIndex, allowMultiplySelections, shift);
         setNeedsValidityCheck();
         if (fireOnChangeNow)
@@ -351,9 +351,9 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
             lazyReattachIfAttached();
             setRecalcListItems();
         }
-    } else if (name == multipleAttr)
+    } else if (name == multipleAttr) {
         parseMultipleAttribute(value);
-    else if (name == accesskeyAttr) {
+    } else if (name == accesskeyAttr) {
         // FIXME: ignore for the moment.
         //
     } else if (name == disabledAttr) {
@@ -365,8 +365,9 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
             }
         }
 
-    } else
+    } else {
         HTMLFormControlElementWithState::parseAttribute(name, value);
+    }
 }
 
 bool HTMLSelectElement::shouldShowFocusRingOnMouseFocus() const
@@ -744,9 +745,9 @@ void HTMLSelectElement::setOptionsChangedOnLayoutObject()
 
 const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& HTMLSelectElement::listItems() const
 {
-    if (m_shouldRecalcListItems)
+    if (m_shouldRecalcListItems) {
         recalcListItems();
-    else {
+    } else {
 #if ENABLE(ASSERT)
         WillBeHeapVector<RawPtrWillBeMember<HTMLElement>> items = m_listItems;
         recalcListItems(false);
@@ -1171,8 +1172,9 @@ void HTMLSelectElement::resetImpl()
                 selectedOption->setSelectedState(false);
             toHTMLOptionElement(element)->setSelectedState(true);
             selectedOption = toHTMLOptionElement(element);
-        } else
+        } else {
             toHTMLOptionElement(element)->setSelectedState(false);
+        }
 
         if (!firstOption)
             firstOption = toHTMLOptionElement(element);
@@ -1308,9 +1310,9 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
         focus();
         if (layoutObject() && layoutObject()->isMenuList() && !isDisabledFormControl()) {
             if (LayoutMenuList* menuList = toLayoutMenuList(layoutObject())) {
-                if (menuList->popupIsVisible())
+                if (menuList->popupIsVisible()) {
                     menuList->hidePopup();
-                else {
+                } else {
                     // Save the selection so it can be compared to the new
                     // selection when we call onChange during selectOption,
                     // which gets called from LayoutMenuList::valueChanged,
@@ -1538,10 +1540,11 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             handled = true;
         }
 
-        if (isSpatialNavigationEnabled(document().frame()))
+        if (isSpatialNavigationEnabled(document().frame())) {
             // Check if the selection moves to the boundary.
             if (keyIdentifier == "Left" || keyIdentifier == "Right" || ((keyIdentifier == "Down" || keyIdentifier == "Up") && endIndex == m_activeSelectionEndIndex))
                 return;
+        }
 
         if (endIndex >= 0 && handled) {
             // Save the selection so it can be compared to the new selection
@@ -1568,8 +1571,9 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
             if (selectNewItem) {
                 updateListBoxSelection(deselectOthers);
                 listBoxOnChange();
-            } else
+            } else {
                 scrollToSelection();
+            }
 
             event->setDefaultHandled();
         }

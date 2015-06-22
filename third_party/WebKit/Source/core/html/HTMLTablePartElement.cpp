@@ -49,9 +49,9 @@ bool HTMLTablePartElement::isPresentationAttribute(const QualifiedName& name) co
 
 void HTMLTablePartElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == bgcolorAttr)
+    if (name == bgcolorAttr) {
         addHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
-    else if (name == backgroundAttr) {
+    } else if (name == backgroundAttr) {
         String url = stripLeadingAndTrailingHTMLSpaces(value);
         if (!url.isEmpty()) {
             RefPtrWillBeRawPtr<CSSImageValue> imageValue = CSSImageValue::create(url, document().completeURL(url));
@@ -83,8 +83,9 @@ void HTMLTablePartElement::collectStyleForPresentationAttribute(const QualifiedN
     } else if (name == heightAttr) {
         if (!value.isEmpty())
             addHTMLLengthToStyle(style, CSSPropertyHeight, value);
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 HTMLTableElement* HTMLTablePartElement::findParentTable() const

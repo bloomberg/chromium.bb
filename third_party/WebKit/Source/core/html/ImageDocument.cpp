@@ -48,7 +48,7 @@
 #include "wtf/text/StringBuilder.h"
 #include <limits>
 
-using std::min;
+using namespace std;
 
 namespace blink {
 
@@ -283,9 +283,9 @@ void ImageDocument::imageClicked(int x, int y)
 
     m_shouldShrinkImage = !m_shouldShrinkImage;
 
-    if (m_shouldShrinkImage)
+    if (m_shouldShrinkImage) {
         windowSizeChanged(ScaleZoomedDocument);
-    else {
+    } else {
         restoreImageSize(ScaleZoomedDocument);
 
         updateLayout();
@@ -434,9 +434,9 @@ DEFINE_TRACE(ImageDocument)
 
 void ImageEventListener::handleEvent(ExecutionContext*, Event* event)
 {
-    if (event->type() == EventTypeNames::resize)
+    if (event->type() == EventTypeNames::resize) {
         m_doc->windowSizeChanged(ImageDocument::ScaleOnlyUnzoomedDocument);
-    else if (event->type() == EventTypeNames::click && event->isMouseEvent()) {
+    } else if (event->type() == EventTypeNames::click && event->isMouseEvent()) {
         MouseEvent* mouseEvent = toMouseEvent(event);
         m_doc->imageClicked(mouseEvent->x(), mouseEvent->y());
     }

@@ -171,8 +171,9 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
     } else if (name == autofocusAttr) {
         HTMLElement::parseAttribute(name, value);
         UseCounter::count(document(), UseCounter::AutoFocusAttribute);
-    } else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLFormControlElement::disabledAttributeChanged()

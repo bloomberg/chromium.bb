@@ -77,8 +77,9 @@ void HTMLFrameElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == noresizeAttr) {
         if (layoutObject())
             layoutObject()->updateFromElement();
-    } else
+    } else {
         HTMLFrameElementBase::parseAttribute(name, value);
+    }
 }
 
 } // namespace blink

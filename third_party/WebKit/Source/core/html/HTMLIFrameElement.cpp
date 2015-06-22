@@ -74,21 +74,22 @@ bool HTMLIFrameElement::isPresentationAttribute(const QualifiedName& name) const
 
 void HTMLIFrameElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == widthAttr)
+    if (name == widthAttr) {
         addHTMLLengthToStyle(style, CSSPropertyWidth, value);
-    else if (name == heightAttr)
+    } else if (name == heightAttr) {
         addHTMLLengthToStyle(style, CSSPropertyHeight, value);
-    else if (name == alignAttr)
+    } else if (name == alignAttr) {
         applyAlignmentAttributeToStyle(value, style);
-    else if (name == frameborderAttr) {
+    } else if (name == frameborderAttr) {
         // LocalFrame border doesn't really match the HTML4 spec definition for iframes. It simply adds
         // a presentational hint that the border should be off if set to zero.
         if (!value.toInt()) {
             // Add a rule that nulls out our border width.
             addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderWidth, 0, CSSPrimitiveValue::CSS_PX);
         }
-    } else
+    } else {
         HTMLFrameElementBase::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLIFrameElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)

@@ -122,5 +122,5 @@ bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtrWil
     return true;
 }
 
-} //namespace
+} // namespace
 

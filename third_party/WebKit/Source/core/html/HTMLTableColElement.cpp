@@ -79,8 +79,9 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
                     col->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
             }
         }
-    } else
+    } else {
         HTMLTablePartElement::parseAttribute(name, value);
+    }
 }
 
 const StylePropertySet* HTMLTableColElement::additionalPresentationAttributeStyle()

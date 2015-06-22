@@ -49,8 +49,9 @@ void HTMLParagraphElement::collectStyleForPresentationAttribute(const QualifiedN
             addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, CSSValueWebkitRight);
         else
             addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, value);
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 }

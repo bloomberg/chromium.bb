@@ -44,8 +44,9 @@ void HTMLTableCaptionElement::collectStyleForPresentationAttribute(const Qualifi
     if (name == alignAttr) {
         if (!value.isEmpty())
             addPropertyToPresentationAttributeStyle(style, CSSPropertyCaptionSide, value);
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 }

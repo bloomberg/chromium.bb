@@ -212,8 +212,9 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
             setSelected(willBeSelected);
     } else if (name == labelAttr) {
         updateLabel();
-    } else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 String HTMLOptionElement::value() const

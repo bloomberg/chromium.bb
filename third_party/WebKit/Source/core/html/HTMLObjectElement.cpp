@@ -97,9 +97,9 @@ void HTMLObjectElement::collectStyleForPresentationAttribute(const QualifiedName
 
 void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == formAttr)
+    if (name == formAttr) {
         formAttributeChanged();
-    else if (name == typeAttr) {
+    } else if (name == typeAttr) {
         m_serviceType = value.lower();
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)

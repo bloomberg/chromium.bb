@@ -148,8 +148,9 @@ void HTMLTextAreaElement::collectStyleForPresentationAttribute(const QualifiedNa
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace, CSSValuePre);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap, CSSValueNormal);
         }
-    } else
+    } else {
         HTMLTextFormControlElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -193,8 +194,9 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name, const Atomic
         setNeedsValidityCheck();
     } else if (name == minlengthAttr) {
         setNeedsValidityCheck();
-    } else
+    } else {
         HTMLTextFormControlElement::parseAttribute(name, value);
+    }
 }
 
 LayoutObject* HTMLTextAreaElement::createLayoutObject(const ComputedStyle&)

@@ -102,7 +102,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
 {
     for (HTMLElement* tfoot = Traversal<HTMLElement>::lastChild(table, HasHTMLTagName(tfootTag)); tfoot; tfoot = Traversal<HTMLElement>::previousSibling(*tfoot, HasHTMLTagName(tfootTag))) {
         if (HTMLTableRowElement* lastRow = Traversal<HTMLTableRowElement>::lastChild(*tfoot))
-                return lastRow;
+            return lastRow;
     }
 
     for (HTMLElement* child = Traversal<HTMLElement>::lastChild(table); child; child = Traversal<HTMLElement>::previousSibling(*child)) {

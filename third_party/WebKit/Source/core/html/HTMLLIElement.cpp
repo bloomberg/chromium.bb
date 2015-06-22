@@ -62,8 +62,9 @@ void HTMLLIElement::collectStyleForPresentationAttribute(const QualifiedName& na
             addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, CSSValueDecimal);
         else
             addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType, value);
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLLIElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -71,8 +72,9 @@ void HTMLLIElement::parseAttribute(const QualifiedName& name, const AtomicString
     if (name == valueAttr) {
         if (layoutObject() && layoutObject()->isListItem())
             parseValue(value);
-    } else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 }
 
 void HTMLLIElement::attach(const AttachContext& context)

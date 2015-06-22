@@ -245,11 +245,11 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
     if (equalIgnoringCase(selectionMode, "select")) {
         newSelectionStart = start;
         newSelectionEnd = start + replacementLength;
-    } else if (equalIgnoringCase(selectionMode, "start"))
+    } else if (equalIgnoringCase(selectionMode, "start")) {
         newSelectionStart = newSelectionEnd = start;
-    else if (equalIgnoringCase(selectionMode, "end"))
+    } else if (equalIgnoringCase(selectionMode, "end")) {
         newSelectionStart = newSelectionEnd = start + replacementLength;
-    else {
+    } else {
         // Default is "preserve".
         long delta = replacementLength - (end - start);
 
@@ -610,8 +610,9 @@ void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const
     if (name == placeholderAttr) {
         updatePlaceholderVisibility(true);
         UseCounter::count(document(), UseCounter::PlaceholderAttribute);
-    } else
+    } else {
         HTMLFormControlElementWithState::parseAttribute(name, value);
+    }
 }
 
 bool HTMLTextFormControlElement::lastChangeWasUserEdit() const
