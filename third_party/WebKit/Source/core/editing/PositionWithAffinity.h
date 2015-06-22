@@ -24,6 +24,14 @@ public:
     EAffinity affinity() const { return m_affinity; }
     const PositionType& position() const { return m_position; }
 
+    // Returns true if both |this| and |other| is null or both |m_position|
+    // and |m_affinity| equal.
+    bool operator==(const PositionWithAffinityTemplate& other) const;
+    bool operator!=(const PositionWithAffinityTemplate& other) const { return !operator==(other); }
+
+    bool isNotNull() const { return m_position.isNotNull(); }
+    bool isNull() const { return m_position.isNull(); }
+
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_position);

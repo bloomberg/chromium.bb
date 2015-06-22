@@ -439,7 +439,7 @@ VisiblePosition VisiblePosition::right(bool stayInEditableContent) const
     return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);
 }
 
-static VisiblePosition honorEditingBoundaryAtOrBeforeOf(const VisiblePosition& pos, const Position& anchor)
+PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity& pos, const Position& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -447,27 +447,27 @@ static VisiblePosition honorEditingBoundaryAtOrBeforeOf(const VisiblePosition& p
     ContainerNode* highestRoot = highestEditableRoot(anchor);
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
-    if (highestRoot && !pos.deepEquivalent().deprecatedNode()->isDescendantOf(highestRoot))
-        return VisiblePosition();
+    if (highestRoot && !pos.position().deprecatedNode()->isDescendantOf(highestRoot))
+        return PositionWithAffinity();
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable
     // FIXME: In the non-editable case, just because the new position is non-editable doesn't mean movement
     // to it is allowed.  VisibleSelection::adjustForEditableContent has this problem too.
-    if (highestEditableRoot(pos.deepEquivalent()) == highestRoot)
+    if (highestEditableRoot(pos.position()) == highestRoot)
         return pos;
 
     // Return empty position if this position is non-editable, but pos is editable
     // FIXME: Move to the previous non-editable region.
     if (!highestRoot)
-        return VisiblePosition();
+        return PositionWithAffinity();
 
     // Return the last position before pos that is in the same editable region as this position
-    return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
+    return lastEditablePositionBeforePositionInRoot(pos.position(), highestRoot);
 }
 
 VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePosition &pos) const
 {
-    return honorEditingBoundaryAtOrBeforeOf(pos, deepEquivalent());
+    return VisiblePosition(honorEditingBoundaryAtOrBeforeOf(PositionWithAffinity(pos.deepEquivalent(), pos.affinity()), deepEquivalent()));
 }
 
 VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosition &pos) const
@@ -621,15 +621,29 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     return next;
 }
 
+Position canonicalPositionOf(const Position& position)
+{
+    return canonicalPosition(position);
+}
+
 void VisiblePosition::init(const Position& position, EAffinity affinity)
 {
     m_affinity = affinity;
 
     m_deepPosition = canonicalPosition(position);
 
-    // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
-    if (m_affinity == UPSTREAM && (isNull() || inSameLine(VisiblePosition(position, DOWNSTREAM), *this)))
+    if (m_affinity != UPSTREAM)
+        return;
+
+    if (isNull()) {
         m_affinity = DOWNSTREAM;
+        return;
+    }
+
+    // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
+    if (!inSameLine(PositionWithAffinity(m_deepPosition, DOWNSTREAM), PositionWithAffinity(m_deepPosition, UPSTREAM)))
+        return;
+    m_affinity = DOWNSTREAM;
 }
 
 UChar32 VisiblePosition::characterAfter() const

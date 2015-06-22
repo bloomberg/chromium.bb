@@ -138,6 +138,9 @@ VisiblePosition startVisiblePosition(const Range*, EAffinity);
 
 Element* enclosingBlockFlowElement(const VisiblePosition&);
 
+Position canonicalPositionOf(const Position&);
+PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
+
 bool isFirstVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
 bool isLastVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
 

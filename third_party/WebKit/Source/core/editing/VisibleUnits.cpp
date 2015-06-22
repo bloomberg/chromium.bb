@@ -711,20 +711,20 @@ VisiblePosition nextWordPosition(const VisiblePosition &c)
 // ---------
 
 enum LineEndpointComputationMode { UseLogicalOrdering, UseInlineBoxOrdering };
-static VisiblePosition startPositionForLine(const VisiblePosition& c, LineEndpointComputationMode mode)
+static PositionWithAffinity startPositionForLine(const PositionWithAffinity& c, LineEndpointComputationMode mode)
 {
     if (c.isNull())
-        return VisiblePosition();
+        return PositionWithAffinity();
 
-    RootInlineBox* rootBox = RenderedPosition(c).rootBox();
+    RootInlineBox* rootBox = RenderedPosition(c.position(), c.affinity()).rootBox();
     if (!rootBox) {
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
-        Position p = c.deepEquivalent();
+        Position p = c.position();
         if (p.deprecatedNode()->layoutObject() && p.deprecatedNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
 
-        return VisiblePosition();
+        return PositionWithAffinity();
     }
 
     Node* startNode;
@@ -732,14 +732,14 @@ static VisiblePosition startPositionForLine(const VisiblePosition& c, LineEndpoi
     if (mode == UseLogicalOrdering) {
         startNode = rootBox->getLogicalStartBoxWithNode(startBox);
         if (!startNode)
-            return VisiblePosition();
+            return PositionWithAffinity();
     } else {
         // Generated content (e.g. list markers and CSS :before and :after pseudoelements) have no corresponding DOM element,
         // and so cannot be represented by a VisiblePosition. Use whatever follows instead.
         startBox = rootBox->firstLeafChild();
         while (true) {
             if (!startBox)
-                return VisiblePosition();
+                return PositionWithAffinity();
 
             startNode = startBox->layoutObject().nonPseudoNode();
             if (startNode)
@@ -749,34 +749,39 @@ static VisiblePosition startPositionForLine(const VisiblePosition& c, LineEndpoi
         }
     }
 
-    return VisiblePosition(startNode->isTextNode() ? Position(toText(startNode), toInlineTextBox(startBox)->start()) : positionBeforeNode(startNode));
+    return PositionWithAffinity(startNode->isTextNode() ? Position(toText(startNode), toInlineTextBox(startBox)->start()) : positionBeforeNode(startNode));
 }
 
-static VisiblePosition startOfLine(const VisiblePosition& c, LineEndpointComputationMode mode)
+static PositionWithAffinity startOfLine(const PositionWithAffinity& c, LineEndpointComputationMode mode)
 {
     // TODO: this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-    VisiblePosition visPos = startPositionForLine(c, mode);
+    PositionWithAffinity visPos = startPositionForLine(c, mode);
 
     if (mode == UseLogicalOrdering) {
-        if (ContainerNode* editableRoot = highestEditableRoot(c.deepEquivalent())) {
-            if (!editableRoot->contains(visPos.deepEquivalent().containerNode()))
-                return VisiblePosition(firstPositionInNode(editableRoot));
+        if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
+            if (!editableRoot->contains(visPos.position().containerNode()))
+                return PositionWithAffinity(firstPositionInNode(editableRoot));
         }
     }
 
-    return c.honorEditingBoundaryAtOrBefore(visPos);
+    return honorEditingBoundaryAtOrBeforeOf(visPos, c.position());
+}
+
+static PositionWithAffinity startOfLine(const PositionWithAffinity& currentPosition)
+{
+    return startOfLine(currentPosition, UseInlineBoxOrdering);
 }
 
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
 VisiblePosition startOfLine(const VisiblePosition& currentPosition)
 {
-    return startOfLine(currentPosition, UseInlineBoxOrdering);
+    return VisiblePosition(startOfLine(PositionWithAffinity(currentPosition.deepEquivalent(), currentPosition.affinity()), UseInlineBoxOrdering));
 }
 
 VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
 {
-    return startOfLine(currentPosition, UseLogicalOrdering);
+    return VisiblePosition(startOfLine(PositionWithAffinity(currentPosition.deepEquivalent(), currentPosition.affinity()), UseLogicalOrdering));
 }
 
 static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpointComputationMode mode)
@@ -885,9 +890,23 @@ VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
     return endOfLine(currentPosition, UseLogicalOrdering);
 }
 
+bool inSameLine(const PositionWithAffinity& position1, const PositionWithAffinity& position2)
+{
+    if (position1.isNull() || position2.isNull())
+        return false;
+    PositionWithAffinity startOfLine1 = startOfLine(position1);
+    PositionWithAffinity startOfLine2 = startOfLine(position2);
+    if (startOfLine1 == startOfLine2)
+        return true;
+    Position canonicalized1 = canonicalPositionOf(startOfLine1.position());
+    if (canonicalized1 == startOfLine2.position())
+        return true;
+    return canonicalized1 == canonicalPositionOf(startOfLine2.position());
+}
+
 bool inSameLine(const VisiblePosition &a, const VisiblePosition &b)
 {
-    return a.isNotNull() && startOfLine(a) == startOfLine(b);
+    return inSameLine(PositionWithAffinity(a.deepEquivalent(), a.affinity()), PositionWithAffinity(b.deepEquivalent(), b.affinity()));
 }
 
 bool isStartOfLine(const VisiblePosition &p)
