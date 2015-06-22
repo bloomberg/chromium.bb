@@ -137,6 +137,9 @@ class AXTreeSerializer {
   void SerializeChangedNodes(AXSourceNode node,
                              AXTreeUpdate* out_update);
 
+  // Visit all of the descendants of |node| once.
+  void WalkAllDescendants(AXSourceNode node);
+
   // The tree source.
   AXTreeSource<AXSourceNode>* tree_;
 
@@ -329,6 +332,13 @@ void AXTreeSerializer<AXSourceNode>::SerializeChanges(
   // Serialize from the LCA, or from the root if there isn't one.
   if (!tree_->IsValid(lca))
     lca = tree_->GetRoot();
+
+  // Work around flaky source trees where nodes don't figure out their
+  // correct parent/child relationships until you walk the whole tree once.
+  // Covered by this test in the content_browsertests suite:
+  //     DumpAccessibilityTreeTest.AccessibilityAriaOwns.
+  WalkAllDescendants(lca);
+
   SerializeChangedNodes(lca, out_update);
 }
 
@@ -470,6 +480,15 @@ void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
   // ids that were valid during serialization.
   out_update->nodes[serialized_node_index].child_ids.swap(
       actual_serialized_node_child_ids);
+}
+
+template<typename AXSourceNode>
+void AXTreeSerializer<AXSourceNode>::WalkAllDescendants(
+    AXSourceNode node) {
+  std::vector<AXSourceNode> children;
+  tree_->GetChildren(node, &children);
+  for (size_t i = 0; i < children.size(); ++i)
+    WalkAllDescendants(children[i]);
 }
 
 }  // namespace ui
