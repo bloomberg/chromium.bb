@@ -88,6 +88,8 @@ struct ivi_layout_layer {
 		struct wl_list surface_list;
 		struct wl_list link;
 	} order;
+
+	int32_t ref_count;
 };
 
 struct ivi_layout {
