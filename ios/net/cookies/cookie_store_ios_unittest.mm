@@ -579,6 +579,27 @@ TEST_F(CookieStoreIOSWithBackend, SyncThenUnsync) {
   dummy_store->UnSynchronize();
 }
 
+// Tests that Synchronization can be "aborted" while there are pending tasks
+// (i.e. the cookie store is unsynchronized while synchronization is in progress
+// and there are pending tasks).
+TEST_F(CookieStoreIOSWithBackend, SyncThenUnsyncWithPendingTasks) {
+  ClearCookies();
+  scoped_refptr<CookieStoreIOS> dummy_store = new CookieStoreIOS(nullptr);
+  // Start synchornization.
+  CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
+  // Create a pending task while synchronization is in progress.
+  GetCookieCallback callback;
+  GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
+  // Cancel the synchronization.
+  CookieStoreIOS::SwitchSynchronizedStore(store_.get(), dummy_store.get());
+  // Synchronization completes after being cancelled.
+  backend_->RunLoadedCallback();
+  // The task is not lost.
+  EXPECT_TRUE(callback.did_run());
+  EXPECT_EQ("a=b", callback.cookie_line());
+  dummy_store->UnSynchronize();
+}
+
 TEST_F(CookieStoreIOSWithBackend, ChangePolicyOnceDuringSynchronization) {
   // Start synchronization.
   CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
@@ -590,6 +611,23 @@ TEST_F(CookieStoreIOSWithBackend, ChangePolicyOnceDuringSynchronization) {
   CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::ALLOW);
   GetCookieCallback callback;
   GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
+  EXPECT_TRUE(callback.did_run());
+  EXPECT_EQ("a=b", callback.cookie_line());
+  store_->UnSynchronize();
+}
+
+TEST_F(CookieStoreIOSWithBackend,
+       ChangePolicyDuringSynchronizationWithPendingTask) {
+  // Start synchronization.
+  CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
+  // Create a pending task while synchronization is in progress.
+  GetCookieCallback callback;
+  GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
+  // Toggle cookie policy to trigger another synchronization while the first one
+  // is still in progress.
+  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::BLOCK);
+  // Backend loading completes (end of synchronization).
+  backend_->RunLoadedCallback();
   EXPECT_TRUE(callback.did_run());
   EXPECT_EQ("a=b", callback.cookie_line());
   store_->UnSynchronize();

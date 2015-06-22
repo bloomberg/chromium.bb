@@ -164,6 +164,8 @@ class CookieStoreIOS : public net::CookieStore,
   // Copies the cookies to the backing CookieMonster. If the cookie store is not
   // synchronized with the system store, this is a no-op.
   void WriteToCookieMonster(NSArray* system_cookies);
+  // Runs all the pending tasks.
+  void RunAllPendingTasks();
 
   // Inherited CookieNotificationObserver methods.
   void OnSystemCookiesChanged() override;
