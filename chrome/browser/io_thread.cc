@@ -634,11 +634,6 @@ void IOThread::Init() {
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
                                 &system_enable_referrers_));
 
-#if defined(ENABLE_EXTENSIONS)
-  if (command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling))
-    chrome_network_delegate->NeverThrottleRequests();
-#endif
-
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile4(

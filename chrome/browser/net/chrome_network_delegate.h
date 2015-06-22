@@ -111,10 +111,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
     domain_reliability_monitor_ = monitor;
   }
 
-  // Causes |OnCanThrottleRequest| to always return false, for all
-  // instances of this object.
-  static void NeverThrottleRequests();
-
   // Binds the pref members to |pref_service| and moves them to the IO thread.
   // |enable_referrers| cannot be NULL, the others can.
   // This method should be called on the UI thread.
@@ -130,8 +126,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   static void AllowAccessToAllFiles();
 
  private:
-  friend class ChromeNetworkDelegateThrottlingTest;
-
   // NetworkDelegate implementation.
   int OnBeforeURLRequest(net::URLRequest* request,
                          const net::CompletionCallback& callback,
@@ -166,7 +160,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
                       net::CookieOptions* options) override;
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& path) const override;
-  bool OnCanThrottleRequest(const net::URLRequest& request) const override;
   bool OnCanEnablePrivacyMode(
       const GURL& url,
       const GURL& first_party_for_cookies) const override;
@@ -202,14 +195,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   // When true, allow access to all file:// URLs.
   static bool g_allow_file_access_;
-
-  // True if OnCanThrottleRequest should always return false.
-  //
-  // Note: This needs to be static as the instance of
-  // ChromeNetworkDelegate used may change over time, and we need to
-  // set this variable once at start-up time.  It is effectively
-  // static anyway since it is based on a command-line flag.
-  static bool g_never_throttle_requests_;
 
   bool experimental_web_platform_features_enabled_;
 
