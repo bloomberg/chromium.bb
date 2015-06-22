@@ -80,8 +80,13 @@ void P2PSocketDispatcher::OnFilterRemoved() {
   sender_ = NULL;
 }
 
+void P2PSocketDispatcher::OnChannelConnected(int32 peer_id) {
+  connected_ = true;
+}
+
 void P2PSocketDispatcher::OnChannelClosing() {
   sender_ = NULL;
+  connected_ = false;
 }
 
 base::SingleThreadTaskRunner* P2PSocketDispatcher::task_runner() {

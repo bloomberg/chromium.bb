@@ -25,6 +25,7 @@
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/rtc_video_encoder_factory.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
+#include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -184,6 +185,7 @@ PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
       worker_thread_(NULL),
       chrome_signaling_thread_("Chrome_libJingle_Signaling"),
       chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
+  TryScheduleStunProbeTrial();
 }
 
 PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
@@ -584,15 +586,53 @@ void PeerConnectionDependencyFactory::InitializeWorkerThread(
   event->Signal();
 }
 
+void PeerConnectionDependencyFactory::TryScheduleStunProbeTrial() {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  if (!cmd_line->HasSwitch(switches::kWebRtcStunProbeTrialParameter))
+    return;
+
+  GetPcFactory();
+
+  // The underneath IPC channel has to be connected before sending any IPC
+  // message.
+  if (!p2p_socket_dispatcher_->connected()) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PeerConnectionDependencyFactory::TryScheduleStunProbeTrial,
+                   base::Unretained(this)),
+        base::TimeDelta::FromSeconds(1));
+    return;
+  }
+
+  const std::string params =
+      cmd_line->GetSwitchValueASCII(switches::kWebRtcStunProbeTrialParameter);
+
+  chrome_worker_thread_.task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(
+          &PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread,
+          base::Unretained(this), params),
+      base::TimeDelta::FromMilliseconds(kExperimentStartDelayMs));
+}
+
+void PeerConnectionDependencyFactory::StartStunProbeTrialOnWorkerThread(
+    const std::string& params) {
+  DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
+  rtc::NetworkManager::NetworkList networks;
+  network_manager_->GetNetworks(&networks);
+  stun_prober_ = StartStunProbeTrial(networks, params, socket_factory_.get());
+}
+
 void PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
     base::WaitableEvent* event) {
-  DCHECK_EQ(base::MessageLoop::current(), chrome_worker_thread_.message_loop());
+  DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
   network_manager_ = new IpcNetworkManager(p2p_socket_dispatcher_.get());
   event->Signal();
 }
 
 void PeerConnectionDependencyFactory::DeleteIpcNetworkManager() {
-  DCHECK_EQ(base::MessageLoop::current(), chrome_worker_thread_.message_loop());
+  DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
   delete network_manager_;
   network_manager_ = NULL;
 }

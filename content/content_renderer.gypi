@@ -639,6 +639,8 @@
       'renderer/media/webrtc/media_stream_track_metrics.h',
       'renderer/media/webrtc/peer_connection_dependency_factory.cc',
       'renderer/media/webrtc/peer_connection_dependency_factory.h',
+      'renderer/media/webrtc/stun_field_trial.cc',
+      'renderer/media/webrtc/stun_field_trial.h',
       'renderer/media/webrtc/track_observer.cc',
       'renderer/media/webrtc/track_observer.h',
       'renderer/media/webrtc/video_destination_handler.cc',
@@ -771,6 +773,7 @@
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/webrtc/modules/modules.gyp:audio_device',
         '../third_party/webrtc/modules/modules.gyp:audio_processing',
+        '../third_party/webrtc/p2p/p2p.gyp:libstunprober',
         '<(DEPTH)/crypto/crypto.gyp:crypto',
       ],
       'sources': [

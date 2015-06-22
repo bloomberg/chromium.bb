@@ -532,5 +532,17 @@ if (enable_webrtc) {
       "//third_party/webrtc/voice_engine",
     ]
   }
+
+  source_set("libstunprober") {
+    p2p_dir = "../webrtc/p2p"
+    sources = [
+      "$p2p_dir/stunprober/stunprober.cc",
+    ]
+
+    deps = [
+      "//third_party/webrtc/base:rtc_base",
+      ":libjingle_webrtc_common",
+    ]
+  }
 }  # enable_webrtc
 # TODO(GYP): Port libjingle.gyp's enable_webrtc condition block.

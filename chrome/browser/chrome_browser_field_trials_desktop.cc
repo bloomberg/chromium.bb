@@ -41,6 +41,23 @@ void SetupLightSpeedTrials() {
   }
 }
 
+void SetupStunProbeTrial() {
+  std::map<std::string, std::string> params;
+  if (!variations::GetVariationParams("StunProbeTrial", &params))
+    return;
+
+  // The parameter, used by StartStunFieldTrial, should have the following
+  // format: "request_per_ip/interval/sharedsocket/server1:port/server2:port/
+  // server3:port/"
+  std::string cmd_param = params["request_per_ip"] + "/" + params["interval"] +
+                          "/" + params["sharedsocket"] + "/" +
+                          params["server1"] + "/" + params["server2"] + "/" +
+                          params["server3"] + "/";
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kWebRtcStunProbeTrialParameter, cmd_param);
+}
+
 }  // namespace
 
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
@@ -48,6 +65,7 @@ void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   AutoLaunchChromeFieldTrial();
   SetupLightSpeedTrials();
   tracing::SetupBackgroundTracingFieldTrial();
+  SetupStunProbeTrial();
 }
 
 }  // namespace chrome

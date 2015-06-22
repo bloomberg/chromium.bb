@@ -60,6 +60,8 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   void RemoveNetworkListObserver(
       NetworkListObserver* network_list_observer) override;
 
+  bool connected() { return connected_; }
+
  protected:
   ~P2PSocketDispatcher() override;
 
@@ -75,6 +77,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   void OnFilterAdded(IPC::Sender* sender) override;
   void OnFilterRemoved() override;
   void OnChannelClosing() override;
+  void OnChannelConnected(int32 peer_pid) override;
 
   base::SingleThreadTaskRunner* task_runner();
 
@@ -113,6 +116,9 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
       network_list_observers_;
 
   IPC::Sender* sender_;
+
+  // To indicate whether IPC could be invoked on this dispatcher.
+  bool connected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

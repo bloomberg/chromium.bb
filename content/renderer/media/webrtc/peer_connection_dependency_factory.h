@@ -14,10 +14,12 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
+#include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
+#include "third_party/webrtc/p2p/stunprober/stunprober.h"
 
 namespace base {
 class WaitableEvent;
@@ -170,6 +172,11 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // the renderer message loop is destroyed.
   void WillDestroyCurrentMessageLoop() override;
 
+  // Functions related to Stun probing trial to determine how fast we could send
+  // Stun request without being dropped by NAT.
+  void TryScheduleStunProbeTrial();
+  void StartStunProbeTrialOnWorkerThread(const std::string& params);
+
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
   void CreatePeerConnectionFactory();
@@ -197,6 +204,8 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
+
+  scoped_ptr<stunprober::StunProber> stun_prober_;
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.

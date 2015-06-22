@@ -48370,6 +48370,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.NAT.Metrics" enum="NatTypeCounters">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    Counters on various types of NAT observed. This is logged once per session.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.NumDataChannelsPerPeerConnection">
   <owner>perkj@chromium.org</owner>
   <summary>
@@ -48473,6 +48480,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Durations of video tracks sent over a PeerConnection. The stopwatch starts
     when the track first becomes connected, and ends when it is disconnected or
     very soon thereafter.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Stun.ResponseLatency" units="milliseconds">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    For clients using a shared source port per STUN binding request, average RTT
+    for requests which received a response with various intervals between
+    requests. Only the first instance of renderers will conduct the trial and
+    log this result.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Stun.SuccessPercent" units="percent">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    For clients using a shared source port per STUN binding request, success
+    rate for requests which received a response with various intervals between
+    requests. Only the first instance of renderers will conduct the trial and
+    log this result.
   </summary>
 </histogram>
 
@@ -60733,6 +60760,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Hit"/>
 </enum>
 
+<enum name="NatTypeCounters" type="int">
+  <int value="0" label="Not behind a NAT."/>
+  <int value="1" label="Behind a NAT of unknown type."/>
+  <int value="2" label="Behind a Symmetric NAT."/>
+  <int value="3" label="Behind a Non-Symmetric NAT."/>
+</enum>
+
 <enum name="NavigationDirection" type="int">
   <summary>Direction of the overscroll gesture.</summary>
   <int value="0" label="None">Did not scroll</int>
@@ -70466,6 +70500,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ModuleIntegrityVerification.Difference"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="NatType" separator=".">
+  <suffix name="NoNAT"/>
+  <suffix name="UnknownNAT"/>
+  <suffix name="SymNAT"/>
+  <suffix name="NonSymNAT"/>
+  <affected-histogram name="WebRTC.Stun.ResponseLatency"/>
+  <affected-histogram name="WebRTC.Stun.SuccessPercent"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="NavigationCharacteristic">
   <suffix name="ExistingRenderer_BeforeUnloadDiscounted"
       label="Navigation reused an existing renderer process. Time spent in
@@ -73143,6 +73186,29 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Blob" label="Appending a blob."/>
   <affected-histogram name="Storage.BlobItemSize"/>
   <affected-histogram name="Storage.BlobItemSize.BlobSlice"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="StunPingInternal" separator=".">
+  <suffix name="0ms" label="0ms between requests"/>
+  <suffix name="5ms" label="5ms between requests"/>
+  <suffix name="10ms" label="10ms between requests"/>
+  <suffix name="15ms" label="15ms between requests"/>
+  <suffix name="20ms" label="20ms between requests"/>
+  <suffix name="25ms" label="25ms between requests"/>
+  <suffix name="30ms" label="30ms between requests"/>
+  <suffix name="35ms" label="35ms between requests"/>
+  <suffix name="40ms" label="40ms between requests"/>
+  <suffix name="45ms" label="45ms between requests"/>
+  <suffix name="50ms" label="50ms between requests"/>
+  <suffix name="100ms" label="100ms between requests"/>
+  <affected-histogram name="WebRTC.Stun.ResponseLatency.NoNAT"/>
+  <affected-histogram name="WebRTC.Stun.ResponseLatency.NonSymNAT"/>
+  <affected-histogram name="WebRTC.Stun.ResponseLatency.SymNAT"/>
+  <affected-histogram name="WebRTC.Stun.ResponseLatency.UnknownNAT"/>
+  <affected-histogram name="WebRTC.Stun.SuccessPercent.NoNAT"/>
+  <affected-histogram name="WebRTC.Stun.SuccessPercent.NonSymNAT"/>
+  <affected-histogram name="WebRTC.Stun.SuccessPercent.SymNAT"/>
+  <affected-histogram name="WebRTC.Stun.SuccessPercent.UnknownNAT"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyzygyStartupTime">

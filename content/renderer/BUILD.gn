@@ -132,6 +132,7 @@ source_set("renderer") {
       "//third_party/webrtc/modules/audio_processing",
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/libjingle:libpeerconnection",
+      "//third_party/libjingle:libstunprober",
     ]
   } else {
     sources += [

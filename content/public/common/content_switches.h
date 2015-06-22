@@ -253,6 +253,7 @@ CONTENT_EXPORT extern const char kDisableWebRtcHWEncoding[];
 CONTENT_EXPORT extern const char kEnableWebRtcDtls12[];
 CONTENT_EXPORT extern const char kEnableWebRtcHWH264Encoding[];
 CONTENT_EXPORT extern const char kEnableWebRtcStunOrigin[];
+CONTENT_EXPORT extern const char kWebRtcStunProbeTrialParameter[];
 extern const char kWebRtcMaxCaptureFramerate[];
 #endif
 

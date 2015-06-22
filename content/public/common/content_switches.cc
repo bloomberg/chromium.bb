@@ -898,6 +898,11 @@ const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";
 // Enables Origin header in Stun messages for WebRTC.
 const char kEnableWebRtcStunOrigin[]        = "enable-webrtc-stun-origin";
 
+// Renderer process parameter for WebRTC Stun probe trial to determine the
+// interval. Please see SetupStunProbeTrial in
+// chrome_browser_field_trials_desktop.cc for more detail.
+const char kWebRtcStunProbeTrialParameter[] = "webrtc-stun-probe-trial";
+
 // Override the maximum framerate as can be specified in calls to getUserMedia.
 // This flag expects a value.  Example: --max-gum-fps=17.5
 const char kWebRtcMaxCaptureFramerate[]     = "max-gum-fps";
