@@ -131,7 +131,7 @@ bool FontResource::ensureCustomFontData()
 {
     if (!m_fontData && !errorOccurred() && !isLoading()) {
         if (m_data)
-            m_fontData = FontCustomPlatformData::create(m_data.get());
+            m_fontData = FontCustomPlatformData::create(m_data.get(), m_otsParsingMessage);
 
         if (m_fontData) {
             recordPackageFormatHistogram(packageFormatOf(m_data.get()));

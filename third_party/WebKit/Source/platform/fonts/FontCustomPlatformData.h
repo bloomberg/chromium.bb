@@ -49,7 +49,7 @@ class SharedBuffer;
 class PLATFORM_EXPORT FontCustomPlatformData {
     WTF_MAKE_NONCOPYABLE(FontCustomPlatformData);
 public:
-    static PassOwnPtr<FontCustomPlatformData> create(SharedBuffer*);
+    static PassOwnPtr<FontCustomPlatformData> create(SharedBuffer*, String& otsParseMessage);
     ~FontCustomPlatformData();
 
     FontPlatformData fontPlatformData(float size, bool bold, bool italic, FontOrientation = FontOrientation::Horizontal);

@@ -12,8 +12,8 @@
 
 namespace blink {
 
-BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data)
-    : m_customPlatformData(FontCustomPlatformData::create(data))
+BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data, String& otsParseMessage)
+    : m_customPlatformData(FontCustomPlatformData::create(data, otsParseMessage))
 {
 }
 

@@ -61,6 +61,7 @@ public:
 
     void setCORSFailed() override { m_corsFailed = true; }
     bool isCORSFailed() const { return m_corsFailed; }
+    String otsParsingMessage() const { return m_otsParsingMessage; }
 
     bool ensureCustomFontData();
     FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = FontOrientation::Horizontal);
@@ -87,6 +88,7 @@ private:
     enum State { Unloaded, LoadScheduled, LoadInitiated };
 
     OwnPtr<FontCustomPlatformData> m_fontData;
+    String m_otsParsingMessage;
     State m_state;
     bool m_exceedsFontLoadWaitLimit;
     bool m_corsFailed;

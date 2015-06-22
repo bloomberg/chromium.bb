@@ -659,7 +659,6 @@ crbug.com/307777 [ Android ] fast/html/imports/import-same-url.html [ Timeout Pa
 crbug.com/307777 [ Android ] fast/html/imports/no-browsing-context.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/images/percent-height-image.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/images/png-suite/test.html [ ImageOnlyFailure Timeout ]
-crbug.com/307777 [ Android ] fast/images/style-access-during-imageChanged-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/images/text-content-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/inline-block/anonymous-block-crash.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/307777 [ Android ] fast/inline/fixed-pos-moves-with-abspos-parent.html [ Timeout Pass ]
@@ -1666,6 +1665,16 @@ crbug.com/461041 fast/forms/calendar-picker/month-picker-ax.html [ Pass Timeout 
 crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
+
+crbug.com/97467 fast/images/style-access-during-imageChanged-crash.html [ NeedsRebaseline ]
+crbug.com/97467 fast/text/custom-font-data-crash2.html [ NeedsRebaseline ]
+crbug.com/97467 fast/text/custom-font-data-crash.html [ NeedsRebaseline ]
+crbug.com/97467 fast/css/font-face-data-uri-invalid.html [ NeedsRebaseline ]
+crbug.com/97467 http/tests/navigation/navigation-redirect-schedule-crash.html [ NeedsRebaseline ]
+crbug.com/97467 fast/css/fontface-arraybuffer.html [ NeedsRebaseline ]
+crbug.com/97467 fast/css/fontfaceset-download-error.html [ NeedsRebaseline ]
+crbug.com/97467 virtual/antialiasedtext/fast/text/custom-font-data-crash2.html [ NeedsRebaseline ]
+crbug.com/97467 virtual/antialiasedtext/fast/text/custom-font-data-crash.html [ NeedsRebaseline ]
 
 # Temporarily disabled due to a change in HTMLMediaElement behavior, I'll
 # update and reenable the test once the bugfix for 475244 lands in Chromium

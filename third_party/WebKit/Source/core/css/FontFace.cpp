@@ -552,7 +552,7 @@ void FontFace::initCSSFontFace(const unsigned char* data, unsigned size)
         return;
 
     RefPtr<SharedBuffer> buffer = SharedBuffer::create(data, size);
-    OwnPtrWillBeRawPtr<BinaryDataFontFaceSource> source = adoptPtrWillBeNoop(new BinaryDataFontFaceSource(buffer.get()));
+    OwnPtrWillBeRawPtr<BinaryDataFontFaceSource> source = adoptPtrWillBeNoop(new BinaryDataFontFaceSource(buffer.get(), m_otsParseMessage));
     if (source->isValid())
         setLoadStatus(Loaded);
     else

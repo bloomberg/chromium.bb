@@ -98,6 +98,8 @@ void FontLoader::didFailToDecode(FontResource* fontResource)
     // See crbug.com/97467
     if (m_fontSelector && m_fontSelector->document())
         m_fontSelector->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, "Failed to decode downloaded font: " + fontResource->url().elidedString()));
+        if (fontResource->otsParsingMessage().length() > 1)
+            m_fontSelector->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, "OTS parsing error: " + fontResource->otsParsingMessage()));
 }
 
 #if !ENABLE(OILPAN)

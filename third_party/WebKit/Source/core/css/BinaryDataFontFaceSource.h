@@ -15,7 +15,7 @@ class SharedBuffer;
 
 class BinaryDataFontFaceSource final : public CSSFontFaceSource {
 public:
-    explicit BinaryDataFontFaceSource(SharedBuffer*);
+    explicit BinaryDataFontFaceSource(SharedBuffer*, String&);
     virtual ~BinaryDataFontFaceSource();
     virtual bool isValid() const override;
 

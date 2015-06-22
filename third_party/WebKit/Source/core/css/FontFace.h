@@ -132,6 +132,7 @@ private:
     typedef ScriptPromiseProperty<RawPtrWillBeMember<FontFace>, RawPtrWillBeMember<FontFace>, Member<DOMException>> LoadedProperty;
 
     AtomicString m_family;
+    String m_otsParseMessage;
     RefPtrWillBeMember<CSSValue> m_src;
     RefPtrWillBeMember<CSSValue> m_style;
     RefPtrWillBeMember<CSSValue> m_weight;

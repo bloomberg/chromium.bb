@@ -85,14 +85,17 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
     return FontPlatformData(m_typeface.get(), "", size, bold && !m_typeface->isBold(), italic && !m_typeface->isItalic(), orientation);
 }
 
-PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer)
+PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer, String& otsParseMessage)
 {
     ASSERT_ARG(buffer, buffer);
 
     OpenTypeSanitizer sanitizer(buffer);
     RefPtr<SharedBuffer> transcodeBuffer = sanitizer.sanitize();
-    if (!transcodeBuffer)
+
+    if (!transcodeBuffer) {
+        otsParseMessage = sanitizer.getErrorString();
         return nullptr; // validation failed.
+    }
     buffer = transcodeBuffer.get();
 
     SkMemoryStream* stream = new SkMemoryStream(buffer->getAsSkData().get());

@@ -33,6 +33,7 @@
 
 #include "opentype-sanitiser.h"
 #include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -42,42 +43,34 @@ class OpenTypeSanitizer {
 public:
     explicit OpenTypeSanitizer(SharedBuffer* buffer)
         : m_buffer(buffer)
+        , m_otsErrorString("")
     {
     }
 
     PassRefPtr<SharedBuffer> sanitize();
 
     static bool supportsFormat(const String&);
+    String getErrorString() const { return static_cast<String>(m_otsErrorString); }
+
+    void setErrorString(const String& errorString) { m_otsErrorString = errorString; }
 
 private:
     SharedBuffer* const m_buffer;
+    String m_otsErrorString;
 };
 
 class BlinkOTSContext: public ots::OTSContext {
 public:
-        // TODO: Implement "Message" to support user friendly messages
-        virtual ots::TableAction GetTableAction(uint32_t tag)
+        BlinkOTSContext()
+            : m_errorString("")
         {
-#define TABLE_TAG(c1, c2, c3, c4) ((uint32_t)((((uint8_t)(c1)) << 24) | (((uint8_t)(c2)) << 16) | (((uint8_t)(c3)) << 8) | ((uint8_t)(c4))))
-
-            const uint32_t cbdtTag = TABLE_TAG('C', 'B', 'D', 'T');
-            const uint32_t cblcTag = TABLE_TAG('C', 'B', 'L', 'C');
-            const uint32_t colrTag = TABLE_TAG('C', 'O', 'L', 'R');
-            const uint32_t cpalTag = TABLE_TAG('C', 'P', 'A', 'L');
-
-            switch (tag) {
-            // Google Color Emoji Tables
-            case cbdtTag:
-            case cblcTag:
-            // Windows Color Emoji Tables
-            case colrTag:
-            case cpalTag:
-                return ots::TABLE_ACTION_PASSTHRU;
-            default:
-                return ots::TABLE_ACTION_DEFAULT;
-            }
-#undef TABLE_TAG
         }
+
+        virtual void Message(int level, const char *format, ...);
+        virtual ots::TableAction GetTableAction(uint32_t tag);
+        String getErrorString() const { return static_cast<String>(m_errorString); }
+private:
+        String m_errorString;
 };
 
 } // namespace blink
