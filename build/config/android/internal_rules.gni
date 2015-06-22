@@ -909,6 +909,12 @@ template("compile_java") {
   if (defined(invoker.chromium_code)) {
     _chromium_code = invoker.chromium_code
   }
+
+  _enable_errorprone = use_errorprone_java_compiler
+  if (defined(invoker.enable_errorprone)) {
+    _enable_errorprone = invoker.enable_errorprone
+  }
+
   _manifest_entries = []
   if (defined(invoker.manifest_entries)) {
     _manifest_entries = invoker.manifest_entries
@@ -978,7 +984,13 @@ template("compile_java") {
     if (_chromium_code) {
       args += [ "--chromium-code=1" ]
     }
-
+    if (_enable_errorprone) {
+      deps += [ "//third_party/errorprone:chromium_errorprone" ]
+      args += [
+        "--use-errorprone-path",
+        "bin/chromium_errorprone",
+      ]
+    }
     args += rebase_path(_java_files, root_build_dir)
   }
 
@@ -1128,6 +1140,9 @@ template("java_library_impl") {
     chromium_code = _chromium_code
     android = _requires_android
 
+    if (defined(invoker.enable_errorprone)) {
+      _enable_errorprone = invoker.enable_errorprone
+    }
     if (defined(invoker.jar_excluded_patterns)) {
       jar_excluded_patterns = invoker.jar_excluded_patterns
     }

@@ -209,6 +209,8 @@
     'native_lib_placeholder_stamp': '<(apk_package_native_libs_dir)/<(android_app_abi)/native_lib_placeholder.stamp',
     'native_lib_placeholders': [],
     'main_apk_name': '<(apk_name)',
+    'enable_errorprone%': '0',
+    'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -249,6 +251,11 @@
     ['use_chromium_linker == 1', {
       'dependencies': [
         '<(DEPTH)/base/base.gyp:chromium_android_linker',
+      ],
+    }],
+    ['enable_errorprone == 1', {
+      'dependencies': [
+        '<(DEPTH)/third_party/errorprone/errorprone.gyp:chromium_errorprone',
       ],
     }],
     ['native_lib_target != ""', {
@@ -793,6 +800,8 @@
       'action_name': 'javac_<(_target_name)',
       'message': 'Compiling java for <(_target_name)',
       'variables': {
+        'extra_args': [],
+        'extra_inputs': [],
         'gen_src_dirs': [
           '<(intermediate_dir)/gen',
           '>@(generated_src_dirs)',
@@ -808,7 +817,14 @@
         # targets use the same java_in_dir and both use java_apk.gypi or
         # both use java.gypi.)
         'java_sources': ['>!@(find >(java_in_dir)>(java_in_dir_suffix) >(additional_src_dirs) -name "*.java"  # apk)'],
-
+        'conditions': [
+          ['enable_errorprone == 1', {
+            'extra_inputs': [
+              '<(errorprone_exe_path)',
+            ],
+            'extra_args': [ '--use-errorprone-path=<(errorprone_exe_path)' ],
+          }],
+        ],
       },
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -816,6 +832,7 @@
         '>@(java_sources)',
         '>@(input_jars_paths)',
         '<(codegen_stamp)',
+        '<@(extra_inputs)',
       ],
       'conditions': [
         ['native_lib_target != ""', {
@@ -835,6 +852,7 @@
         '--jar-path=<(javac_jar_path)',
         '--jar-excluded-classes=<(jar_excluded_classes)',
         '--stamp=<(compile_stamp)',
+        '<@(extra_args)',
         '>@(java_sources)',
       ],
     },

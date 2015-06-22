@@ -54,8 +54,20 @@ def ColorJavacOutput(output):
   return '\n'.join(map(ApplyColor, output.split('\n')))
 
 
+ERRORPRONE_OPTIONS = [
+  '-Xepdisable:'
+  # Something in chrome_private_java makes this check crash.
+  'com.google.errorprone.bugpatterns.ClassCanBeStatic,'
+  # These crash on lots of targets.
+  'com.google.errorprone.bugpatterns.WrongParameterPackage,'
+  'com.google.errorprone.bugpatterns.GuiceOverridesGuiceInjectableMethod,'
+  'com.google.errorprone.bugpatterns.GuiceOverridesJavaxInjectableMethod,'
+  'com.google.errorprone.bugpatterns.ElementsCountedInLoop'
+]
+
 def DoJavac(
-    classpath, classes_dir, chromium_code, java_files):
+    classpath, classes_dir, chromium_code,
+    use_errorprone_path, java_files):
   """Runs javac.
 
   Builds |java_files| with the provided |classpath| and puts the generated
@@ -88,7 +100,12 @@ def DoJavac(
     # trigger a compile warning or error.
     javac_args.extend(['-XDignore.symbol.file'])
 
-  javac_cmd = ['javac'] + javac_args + java_files
+  if use_errorprone_path:
+    javac_cmd = [use_errorprone_path] + ERRORPRONE_OPTIONS
+  else:
+    javac_cmd = ['javac']
+
+  javac_cmd = javac_cmd + javac_args + java_files
 
   def Compile():
     build_utils.CheckOutput(
@@ -184,6 +201,10 @@ def main(argv):
       'warnings for chromium code.')
 
   parser.add_option(
+      '--use-errorprone-path',
+      help='Use the Errorprone compiler at this path.')
+
+  parser.add_option(
       '--classes-dir',
       help='Directory for compiled .class files.')
   parser.add_option('--jar-path', help='Jar output path.')
@@ -241,6 +262,7 @@ def main(argv):
           classpath,
           classes_dir,
           options.chromium_code,
+          options.use_errorprone_path,
           java_files)
 
     if options.jar_path:

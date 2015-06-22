@@ -81,6 +81,8 @@
     'run_findbugs%': 0,
     'proguard_config%': '',
     'proguard_preprocess%': '0',
+    'enable_errorprone%': '0',
+    'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
     'variables': {
       'variables': {
         'proguard_preprocess%': 0,
@@ -244,13 +246,28 @@
         },
       ],
     }],
+    ['enable_errorprone == 1', {
+      'dependencies': [
+        '<(DEPTH)/third_party/errorprone/errorprone.gyp:chromium_errorprone',
+      ],
+    }],
   ],
   'actions': [
     {
       'action_name': 'javac_<(_target_name)',
       'message': 'Compiling <(_target_name) java sources',
       'variables': {
+        'extra_args': [],
+        'extra_inputs': [],
         'java_sources': ['>!@(find >(java_in_dir)/src >(additional_src_dirs) -name "*.java")'],
+        'conditions': [
+          ['enable_errorprone == 1', {
+            'extra_inputs': [
+              '<(errorprone_exe_path)',
+            ],
+            'extra_args': [ '--use-errorprone-path=<(errorprone_exe_path)' ],
+          }],
+        ],
       },
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -258,6 +275,7 @@
         '>@(java_sources)',
         '>@(input_jars_paths)',
         '>@(additional_input_paths)',
+        '<@(extra_inputs)',
       ],
       'outputs': [
         '<(compile_stamp)',
@@ -273,6 +291,7 @@
         '--jar-excluded-classes=<(jar_excluded_classes)',
         '--stamp=<(compile_stamp)',
         '>@(java_sources)',
+        '<@(extra_args)',
       ]
     },
     {

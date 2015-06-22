@@ -798,6 +798,7 @@ template("java_strings_grd_prebuilt") {
 #     android_library target, for example.
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
+#   enable_errorprone: If true, enables the errorprone compiler.
 #
 #   data_deps, testonly
 #
@@ -824,6 +825,9 @@ template("java_binary") {
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
+    }
+    if (defined(invoker.enable_errorprone)) {
+      enable_errorprone = invoker.enable_errorprone
     }
     if (defined(invoker.java_files)) {
       java_files = invoker.java_files
@@ -919,6 +923,8 @@ template("junit_binary") {
 #     ease the gyp->gn conversion and will be removed in the future.
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
+#   enable_errorprone: If true, enables the errorprone compiler.
+#
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
 #
@@ -966,6 +972,9 @@ template("java_library") {
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
+    }
+    if (defined(invoker.enable_errorprone)) {
+      enable_errorprone = invoker.enable_errorprone
     }
     if (defined(invoker.jar_excluded_patterns)) {
       jar_excluded_patterns = invoker.jar_excluded_patterns
@@ -1058,6 +1067,8 @@ template("java_prebuilt") {
 #     ease the gyp->gn conversion and will be removed in the future.
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
+#   enable_errorprone: If true, enables the errorprone compiler.
+#
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
 #
@@ -1102,6 +1113,9 @@ template("android_library") {
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
+    }
+    if (defined(invoker.enable_errorprone)) {
+      enable_errorprone = invoker.enable_errorprone
     }
     if (defined(invoker.jar_excluded_patterns)) {
       jar_excluded_patterns = invoker.jar_excluded_patterns

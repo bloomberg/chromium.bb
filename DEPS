@@ -415,6 +415,9 @@ deps_os = {
     'src/third_party/cardboard-java/src':
      Var('chromium_git') + '/external/github.com/googlesamples/cardboard-java.git' + '@' + '08ad25a04f2801bd822c3f2cd28301b68d74aef6',
 
+    'src/third_party/errorprone/lib':
+      Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '6c66e56c0f9d750aef83190466df834f9d6af8ab',
+
     'src/third_party/findbugs':
      Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '7f69fa78a6db6dc31866d09572a0e356e921bf12',
 

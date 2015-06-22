@@ -1,0 +1,22 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+# GYP: //third_party/errorprone.gyp:errorprone_java
+java_prebuilt("errorprone_java") {
+  jar_path = "lib/error_prone_core-1.1.2.jar"
+}
+
+# GYP: //third_party/errorprone.gyp:chromium_errorprone
+java_binary("chromium_errorprone") {
+  chromium_code = false
+  main_class = "org.chromium.errorprone.ChromiumErrorProneCompiler"
+  disable_errorprone = true
+  java_files = [ "src/org/chromium/errorprone/ChromiumErrorProneCompiler.java" ]
+  deps = [
+    "//build/android:sun_tools_java",
+    ":errorprone_java",
+  ]
+}

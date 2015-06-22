@@ -1,0 +1,26 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+sun_tools_jar_path = "$root_gen_dir/sun_tools_jar/tools.jar"
+
+action("find_sun_tools_jar") {
+  script = "//build/android/gyp/find_sun_tools_jar.py"
+  depfile = "$target_gen_dir/$target_name.d"
+  outputs = [
+    depfile,
+    sun_tools_jar_path,
+  ]
+  args = [
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+    "--output",
+    rebase_path(sun_tools_jar_path, root_build_dir),
+  ]
+}
+
+java_prebuilt("sun_tools_java") {
+  jar_path = sun_tools_jar_path
+}

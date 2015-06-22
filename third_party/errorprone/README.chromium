@@ -1,0 +1,16 @@
+Name: Error Prone
+Short Name: errorprone
+URL: http://errorprone.info/
+Version: 1.1.2
+Date: May 05, 2015
+License: Apache 2.0
+License File: LICENSE
+Security Critical: no
+
+Description:
+Catch common Java mistakes as compile-time errors
+
+Local Modifications:
+No changes to the original source
+Added ChromiumErrorProneCompiler.java as a main entry point for Chromium
+Added gn and gyp files
