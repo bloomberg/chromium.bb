@@ -833,6 +833,10 @@ void ThreadState::setGCState(GCState gcState)
         ASSERT_NOT_REACHED();
     }
     m_gcState = gcState;
+#if ENABLE(GC_PROFILING)
+    if (isMainThread())
+        TRACE_COUNTER1("blink_gc", "ThreadState::gcState", static_cast<int>(m_gcState));
+#endif
 }
 
 #undef VERIFY_STATE_TRANSITION
