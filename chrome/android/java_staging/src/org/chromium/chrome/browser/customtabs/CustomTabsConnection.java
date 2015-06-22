@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Implementation of the ICustomTabsConnectionService interface.
  */
 class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
-    private static final String TAG = Log.makeTag("ChromeConnection");
+    private static final String TAG = "cr.ChromeConnection";
     private static final long RESULT_OK = 0;
     private static final long RESULT_ERROR = -1;
     private static final String KEY_CUSTOM_TABS_REFERRER = "android.support.CUSTOM_TABS:referrer";

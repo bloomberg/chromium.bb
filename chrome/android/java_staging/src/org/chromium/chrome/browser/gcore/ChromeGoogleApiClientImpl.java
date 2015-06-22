@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * Default implementation for {@link ChromeGoogleApiClient}.
  */
 public class ChromeGoogleApiClientImpl implements ChromeGoogleApiClient {
-    private static final String TAG = Log.makeTag("Icing");
+    private static final String TAG = "cr.Icing";
 
     private final Context mApplicationContext;
     private final GoogleApiClient mClient;

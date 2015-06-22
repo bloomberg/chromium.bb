@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
  * Reports context to GSA for search quality.
  */
 public class ContextReporter {
-    private static final String TAG = Log.makeTag("GSA");
+    private static final String TAG = "cr.GSA";
 
     // Values for UMA histogram.
     public static final int STATUS_SUCCESS = 0;

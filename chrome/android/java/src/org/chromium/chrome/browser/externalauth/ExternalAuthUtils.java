@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ExternalAuthUtils {
     public static final int FLAG_SHOULD_BE_GOOGLE_SIGNED = 1 << 0;
     public static final int FLAG_SHOULD_BE_SYSTEM = 1 << 1;
-    private static final String TAG = Log.makeTag("ExternalAuthUtils");
+    private static final String TAG = "cr.ExternalAuthUtils";
     private static final String CONNECTION_RESULT_HISTOGRAM_NAME =
             "GooglePlayServices.ConnectionResult";
 

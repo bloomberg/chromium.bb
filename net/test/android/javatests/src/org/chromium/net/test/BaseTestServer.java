@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A base class for simple test servers. */
 public abstract class BaseTestServer implements Runnable {
-    private static final String TAG = Log.makeTag("net.test");
+    private static final String TAG = "cr.net.test";
 
     private AtomicBoolean mKeepRunning;
     private final Object mLock;

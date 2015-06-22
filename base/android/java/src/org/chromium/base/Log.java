@@ -4,8 +4,6 @@
 
 package org.chromium.base;
 
-import android.text.TextUtils;
-
 import org.chromium.base.annotations.RemovableInRelease;
 
 import java.util.Locale;
@@ -60,27 +58,6 @@ public class Log {
      */
     private static String formatLogWithStack(String messageTemplate, Object... params) {
         return "[" + getCallOrigin() + "] " + formatLog(messageTemplate, params);
-    }
-
-    /**
-     * Returns a full tag for the provided group tag. Full tags longer than 23 characters
-     * will cause a runtime exception.
-     *
-     * @param groupTag {@code null} and empty string are allowed.
-     *
-     * @see android.util.Log#isLoggable(String, int)
-     * @throws IllegalArgumentException if the tag is too long.
-     * @deprecated Directly use a string (e.g. "cr.Tag") in your class. See http://crbug.com/485772
-     */
-    @Deprecated
-    public static String makeTag(String groupTag) {
-        if (TextUtils.isEmpty(groupTag)) return "cr";
-        String tag = "cr." + groupTag;
-        if (tag.length() > 23) {
-            throw new IllegalArgumentException(
-                    "The full tag (" + tag + ") is longer than 23 characters.");
-        }
-        return tag;
     }
 
     /** Convenience function, forwards to {@link android.util.Log#isLoggable(String, int)}. */

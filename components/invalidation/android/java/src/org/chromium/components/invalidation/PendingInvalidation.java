@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  * (storing in prefStore) and Bundle (ContentProvider).
  */
 public class PendingInvalidation {
-    private static final String TAG = Log.makeTag("invalidation");
+    private static final String TAG = "cr.invalidation";
 
     private static final String INVALIDATION_OBJECT_SOURCE_KEY = "objectSource";
     private static final String INVALIDATION_OBJECT_ID_KEY = "objectId";

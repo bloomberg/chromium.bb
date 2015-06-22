@@ -6,7 +6,6 @@ package org.chromium.content_browsertests_apk;
 
 import android.os.Bundle;
 
-import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.content_shell.browsertests.ContentShellBrowserTestActivity;
 
@@ -16,7 +15,7 @@ import java.io.File;
  * Android activity for running content browser tests
  */
 public class ContentBrowserTestsActivity extends ContentShellBrowserTestActivity {
-    private static final String TAG = Log.makeTag("native_test");
+    private static final String TAG = "cr.native_test";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

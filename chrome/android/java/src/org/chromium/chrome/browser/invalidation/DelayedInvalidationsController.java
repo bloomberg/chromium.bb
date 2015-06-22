@@ -30,7 +30,7 @@ import java.util.Set;
  * delayed until Chrome comes to the foreground again.
  */
 public class DelayedInvalidationsController {
-    private static final String TAG = Log.makeTag("invalidation");
+    private static final String TAG = "cr.invalidation";
     private static final String DELAYED_ACCOUNT_NAME = "delayed_account";
     private static final String DELAYED_INVALIDATIONS = "delayed_invalidations";
 

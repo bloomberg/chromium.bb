@@ -17,7 +17,7 @@ import org.chromium.base.Log;
 @JNINamespace("cronet")
 public final class QuicTestServer {
     private static final ConditionVariable sBlock = new ConditionVariable();
-    private static final String TAG = Log.makeTag("QuicTestServer");
+    private static final String TAG = "cr.QuicTestServer";
 
     public static void startQuicTestServer(Context context) {
         TestFilesInstaller.installIfNeeded(context);
