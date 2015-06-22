@@ -484,6 +484,25 @@ extern int drmModeObjectSetProperty(int fd, uint32_t object_id,
 				    uint32_t object_type, uint32_t property_id,
 				    uint64_t value);
 
+
+typedef struct _drmModeAtomicReq drmModeAtomicReq, *drmModeAtomicReqPtr;
+
+extern drmModeAtomicReqPtr drmModeAtomicAlloc(void);
+extern drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr req);
+extern int drmModeAtomicMerge(drmModeAtomicReqPtr base,
+			      drmModeAtomicReqPtr augment);
+extern void drmModeAtomicFree(drmModeAtomicReqPtr req);
+extern int drmModeAtomicGetCursor(drmModeAtomicReqPtr req);
+extern void drmModeAtomicSetCursor(drmModeAtomicReqPtr req, int cursor);
+extern int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
+				    uint32_t object_id,
+				    uint32_t property_id,
+				    uint64_t value);
+extern int drmModeAtomicCommit(int fd,
+			       drmModeAtomicReqPtr req,
+			       uint32_t flags,
+			       void *user_data);
+
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
