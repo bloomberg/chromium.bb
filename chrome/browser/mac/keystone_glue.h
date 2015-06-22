@@ -87,6 +87,7 @@ enum BrandFileType {
   // And the Keystone registration itself, with the active timer
   KSRegistration* registration_;  // strong
   NSTimer* timer_;  // strong
+  BOOL registrationActive_;
   Class ksUnsignedReportingAttributeClass_;
 
   // The most recent kAutoupdateStatusNotification notification posted.
@@ -114,6 +115,7 @@ enum BrandFileType {
 // Load KeystoneRegistration.framework if present, call into it to register
 // with Keystone, and set up periodic activity pings.
 - (void)registerWithKeystone;
+- (BOOL)isRegisteredAndActive;
 
 // -checkForUpdate launches a check for updates, and -installUpdate begins
 // installing an available update.  For each, status will be communicated via

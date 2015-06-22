@@ -190,6 +190,12 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&EnsureMetadataNeverIndexFile, user_data_dir()));
+
+  // Activation of KeyStone is not automatic but done in response to the
+  // counting and reporting of profiles.  Make sure, assuming KeyStone
+  // is active, that it happened.
+  CHECK(![KeystoneGlue defaultKeystoneGlue] ||
+        [[KeystoneGlue defaultKeystoneGlue] isRegisteredAndActive]);
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {

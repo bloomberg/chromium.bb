@@ -499,6 +499,7 @@ NSString* const kVersionKey = @"KSVersion";
 - (void)setRegistrationActive {
   if (!registration_)
     return;
+  registrationActive_ = YES;
 
   // Should never have zero profiles. Do not report this value.
   if (!numProfiles_) {
@@ -557,15 +558,16 @@ NSString* const kVersionKey = @"KSVersion";
   // Upon completion, ksr::KSRegistrationDidCompleteNotification will be
   // posted, and -registrationComplete: will be called.
 
-  // Mark an active RIGHT NOW; don't wait an hour for the first one.
-  [self setRegistrationActive];
-
   // Set up hourly activity pings.
   timer_ = [NSTimer scheduledTimerWithTimeInterval:60 * 60  // One hour
                                             target:self
                                           selector:@selector(markActive:)
                                           userInfo:nil
                                            repeats:YES];
+}
+
+- (BOOL)isRegisteredAndActive {
+  return registrationActive_;
 }
 
 - (void)registrationComplete:(NSNotification*)notification {
@@ -1097,8 +1099,14 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)updateProfileCountsWithNumProfiles:(uint32_t)profiles
                        numSignedInProfiles:(uint32_t)signedInProfiles {
+  BOOL activate = numProfiles_ == 0;
   numProfiles_ = profiles;
   numSignedInProfiles_ = signedInProfiles;
+  if (activate) {
+    // During startup, numProfiles_ defaults to 0 so this is called when the
+    // very first update to profile-counts is made.  http://crbug/487807
+    [self setRegistrationActive];
+  }
 }
 
 @end  // @implementation KeystoneGlue
