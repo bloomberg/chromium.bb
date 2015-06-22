@@ -2185,28 +2185,6 @@ def RietveldUpload(options, args, cl, change):
     if target_ref:
       upload_args.extend(['--target_ref', target_ref])
 
-    # Look for dependent patchsets. See crbug.com/480453 for more details.
-    remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
-    upstream_branch = ShortBranchName(upstream_branch)
-    if remote is '.':
-      # A local branch is being tracked.
-      local_branch = ShortBranchName(upstream_branch)
-      auth_config = auth.extract_auth_config_from_options(options)
-      branch_cl = Changelist(branchref=local_branch, auth_config=auth_config)
-      branch_cl_issue_url = branch_cl.GetIssueURL()
-      branch_cl_issue = branch_cl.GetIssue()
-      branch_cl_patchset = branch_cl.GetPatchset()
-      if branch_cl_issue_url and branch_cl_issue and branch_cl_patchset:
-        upload_args.extend(
-            ['--depends_on_patchset', '%s:%s' % (
-                 branch_cl_issue, branch_cl_patchset)])
-        print
-        print ('The current branch (%s) is tracking a local branch (%s) with '
-               'an open CL.') % (cl.GetBranch(), local_branch)
-        print 'Adding %s/#ps%s as a dependency patchset.' % (
-            branch_cl_issue_url, branch_cl_patchset)
-        print
-
   project = settings.GetProject()
   if project:
     upload_args.extend(['--project', project])

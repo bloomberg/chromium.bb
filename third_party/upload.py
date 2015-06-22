@@ -635,10 +635,6 @@ group.add_option("--target_ref", action="store", dest="target_ref",
 parser.add_option("--cq_dry_run", action="store_true",
                   help="Send the patchset to do a CQ dry run right after "
                        "upload.")
-parser.add_option("--depends_on_patchset", action="store",
-                  dest="depends_on_patchset",
-                  help="The uploaded patchset this patchset depends on. The "
-                       "value will be in this format- issue_num:patchset_num")
 group.add_option("--download_base", action="store_true",
                  dest="download_base", default=False,
                  help="Base files will be downloaded by the server "
@@ -2440,8 +2436,6 @@ def RealMain(argv, data=None):
   if options.cq_dry_run:
     form_fields.append(("cq_dry_run", "1"))
     form_fields.append(("commit", "1"))
-  if options.depends_on_patchset:
-    form_fields.append(("depends_on_patchset", options.depends_on_patchset))
 
   # Process --message, --title and --file.
   message = options.message or ""
