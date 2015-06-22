@@ -84,19 +84,27 @@ namespace blink {
 using namespace HTMLNames;
 
 // static
-AXObjectCache* AXObjectCacheImpl::create(Document& document)
+PassOwnPtrWillBeRawPtr<AXObjectCache> AXObjectCacheImpl::create(Document& document)
 {
-    return new AXObjectCacheImpl(document);
+    return adoptPtrWillBeNoop(new AXObjectCacheImpl(document));
 }
 
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     : m_document(document)
     , m_modificationCount(0)
+#if ENABLE(ASSERT)
+    , m_hasBeenDisposed(false)
+#endif
     , m_notificationPostTimer(this, &AXObjectCacheImpl::notificationPostTimerFired)
 {
 }
 
 AXObjectCacheImpl::~AXObjectCacheImpl()
+{
+    ASSERT(m_hasBeenDisposed);
+}
+
+void AXObjectCacheImpl::dispose()
 {
     m_notificationPostTimer.stop();
 
@@ -106,6 +114,10 @@ AXObjectCacheImpl::~AXObjectCacheImpl()
         obj->detach();
         removeAXID(obj);
     }
+
+#if ENABLE(ASSERT)
+    m_hasBeenDisposed = true;
+#endif
 }
 
 AXObject* AXObjectCacheImpl::root()
@@ -1352,6 +1364,12 @@ void AXObjectCacheImpl::setCanvasObjectBounds(Element* element, const LayoutRect
         return;
 
     obj->setElementRect(rect);
+}
+
+DEFINE_TRACE(AXObjectCacheImpl)
+{
+    visitor->template registerWeakMembers<AXObjectCacheImpl, &AXObjectCacheImpl::clearWeakMembers>(this);
+    AXObjectCache::trace(visitor);
 }
 
 } // namespace blink

@@ -40,7 +40,7 @@ void AXObjectCache::init(AXObjectCacheCreateFunction function)
     m_createFunction = function;
 }
 
-AXObjectCache* AXObjectCache::create(Document& document)
+PassOwnPtrWillBeRawPtr<AXObjectCache> AXObjectCache::create(Document& document)
 {
     ASSERT(m_createFunction);
     return (m_createFunction)(document);
@@ -54,34 +54,31 @@ AXObjectCache::~AXObjectCache()
 {
 }
 
-ScopedAXObjectCache::ScopedAXObjectCache(Document& document)
-    : m_document(document)
-    , m_cache(0)
+PassOwnPtr<ScopedAXObjectCache> ScopedAXObjectCache::create(Document& document)
 {
-    if (AXObjectCache* existingCache = document.axObjectCache()) {
-        m_cache = existingCache;
-        m_isScoped = false;
-    } else {
-        m_isScoped = true;
-        m_cache = AXObjectCache::create(m_document);
-    }
+    return adoptPtr(new ScopedAXObjectCache(document));
+}
+
+ScopedAXObjectCache::ScopedAXObjectCache(Document& document)
+    : m_document(&document)
+{
+    if (!m_document->axObjectCache())
+        m_cache = AXObjectCache::create(*m_document);
 }
 
 ScopedAXObjectCache::~ScopedAXObjectCache()
 {
-    if (m_isScoped)
-        delete m_cache;
+    if (m_cache)
+        m_cache->dispose();
 }
 
 AXObjectCache* ScopedAXObjectCache::get()
 {
-    ASSERT(m_cache);
-    return m_cache;
-}
-
-AXObjectCache* ScopedAXObjectCache::operator->()
-{
-    return get();
+    if (m_cache)
+        return m_cache.get();
+    AXObjectCache* cache = m_document->axObjectCache();
+    ASSERT(cache);
+    return cache;
 }
 
 } // namespace blink

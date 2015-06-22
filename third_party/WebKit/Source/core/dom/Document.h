@@ -1104,8 +1104,6 @@ private:
 
     void detachParser();
 
-    void clearWeakMembers(Visitor*);
-
     virtual bool isDocument() const override final { return true; }
 
     virtual void childrenChanged(const ChildrenChange&) override;
@@ -1263,7 +1261,7 @@ private:
     String m_rawTitle;
     RefPtrWillBeMember<Element> m_titleElement;
 
-    OwnPtr<AXObjectCache> m_axObjectCache;
+    OwnPtrWillBeMember<AXObjectCache> m_axObjectCache;
     OwnPtrWillBeMember<DocumentMarkerController> m_markers;
 
     Timer<Document> m_updateFocusAppearanceTimer;

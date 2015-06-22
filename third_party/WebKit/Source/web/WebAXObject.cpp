@@ -76,13 +76,13 @@ static bool isLayoutClean(Document* document)
 #endif
 
 WebScopedAXContext::WebScopedAXContext(WebDocument& rootDocument)
-    : m_private(adoptRef(new ScopedAXObjectCache(*rootDocument.unwrap<Document>())))
+    : m_private(ScopedAXObjectCache::create(*rootDocument.unwrap<Document>()))
 {
 }
 
 WebScopedAXContext::~WebScopedAXContext()
 {
-    m_private.reset();
+    m_private.reset(0);
 }
 
 WebAXObject WebScopedAXContext::root() const

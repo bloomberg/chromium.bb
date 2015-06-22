@@ -2254,6 +2254,8 @@ void Document::clearAXObjectCache()
     ASSERT(&axObjectCacheOwner() == this);
     // Clear the cache member variable before calling delete because attempts
     // are made to access it during destruction.
+    if (m_axObjectCache)
+        m_axObjectCache->dispose();
     m_axObjectCache.clear();
 }
 
@@ -2285,7 +2287,7 @@ AXObjectCache* Document::axObjectCache() const
 
     ASSERT(&cacheOwner == this || !m_axObjectCache);
     if (!cacheOwner.m_axObjectCache)
-        cacheOwner.m_axObjectCache = adoptPtr(AXObjectCache::create(cacheOwner));
+        cacheOwner.m_axObjectCache = AXObjectCache::create(cacheOwner);
     return cacheOwner.m_axObjectCache.get();
 }
 
@@ -5631,12 +5633,6 @@ void Document::platformColorsChanged()
     styleEngine().platformColorsChanged();
 }
 
-void Document::clearWeakMembers(Visitor* visitor)
-{
-    if (m_axObjectCache)
-        m_axObjectCache->clearWeakMembers(visitor);
-}
-
 v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     // It's possible that no one except for the new wrapper owns this object at
@@ -5715,6 +5711,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_activeHoverElement);
     visitor->trace(m_documentElement);
     visitor->trace(m_titleElement);
+    visitor->trace(m_axObjectCache);
     visitor->trace(m_markers);
     visitor->trace(m_cssTarget);
     visitor->trace(m_currentScriptStack);
@@ -5754,7 +5751,6 @@ DEFINE_TRACE(Document)
     visitor->trace(m_timeline);
     visitor->trace(m_compositorPendingAnimations);
     visitor->trace(m_contextDocument);
-    visitor->template registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     WillBeHeapSupplementable<Document>::trace(visitor);
 #endif
     TreeScope::trace(visitor);

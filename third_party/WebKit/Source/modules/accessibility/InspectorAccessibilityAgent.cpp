@@ -356,7 +356,7 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
         return;
 
     Document& document = node->document();
-    RefPtr<ScopedAXObjectCache> cache(adoptRef(new ScopedAXObjectCache(document)));
+    OwnPtr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document);
     AXObjectCacheImpl* cacheImpl = toAXObjectCacheImpl(cache->get());
     AXObject* axObject = cacheImpl->getOrCreate(node);
     if (!axObject || axObject->accessibilityIsIgnored()) {

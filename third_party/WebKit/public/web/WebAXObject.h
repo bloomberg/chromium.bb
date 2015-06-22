@@ -33,6 +33,7 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebPoint.h"
+#include "../platform/WebPrivateOwnPtr.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebVector.h"
 #include "WebAXEnums.h"
@@ -64,7 +65,7 @@ public:
     BLINK_EXPORT WebAXObject root() const;
 
 private:
-    WebPrivatePtr<ScopedAXObjectCache> m_private;
+    WebPrivateOwnPtr<ScopedAXObjectCache> m_private;
 };
 
 // A container for passing around a reference to AXObject.

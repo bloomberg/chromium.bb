@@ -55,14 +55,17 @@ struct TextMarkerData {
 
 // This class should only be used from inside the accessibility directory.
 class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
-    WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl); WTF_MAKE_FAST_ALLOCATED(AXObjectCacheImpl);
+    WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl);
 public:
-    static AXObjectCache* create(Document&);
+    static PassOwnPtrWillBeRawPtr<AXObjectCache> create(Document&);
 
     explicit AXObjectCacheImpl(Document&);
     ~AXObjectCacheImpl();
+    DECLARE_VIRTUAL_TRACE();
 
     AXObject* focusedUIElementForPage(const Page*);
+
+    virtual void dispose() override;
 
     virtual void selectionChanged(Node*) override;
     virtual void childrenChanged(Node*) override;
@@ -212,6 +215,11 @@ private:
     int m_modificationCount;
 
     HashSet<AXID> m_idsInUse;
+
+#if ENABLE(ASSERT)
+    // Verified when finalizing.
+    bool m_hasBeenDisposed;
+#endif
 
     //
     // Aria-owns
