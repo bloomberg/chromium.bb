@@ -76,6 +76,74 @@ test_surface_bad_visibility(struct test_context *ctx)
 	iassert(visibility == false);
 }
 
+static void
+test_surface_bad_destination_rectangle(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->surface_set_destination_rectangle(NULL, 20, 30, 200, 300) == IVI_FAILED);
+}
+
+static void
+test_surface_bad_orientation(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->surface_set_orientation(NULL, WL_OUTPUT_TRANSFORM_90) == IVI_FAILED);
+
+	iassert(ctl->surface_get_orientation(NULL) == WL_OUTPUT_TRANSFORM_NORMAL);
+}
+
+static void
+test_surface_bad_dimension(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_surface *ivisurf = NULL;
+	int32_t dest_width;
+	int32_t dest_height;
+
+	iassert(ctl->surface_set_dimension(NULL, 200, 300) == IVI_FAILED);
+
+	ctl->commit_changes();
+
+	iassert(ctl->surface_get_dimension(NULL, &dest_width, &dest_height) == IVI_FAILED);
+	iassert(ctl->surface_get_dimension(ivisurf, NULL, &dest_height) == IVI_FAILED);
+	iassert(ctl->surface_get_dimension(ivisurf, &dest_width, NULL) == IVI_FAILED);
+}
+
+static void
+test_surface_bad_position(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_surface *ivisurf = NULL;
+	int32_t dest_x;
+	int32_t dest_y;
+
+	iassert(ctl->surface_set_position(NULL, 20, 30) == IVI_FAILED);
+
+	ctl->commit_changes();
+
+	iassert(ctl->surface_get_position(NULL, &dest_x, &dest_y) == IVI_FAILED);
+	iassert(ctl->surface_get_position(ivisurf, NULL, &dest_y) == IVI_FAILED);
+	iassert(ctl->surface_get_position(ivisurf, &dest_x, NULL) == IVI_FAILED);
+}
+
+static void
+test_surface_bad_source_rectangle(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->surface_set_source_rectangle(NULL, 20, 30, 200, 300) == IVI_FAILED);
+}
+
+static void
+test_surface_bad_properties(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->get_properties_of_surface(NULL) == NULL);
+}
+
 /************************ tests end ********************************/
 
 static void
@@ -84,6 +152,12 @@ run_internal_tests(void *data)
 	struct test_context *ctx = data;
 
 	test_surface_bad_visibility(ctx);
+	test_surface_bad_destination_rectangle(ctx);
+	test_surface_bad_orientation(ctx);
+	test_surface_bad_dimension(ctx);
+	test_surface_bad_position(ctx);
+	test_surface_bad_source_rectangle(ctx);
+	test_surface_bad_properties(ctx);
 
 	weston_compositor_exit_with_code(ctx->compositor, EXIT_SUCCESS);
 	free(ctx);
