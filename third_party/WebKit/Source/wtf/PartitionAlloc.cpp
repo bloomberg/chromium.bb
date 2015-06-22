@@ -133,6 +133,7 @@ static void partitionBucketInitBase(PartitionBucket* bucket, PartitionRootBase* 
 {
     bucket->activePagesHead = &PartitionRootGeneric::gSeedPage;
     bucket->emptyPagesHead = 0;
+    bucket->decommittedPagesHead = 0;
     bucket->numFullPages = 0;
     bucket->numSystemPagesPerSlotSpan = partitionBucketNumSystemPages(bucket->slotSize);
 }
@@ -320,6 +321,24 @@ static NEVER_INLINE void partitionBucketFull()
     IMMEDIATE_CRASH();
 }
 
+static bool partitionPageStateIsEmpty(const PartitionPage* page)
+{
+    ASSERT(page != &PartitionRootGeneric::gSeedPage);
+    return !page->numAllocatedSlots;
+}
+
+static bool partitionPageStateIsDecommitted(const PartitionPage* page)
+{
+    ASSERT(page != &PartitionRootGeneric::gSeedPage);
+    bool ret = !page->numAllocatedSlots && !page->freelistHead;
+    if (ret) {
+        ASSERT(!page->numUnprovisionedSlots);
+        ASSERT(page->emptyCacheIndex == -1);
+        ASSERT(!page->pageOffset);
+    }
+    return ret;
+}
+
 static void partitionIncreaseCommittedPages(PartitionRootBase* root, size_t len)
 {
     root->totalSizeOfCommittedPages += len;
@@ -435,13 +454,8 @@ static ALWAYS_INLINE uint16_t partitionBucketPartitionPages(const PartitionBucke
 
 static ALWAYS_INLINE void partitionPageReset(PartitionPage* page, PartitionBucket* bucket)
 {
-    ASSERT(page != &PartitionRootGeneric::gSeedPage);
     ASSERT(page->bucket == bucket);
-    ASSERT(!page->freelistHead);
-    ASSERT(!page->numAllocatedSlots);
-    ASSERT(!page->numUnprovisionedSlots);
-    ASSERT(page->emptyCacheIndex == -1);
-    ASSERT(!page->pageOffset);
+    ASSERT(partitionPageStateIsDecommitted(page));
 
     page->numUnprovisionedSlots = partitionBucketSlots(bucket);
     ASSERT(page->numUnprovisionedSlots);
@@ -539,45 +553,44 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page
     return returnObject;
 }
 
-// This helper function scans the active page list for a suitable new active
-// page, starting at the passed-in page.
-// When it finds a suitable new active page (one that has free slots), it is
-// set as the new active page and true is returned. If there is no suitable new
-// active page, false is returned and the current active page is set to null.
+// This helper function scans a bucket's active page list for a suitable new
+// active page.
+// When it finds a suitable new active page (one that has free slots and is not
+// empty), it is set as the new active page. If there is no suitable new
+// active page, the current active page is set to the seed page.
 // As potential pages are scanned, they are tidied up according to their state.
-// Freed pages are swept on to the free page list and full pages are unlinked
-// from any list.
-static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
+// Empty pages are swept on to the empty page list, decommitted pages on to the
+// decommitted page list and full pages are unlinked from any list.
+static bool partitionSetNewActivePage(PartitionBucket* bucket)
 {
-    if (page == &PartitionRootBase::gSeedPage) {
-        ASSERT(!page->nextPage);
+    PartitionPage* page = bucket->activePagesHead;
+    if (page == &PartitionRootBase::gSeedPage)
         return false;
-    }
 
-    PartitionPage* nextPage = 0;
-    PartitionBucket* bucket = page->bucket;
+    PartitionPage* nextPage;
 
     for (; page; page = nextPage) {
         nextPage = page->nextPage;
         ASSERT(page->bucket == bucket);
-        // Check that the page is not at the head of the free page list.
         ASSERT(page != bucket->emptyPagesHead);
-        // Check one level deeper.
-        ASSERT(!bucket->emptyPagesHead || page != bucket->emptyPagesHead->nextPage);
+        ASSERT(page != bucket->decommittedPagesHead);
 
-        // Page is usable if it has something on the freelist, or unprovisioned
-        // slots that can be turned into a freelist.
-        if (LIKELY(page->freelistHead != 0) || LIKELY(page->numUnprovisionedSlots)) {
+        // Deal with empty and decommitted pages.
+        if (UNLIKELY(!page->numAllocatedSlots)) {
+            ASSERT(partitionPageStateIsEmpty(page));
+            if (UNLIKELY(!page->freelistHead)) {
+                ASSERT(partitionPageStateIsDecommitted(page));
+                page->nextPage = bucket->decommittedPagesHead;
+                bucket->decommittedPagesHead = page;
+            } else {
+                page->nextPage = bucket->emptyPagesHead;
+                bucket->emptyPagesHead = page;
+            }
+        } else if (LIKELY(page->freelistHead != 0) || LIKELY(page->numUnprovisionedSlots)) {
+            // This page is usable because it has freelist entries, or has
+            // unprovisioned slots we can create freelist entries from.
             bucket->activePagesHead = page;
             return true;
-        }
-
-        ASSERT(page->numAllocatedSlots >= 0); // Free page or full page.
-        if (LIKELY(page->numAllocatedSlots == 0)) {
-            ASSERT(page->emptyCacheIndex == -1);
-            // We hit a free page, so shepherd it on to the free page list.
-            page->nextPage = bucket->emptyPagesHead;
-            bucket->emptyPagesHead = page;
         } else {
             // If we get here, we found a full page. Skip over it too, and also
             // tag it as full (via a negative value). We need it tagged so that
@@ -594,7 +607,7 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
         }
     }
 
-    bucket->activePagesHead = 0;
+    bucket->activePagesHead = &PartitionRootGeneric::gSeedPage;
     return false;
 }
 
@@ -611,7 +624,7 @@ static ALWAYS_INLINE void partitionPageSetRawSize(PartitionPage* page, size_t si
         *rawSizePtr = size;
 }
 
-static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags, size_t rawSize)
+static ALWAYS_INLINE PartitionPage* partitionDirectMap(PartitionRootBase* root, int flags, size_t rawSize)
 {
     size_t size = partitionDirectMapSize(rawSize);
 
@@ -634,17 +647,17 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     // allocZeroed() API so we can avoid a memset() entirely in this case.
     char* ptr = reinterpret_cast<char*>(allocPages(0, mapSize, kSuperPageSize, PageAccessible));
     if (UNLIKELY(!ptr))
-        return 0;
+        return nullptr;
 
     size_t committedPageSize = size + kSystemPageSize;
     root->totalSizeOfDirectMappedPages += committedPageSize;
     partitionIncreaseCommittedPages(root, committedPageSize);
 
-    char* ret = ptr + kPartitionPageSize;
+    char* slot = ptr + kPartitionPageSize;
     setSystemPagesInaccessible(ptr + (kSystemPageSize * 2), kPartitionPageSize - (kSystemPageSize * 2));
 #if !CPU(64BIT)
     setSystemPagesInaccessible(ptr, kSystemPageSize);
-    setSystemPagesInaccessible(ret + size, kSystemPageSize);
+    setSystemPagesInaccessible(slot + size, kSystemPageSize);
 #endif
 
     PartitionSuperPageExtentEntry* extent = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionSuperPageToMetadataArea(ptr));
@@ -654,24 +667,24 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     ASSERT(!extent->superPageBase);
     ASSERT(!extent->superPagesEnd);
     ASSERT(!extent->next);
-    PartitionPage* page = partitionPointerToPageNoAlignmentCheck(ret);
+    PartitionPage* page = partitionPointerToPageNoAlignmentCheck(slot);
     PartitionBucket* bucket = reinterpret_cast<PartitionBucket*>(reinterpret_cast<char*>(page) + (kPageMetadataSize * 2));
-    ASSERT(!page->freelistHead);
     ASSERT(!page->nextPage);
+    ASSERT(!page->numAllocatedSlots);
     ASSERT(!page->numUnprovisionedSlots);
     ASSERT(!page->pageOffset);
     ASSERT(!page->emptyCacheIndex);
     page->bucket = bucket;
-    page->numAllocatedSlots = 1;
+    page->freelistHead = reinterpret_cast<PartitionFreelistEntry*>(slot);
+    PartitionFreelistEntry* nextEntry = reinterpret_cast<PartitionFreelistEntry*>(slot);
+    nextEntry->next = partitionFreelistMask(0);
 
     ASSERT(!bucket->activePagesHead);
     ASSERT(!bucket->emptyPagesHead);
+    ASSERT(!bucket->decommittedPagesHead);
     ASSERT(!bucket->numSystemPagesPerSlotSpan);
     ASSERT(!bucket->numFullPages);
     bucket->slotSize = size;
-
-    partitionPageSetRawSize(page, rawSize);
-    ASSERT(partitionPageGetRawSize(page) == rawSize);
 
     PartitionDirectMapExtent* mapExtent = partitionPageToDirectMapExtent(page);
     mapExtent->mapSize = mapSize - kPartitionPageSize - kSystemPageSize;
@@ -684,7 +697,7 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     mapExtent->prevExtent = nullptr;
     root->directMapList = mapExtent;
 
-    return ret;
+    return page;
 }
 
 static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
@@ -739,73 +752,90 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     if (UNLIKELY(partitionBucketIsDirectMapped(bucket))) {
         ASSERT(size > kGenericMaxBucketed);
         ASSERT(bucket == &PartitionRootBase::gPagedBucket);
+        ASSERT(bucket->activePagesHead == &PartitionRootGeneric::gSeedPage);
         if (size > kGenericMaxDirectMapped) {
             if (returnNull)
-                return 0;
+                return nullptr;
             partitionExcessiveAllocationSize();
         }
-        void* ret = partitionDirectMap(root, flags, size);
-        if (ret)
-            return ret;
-        goto partitionAllocSlowPathFailed;
-    }
-
-    if (LIKELY(partitionSetNewActivePage(bucket->activePagesHead))) {
-        // First, look for a usable page in the existing active pages list.
-        // Change active page, accepting the current page as a candidate.
+        newPage = partitionDirectMap(root, flags, size);
+    } else if (LIKELY(partitionSetNewActivePage(bucket))) {
+        // First, did we find an active page in the active pages list?
         newPage = bucket->activePagesHead;
-        if (LIKELY(newPage->freelistHead != 0)) {
-            PartitionFreelistEntry* entry = newPage->freelistHead;
-            newPage->freelistHead = partitionFreelistMask(entry->next);
-            newPage->numAllocatedSlots++;
-            partitionPageSetRawSize(newPage, size);
-            return entry;
+        ASSERT(newPage != &PartitionRootGeneric::gSeedPage);
+    } else if (LIKELY(bucket->emptyPagesHead != nullptr) || LIKELY(bucket->decommittedPagesHead != nullptr)) {
+        // Second, look in our lists of empty and decommitted pages.
+        // Check empty pages first, which are preferred, but beware that an
+        // empty page might have been decommitted.
+        while (LIKELY((newPage = bucket->emptyPagesHead) != nullptr)) {
+            ASSERT(partitionPageStateIsEmpty(newPage));
+            bucket->emptyPagesHead = newPage->nextPage;
+            // Accept the empty page unless it got decommitted.
+            if (newPage->freelistHead) {
+                newPage->nextPage = nullptr;
+                break;
+            }
+            ASSERT(partitionPageStateIsDecommitted(newPage));
+            newPage->nextPage = bucket->decommittedPagesHead;
+            bucket->decommittedPagesHead = newPage;
         }
-    } else if (LIKELY(bucket->emptyPagesHead != nullptr)) {
-        // Second, look in our list of freed but reserved pages.
-        newPage = bucket->emptyPagesHead;
-        bucket->emptyPagesHead = newPage->nextPage;
-        void* addr = partitionPageToPointer(newPage);
-        partitionRecommitSystemPages(root, addr, partitionBucketBytes(newPage->bucket));
-        partitionPageReset(newPage, bucket);
+        if (UNLIKELY(!newPage) && LIKELY(bucket->decommittedPagesHead != nullptr)) {
+            newPage = bucket->decommittedPagesHead;
+            bucket->decommittedPagesHead = newPage->nextPage;
+            ASSERT(partitionPageStateIsDecommitted(newPage));
+            void* addr = partitionPageToPointer(newPage);
+            partitionRecommitSystemPages(root, addr, partitionBucketBytes(newPage->bucket));
+            partitionPageReset(newPage, bucket);
+        }
+        ASSERT(newPage);
     } else {
         // Third. If we get here, we need a brand new page.
         uint16_t numPartitionPages = partitionBucketPartitionPages(bucket);
-        void* rawNewPage = partitionAllocPartitionPages(root, flags, numPartitionPages);
-        if (UNLIKELY(!rawNewPage))
-            goto partitionAllocSlowPathFailed;
-        // Skip the alignment check because it depends on page->bucket, which is not yet set.
-        newPage = partitionPointerToPageNoAlignmentCheck(rawNewPage);
-        partitionPageSetup(newPage, bucket);
+        void* rawPages = partitionAllocPartitionPages(root, flags, numPartitionPages);
+        if (LIKELY(rawPages != nullptr)) {
+            newPage = partitionPointerToPageNoAlignmentCheck(rawPages);
+            partitionPageSetup(newPage, bucket);
+        }
     }
 
+    // Bail if we had a memory allocation failure.
+    if (UNLIKELY(!newPage)) {
+        ASSERT(bucket->activePagesHead == &PartitionRootGeneric::gSeedPage);
+        if (returnNull)
+            return nullptr;
+        partitionOutOfMemory(root);
+    }
+
+    bucket = newPage->bucket;
+    ASSERT(bucket != &PartitionRootBase::gPagedBucket);
     bucket->activePagesHead = newPage;
     partitionPageSetRawSize(newPage, size);
 
-    return partitionPageAllocAndFillFreelist(newPage);
-
-partitionAllocSlowPathFailed:
-    if (returnNull) {
-        // If we get here, we will set the active page to null, which is an
-        // invalid state. To support continued use of this bucket, we need to
-        // restore a valid state, by setting the active page to the seed page.
-        bucket->activePagesHead = &PartitionRootGeneric::gSeedPage;
-        return nullptr;
+    // If we found an active page with free slots, or an empty page, we have a
+    // usable freelist head.
+    if (LIKELY(newPage->freelistHead != nullptr)) {
+        PartitionFreelistEntry* entry = newPage->freelistHead;
+        PartitionFreelistEntry* newHead = partitionFreelistMask(entry->next);
+        newPage->freelistHead = newHead;
+        newPage->numAllocatedSlots++;
+        return entry;
     }
-    partitionOutOfMemory(root);
-    return nullptr;
+    // Otherwise, we need to build the freelist.
+    ASSERT(newPage->numUnprovisionedSlots);
+    return partitionPageAllocAndFillFreelist(newPage);
 }
 
 static ALWAYS_INLINE void partitionDecommitPage(PartitionRootBase* root, PartitionPage* page)
 {
+    ASSERT(partitionPageStateIsEmpty(page));
     ASSERT(page->freelistHead);
-    ASSERT(!page->numAllocatedSlots);
     ASSERT(!partitionBucketIsDirectMapped(page->bucket));
     void* addr = partitionPageToPointer(page);
     partitionDecommitSystemPages(root, addr, partitionBucketBytes(page->bucket));
 
     // We actually leave the decommitted page in the active list. We'll sweep
-    // it on to the free page list when we next walk the active page list.
+    // it on to the decommitted page list when we next walk the active page
+    // list.
     // Pulling this trick enables us to use a singly-linked page list for all
     // cases, which is critical in keeping the page metadata structure down to
     // 32 bytes in size.
@@ -815,7 +845,6 @@ static ALWAYS_INLINE void partitionDecommitPage(PartitionRootBase* root, Partiti
 
 static void partitionDecommitPageIfPossible(PartitionRootBase* root, PartitionPage* page)
 {
-    ASSERT(page != &PartitionRootBase::gSeedPage);
     ASSERT(page->emptyCacheIndex >= 0);
     ASSERT(static_cast<unsigned>(page->emptyCacheIndex) < kMaxFreeableSpans);
     ASSERT(page == root->globalEmptyPageRing[page->emptyCacheIndex]);
@@ -829,6 +858,7 @@ static void partitionDecommitPageIfPossible(PartitionRootBase* root, PartitionPa
 
 static ALWAYS_INLINE void partitionRegisterEmptyPage(PartitionPage* page)
 {
+    ASSERT(partitionPageStateIsEmpty(page));
     PartitionRootBase* root = partitionPageToRoot(page);
 
     // If the page is already registered as empty, give it another life.
@@ -892,36 +922,12 @@ void partitionFreeSlowPath(PartitionPage* page)
             partitionDirectUnmap(page);
             return;
         }
-        // Make sure all large allocations always bounce through the slow path,
-        // so that we correctly update size metadata.
-        // TODO(cevans): remove this special case when we start bouncing empty
-        // pages straight to the empty list. This will happen soon.
-        if (UNLIKELY(partitionPageGetRawSize(page))) {
-            // We can make that allocations from this empty page bounce
-            // through the slow path by marking the freelist head as null. To
-            // get the single slot filled correctly, we also have to tag the
-            // page as having a single unprovisioned slot.
-            ASSERT(partitionBucketSlots(bucket) == 1);
-            page->numUnprovisionedSlots = 1;
-            page->freelistHead = nullptr;
-        }
-        // If it's the current active page, attempt to change it. We'd prefer to
-        // leave the page empty as a gentle force towards defragmentation.
-        if (LIKELY(page == bucket->activePagesHead) && page->nextPage) {
-            if (partitionSetNewActivePage(page->nextPage)) {
-                ASSERT(bucket->activePagesHead != page);
-                // Link the empty page back in after the new current page, to
-                // avoid losing a reference to it.
-                // TODO: consider walking the list to link the empty page after
-                // all non-empty pages?
-                PartitionPage* currentPage = bucket->activePagesHead;
-                page->nextPage = currentPage->nextPage;
-                currentPage->nextPage = page;
-            } else {
-                bucket->activePagesHead = page;
-                page->nextPage = 0;
-            }
-        }
+        // If it's the current active page, change it. We bounce the page to
+        // the empty list as a force towards defragmentation.
+        if (LIKELY(page == bucket->activePagesHead))
+            (void) partitionSetNewActivePage(bucket);
+        ASSERT(bucket->activePagesHead != page);
+
         partitionRegisterEmptyPage(page);
     } else {
         ASSERT(!partitionBucketIsDirectMapped(bucket));
@@ -937,9 +943,8 @@ void partitionFreeSlowPath(PartitionPage* page)
         // non-full page list. Also make it the current page to increase the
         // chances of it being filled up again. The old current page will be
         // the next page.
-        if (UNLIKELY(bucket->activePagesHead == &PartitionRootGeneric::gSeedPage))
-            page->nextPage = 0;
-        else
+        ASSERT(!page->nextPage);
+        if (LIKELY(bucket->activePagesHead != &PartitionRootGeneric::gSeedPage))
             page->nextPage = bucket->activePagesHead;
         bucket->activePagesHead = page;
         --bucket->numFullPages;
@@ -1066,7 +1071,7 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
 {
     uint16_t bucketNumSlots = partitionBucketSlots(page->bucket);
 
-    if (!page->freelistHead && page->numAllocatedSlots == 0 && !page->numUnprovisionedSlots) {
+    if (partitionPageStateIsDecommitted(page)) {
         ++statsOut->numDecommittedPages;
     } else {
         size_t rawSize = partitionPageGetRawSize(const_cast<PartitionPage*>(page));
@@ -1078,12 +1083,13 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
         // Round up to system page size.
         size_t pageBytesResidentRounded = partitionRoundUpToSystemPage(pageBytesResident);
         statsOut->residentBytes += pageBytesResidentRounded;
-        if (!page->numAllocatedSlots) {
+        if (partitionPageStateIsEmpty(page)) {
             statsOut->decommittableBytes += pageBytesResidentRounded;
             ++statsOut->numEmptyPages;
         } else if (page->numAllocatedSlots == bucketNumSlots) {
             ++statsOut->numFullPages;
         } else {
+            ASSERT(page->numAllocatedSlots > 0);
             ++statsOut->numActivePages;
         }
     }
@@ -1094,9 +1100,9 @@ static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const
     ASSERT(!partitionBucketIsDirectMapped(bucket));
     statsOut->isValid = false;
     // If the active page list is empty (== &PartitionRootGeneric::gSeedPage),
-    // the bucket might still need to be reported if it has an empty page list,
-    // or full pages.
-    if (bucket->activePagesHead == &PartitionRootGeneric::gSeedPage && !bucket->emptyPagesHead && !bucket->numFullPages)
+    // the bucket might still need to be reported if it has a list of empty,
+    // decommitted or full pages.
+    if (bucket->activePagesHead == &PartitionRootGeneric::gSeedPage && !bucket->emptyPagesHead && !bucket->decommittedPagesHead && !bucket->numFullPages)
         return;
 
     memset(statsOut, '\0', sizeof(*statsOut));
@@ -1111,12 +1117,11 @@ static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const
     statsOut->residentBytes = bucket->numFullPages * statsOut->allocatedPageSize;
 
     for (const PartitionPage* page = bucket->emptyPagesHead; page; page = page->nextPage) {
-        // Currently, only decommitted pages appear in the empty pages list.
-        // This may change.
-        ASSERT(page != &PartitionRootGeneric::gSeedPage);
-        ASSERT(!page->freelistHead);
-        ASSERT(!page->numAllocatedSlots);
-        ASSERT(!page->numUnprovisionedSlots);
+        ASSERT(partitionPageStateIsEmpty(page));
+        partitionDumpPageStats(statsOut, page);
+    }
+    for (const PartitionPage* page = bucket->decommittedPagesHead; page; page = page->nextPage) {
+        ASSERT(partitionPageStateIsDecommitted(page));
         partitionDumpPageStats(statsOut, page);
     }
 

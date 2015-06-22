@@ -267,6 +267,7 @@ struct PartitionPage {
 struct PartitionBucket {
     PartitionPage* activePagesHead; // Accessed most in hot path => goes first.
     PartitionPage* emptyPagesHead;
+    PartitionPage* decommittedPagesHead;
     uint32_t slotSize;
     uint16_t numSystemPagesPerSlotSpan;
     uint16_t numFullPages;
@@ -629,8 +630,13 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
     entry->next = partitionFreelistMask(freelistHead);
     page->freelistHead = entry;
     --page->numAllocatedSlots;
-    if (UNLIKELY(page->numAllocatedSlots <= 0))
+    if (UNLIKELY(page->numAllocatedSlots <= 0)) {
         partitionFreeSlowPath(page);
+    } else {
+        // All single-slot allocations must go through the slow path to
+        // correctly update the size metadata.
+        ASSERT(partitionPageGetRawSize(page) == 0);
+    }
 }
 
 ALWAYS_INLINE void partitionFree(void* ptr)

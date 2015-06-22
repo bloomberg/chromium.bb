@@ -241,6 +241,7 @@ TEST(PartitionAllocTest, Basic)
     PartitionPage* seedPage = &PartitionRootGeneric::gSeedPage;
 
     EXPECT_FALSE(bucket->emptyPagesHead);
+    EXPECT_FALSE(bucket->decommittedPagesHead);
     EXPECT_EQ(seedPage, bucket->activePagesHead);
     EXPECT_EQ(0, bucket->activePagesHead->nextPage);
 
@@ -251,8 +252,10 @@ TEST(PartitionAllocTest, Basic)
     EXPECT_EQ(kPartitionPageSize + kPointerOffset, reinterpret_cast<size_t>(ptr) & kSuperPageOffsetMask);
 
     partitionFree(ptr);
-    // Expect that the last active page does not get tossed to the freelist.
-    EXPECT_FALSE(bucket->emptyPagesHead);
+    // Expect that the last active page gets noticed as empty but doesn't get
+    // decommitted.
+    EXPECT_TRUE(bucket->emptyPagesHead);
+    EXPECT_FALSE(bucket->decommittedPagesHead);
 
     TestShutdown();
 }
@@ -313,8 +316,8 @@ TEST(PartitionAllocTest, MultiPages)
 
     PartitionPage* page = GetFullPage(kTestAllocSize);
     FreeFullPage(page);
-    EXPECT_FALSE(bucket->emptyPagesHead);
-    EXPECT_EQ(page, bucket->activePagesHead);
+    EXPECT_TRUE(bucket->emptyPagesHead);
+    EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->activePagesHead);
     EXPECT_EQ(0, page->nextPage);
     EXPECT_EQ(0, page->numAllocatedSlots);
 
@@ -325,12 +328,12 @@ TEST(PartitionAllocTest, MultiPages)
     EXPECT_EQ(0, page2->nextPage);
     EXPECT_EQ(reinterpret_cast<uintptr_t>(partitionPageToPointer(page)) & kSuperPageBaseMask, reinterpret_cast<uintptr_t>(partitionPageToPointer(page2)) & kSuperPageBaseMask);
 
-    // Fully free the non-current page. It should not be freelisted because
-    // there is no other immediately useable page. The other page is full.
+    // Fully free the non-current page. This will leave us with no current
+    // active page because one is empty and the other is full.
     FreeFullPage(page);
     EXPECT_EQ(0, page->numAllocatedSlots);
-    EXPECT_FALSE(bucket->emptyPagesHead);
-    EXPECT_EQ(page, bucket->activePagesHead);
+    EXPECT_TRUE(bucket->emptyPagesHead);
+    EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->activePagesHead);
 
     // Allocate a new page, it should pull from the freelist.
     page = GetFullPage(kTestAllocSize);
@@ -426,10 +429,8 @@ TEST(PartitionAllocTest, FreePageListPageTransitions)
     EXPECT_EQ(pages[numToFillFreeListPage - 1], bucket->activePagesHead);
     for (i = 0; i < numToFillFreeListPage; ++i)
         FreeFullPage(pages[i]);
-    EXPECT_EQ(0, bucket->activePagesHead->numAllocatedSlots);
-    EXPECT_NE(-1, bucket->activePagesHead->nextPage->emptyCacheIndex);
-    EXPECT_EQ(0, bucket->activePagesHead->nextPage->numAllocatedSlots);
-    EXPECT_EQ(0, bucket->activePagesHead->nextPage->numUnprovisionedSlots);
+    EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->activePagesHead);
+    EXPECT_TRUE(bucket->emptyPagesHead);
 
     // Allocate / free in a different bucket size so we get control of a
     // different free page list. We need two pages because one will be the last
@@ -439,27 +440,15 @@ TEST(PartitionAllocTest, FreePageListPageTransitions)
     FreeFullPage(page1);
     FreeFullPage(page2);
 
-    // If we re-allocate all kTestAllocSize allocations, we'll pull all the
-    // free pages and end up freeing the first page for free page objects.
-    // It's getting a bit tricky but a nice re-entrancy is going on:
-    // alloc(kTestAllocSize) -> pulls page from free page list ->
-    // free(PartitionFreepagelistEntry) -> last entry in page freed ->
-    // alloc(PartitionFreepagelistEntry).
     for (i = 0; i < numToFillFreeListPage; ++i) {
         pages[i] = GetFullPage(kTestAllocSize);
     }
     EXPECT_EQ(pages[numToFillFreeListPage - 1], bucket->activePagesHead);
 
-    // As part of the final free-up, we'll test another re-entrancy:
-    // free(kTestAllocSize) -> last entry in page freed ->
-    // alloc(PartitionFreepagelistEntry) -> pulls page from free page list ->
-    // free(PartitionFreepagelistEntry)
     for (i = 0; i < numToFillFreeListPage; ++i)
         FreeFullPage(pages[i]);
-    EXPECT_EQ(0, bucket->activePagesHead->numAllocatedSlots);
-    EXPECT_NE(-1, bucket->activePagesHead->nextPage->emptyCacheIndex);
-    EXPECT_EQ(0, bucket->activePagesHead->nextPage->numAllocatedSlots);
-    EXPECT_EQ(0, bucket->activePagesHead->nextPage->numUnprovisionedSlots);
+    EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->activePagesHead);
+    EXPECT_TRUE(bucket->emptyPagesHead);
 
     TestShutdown();
 }
@@ -1136,7 +1125,8 @@ TEST(PartitionAllocTest, LostFreePagesBug)
     partitionFreeGeneric(genericAllocator.root(), ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr2);
 
-    EXPECT_EQ(0, bucket->emptyPagesHead);
+    EXPECT_TRUE(bucket->emptyPagesHead);
+    EXPECT_TRUE(bucket->emptyPagesHead->nextPage);
     EXPECT_EQ(0, page->numAllocatedSlots);
     EXPECT_EQ(0, page2->numAllocatedSlots);
     EXPECT_TRUE(page->freelistHead);
@@ -1147,62 +1137,55 @@ TEST(PartitionAllocTest, LostFreePagesBug)
     EXPECT_FALSE(page->freelistHead);
     EXPECT_FALSE(page2->freelistHead);
 
-    EXPECT_FALSE(bucket->emptyPagesHead);
-    EXPECT_TRUE(bucket->activePagesHead);
-    EXPECT_TRUE(bucket->activePagesHead->nextPage);
+    EXPECT_TRUE(bucket->emptyPagesHead);
+    EXPECT_TRUE(bucket->emptyPagesHead->nextPage);
+    EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->activePagesHead);
 
-    // At this moment, we have two freed pages, on the freelist.
-
+    // At this moment, we have two decommitted pages, on the empty list.
     ptr = partitionAllocGeneric(genericAllocator.root(), size);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
-    EXPECT_TRUE(bucket->activePagesHead);
+    EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->activePagesHead);
     EXPECT_TRUE(bucket->emptyPagesHead);
+    EXPECT_TRUE(bucket->decommittedPagesHead);
 
     CycleGenericFreeCache(kTestAllocSize);
 
-    // We're now set up to trigger the bug by scanning over the active pages
-    // list, where the current active page is freed, and there exists at least
-    // one freed page in the free pages list.
+    // We're now set up to trigger a historical bug by scanning over the active
+    // pages list. The current code gets into a different state, but we'll keep
+    // the test as being an interesting corner case.
     ptr = partitionAllocGeneric(genericAllocator.root(), size);
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
     EXPECT_TRUE(bucket->activePagesHead);
     EXPECT_TRUE(bucket->emptyPagesHead);
+    EXPECT_TRUE(bucket->decommittedPagesHead);
 
     TestShutdown();
 }
 
 #if !CPU(64BIT) || OS(POSIX)
 
-// Tests that if an allocation fails in "return null" mode, repeating it doesn't
-// crash, and still returns null. The test tries to allocate 6 GB of memory in
-// 512 kB blocks. On 64-bit POSIX systems, the address space is limited to 4 GB
-// using setrlimit() first.
-#if OS(MACOSX)
-#define MAYBE_RepeatedReturnNull DISABLED_RepeatedReturnNull
-#else
-#define MAYBE_RepeatedReturnNull RepeatedReturnNull
-#endif
-TEST(PartitionAllocTest, MAYBE_RepeatedReturnNull)
+static void DoReturnNullTest(size_t allocSize)
 {
     TestSetup();
 
     EXPECT_TRUE(SetAddressSpaceLimit());
 
-    // 512 kB x 12288 == 6 GB
-    const size_t blockSize = 512 * 1024;
-    const int numAllocations = 12288;
+    // Work out the number of allocations for 6 GB of memory.
+    const int numAllocations = (6 * 1024 * 1024) / (allocSize / 1024);
 
-    void* ptrs[numAllocations];
+    void** ptrs = reinterpret_cast<void**>(partitionAllocGeneric(genericAllocator.root(), numAllocations * sizeof(void*)));
     int i;
 
     for (i = 0; i < numAllocations; ++i) {
-        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, blockSize);
+        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize);
+        if (!i)
+            EXPECT_TRUE(ptrs[0]);
         if (!ptrs[i]) {
-            ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, blockSize);
+            ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize);
             EXPECT_FALSE(ptrs[i]);
             break;
         }
@@ -1216,14 +1199,43 @@ TEST(PartitionAllocTest, MAYBE_RepeatedReturnNull)
     // check that freeing memory also works correctly after a failed allocation.
     for (--i; i >= 0; --i) {
         partitionFreeGeneric(genericAllocator.root(), ptrs[i]);
-        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, blockSize);
+        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), PartitionAllocReturnNull, allocSize);
         EXPECT_TRUE(ptrs[i]);
         partitionFreeGeneric(genericAllocator.root(), ptrs[i]);
     }
 
+    partitionFreeGeneric(genericAllocator.root(), ptrs);
+
     EXPECT_TRUE(ClearAddressSpaceLimit());
 
     TestShutdown();
+}
+
+// Tests that if an allocation fails in "return null" mode, repeating it doesn't
+// crash, and still returns null. The test tries to allocate 6 GB of memory in
+// 512 kB blocks. On 64-bit POSIX systems, the address space is limited to 4 GB
+// using setrlimit() first.
+#if OS(MACOSX)
+#define MAYBE_RepeatedReturnNull DISABLED_RepeatedReturnNull
+#else
+#define MAYBE_RepeatedReturnNull RepeatedReturnNull
+#endif
+TEST(PartitionAllocTest, MAYBE_RepeatedReturnNull)
+{
+    // A single-slot but non-direct-mapped allocation size.
+    DoReturnNullTest(512 * 1024);
+}
+
+// Another "return null" test but for larger, direct-mapped allocations.
+#if OS(MACOSX)
+#define MAYBE_RepeatedReturnNullDirect DISABLED_RepeatedReturnNullDirect
+#else
+#define MAYBE_RepeatedReturnNullDirect RepeatedReturnNullDirect
+#endif
+TEST(PartitionAllocTest, MAYBE_RepeatedReturnNullDirect)
+{
+    // A direct-mapped allocation size.
+    DoReturnNullTest(256 * 1024 * 1024);
 }
 
 #endif // !CPU(64BIT) || OS(POSIX)
@@ -1581,6 +1593,59 @@ TEST(PartitionAllocTest, Purge)
     // Calling purge again here is a good way of testing we didn't mess up the
     // state of the free cache ring.
     partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
+    TestShutdown();
+}
+
+// Tests that we prefer to allocate into a non-empty partition page over an
+// empty one. This is an important aspect of minimizing memory usage for some
+// allocation sizes, particularly larger ones.
+TEST(PartitionAllocTest, PreferActiveOverEmpty)
+{
+    TestSetup();
+
+    size_t size = (kSystemPageSize * 2) - kExtraAllocSize;
+    // Allocate 3 full slot spans worth of 8192-byte allocations.
+    // Each slot span for this size is 16384 bytes, or 1 partition page and 2
+    // slots.
+    void* ptr1 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr3 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr4 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr5 = partitionAllocGeneric(genericAllocator.root(), size);
+    void* ptr6 = partitionAllocGeneric(genericAllocator.root(), size);
+
+    PartitionPage* page1 = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr1));
+    PartitionPage* page2 = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr3));
+    PartitionPage* page3 = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr6));
+    EXPECT_NE(page1, page2);
+    EXPECT_NE(page2, page3);
+    PartitionBucket* bucket = page1->bucket;
+    EXPECT_EQ(page3, bucket->activePagesHead);
+
+    // Free up the 2nd slot in each slot span.
+    // This leaves the active list containing 3 pages, each with 1 used and 1
+    // free slot. The active page will be the one containing ptr1.
+    partitionFreeGeneric(genericAllocator.root(), ptr6);
+    partitionFreeGeneric(genericAllocator.root(), ptr4);
+    partitionFreeGeneric(genericAllocator.root(), ptr2);
+    EXPECT_EQ(page1, bucket->activePagesHead);
+
+    // Empty the middle page in the active list.
+    partitionFreeGeneric(genericAllocator.root(), ptr3);
+    EXPECT_EQ(page1, bucket->activePagesHead);
+
+    // Empty the the first page in the active list -- also the current page.
+    partitionFreeGeneric(genericAllocator.root(), ptr1);
+
+    // A good choice here is to re-fill the third page since the first two are
+    // empty. We used to fail that.
+    void* ptr7 = partitionAllocGeneric(genericAllocator.root(), size);
+    EXPECT_EQ(ptr6, ptr7);
+    EXPECT_EQ(page3, bucket->activePagesHead);
+
+    partitionFreeGeneric(genericAllocator.root(), ptr5);
+    partitionFreeGeneric(genericAllocator.root(), ptr7);
+
     TestShutdown();
 }
 
