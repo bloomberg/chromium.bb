@@ -1623,5 +1623,10 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, OpenAudioOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, CheckInitialElements) {
+  set_test_case_name("checkInitialElements");
+  StartTest();
+}
+
 }  // namespace
 }  // namespace file_manager
