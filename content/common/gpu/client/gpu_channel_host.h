@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
+#include "media/video/jpeg_decode_accelerator.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -44,6 +45,7 @@ class SyncMessageFilter;
 }
 
 namespace media {
+class JpegDecodeAccelerator;
 class VideoDecodeAccelerator;
 class VideoEncodeAccelerator;
 }
@@ -148,6 +150,10 @@ class GpuChannelHost : public IPC::Sender,
   // Creates a video encoder in the GPU process.
   scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder(
       int command_buffer_route_id);
+
+  // Creates a JPEG decoder in the GPU process.
+  scoped_ptr<media::JpegDecodeAccelerator> CreateJpegDecoder(
+      media::JpegDecodeAccelerator::Client* client);
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);

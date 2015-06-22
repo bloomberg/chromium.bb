@@ -14,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/gpu_jpeg_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "url/gurl.h"
@@ -256,6 +257,28 @@ scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder(
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
   DCHECK(it != proxies_.end());
   return it->second->CreateVideoEncoder();
+}
+
+scoped_ptr<media::JpegDecodeAccelerator> GpuChannelHost::CreateJpegDecoder(
+    media::JpegDecodeAccelerator::Client* client) {
+  TRACE_EVENT0("gpu", "GpuChannelHost::CreateJpegDecoder");
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      factory_->GetIOThreadTaskRunner();
+  int32 route_id = GenerateRouteID();
+  scoped_ptr<GpuJpegDecodeAcceleratorHost> decoder(
+      new GpuJpegDecodeAcceleratorHost(this, route_id, io_task_runner));
+  if (!decoder->Initialize(client)) {
+    return nullptr;
+  }
+
+  // The reply message of jpeg decoder should run on IO thread.
+  io_task_runner->PostTask(FROM_HERE,
+                           base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
+                                      channel_filter_.get(), route_id,
+                                      decoder->GetReceiver(), io_task_runner));
+
+  return decoder.Pass();
 }
 
 void GpuChannelHost::DestroyCommandBuffer(
