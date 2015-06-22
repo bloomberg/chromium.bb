@@ -1666,16 +1666,6 @@ crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
 
-crbug.com/97467 fast/images/style-access-during-imageChanged-crash.html [ NeedsRebaseline ]
-crbug.com/97467 fast/text/custom-font-data-crash2.html [ NeedsRebaseline ]
-crbug.com/97467 fast/text/custom-font-data-crash.html [ NeedsRebaseline ]
-crbug.com/97467 fast/css/font-face-data-uri-invalid.html [ NeedsRebaseline ]
-crbug.com/97467 http/tests/navigation/navigation-redirect-schedule-crash.html [ NeedsRebaseline ]
-crbug.com/97467 fast/css/fontface-arraybuffer.html [ NeedsRebaseline ]
-crbug.com/97467 fast/css/fontfaceset-download-error.html [ NeedsRebaseline ]
-crbug.com/97467 virtual/antialiasedtext/fast/text/custom-font-data-crash2.html [ NeedsRebaseline ]
-crbug.com/97467 virtual/antialiasedtext/fast/text/custom-font-data-crash.html [ NeedsRebaseline ]
-
 # Temporarily disabled due to a change in HTMLMediaElement behavior, I'll
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]

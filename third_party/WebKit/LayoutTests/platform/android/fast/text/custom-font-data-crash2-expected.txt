@@ -1,0 +1,3 @@
+CONSOLE WARNING: Failed to decode downloaded font: custom-font-data-crash2.html
+CONSOLE WARNING: Failed to decode downloaded font: custom-font-data-crash2.html
+PASS
