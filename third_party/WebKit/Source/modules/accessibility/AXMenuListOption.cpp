@@ -102,9 +102,13 @@ bool AXMenuListOption::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReas
 LayoutRect AXMenuListOption::elementRect() const
 {
     AXObject* parent = parentObject();
+    if (!parent)
+        return LayoutRect();
     ASSERT(parent->isMenuListPopup());
 
     AXObject* grandparent = parent->parentObject();
+    if (!grandparent)
+        return LayoutRect();
     ASSERT(grandparent->isMenuList());
 
     return grandparent->elementRect();
