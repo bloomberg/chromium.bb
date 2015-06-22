@@ -547,7 +547,6 @@ extern const char kNtpCollapsedRecentlyClosedTabs[];
 extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
 #endif
-extern const char kNtpMostVisitedURLsBlacklist[];
 extern const char kNtpShownPage[];
 
 extern const char kDevToolsAdbKey[];

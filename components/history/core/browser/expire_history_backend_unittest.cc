@@ -40,14 +40,10 @@
 namespace history {
 
 namespace {
-// Key for URL blacklist.
-const char kBlacklistURLKey[] = "test.blacklist.url";
-
 // Returns whether |url| can be added to history.
 bool MockCanAddURLToHistory(const GURL& url) {
   return url.is_valid();
 }
-
 }  // namespace
 
 // ExpireHistoryTest -----------------------------------------------------------
@@ -131,12 +127,11 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
       thumb_db_.reset();
 
     pref_service_.reset(new TestingPrefServiceSimple);
-    pref_service_->registry()->RegisterDictionaryPref(kBlacklistURLKey);
+    TopSitesImpl::RegisterPrefs(pref_service_->registry());
 
     expirer_.SetDatabases(main_db_.get(), thumb_db_.get());
-
     top_sites_ = new TopSitesImpl(pref_service_.get(), nullptr,
-                                  kBlacklistURLKey, PrepopulatedPageList(),
+                                  PrepopulatedPageList(),
                                   base::Bind(MockCanAddURLToHistory));
     WaitTopSitesLoadedObserver wait_top_sites_observer(top_sites_);
     top_sites_->Init(path().Append(kTopSitesFilename),

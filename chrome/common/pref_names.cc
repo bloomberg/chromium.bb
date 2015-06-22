@@ -1528,9 +1528,6 @@ const char kNtpCollapsedSnapshotDocument[] = "ntp.collapsed_snapshot_document";
 const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 #endif
 
-// New Tab Page URLs that should not be shown as most visited thumbnails.
-const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
-
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
 

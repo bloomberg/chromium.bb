@@ -10,7 +10,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -91,8 +90,7 @@ scoped_refptr<history::TopSites> TopSitesFactory::BuildTopSites(
   scoped_refptr<history::TopSitesImpl> top_sites(new history::TopSitesImpl(
       profile->GetPrefs(), HistoryServiceFactory::GetForProfile(
                                profile, ServiceAccessType::EXPLICIT_ACCESS),
-      prefs::kNtpMostVisitedURLsBlacklist, prepopulated_page_list,
-      base::Bind(CanAddURLToHistory)));
+      prepopulated_page_list, base::Bind(CanAddURLToHistory)));
   top_sites->Init(context->GetPath().Append(history::kTopSitesFilename),
                   content::BrowserThread::GetMessageLoopProxyForThread(
                       content::BrowserThread::DB));
@@ -118,7 +116,7 @@ scoped_refptr<RefcountedKeyedService> TopSitesFactory::BuildServiceInstanceFor(
 
 void TopSitesFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist);
+  history::TopSitesImpl::RegisterPrefs(registry);
 }
 
 bool TopSitesFactory::ServiceIsNULLWhileTesting() const {

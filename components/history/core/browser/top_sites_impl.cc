@@ -14,6 +14,7 @@
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/single_thread_task_runner.h"
@@ -89,6 +90,10 @@ const int64 kMaxUpdateIntervalMinutes = 5;
 // artifacts for these small sized, highly detailed images.
 const int kTopSitesImageQuality = 100;
 
+// Key for preference listing the URLs that should not be shown as most
+// visited thumbnails.
+const char kMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
+
 }  // namespace
 
 // Initially, histogram is not recorded.
@@ -96,7 +101,6 @@ bool TopSitesImpl::histogram_recorded_ = false;
 
 TopSitesImpl::TopSitesImpl(PrefService* pref_service,
                            HistoryService* history_service,
-                           const char* blacklist_pref_name,
                            const PrepopulatedPageList& prepopulated_pages,
                            const CanAddURLToHistoryFn& can_add_url_to_history)
     : backend_(nullptr),
@@ -105,13 +109,11 @@ TopSitesImpl::TopSitesImpl(PrefService* pref_service,
       last_num_urls_changed_(0),
       prepopulated_pages_(prepopulated_pages),
       pref_service_(pref_service),
-      blacklist_pref_name_(blacklist_pref_name),
       history_service_(history_service),
       can_add_url_to_history_(can_add_url_to_history),
       loaded_(false),
       history_service_observer_(this) {
   DCHECK(pref_service_);
-  DCHECK(blacklist_pref_name_);
   DCHECK(!can_add_url_to_history_.is_null());
 }
 
@@ -317,7 +319,7 @@ void TopSitesImpl::SyncWithHistory() {
 
 bool TopSitesImpl::HasBlacklistedItems() const {
   const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(blacklist_pref_name_);
+      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
   return blacklist && !blacklist->empty();
 }
 
@@ -326,7 +328,7 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
 
   scoped_ptr<base::Value> dummy = base::Value::CreateNullValue();
   {
-    DictionaryPrefUpdate update(pref_service_, blacklist_pref_name_);
+    DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();
     blacklist->SetWithoutPathExpansion(GetURLHash(url), dummy.Pass());
   }
@@ -338,7 +340,7 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
 void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   {
-    DictionaryPrefUpdate update(pref_service_, blacklist_pref_name_);
+    DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();
     blacklist->RemoveWithoutPathExpansion(GetURLHash(url), nullptr);
   }
@@ -349,14 +351,14 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
 bool TopSitesImpl::IsBlacklisted(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(blacklist_pref_name_);
+      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
   return blacklist && blacklist->HasKey(GetURLHash(url));
 }
 
 void TopSitesImpl::ClearBlacklistedURLs() {
   DCHECK(thread_checker_.CalledOnValidThread());
   {
-    DictionaryPrefUpdate update(pref_service_, blacklist_pref_name_);
+    DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();
     blacklist->Clear();
   }
@@ -373,6 +375,11 @@ void TopSitesImpl::ShutdownOnUIThread() {
   cancelable_task_tracker_.TryCancelAll();
   if (backend_)
     backend_->Shutdown();
+}
+
+// static
+void TopSitesImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kMostVisitedURLsBlacklist);
 }
 
 // static
@@ -685,7 +692,7 @@ void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
   // Log the number of times ApplyBlacklist is called so we can compute the
   // average number of blacklisted items per user.
   const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(blacklist_pref_name_);
+      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
   UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
   UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
       (blacklist ? blacklist->size() : 0));
@@ -799,7 +806,7 @@ int TopSitesImpl::num_results_to_request_from_history() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(blacklist_pref_name_);
+      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
   return kNonForcedTopSitesNumber + (blacklist ? blacklist->size() : 0);
 }
 

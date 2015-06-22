@@ -32,6 +32,7 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -59,7 +60,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   TopSitesImpl(PrefService* pref_service,
                HistoryService* history_service,
-               const char* blacklist_pref_name,
                const PrepopulatedPageList& prepopulated_pages,
                const CanAddURLToHistoryFn& can_add_url_to_history);
 
@@ -100,6 +100,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
+
+  // Register preferences used by TopSitesImpl.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  protected:
   ~TopSitesImpl() override;
@@ -291,9 +294,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // PrefService holding the NTP URL blacklist dictionary. Must outlive
   // TopSitesImpl.
   PrefService* pref_service_;
-
-  // Key for the NTP URL blacklist dictionary in PrefService.
-  const char* blacklist_pref_name_;
 
   // HistoryService that TopSitesImpl can query. May be null, but if defined it
   // must outlive TopSitesImpl.
