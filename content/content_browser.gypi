@@ -2095,5 +2095,14 @@
         '../third_party/boringssl/boringssl.gyp:boringssl',
       ],
     }],
+    ['enable_webvr==1', {
+      'sources': [
+        'browser/vr/vr_device.cc',
+        'browser/vr/vr_device.h',
+        'browser/vr/vr_device_manager.cc',
+        'browser/vr/vr_device_manager.h',
+        'browser/vr/vr_device_provider.h',
+      ]
+    }],
   ],
 }

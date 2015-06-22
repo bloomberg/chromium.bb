@@ -81,6 +81,10 @@
 #include "media/mojo/services/mojo_renderer_service.h"
 #endif
 
+#if defined(ENABLE_WEBVR)
+#include "content/browser/vr/vr_device_manager.h"
+#endif
+
 using base::TimeDelta;
 
 namespace content {
@@ -1575,6 +1579,16 @@ void RenderFrameHostImpl::RegisterMojoServices() {
 
   GetServiceRegistry()->AddService<mojo::Shell>(base::Bind(
       &FrameMojoShell::BindRequest, base::Unretained(frame_mojo_shell_.get())));
+
+#if defined(ENABLE_WEBVR)
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (browser_command_line.HasSwitch(switches::kEnableWebVR)) {
+    GetServiceRegistry()->AddService<VRService>(
+        base::Bind(&VRDeviceManager::BindRequest));
+  }
+#endif
 
   GetContentClient()->browser()->OverrideRenderFrameMojoServices(
       GetServiceRegistry(), this);

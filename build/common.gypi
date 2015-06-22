@@ -1009,6 +1009,9 @@
         }],
       ],
 
+      # WebVR support disabled until platform implementations have been added
+      'enable_webvr%': 0,
+
       # Setting this to '0' will cause V8's startup snapshot to be
       # embedded in the binary instead of being a external files.
       'v8_use_external_startup_data%': 1,
@@ -1222,6 +1225,7 @@
     'mac_views_browser%': '<(mac_views_browser)',
     'android_app_version_name%': '<(android_app_version_name)',
     'android_app_version_code%': '<(android_app_version_code)',
+    'enable_webvr%': '<(enable_webvr)',
 
     # Turns on compiler optimizations in V8 in Debug build.
     'v8_optimized_debug%': 1,
@@ -3022,6 +3026,9 @@
       }],
       ['v8_use_external_startup_data==1', {
        'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],
+      }],
+      ['enable_webvr==1', {
+        'defines': ['ENABLE_WEBVR'],
       }],
 
       # SAFE_BROWSING_SERVICE - browser manages a safe-browsing service.
