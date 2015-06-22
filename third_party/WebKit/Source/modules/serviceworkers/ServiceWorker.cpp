@@ -63,11 +63,6 @@ void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<Serialized
     m_outerWorker->postMessage(messageString, webChannels.leakPtr());
 }
 
-void ServiceWorker::terminate(ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(InvalidAccessError, "Not supported.");
-}
-
 void ServiceWorker::internalsTerminate()
 {
     m_outerWorker->terminate();
