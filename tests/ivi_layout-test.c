@@ -190,6 +190,11 @@ ivi_window_destroy(struct ivi_window *wnd)
 const char * const basic_test_names[] = {
 	"surface_visibility",
 	"surface_opacity",
+	"surface_orientation",
+	"surface_dimension",
+	"surface_position",
+	"surface_destination_rectangle",
+	"surface_source_rectangle",
 };
 
 TEST_P(ivi_layout_runner, basic_test_names)
