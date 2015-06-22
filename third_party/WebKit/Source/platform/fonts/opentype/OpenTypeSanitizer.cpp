@@ -36,6 +36,8 @@
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
+#include <stdarg.h>
+
 namespace blink {
 
 static void recordDecodeSpeedHistogram(SharedBuffer* buffer, double decodeTime, size_t decodedSize)
