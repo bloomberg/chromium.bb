@@ -40,6 +40,10 @@ vars = {
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
   "buildtools_revision": "93b3d0af1b30db55ee42bd2e983f7753153217db",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling V8
+  # and whatever else without interference from each other.
+  "gn_config_revision": "11eb422004ff8a7a3fa8fdee1d3982aa5931dfe2",
 }
 
 deps = {
@@ -49,6 +53,9 @@ deps = {
   "buildtools":
     Var("chromium_git") + "/chromium/buildtools.git@" +
      Var("buildtools_revision"),
+  "build":
+    Var("chromium_git") + "/native_client/gn_config.git@" +
+    Var("gn_config_revision"),
   "testing/gtest":
     Var("chromium_git") + "/external/googletest.git@" + Var("gtest_rev"),
   "third_party":

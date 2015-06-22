@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("../android/config.gni")
+import("//native_client/build/config/chrome_build.gni")
 if (current_cpu == "arm") {
   import("../arm.gni")
 }

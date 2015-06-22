@@ -70,16 +70,6 @@ declare_args() {
   # the default toolchain to 64-bit.
   force_win64 = false
 
-  # Selects the desired build flavor. Official builds get additional
-  # processing to prepare for release. Normally you will want to develop and
-  # test with this flag off.
-  is_official_build = false
-
-  # Select the desired branding flavor. False means normal Chromium branding,
-  # true means official Google Chrome branding (requires extra Google-internal
-  # resources).
-  is_chrome_branded = false
-
   # Compile for Address Sanitizer to find memory bugs.
   is_asan = false
 

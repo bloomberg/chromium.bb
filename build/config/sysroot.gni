@@ -5,10 +5,11 @@
 # This header file defines the "sysroot" variable which is the absolute path
 # of the sysroot. If no sysroot applies, the variable will be an empty string.
 
-import("chrome_build.gni")
+import("//build/module_args/nacl.gni")
+import("$nacl_shared_build_dir/config/chrome_build.gni")
 
 if (is_android) {
-  import("//native_client/build/config/android/config.gni")
+  import("$nacl_shared_build_dir/config/android/config.gni")
   if (current_cpu == "x86") {
     sysroot = rebase_path("$android_ndk_root/$x86_android_sysroot_subdir")
   } else if (current_cpu == "arm") {
@@ -37,11 +38,11 @@ if (is_android) {
     sysroot = ""
   }
 } else if (is_mac) {
-  import("//native_client/build/config/mac/mac_sdk.gni")
+  import("$nacl_shared_build_dir/config/mac/mac_sdk.gni")
 
   sysroot = mac_sdk_path
 } else if (is_ios) {
-  import("//native_client/build/config/ios/ios_sdk.gni")
+  import("$nacl_shared_build_dir/config/ios/ios_sdk.gni")
   sysroot = ios_sdk_path
 } else {
   sysroot = ""

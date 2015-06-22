@@ -11,6 +11,7 @@
 #
 # See also build/config/ui.gni
 
+import("//native_client/build/config/chrome_build.gni")
 if (is_android) {
   import("//native_client/build/config/android/config.gni")
 }
