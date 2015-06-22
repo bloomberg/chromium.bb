@@ -1049,3 +1049,25 @@ RUNNER_TEST(surface_remove_notification_p3)
 {
 	runner_assert(ctx->user_flags == 0);
 }
+
+static void
+test_surface_bad_properties_changed_notification_callback(struct ivi_layout_surface *ivisurf,
+							  const struct ivi_layout_surface_properties *prop,
+							  enum ivi_layout_notification_mask mask,
+							  void *userdata)
+{
+}
+
+RUNNER_TEST(surface_bad_properties_changed_notification)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_surface *ivisurf;
+
+	ivisurf = ctl->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
+	runner_assert(ivisurf != NULL);
+
+	runner_assert(ctl->surface_add_notification(
+		      NULL, test_surface_bad_properties_changed_notification_callback, NULL) == IVI_FAILED);
+	runner_assert(ctl->surface_add_notification(
+		      ivisurf, NULL, NULL) == IVI_FAILED);
+}
