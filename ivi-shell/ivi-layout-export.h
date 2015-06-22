@@ -783,6 +783,13 @@ struct ivi_controller_interface {
 				int32_t x, int32_t y,
 				int32_t width, int32_t height);
 
+	/**
+	 * remove notification by callback on property changes of ivi_surface
+	 */
+	void (*surface_remove_notification_by_callback)(struct ivi_layout_surface *ivisurf,
+							surface_property_notification_func callback,
+							void *userdata);
+
 };
 
 #ifdef __cplusplus

@@ -111,6 +111,9 @@ struct ivi_layout_notification_callback {
 	void *data;
 };
 
+static void
+remove_notification(struct wl_list *listener_list, void *callback, void *userdata);
+
 static struct ivi_layout ivilayout = {0};
 
 struct ivi_layout *
@@ -317,6 +320,19 @@ ivi_layout_surface_remove_notification(struct ivi_layout_surface *ivisurf)
 	}
 
 	remove_all_notification(&ivisurf->property_changed.listener_list);
+}
+
+static void
+ivi_layout_surface_remove_notification_by_callback(struct ivi_layout_surface *ivisurf,
+						   surface_property_notification_func callback,
+						   void *userdata)
+{
+	if (ivisurf == NULL) {
+		weston_log("ivi_layout_surface_remove_notification_by_callback: invalid argument\n");
+		return;
+	}
+
+	remove_notification(&ivisurf->property_changed.listener_list, callback, userdata);
 }
 
 /**
@@ -2964,6 +2980,11 @@ static struct ivi_controller_interface ivi_controller_interface = {
 	 */
 	.surface_get_size		= ivi_layout_surface_get_size,
 	.surface_dump			= ivi_layout_surface_dump,
+
+	/**
+	 * remove notification by callback on property changes of ivi_surface
+	 */
+	.surface_remove_notification_by_callback	= ivi_layout_surface_remove_notification_by_callback
 };
 
 int
