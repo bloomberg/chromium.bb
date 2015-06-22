@@ -208,7 +208,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
 
         Message resend = handler.obtainMessage(msgContinuePendingReload);
         Message dontResend = handler.obtainMessage(msgCancelPendingReload);
-        mContentsClient.onFormResubmission(dontResend, resend);
+        mContentsClient.getCallbackHelper().postOnFormResubmission(dontResend, resend);
     }
 
     @Override
