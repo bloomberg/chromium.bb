@@ -30,10 +30,7 @@ import org.chromium.chrome.browser.notifications.GoogleServicesNotificationContr
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.signin.ChromeSigninController;
-
-import java.util.HashSet;
 
 import javax.annotation.Nullable;
 
@@ -411,12 +408,14 @@ public class SigninManager {
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
 
+        ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
+
         // Register for invalidations.
         InvalidationController invalidationController = InvalidationController.get(mContext);
-        invalidationController.setRegisteredTypes(mSignInAccount, true, new HashSet<ModelType>());
+        invalidationController.setRegisteredTypes(mSignInAccount, false,
+                                                  profileSyncService.getPreferredDataTypes());
 
         // Sign-in to sync.
-        ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
         if (AndroidSyncSettings.isSyncEnabled(mContext)
                 && !profileSyncService.hasSyncSetupCompleted()) {
             profileSyncService.setSetupInProgress(true);
