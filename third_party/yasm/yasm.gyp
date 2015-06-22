@@ -93,7 +93,7 @@
           # https://connect.microsoft.com/VisualStudio/feedback/details/1014799/internal-compiler-error-when-using-analyze
           'msvs_settings': {
             'VCCLCompilerTool': {
-              'AdditionalOptions!': [ '/analyze' ]
+              'AdditionalOptions!': [ '/analyze:WX-' ]
             },
           },
         }],

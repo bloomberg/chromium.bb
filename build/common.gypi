@@ -2890,8 +2890,7 @@
                 # override WarnAsError.
                 # Also, disable various noisy warnings that have low value.
                 'AdditionalOptions': [
-                  '/analyze',
-                  '/WX-',
+                  '/analyze:WX-',
                   '/wd6011',  # Dereferencing NULL pointer
                   '/wd6312',  # Possible infinite loop: use of the constant
                     # EXCEPTION_CONTINUE_EXECUTION in the exception-filter

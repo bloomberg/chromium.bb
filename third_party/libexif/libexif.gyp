@@ -106,7 +106,7 @@
               # https://connect.microsoft.com/VisualStudio/feedback/details/1014689/internal-compiler-error
               'msvs_settings': {
                 'VCCLCompilerTool': {
-                  'AdditionalOptions!': [ '/analyze' ]
+                  'AdditionalOptions!': [ '/analyze:WX-' ]
                 },
               },
             }],
