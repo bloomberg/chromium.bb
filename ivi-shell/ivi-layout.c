@@ -2209,7 +2209,9 @@ ivi_layout_surface_set_opacity(struct ivi_layout_surface *ivisurf,
 {
 	struct ivi_layout_surface_properties *prop = NULL;
 
-	if (ivisurf == NULL) {
+	if (ivisurf == NULL ||
+	    opacity < wl_fixed_from_double(0.0) ||
+	    wl_fixed_from_double(1.0) < opacity) {
 		weston_log("ivi_layout_surface_set_opacity: invalid argument\n");
 		return IVI_FAILED;
 	}
