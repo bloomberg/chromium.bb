@@ -1,0 +1,25 @@
+CONSOLE ERROR: line 7: Uncaught ReferenceError: runRepaintTest is not defined
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x52
+  LayoutBlockFlow {HTML} at (0,0) size 800x52
+    LayoutBlockFlow {BODY} at (8,8) size 784x36
+      LayoutText {#text} at (0,0) size 719x35
+        text run at (0,0) width 719: "Tests if the inline layered child is correctly repainted when container's transform changes. Succeeds if the text is"
+        text run at (0,18) width 394: "completely rotated leaving no residue at the original location."
+      LayoutText {#text} at (0,0) size 0x0
+layer at (100,100) size 100x162
+  LayoutBlockFlow (positioned) {DIV} at (100,100) size 100x162
+    LayoutText {#text} at (0,0) size 0x0
+layer at (300,300) size 80x160
+  LayoutInline (relative positioned) {SPAN} at (0,0) size 80x160
+    LayoutText {#text} at (0,1) size 80x160
+      text run at (0,1) width 80: "A B C"
+      text run at (0,19) width 80: "D E F"
+      text run at (0,37) width 80: "G H I"
+      text run at (0,55) width 80: "J K L"
+      text run at (0,73) width 80: "M N O"
+      text run at (0,91) width 80: "P Q R"
+      text run at (0,109) width 80: "S T U"
+      text run at (0,127) width 80: "V W X"
+      text run at (0,145) width 48: "Y Z"
