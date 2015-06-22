@@ -26,6 +26,8 @@ class PasswordStoreDefault : public PasswordStore {
 
   bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
 
+  void Shutdown() override;
+
   // To be used only for testing.
   LoginDatabase* login_db() const { return login_db_.get(); }
 
@@ -69,6 +71,9 @@ class PasswordStoreDefault : public PasswordStore {
   }
 
  private:
+  // Resets |login_db_| on the background thread.
+  void ResetLoginDB();
+
   // The login SQL database. The LoginDatabase instance is received via the
   // in an uninitialized state, so as to allow injecting mocks, then Init() is
   // called on the DB thread in a deferred manner. If opening the DB fails,

@@ -26,6 +26,8 @@ namespace syncer {
 class SyncableService;
 }
 
+class PasswordStoreProxyMac;
+
 namespace password_manager {
 
 class AffiliatedMatchHelper;
@@ -290,6 +292,8 @@ class PasswordStore : protected PasswordStoreSync,
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, GetLoginImpl);
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest,
                            UpdatePasswordsStoredForAffiliatedWebsites);
+  // TODO(vasilii): remove this together with PasswordStoreProxyMac.
+  friend class ::PasswordStoreProxyMac;
 
   // Schedule the given |func| to be run in the PasswordStore's own thread with
   // responses delivered to |consumer| on the current thread.

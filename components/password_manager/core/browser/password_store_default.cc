@@ -24,14 +24,17 @@ PasswordStoreDefault::PasswordStoreDefault(
 }
 
 PasswordStoreDefault::~PasswordStoreDefault() {
-  if (!GetBackgroundTaskRunner()->BelongsToCurrentThread())
-    GetBackgroundTaskRunner()->DeleteSoon(FROM_HERE, login_db_.release());
 }
 
 bool PasswordStoreDefault::Init(
     const syncer::SyncableService::StartSyncFlare& flare) {
   ScheduleTask(base::Bind(&PasswordStoreDefault::InitOnDBThread, this));
   return PasswordStore::Init(flare);
+}
+
+void PasswordStoreDefault::Shutdown() {
+  PasswordStore::Shutdown();
+  ScheduleTask(base::Bind(&PasswordStoreDefault::ResetLoginDB, this));
 }
 
 void PasswordStoreDefault::InitOnDBThread() {
@@ -167,6 +170,11 @@ scoped_ptr<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_ ? login_db_->stats_table().GetRow(origin_domain)
                    : scoped_ptr<InteractionsStats>();
+}
+
+void PasswordStoreDefault::ResetLoginDB() {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  login_db_.reset();
 }
 
 }  // namespace password_manager
