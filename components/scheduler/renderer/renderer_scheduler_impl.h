@@ -79,7 +79,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   enum class Policy {
     NORMAL,
     COMPOSITOR_PRIORITY,
-    COMPOSITOR_PRIORITY_WITHOUT_TIMERS,
+    COMPOSITOR_CRITICAL_PATH_PRIORITY,
     TOUCHSTART_PRIORITY,
     LOADING_PRIORITY,
     // Must be the last entry.
@@ -137,10 +137,11 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // other tasks during the initial page load.
   static const int kRailsInitialLoadingPrioritizationMillis = 1000;
 
-  // For the purposes of deciding whether or not it's safe to turn timers on
-  // only in idle periods, we regard the system as being as being "idle period"
-  // starved if there hasn't been an idle period in the last 10 seconds. This
-  // was chosen to be long enough to cover most anticipated user gestures.
+  // For the purposes of deciding whether or not it's safe to turn timers and
+  // loading tasks on only in idle periods, we regard the system as being as
+  // being "idle period" starved if there hasn't been an idle period in the last
+  // 10 seconds. This was chosen to be long enough to cover most anticipated
+  // user gestures.
   static const int kIdlePeriodStarvationThresholdMillis = 10000;
 
   // Schedules an immediate PolicyUpdate, if there isn't one already pending and

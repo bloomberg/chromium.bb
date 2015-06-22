@@ -591,8 +591,8 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_CompositorHandlesInput) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("L1"), std::string("I1")));
+                                   std::string("L1"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_MainThreadHandlesInput) {
@@ -606,8 +606,8 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_MainThreadHandlesInput) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("L1"), std::string("I1")));
+                                   std::string("L1"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
   scheduler_->DidHandleInputEventOnMainThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
 }
@@ -742,8 +742,8 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   RunUntilIdle();
 
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("T2"),
-                                   std::string("L1")));
+              testing::ElementsAre(std::string("L1"), std::string("T1"),
+                                   std::string("T2")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_MainThread) {
@@ -789,8 +789,8 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   RunUntilIdle();
 
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("T2"),
-                                   std::string("L1")));
+              testing::ElementsAre(std::string("L1"), std::string("T1"),
+                                   std::string("T2")));
 }
 
 TEST_F(RendererSchedulerImplTest, LoadingPriorityPolicy) {
