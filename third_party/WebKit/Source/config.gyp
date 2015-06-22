@@ -102,13 +102,13 @@
         }],
         # Only enable the blink_gc_plugin when using clang and chrome plugins.
         ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
-          'cflags': ['<!@(python ../../../tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
+          'cflags': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
           'xcode_settings': {
-            'OTHER_CFLAGS': ['<!@(python ../../../tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
+            'OTHER_CFLAGS': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
           },
           'msvs_settings': {
             'VCCLCompilerTool': {
-              'AdditionalOptions': ['<!@(python ../../../tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
+              'AdditionalOptions': ['<!@(python <(DEPTH)/tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) <(blink_gc_plugin_flags))'],
             },
           },
         }],
