@@ -790,6 +790,13 @@ struct ivi_controller_interface {
 							surface_property_notification_func callback,
 							void *userdata);
 
+	/**
+	 * \brief remove notification by callback on property changes of ivi_layer
+	 */
+	void (*layer_remove_notification_by_callback)(struct ivi_layout_layer *ivilayer,
+						      layer_property_notification_func callback,
+						      void *userdata);
+
 };
 
 #ifdef __cplusplus
