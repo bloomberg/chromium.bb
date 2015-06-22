@@ -1555,6 +1555,7 @@ void FrameView::scrollPositionChanged()
     if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
         cache->handleScrollPositionChanged(this);
 
+    layoutView()->clearHitTestCache();
     frame().loader().saveScrollState();
 }
 

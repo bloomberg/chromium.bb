@@ -95,16 +95,32 @@ onload = function() {
     checkElementAt(60, 60, 2, 0);
     checkElementAt(60, 60, 2, 1);
 
-    clearCounts();
     debug('');
     debug('Hit test fixed div after scroll');
     debug('---------------------');
 
-    // Verify that after we scroll an element the hit cache isn't used.
+    // Verify that after scroll the hit cache isn't used but the
+    // correct element is returned for the fixed position elements.
+    document.lastHitNode = document.elementFromPoint(12, 12);
+    clearCounts();
     checkElementAt(12, 12, 2, 0);
-    checkElementAt(10, 60, 2, 0);
     window.scrollTo(0,  50);
     checkElementAt(12, 12, 2, 0);
+    shouldBe("document.lastHitNode", "document.elementFromPoint(12, 12)");
+
+    debug('');
+    debug('Hit test after main frame scroll');
+    debug('---------------------');
+
+    // Verify that after scroll the hit cache isn't used but
+    // the same element is returned for the adjusted co-ordinate.
+    window.scrollTo(0, 0);
+    document.lastHitNode = document.elementFromPoint(60, 75);
+    clearCounts();
+    checkElementAt(60, 75, 2, 0);
+    window.scrollTo(0, 50);
+    checkElementAt(60, 25, 2, 0);
+    shouldBe("document.lastHitNode", "document.elementFromPoint(60, 25)");
 
     clearCounts();
     debug('');

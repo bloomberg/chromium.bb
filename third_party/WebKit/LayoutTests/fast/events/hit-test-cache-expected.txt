@@ -27,12 +27,20 @@ Hit test fixed div after scroll
 PASS document.elementFromPoint(12,12) is internals.clearHitTestCache(document); internals.elementFromPoint(document, 12, 12, false, false)
 PASS hitTestCountDelta() is 2
 PASS hitTestCacheHitsDelta() is 0
-PASS document.elementFromPoint(10,60) is internals.clearHitTestCache(document); internals.elementFromPoint(document, 10, 60, false, false)
-PASS hitTestCountDelta() is 2
-PASS hitTestCacheHitsDelta() is 0
 PASS document.elementFromPoint(12,12) is internals.clearHitTestCache(document); internals.elementFromPoint(document, 12, 12, false, false)
 PASS hitTestCountDelta() is 2
 PASS hitTestCacheHitsDelta() is 0
+PASS document.lastHitNode is document.elementFromPoint(12, 12)
+
+Hit test after main frame scroll
+---------------------
+PASS document.elementFromPoint(60,75) is internals.clearHitTestCache(document); internals.elementFromPoint(document, 60, 75, false, false)
+PASS hitTestCountDelta() is 2
+PASS hitTestCacheHitsDelta() is 0
+PASS document.elementFromPoint(60,25) is internals.clearHitTestCache(document); internals.elementFromPoint(document, 60, 25, false, false)
+PASS hitTestCountDelta() is 2
+PASS hitTestCacheHitsDelta() is 0
+PASS document.lastHitNode is document.elementFromPoint(60, 25)
 
 Hit test after style change
 ---------------------
