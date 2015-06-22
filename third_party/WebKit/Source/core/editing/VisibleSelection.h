@@ -27,6 +27,7 @@
 #define VisibleSelection_h
 
 #include "core/CoreExport.h"
+#include "core/editing/EditingStrategy.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextGranularity.h"
 #include "core/editing/VisiblePosition.h"
@@ -57,10 +58,21 @@ public:
         static PositionType toPositionType(const Position& position) { return position; }
     };
 
+    class InComposedTree {
+    public:
+        using PositionType = PositionInComposedTree;
+
+        static PositionType selectionBase(const VisibleSelection& selection) { return selection.baseInComposedTree(); }
+        static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extentInComposedTree(); }
+        static PositionType selectionStart(const VisibleSelection& selection) { return selection.startInComposedTree(); }
+        static PositionType selectionEnd(const VisibleSelection& selection) { return selection.endInComposedTree(); }
+    };
+
     VisibleSelection();
 
     VisibleSelection(const Position&, EAffinity, bool isDirectional = false);
-    VisibleSelection(const Position&, const Position&, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
+    VisibleSelection(const Position& base, const Position& extent, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
+    VisibleSelection(const PositionInComposedTree& base, const PositionInComposedTree& extent, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
     explicit VisibleSelection(const Range*, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
@@ -78,14 +90,20 @@ public:
     EAffinity affinity() const { return m_affinity; }
 
     void setBase(const Position&);
+    void setBase(const PositionInComposedTree&);
     void setBase(const VisiblePosition&);
     void setExtent(const Position&);
+    void setExtent(const PositionInComposedTree&);
     void setExtent(const VisiblePosition&);
 
     Position base() const { return m_base; }
     Position extent() const { return m_extent; }
     Position start() const { return m_start; }
     Position end() const { return m_end; }
+    PositionInComposedTree baseInComposedTree() const;
+    PositionInComposedTree extentInComposedTree() const;
+    PositionInComposedTree startInComposedTree() const;
+    PositionInComposedTree endInComposedTree() const;
 
     VisiblePosition visibleStart() const { return VisiblePosition(m_start, isRange() ? DOWNSTREAM : affinity()); }
     VisiblePosition visibleEnd() const { return VisiblePosition(m_end, isRange() ? UPSTREAM : affinity()); }
@@ -156,7 +174,7 @@ public:
     void validatePositionsIfNeeded();
 
 #ifndef NDEBUG
-    void debugPosition() const;
+    void debugPosition(const char* message) const;
     void formatForDebugger(char* buffer, unsigned length) const;
     void showTreeForThis() const;
 #endif
@@ -166,11 +184,15 @@ public:
 
 private:
     void validate(TextGranularity = CharacterGranularity);
+    void resetPositionsInComposedTree();
 
     // Support methods for validate()
     void setBaseAndExtentToDeepEquivalents();
     void adjustSelectionToAvoidCrossingShadowBoundaries();
+    void adjustSelectionToAvoidCrossingSelectionBoundaryInComposedTree();
+    bool isBaseFirstInComposedTree() const;
     void adjustSelectionToAvoidCrossingEditingBoundaries();
+    void adjustStartAndEndInComposedTree();
     void updateSelectionType();
 
     // We need to store these as Positions because VisibleSelection is
@@ -182,6 +204,17 @@ private:
     Position m_extent; // Where the end click happened
     Position m_start;  // Leftmost position when expanded to respect granularity
     Position m_end;    // Rightmost position when expanded to respect granularity
+
+    // TODO(hajimehoshi, yosin): The members m_*InComposedTree are now always
+    // computed from the respective positions at validate(). To have selections
+    // work on the composed tree more accurately, we need to compute the DOM
+    // positions from the composed tree positions. To do this, we need to add
+    // considable amount of fixes (including htmlediting.cpp, VisibleUnit.cpp,
+    // and VisiblePosition.cpp). We'll do that in the future.
+    PositionInComposedTree m_baseInComposedTree;
+    PositionInComposedTree m_extentInComposedTree;
+    PositionInComposedTree m_startInComposedTree;
+    PositionInComposedTree m_endInComposedTree;
 
     EAffinity m_affinity;           // the upstream/downstream affinity of the caret
 

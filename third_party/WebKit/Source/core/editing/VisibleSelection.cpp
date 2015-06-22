@@ -74,6 +74,11 @@ VisibleSelection::VisibleSelection(const Position& base, const Position& extent,
     validate();
 }
 
+VisibleSelection::VisibleSelection(const PositionInComposedTree& base, const PositionInComposedTree& extent, EAffinity affinity, bool isDirectional)
+    : VisibleSelection(toPositionInDOMTree(base), toPositionInDOMTree(extent), affinity, isDirectional)
+{
+}
+
 VisibleSelection::VisibleSelection(const VisiblePosition& pos, bool isDirectional)
     : m_base(pos.deepEquivalent())
     , m_extent(pos.deepEquivalent())
@@ -109,6 +114,10 @@ VisibleSelection::VisibleSelection(const VisibleSelection& other)
     , m_extent(other.m_extent)
     , m_start(other.m_start)
     , m_end(other.m_end)
+    , m_baseInComposedTree(other.m_baseInComposedTree)
+    , m_extentInComposedTree(other.m_extentInComposedTree)
+    , m_startInComposedTree(other.m_startInComposedTree)
+    , m_endInComposedTree(other.m_endInComposedTree)
     , m_affinity(other.m_affinity)
     , m_changeObserver(nullptr) // Observer is associated with only one VisibleSelection, so this should not be copied.
     , m_selectionType(other.m_selectionType)
@@ -125,6 +134,10 @@ VisibleSelection& VisibleSelection::operator=(const VisibleSelection& other)
     m_extent = other.m_extent;
     m_start = other.m_start;
     m_end = other.m_end;
+    m_baseInComposedTree = other.m_baseInComposedTree;
+    m_extentInComposedTree = other.m_extentInComposedTree;
+    m_startInComposedTree = other.m_startInComposedTree;
+    m_endInComposedTree = other.m_endInComposedTree;
     m_affinity = other.m_affinity;
     m_changeObserver = nullptr;
     m_selectionType = other.m_selectionType;
@@ -155,6 +168,16 @@ void VisibleSelection::setBase(const Position& position)
         didChange();
 }
 
+void VisibleSelection::setBase(const PositionInComposedTree& position)
+{
+    Position oldBase = m_base;
+    m_base = toPositionInDOMTree(position);
+    m_extent = toPositionInDOMTree(extentInComposedTree());
+    validate();
+    if (m_base != oldBase)
+        didChange();
+}
+
 void VisibleSelection::setBase(const VisiblePosition& visiblePosition)
 {
     Position oldBase = m_base;
@@ -180,6 +203,36 @@ void VisibleSelection::setExtent(const VisiblePosition& visiblePosition)
     validate();
     if (m_extent != oldExtent)
         didChange();
+}
+
+void VisibleSelection::setExtent(const PositionInComposedTree& position)
+{
+    Position oldExtent = m_extent;
+    m_extent = toPositionInDOMTree(position);
+    m_base = toPositionInDOMTree(baseInComposedTree());
+    validate();
+    if (m_extent != oldExtent)
+        didChange();
+}
+
+PositionInComposedTree VisibleSelection::baseInComposedTree() const
+{
+    return m_baseInComposedTree;
+}
+
+PositionInComposedTree VisibleSelection::extentInComposedTree() const
+{
+    return m_extentInComposedTree;
+}
+
+PositionInComposedTree VisibleSelection::startInComposedTree() const
+{
+    return m_startInComposedTree;
+}
+
+PositionInComposedTree VisibleSelection::endInComposedTree() const
+{
+    return m_endInComposedTree;
 }
 
 PassRefPtrWillBeRawPtr<Range> VisibleSelection::firstRange() const
@@ -336,6 +389,7 @@ void VisibleSelection::appendTrailingWhitespace()
         if ((!isSpaceOrNewline(c) && c != noBreakSpaceCharacter) || c == '\n')
             break;
         m_end = charIt.endPosition();
+        m_endInComposedTree = toPositionInComposedTree(m_end);
         changed = true;
     }
     if (changed)
@@ -424,6 +478,7 @@ void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity
     // Make sure we do not have a Null position.
     if (m_start.isNull())
         m_start = m_baseIsFirst ? m_base : m_extent;
+    resetPositionsInComposedTree();
 }
 
 void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, EWordSide wordSide)
@@ -530,6 +585,7 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
     // Make sure we do not have a Null position.
     if (m_end.isNull())
         m_end = m_baseIsFirst ? m_extent : m_base;
+    resetPositionsInComposedTree();
 }
 
 SelectionType VisibleSelection::selectionType(const Position& start, const Position& end)
@@ -552,18 +608,87 @@ void VisibleSelection::updateSelectionType()
         m_affinity = DOWNSTREAM;
 }
 
+static Node* enclosingShadowHost(Node* node)
+{
+    for (Node* runner = node; runner; runner = ComposedTreeTraversal::parent(*runner)) {
+        if (isShadowHost(runner))
+            return runner;
+    }
+    return nullptr;
+}
+
+static bool isEnclosedBy(const PositionInComposedTree& position, const Node& node)
+{
+    ASSERT(position.isNotNull());
+    Node* anchorNode = position.anchorNode();
+    if (anchorNode == node)
+        return position.anchorType() != PositionInComposedTree::PositionIsAfterAnchor && position.anchorType() != PositionInComposedTree::PositionIsBeforeAnchor;
+
+    return ComposedTreeTraversal::isDescendantOf(*anchorNode, node);
+}
+
+static bool isSelectionBoundary(const Node& node)
+{
+    return isHTMLTextAreaElement(node) || isHTMLInputElement(node) || isHTMLSelectElement(node);
+}
+
+static Node* enclosingShadowHostForStart(const PositionInComposedTree& position)
+{
+    Node* node = position.nodeAsRangeFirstNode();
+    if (!node)
+        return nullptr;
+    Node* shadowHost = enclosingShadowHost(node);
+    if (!shadowHost)
+        return nullptr;
+    if (!isEnclosedBy(position, *shadowHost))
+        return nullptr;
+    return isSelectionBoundary(*shadowHost) ? shadowHost : nullptr;
+}
+
+static Node* enclosingShadowHostForEnd(const PositionInComposedTree& position)
+{
+    Node* node = position.nodeAsRangeLastNode();
+    if (!node)
+        return nullptr;
+    Node* shadowHost = enclosingShadowHost(node);
+    if (!shadowHost)
+        return nullptr;
+    if (!isEnclosedBy(position, *shadowHost))
+        return nullptr;
+    return isSelectionBoundary(*shadowHost) ? shadowHost : nullptr;
+}
+
+static bool isCrossingSelectionBoundary(const PositionInComposedTree& start, const PositionInComposedTree& end)
+{
+    Node* shadowHostStart = enclosingShadowHostForStart(start);
+    Node* shadowHostEnd = enclosingShadowHostForEnd(end);
+    return shadowHostStart != shadowHostEnd;
+}
+
 void VisibleSelection::validate(TextGranularity granularity)
 {
     setBaseAndExtentToDeepEquivalents();
-    if (m_base.isNotNull() && m_extent.isNotNull()) {
-        setStartRespectingGranularity(granularity);
-        ASSERT(m_start.isNotNull());
-        setEndRespectingGranularity(granularity);
-        ASSERT(m_end.isNotNull());
-        adjustSelectionToAvoidCrossingShadowBoundaries();
-        adjustSelectionToAvoidCrossingEditingBoundaries();
-    } else {
+    if (m_base.isNull() || m_extent.isNull()) {
         m_base = m_extent = m_start = m_end = Position();
+        m_baseInComposedTree = m_extentInComposedTree = m_startInComposedTree = m_endInComposedTree = PositionInComposedTree();
+        updateSelectionType();
+        return;
+    }
+
+    m_start = m_baseIsFirst ? m_base : m_extent;
+    m_end = m_baseIsFirst ? m_extent : m_base;
+    setStartRespectingGranularity(granularity);
+    ASSERT(m_start.isNotNull());
+    setEndRespectingGranularity(granularity);
+    ASSERT(m_end.isNotNull());
+    adjustSelectionToAvoidCrossingShadowBoundaries();
+    Position origExtent = m_extent;
+    Position origEnd = m_end;
+    adjustSelectionToAvoidCrossingEditingBoundaries();
+    if (origExtent != m_extent || origEnd != m_end) {
+        // |m_extent| is adjusted. So, we need to adjust end position in the
+        // composed tree
+        resetPositionsInComposedTree();
     }
     updateSelectionType();
 
@@ -579,11 +704,40 @@ void VisibleSelection::validate(TextGranularity granularity)
         m_start = m_start.downstream();
         m_end = m_end.upstream();
 
+        // Even by downstreaming, |m_start| can be moved to the upper place from
+        // the original position, same as |m_end|.
+        // e.g.) editing/shadow/select-contenteditable-shadowhost.html
+        m_startInComposedTree = m_startInComposedTree.downstream();
+        m_endInComposedTree = m_endInComposedTree.upstream();
+        adjustStartAndEndInComposedTree();
+
+        if (isCrossingSelectionBoundary(m_startInComposedTree, m_endInComposedTree))
+            resetPositionsInComposedTree();
+
         // FIXME: Position::downstream() or Position::upStream() might violate editing boundaries
         // if an anchor node has a Shadow DOM. So we adjust selection to avoid crossing editing
         // boundaries again. See https://bugs.webkit.org/show_bug.cgi?id=87463
+        origExtent = m_extent;
+        origEnd = m_end;
         adjustSelectionToAvoidCrossingEditingBoundaries();
+        if (origExtent != m_extent || origEnd != m_end)
+            resetPositionsInComposedTree();
     }
+
+    // isCrossingSelectionBoundary() can be true by upstreaming/downstreaming the
+    // positions (in the composed tree).
+    if (!isCrossingSelectionBoundary(m_startInComposedTree, m_endInComposedTree))
+        return;
+    adjustSelectionToAvoidCrossingSelectionBoundaryInComposedTree();
+}
+
+void VisibleSelection::resetPositionsInComposedTree()
+{
+    m_baseInComposedTree = toPositionInComposedTree(m_base);
+    m_extentInComposedTree = toPositionInComposedTree(m_extent);
+    m_endInComposedTree = toPositionInComposedTree(m_end);
+    m_startInComposedTree = toPositionInComposedTree(m_start);
+    adjustStartAndEndInComposedTree();
 }
 
 // FIXME: This function breaks the invariant of this class.
@@ -596,9 +750,15 @@ void VisibleSelection::setWithoutValidation(const Position& base, const Position
 {
     ASSERT(!base.isNull());
     ASSERT(!extent.isNull());
+
+    // TODO(hajimehoshi): We doubt this assertion is needed. This was introduced
+    // by http://trac.webkit.org/browser/trunk/WebCore/editing/Selection.cpp?annotate=blame&rev=21071
     ASSERT(m_affinity == DOWNSTREAM);
+
     m_base = base;
     m_extent = extent;
+    m_baseInComposedTree = toPositionInComposedTree(base);
+    m_extentInComposedTree = toPositionInComposedTree(extent);
     m_baseIsFirst = comparePositions(base, extent) <= 0;
     if (m_baseIsFirst) {
         m_start = base;
@@ -608,7 +768,25 @@ void VisibleSelection::setWithoutValidation(const Position& base, const Position
         m_end = base;
     }
     m_selectionType = base == extent ? CaretSelection : RangeSelection;
+    m_startInComposedTree = toPositionInComposedTree(m_start);
+    m_endInComposedTree = toPositionInComposedTree(m_end);
     didChange();
+}
+
+static PositionInComposedTree adjustPositionInComposedTreeForStart(const PositionInComposedTree& position, Node* shadowHost)
+{
+    if (isEnclosedBy(position, *shadowHost)) {
+        if (position.anchorType() == PositionInComposedTree::PositionIsBeforeChildren)
+            return PositionInComposedTree::beforeNode(shadowHost);
+        return PositionInComposedTree::afterNode(shadowHost);
+    }
+
+    // We use |firstChild|'s after instead of beforeAllChildren for backward
+    // compatibility. The positions are same but the anchors would be different,
+    // and selection painting uses anchor nodes.
+    if (Node* firstChild = ComposedTreeTraversal::firstChild(*shadowHost))
+        return PositionInComposedTree::beforeNode(firstChild);
+    return PositionInComposedTree();
 }
 
 static Position adjustPositionForEnd(const Position& currentPosition, Node* startContainerNode)
@@ -627,6 +805,22 @@ static Position adjustPositionForEnd(const Position& currentPosition, Node* star
         return positionAfterNode(lastChild);
 
     return Position();
+}
+
+PositionInComposedTree adjustPositionInComposedTreeForEnd(const PositionInComposedTree& position, Node* shadowHost)
+{
+    if (isEnclosedBy(position, *shadowHost)) {
+        if (position.anchorType() == PositionInComposedTree::PositionIsAfterChildren)
+            return PositionInComposedTree::afterNode(shadowHost);
+        return PositionInComposedTree::beforeNode(shadowHost);
+    }
+
+    // We use |lastChild|'s after instead of afterAllChildren for backward
+    // compatibility. The positions are same but the anchors would be different,
+    // and selection painting uses anchor nodes.
+    if (Node* lastChild = ComposedTreeTraversal::lastChild(*shadowHost))
+        return PositionInComposedTree::afterNode(lastChild);
+    return PositionInComposedTree();
 }
 
 static Position adjustPositionForStart(const Position& currentPosition, Node* endContainerNode)
@@ -652,6 +846,8 @@ void VisibleSelection::adjustSelectionToAvoidCrossingShadowBoundaries()
     if (m_base.isNull() || m_start.isNull() || m_end.isNull())
         return;
 
+    // TODO(hajimehoshi): Checking treeScope is wrong when a node is
+    // distributed, but we leave it as it is for backward compatibility.
     if (m_start.anchorNode()->treeScope() == m_end.anchorNode()->treeScope())
         return;
 
@@ -663,7 +859,43 @@ void VisibleSelection::adjustSelectionToAvoidCrossingShadowBoundaries()
         m_start = m_extent;
     }
 
+    // TODO(hajimehoshi): We should check if |start| and/or |end| are <input> or
+    // <textarea>
+    Node* start = m_start.anchorNode();
+    Node* end = m_end.anchorNode();
+    if ((start && isSelectionBoundary(*start)) || (end && isSelectionBoundary(*end)))
+        resetPositionsInComposedTree();
+
     ASSERT(m_start.anchorNode()->treeScope() == m_end.anchorNode()->treeScope());
+}
+
+// This function is called twice. The first is called when |m_start| and |m_end|
+// or |m_extent| are same, and the second when |m_start| and |m_end| are changed
+// after downstream/upstream.
+void VisibleSelection::adjustSelectionToAvoidCrossingSelectionBoundaryInComposedTree()
+{
+    Node* shadowHostStart = enclosingShadowHostForStart(m_startInComposedTree);
+    Node* shadowHostEnd = enclosingShadowHostForEnd(m_endInComposedTree);
+    if (shadowHostStart == shadowHostEnd)
+        return;
+
+    auto origEndICT = m_endInComposedTree;
+    auto origExtentICT = m_extentInComposedTree;
+    Node* shadowHost = nullptr;
+    if (isBaseFirstInComposedTree()) {
+        shadowHost = shadowHostStart ? shadowHostStart : shadowHostEnd;
+        m_endInComposedTree = adjustPositionInComposedTreeForEnd(m_endInComposedTree, shadowHost);
+        m_extentInComposedTree = m_endInComposedTree;
+    } else {
+        shadowHost = shadowHostEnd ? shadowHostEnd : shadowHostStart;
+        m_startInComposedTree = adjustPositionInComposedTreeForStart(m_startInComposedTree, shadowHost);
+        m_extentInComposedTree = m_startInComposedTree;
+    }
+}
+
+bool VisibleSelection::isBaseFirstInComposedTree() const
+{
+    return m_baseInComposedTree.isNotNull() && m_baseInComposedTree.compareTo(m_extentInComposedTree) <= 0;
 }
 
 void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
@@ -771,6 +1003,15 @@ void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
     // Correct the extent if necessary.
     if (baseEditableAncestor != lowestEditableAncestor(m_extent.containerNode()))
         m_extent = m_baseIsFirst ? m_end : m_start;
+}
+
+void VisibleSelection::adjustStartAndEndInComposedTree()
+{
+    if (m_startInComposedTree.isNull())
+        return;
+    if (m_startInComposedTree.compareTo(m_endInComposedTree) <= 0)
+        return;
+    std::swap(m_startInComposedTree, m_endInComposedTree);
 }
 
 VisiblePosition VisibleSelection::visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
@@ -883,22 +1124,35 @@ bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& select
 
 #ifndef NDEBUG
 
-void VisibleSelection::debugPosition() const
+void VisibleSelection::debugPosition(const char* message) const
 {
-    fprintf(stderr, "VisibleSelection ===============\n");
+    fprintf(stderr, "VisibleSelection (%s) ===============\n", message);
 
-    if (!m_start.anchorNode())
-        fputs("pos:   null", stderr);
-    else if (m_start == m_end) {
-        fprintf(stderr, "pos:   %s ", m_start.anchorNode()->nodeName().utf8().data());
-        m_start.showAnchorTypeAndOffset();
+    if (m_baseIsFirst) {
+        m_start.debugPosition("start: ");
+        m_base.debugPosition("base: ");
+        m_end.debugPosition("end: ");
+        m_extent.debugPosition("extent: ");
     } else {
-        fprintf(stderr, "start: %s ", m_start.anchorNode()->nodeName().utf8().data());
-        m_start.showAnchorTypeAndOffset();
-        fprintf(stderr, "end:   %s ", m_end.anchorNode()->nodeName().utf8().data());
-        m_end.showAnchorTypeAndOffset();
+        m_start.debugPosition("start: ");
+        m_extent.debugPosition("extent: ");
+        m_end.debugPosition("end: ");
+        m_base.debugPosition("base: ");
+    }
+    if (isBaseFirstInComposedTree()) {
+        startInComposedTree().debugPosition("startInComposedTree: ");
+        baseInComposedTree().debugPosition("baseInComposedTree: ");
+        endInComposedTree().debugPosition("endInComposedTree: ");
+        extentInComposedTree().debugPosition("extentInComposedTree: ");
+    } else {
+        startInComposedTree().debugPosition("startInComposedTree: ");
+        extentInComposedTree().debugPosition("extentInComposedTree: ");
+        endInComposedTree().debugPosition("endInComposedTree: ");
+        baseInComposedTree().debugPosition("baseInComposedTree: ");
     }
 
+    fprintf(stderr, "isDirectional=%s\n", isDirectional() ? "true" : "false");
+    fprintf(stderr, "affinity=%s\n", affinity() == DOWNSTREAM ? "DOWNSTREaM" : affinity() == UPSTREAM ? "UPSTREAM" : "UNKNOWN");
     fprintf(stderr, "================================\n");
 }
 

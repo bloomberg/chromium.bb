@@ -64,6 +64,11 @@ std::ostream& operator<<(std::ostream& ostream, Position::AnchorType anchorType)
     return ostream << "anchorType=" << static_cast<int>(anchorType);
 }
 
+std::ostream& operator<<(std::ostream& ostream, PositionInComposedTree::AnchorType anchorType)
+{
+    return ostream << static_cast<Position::AnchorType>(anchorType);
+}
+
 // |std::ostream| version of |Node::showNode|
 std::ostream& operator<<(std::ostream& ostream, const Node& node)
 {
@@ -85,6 +90,11 @@ std::ostream& operator<<(std::ostream& ostream, const Node* node)
 }
 
 std::ostream& operator<<(std::ostream& ostream, const Position& position)
+{
+    return printPosition(ostream, position);
+}
+
+std::ostream& operator<<(std::ostream& ostream, const PositionInComposedTree& position)
 {
     return printPosition(ostream, position);
 }
