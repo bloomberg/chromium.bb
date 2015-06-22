@@ -294,7 +294,7 @@
    fun:_Znw*
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
    fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN4base12_GLOBAL__N_169MessageLoopProxyTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test8TestBodyEv
+   fun:_ZN4base74MessageLoopTaskRunnerTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test8TestBodyEv
 }
 {
    # Non-joinable thread doesn't clean up all state on program exit
@@ -1145,19 +1145,6 @@
    fun:_Znw*
    fun:_Z17NewRunnableMethodIN21ServiceProcessControl8LauncherEMS1_FvvEEP14CancelableTaskPT_T0_
    fun:_ZN21ServiceProcessControl8Launcher5DoRunEv
-}
-{
-   bug_93730_d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyEbPNS8_13WaitableEventE
-   fun:_ZN16ServiceIPCServer13CreateChannelEv
-   fun:_ZN16ServiceIPCServer4InitEv
-   fun:_ZN14ServiceProcess10InitializeEP16MessageLoopForUIRK11CommandLineP19ServiceProcessState
-   fun:_Z18ServiceProcessMainRK18MainFunctionParams
-   ...
-   fun:ChromeMain
-   fun:main
 }
 {
    bug_94764
