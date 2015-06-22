@@ -55,6 +55,10 @@ inline CSSPropertyID resolveCSSPropertyID(CSSPropertyID id)
 
 inline bool isPropertyAlias(CSSPropertyID id) { return id & 512; }
 
+CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
+
+CSSPropertyID cssPropertyID(const WTF::String&);
+
 } // namespace blink
 
 namespace WTF {
@@ -159,6 +163,11 @@ String getJSPropertyName(CSSPropertyID id)
     }
     *resultPointer = '\\0';
     return String(result);
+}
+
+CSSPropertyID cssPropertyID(const String& string)
+{
+    return resolveCSSPropertyID(unresolvedCSSPropertyID(string));
 }
 
 } // namespace blink

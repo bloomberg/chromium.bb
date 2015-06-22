@@ -60,10 +60,6 @@ private:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, const CSSParserContext&);
 };
 
-// TODO(timloh): It's weird that these are declared here but defined in CSSPropertyParser.h
-CSSPropertyID unresolvedCSSPropertyID(const String&);
-CSSPropertyID cssPropertyID(const String&);
-
 } // namespace blink
 
 #endif // CSSParser_h

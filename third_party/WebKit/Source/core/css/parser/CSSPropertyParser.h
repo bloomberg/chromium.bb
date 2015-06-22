@@ -380,7 +380,6 @@ private:
 };
 
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
-CSSPropertyID cssPropertyID(const String&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
 
 } // namespace blink

@@ -7613,11 +7613,6 @@ CSSPropertyID unresolvedCSSPropertyID(const String& string)
     return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
 }
 
-CSSPropertyID cssPropertyID(const String& string)
-{
-    return resolveCSSPropertyID(unresolvedCSSPropertyID(string));
-}
-
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString& string)
 {
     unsigned length = string.length();
