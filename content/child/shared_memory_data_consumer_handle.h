@@ -29,8 +29,12 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
    public:
     Writer(const scoped_refptr<Context>& context, BackpressureMode mode);
     ~Writer();
+    // Note: Writer assumes |AddData| is not called in a client's didGetReadable
+    // callback. There isn't such assumption for |Close| and |Fail|.
     void AddData(scoped_ptr<RequestPeer::ReceivedData> data);
     void Close();
+    // TODO(yhirano): Consider providing error code.
+    void Fail();
 
    private:
     scoped_refptr<Context> context_;
@@ -61,21 +65,11 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
 
   scoped_ptr<Reader> ObtainReader(Client* client);
 
-  virtual Result read(void* data, size_t size, Flags flags, size_t* readSize);
-  virtual Result beginRead(const void** buffer, Flags flags, size_t* available);
-  virtual Result endRead(size_t readSize);
-  virtual void registerClient(Client* client);
-  virtual void unregisterClient();
-
  private:
   virtual ReaderImpl* obtainReaderInternal(Client* client);
   const char* debugName() const override;
-  void LockImplicitly();
-  void UnlockImplicitly();
 
   scoped_refptr<Context> context_;
-  // This is an implicitly acquired reader for deprecated APIs.
-  scoped_ptr<Reader> reader_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryDataConsumerHandle);
 };

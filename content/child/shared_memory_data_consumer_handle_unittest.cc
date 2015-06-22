@@ -35,9 +35,11 @@ const WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
 const Result kOk = WebDataConsumerHandle::Ok;
 const Result kDone = WebDataConsumerHandle::Done;
 const Result kShouldWait = WebDataConsumerHandle::ShouldWait;
+const Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
 
 using ::testing::_;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -433,8 +435,9 @@ TEST_P(SharedMemoryDataConsumerHandleTest, RegisterClient) {
   EXPECT_CALL(checkpoint, Call(0));
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
-  EXPECT_CALL(client_, didGetReadable());
   EXPECT_CALL(checkpoint, Call(3));
+  EXPECT_CALL(client_, didGetReadable());
+  EXPECT_CALL(checkpoint, Call(4));
 
   checkpoint.Call(0);
   auto reader = handle_->ObtainReader(&client_);
@@ -443,6 +446,8 @@ TEST_P(SharedMemoryDataConsumerHandleTest, RegisterClient) {
   checkpoint.Call(2);
   writer_->Close();
   checkpoint.Call(3);
+  RunPostedTasks();
+  checkpoint.Call(4);
 }
 
 TEST_P(SharedMemoryDataConsumerHandleTest, RegisterClientWhenDataExists) {
@@ -620,6 +625,126 @@ TEST_P(SharedMemoryDataConsumerHandleTest, TwoPhaseReadWithMultipleData) {
   EXPECT_EQ(nullptr, buffer);
 }
 
+TEST_P(SharedMemoryDataConsumerHandleTest, ErrorRead) {
+  Checkpoint checkpoint;
+  Result result;
+  char buffer[20] = {};
+  size_t read = 99;
+  auto reader = handle_->ObtainReader(nullptr);
+
+  writer_->Fail();
+  result = reader->read(buffer, sizeof(buffer), kNone, &read);
+
+  EXPECT_EQ(kUnexpectedError, result);
+  EXPECT_EQ(0u, read);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, ErrorTwoPhaseRead) {
+  Result result;
+  const void* pointer = &result;
+  size_t size = 99;
+  auto reader = handle_->ObtainReader(nullptr);
+
+  writer_->Fail();
+  result = reader->beginRead(&pointer, kNone, &size);
+
+  EXPECT_EQ(kUnexpectedError, result);
+  EXPECT_EQ(nullptr, pointer);
+  EXPECT_EQ(0u, size);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, FailWhileTwoPhaseReadIsInProgress) {
+  Result result;
+  const void* pointer = nullptr;
+  size_t size = 0;
+  auto reader = handle_->ObtainReader(nullptr);
+
+  writer_->AddData(NewFixedData("Once "));
+  result = reader->beginRead(&pointer, kNone, &size);
+  auto buffer = static_cast<const char*>(pointer);
+
+  ASSERT_EQ(kOk, result);
+  ASSERT_NE(nullptr, pointer);
+  ASSERT_EQ(size, 5u);
+
+  writer_->Fail();
+
+  // We can access the buffer after calling |Fail|. I hope ASAN will detect
+  // an error if the region is already freed.
+  EXPECT_EQ('O', buffer[0]);
+  EXPECT_EQ('n', buffer[1]);
+  EXPECT_EQ('c', buffer[2]);
+  EXPECT_EQ('e', buffer[3]);
+  EXPECT_EQ(' ', buffer[4]);
+
+  EXPECT_EQ(kOk, reader->endRead(size));
+
+  EXPECT_EQ(kUnexpectedError, reader->beginRead(&pointer, kNone, &size));
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, FailWithClient) {
+  Checkpoint checkpoint;
+
+  InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(client_, didGetReadable());
+  EXPECT_CALL(checkpoint, Call(3));
+
+  checkpoint.Call(0);
+  auto reader = handle_->ObtainReader(&client_);
+  checkpoint.Call(1);
+  writer_->Fail();
+  checkpoint.Call(2);
+  RunPostedTasks();
+  checkpoint.Call(3);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, FailWithClientAndData) {
+  Checkpoint checkpoint;
+
+  InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(client_, didGetReadable());
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(checkpoint, Call(3));
+  EXPECT_CALL(client_, didGetReadable());
+  EXPECT_CALL(checkpoint, Call(4));
+
+  checkpoint.Call(0);
+  auto reader = handle_->ObtainReader(&client_);
+  checkpoint.Call(1);
+  writer_->AddData(NewFixedData("Once "));
+  checkpoint.Call(2);
+  writer_->Fail();
+  checkpoint.Call(3);
+  RunPostedTasks();
+  checkpoint.Call(4);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, RecursiveErrorNotification) {
+  Checkpoint checkpoint;
+
+  InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(client_, didGetReadable())
+      .WillOnce(Invoke(writer_.get(), &Writer::Fail));
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(client_, didGetReadable());
+  EXPECT_CALL(checkpoint, Call(3));
+
+  checkpoint.Call(0);
+  auto reader = handle_->ObtainReader(&client_);
+  checkpoint.Call(1);
+  writer_->AddData(NewFixedData("Once "));
+  checkpoint.Call(2);
+  RunPostedTasks();
+  checkpoint.Call(3);
+}
+
 TEST(SharedMemoryDataConsumerHandleBackpressureTest, Read) {
   base::MessageLoop loop;
   char buffer[20];
@@ -639,16 +764,17 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, Read) {
   writer->AddData(
       make_scoped_ptr(new LoggingFixedReceivedData("data4", "time ", logger)));
 
+  auto reader = handle->ObtainReader(nullptr);
   logger->Add("1");
-  result = handle->read(buffer, 2, kNone, &size);
+  result = reader->read(buffer, 2, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, size);
   logger->Add("2");
-  result = handle->read(buffer, 5, kNone, &size);
+  result = reader->read(buffer, 5, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(5u, size);
   logger->Add("3");
-  result = handle->read(buffer, 6, kNone, &size);
+  result = reader->read(buffer, 6, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(6u, size);
   logger->Add("4");
@@ -681,14 +807,16 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, CloseAndReset) {
   writer->AddData(
       make_scoped_ptr(new LoggingFixedReceivedData("data3", "a ", logger)));
 
+  auto reader = handle->ObtainReader(nullptr);
   logger->Add("1");
-  result = handle->read(buffer, 2, kNone, &size);
+  result = reader->read(buffer, 2, kNone, &size);
   EXPECT_EQ(kOk, result);
   EXPECT_EQ(2u, size);
   logger->Add("2");
   writer->Close();
   logger->Add("3");
   handle.reset();
+  reader.reset();
   logger->Add("4");
 
   EXPECT_EQ(

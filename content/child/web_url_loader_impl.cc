@@ -362,6 +362,9 @@ void WebURLLoaderImpl::Context::Cancel() {
     request_id_ = -1;
   }
 
+  if (body_stream_writer_)
+    body_stream_writer_->Fail();
+
   // Ensure that we do not notify the multipart delegate anymore as it has
   // its own pointer to the client.
   if (multipart_delegate_)
@@ -728,10 +731,9 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     multipart_delegate_.reset(NULL);
   }
 
-  if (request_.useStreamOnResponse()) {
-    // TODO(yhirano): Notify error.
-    body_stream_writer_.reset();
-  }
+  if (body_stream_writer_ && error_code != net::OK)
+    body_stream_writer_->Fail();
+  body_stream_writer_.reset();
 
   if (client_) {
     if (error_code != net::OK) {
