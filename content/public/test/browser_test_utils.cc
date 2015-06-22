@@ -47,6 +47,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/latency_info.h"
 #include "ui/resources/grit/webui_resources.h"
 
 #if defined(USE_AURA)
@@ -429,6 +430,14 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
   RenderWidgetHostImpl* widget_host =
       RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
   widget_host->ForwardGestureEvent(tap);
+}
+
+void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point) {
+  SyntheticWebTouchEvent touch;
+  touch.PressPoint(point.x(), point.y());
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+  widget_host->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
 }
 
 void SimulateKeyPress(WebContents* web_contents,
@@ -961,6 +970,12 @@ bool WebContentsAddedObserver::RenderViewCreatedCalled() {
   return false;
 }
 
+bool RequestFrame(WebContents* web_contents) {
+  DCHECK(web_contents);
+  return RenderWidgetHostImpl::From(web_contents->GetRenderViewHost())
+      ->ScheduleComposite();
+}
+
 FrameWatcher::FrameWatcher()
     : BrowserMessageFilter(ViewMsgStart), frames_to_wait_(0) {
 }
@@ -980,6 +995,13 @@ bool FrameWatcher::OnMessageReceived(const IPC::Message& message) {
                             base::Bind(&FrameWatcher::ReceivedFrameSwap, this));
   }
   return false;
+}
+
+void FrameWatcher::AttachTo(WebContents* web_contents) {
+  DCHECK(web_contents);
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+  widget_host->GetProcess()->AddFilter(this);
 }
 
 void FrameWatcher::WaitFrames(int frames_to_wait) {

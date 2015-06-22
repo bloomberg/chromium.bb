@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <queue>
+
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
@@ -52,8 +54,14 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/aura/window.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_observer.h"
+#include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
@@ -205,6 +213,25 @@ void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
   EXPECT_TRUE(content::ExecuteScript(web_contents, script));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
+
+#if defined (USE_AURA)
+views::View* FindWebView(views::View* view) {
+  std::queue<views::View*> queue;
+  queue.push(view);
+  while (!queue.empty()) {
+    views::View* current = queue.front();
+    queue.pop();
+    if (std::string(current->GetClassName()).find("WebView") !=
+        std::string::npos) {
+      return current;
+    }
+
+    for (int i = 0; i < current->child_count(); ++i)
+      queue.push(current->child_at(i));
+  }
+  return nullptr;
+}
+#endif
 
 }  // namespace
 
@@ -658,6 +685,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
                   embedder_web_contents_(NULL) {
     GuestViewManager::set_factory_for_testing(&factory_);
   }
+
+ protected:
+  scoped_refptr<content::FrameWatcher> frame_watcher_;
 
  private:
   bool UsesFakeSpeech() {
@@ -2372,3 +2402,132 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGarbageCollect) {
   TestHelper("testGarbageCollect", "web_view/shim", NO_TEST_SERVER);
   GetGuestViewManager()->WaitForSingleViewGarbageCollected();
 }
+
+#if defined(USE_AURA)
+class WebViewFocusTest : public WebViewTest {
+ public:
+  ~WebViewFocusTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebViewTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kTouchEvents,
+                                    switches::kTouchEventsEnabled);
+  }
+
+  void ForceCompositorFrame() {
+    if (!frame_watcher_) {
+      frame_watcher_ = new content::FrameWatcher();
+      frame_watcher_->AttachTo(GetEmbedderWebContents());
+    }
+
+    while (!RequestFrame(GetEmbedderWebContents())) {
+      // RequestFrame failed because we were waiting on an ack ... wait a short
+      // time and retry.
+      base::RunLoop run_loop;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(10));
+      run_loop.Run();
+    }
+    frame_watcher_->WaitFrames(1);
+  }
+
+ private:
+  scoped_refptr<content::FrameWatcher> frame_watcher_;
+};
+
+class FocusWaiter : public views::FocusChangeListener {
+ public:
+  explicit FocusWaiter(views::View* view_to_wait_for)
+      : view_to_wait_for_(view_to_wait_for) {
+    view_to_wait_for_->GetFocusManager()->AddFocusChangeListener(this);
+  }
+  ~FocusWaiter() override {
+    view_to_wait_for_->GetFocusManager()->RemoveFocusChangeListener(this);
+  }
+
+  void Wait() {
+    if (view_to_wait_for_->HasFocus())
+      return;
+
+    base::MessageLoop::current()->Run();
+  }
+
+  // FocusChangeListener implementation.
+  void OnWillChangeFocus(views::View* focused_before,
+                         views::View* focused_now) override {}
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override {
+    if (view_to_wait_for_ == focused_now)
+      base::MessageLoop::current()->QuitWhenIdle();
+  }
+
+ private:
+  views::View* view_to_wait_for_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusWaiter);
+};
+
+// The following test verifies that a views::WebView hosting an embedder
+// gains focus on touchstart.
+IN_PROC_BROWSER_TEST_F(WebViewFocusTest, TouchFocusesEmbedder) {
+  LoadAppWithGuest("web_view/accept_touch_events");
+
+  content::WebContents* web_contents = GetEmbedderWebContents();
+  content::RenderViewHost* embedder_rvh = web_contents->GetRenderViewHost();
+
+  bool embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_FALSE(embedder_has_touch_handler);
+
+  SendMessageToGuestAndWait("install-touch-handler", "installed-touch-handler");
+
+  // Note that we need to wait for the installed/registered touch handler to
+  // appear in browser process before querying |embedder_rvh|.
+  // In practice, since we do a roundrtip from browser process to guest and
+  // back, this is sufficient.
+  embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_TRUE(embedder_has_touch_handler);
+
+  extensions::AppWindow* app_window = GetFirstAppWindowForBrowser(browser());
+  aura::Window* window = app_window->GetNativeWindow();
+  EXPECT_TRUE(app_window);
+  EXPECT_TRUE(window);
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+  EXPECT_TRUE(widget->GetRootView());
+  // We only expect a single views::webview in the view hierarchy.
+  views::View* aura_webview = FindWebView(widget->GetRootView());
+  ASSERT_TRUE(aura_webview);
+  gfx::Rect bounds(aura_webview->bounds());
+  EXPECT_TRUE(aura_webview->IsFocusable());
+
+  views::View* other_focusable_view = new views::View();
+  other_focusable_view->SetBounds(bounds.x() + bounds.width(), bounds.y(), 100,
+                                  100);
+  other_focusable_view->SetFocusable(true);
+  aura_webview->parent()->AddChildView(other_focusable_view);
+  other_focusable_view->SetPosition(gfx::Point(bounds.x() + bounds.width(), 0));
+
+  // Sync changes to compositor.
+  ForceCompositorFrame();
+
+  aura_webview->RequestFocus();
+  // Verify that other_focusable_view can steal focus from aura_webview.
+  EXPECT_TRUE(aura_webview->HasFocus());
+  other_focusable_view->RequestFocus();
+  EXPECT_TRUE(other_focusable_view->HasFocus());
+  EXPECT_FALSE(aura_webview->HasFocus());
+
+  // Generate and send synthetic touch event.
+  // TODO(wjmaclean): This is fragile ... if anyone alters the location/size
+  // of the webview in accept_touch_events then this may miss its target.
+  FocusWaiter waiter(aura_webview);
+  content::SimulateTouchPressAt(GetEmbedderWebContents(), gfx::Point(10, 10));
+
+  // Wait for the TouchStart to propagate and restore focus. Test times out
+  // on failure.
+  waiter.Wait();
+}
+#endif

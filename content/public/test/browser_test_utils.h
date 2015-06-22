@@ -116,6 +116,9 @@ void SimulateMouseEvent(WebContents* web_contents,
 // Taps the screen at |point|.
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point);
 
+// Generates a TouchStart at |point|.
+void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point);
+
 // Taps the screen with modifires at |point|.
 void SimulateTapWithModifiersAt(WebContents* web_contents,
                                 unsigned Modifiers,
@@ -401,12 +404,18 @@ class WebContentsAddedObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsAddedObserver);
 };
 
+// Request a new frame be drawn, returns false if request fails.
+bool RequestFrame(WebContents* web_contents);
+
 // Watches compositor frame changes, blocking until a frame has been
 // composited. This class is intended to be run on the main thread; to
 // synchronize the main thread against the impl thread.
 class FrameWatcher : public BrowserMessageFilter {
  public:
   FrameWatcher();
+
+  // Listen for new frames from the |web_contents| renderer process.
+  void AttachTo(WebContents* web_contents);
 
   // Wait for |frames_to_wait| swap mesages from the compositor.
   void WaitFrames(int frames_to_wait);

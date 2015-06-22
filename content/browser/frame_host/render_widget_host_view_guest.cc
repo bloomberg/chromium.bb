@@ -646,6 +646,11 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
   }
 
   if (blink::WebInputEvent::isTouchEventType(event->type)) {
+    if (event->type == blink::WebInputEvent::TouchStart &&
+        !embedder->GetView()->HasFocus()) {
+      embedder->GetView()->Focus();
+    }
+
     host_->ForwardTouchEventWithLatencyInfo(
         *static_cast<const blink::WebTouchEvent*>(event),
         ui::LatencyInfo());
