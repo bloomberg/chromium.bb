@@ -1718,7 +1718,7 @@ ivi_layout_get_layers_on_screen(struct ivi_layout_screen *iviscrn,
 			return IVI_FAILED;
 		}
 
-		wl_list_for_each(ivilayer, &iviscrn->order.layer_list, link) {
+		wl_list_for_each(ivilayer, &iviscrn->order.layer_list, order.link) {
 			(*ppArray)[n++] = ivilayer;
 		}
 	}
