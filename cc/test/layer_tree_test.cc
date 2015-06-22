@@ -316,6 +316,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->NotifyReadyToDrawOnThread(this);
   }
 
+  void NotifyAllTileTasksCompleted() override {
+    LayerTreeHostImpl::NotifyAllTileTasksCompleted();
+    test_hooks_->NotifyAllTileTasksCompleted(this);
+  }
+
   void BlockNotifyReadyToActivateForTesting(bool block) override {
     CHECK(proxy()->ImplThreadTaskRunner())
         << "Not supported for single-threaded mode.";

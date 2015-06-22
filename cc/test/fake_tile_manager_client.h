@@ -19,6 +19,7 @@ class FakeTileManagerClient : public TileManagerClient {
   // TileManagerClient implementation.
   void NotifyReadyToActivate() override {}
   void NotifyReadyToDraw() override {}
+  void NotifyAllTileTasksCompleted() override {}
   void NotifyTileStateChanged(const Tile* tile) override {}
   scoped_ptr<RasterTilePriorityQueue> BuildRasterQueue(
       TreePriority tree_priority,

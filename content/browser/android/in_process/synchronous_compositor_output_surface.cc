@@ -256,9 +256,11 @@ void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
   if (became_zero) {
     // This is small hack to drop context resources without destroying it
     // when this compositor is put into the background.
-    context_provider()->ContextSupport()->SetSurfaceVisible(false);
+    context_provider()->ContextSupport()->SetAggressivelyFreeResources(
+        true /* aggressively_free_resources */);
   } else if (became_non_zero) {
-    context_provider()->ContextSupport()->SetSurfaceVisible(true);
+    context_provider()->ContextSupport()->SetAggressivelyFreeResources(
+        false /* aggressively_free_resources */);
   }
 }
 

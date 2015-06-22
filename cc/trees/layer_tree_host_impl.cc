@@ -1180,6 +1180,16 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
           gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
   global_tile_state_.num_resources_limit = policy.num_resources_limit;
 
+  if (output_surface_ && global_tile_state_.hard_memory_limit_in_bytes > 0) {
+    // If |global_tile_state_.hard_memory_limit_in_bytes| is greater than 0, we
+    // allow the worker context to retain allocated resources. Notify the worker
+    // context. If the memory policy has become zero, we'll handle the
+    // notification in NotifyAllTileTasksCompleted, after in-progress work
+    // finishes.
+    output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
+        false /* aggressively_free_resources */);
+  }
+
   // TODO(reveman): We should avoid keeping around unused resources if
   // possible. crbug.com/224475
   // Unused limit is calculated from soft-limit, as hard-limit may
@@ -1260,6 +1270,15 @@ void LayerTreeHostImpl::NotifyReadyToDraw() {
   is_likely_to_require_a_draw_ = false;
 
   client_->NotifyReadyToDraw();
+}
+
+void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
+  // The tile tasks started by the most recent call to PrepareTiles have
+  // completed. Now is a good time to free resources if necessary.
+  if (output_surface_ && global_tile_state_.hard_memory_limit_in_bytes == 0) {
+    output_surface_->SetWorkerContextShouldAggressivelyFreeResources(
+        true /* aggressively_free_resources */);
+  }
 }
 
 void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {

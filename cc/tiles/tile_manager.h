@@ -43,6 +43,10 @@ class CC_EXPORT TileManagerClient {
   // Called when all tiles marked as required for draw are ready to draw.
   virtual void NotifyReadyToDraw() = 0;
 
+  // Called when all tile tasks started by the most recent call to PrepareTiles
+  // are completed.
+  virtual void NotifyAllTileTasksCompleted() = 0;
+
   // Called when the visible representation of a tile might have changed. Some
   // examples are:
   // - Tile version initialized.
@@ -179,6 +183,14 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
     CheckIfMoreTilesNeedToBePrepared();
   }
 
+  void SetMoreTilesNeedToBeRasterizedForTesting() {
+    all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
+  }
+
+  bool HasScheduledTileTasksForTesting() const {
+    return has_scheduled_tile_tasks_;
+  }
+
  protected:
   TileManager(TileManagerClient* client,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -261,10 +273,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
       MemoryUsage* usage);
   bool TilePriorityViolatesMemoryPolicy(const TilePriority& priority);
   bool AreRequiredTilesReadyToDraw(RasterTilePriorityQueue::Type type) const;
-  void NotifyReadyToActivate();
-  void NotifyReadyToDraw();
   void CheckIfReadyToActivate();
   void CheckIfReadyToDraw();
+  void CheckIfAllTileTasksCompleted();
   void CheckIfMoreTilesNeedToBePrepared();
 
   TileManagerClient* client_;
@@ -302,10 +313,13 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
 
   UniqueNotifier ready_to_activate_check_notifier_;
   UniqueNotifier ready_to_draw_check_notifier_;
+  UniqueNotifier all_tile_tasks_completed_check_notifier_;
   UniqueNotifier more_tiles_need_prepare_check_notifier_;
 
   bool did_notify_ready_to_activate_;
   bool did_notify_ready_to_draw_;
+  bool did_notify_all_tile_tasks_completed_;
+  bool has_scheduled_tile_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

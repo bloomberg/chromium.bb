@@ -113,7 +113,7 @@ GLES2Implementation::GLES2Implementation(
       current_trace_stack_(0),
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
-      visible_(true),
+      aggressively_free_resources_(false),
       weak_ptr_factory_(this) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
@@ -318,12 +318,19 @@ void GLES2Implementation::SignalQuery(uint32 query,
 void GLES2Implementation::SetSurfaceVisible(bool visible) {
   TRACE_EVENT1(
       "gpu", "GLES2Implementation::SetSurfaceVisible", "visible", visible);
-  // TODO(piman): This probably should be ShallowFlushCHROMIUM().
-  Flush();
+  ShallowFlushCHROMIUM();
   gpu_control_->SetSurfaceVisible(visible);
-  visible_ = visible;
-  if (!visible)
-    FreeEverything();
+}
+
+void GLES2Implementation::SetAggressivelyFreeResources(
+    bool aggressively_free_resources) {
+  TRACE_EVENT1("gpu", "GLES2Implementation::SetAggressivelyFreeResources",
+               "aggressively_free_resources", aggressively_free_resources);
+  aggressively_free_resources_ = aggressively_free_resources;
+
+  // ShallowFlushCHROMIUM will free resources if |aggressively_free_resources_|
+  // is false.
+  ShallowFlushCHROMIUM();
 }
 
 void GLES2Implementation::WaitForCmd() {
@@ -1168,8 +1175,8 @@ void GLES2Implementation::FlushHelper() {
   // Flush our command buffer
   // (tell the service to execute up to the flush cmd.)
   helper_->CommandBufferHelper::Flush();
-  // If visibility is false, then agressively clean everything up.
-  if (!visible_)
+
+  if (aggressively_free_resources_)
     FreeEverything();
 }
 
@@ -1191,8 +1198,8 @@ void GLES2Implementation::ShallowFinishCHROMIUM() {
   // Flush our command buffer (tell the service to execute up to the flush cmd
   // and don't return until it completes).
   helper_->CommandBufferHelper::Finish();
-  // If visibility is false, then agressively clean everything up.
-  if (!visible_)
+
+  if (aggressively_free_resources_)
     FreeEverything();
 }
 
@@ -1205,8 +1212,8 @@ void GLES2Implementation::FinishHelper() {
   // (tell the service to execute up to the Finish cmd and wait for it to
   // execute.)
   helper_->CommandBufferHelper::Finish();
-  // If visibility is false, then agressively clean everything up.
-  if (!visible_)
+
+  if (aggressively_free_resources_)
     FreeEverything();
 }
 

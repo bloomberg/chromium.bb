@@ -12,7 +12,9 @@
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -207,6 +209,32 @@ void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
 
 OverlayCandidateValidator* OutputSurface::GetOverlayCandidateValidator() const {
   return nullptr;
+}
+
+void OutputSurface::SetWorkerContextShouldAggressivelyFreeResources(
+    bool aggressively_free_resources) {
+  TRACE_EVENT1("cc",
+               "OutputSurface::SetWorkerContextShouldAggressivelyFreeResources",
+               "aggressively_free_resources", aggressively_free_resources);
+  if (auto* context_provider = worker_context_provider()) {
+    // The context lock must be held while accessing the worker context.
+    base::AutoLock context_lock(*context_provider->GetLock());
+
+    // Allow context to bind to current thread.
+    context_provider->DetachFromThread();
+
+    if (aggressively_free_resources) {
+      context_provider->DeleteCachedResources();
+    }
+
+    if (auto* context_support = context_provider->ContextSupport()) {
+      context_support->SetAggressivelyFreeResources(
+          aggressively_free_resources);
+    }
+
+    // Allow context to bind to other threads.
+    context_provider->DetachFromThread();
+  }
 }
 
 }  // namespace cc

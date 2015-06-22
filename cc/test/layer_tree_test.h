@@ -57,6 +57,7 @@ class TestHooks : public AnimationDelegate {
   virtual void SwapBuffersCompleteOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyReadyToActivateOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyReadyToDrawOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void NotifyAllTileTasksCompleted(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
                                               const Tile* tile) {}
   virtual void AnimateLayers(LayerTreeHostImpl* host_impl,

@@ -39,6 +39,10 @@ void TestContextSupport::SetSurfaceVisible(bool visible) {
   }
 }
 
+void TestContextSupport::SetAggressivelyFreeResources(
+    bool aggressively_free_resources) {
+}
+
 void TestContextSupport::CallAllSyncPointCallbacks() {
   for (size_t i = 0; i < sync_point_callbacks_.size(); ++i) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,

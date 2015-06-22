@@ -249,12 +249,18 @@ TileManager::TileManager(
       ready_to_draw_check_notifier_(
           task_runner_.get(),
           base::Bind(&TileManager::CheckIfReadyToDraw, base::Unretained(this))),
+      all_tile_tasks_completed_check_notifier_(
+          task_runner_.get(),
+          base::Bind(&TileManager::CheckIfAllTileTasksCompleted,
+                     base::Unretained(this))),
       more_tiles_need_prepare_check_notifier_(
           task_runner_.get(),
           base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
                      base::Unretained(this))),
       did_notify_ready_to_activate_(false),
-      did_notify_ready_to_draw_(false) {
+      did_notify_ready_to_draw_(false),
+      did_notify_all_tile_tasks_completed_(false),
+      has_scheduled_tile_tasks_(false) {
   tile_task_runner_->SetClient(this);
 }
 
@@ -323,13 +329,20 @@ void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
 
   switch (task_set) {
     case ALL: {
+      has_scheduled_tile_tasks_ = false;
+
       bool memory_usage_above_limit =
           resource_pool_->total_memory_usage_bytes() >
           global_state_.soft_memory_limit_in_bytes;
 
       if (all_tiles_that_need_to_be_rasterized_are_scheduled_ &&
-          !memory_usage_above_limit)
+          !memory_usage_above_limit) {
+        // TODO(ericrk): We should find a better way to safely handle re-entrant
+        // notifications than always having to schedule a new task.
+        // http://crbug.com/498439
+        all_tile_tasks_completed_check_notifier_.Schedule();
         return;
+      }
 
       more_tiles_need_prepare_check_notifier_.Schedule();
       return;
@@ -380,6 +393,7 @@ void TileManager::PrepareTiles(
 
   did_notify_ready_to_activate_ = false;
   did_notify_ready_to_draw_ = false;
+  did_notify_all_tile_tasks_completed_ = false;
 
   TRACE_EVENT_INSTANT1("cc", "DidPrepareTiles", TRACE_EVENT_SCOPE_THREAD,
                        "state", BasicStateAsValue());
@@ -625,6 +639,11 @@ void TileManager::ScheduleTasks(
 
   raster_queue_.Reset();
 
+  // Even when scheduling an empty set of tiles, the TTWP does some work, and
+  // will always trigger a DidFinishRunningTileTasks notification. Because of
+  // this we unconditionally set |has_scheduled_tile_tasks_| to true.
+  has_scheduled_tile_tasks_ = true;
+
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
   for (auto& prioritized_tile : tiles_that_need_to_be_rasterized) {
@@ -856,22 +875,6 @@ bool TileManager::IsReadyToDraw() const {
       RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
 }
 
-void TileManager::NotifyReadyToActivate() {
-  TRACE_EVENT0("cc", "TileManager::NotifyReadyToActivate");
-  if (did_notify_ready_to_activate_)
-    return;
-  client_->NotifyReadyToActivate();
-  did_notify_ready_to_activate_ = true;
-}
-
-void TileManager::NotifyReadyToDraw() {
-  TRACE_EVENT0("cc", "TileManager::NotifyReadyToDraw");
-  if (did_notify_ready_to_draw_)
-    return;
-  client_->NotifyReadyToDraw();
-  did_notify_ready_to_draw_ = true;
-}
-
 void TileManager::CheckIfReadyToActivate() {
   TRACE_EVENT0("cc", "TileManager::CheckIfReadyToActivate");
 
@@ -883,7 +886,11 @@ void TileManager::CheckIfReadyToActivate() {
   if (!IsReadyToActivate())
     return;
 
-  NotifyReadyToActivate();
+  TRACE_EVENT0("cc", "TileManager::NotifyReadyToActivate");
+  // Set this to true before NotifyReadyToActivate, to ensure correct behavior
+  // with regards to re-entrant code.
+  did_notify_ready_to_activate_ = true;
+  client_->NotifyReadyToActivate();
 }
 
 void TileManager::CheckIfReadyToDraw() {
@@ -897,7 +904,29 @@ void TileManager::CheckIfReadyToDraw() {
   if (!IsReadyToDraw())
     return;
 
-  NotifyReadyToDraw();
+  TRACE_EVENT0("cc", "TileManager::NotifyReadyToDraw");
+  // Set this to true before NotifyReadyToDraw, to ensure correct behavior with
+  // regards to re-entrant code.
+  did_notify_ready_to_draw_ = true;
+  client_->NotifyReadyToDraw();
+}
+
+void TileManager::CheckIfAllTileTasksCompleted() {
+  TRACE_EVENT0("cc", "TileManager::CheckIfAllTileTasksCompleted");
+
+  tile_task_runner_->CheckForCompletedTasks();
+  did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
+
+  if (did_notify_all_tile_tasks_completed_)
+    return;
+  if (has_scheduled_tile_tasks_)
+    return;
+
+  TRACE_EVENT0("cc", "TileManager::NotifyAllTileTasksCompleted");
+  // Set this to true before NotifyAllTileTasksCompleted, to ensure correct
+  // behavior with regards to re-entrant code.
+  did_notify_all_tile_tasks_completed_ = true;
+  client_->NotifyAllTileTasksCompleted();
 }
 
 void TileManager::CheckIfMoreTilesNeedToBePrepared() {
@@ -930,6 +959,8 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   FreeResourcesForReleasedTiles();
 
   resource_pool_->ReduceResourceUsage();
+
+  all_tile_tasks_completed_check_notifier_.Schedule();
 
   // We don't reserve memory for required-for-activation tiles during
   // accelerated gestures, so we just postpone activation when we don't
@@ -965,6 +996,8 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   }
 
   DCHECK(IsReadyToActivate());
+  // TODO(ericrk): Investigate why we need to schedule this (not just call it
+  // inline). http://crbug.com/498439
   ready_to_activate_check_notifier_.Schedule();
 }
 

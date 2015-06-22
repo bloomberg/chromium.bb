@@ -22,6 +22,7 @@ class TestContextSupport : public gpu::ContextSupport {
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
+  void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap() override;
   void PartialSwapBuffers(const gfx::Rect& sub_buffer) override;
   uint32 InsertFutureSyncPointCHROMIUM() override;

@@ -274,6 +274,182 @@ class LayerTreeHostTestReadyToDrawNonEmpty
 // single threaded mode.
 SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawNonEmpty);
 
+// Test if the LTHI successfully recieves the NotifyAllTileTasksCompleted
+// callback for a call of PrepareTiles.
+class LayerTreeHostNotifyAllTileTasksCompletedOnPrepareTiles
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostNotifyAllTileTasksCompletedOnPrepareTiles()
+      : notify_all_tile_tasks_completed_called_(false) {}
+  void BeginTest() override {
+    // Logic is handled in InitializedRendererOnThread to ensure that our
+    // LTHI is fully set up.
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(notify_all_tile_tasks_completed_called_);
+  }
+
+  void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                   bool success) override {
+    host_impl->PrepareTiles();
+  }
+
+  void NotifyAllTileTasksCompleted(LayerTreeHostImpl* host_impl) override {
+    // We only expect this to be called once.
+    DCHECK(!notify_all_tile_tasks_completed_called_);
+    notify_all_tile_tasks_completed_called_ = true;
+    EndTest();
+  }
+
+ private:
+  bool notify_all_tile_tasks_completed_called_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostNotifyAllTileTasksCompletedOnPrepareTiles);
+
+// Test if the LTHI successfully recieves the NotifyAllTileTasksCompleted
+// callback for a call of PrepareTiles while using the "needs more work" path.
+class LayerTreeHostNotifyAllTileTasksCompletedOnPrepareMoreTiles
+    : public LayerTreeHostNotifyAllTileTasksCompletedOnPrepareTiles {
+ public:
+  void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                   bool success) override {
+    host_impl->PrepareTiles();
+    host_impl->tile_manager()->SetMoreTilesNeedToBeRasterizedForTesting();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostNotifyAllTileTasksCompletedOnPrepareMoreTiles);
+
+// Test that AreAllTileTasksCompleted returnes the expected values before and
+// after PrepareTiles.
+class LayerTreeHostAreAllTileTasksCompleted : public LayerTreeHostTest {
+ public:
+  LayerTreeHostAreAllTileTasksCompleted() : got_notify_(false) {}
+
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+    scoped_refptr<FakePictureLayer> root_layer =
+        FakePictureLayer::Create(layer_settings(), &client_);
+    root_layer->SetBounds(gfx::Size(1500, 1500));
+    root_layer->SetIsDrawable(true);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    layer_tree_host()->SetViewportSize(gfx::Size(16, 16));
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void AfterTest() override { EXPECT_TRUE(got_notify_); }
+
+  void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
+    // Before commit, we should have no work.
+    EXPECT_FALSE(host_impl->tile_manager()->HasScheduledTileTasksForTesting());
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    // Immediately after commit, we should have enqueued work.
+    EXPECT_TRUE(host_impl->tile_manager()->HasScheduledTileTasksForTesting());
+  }
+
+  void NotifyAllTileTasksCompleted(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(host_impl->tile_manager()->HasScheduledTileTasksForTesting());
+    got_notify_ = true;
+    EndTest();
+  }
+
+ private:
+  FakeContentLayerClient client_;
+  bool got_notify_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAreAllTileTasksCompleted);
+
+class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
+ public:
+  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+    auto output_surface = make_scoped_ptr(new testing::StrictMock<
+        MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface>(
+        delegating_renderer()));
+
+    // At init, we expect one call to set visibility to true.
+    testing::Expectation visibility_true =
+        EXPECT_CALL(*output_surface,
+                    SetWorkerContextShouldAggressivelyFreeResources(false))
+            .Times(1);
+
+    // After running, we should get exactly one call to
+    // FreeWorkerContextGpuResources.
+    EXPECT_CALL(*output_surface,
+                SetWorkerContextShouldAggressivelyFreeResources(true))
+        .After(visibility_true)
+        .WillOnce(testing::Invoke([this](bool is_visible) { EndTest(); }));
+    return output_surface.Pass();
+  }
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_enabled = true;
+    settings->gpu_rasterization_forced = true;
+  }
+
+  void BeginTest() override {
+    // Logic is handled in InitializedRendererOnThread to ensure that our
+    // LTHI is fully set up.
+  }
+
+  void AfterTest() override {
+    // Expectations handled via mock.
+  }
+
+ private:
+  class MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface
+      : public FakeOutputSurface {
+   public:
+    ~MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface() {}
+    explicit MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface(
+        bool delegated_rendering)
+        : FakeOutputSurface(TestContextProvider::Create(),
+                            TestContextProvider::Create(),
+                            delegated_rendering) {}
+    MOCK_METHOD1(SetWorkerContextShouldAggressivelyFreeResources,
+                 void(bool is_visible));
+  };
+};
+
+// Test if the LTH successfully frees resources on the worker context when
+// visibility is set to false.
+class LayerTreeHostFreeWorkerContextResourcesOnInvisible
+    : public LayerTreeHostFreeWorkerContextResourcesTest {
+ public:
+  void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                   bool success) override {
+    PostSetVisibleToMainThread(false);
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostFreeWorkerContextResourcesOnInvisible);
+
+// Test if the LTH successfully frees resources on the worker context when
+// hard memory limit is set to zero.
+class LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimit
+    : public LayerTreeHostFreeWorkerContextResourcesTest {
+ public:
+  void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                   bool success) override {
+    ManagedMemoryPolicy zero_policy(
+        0, gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING, 0);
+    host_impl->SetMemoryPolicy(zero_policy);
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimit);
+
 // Two setNeedsCommits in a row should lead to at least 1 commit and at least 1
 // draw with frame 0.
 class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {

@@ -254,6 +254,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                        const base::Closure& callback) override;
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
+  void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
 
   void SetErrorMessageCallback(
       GLES2ImplementationErrorMessageCallback* callback) {
@@ -813,8 +814,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   Capabilities capabilities_;
 
-  // Flag to indicate whether the last surface visible state set.
-  bool visible_;
+  // Flag to indicate whether the implementation can retain resources, or
+  // whether it should aggressively free them.
+  bool aggressively_free_resources_;
 
   base::WeakPtrFactory<GLES2Implementation> weak_ptr_factory_;
 

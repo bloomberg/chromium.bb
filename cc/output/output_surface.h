@@ -152,6 +152,10 @@ class CC_EXPORT OutputSurface {
   // there's new content.
   virtual void Invalidate() {}
 
+  // Updates the worker context provider's visibility, freeing GPU resources if
+  // appropriate.
+  virtual void SetWorkerContextShouldAggressivelyFreeResources(bool is_visible);
+
  protected:
   OutputSurfaceClient* client_;
 
