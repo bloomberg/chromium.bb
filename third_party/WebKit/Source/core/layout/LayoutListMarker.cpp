@@ -463,6 +463,8 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case CJKIdeographic:
         return type; // Can represent all ordinals.
     case Armenian:
+    case LowerArmenian:
+    case UpperArmenian:
         return (value < 1 || value > 99999999) ? DecimalListStyle : type;
     case Georgian:
         return (value < 1 || value > 19999) ? DecimalListStyle : type;
@@ -484,11 +486,9 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case Katakana:
     case KatakanaIroha:
     case LowerAlpha:
-    case LowerArmenian:
     case LowerGreek:
     case LowerLatin:
     case UpperAlpha:
-    case UpperArmenian:
     case UpperLatin:
         return (value < 1) ? DecimalListStyle : type;
     }

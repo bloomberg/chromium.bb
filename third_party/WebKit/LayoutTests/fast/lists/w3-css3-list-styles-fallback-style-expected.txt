@@ -50,6 +50,8 @@ lower-armenian
 PASS list marker is -1.
 PASS list marker is 0.
 PASS list marker is ա.
+PASS list marker is ք̂ջ̂ղ̂թ̂քջղթ.
+PASS list marker is 100000000.
 lower-roman
 
 PASS list marker is -1.
@@ -90,6 +92,8 @@ upper-armenian
 PASS list marker is -1.
 PASS list marker is 0.
 PASS list marker is Ա.
+PASS list marker is Ք̂Ջ̂Ղ̂Թ̂ՔՋՂԹ.
+PASS list marker is 100000000.
 upper-roman
 
 PASS list marker is -1.
