@@ -362,7 +362,7 @@ bool NativeAppWindowCocoa::IsActive() const {
 }
 
 bool NativeAppWindowCocoa::IsMaximized() const {
-  return is_maximized_ && !IsMinimized();
+  return is_maximized_;
 }
 
 bool NativeAppWindowCocoa::IsMinimized() const {
@@ -497,14 +497,9 @@ void NativeAppWindowCocoa::Deactivate() {
 }
 
 void NativeAppWindowCocoa::Maximize() {
-  if (is_fullscreen_)
-    return;
-
   UpdateRestoredBounds();
   is_maximized_ = true;  // See top of file NOTE: State Before Update.
   [window() setFrame:[[window() screen] visibleFrame] display:YES animate:YES];
-  if (IsMinimized())
-    [window() deminiaturize:window_controller_];
 }
 
 void NativeAppWindowCocoa::Minimize() {
@@ -514,12 +509,13 @@ void NativeAppWindowCocoa::Minimize() {
 void NativeAppWindowCocoa::Restore() {
   DCHECK(!IsFullscreenOrPending());   // SetFullscreen, not Restore, expected.
 
-  if (is_maximized_) {
+  if (IsMaximized()) {
     is_maximized_ = false;  // See top of file NOTE: State Before Update.
     [window() setFrame:restored_bounds() display:YES animate:YES];
-  }
-  if (IsMinimized())
+  } else if (IsMinimized()) {
+    is_maximized_ = false;  // See top of file NOTE: State Before Update.
     [window() deminiaturize:window_controller_];
+  }
 }
 
 void NativeAppWindowCocoa::SetBounds(const gfx::Rect& bounds) {
@@ -767,7 +763,6 @@ void NativeAppWindowCocoa::WindowDidDeminiaturize() {
 }
 
 void NativeAppWindowCocoa::WindowDidEnterFullscreen() {
-  is_maximized_ = false;
   is_fullscreen_ = true;
   app_window_->OnNativeWindowChanged();
 }
@@ -776,8 +771,6 @@ void NativeAppWindowCocoa::WindowDidExitFullscreen() {
   is_fullscreen_ = false;
   if (!shows_fullscreen_controls_)
     gfx::SetNSWindowCanFullscreen(window(), false);
-
-  WindowDidFinishResize();
 
   app_window_->OnNativeWindowChanged();
 }

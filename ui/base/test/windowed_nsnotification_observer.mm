@@ -15,15 +15,11 @@
 @implementation WindowedNSNotificationObserver
 
 - (id)initForNotification:(NSString*)name {
-  return [self initForNotification:name object:nil];
-}
-
-- (id)initForNotification:(NSString*)name object:(id)sender {
   if ((self = [super init])) {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(onNotification:)
                                                  name:name
-                                               object:sender];
+                                               object:nil];
   }
   return self;
 }

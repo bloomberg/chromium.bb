@@ -25,7 +25,6 @@
 #include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
-#import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
 using extensions::AppWindow;
@@ -214,6 +213,42 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
   testing::Mock::VerifyAndClearExpectations(&mock_host);
 }
 
+@interface ScopedNotificationWatcher : NSObject {
+ @private
+  BOOL received_;
+}
+- (id)initWithNotification:(NSString*)notification
+                 andObject:(NSObject*)object;
+- (void)onNotification:(NSString*)notification;
+- (void)waitForNotification;
+@end
+
+@implementation ScopedNotificationWatcher
+
+- (id)initWithNotification:(NSString*)notification
+                 andObject:(NSObject*)object {
+  if ((self = [super init])) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(onNotification:)
+               name:notification
+             object:object];
+  }
+  return self;
+}
+
+- (void)onNotification:(NSString*)notification {
+  received_ = YES;
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)waitForNotification {
+  while (!received_)
+    content::RunAllPendingInMessageLoop();
+}
+
+@end
+
 // Test that NativeAppWindow and AppWindow fullscreen state is updated when
 // the window is fullscreened natively.
 IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Fullscreen) {
@@ -224,8 +259,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Fullscreen) {
       CreateTestAppWindow("{\"alwaysOnTop\": true }");
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
   NSWindow* ns_window = app_window->GetNativeWindow();
-  base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
-      [[NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
+  base::scoped_nsobject<ScopedNotificationWatcher> watcher;
 
   EXPECT_EQ(AppWindow::FULLSCREEN_TYPE_NONE,
             app_window->fullscreen_types_for_test());
@@ -233,275 +267,51 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
   EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidEnterFullScreenNotification
+                 andObject:ns_window]);
   [ns_window toggleFullScreen:nil];
-  [waiter waitForEnterCount:1 exitCount:0];
+  [watcher waitForNotification];
   EXPECT_TRUE(app_window->fullscreen_types_for_test() &
               AppWindow::FULLSCREEN_TYPE_OS);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
   EXPECT_FALSE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidExitFullScreenNotification
+                 andObject:ns_window]);
   app_window->Restore();
   EXPECT_FALSE(window->IsFullscreenOrPending());
-  [waiter waitForEnterCount:1 exitCount:1];
+  [watcher waitForNotification];
   EXPECT_EQ(AppWindow::FULLSCREEN_TYPE_NONE,
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
   EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidEnterFullScreenNotification
+                 andObject:ns_window]);
   app_window->Fullscreen();
   EXPECT_TRUE(window->IsFullscreenOrPending());
-  [waiter waitForEnterCount:2 exitCount:1];
+  [watcher waitForNotification];
   EXPECT_TRUE(app_window->fullscreen_types_for_test() &
               AppWindow::FULLSCREEN_TYPE_WINDOW_API);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
   EXPECT_FALSE(gfx::IsNSWindowAlwaysOnTop(ns_window));
 
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidExitFullScreenNotification
+                 andObject:ns_window]);
   [ns_window toggleFullScreen:nil];
-  [waiter waitForEnterCount:2 exitCount:2];
+  [watcher waitForNotification];
   EXPECT_EQ(AppWindow::FULLSCREEN_TYPE_NONE,
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
   EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
-}
-
-// Test Minimize, Restore combinations with their native equivalents.
-IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Minimize) {
-  SetUpAppWithWindows(1);
-  AppWindow* app_window = GetFirstAppWindow();
-  extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
-
-  NSRect initial_frame = [ns_window frame];
-
-  EXPECT_FALSE(window->IsMinimized());
-  EXPECT_FALSE([ns_window isMiniaturized]);
-
-  // Native minimize, Restore.
-  [ns_window miniaturize:nil];
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMinimized());
-  EXPECT_TRUE([ns_window isMiniaturized]);
-
-  app_window->Restore();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMinimized());
-  EXPECT_FALSE([ns_window isMiniaturized]);
-
-  // Minimize, native restore.
-  app_window->Minimize();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMinimized());
-  EXPECT_TRUE([ns_window isMiniaturized]);
-
-  [ns_window deminiaturize:nil];
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMinimized());
-  EXPECT_FALSE([ns_window isMiniaturized]);
-}
-
-// Test Maximize, Restore combinations with their native equivalents.
-IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Maximize) {
-  SetUpAppWithWindows(1);
-  AppWindow* app_window = GetFirstAppWindow();
-  extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
-  base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
-
-  gfx::Rect initial_restored_bounds = window->GetRestoredBounds();
-  NSRect initial_frame = [ns_window frame];
-  NSRect maximized_frame = [[ns_window screen] visibleFrame];
-
-  EXPECT_FALSE(window->IsMaximized());
-
-  // Native maximize, Restore.
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  [ns_window zoom:nil];
-  [watcher wait];
-  EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMaximized());
-
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  app_window->Restore();
-  [watcher wait];
-  EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMaximized());
-
-  // Maximize, native restore.
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  app_window->Maximize();
-  [watcher wait];
-  EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMaximized());
-
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  [ns_window zoom:nil];
-  [watcher wait];
-  EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMaximized());
-}
-
-// Test Maximize when the window has a maximum size. The maximum size means that
-// the window is not user-maximizable. However, calling Maximize() via the
-// javascript API should still maximize and since the zoom button is removed,
-// the codepath changes.
-IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MaximizeConstrained) {
-  AppWindow* app_window = CreateTestAppWindow(
-      "{\"outerBounds\": {\"maxWidth\":200, \"maxHeight\":300}}");
-  extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
-  base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
-
-  gfx::Rect initial_restored_bounds = window->GetRestoredBounds();
-  NSRect initial_frame = [ns_window frame];
-  NSRect maximized_frame = [[ns_window screen] visibleFrame];
-
-  EXPECT_FALSE(window->IsMaximized());
-
-  // Maximize, Restore.
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  app_window->Maximize();
-  [watcher wait];
-  EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMaximized());
-
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  app_window->Restore();
-  [watcher wait];
-  EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMaximized());
-}
-
-// Test Minimize, Maximize, Restore combinations with their native equivalents.
-IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MinimizeMaximize) {
-  SetUpAppWithWindows(1);
-  AppWindow* app_window = GetFirstAppWindow();
-  extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
-  base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
-
-  NSRect initial_frame = [ns_window frame];
-  NSRect maximized_frame = [[ns_window screen] visibleFrame];
-
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_FALSE(window->IsMinimized());
-  EXPECT_FALSE([ns_window isMiniaturized]);
-
-  // Maximize, Minimize, Restore.
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  app_window->Maximize();
-  [watcher wait];
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMaximized());
-
-  app_window->Minimize();
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_TRUE(window->IsMinimized());
-  EXPECT_TRUE([ns_window isMiniaturized]);
-
-  app_window->Restore();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_FALSE(window->IsMinimized());
-  EXPECT_FALSE([ns_window isMiniaturized]);
-
-  // Minimize, Maximize.
-  app_window->Minimize();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMinimized());
-  EXPECT_TRUE([ns_window isMiniaturized]);
-
-  app_window->Maximize();
-  EXPECT_TRUE([ns_window isVisible]);
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMaximized());
-  EXPECT_FALSE(window->IsMinimized());
-  EXPECT_FALSE([ns_window isMiniaturized]);
-}
-
-// Test Maximize, Fullscreen, Restore combinations.
-// TODO(jackhou): Enable this when we can mock out fullscreen.
-// See http://crbug.com/502150
-IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
-                       DISABLED_MaximizeFullscreen) {
-  SetUpAppWithWindows(1);
-  AppWindow* app_window = GetFirstAppWindow();
-  extensions::NativeAppWindow* window = app_window->GetBaseWindow();
-  NSWindow* ns_window = app_window->GetNativeWindow();
-  base::scoped_nsobject<WindowedNSNotificationObserver> watcher;
-  base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
-      [[NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
-
-  NSRect initial_frame = [ns_window frame];
-  NSRect maximized_frame = [[ns_window screen] visibleFrame];
-
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_FALSE(window->IsFullscreen());
-
-  // Maximize, Fullscreen, Restore, Restore.
-  watcher.reset([[WindowedNSNotificationObserver alloc]
-      initForNotification:NSWindowDidResizeNotification
-                   object:ns_window]);
-  app_window->Maximize();
-  [watcher wait];
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMaximized());
-
-  EXPECT_EQ(0, [waiter enterCount]);
-  app_window->Fullscreen();
-  [waiter waitForEnterCount:1 exitCount:0];
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_TRUE(window->IsFullscreen());
-
-  app_window->Restore();
-  [waiter waitForEnterCount:1 exitCount:1];
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
-  EXPECT_TRUE(window->IsMaximized());
-  EXPECT_FALSE(window->IsFullscreen());
-
-  app_window->Restore();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMaximized());
-
-  // Fullscreen, Maximize, Restore.
-  app_window->Fullscreen();
-  [waiter waitForEnterCount:2 exitCount:1];
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_TRUE(window->IsFullscreen());
-
-  app_window->Maximize();
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_TRUE(window->IsFullscreen());
-
-  app_window->Restore();
-  [waiter waitForEnterCount:2 exitCount:2];
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
-  EXPECT_FALSE(window->IsMaximized());
-  EXPECT_FALSE(window->IsFullscreen());
 }
 
 // Test that, in frameless windows, the web contents has the same size as the
