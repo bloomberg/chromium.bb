@@ -368,7 +368,7 @@ TEST_F(LocaleMacTest, invalidLocale)
 
 static void testNumberIsReversible(const AtomicString& localeString, const char* original, const char* shouldHave = 0)
 {
-    OwnPtr<Locale> locale = Locale::create(localeString);
+    OwnPtr<LocaleMac> locale = LocaleMac::create(localeString);
     String localized = locale->convertToLocalizedNumber(original);
     if (shouldHave)
         EXPECT_TRUE(localized.contains(shouldHave));
