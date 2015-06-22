@@ -14,6 +14,7 @@
 #include "chrome_elf/chrome_elf_constants.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "version.h"  // NOLINT
 
@@ -55,6 +56,7 @@ class ChromeBlacklistTrialTest : public testing::Test {
 
   scoped_ptr<base::win::RegKey> blacklist_registry_key_;
   registry_util::RegistryOverrideManager override_manager_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBlacklistTrialTest);
