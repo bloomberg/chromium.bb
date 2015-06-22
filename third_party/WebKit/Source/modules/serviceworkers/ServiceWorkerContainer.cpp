@@ -30,7 +30,6 @@
 #include "config.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -57,26 +56,101 @@
 
 namespace blink {
 
-// This wraps CallbackPromiseAdapter and resolves the promise with undefined
-// when nullptr is given to onSuccess.
+class RegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks {
+public:
+    explicit RegistrationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
+    virtual ~RegistrationCallback() { }
+
+    virtual void onSuccess(WebServiceWorkerRegistration* registration) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            ServiceWorkerRegistration::dispose(registration);
+            return;
+        }
+        m_resolver->resolve(ServiceWorkerRegistration::take(m_resolver.get(), registration));
+    }
+
+    // Takes ownership of |error|.
+    virtual void onError(WebServiceWorkerError* error) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            ServiceWorkerError::dispose(error);
+            return;
+        }
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+    }
+
+private:
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    WTF_MAKE_NONCOPYABLE(RegistrationCallback);
+};
+
 class GetRegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerGetRegistrationCallbacks {
 public:
     explicit GetRegistrationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
-        : m_resolver(resolver)
-        , m_adapter(m_resolver) { }
+        : m_resolver(resolver) { }
     virtual ~GetRegistrationCallback() { }
+
     virtual void onSuccess(WebServiceWorkerRegistration* registration) override
     {
-        if (registration)
-            m_adapter.onSuccess(registration);
-        else if (m_resolver->executionContext() && !m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            ServiceWorkerRegistration::dispose(registration);
+            return;
+        }
+        if (!registration) {
+            // Resolve the promise with undefined.
             m_resolver->resolve();
+            return;
+        }
+        m_resolver->resolve(ServiceWorkerRegistration::take(m_resolver.get(), registration));
     }
-    virtual void onError(WebServiceWorkerError* error) override { m_adapter.onError(error); }
+
+    // Takes ownership of |error|.
+    virtual void onError(WebServiceWorkerError* error) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            ServiceWorkerError::dispose(error);
+            return;
+        }
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+    }
+
 private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
-    CallbackPromiseAdapter<ServiceWorkerRegistration, ServiceWorkerError> m_adapter;
     WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
+};
+
+class GetRegistrationsCallback : public WebServiceWorkerProvider::WebServiceWorkerGetRegistrationsCallbacks {
+public:
+    explicit GetRegistrationsCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
+    virtual ~GetRegistrationsCallback() { }
+
+    // Takes ownership of |registrationsRaw|.
+    virtual void onSuccess(WebVector<WebServiceWorkerRegistration*>* registrationsRaw) override
+    {
+        OwnPtr<WebVector<WebServiceWorkerRegistration*>> registrations = adoptPtr(registrationsRaw);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            ServiceWorkerRegistrationArray::dispose(registrations.release());
+            return;
+        }
+        m_resolver->resolve(ServiceWorkerRegistrationArray::take(m_resolver.get(), registrations.release()));
+    }
+
+    // Takes ownership of |error|.
+    virtual void onError(WebServiceWorkerError* error) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            ServiceWorkerError::dispose(error);
+            return;
+        }
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+    }
+
+private:
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    WTF_MAKE_NONCOPYABLE(GetRegistrationsCallback);
 };
 
 class ServiceWorkerContainer::GetRegistrationForReadyCallback : public WebServiceWorkerProvider::WebServiceWorkerGetRegistrationForReadyCallbacks {
@@ -179,7 +253,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
-    m_provider->registerServiceWorker(patternURL, scriptURL, new CallbackPromiseAdapter<ServiceWorkerRegistration, ServiceWorkerError>(resolver));
+    m_provider->registerServiceWorker(patternURL, scriptURL, new RegistrationCallback(resolver));
 
     return promise;
 }
@@ -248,7 +322,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(ScriptState* scriptState)
         return promise;
     }
 
-    m_provider->getRegistrations(new CallbackPromiseAdapter<ServiceWorkerRegistrationArray, ServiceWorkerError>(resolver));
+    m_provider->getRegistrations(new GetRegistrationsCallback(resolver));
 
     return promise;
 }

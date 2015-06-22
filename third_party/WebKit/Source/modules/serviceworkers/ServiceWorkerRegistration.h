@@ -88,18 +88,18 @@ private:
 class ServiceWorkerRegistrationArray {
 public:
     typedef WebVector<WebServiceWorkerRegistration*> WebType;
-    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, WebType* webServiceWorkerRegistrationsRaw)
+    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebType> webServiceWorkerRegistrations)
     {
-        OwnPtr<WebType> webServiceWorkerRegistrations = adoptPtr(webServiceWorkerRegistrationsRaw);
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
-        for (size_t i = 0; i < webServiceWorkerRegistrations->size(); ++i) {
-            registrations.append(ServiceWorkerRegistration::take(resolver, (*webServiceWorkerRegistrations)[i]));
-        }
+        for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
+            registrations.append(ServiceWorkerRegistration::take(resolver, registration));
         return registrations;
     }
-    static void dispose(WebType* webServiceWorkerRegistrationsRaw)
+
+    static void dispose(PassOwnPtr<WebType> webServiceWorkerRegistrations)
     {
-        delete webServiceWorkerRegistrationsRaw;
+        for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
+            ServiceWorkerRegistration::dispose(registration);
     }
 
 private:
