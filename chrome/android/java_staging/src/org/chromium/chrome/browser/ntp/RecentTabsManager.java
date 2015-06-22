@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ForeignSessionHelper;
 import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSessionCallback;
@@ -408,11 +409,16 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     // AndroidSyncSettingsObserver
     @Override
     public void androidSyncSettingsChanged() {
-        updateForeignSessions();
-        postUpdate();
-        for (AndroidSyncSettingsObserver observer : mObservers) {
-            observer.androidSyncSettingsChanged();
-        }
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateForeignSessions();
+                postUpdate();
+                for (AndroidSyncSettingsObserver observer : mObservers) {
+                    observer.androidSyncSettingsChanged();
+                }
+            }
+        });
     }
 
     // SyncPromoModel
