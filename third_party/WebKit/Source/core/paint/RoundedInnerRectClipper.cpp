@@ -64,10 +64,12 @@ RoundedInnerRectClipper::~RoundedInnerRectClipper()
     DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
     if (m_useDisplayItemList) {
         ASSERT(m_paintInfo.context->displayItemList());
-        if (m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_layoutObject, endType);
-        m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
+        if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
+            if (m_paintInfo.context->displayItemList()->lastDisplayItemIsNoopBegin())
+                m_paintInfo.context->displayItemList()->removeLastDisplayItem();
+            else
+                m_paintInfo.context->displayItemList()->add(EndClipDisplayItem::create(m_layoutObject, endType));
+        }
     } else {
         EndClipDisplayItem endClipDisplayItem(m_layoutObject, endType);
         endClipDisplayItem.replay(*m_paintInfo.context);

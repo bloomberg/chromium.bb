@@ -101,9 +101,12 @@ void SVGClipPainter::postApplyStatefulResource(const LayoutObject& target, Graph
     case ClipperAppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            if (context->displayItemList()->displayItemConstructionIsDisabled())
-                return;
-            context->displayItemList()->add(EndClipPathDisplayItem::create(target));
+            if (!context->displayItemList()->displayItemConstructionIsDisabled()) {
+                if (context->displayItemList()->lastDisplayItemIsNoopBegin())
+                    context->displayItemList()->removeLastDisplayItem();
+                else
+                    context->displayItemList()->add(EndClipPathDisplayItem::create(target));
+            }
         } else {
             EndClipPathDisplayItem endClipPathDisplayItem(target);
             endClipPathDisplayItem.replay(*context);

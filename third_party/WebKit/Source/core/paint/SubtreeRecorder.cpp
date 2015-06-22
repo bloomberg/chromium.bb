@@ -30,8 +30,12 @@ SubtreeRecorder::~SubtreeRecorder()
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
-    if (m_begun)
-        m_displayItemList->add(EndSubtreeDisplayItem::create(m_subtreeRoot, DisplayItem::paintPhaseToEndSubtreeType(m_paintPhase)));
+    if (m_begun) {
+        if (m_displayItemList->lastDisplayItemIsNoopBegin())
+            m_displayItemList->removeLastDisplayItem();
+        else
+            m_displayItemList->add(EndSubtreeDisplayItem::create(m_subtreeRoot, DisplayItem::paintPhaseToEndSubtreeType(m_paintPhase)));
+    }
 }
 
 void SubtreeRecorder::begin()

@@ -31,9 +31,12 @@ ClipPathRecorder::~ClipPathRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        m_context.displayItemList()->add(EndClipPathDisplayItem::create(m_client));
+        if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
+            if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
+                m_context.displayItemList()->removeLastDisplayItem();
+            else
+                m_context.displayItemList()->add(EndClipPathDisplayItem::create(m_client));
+        }
     } else {
         EndClipPathDisplayItem endClipPathDisplayItem(m_client);
         endClipPathDisplayItem.replay(m_context);

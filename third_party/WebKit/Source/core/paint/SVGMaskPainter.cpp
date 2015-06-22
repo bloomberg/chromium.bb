@@ -57,9 +57,12 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* c
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
-        if (context->displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        context->displayItemList()->add(EndCompositingDisplayItem::create(object));
+        if (!context->displayItemList()->displayItemConstructionIsDisabled()) {
+            if (context->displayItemList()->lastDisplayItemIsNoopBegin())
+                context->displayItemList()->removeLastDisplayItem();
+            else
+                context->displayItemList()->add(EndCompositingDisplayItem::create(object));
+        }
     } else {
         EndCompositingDisplayItem endCompositingContent(object);
         endCompositingContent.replay(*context);

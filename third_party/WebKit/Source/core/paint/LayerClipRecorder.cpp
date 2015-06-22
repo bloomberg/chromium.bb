@@ -84,11 +84,12 @@ LayerClipRecorder::~LayerClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext.displayItemList());
-        if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
-        OwnPtr<EndClipDisplayItem> endClip = EndClipDisplayItem::create(m_layoutObject, endType);
-        m_graphicsContext.displayItemList()->add(endClip.release());
+        if (!m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled()) {
+            if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
+                m_graphicsContext.displayItemList()->removeLastDisplayItem();
+            else
+                m_graphicsContext.displayItemList()->add(EndClipDisplayItem::create(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType)));
+        }
     } else {
         m_graphicsContext.restore();
     }

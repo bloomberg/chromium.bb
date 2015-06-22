@@ -42,9 +42,12 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(graphicsContext.displayItemList());
-        if (graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        graphicsContext.displayItemList()->add(EndCompositingDisplayItem::create(client));
+        if (!graphicsContext.displayItemList()->displayItemConstructionIsDisabled()) {
+            if (graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
+                graphicsContext.displayItemList()->removeLastDisplayItem();
+            else
+                graphicsContext.displayItemList()->add(EndCompositingDisplayItem::create(client));
+        }
     } else {
         EndCompositingDisplayItem endCompositingDisplayItem(client);
         endCompositingDisplayItem.replay(graphicsContext);

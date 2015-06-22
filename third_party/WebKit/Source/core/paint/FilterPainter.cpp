@@ -81,13 +81,16 @@ FilterPainter::~FilterPainter()
     if (!m_filterInProgress)
         return;
 
-    OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = EndFilterDisplayItem::create(*m_layoutObject);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context->displayItemList());
-        if (m_context->displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        m_context->displayItemList()->add(endFilterDisplayItem.release());
+        if (!m_context->displayItemList()->displayItemConstructionIsDisabled()) {
+            if (m_context->displayItemList()->lastDisplayItemIsNoopBegin())
+                m_context->displayItemList()->removeLastDisplayItem();
+            else
+                m_context->displayItemList()->add(EndFilterDisplayItem::create(*m_layoutObject));
+        }
     } else {
+        OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = EndFilterDisplayItem::create(*m_layoutObject);
         endFilterDisplayItem->replay(*m_context);
     }
 }

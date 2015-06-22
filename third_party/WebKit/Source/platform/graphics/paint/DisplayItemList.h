@@ -34,6 +34,10 @@ public:
     void beginScope(DisplayItemClient);
     void endScope(DisplayItemClient);
 
+    // True if the last display item is a begin that doesn't draw content.
+    bool lastDisplayItemIsNoopBegin() const;
+    void removeLastDisplayItem();
+
     void beginSkippingCache() { ++m_skippingCacheCount; }
     void endSkippingCache() { ASSERT(m_skippingCacheCount > 0); --m_skippingCacheCount; }
     bool skippingCache() const { return m_skippingCacheCount; }

@@ -39,9 +39,12 @@ TransformRecorder::~TransformRecorder()
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
-            return;
-        m_context.displayItemList()->add(EndTransformDisplayItem::create(m_client));
+        if (!m_context.displayItemList()->displayItemConstructionIsDisabled()) {
+            if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
+                m_context.displayItemList()->removeLastDisplayItem();
+            else
+                m_context.displayItemList()->add(EndTransformDisplayItem::create(m_client));
+        }
     } else {
         EndTransformDisplayItem endTransform(m_client);
         endTransform.replay(m_context);

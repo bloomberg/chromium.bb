@@ -32,30 +32,45 @@ const DisplayItems& DisplayItemList::displayItems() const
     return m_currentDisplayItems;
 }
 
+bool DisplayItemList::lastDisplayItemIsNoopBegin() const
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    if (m_newDisplayItems.isEmpty())
+        return false;
+
+    const auto& lastDisplayItem = m_newDisplayItems.last();
+    return lastDisplayItem.isBegin() && !lastDisplayItem.drawsContent();
+}
+
+void DisplayItemList::removeLastDisplayItem()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    if (m_newDisplayItems.isEmpty())
+        return;
+
+#if ENABLE(ASSERT)
+    // Also remove the index pointing to the removed display item.
+    DisplayItemIndicesByClientMap::iterator it = m_newDisplayItemIndicesByClient.find(m_newDisplayItems.last().client());
+    if (it != m_newDisplayItemIndicesByClient.end()) {
+        Vector<size_t>& indices = it->value;
+        if (!indices.isEmpty() && indices.last() == (m_newDisplayItems.size() - 1))
+            indices.removeLast();
+    }
+#endif
+    m_newDisplayItems.removeLast();
+}
+
 void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     ASSERT(!m_constructionDisabled);
     ASSERT(!skippingCache() || !displayItem->isCached());
 
-    if (displayItem->isEnd()) {
-        ASSERT(!m_newDisplayItems.isEmpty());
-        if (m_newDisplayItems.last().isBegin() && !m_newDisplayItems.last().drawsContent()) {
-            ASSERT(displayItem->isEndAndPairedWith(m_newDisplayItems.last().type()));
-            // Remove the beginning display item of this empty pair.
-            m_newDisplayItems.removeLast();
 #if ENABLE(ASSERT)
-            // Also remove the index pointing to the removed display item.
-            DisplayItemIndicesByClientMap::iterator it = m_newDisplayItemIndicesByClient.find(displayItem->client());
-            if (it != m_newDisplayItemIndicesByClient.end()) {
-                Vector<size_t>& indices = it->value;
-                if (!indices.isEmpty() && indices.last() == m_newDisplayItems.size())
-                    indices.removeLast();
-            }
+    // Verify noop begin/end pairs have been removed.
+    if (!m_newDisplayItems.isEmpty() && m_newDisplayItems.last().isBegin() && !m_newDisplayItems.last().drawsContent())
+        ASSERT(!displayItem->isEndAndPairedWith(m_newDisplayItems.last().type()));
 #endif
-            return;
-        }
-    }
 
     if (!m_scopeStack.isEmpty())
         displayItem->setScope(m_scopeStack.last().id, m_scopeStack.last().client);

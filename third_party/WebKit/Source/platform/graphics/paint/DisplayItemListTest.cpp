@@ -7,6 +7,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -644,6 +645,60 @@ TEST_F(DisplayItemListTest, Scope)
         TestDisplayItem(content, foregroundDrawingType));
     EXPECT_NE(picture1, displayItemList().displayItems()[1].picture());
     EXPECT_NE(picture2, displayItemList().displayItems()[2].picture());
+}
+
+TEST_F(DisplayItemListTest, OptimizeNoopPairs)
+{
+    TestDisplayItemClient first("first");
+    TestDisplayItemClient second("second");
+    TestDisplayItemClient third("third");
+
+    GraphicsContext context(&displayItemList());
+    drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+    {
+        ClipPathRecorder clipRecorder(context, second, Path());
+        drawRect(context, second, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+    }
+    drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+
+    displayItemList().commitNewDisplayItems();
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 5,
+        TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(second, DisplayItem::BeginClipPath),
+        TestDisplayItem(second, backgroundDrawingType),
+        TestDisplayItem(second, DisplayItem::EndClipPath),
+        TestDisplayItem(third, backgroundDrawingType));
+
+    displayItemList().invalidate(second.displayItemClient());
+    drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+    {
+        ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
+        // Do not draw anything for second.
+    }
+    drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+    displayItemList().commitNewDisplayItems();
+
+    // Empty clips should have been optimized out.
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
+        TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(third, backgroundDrawingType));
+
+    displayItemList().invalidate(second.displayItemClient());
+    drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+    {
+        ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
+        {
+            ClipPathRecorder clipPathRecorder(context, second, Path());
+            // Do not draw anything for second.
+        }
+    }
+    drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+    displayItemList().commitNewDisplayItems();
+
+    // Empty clips should have been optimized out.
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
+        TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(third, backgroundDrawingType));
 }
 
 } // namespace blink
