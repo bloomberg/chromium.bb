@@ -72,6 +72,7 @@
         '<(resource_packaged_apk_path)-hdpi',
         '<(resource_packaged_apk_path)-xhdpi',
         '<(resource_packaged_apk_path)-xxhdpi',
+        '<(resource_packaged_apk_path)-xxxhdpi',
         '<(resource_packaged_apk_path)-tvdpi',
       ],
     }],

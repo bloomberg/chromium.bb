@@ -618,6 +618,7 @@ template("create_apk") {
       "hdpi",
       "xhdpi",
       "xxhdpi",
+      "xxxhdpi",
       "tvdpi",
     ]
   }

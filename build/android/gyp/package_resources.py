@@ -54,6 +54,14 @@ DENSITY_SPLITS = {
         'ldrtl-sw600dp-xxhdpi-v17',
         'xxhdpi-v21',
     ),
+    'xxxhdpi': (
+        'xxxhdpi-v4',
+        'ldrtl-xxxhdpi-v4',
+        'sw600dp-xxxhdpi-v13',
+        'ldrtl-xxxhdpi-v17',
+        'ldrtl-sw600dp-xxxhdpi-v17',
+        'xxxhdpi-v21',
+    ),
     'tvdpi': (
         'tvdpi-v4',
         'sw600dp-tvdpi-v13',

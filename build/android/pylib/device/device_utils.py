@@ -1374,6 +1374,7 @@ class DeviceUtils(object):
       240: 'hdpi',
       320: 'xhdpi',
       480: 'xxhdpi',
+      640: 'xxxhdpi',
     }
     dpi = int(self.GetProp('ro.sf.lcd_density', cache=True))
     return DPI_TO_DENSITY.get(dpi, 'tvdpi')

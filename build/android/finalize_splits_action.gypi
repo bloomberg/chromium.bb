@@ -45,16 +45,18 @@
         '<(resource_packaged_apk_path)-hdpi',
         '<(resource_packaged_apk_path)-xhdpi',
         '<(resource_packaged_apk_path)-xxhdpi',
+        '<(resource_packaged_apk_path)-xxxhdpi',
         '<(resource_packaged_apk_path)-tvdpi',
       ],
       'outputs': [
         '<(base_output_path)-density-hdpi.apk',
         '<(base_output_path)-density-xhdpi.apk',
         '<(base_output_path)-density-xxhdpi.apk',
+        '<(base_output_path)-density-xxxhdpi.apk',
         '<(base_output_path)-density-tvdpi.apk',
       ],
       'action': [
-        '--densities=hdpi,xhdpi,xxhdpi,tvdpi',
+        '--densities=hdpi,xhdpi,xxhdpi,xxxhdpi,tvdpi',
       ],
     }],
     # TODO(agrieve): Implement language splits
