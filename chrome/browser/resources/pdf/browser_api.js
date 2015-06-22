@@ -12,7 +12,9 @@
  *     factor.
  */
 function lookupDefaultZoom(streamInfo) {
-  if (!chrome.tabs)
+  // Webviews don't run in tabs so |streamInfo.tabId| is -1 when running within
+  // a webview.
+  if (!chrome.tabs || streamInfo.tabId < 0)
     return Promise.resolve(1);
 
   return new Promise(function(resolve, reject) {
