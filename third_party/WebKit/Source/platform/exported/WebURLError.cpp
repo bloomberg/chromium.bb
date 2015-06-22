@@ -53,6 +53,7 @@ WebURLError& WebURLError::operator=(const ResourceError& error)
         isCancellation = error.isCancellation();
         staleCopyInCache = error.staleCopyInCache();
         localizedDescription = error.localizedDescription();
+        wasIgnoredByHandler = error.wasIgnoredByHandler();
     }
     return *this;
 }
@@ -65,6 +66,7 @@ WebURLError::operator ResourceError() const
     ResourceError resourceError = ResourceError(domain, reason, String::fromUTF8(spec.data(), spec.length()), localizedDescription);
     resourceError.setIsCancellation(isCancellation);
     resourceError.setStaleCopyInCache(staleCopyInCache);
+    resourceError.setWasIgnoredByHandler(wasIgnoredByHandler);
     return resourceError;
 }
 

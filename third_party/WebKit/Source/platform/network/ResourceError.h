@@ -46,6 +46,7 @@ public:
         , m_isAccessCheck(false)
         , m_isTimeout(false)
         , m_staleCopyInCache(false)
+        , m_wasIgnoredByHandler(false)
     {
     }
 
@@ -59,6 +60,7 @@ public:
         , m_isAccessCheck(false)
         , m_isTimeout(false)
         , m_staleCopyInCache(false)
+        , m_wasIgnoredByHandler(false)
     {
     }
 
@@ -83,6 +85,9 @@ public:
     void setStaleCopyInCache(bool staleCopyInCache) { m_staleCopyInCache = staleCopyInCache; }
     bool staleCopyInCache() const { return m_staleCopyInCache; }
 
+    void setWasIgnoredByHandler(bool ignoredByHandler) { m_wasIgnoredByHandler = ignoredByHandler; }
+    bool wasIgnoredByHandler() const { return m_wasIgnoredByHandler; }
+
     static bool compare(const ResourceError&, const ResourceError&);
 
 private:
@@ -95,6 +100,7 @@ private:
     bool m_isAccessCheck;
     bool m_isTimeout;
     bool m_staleCopyInCache;
+    bool m_wasIgnoredByHandler;
 };
 
 inline bool operator==(const ResourceError& a, const ResourceError& b) { return ResourceError::compare(a, b); }

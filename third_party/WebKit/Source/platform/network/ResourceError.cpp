@@ -60,6 +60,7 @@ ResourceError ResourceError::copy() const
     errorCopy.m_isAccessCheck = m_isAccessCheck;
     errorCopy.m_isTimeout = m_isTimeout;
     errorCopy.m_staleCopyInCache = m_staleCopyInCache;
+    errorCopy.m_wasIgnoredByHandler = m_wasIgnoredByHandler;
     return errorCopy;
 }
 
@@ -93,6 +94,9 @@ bool ResourceError::compare(const ResourceError& a, const ResourceError& b)
         return false;
 
     if (a.staleCopyInCache() != b.staleCopyInCache())
+        return false;
+
+    if (a.wasIgnoredByHandler() != b.wasIgnoredByHandler())
         return false;
 
     return true;

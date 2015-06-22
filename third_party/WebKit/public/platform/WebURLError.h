@@ -58,13 +58,18 @@ struct WebURLError {
     // e.g. we do not show console errors for cancellations.
     bool isCancellation;
 
+    // A flag showing whether this error is the result of a request being
+    // ignored (e.g. through shouldOverrideUrlLoading).
+    bool wasIgnoredByHandler;
+
     // The url that failed to load.
     WebURL unreachableURL;
 
     // A description for the error.
     WebString localizedDescription;
 
-    WebURLError() : reason(0), staleCopyInCache(false), isCancellation(false) { }
+    WebURLError() : reason(0), staleCopyInCache(false), isCancellation(false),
+        wasIgnoredByHandler(false) { }
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebURLError(const ResourceError&);
