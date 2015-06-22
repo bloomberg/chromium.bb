@@ -18,20 +18,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-// A finch experiment to enable the permission bubble for media requests only.
-bool MediaStreamPermissionBubbleExperimentEnabled() {
-  const std::string group =
-      base::FieldTrialList::FindFullName("MediaStreamPermissionBubble");
-  if (group == "enabled")
-    return true;
-
-  return false;
-}
-
-}  // namespace
-
 struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
   PendingAccessRequest(const content::MediaStreamRequest& request,
                        const content::MediaResponseCallback& callback)
@@ -134,8 +120,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 
   DCHECK(!it->second.empty());
 
-  if (PermissionBubbleManager::Enabled() ||
-      MediaStreamPermissionBubbleExperimentEnabled()) {
+  if (PermissionBubbleManager::Enabled()) {
     scoped_ptr<MediaStreamDevicesController> controller(
         new MediaStreamDevicesController(
             web_contents, it->second.front().request,
