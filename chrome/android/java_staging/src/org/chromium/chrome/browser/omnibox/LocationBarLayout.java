@@ -289,10 +289,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 mSuggestionList.setSelection(0);
             }
 
-            final String textWithoutAutocomplete = mUrlBar.getTextWithoutAutocomplete();
-
             stopAutocomplete(false);
-            if (TextUtils.isEmpty(textWithoutAutocomplete)) {
+            if (TextUtils.isEmpty(mUrlBar.getTextWithoutAutocomplete())) {
                 hideSuggestions();
                 startZeroSuggest();
             } else {
@@ -300,6 +298,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 mRequestSuggestions = new Runnable() {
                     @Override
                     public void run() {
+                        String textWithoutAutocomplete = mUrlBar.getTextWithoutAutocomplete();
+
                         boolean preventAutocomplete = !shouldAutocomplete()
                                 || (editableText != null && Selection.getSelectionEnd(editableText)
                                         != editableText.length());

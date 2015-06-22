@@ -7,15 +7,19 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.Intent;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.view.inputmethod.BaseInputConnection;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils.StubAutocompleteController;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -36,7 +40,7 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     private void stubLocationBarAutocomplete() {
-        ThreadUtils.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 LocationBarLayout locationBar =
@@ -296,6 +300,69 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertFalse(state.hasAutocomplete);
         assertEquals("test", state.textWithoutAutocomplete);
         assertEquals("test", state.textWithAutocomplete);
+    }
+
+    @SmallTest
+    @Feature({"Omnibox"})
+    public void testBatchModeChangesTriggerCorrectSuggestions() throws InterruptedException {
+        startMainActivityOnBlankPage();
+
+        final AtomicReference<String> requestedAutocompleteText = new AtomicReference<String>();
+        final StubAutocompleteController controller = new StubAutocompleteController() {
+            @Override
+            public void start(Profile profile, String url, String text,
+                    boolean preventInlineAutocomplete) {
+                requestedAutocompleteText.set(text);
+            }
+
+            @Override
+            public void start(Profile profile, String url, String text, int cursorPosition,
+                    boolean preventInlineAutocomplete) {
+                requestedAutocompleteText.set(text);
+            }
+        };
+
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                LocationBarLayout locationBar =
+                        (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
+                locationBar.setAutocompleteController(controller);
+            }
+        });
+
+        final UrlBar urlBar = getUrlBar();
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+
+        setTextAndVerifyNoAutocomplete(urlBar, "test");
+        setAutocomplete(urlBar, "test", "ing is fun");
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBar.beginBatchEdit();
+            }
+        });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBar.mInputConnection.commitText("y", 1);
+            }
+        });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBar.endBatchEdit();
+            }
+        });
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return TextUtils.equals("testy", requestedAutocompleteText.get());
+            }
+        });
+        assertEquals("Autocomplete sent incorrectly.", "testy", requestedAutocompleteText.get());
     }
 
     @SmallTest

@@ -109,6 +109,7 @@ public class UrlBar extends VerticallyFixedEditText {
     private long mFirstFocusTimeMs;
 
     private boolean mInBatchEditMode;
+    private boolean mSelectionChangedInBatchMode;
 
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
@@ -310,12 +311,19 @@ public class UrlBar extends VerticallyFixedEditText {
     public void onEndBatchEdit() {
         super.onEndBatchEdit();
         mInBatchEditMode = false;
-        validateSelection(getSelectionStart(), getSelectionEnd());
+        if (mSelectionChangedInBatchMode) {
+            validateSelection(getSelectionStart(), getSelectionEnd());
+            mSelectionChangedInBatchMode = false;
+        }
     }
 
     @Override
     protected void onSelectionChanged(int selStart, int selEnd) {
-        if (!mInBatchEditMode) validateSelection(selStart, selEnd);
+        if (!mInBatchEditMode) {
+            validateSelection(selStart, selEnd);
+        } else {
+            mSelectionChangedInBatchMode = true;
+        }
         super.onSelectionChanged(selStart, selEnd);
     }
 
