@@ -78,11 +78,15 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   bool PreviewSuggestion(int key, const base::string16& username);
 
   // If |current_username| matches a username for one of the login mappings in
-  // |fill_data|, returns true and assigns the password to |out_password|.
-  // Otherwise, returns false and leaves |out_password| untouched.
-  bool GetPasswordForUsername(const base::string16& current_username,
-                              const autofill::PasswordFormFillData& fill_data,
-                              base::string16* out_password);
+  // |fill_data|, returns true and assigns the password and the original signon
+  // realm to |password_and_realm|. Note that if the credential comes from the
+  // same realm as the one we're filling to, the |realm| field will be left
+  // empty, as this is the behavior of |PasswordFormFillData|.
+  // Otherwise, returns false and leaves |password_and_realm| untouched.
+  bool GetPasswordAndRealmForUsername(
+      const base::string16& current_username,
+      const autofill::PasswordFormFillData& fill_data,
+      autofill::PasswordAndRealm* password_and_realm);
 
   // Finds login information for a |node| that was previously filled.
   bool FindLoginInfo(int key, autofill::PasswordFormFillData* found_password);

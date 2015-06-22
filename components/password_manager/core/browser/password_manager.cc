@@ -111,6 +111,12 @@ bool ServerTypeToPrediction(autofill::ServerFieldType server_field_type,
   return true;
 }
 
+bool PreferredRealmIsFromAndroid(
+    const autofill::PasswordFormFillData& fill_data) {
+  return FacetURI::FromPotentiallyInvalidSpec(
+             fill_data.preferred_realm).IsValidAndroidFacetURI();
+}
+
 bool ContainsAndroidCredentials(
     const autofill::PasswordFormFillData& fill_data) {
   for (const auto& login : fill_data.additional_logins) {
@@ -120,8 +126,7 @@ bool ContainsAndroidCredentials(
     }
   }
 
-  return FacetURI::FromPotentiallyInvalidSpec(
-             fill_data.preferred_realm).IsValidAndroidFacetURI();
+  return PreferredRealmIsFromAndroid(fill_data);
 }
 
 }  // namespace
@@ -688,6 +693,8 @@ void PasswordManager::Autofill(password_manager::PasswordManagerDriver* driver,
       UMA_HISTOGRAM_BOOLEAN(
           "PasswordManager.FillSuggestionsIncludeAndroidAppCredentials",
           ContainsAndroidCredentials(fill_data));
+      metrics_util::LogFilledCredentialIsFromAndroidApp(
+          PreferredRealmIsFromAndroid(fill_data));
       driver->FillPasswordForm(fill_data);
       break;
     }

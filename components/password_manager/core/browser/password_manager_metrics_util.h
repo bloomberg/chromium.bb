@@ -116,6 +116,9 @@ void LogUIDisplayDisposition(UIDisplayDisposition disposition);
 // Log if a saved FormData was deserialized correctly.
 void LogFormDataDeserializationStatus(FormDeserializationStatus status);
 
+// When a credential was filled, log whether it came from an Android app.
+void LogFilledCredentialIsFromAndroidApp(bool from_android);
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

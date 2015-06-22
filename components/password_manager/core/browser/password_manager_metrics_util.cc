@@ -153,6 +153,12 @@ void LogFormDataDeserializationStatus(FormDeserializationStatus status) {
                             status, NUM_DESERIALIZATION_STATUSES);
 }
 
+void LogFilledCredentialIsFromAndroidApp(bool from_android) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.FilledCredentialWasFromAndroidApp",
+      from_android);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager
