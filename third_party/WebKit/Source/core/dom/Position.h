@@ -142,6 +142,9 @@ public:
     // |PositionIs::OffsetInAhcor| to behave as |Range| boundary point.
     Node* nodeAsRangeFirstNode() const;
 
+    // Similar to |nodeAsRangeLastNode()|, but returns a node in a range.
+    Node* nodeAsRangeLastNode() const;
+
     // Returns a node as past last as same as |Range::pastLastNode()|. This
     // function is supposed to used in HTML serialization and plain text
     // iterator. This position must be a |PositionIs::OffsetInAhcor| to

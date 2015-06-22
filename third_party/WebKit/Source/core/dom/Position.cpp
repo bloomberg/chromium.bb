@@ -320,6 +320,16 @@ Node* PositionAlgorithm<Strategy>::nodeAsRangeFirstNode() const
     return Strategy::nextSkippingChildren(*m_anchorNode);
 }
 
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::nodeAsRangeLastNode() const
+{
+    if (isNull())
+        return nullptr;
+    if (Node* pastLastNode = nodeAsRangePastLastNode())
+        return Strategy::previous(*pastLastNode);
+    return &Strategy::lastWithinOrSelf(*containerNode());
+}
+
 // An implementation of |Range::pastLastNode()|.
 template <typename Strategy>
 Node* PositionAlgorithm<Strategy>::nodeAsRangePastLastNode() const

@@ -3868,6 +3868,7 @@
             'dom/DocumentTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
             'dom/NthIndexCacheTest.cpp',
+            'dom/PositionTest.cpp',
             'dom/RangeTest.cpp',
             'dom/ScriptRunnerTest.cpp',
             'dom/TreeScopeStyleSheetCollectionTest.cpp',
