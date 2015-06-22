@@ -1480,6 +1480,12 @@ ivi_layout_get_id_of_layer(struct ivi_layout_layer *ivilayer)
 	return ivilayer->id_layer;
 }
 
+static uint32_t
+ivi_layout_get_id_of_screen(struct ivi_layout_screen *iviscrn)
+{
+	return iviscrn->id_screen;
+}
+
 static struct ivi_layout_layer *
 ivi_layout_get_layer_from_id(uint32_t id_layer)
 {
@@ -2972,7 +2978,7 @@ static struct ivi_controller_interface ivi_controller_interface = {
 	.layer_set_transition			= ivi_layout_layer_set_transition,
 
 	/**
-	 * screen controller interfaces
+	 * screen controller interfaces part1
 	 */
 	.get_screen_from_id		= ivi_layout_get_screen_from_id,
 	.get_screen_resolution		= ivi_layout_get_screen_resolution,
@@ -2998,7 +3004,12 @@ static struct ivi_controller_interface ivi_controller_interface = {
 	 * remove notification by callback on property changes of ivi_surface/layer
 	 */
 	.surface_remove_notification_by_callback	= ivi_layout_surface_remove_notification_by_callback,
-	.layer_remove_notification_by_callback		= ivi_layout_layer_remove_notification_by_callback
+	.layer_remove_notification_by_callback		= ivi_layout_layer_remove_notification_by_callback,
+
+	/**
+	 * screen controller interfaces part2
+	 */
+	.get_id_of_screen	= ivi_layout_get_id_of_screen
 };
 
 int

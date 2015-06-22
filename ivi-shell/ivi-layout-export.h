@@ -797,6 +797,13 @@ struct ivi_controller_interface {
 						      layer_property_notification_func callback,
 						      void *userdata);
 
+	/**
+	 * \brief get id of ivi_screen from ivi_layout_screen
+	 *
+	 *
+	 * \return id of ivi_screen
+	 */
+	uint32_t (*get_id_of_screen)(struct ivi_layout_screen *iviscrn);
 };
 
 #ifdef __cplusplus
