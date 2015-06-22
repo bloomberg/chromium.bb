@@ -8,8 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_match_type.h"
-#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_scheme_classifier.h"
+#include "components/omnibox/mock_autocomplete_provider_client.h"
 #include "components/omnibox/search_suggestion_parser.h"
 #include "components/omnibox/suggestion_answer.h"
 #include "components/search_engines/search_terms_data.h"
@@ -21,67 +21,6 @@
 using testing::NiceMock;
 using testing::Return;
 using testing::_;
-
-class MockAutocompleteProviderClient : public AutocompleteProviderClient {
- public:
-  MockAutocompleteProviderClient() {
-    template_url_service_.reset(new TemplateURLService(
-        nullptr, scoped_ptr<SearchTermsData>(new SearchTermsData), nullptr,
-        scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
-        base::Closure()));
-  }
-  MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
-  MOCK_METHOD0(GetPrefs, PrefService*());
-  MOCK_CONST_METHOD0(GetSchemeClassifier,
-                     const AutocompleteSchemeClassifier&());
-  MOCK_METHOD0(GetAutocompleteClassifier, AutocompleteClassifier*());
-  MOCK_METHOD0(GetHistoryService, history::HistoryService*());
-
-  // Can't mock scoped_refptr :\.
-  scoped_refptr<history::TopSites> GetTopSites() override { return nullptr; }
-
-  MOCK_METHOD0(GetBookmarkModel, bookmarks::BookmarkModel*());
-  MOCK_METHOD0(GetInMemoryDatabase, history::URLDatabase*());
-
-  TemplateURLService* GetTemplateURLService() override {
-    return template_url_service_.get();
-  }
-  const TemplateURLService* GetTemplateURLService() const override {
-    return template_url_service_.get();
-  }
-
-  MOCK_CONST_METHOD0(GetSearchTermsData, const SearchTermsData&());
-
-  // Can't mock scoped_refptr :\.
-  scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override {
-    return nullptr;
-  }
-  scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override {
-    return nullptr;
-  }
-
-  MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());
-  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
-  MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
-  MOCK_CONST_METHOD0(BookmarkBarIsVisible, bool());
-  MOCK_CONST_METHOD0(TabSyncEnabledAndUnencrypted, bool());
-  MOCK_METHOD6(
-      Classify,
-      void(const base::string16& text,
-           bool prefer_keyword,
-           bool allow_exact_keyword_match,
-           metrics::OmniboxEventProto::PageClassification page_classification,
-           AutocompleteMatch* match,
-           GURL* alternate_nav_url));
-  MOCK_METHOD2(DeleteMatchingURLsForKeywordFromHistory,
-               void(history::KeywordID keyword_id, const base::string16& term));
-  MOCK_METHOD1(PrefetchImage, void(const GURL& url));
-
- private:
-  scoped_ptr<TemplateURLService> template_url_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);
-};
 
 class TestBaseSearchProvider : public BaseSearchProvider {
  public:
@@ -127,7 +66,12 @@ class BaseSearchProviderTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    scoped_ptr<TemplateURLService> template_url_service(new TemplateURLService(
+        nullptr, scoped_ptr<SearchTermsData>(new SearchTermsData), nullptr,
+        scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
+        base::Closure()));
     client_.reset(new NiceMock<MockAutocompleteProviderClient>());
+    client_->set_template_url_service(template_url_service.Pass());
     provider_ = new NiceMock<TestBaseSearchProvider>(
         AutocompleteProvider::TYPE_SEARCH, client_.get());
   }

@@ -118,6 +118,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../testing/gmock.gyp:gmock',
         'omnibox',
         'component_metrics_proto',
       ],
@@ -126,6 +127,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'omnibox/mock_autocomplete_provider_client.cc',
+        'omnibox/mock_autocomplete_provider_client.h',
         'omnibox/test_scheme_classifier.cc',
         'omnibox/test_scheme_classifier.h',
       ],

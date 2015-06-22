@@ -25,11 +25,14 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   scoped_refptr<history::TopSites> GetTopSites() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   history::URLDatabase* GetInMemoryDatabase() override;
+  InMemoryURLIndex* GetInMemoryURLIndex() override;
   TemplateURLService* GetTemplateURLService() override;
   const TemplateURLService* GetTemplateURLService() const override;
   const SearchTermsData& GetSearchTermsData() const override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
+  scoped_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
+      KeywordProvider* keyword_provider) override;
   std::string GetAcceptLanguages() const override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;

@@ -1124,9 +1124,9 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   AddSearchToHistory(keyword_t_url_, ASCIIToUTF16("term2"), 1);
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
-  AutocompleteController controller(&profile_,
-      TemplateURLServiceFactory::GetForProfile(&profile_),
-      NULL, AutocompleteProvider::TYPE_SEARCH);
+  AutocompleteController controller(
+      make_scoped_ptr(new ChromeAutocompleteProviderClient(&profile_)), nullptr,
+      AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
       ASCIIToUTF16("k t"), base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INVALID_SPEC, false, false, true, true, false,

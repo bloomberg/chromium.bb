@@ -10,6 +10,7 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/keyword_extensions_delegate.h"
 #include "components/omnibox/shortcuts_backend.h"
 
 class AutocompleteController;
@@ -17,6 +18,8 @@ struct AutocompleteMatch;
 class AutocompleteClassifier;
 class AutocompleteSchemeClassifier;
 class GURL;
+class InMemoryURLIndex;
+class KeywordProvider;
 class PrefService;
 class ShortcutsBackend;
 
@@ -48,11 +51,14 @@ class AutocompleteProviderClient {
   virtual scoped_refptr<history::TopSites> GetTopSites() = 0;
   virtual bookmarks::BookmarkModel* GetBookmarkModel() = 0;
   virtual history::URLDatabase* GetInMemoryDatabase() = 0;
+  virtual InMemoryURLIndex* GetInMemoryURLIndex() = 0;
   virtual TemplateURLService* GetTemplateURLService() = 0;
   virtual const TemplateURLService* GetTemplateURLService() const = 0;
   virtual const SearchTermsData& GetSearchTermsData() const = 0;
   virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackend() = 0;
   virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() = 0;
+  virtual scoped_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
+      KeywordProvider* keyword_provider) = 0;
 
   // The value to use for Accept-Languages HTTP header when making an HTTP
   // request.
@@ -93,6 +99,10 @@ class AutocompleteProviderClient {
   // listeners add themselves to, and then kill this method.
   virtual void OnAutocompleteControllerResultReady(
       AutocompleteController* controller) {}
+
+  // Called after creation of |keyword_provider| to allow the client to
+  // configure the provider if desired.
+  virtual void ConfigureKeywordProvider(KeywordProvider* keyword_provider) {}
 };
 
 #endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_

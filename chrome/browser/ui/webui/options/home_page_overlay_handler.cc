@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -35,8 +36,8 @@ void HomePageOverlayHandler::RegisterMessages() {
 
 void HomePageOverlayHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  autocomplete_controller_.reset(new AutocompleteController(profile,
-      TemplateURLServiceFactory::GetForProfile(profile), this,
+  autocomplete_controller_.reset(new AutocompleteController(
+      make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)), this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 

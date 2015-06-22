@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -85,7 +86,8 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
 
 ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
     : controller_(new AutocompleteController(
-          profile, TemplateURLServiceFactory::GetForProfile(profile), this,
+          make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)),
+          this,
           AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
   // Creating an arbitrary fake_request_source to avoid passing in an invalid
   // AutocompleteInput object.
@@ -119,7 +121,8 @@ void ZeroSuggestPrefetcher::OnResultChanged(bool default_match_changed) {
 
 AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
     : autocomplete_controller_(new AutocompleteController(
-          profile, TemplateURLServiceFactory::GetForProfile(profile), this,
+          make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)),
+          this,
           kAndroidAutocompleteProviders)),
       inside_synchronous_start_(false),
       profile_(profile) {

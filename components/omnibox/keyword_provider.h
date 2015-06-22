@@ -21,6 +21,7 @@
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/keyword_extensions_delegate.h"
 
+class AutocompleteProviderClient;
 class AutocompleteProviderListener;
 class KeywordExtensionsDelegate;
 class TemplateURL;
@@ -50,13 +51,8 @@ class TemplateURLService;
 // "<enter term(s)>" as the substituted input, and does nothing when selected.
 class KeywordProvider : public AutocompleteProvider {
  public:
-  KeywordProvider(AutocompleteProviderListener* listener,
-                  TemplateURLService* model);
-
-  void set_extensions_delegate(
-      scoped_ptr<KeywordExtensionsDelegate> extensions_delegate) {
-    extensions_delegate_ = extensions_delegate.Pass();
-  }
+  KeywordProvider(AutocompleteProviderClient* client,
+                  AutocompleteProviderListener* listener);
 
   // Extracts the next whitespace-delimited token from input and returns it.
   // Sets |remaining_input| to everything after the first token (skipping over

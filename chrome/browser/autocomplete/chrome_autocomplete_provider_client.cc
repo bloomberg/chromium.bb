@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
@@ -21,6 +22,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/notification_service.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
+#endif
 
 ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
@@ -73,6 +78,10 @@ history::URLDatabase* ChromeAutocompleteProviderClient::GetInMemoryDatabase() {
   return history_service ? history_service->InMemoryDatabase() : NULL;
 }
 
+InMemoryURLIndex* ChromeAutocompleteProviderClient::GetInMemoryURLIndex() {
+  return InMemoryURLIndexFactory::GetForProfile(profile_);
+}
+
 TemplateURLService* ChromeAutocompleteProviderClient::GetTemplateURLService() {
   return TemplateURLServiceFactory::GetForProfile(profile_);
 }
@@ -95,6 +104,17 @@ ChromeAutocompleteProviderClient::GetShortcutsBackend() {
 scoped_refptr<ShortcutsBackend>
 ChromeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
   return ShortcutsBackendFactory::GetForProfileIfExists(profile_);
+}
+
+scoped_ptr<KeywordExtensionsDelegate>
+ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
+    KeywordProvider* keyword_provider) {
+#if defined(ENABLE_EXTENSIONS)
+  return make_scoped_ptr(
+      new KeywordExtensionsDelegateImpl(profile_, keyword_provider));
+#else
+  return nullptr;
+#endif
 }
 
 std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() const {

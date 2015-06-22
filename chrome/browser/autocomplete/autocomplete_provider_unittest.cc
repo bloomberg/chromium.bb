@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -297,7 +298,9 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
 
   // Reset the controller to contain our new providers.
   controller_.reset(new AutocompleteController(
-      &profile_, TemplateURLServiceFactory::GetForProfile(&profile_), NULL, 0));
+
+      make_scoped_ptr(new ChromeAutocompleteProviderClient(&profile_)), NULL,
+      0));
   // We're going to swap the providers vector, but the old vector should be
   // empty so no elements need to be freed at this point.
   EXPECT_TRUE(controller_->providers_.empty());
@@ -345,7 +348,8 @@ void AutocompleteProviderTest::
   ASSERT_NE(0, keyword_t_url->id());
 
   controller_.reset(new AutocompleteController(
-      &profile_, TemplateURLServiceFactory::GetForProfile(&profile_), NULL,
+
+      make_scoped_ptr(new ChromeAutocompleteProviderClient(&profile_)), NULL,
       AutocompleteProvider::TYPE_KEYWORD | AutocompleteProvider::TYPE_SEARCH));
 }
 
@@ -383,7 +387,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   ASSERT_NE(0, keyword_t_url->id());
 
   controller_.reset(new AutocompleteController(
-      &profile_, TemplateURLServiceFactory::GetForProfile(&profile_), NULL,
+      make_scoped_ptr(new ChromeAutocompleteProviderClient(&profile_)), NULL,
       AutocompleteProvider::TYPE_KEYWORD));
 }
 

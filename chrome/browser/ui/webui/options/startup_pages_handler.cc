@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
@@ -100,8 +101,8 @@ void StartupPagesHandler::InitializeHandler() {
       base::Bind(&StartupPagesHandler::UpdateStartupPages,
                  base::Unretained(this)));
 
-  autocomplete_controller_.reset(new AutocompleteController(profile,
-      TemplateURLServiceFactory::GetForProfile(profile), this,
+  autocomplete_controller_.reset(new AutocompleteController(
+      make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)), this,
       AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 

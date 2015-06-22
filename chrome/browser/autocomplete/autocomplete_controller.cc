@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/builtin_provider.h"
-#include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/zero_suggest_provider.h"
 #include "components/omnibox/bookmark_provider.h"
 #include "components/omnibox/history_quick_provider.h"
@@ -28,10 +27,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
-#endif
 
 namespace {
 
@@ -166,12 +161,11 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
 }  // namespace
 
 AutocompleteController::AutocompleteController(
-    Profile* profile,
-    TemplateURLService* template_url_service,
+    scoped_ptr<AutocompleteProviderClient> provider_client,
     AutocompleteControllerDelegate* delegate,
     int provider_types)
     : delegate_(delegate),
-      provider_client_(new ChromeAutocompleteProviderClient(profile)),
+      provider_client_(provider_client.Pass()),
       history_url_provider_(NULL),
       keyword_provider_(NULL),
       search_provider_(NULL),
@@ -179,17 +173,14 @@ AutocompleteController::AutocompleteController(
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       done_(true),
       in_start_(false),
-      template_url_service_(template_url_service) {
+      template_url_service_(provider_client_->GetTemplateURLService()) {
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
     providers_.push_back(new BookmarkProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
     providers_.push_back(new BuiltinProvider());
-  if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK) {
-    providers_.push_back(new HistoryQuickProvider(
-        provider_client_.get(),
-        InMemoryURLIndexFactory::GetForProfile(profile)));
-  }
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK)
+    providers_.push_back(new HistoryQuickProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {
     history_url_provider_ =
         new HistoryURLProvider(provider_client_.get(), this);
@@ -198,12 +189,7 @@ AutocompleteController::AutocompleteController(
   // "Tab to search" can be used on all platforms other than Android.
 #if !defined(OS_ANDROID)
   if (provider_types & AutocompleteProvider::TYPE_KEYWORD) {
-    keyword_provider_ = new KeywordProvider(this, template_url_service);
-#if defined(ENABLE_EXTENSIONS)
-    keyword_provider_->set_extensions_delegate(
-        scoped_ptr<KeywordExtensionsDelegate>(
-            new KeywordExtensionsDelegateImpl(profile, keyword_provider_)));
-#endif
+    keyword_provider_ = new KeywordProvider(provider_client_.get(), this);
     providers_.push_back(keyword_provider_);
   }
 #endif

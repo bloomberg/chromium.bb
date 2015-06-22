@@ -46,12 +46,10 @@ const char kBug464926CrashKey[] = "bug-464926-info";
 
 bool HistoryQuickProvider::disabled_ = false;
 
-HistoryQuickProvider::HistoryQuickProvider(
-    AutocompleteProviderClient* client,
-    InMemoryURLIndex* in_memory_url_index)
+HistoryQuickProvider::HistoryQuickProvider(AutocompleteProviderClient* client)
     : HistoryProvider(AutocompleteProvider::TYPE_HISTORY_QUICK, client),
       languages_(client->GetAcceptLanguages()),
-      in_memory_url_index_(in_memory_url_index) {
+      in_memory_url_index_(client->GetInMemoryURLIndex()) {
 }
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
@@ -101,8 +102,7 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
       profile_(profile),
       popup_(NULL),
       autocomplete_controller_(new AutocompleteController(
-          profile,
-          TemplateURLServiceFactory::GetForProfile(profile),
+          make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)),
           this,
           AutocompleteClassifier::kDefaultOmniboxProviders)),
       request_id_(BitmapFetcherService::REQUEST_ID_INVALID),

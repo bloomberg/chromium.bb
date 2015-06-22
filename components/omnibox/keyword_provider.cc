@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/keyword_extensions_delegate.h"
 #include "components/search_engines/template_url.h"
@@ -69,12 +70,12 @@ void ScopedEndExtensionKeywordMode::StayInKeywordMode() {
 
 }  // namespace
 
-KeywordProvider::KeywordProvider(
-    AutocompleteProviderListener* listener,
-    TemplateURLService* model)
+KeywordProvider::KeywordProvider(AutocompleteProviderClient* client,
+                                 AutocompleteProviderListener* listener)
     : AutocompleteProvider(AutocompleteProvider::TYPE_KEYWORD),
       listener_(listener),
-      model_(model) {
+      model_(client->GetTemplateURLService()),
+      extensions_delegate_(client->GetKeywordExtensionsDelegate(this)) {
 }
 
 // static

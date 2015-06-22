@@ -6,6 +6,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
@@ -37,7 +38,7 @@ scoped_ptr<KeyedService> AutocompleteClassifierFactory::BuildInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   return make_scoped_ptr(new AutocompleteClassifier(
       make_scoped_ptr(new AutocompleteController(
-          profile, TemplateURLServiceFactory::GetForProfile(profile), NULL,
+          make_scoped_ptr(new ChromeAutocompleteProviderClient(profile)), NULL,
           AutocompleteClassifier::kDefaultOmniboxProviders)),
       scoped_ptr<AutocompleteSchemeClassifier>(
           new ChromeAutocompleteSchemeClassifier(profile))));

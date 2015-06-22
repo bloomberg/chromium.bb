@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/omnibox/keyword_provider.h"
+#include "components/omnibox/mock_autocomplete_provider_client.h"
 #include "components/search_engines/template_url_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -79,9 +80,11 @@ void KeywordExtensionsDelegateImplTest::SetUp() {
 }
 
 void KeywordExtensionsDelegateImplTest::RunTest(bool incognito) {
-  TemplateURLService empty_model(NULL, 0);
+  scoped_ptr<TemplateURLService> empty_model(new TemplateURLService(NULL, 0));
+  MockAutocompleteProviderClient client;
+  client.set_template_url_service(empty_model.Pass());
   scoped_refptr<KeywordProvider> keyword_provider =
-      new KeywordProvider(NULL, &empty_model);
+      new KeywordProvider(&client, nullptr);
 
   // Load an extension.
   {

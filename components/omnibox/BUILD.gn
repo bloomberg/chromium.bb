@@ -98,7 +98,10 @@ proto_library("in_memory_url_index_cache_proto") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
+    "mock_autocomplete_provider_client.cc",
+    "mock_autocomplete_provider_client.h",
     "test_scheme_classifier.cc",
     "test_scheme_classifier.h",
   ]
@@ -107,6 +110,7 @@ static_library("test_support") {
     ":omnibox",
     "//base",
     "//components/metrics/proto",
+    "//testing/gmock",
   ]
 }
 

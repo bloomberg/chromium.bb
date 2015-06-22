@@ -23,8 +23,7 @@ struct ScoredHistoryMatch;
 // history.
 class HistoryQuickProvider : public HistoryProvider {
  public:
-  HistoryQuickProvider(AutocompleteProviderClient* client,
-                       InMemoryURLIndex* in_memory_url_index);
+  explicit HistoryQuickProvider(AutocompleteProviderClient* client);
 
   // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
   // completion performed.
