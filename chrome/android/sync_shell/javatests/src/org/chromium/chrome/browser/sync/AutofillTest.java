@@ -13,7 +13,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.protocol.AutofillProfileSpecifics;
-import org.chromium.sync.protocol.AutofillSpecifics;
 import org.chromium.sync.protocol.EntitySpecifics;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,19 +21,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Test suite for the autofill sync data type.
+ * Test suite for the autofill profile sync data type.
  */
 public class AutofillTest extends SyncTestBase {
     private static final String TAG = "AutofillTest";
 
-    private static final String AUTOFILL_TYPE = "Autofill";
+    private static final String AUTOFILL_TYPE = "Autofill Profiles";
+
+    private static final String GUID = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
+    private static final String ORIGIN = "https://www.chromium.org/";
 
     private static final String STREET = "1600 Amphitheatre Pkwy";
     private static final String CITY = "Mountain View";
     private static final String STATE = "CA";
     private static final String ZIP = "94043";
 
-    // A container to store autofill information for data verification.
+    // A container to store autofill profile information for data verification.
     private static class Autofill {
         public final String id;
         public final String street;
@@ -56,16 +58,16 @@ public class AutofillTest extends SyncTestBase {
         super.setUp();
         setupTestAccountAndSignInToSync(CLIENT_ID);
         // Make sure the initial state is clean.
-        assertClientAutofillCount(0);
-        assertServerAutofillCountWithName(0, STREET);
+        assertClientAutofillProfileCount(0);
+        assertServerAutofillProfileCountWithName(0, STREET);
     }
 
-    // Test syncing a autofill from server to client.
+    // Test syncing an autofill profile from server to client.
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadAutofill() throws Exception {
-        addServerAutofillData(STREET, CITY, STATE, ZIP);
-        assertServerAutofillCountWithName(1, STREET);
+        addServerAutofillProfile(STREET, CITY, STATE, ZIP);
+        assertServerAutofillProfileCountWithName(1, STREET);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
 
         // Verify data synced to client.
@@ -79,45 +81,46 @@ public class AutofillTest extends SyncTestBase {
         assertEquals("The wrong zip was found for the autofill.", ZIP, autofill.zip);
     }
 
-    // Test syncing a autofill deletion from server to client.
+    // Test syncing an autofill profile deletion from server to client.
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadDeletedAutofill() throws Exception {
         // Add the entity to test deleting.
-        addServerAutofillData(STREET, CITY, STATE, ZIP);
+        addServerAutofillProfile(STREET, CITY, STATE, ZIP);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
-        assertServerAutofillCountWithName(1, STREET);
-        assertClientAutofillCount(1);
+        assertServerAutofillProfileCountWithName(1, STREET);
+        assertClientAutofillProfileCount(1);
 
         // Delete on server, sync, and verify deleted locally.
         Autofill autofill = getClientAutofillProfiles().get(0);
         mFakeServerHelper.deleteEntity(autofill.id);
-        waitForServerAutofillCountWithName(0, STREET);
+        waitForServerAutofillProfileCountWithName(0, STREET);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
-        waitForClientAutofillCount(0);
+        waitForClientAutofillProfileCount(0);
     }
 
-    // Test that autofill entries don't get synced if the data type is disabled.
+    // Test that autofill profiles don't get synced if the data type is disabled.
     @LargeTest
     @Feature({"Sync"})
     public void testDisabledNoDownloadAutofill() throws Exception {
+        // The AUTOFILL type here controls both AUTOFILL and AUTOFILL_PROFILE.
         disableDataType(ModelType.AUTOFILL);
-        addServerAutofillData(STREET, CITY, STATE, ZIP);
-        assertServerAutofillCountWithName(1, STREET);
+        addServerAutofillProfile(STREET, CITY, STATE, ZIP);
+        assertServerAutofillProfileCountWithName(1, STREET);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
-        assertClientAutofillCount(0);
+        assertClientAutofillProfileCount(0);
     }
 
-    // TODO(maxbogue): Switch to using specifics.autofill_profile instead.
-    private void addServerAutofillData(String street, String city, String state, String zip) {
+    private void addServerAutofillProfile(String street, String city, String state, String zip) {
         EntitySpecifics specifics = new EntitySpecifics();
-        specifics.autofill = new AutofillSpecifics();
         AutofillProfileSpecifics profile = new AutofillProfileSpecifics();
+        profile.guid = GUID;
+        profile.origin = ORIGIN;
         profile.addressHomeLine1 = street;
         profile.addressHomeCity = city;
         profile.addressHomeState = state;
         profile.addressHomeZip = zip;
-        specifics.autofill.profile = profile;
+        specifics.autofillProfile = profile;
         mFakeServerHelper.injectUniqueClientEntity(street /* name */, specifics);
     }
 
@@ -127,7 +130,7 @@ public class AutofillTest extends SyncTestBase {
         List<Autofill> autofills = new ArrayList<Autofill>(entities.size());
         for (Pair<String, JSONObject> entity : entities) {
             String id = entity.first;
-            JSONObject profile = entity.second.getJSONObject("profile");
+            JSONObject profile = entity.second;
             String street = profile.getString("address_home_line1");
             String city = profile.getString("address_home_city");
             String state = profile.getString("address_home_state");
@@ -137,18 +140,18 @@ public class AutofillTest extends SyncTestBase {
         return autofills;
     }
 
-    private void assertClientAutofillCount(int count) throws JSONException {
-        assertEquals("There should be " + count + " local autofill entities.",
+    private void assertClientAutofillProfileCount(int count) throws JSONException {
+        assertEquals("There should be " + count + " local autofill profiles.",
                 count, SyncTestUtil.getLocalData(mContext, AUTOFILL_TYPE).size());
     }
 
-    private void assertServerAutofillCountWithName(int count, String name) {
-        assertTrue("Expected " + count + " server autofills with name " + name + ".",
+    private void assertServerAutofillProfileCountWithName(int count, String name) {
+        assertTrue("Expected " + count + " server autofill profiles with name " + name + ".",
                 mFakeServerHelper.verifyEntityCountByTypeAndName(
-                        count, ModelType.AUTOFILL, name));
+                        count, ModelType.AUTOFILL_PROFILE, name));
     }
 
-    private void waitForClientAutofillCount(final int count) throws InterruptedException {
+    private void waitForClientAutofillProfileCount(final int count) throws InterruptedException {
         boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -159,10 +162,10 @@ public class AutofillTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
-        assertTrue("Expected " + count + " local autofill entities.", success);
+        assertTrue("Expected " + count + " local autofill profiles.", success);
     }
 
-    private void waitForServerAutofillCountWithName(final int count, final String name)
+    private void waitForServerAutofillProfileCountWithName(final int count, final String name)
             throws InterruptedException {
         boolean success = CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -175,6 +178,7 @@ public class AutofillTest extends SyncTestBase {
                 }
             }
         }, SyncTestUtil.UI_TIMEOUT_MS, SyncTestUtil.CHECK_INTERVAL_MS);
-        assertTrue("Expected " + count + " server autofills with name " + name + ".", success);
+        assertTrue("Expected " + count + " server autofill profiles with name " + name + ".",
+                success);
     }
 }
