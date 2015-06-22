@@ -75,6 +75,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   static const char kWasInstalledByOem[];
   static const char kMayBeUntrusted[];
   static const char kMinProfileCreatedByVersion[];
+  static const char kDoNotInstallForEnterprise[];
 
   void set_auto_acknowledge(bool auto_acknowledge) {
     auto_acknowledge_ = auto_acknowledge;
@@ -88,6 +89,11 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   bool HandleMinProfileVersion(const base::DictionaryValue* extension,
                                const std::string& extension_id,
                                std::set<std::string>* unsupported_extensions);
+
+  bool HandleDoNotInstallForEnterprise(
+      const base::DictionaryValue* extension,
+      const std::string& extension_id,
+      std::set<std::string>* unsupported_extensions);
 
   // Location for external extensions that are provided by this provider from
   // local crx files.

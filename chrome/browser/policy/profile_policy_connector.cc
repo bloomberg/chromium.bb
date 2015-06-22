@@ -135,6 +135,10 @@ void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
   policy_service_ = service.Pass();
 }
 
+void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
+  is_managed_override_.reset(new bool(is_managed));
+}
+
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
   BrowserPolicyConnectorChromeOS* connector =
@@ -149,6 +153,8 @@ void ProfilePolicyConnector::Shutdown() {
 }
 
 bool ProfilePolicyConnector::IsManaged() const {
+  if (is_managed_override_)
+    return *is_managed_override_;
   return !GetManagementDomain().empty();
 }
 

@@ -38,6 +38,7 @@ class ProfilePolicyConnector : public KeyedService {
             CloudPolicyManager* user_cloud_policy_manager);
 
   void InitForTesting(scoped_ptr<PolicyService> service);
+  void OverrideIsManagedForTesting(bool is_managed);
 
   // KeyedService:
   void Shutdown() override;
@@ -74,6 +75,7 @@ class ProfilePolicyConnector : public KeyedService {
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
   scoped_ptr<PolicyService> policy_service_;
+  scoped_ptr<bool> is_managed_override_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePolicyConnector);
 };
