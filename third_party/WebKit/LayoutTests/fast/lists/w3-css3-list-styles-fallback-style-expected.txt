@@ -59,14 +59,14 @@ PASS list marker is 0.
 PASS list marker is i.
 simp-chinese-formal
 
-PASS list marker is -1.
-PASS list marker is 0.
-PASS list marker is 1.
+PASS list marker is 负壹.
+PASS list marker is 零.
+PASS list marker is 壹.
 simp-chinese-informal
 
-PASS list marker is -1.
-PASS list marker is 0.
-PASS list marker is 1.
+PASS list marker is 负一.
+PASS list marker is 零.
+PASS list marker is 一.
 syriac
 
 PASS list marker is -1.
@@ -79,14 +79,14 @@ PASS list marker is 0.
 PASS list marker is 1.
 trad-chinese-formal
 
-PASS list marker is -1.
-PASS list marker is 0.
-PASS list marker is 1.
+PASS list marker is 負壹.
+PASS list marker is 零.
+PASS list marker is 壹.
 trad-chinese-informal
 
-PASS list marker is -1.
-PASS list marker is 0.
-PASS list marker is 1.
+PASS list marker is 負一.
+PASS list marker is 零.
+PASS list marker is 一.
 upper-armenian
 
 PASS list marker is -1.

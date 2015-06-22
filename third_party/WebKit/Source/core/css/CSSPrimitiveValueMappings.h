@@ -1636,6 +1636,12 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
     case Persian:
         m_value.valueID = CSSValuePersian;
         break;
+    case SimpChineseFormal:
+        m_value.valueID = CSSValueSimpChineseFormal;
+        break;
+    case SimpChineseInformal:
+        m_value.valueID = CSSValueSimpChineseInformal;
+        break;
     case Square:
         m_value.valueID = CSSValueSquare;
         break;
@@ -1647,6 +1653,12 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
         break;
     case Tibetan:
         m_value.valueID = CSSValueTibetan;
+        break;
+    case TradChineseFormal:
+        m_value.valueID = CSSValueTradChineseFormal;
+        break;
+    case TradChineseInformal:
+        m_value.valueID = CSSValueTradChineseInformal;
         break;
     case UpperAlpha:
         m_value.valueID = CSSValueUpperAlpha;

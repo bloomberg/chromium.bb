@@ -317,24 +317,31 @@ static String toGeorgian(int number)
     return String(letters, length);
 }
 
+enum CJKLang {
+    Chinese = 1,
+    Korean,
+    Japanese
+};
+
+enum CJKStyle {
+    Formal,
+    Informal
+};
+
 // The table uses the order from the CSS3 specification:
 // first 3 group markers, then 3 digit markers, then ten digits, then negative symbols.
-static String toCJKIdeographic(int number, const UChar table[23])
+static String toCJKIdeographic(int number, const UChar table[26], CJKStyle cjkStyle)
 {
     enum AbstractCJKChar {
         NoChar = 0,
         Lang = 0,
-        SecondGroupMarker, ThirdGroupMarker, FourthGroupMarker,
-        SecondDigitMarker, ThirdDigitMarker, FourthDigitMarker,
+        // FourthGroupMarker for simplified chinese has two codepoints, to simplify
+        // the main algorithm below use two codepoints for all group markers.
+        SecondGroupMarker = 1, ThirdGroupMarker = 3, FourthGroupMarker = 5,
+        SecondDigitMarker = 7, ThirdDigitMarker, FourthDigitMarker,
         Digit0, Digit1, Digit2, Digit3, Digit4,
         Digit5, Digit6, Digit7, Digit8, Digit9,
         Neg1, Neg2, Neg3, Neg4, Neg5
-    };
-
-    enum CJKLang {
-        Chinese = 1,
-        Korean,
-        Japanese
     };
 
     if (number == 0)
@@ -344,7 +351,7 @@ static String toCJKIdeographic(int number, const UChar table[23])
     if (negative)
         number = -number;
 
-    const int groupLength = 8; // 4 digits, 3 digit markers, and a group marker
+    const int groupLength = 9; // 4 digits, 3 digit markers, group marker of size 2.
     const int bufferLength = 4 * groupLength;
     AbstractCJKChar buffer[bufferLength] = { NoChar };
 
@@ -355,8 +362,10 @@ static String toCJKIdeographic(int number, const UChar table[23])
         // Process least-significant group first, but put it in the buffer last.
         AbstractCJKChar* group = &buffer[(3 - i) * groupLength];
 
-        if (groupValue && i)
+        if (groupValue && i) {
+            group[8] = static_cast<AbstractCJKChar>(SecondGroupMarker + i);
             group[7] = static_cast<AbstractCJKChar>(SecondGroupMarker - 1 + i);
+        }
 
         // Put in the four digits and digit markers for any non-zero digits.
         int digitValue = (groupValue % 10);
@@ -389,12 +398,13 @@ static String toCJKIdeographic(int number, const UChar table[23])
 
         if (trailingZero && i > 0) {
             group[6] = group[7];
-            group[7] = Digit0;
+            group[7] = group[8];
+            group[8] = Digit0;
         }
 
         // Remove the tens digit, but leave the marker, for any group that has
         // a value of less than 20.
-        if (table[Lang] == Chinese && groupValue < 20) {
+        if (table[Lang] == Chinese && cjkStyle == Informal && groupValue < 20) {
             ASSERT(group[4] == NoChar || group[4] == Digit0 || group[4] == Digit1);
             group[4] = NoChar;
         }
@@ -417,9 +427,12 @@ static String toCJKIdeographic(int number, const UChar table[23])
         AbstractCJKChar a = buffer[i];
         if (a != NoChar) {
             if (a != Digit0 || (table[Lang] == Chinese && last != Digit0)) {
-                characters[length++] = table[a];
-                if (table[Lang] == Korean && a >= SecondGroupMarker && a <= FourthGroupMarker)
-                    characters[length++] = ' ';
+                UChar newChar = table[a];
+                if (newChar != NoChar) {
+                    characters[length++] = table[a];
+                    if (table[Lang] == Korean && (a == SecondGroupMarker || a == ThirdGroupMarker || a == FourthGroupMarker))
+                        characters[length++] = ' ';
+                }
             }
             last = a;
         }
@@ -461,6 +474,10 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case Urdu:
     case KoreanHangulFormal:
     case CJKIdeographic:
+    case SimpChineseFormal:
+    case SimpChineseInformal:
+    case TradChineseFormal:
+    case TradChineseInformal:
         return type; // Can represent all ordinals.
     case Armenian:
     case LowerArmenian:
@@ -558,8 +575,12 @@ UChar LayoutListMarker::listMarkerSuffix(EListStyleType type, int value)
     case UpperRoman:
     case Urdu:
         return '.';
+    case SimpChineseFormal:
+    case SimpChineseInformal:
+    case TradChineseFormal:
+    case TradChineseInformal:
     case KoreanHangulFormal:
-        return ',';
+        return 0x3001;
     }
 
     ASSERT_NOT_REACHED();
@@ -835,26 +856,60 @@ String listMarkerText(EListStyleType type, int value)
         return toAlphabetic(value, ethiopicHalehameTiEtAlphabet);
     }
     case KoreanHangulFormal: {
-        static const UChar koreanHangulFormalTable[23] = {
-            0x2,
-            0xB9CC, 0xC5B5, 0xC870,
+        static const UChar koreanHangulFormalTable[26] = {
+            Korean,
+            0xB9CC, 0x0000, 0xC5B5, 0x0000, 0xC870, 0x0000,
             0xC2ED, 0xBC31, 0xCC9C,
             0xC601, 0xC77C, 0xC774, 0xC0BC, 0xC0AC,
             0xC624, 0xC721, 0xCE60, 0xD314, 0xAD6C,
             0xB9C8, 0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000
         };
-        return toCJKIdeographic(value, koreanHangulFormalTable);
+        return toCJKIdeographic(value, koreanHangulFormalTable, Formal);
     }
-    case CJKIdeographic: {
-        static const UChar traditionalChineseInformalTable[19] = {
-            0x1,
-            0x842C, 0x5104, 0x5146,
+    case CJKIdeographic:
+    case TradChineseInformal: {
+        static const UChar traditionalChineseInformalTable[22] = {
+            Chinese,
+            0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000,
             0x5341, 0x767E, 0x5343,
             0x96F6, 0x4E00, 0x4E8C, 0x4E09, 0x56DB,
             0x4E94, 0x516D, 0x4E03, 0x516B, 0x4E5D,
             0x8CA0, 0x0000
         };
-        return toCJKIdeographic(value, traditionalChineseInformalTable);
+        return toCJKIdeographic(value, traditionalChineseInformalTable, Informal);
+    }
+    case SimpChineseInformal: {
+        static const UChar simpleChineseInformalTable[22] = {
+            Chinese,
+            0x4E07, 0x0000, 0x4EBF, 0x0000, 0x4E07, 0x4EBF,
+            0x5341, 0x767E, 0x5343,
+            0x96F6, 0x4E00, 0x4E8C, 0x4E09, 0x56DB,
+            0x4E94, 0x516D, 0x4E03, 0x516B, 0x4E5D,
+            0x8D1F, 0x0000
+        };
+        return toCJKIdeographic(value, simpleChineseInformalTable, Informal);
+    }
+    case TradChineseFormal: {
+        static const UChar traditionalChineseFormalTable[22] = {
+            Chinese,
+            0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000,
+            0x62FE, 0x4F70, 0x4EDF,
+            0x96F6, 0x58F9, 0x8CB3, 0x53C3, 0x8086,
+            0x4F0D, 0x9678, 0x67D2, 0x634C, 0x7396,
+            0x8CA0, 0x0000
+        };
+        return toCJKIdeographic(value, traditionalChineseFormalTable, Formal);
+    }
+    case SimpChineseFormal: {
+        static const UChar simpleChineseFormalTable[22] = {
+            Chinese,
+            0x4E07, 0x0000, 0x4EBF, 0x0000, 0x4E07, 0x4EBF,
+            0x62FE, 0x4F70, 0x4EDF,
+            0x96F6, 0x58F9, 0x8D30, 0x53C1, 0x8086,
+            0x4F0D, 0x9646, 0x67D2, 0x634C, 0x7396,
+            0x8D1F, 0x0000
+        };
+        return toCJKIdeographic(value, simpleChineseFormalTable, Formal);
     }
 
     case LowerRoman:
@@ -1069,9 +1124,13 @@ void LayoutListMarker::updateContent()
     case Myanmar:
     case Oriya:
     case Persian:
+    case SimpChineseFormal:
+    case SimpChineseInformal:
     case Telugu:
     case Thai:
     case Tibetan:
+    case TradChineseFormal:
+    case TradChineseInformal:
     case UpperAlpha:
     case UpperArmenian:
     case UpperLatin:
@@ -1145,9 +1204,13 @@ void LayoutListMarker::computePreferredLogicalWidths()
     case Myanmar:
     case Oriya:
     case Persian:
+    case SimpChineseFormal:
+    case SimpChineseInformal:
     case Telugu:
     case Thai:
     case Tibetan:
+    case TradChineseFormal:
+    case TradChineseInformal:
     case UpperAlpha:
     case UpperArmenian:
     case UpperLatin:
@@ -1317,9 +1380,13 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
     case Myanmar:
     case Oriya:
     case Persian:
+    case SimpChineseFormal:
+    case SimpChineseInformal:
     case Telugu:
     case Thai:
     case Tibetan:
+    case TradChineseFormal:
+    case TradChineseInformal:
     case UpperAlpha:
     case UpperArmenian:
     case UpperLatin:

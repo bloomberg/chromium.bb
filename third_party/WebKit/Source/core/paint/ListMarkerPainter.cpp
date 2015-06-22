@@ -119,9 +119,13 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     case Myanmar:
     case Oriya:
     case Persian:
+    case SimpChineseFormal:
+    case SimpChineseInformal:
     case Telugu:
     case Thai:
     case Tibetan:
+    case TradChineseFormal:
+    case TradChineseInformal:
     case UpperAlpha:
     case UpperArmenian:
     case UpperLatin:
