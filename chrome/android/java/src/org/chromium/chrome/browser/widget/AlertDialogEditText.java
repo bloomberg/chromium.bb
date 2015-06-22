@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.widget;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
 import android.view.ActionMode;
@@ -28,6 +29,7 @@ public class AlertDialogEditText extends AppCompatEditText {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) return;
         setCustomSelectionActionModeCallback(new ActionMode.Callback() {
             @Override
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
@@ -42,6 +44,7 @@ public class AlertDialogEditText extends AppCompatEditText {
                 for (int i = 0; i < menu.size(); i++) {
                     MenuItem item = menu.getItem(i);
                     Drawable icon = item.getIcon();
+                    if (icon == null) break;
                     icon.setColorFilter(getResources().getColor(R.color.light_normal_color),
                             PorterDuff.Mode.SRC_IN);
                     item.setIcon(icon);
