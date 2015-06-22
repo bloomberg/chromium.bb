@@ -298,6 +298,9 @@ touch-action converter=convertFlags<TouchAction>
 transform animatable, custom_value
 transform-origin animatable, converter=convertTransformOrigin
 transform-style name_for_methods=TransformStyle3D
+translate runtime_flag=CSSIndependentTransformProperties, converter=convertTranslate
+rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate
+scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale
 transition-delay custom_all
 transition-duration custom_all
 transition-property custom_all

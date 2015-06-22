@@ -232,8 +232,10 @@ position: static
 r: 0px
 resize: none
 right: auto
+rotate: 0deg
 rx: 0px
 ry: 0px
+scale: 1
 scroll-behavior: auto
 scroll-blocks-on: none
 scroll-snap-coordinate: none
@@ -281,6 +283,7 @@ transition-delay: 0s
 transition-duration: 0s
 transition-property: all
 transition-timing-function: ease
+translate: 0px
 unicode-bidi: normal
 vector-effect: none
 vertical-align: baseline

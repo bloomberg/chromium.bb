@@ -206,8 +206,10 @@ r
 removeProperty
 resize
 right
+rotate
 rx
 ry
+scale
 scrollBehavior
 scrollBlocksOn
 scrollSnapCoordinate
@@ -259,6 +261,7 @@ transitionDelay
 transitionDuration
 transitionProperty
 transitionTimingFunction
+translate
 unicodeBidi
 unicodeRange
 userZoom

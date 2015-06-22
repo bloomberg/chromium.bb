@@ -111,11 +111,14 @@ struct BorderEdge;
 class CounterContent;
 class Font;
 class FontMetrics;
+class RotateTransformOperation;
+class ScaleTransformOperation;
 class ShadowList;
 class StyleImage;
 class StyleInheritedData;
 class StyleResolver;
 class TransformationMatrix;
+class TranslateTransformOperation;
 
 class ContentData;
 
@@ -843,8 +846,12 @@ public:
     const TransformOrigin& transformOrigin() const { return rareNonInheritedData->m_transform->m_origin; }
     const Length& transformOriginX() const { return transformOrigin().x(); }
     const Length& transformOriginY() const { return transformOrigin().y(); }
+    TranslateTransformOperation* translate() const { return rareNonInheritedData->m_transform->m_translate.get(); }
+    RotateTransformOperation* rotate() const { return rareNonInheritedData->m_transform->m_rotate.get(); }
+    ScaleTransformOperation* scale() const { return rareNonInheritedData->m_transform->m_scale.get(); }
     float transformOriginZ() const { return transformOrigin().z(); }
-    bool hasTransform() const { return hasTransformOperations() || hasMotionPath() || hasCurrentTransformAnimation(); }
+    bool has3DTransform() const { return rareNonInheritedData->m_transform->has3DTransform(); }
+    bool hasTransform() const { return hasTransformOperations() || hasMotionPath() || hasCurrentTransformAnimation() || translate() || rotate() || scale(); }
     bool transformDataEquivalent(const ComputedStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
     StyleMotionPath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
@@ -872,9 +879,9 @@ public:
 
     enum ApplyTransformOrigin { IncludeTransformOrigin, ExcludeTransformOrigin };
     enum ApplyMotionPath { IncludeMotionPath, ExcludeMotionPath };
-    void applyTransform(TransformationMatrix&, const LayoutSize& borderBoxSize, ApplyTransformOrigin, ApplyMotionPath) const;
-    void applyTransform(TransformationMatrix&, const FloatRect& boundingBox, ApplyTransformOrigin, ApplyMotionPath) const;
-
+    enum ApplyIndependentTransformProperties { IncludeIndependentTransformProperties , ExcludeIndependentTransformProperties };
+    void applyTransform(TransformationMatrix&, const LayoutSize& borderBoxSize, ApplyTransformOrigin, ApplyMotionPath, ApplyIndependentTransformProperties) const;
+    void applyTransform(TransformationMatrix&, const FloatRect& boundingBox, ApplyTransformOrigin, ApplyMotionPath, ApplyIndependentTransformProperties) const;
     bool hasMask() const { return rareNonInheritedData->m_mask.hasImage() || rareNonInheritedData->m_maskBoxImage.hasImage(); }
 
     TextCombine textCombine() const { return static_cast<TextCombine>(rareNonInheritedData->m_textCombine); }
@@ -1338,6 +1345,10 @@ public:
     void setTransformOriginY(const Length& v) { setTransformOrigin(TransformOrigin(transformOriginX(), v, transformOriginZ())); }
     void setTransformOriginZ(float f) { setTransformOrigin(TransformOrigin(transformOriginX(), transformOriginY(), f)); }
     void setTransformOrigin(const TransformOrigin& o) { SET_VAR(rareNonInheritedData.access()->m_transform, m_origin, o); }
+    void setTranslate(PassRefPtr<TranslateTransformOperation> v) { rareNonInheritedData.access()->m_transform.access()->m_translate = v; }
+    void setRotate(PassRefPtr<RotateTransformOperation> v) { rareNonInheritedData.access()->m_transform.access()->m_rotate = v; }
+    void setScale(PassRefPtr<ScaleTransformOperation> v) { rareNonInheritedData.access()->m_transform.access()->m_scale = v; }
+
     void setSpeak(ESpeak s) { SET_VAR(rareInheritedData, speak, s); }
     void setTextCombine(TextCombine v) { SET_VAR(rareNonInheritedData, m_textCombine, v); }
     void setTextDecorationColor(const StyleColor& c) { SET_VAR(rareNonInheritedData, m_textDecorationColor, c); }
@@ -1646,6 +1657,9 @@ public:
     static ColumnFill initialColumnFill() { return ColumnFillBalance; }
     static ColumnSpan initialColumnSpan() { return ColumnSpanNone; }
     static const TransformOperations& initialTransform() { DEFINE_STATIC_LOCAL(TransformOperations, ops, ()); return ops; }
+    static PassRefPtr<TranslateTransformOperation> initialTranslate() { return TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed), 0, TransformOperation::Translate3D); }
+    static PassRefPtr<RotateTransformOperation> initialRotate() { return RotateTransformOperation::create(0, 0, 1, 0, TransformOperation::Rotate3D); }
+    static PassRefPtr<ScaleTransformOperation> initialScale() { return ScaleTransformOperation::create(1, 1, 1, TransformOperation::Scale3D); }
     static Length initialTransformOriginX() { return Length(50.0, Percent); }
     static Length initialTransformOriginY() { return Length(50.0, Percent); }
     static float initialTransformOriginZ() { return 0; }
@@ -1810,6 +1824,8 @@ private:
     bool diffNeedsPaintInvalidationLayer(const ComputedStyle& other) const;
     bool diffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
     void updatePropertySpecificDifferences(const ComputedStyle& other, StyleDifference&) const;
+
+    bool requireTransformOrigin(ApplyTransformOrigin applyOrigin, ApplyMotionPath) const;
 };
 
 // FIXME: Reduce/remove the dependency on zoom adjusted int values.

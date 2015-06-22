@@ -337,7 +337,10 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyScrollSnapPointsX,
     CSSPropertyScrollSnapPointsY,
     CSSPropertyScrollSnapCoordinate,
-    CSSPropertyScrollSnapDestination
+    CSSPropertyScrollSnapDestination,
+    CSSPropertyTranslate,
+    CSSPropertyRotate,
+    CSSPropertyScale,
 };
 
 static const Vector<CSSPropertyID>& computableProperties()
@@ -466,6 +469,9 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* sty
     case CSSPropertyTop:
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransform:
+    case CSSPropertyTranslate:
+    case CSSPropertyRotate:
+    case CSSPropertyScale:
     case CSSPropertyTransformOrigin:
     case CSSPropertyMotionPath:
     case CSSPropertyMotionOffset:

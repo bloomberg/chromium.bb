@@ -955,7 +955,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* la
         box = pixelSnappedIntRect(toLayoutBox(layoutObject)->borderBoxRect());
 
     TransformationMatrix transform;
-    style.applyTransform(transform, LayoutSize(box.size()), ComputedStyle::ExcludeTransformOrigin, ComputedStyle::ExcludeMotionPath);
+    style.applyTransform(transform, LayoutSize(box.size()), ComputedStyle::ExcludeTransformOrigin, ComputedStyle::ExcludeMotionPath, ComputedStyle::ExcludeIndependentTransformProperties);
 
     // FIXME: Need to print out individual functions (https://bugs.webkit.org/show_bug.cgi?id=23924)
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
@@ -2638,7 +2638,56 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return valueForScrollSnapCoordinate(style.scrollSnapCoordinate(), style);
     case CSSPropertyScrollSnapDestination:
         return valueForScrollSnapDestination(style.scrollSnapDestination(), style);
+    case CSSPropertyTranslate: {
+        if (!style.translate())
+            return cssValuePool().createValue(0, CSSPrimitiveValue::CSS_PX);
 
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+        if (layoutObject && layoutObject->isBox()) {
+            LayoutRect box = toLayoutBox(layoutObject)->borderBoxRect();
+            list->append(zoomAdjustedPixelValue(floatValueForLength(style.translate()->x(), box.width().toFloat()), style));
+
+            if (!style.translate()->y().isZero() || style.translate()->z() != 0)
+                list->append(zoomAdjustedPixelValue(floatValueForLength(style.translate()->y(), box.height().toFloat()), style));
+
+        } else {
+            // No box to resolve the percentage values
+            list->append(zoomAdjustedPixelValueForLength(style.translate()->x(), style));
+
+            if (!style.translate()->y().isZero() || style.translate()->z() != 0)
+                list->append(zoomAdjustedPixelValueForLength(style.translate()->y(), style));
+        }
+
+        if (style.translate()->z() != 0)
+            list->append(zoomAdjustedPixelValue(style.translate()->z(), style));
+
+        return list.release();
+    }
+    case CSSPropertyRotate: {
+        if (!style.rotate())
+            return cssValuePool().createValue(0, CSSPrimitiveValue::CSS_DEG);
+
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+        list->append(cssValuePool().createValue(style.rotate()->angle(), CSSPrimitiveValue::CSS_DEG));
+        if (style.rotate()->x() != 0 || style.rotate()->y() != 0 || style.rotate()->z() != 1) {
+            list->append(cssValuePool().createValue(style.rotate()->x(), CSSPrimitiveValue::CSS_NUMBER));
+            list->append(cssValuePool().createValue(style.rotate()->y(), CSSPrimitiveValue::CSS_NUMBER));
+            list->append(cssValuePool().createValue(style.rotate()->z(), CSSPrimitiveValue::CSS_NUMBER));
+        }
+        return list.release();
+    }
+    case CSSPropertyScale: {
+        if (!style.scale())
+            return cssValuePool().createValue(1, CSSPrimitiveValue::CSS_NUMBER);
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+        list->append(cssValuePool().createValue(style.scale()->x(), CSSPrimitiveValue::CSS_NUMBER));
+        if (style.scale()->y() == 1 && style.scale()->z() == 1)
+            return list.release();
+        list->append(cssValuePool().createValue(style.scale()->y(), CSSPrimitiveValue::CSS_NUMBER));
+        if (style.scale()->z() != 1)
+            list->append(cssValuePool().createValue(style.scale()->z(), CSSPrimitiveValue::CSS_NUMBER));
+        return list.release();
+    }
     case CSSPropertyAll:
         return nullptr;
     default:

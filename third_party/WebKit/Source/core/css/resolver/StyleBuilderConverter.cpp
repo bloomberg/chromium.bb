@@ -39,6 +39,9 @@
 #include "core/css/Rect.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/transforms/RotateTransformOperation.h"
+#include "platform/transforms/ScaleTransformOperation.h"
+#include "platform/transforms/TranslateTransformOperation.h"
 
 namespace blink {
 
@@ -935,6 +938,53 @@ Vector<LengthPoint> StyleBuilderConverter::convertSnapCoordinates(StyleResolverS
     }
 
     return coordinates;
+}
+
+PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(StyleResolverState& state, CSSValue* value)
+{
+    CSSValueList& list = *toCSSValueList(value);
+    ASSERT(list.length() <= 3);
+    Length tx = convertLength(state, list.item(0));
+    Length ty(0, Fixed);
+    double tz = 0;
+    if (list.length() >= 2)
+        ty = convertLength(state, list.item(1));
+    if (list.length() == 3)
+        tz = toCSSPrimitiveValue(list.item(2))->getDoubleValue();
+
+    return TranslateTransformOperation::create(tx, ty, tz, TransformOperation::Translate3D);
+}
+
+PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(StyleResolverState& state, CSSValue* value)
+{
+    CSSValueList& list = *toCSSValueList(value);
+    ASSERT(list.length() == 1 || list.length() == 4);
+    double angle = toCSSPrimitiveValue(list.item(0))->computeDegrees();
+    double x = 0;
+    double y = 0;
+    double z = 1;
+    if (list.length() == 4) {
+        x = toCSSPrimitiveValue(list.item(1))->getDoubleValue();
+        y = toCSSPrimitiveValue(list.item(2))->getDoubleValue();
+        z = toCSSPrimitiveValue(list.item(3))->getDoubleValue();
+    }
+
+    return RotateTransformOperation::create(x, y, z, angle, TransformOperation::Rotate3D);
+}
+
+PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(StyleResolverState& state, CSSValue* value)
+{
+    CSSValueList& list = *toCSSValueList(value);
+    ASSERT(list.length() <= 3);
+    double sx = toCSSPrimitiveValue(list.item(0))->getDoubleValue();
+    double sy = sx;
+    double sz = 1;
+    if (list.length() >= 2)
+        sy = toCSSPrimitiveValue(list.item(1))->getDoubleValue();
+    if (list.length() == 3)
+        sz = toCSSPrimitiveValue(list.item(2))->getDoubleValue();
+
+    return ScaleTransformOperation::create(sx, sy, sz, TransformOperation::Scale3D);
 }
 
 } // namespace blink

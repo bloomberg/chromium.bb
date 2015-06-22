@@ -537,6 +537,9 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyScrollSnapPointsY: return 501;
     case CSSPropertyScrollSnapCoordinate: return 502;
     case CSSPropertyScrollSnapDestination: return 503;
+    case CSSPropertyTranslate: return 504;
+    case CSSPropertyRotate: return 505;
+    case CSSPropertyScale: return 506;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -553,7 +556,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 503; }
+static int maximumCSSSampleId() { return 506; }
 
 void UseCounter::muteForInspector()
 {

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<style>
+div {
+    width: 100px;
+    height: 100px;
+    background-color: blue;
+    transform-origin: 50% 50%;
+}
+.container {
+    rotate: 45deg;
+    background-color: red;
+    perspective-origin: 150% 150%;
+    perspective: 500px;
+}
+#box1 {
+    rotate: inherit;
+}
+#box2 {
+    transform: translate(200px);
+    rotate: 50deg 1 0 0;
+}
+#box3 {
+    transform: translate(200px);
+    rotate: 30deg 1 -2.5 4;
+}
+#box4 {
+    rotate: 45deg 0 0 0;
+}
+</style>
+
+<div class="container">
+    <div id="box1">1</div>
+    <div id="box2">2</div>
+</div>
+<div id="box3">3</div>
+<div id="box4">4</div>

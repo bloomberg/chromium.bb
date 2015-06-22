@@ -27,7 +27,10 @@
 
 #include "core/style/StyleMotionData.h"
 #include "core/style/TransformOrigin.h"
+#include "platform/transforms/RotateTransformOperation.h"
+#include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformOperations.h"
+#include "platform/transforms/TranslateTransformOperation.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -43,10 +46,14 @@ public:
     {
         return !(*this == o);
     }
+    bool has3DTransform() const;
 
     TransformOperations m_operations;
     TransformOrigin m_origin;
     StyleMotionData m_motion;
+    RefPtr<TranslateTransformOperation> m_translate;
+    RefPtr<RotateTransformOperation> m_rotate;
+    RefPtr<ScaleTransformOperation> m_scale;
 
 private:
     StyleTransformData();

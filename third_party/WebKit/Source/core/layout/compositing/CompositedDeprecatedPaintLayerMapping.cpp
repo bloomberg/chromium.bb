@@ -269,7 +269,7 @@ void CompositedDeprecatedPaintLayerMapping::updateTransform(const ComputedStyle&
     // baked into it, and we don't want that.
     TransformationMatrix t;
     if (m_owningLayer.hasTransformRelatedProperty()) {
-        style.applyTransform(t, LayoutSize(toLayoutBox(layoutObject())->pixelSnappedSize()), ComputedStyle::ExcludeTransformOrigin, ComputedStyle::IncludeMotionPath);
+        style.applyTransform(t, LayoutSize(toLayoutBox(layoutObject())->pixelSnappedSize()), ComputedStyle::ExcludeTransformOrigin, ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
         makeMatrixRenderable(t, compositor()->hasAcceleratedCompositing());
     }
 

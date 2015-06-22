@@ -42,6 +42,9 @@
 #include "platform/fonts/FontSelector.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/transforms/RotateTransformOperation.h"
+#include "platform/transforms/ScaleTransformOperation.h"
+#include "platform/transforms/TranslateTransformOperation.h"
 #include "wtf/MathExtras.h"
 
 #include <algorithm>
@@ -883,15 +886,17 @@ bool ComputedStyle::hasWillChangeCompositingHint() const
     return false;
 }
 
-inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation>>& transformOperations, ComputedStyle::ApplyTransformOrigin applyOrigin, ComputedStyle::ApplyMotionPath applyMotionPath)
+bool ComputedStyle::requireTransformOrigin(ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
 {
+    const Vector<RefPtr<TransformOperation>>& transformOperations = transform().operations();
+
     // transform-origin brackets the transform with translate operations.
     // Optimize for the case where the only transform is a translation, since the transform-origin is irrelevant
     // in that case.
-    if (applyOrigin != ComputedStyle::IncludeTransformOrigin)
+    if (applyOrigin != IncludeTransformOrigin)
         return false;
 
-    if (applyMotionPath == ComputedStyle::IncludeMotionPath)
+    if (applyMotionPath == IncludeMotionPath)
         return true;
 
     unsigned size = transformOperations.size();
@@ -905,39 +910,50 @@ inline bool requireTransformOrigin(const Vector<RefPtr<TransformOperation>>& tra
             return true;
     }
 
-    return false;
+    return scale() || rotate();
 }
 
-void ComputedStyle::applyTransform(TransformationMatrix& transform, const LayoutSize& borderBoxSize, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
+void ComputedStyle::applyTransform(TransformationMatrix& result, const LayoutSize& borderBoxSize, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath, ApplyIndependentTransformProperties applyIndependentTransformProperties) const
 {
-    applyTransform(transform, FloatRect(FloatPoint(), FloatSize(borderBoxSize)), applyOrigin, applyMotionPath);
+    applyTransform(result, FloatRect(FloatPoint(), FloatSize(borderBoxSize)), applyOrigin, applyMotionPath, applyIndependentTransformProperties);
 }
 
-void ComputedStyle::applyTransform(TransformationMatrix& transform, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
+void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath, ApplyIndependentTransformProperties applyIndependentTransformProperties) const
 {
     if (!hasMotionPath())
         applyMotionPath = ExcludeMotionPath;
-    const Vector<RefPtr<TransformOperation>>& transformOperations = rareNonInheritedData->m_transform->m_operations.operations();
-    bool applyTransformOrigin = requireTransformOrigin(transformOperations, applyOrigin, applyMotionPath);
+    bool applyTransformOrigin = requireTransformOrigin(applyOrigin, applyMotionPath);
 
     float offsetX = transformOriginX().type() == Percent ? boundingBox.x() : 0;
     float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
 
     if (applyTransformOrigin) {
-        transform.translate3d(floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX,
+        result.translate3d(floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX,
             floatValueForLength(transformOriginY(), boundingBox.height()) + offsetY,
             transformOriginZ());
     }
 
-    if (applyMotionPath == ComputedStyle::IncludeMotionPath)
-        applyMotionPathTransform(transform);
+    if (applyIndependentTransformProperties == IncludeIndependentTransformProperties) {
+        if (translate())
+            translate()->apply(result, boundingBox.size());
 
+        if (rotate())
+            rotate()->apply(result, boundingBox.size());
+
+        if (scale())
+            scale()->apply(result, boundingBox.size());
+    }
+
+    if (applyMotionPath == ComputedStyle::IncludeMotionPath)
+        applyMotionPathTransform(result);
+
+    const Vector<RefPtr<TransformOperation>>& transformOperations = transform().operations();
     unsigned size = transformOperations.size();
     for (unsigned i = 0; i < size; ++i)
-        transformOperations[i]->apply(transform, boundingBox.size());
+        transformOperations[i]->apply(result, boundingBox.size());
 
     if (applyTransformOrigin) {
-        transform.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width()) - offsetX,
+        result.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width()) - offsetX,
             -floatValueForLength(transformOriginY(), boundingBox.height()) - offsetY,
             -transformOriginZ());
     }

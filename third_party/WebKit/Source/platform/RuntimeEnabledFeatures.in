@@ -44,6 +44,7 @@ CSSAttributeCaseSensitivity status=experimental
 CSSCompositing status=stable
 CSSFontSizeAdjust status=experimental
 CSSGridLayout status=experimental
+CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
 CSSMotionPath status=experimental
 CSSOMSmoothScroll status=experimental

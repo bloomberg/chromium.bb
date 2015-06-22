@@ -143,7 +143,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(LayoutObject* layo
 {
     // Note that we ask the layoutObject if it has a transform, because the style may have transforms,
     // but the layoutObject may be an inline that doesn't support them.
-    return layoutObject->hasTransformRelatedProperty() && layoutObject->style()->transform().has3DOperation();
+    return layoutObject->hasTransformRelatedProperty() && layoutObject->style()->has3DTransform();
 }
 
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer* layer) const

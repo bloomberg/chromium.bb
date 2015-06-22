@@ -52,6 +52,11 @@ public:
     Length y() const { return m_y; }
     double z() const { return m_z; }
 
+    virtual void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const override
+    {
+        transform.translate3d(x(borderBoxSize), y(borderBoxSize), z());
+    }
+
 private:
     virtual OperationType type() const override { return m_type; }
 
@@ -61,11 +66,6 @@ private:
             return false;
         const TranslateTransformOperation* t = static_cast<const TranslateTransformOperation*>(&o);
         return m_x == t->m_x && m_y == t->m_y && m_z == t->m_z;
-    }
-
-    virtual void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const override
-    {
-        transform.translate3d(x(borderBoxSize), y(borderBoxSize), z());
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;

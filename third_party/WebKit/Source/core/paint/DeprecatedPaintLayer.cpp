@@ -341,7 +341,7 @@ void DeprecatedPaintLayer::updateTransformationMatrix()
         LayoutBox* box = layoutBox();
         ASSERT(box);
         m_transform->makeIdentity();
-        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), ComputedStyle::IncludeTransformOrigin, ComputedStyle::IncludeMotionPath);
+        box->style()->applyTransform(*m_transform, LayoutSize(box->pixelSnappedSize()), ComputedStyle::IncludeTransformOrigin, ComputedStyle::IncludeMotionPath, ComputedStyle::IncludeIndependentTransformProperties);
         makeMatrixRenderable(*m_transform, compositor()->hasAcceleratedCompositing());
     }
 }

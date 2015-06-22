@@ -47,6 +47,11 @@ public:
 
     virtual bool canBlendWith(const TransformOperation& other) const;
 
+    virtual void apply(TransformationMatrix& transform, const FloatSize&) const override
+    {
+        transform.scale3d(m_x, m_y, m_z);
+    }
+
 private:
     virtual OperationType type() const override { return m_type; }
 
@@ -56,11 +61,6 @@ private:
             return false;
         const ScaleTransformOperation* s = static_cast<const ScaleTransformOperation*>(&o);
         return m_x == s->m_x && m_y == s->m_y && m_z == s->m_z;
-    }
-
-    virtual void apply(TransformationMatrix& transform, const FloatSize&) const override
-    {
-        transform.scale3d(m_x, m_y, m_z);
     }
 
     virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;

@@ -42,8 +42,11 @@
 
 namespace blink {
 
-// Note that we assume the parser only allows valid CSSValue types.
+class RotateTransformOperation;
+class TranslateTransformOperation;
+class ScaleTransformOperation;
 
+// Note that we assume the parser only allows valid CSSValue types.
 class StyleBuilderConverter {
 public:
     static PassRefPtr<StyleReflection> convertBoxReflect(StyleResolverState&, CSSValue*);
@@ -98,6 +101,9 @@ public:
     static ScrollSnapPoints convertSnapPoints(StyleResolverState&, CSSValue*);
     static Vector<LengthPoint> convertSnapCoordinates(StyleResolverState&, CSSValue*);
     static LengthPoint convertSnapDestination(StyleResolverState&, CSSValue*);
+    static PassRefPtr<TranslateTransformOperation> convertTranslate(StyleResolverState&, CSSValue*);
+    static PassRefPtr<RotateTransformOperation> convertRotate(StyleResolverState&, CSSValue*);
+    static PassRefPtr<ScaleTransformOperation> convertScale(StyleResolverState&, CSSValue*);
 };
 
 template <typename T>
