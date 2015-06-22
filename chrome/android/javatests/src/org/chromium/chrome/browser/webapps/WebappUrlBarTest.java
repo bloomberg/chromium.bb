@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.test.FlakyTest;
+import android.test.UiThreadTest;
+import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
@@ -26,13 +28,9 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
         mUrlBar = getActivity().getUrlBarForTests();
     }
 
-    /*
     @UiThreadTest
     @MediumTest
     @Feature({"Webapps"})
-    crbug/407332
-    */
-    @FlakyTest
     public void testUrlDisplay() {
         final String scheme = "somescheme://";
         final String host = "lorem.com";
