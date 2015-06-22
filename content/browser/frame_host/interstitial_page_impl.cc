@@ -252,6 +252,8 @@ void InterstitialPageImpl::Show() {
   std::string data_url = "data:text/html;charset=utf-8," +
                          net::EscapePath(delegate_->GetHTMLContents());
   frame_tree_.root()->current_frame_host()->NavigateToURL(GURL(data_url));
+  frame_tree_.root()->current_frame_host()->SetAccessibilityMode(
+      GetAccessibilityMode());
 
   notification_registrar_.Add(this, NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(controller_));
