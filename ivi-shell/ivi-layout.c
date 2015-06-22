@@ -1079,11 +1079,13 @@ send_prop(struct ivi_layout *layout)
 	struct ivi_layout_surface *ivisurf  = NULL;
 
 	wl_list_for_each_reverse(ivilayer, &layout->layer_list, link) {
-		send_layer_prop(ivilayer);
+		if (ivilayer->event_mask)
+			send_layer_prop(ivilayer);
 	}
 
 	wl_list_for_each_reverse(ivisurf, &layout->surface_list, link) {
-		send_surface_prop(ivisurf);
+		if (ivisurf->event_mask)
+			send_surface_prop(ivisurf);
 	}
 }
 
