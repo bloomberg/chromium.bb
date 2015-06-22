@@ -5,10 +5,14 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_BLE_PROXIMITY_AUTH_BLE_SYSTEM_H_
 #define COMPONENTS_PROXIMITY_AUTH_BLE_PROXIMITY_AUTH_BLE_SYSTEM_H_
 
+#include <map>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/connection_observer.h"
+#include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
 namespace content {
@@ -33,8 +37,10 @@ class ConnectionFinder;
 class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
                                public ConnectionObserver {
  public:
-  ProximityAuthBleSystem(ScreenlockBridge* screenlock_bridge,
-                         content::BrowserContext* browser_context);
+  ProximityAuthBleSystem(
+      ScreenlockBridge* screenlock_bridge,
+      content::BrowserContext* browser_context,
+      scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory);
   ~ProximityAuthBleSystem() override;
 
   // ScreenlockBridge::Observer:
@@ -74,6 +80,13 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   virtual ConnectionFinder* CreateConnectionFinder();
 
  private:
+  // Fetches the the public keys of devices that can be used as unlock keys.
+  void GetUnlockKeys();
+
+  // Callbacks for cryptauth::CryptAuthClient::GetMyDevices.
+  void OnGetMyDevices(const cryptauth::GetMyDevicesResponse& response);
+  void OnGetMyDevicesError(const std::string& error);
+
   // Handler for a new connection found event.
   void OnConnectionFound(scoped_ptr<Connection> connection);
 
@@ -88,6 +101,15 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   content::BrowserContext*
       browser_context_;  // Not owned. Must outlive this object.
+
+  // Creates CryptAuth client instances to make API calls.
+  scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
+
+  // We only support one concurrent API call.
+  scoped_ptr<CryptAuthClient> cryptauth_client_;
+
+  // Maps devices public keys to the device friendly name.
+  std::map<std::string, std::string> unlock_keys_;
 
   scoped_ptr<ConnectionFinder> connection_finder_;
 

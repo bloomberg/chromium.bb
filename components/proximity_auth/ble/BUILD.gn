@@ -25,6 +25,10 @@ source_set("ble") {
     "//device/bluetooth",
     "//net",
   ]
+
+  public_deps = [
+    "//components/proximity_auth/cryptauth/proto",
+  ]
 }
 
 source_set("unit_tests") {
@@ -45,5 +49,9 @@ source_set("unit_tests") {
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+
+  public_deps = [
+    "//components/proximity_auth/cryptauth/proto",
   ]
 }

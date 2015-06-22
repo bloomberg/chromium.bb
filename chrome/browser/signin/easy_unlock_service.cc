@@ -694,7 +694,8 @@ void EasyUnlockService::UpdateAppState() {
         !proximity_auth_ble_system_) {
       proximity_auth_ble_system_.reset(
           new proximity_auth::ProximityAuthBleSystem(
-              GetScreenlockBridgeInstance(), profile_));
+              GetScreenlockBridgeInstance(), profile_,
+              CreateCryptAuthClientFactory()));
     }
 
 #if defined(OS_CHROMEOS)

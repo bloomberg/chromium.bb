@@ -13,6 +13,7 @@
         '..',
       ],
       'dependencies': [
+        ':cryptauth',
         ':proximity_auth_logging',
         '../base/base.gyp:base',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
