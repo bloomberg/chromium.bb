@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/history/core/test/history_unittest_base.h"
+#include "sql/init_status.h"
 
 namespace base {
 class Time;
@@ -42,6 +43,7 @@ class HistoryBackendDBBaseTest : public HistoryUnitTestBase {
   // Creates the HistoryBackend and HistoryDatabase on the current thread,
   // assigning the values to backend_ and db_.
   void CreateBackendAndDatabase();
+  void CreateBackendAndDatabaseAllowFail();
 
   void CreateDBVersion(int version);
 
@@ -62,6 +64,7 @@ class HistoryBackendDBBaseTest : public HistoryUnitTestBase {
   scoped_refptr<HistoryBackend> backend_;
   scoped_ptr<InMemoryHistoryBackend> in_mem_backend_;
   HistoryDatabase* db_;  // Cached reference to the backend's database.
+  sql::InitStatus last_profile_error_;
 };
 
 }  // namespace history

@@ -622,6 +622,10 @@ void HistoryBackend::InitImpl(
   switch (status) {
     case sql::INIT_OK:
       break;
+    case sql::INIT_TOO_NEW:
+      delegate_->NotifyProfileError(status);
+      db_.reset();
+      return;
     case sql::INIT_FAILURE: {
       // A null db_ will cause all calls on this object to notice this error
       // and to not continue. If the error callback scheduled killing the

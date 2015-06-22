@@ -756,5 +756,42 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
   STLDeleteElements(&results);
 }
 
+TEST_F(HistoryBackendDBTest, CheckLastCompatibleVersion) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(28));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    {
+      // Manually set last compatible version to one higher
+      // than current version.
+      sql::MetaTable meta;
+      meta.Init(&db, 1, 1);
+      meta.SetCompatibleVersionNumber(HistoryDatabase::GetCurrentVersion() + 1);
+    }
+  }
+  // Try to create and init backend for non compatible db.
+  // Allow failure in backend creation.
+  CreateBackendAndDatabaseAllowFail();
+  DeleteBackend();
+
+  // Check that error delegate was called with correct init error status.
+  EXPECT_EQ(sql::INIT_TOO_NEW, last_profile_error_);
+  {
+    // Re-open the db to check that it was not migrated.
+    // Non compatible DB must be ignored.
+    // Check that DB version in file remains the same.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    {
+      sql::MetaTable meta;
+      meta.Init(&db, 1, 1);
+      // Current browser version must be already higher than 28.
+      ASSERT_LT(28, HistoryDatabase::GetCurrentVersion());
+      // Expect that version in DB remains the same.
+      EXPECT_EQ(28, meta.GetVersionNumber());
+    }
+  }
+}
+
 }  // namespace
 }  // namespace history
