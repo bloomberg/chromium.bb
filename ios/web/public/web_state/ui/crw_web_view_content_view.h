@@ -18,9 +18,13 @@
                      scrollView:(UIScrollView*)scrollView
     NS_DESIGNATED_INITIALIZER;
 
+// Available only for testing.
+- (instancetype)initForTesting NS_DESIGNATED_INITIALIZER;
+
 // CRWWebViewContentViews should be initialized via |-initWithWebView:
 // scrollView:|.
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)decoder NS_UNAVAILABLE;
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
 @end
 

@@ -126,6 +126,16 @@
   return self;
 }
 
+- (instancetype)initWithCoder:(NSCoder*)decoder {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+  NOTREACHED();
+  return nil;
+}
+
 - (void)dealloc {
   [_webViewProxy setContentView:nil];
   [super dealloc];

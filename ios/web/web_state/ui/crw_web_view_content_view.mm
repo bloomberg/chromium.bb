@@ -32,6 +32,20 @@
   return self;
 }
 
+- (instancetype)initForTesting {
+  return [super initWithFrame:CGRectZero];
+}
+
+- (instancetype)initWithCoder:(NSCoder*)decoder {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+  NOTREACHED();
+  return nil;
+}
+
 #pragma mark Accessors
 
 - (UIScrollView*)scrollView {

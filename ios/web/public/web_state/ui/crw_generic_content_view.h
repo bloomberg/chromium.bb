@@ -19,7 +19,8 @@
 - (instancetype)initWithView:(UIView*)view NS_DESIGNATED_INITIALIZER;
 
 // CRWGenericContentViews should be initialized via |-initWithView:|.
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)decoder NS_UNAVAILABLE;
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
 @end
 

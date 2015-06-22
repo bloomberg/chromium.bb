@@ -17,7 +17,7 @@
 @implementation TestWebViewContentView
 
 - (instancetype)initWithMockWebView:(id)webView scrollView:(id)scrollView {
-  self = [super initWithFrame:CGRectZero];
+  self = [super initForTesting];
   if (self) {
     DCHECK(webView);
     DCHECK(scrollView);
@@ -25,6 +25,16 @@
     _mockScrollView.reset([scrollView retain]);
   }
   return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder*)decoder {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+  NOTREACHED();
+  return nil;
 }
 
 #pragma mark Accessors

@@ -33,7 +33,7 @@
 
 // CRWWebControllerContainerView should be initialized via
 // |-initWithContentViewProxy:|.
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)decoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
 // Returns YES if the container view is currently displaying content.
