@@ -617,9 +617,12 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
 
     private ContentViewCore createDistillerContentViewCore(
             Context context, WindowAndroid windowAndroid) {
+        boolean isHostTabIncognito =
+                mReaderModeHost.getTab().getContentViewCore().getWebContents().isIncognito();
         ContentViewCore cvc = new ContentViewCore(context);
         ContentView cv = new ContentView(context, cvc);
-        cvc.initialize(cv, cv, WebContentsFactory.createWebContents(false, true), windowAndroid);
+        cvc.initialize(cv, cv, WebContentsFactory.createWebContents(isHostTabIncognito, true),
+                windowAndroid);
         cvc.setContentViewClient(new ContentViewClient() {
             @Override
             public void onOffsetsForFullscreenChanged(float topControlsOffsetYPix,
