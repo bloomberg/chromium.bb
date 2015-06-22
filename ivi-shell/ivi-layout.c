@@ -1535,7 +1535,7 @@ ivi_layout_get_screen_resolution(struct ivi_layout_screen *iviscrn,
 {
 	struct weston_output *output = NULL;
 
-	if (pWidth == NULL || pHeight == NULL) {
+	if (iviscrn == NULL || pWidth == NULL || pHeight == NULL) {
 		weston_log("ivi_layout_get_screen_resolution: invalid argument\n");
 		return IVI_FAILED;
 	}
