@@ -798,7 +798,7 @@ crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.htm
 
 crbug.com/460885 fast/forms/month-multiple-fields/month-multiple-fields-preserve-value-after-history-back.html [ Failure Pass ]
 
-crbug.com/493137 inspector/console/console-format-es6.html [ Failure Pass NeedsManualRebaseline ]
+crbug.com/493137 inspector/console/console-format-es6.html [ Failure ]
 
 crbug.com/310323 [ Linux Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
