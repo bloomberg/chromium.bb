@@ -403,10 +403,24 @@ else
 fi
 AM_CONDITIONAL([HAVE_MANPAGES_STYLESHEET], [test "x$HAVE_MANPAGES_STYLESHEET" = "xyes"])
 
+AC_ARG_ENABLE(valgrind,
+              [AS_HELP_STRING([--enable-valgrind],
+                             [Build libdrm with  valgrind support (default: auto)])],
+                             [VALGRIND=$enableval], [VALGRIND=yes])
 PKG_CHECK_MODULES(VALGRIND, [valgrind], [have_valgrind=yes], [have_valgrind=no])
-if test "x$have_valgrind" = "xyes"; then
+AC_MSG_CHECKING([whether to enable Valgrind support])
+if test "x$VALGRIND" = xauto; then
+	VALGRIND="$have_valgrind"
+fi
+
+if test "x$VALGRIND" = "xyes"; then
+	if ! test "x$have_valgrind" = xyes; then
+		AC_MSG_ERROR([Valgrind support required but not present])
+	fi
 	AC_DEFINE([HAVE_VALGRIND], 1, [Use valgrind intrinsics to suppress false warnings])
 fi
+
+AC_MSG_RESULT([$VALGRIND])
 
 AC_ARG_WITH([kernel-source],
             [AS_HELP_STRING([--with-kernel-source],
