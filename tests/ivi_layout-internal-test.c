@@ -39,6 +39,7 @@
 struct test_context {
 	struct weston_compositor *compositor;
 	const struct ivi_controller_interface *controller_interface;
+	uint32_t user_flags;
 };
 
 static void
@@ -898,6 +899,154 @@ test_commit_changes_after_render_order_set_layer_destroy(
 #undef LAYER_NUM
 }
 
+static void
+test_layer_properties_changed_notification_callback(struct ivi_layout_layer *ivilayer,
+						    const struct ivi_layout_layer_properties *prop,
+						    enum ivi_layout_notification_mask mask,
+						    void *userdata)
+{
+	struct test_context *ctx = userdata;
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0));
+	iassert(prop->source_width == 200);
+	iassert(prop->source_height == 300);
+
+	if (ctl->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0) &&
+	    prop->source_width == 200 && prop->source_height == 300)
+		ctx->user_flags = 1;
+}
+
+static void
+test_layer_properties_changed_notification(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+
+	ctx->user_flags = 0;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+
+	iassert(ctl->layer_add_notification(ivilayer, test_layer_properties_changed_notification_callback, ctx) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	iassert(ctx->user_flags == 0);
+
+	iassert(ctl->layer_set_destination_rectangle(
+		ivilayer, 20, 30, 200, 300) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	iassert(ctx->user_flags == 1);
+
+	ctx->user_flags = 0;
+	iassert(ctl->layer_set_destination_rectangle(
+		ivilayer, 20, 30, 200, 300) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	iassert(ctx->user_flags == 0);
+
+	ctl->layer_remove_notification(ivilayer);
+
+	ctx->user_flags = 0;
+	ctl->commit_changes();
+
+	iassert(ctx->user_flags == 0);
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_layer_create_notification_callback(struct ivi_layout_layer *ivilayer,
+					void *userdata)
+{
+	struct test_context *ctx = userdata;
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	const struct ivi_layout_layer_properties *prop = ctl->get_properties_of_layer(ivilayer);
+
+	iassert(ctl->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0));
+	iassert(prop->source_width == 200);
+	iassert(prop->source_height == 300);
+
+	if (ctl->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0) &&
+	    prop->source_width == 200 && prop->source_height == 300)
+		ctx->user_flags = 1;
+}
+
+static void
+test_layer_create_notification(struct test_context *ctx)
+{
+#define LAYER_NUM (2)
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	static const uint32_t layers[LAYER_NUM] = {IVI_TEST_LAYER_ID(0), IVI_TEST_LAYER_ID(1)};
+	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
+
+	ctx->user_flags = 0;
+
+	iassert(ctl->add_notification_create_layer(
+		    test_layer_create_notification_callback, ctx) == IVI_SUCCEEDED);
+	ivilayers[0] = ctl->layer_create_with_dimension(layers[0], 200, 300);
+
+	iassert(ctx->user_flags == 1);
+
+	ctx->user_flags = 0;
+	ctl->remove_notification_create_layer(test_layer_create_notification_callback, ctx);
+
+	ivilayers[1] = ctl->layer_create_with_dimension(layers[1], 400, 500);
+
+	iassert(ctx->user_flags == 0);
+
+	ctl->layer_destroy(ivilayers[0]);
+	ctl->layer_destroy(ivilayers[1]);
+#undef LAYER_NUM
+}
+
+static void
+test_layer_remove_notification_callback(struct ivi_layout_layer *ivilayer,
+					void *userdata)
+{
+	struct test_context *ctx = userdata;
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	const struct ivi_layout_layer_properties *prop =
+		ctl->get_properties_of_layer(ivilayer);
+
+	iassert(ctl->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0));
+	iassert(prop->source_width == 200);
+	iassert(prop->source_height == 300);
+
+	if (ctl->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0) &&
+	    prop->source_width == 200 && prop->source_height == 300)
+		ctx->user_flags = 1;
+}
+
+static void
+test_layer_remove_notification(struct test_context *ctx)
+{
+#define LAYER_NUM (2)
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	static const uint32_t layers[LAYER_NUM] = {IVI_TEST_LAYER_ID(0), IVI_TEST_LAYER_ID(1)};
+	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
+
+	ctx->user_flags = 0;
+
+	ivilayers[0] = ctl->layer_create_with_dimension(layers[0], 200, 300);
+	iassert(ctl->add_notification_remove_layer(
+		    test_layer_remove_notification_callback, ctx) == IVI_SUCCEEDED);
+	ctl->layer_destroy(ivilayers[0]);
+
+	iassert(ctx->user_flags == 1);
+
+	ctx->user_flags = 0;
+	ivilayers[1] = ctl->layer_create_with_dimension(layers[1], 250, 350);
+	ctl->remove_notification_remove_layer(test_layer_remove_notification_callback, ctx);
+	ctl->layer_destroy(ivilayers[1]);
+
+	iassert(ctx->user_flags == 0);
+#undef LAYER_NUM
+}
+
 /************************ tests end ********************************/
 
 static void
@@ -947,6 +1096,9 @@ run_internal_tests(void *data)
 	test_screen_bad_render_order(ctx);
 	test_commit_changes_after_render_order_set_layer_destroy(ctx);
 
+	test_layer_properties_changed_notification(ctx);
+	test_layer_create_notification(ctx);
+	test_layer_remove_notification(ctx);
 
 	weston_compositor_exit_with_code(ctx->compositor, EXIT_SUCCESS);
 	free(ctx);
