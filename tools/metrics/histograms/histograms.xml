@@ -11974,11 +11974,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The result of FileSystemDirectoryDatabase initialization.</summary>
 </histogram>
 
+<histogram name="FileSystem.DirectoryDatabaseRepair"
+    enum="DirectoryDatabaseRepairResult">
+  <owner>tzik@chromium.org</owner>
+  <summary>The result of FileSystemDirectoryDatabase repair.</summary>
+</histogram>
+
 <histogram name="FileSystem.OpenFileSystem" enum="OpenFileSystemResult">
   <owner>tzik@chromium.org</owner>
   <summary>
     The success or the cause of failure for each call to OpenFileSystem().
   </summary>
+</histogram>
+
+<histogram name="FileSystem.OpenFileSystemDetail" enum="FileSystemErrors">
+  <owner>tzik@chromium.org</owner>
+  <summary>The result of opening a filesystem.</summary>
+</histogram>
+
+<histogram name="FileSystem.OpenFileSystemDetailNonthrottled"
+    enum="FileSystemErrors">
+  <owner>tzik@chromium.org</owner>
+  <summary>The result of opening a non-throttled filesystem.</summary>
 </histogram>
 
 <histogram name="FileSystem.OriginDatabaseInit"
@@ -52002,6 +52019,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Primary accounts present but different"/>
 </enum>
 
+<enum name="DirectoryDatabaseRepairResult" type="int">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Failed"/>
+</enum>
+
 <enum name="DistillableType" type="int">
   <int value="0" label="Not distillable"/>
   <int value="1" label="Non-mobile-friendly Distillable"/>
@@ -56523,6 +56545,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Corruption"/>
   <int value="2" label="IO Error"/>
   <int value="3" label="Unknown Error"/>
+</enum>
+
+<enum name="FileSystemErrors" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Incognito"/>
+  <int value="2" label="Invalid Schema"/>
+  <int value="3" label="Create Directory Error"/>
+  <int value="4" label="Not Found"/>
+  <int value="5" label="Unknown Error"/>
 </enum>
 
 <enum name="FileType" type="int">

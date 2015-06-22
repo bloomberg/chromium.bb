@@ -77,6 +77,8 @@ const char kInitStatusHistogramLabel[] = "FileSystem.DirectoryDatabaseInit";
 const char kDatabaseRepairHistogramLabel[] =
     "FileSystem.DirectoryDatabaseRepair";
 
+// These values are recorded in UMA. Changing existing values will invalidate
+// results for older Chrome releases. Only add new values.
 enum InitStatus {
   INIT_STATUS_OK = 0,
   INIT_STATUS_CORRUPTION,
@@ -85,6 +87,8 @@ enum InitStatus {
   INIT_STATUS_MAX
 };
 
+// These values are recorded in UMA. Changing existing values will invalidate
+// results for older Chrome releases. Only add new values.
 enum RepairResult {
   DB_REPAIR_SUCCEEDED = 0,
   DB_REPAIR_FAILED,
