@@ -420,6 +420,7 @@
           },
           'dependencies': [
             'sync_java',
+            '../base/base.gyp:base_java_test_support',
           ],
           'includes': [ '../build/java.gypi' ],
         },

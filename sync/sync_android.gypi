@@ -15,7 +15,6 @@
           },
           'dependencies': [
             '../base/base.gyp:base_java',
-            '../base/base.gyp:base_java_test_support',
             '../net/net.gyp:net_java',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
