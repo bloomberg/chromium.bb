@@ -76,6 +76,19 @@ std::vector<uint8_t> ParseHexBuf(const string& str) {
   return buf;
 }
 
+bool GetLine(std::istringstream* istream, string* str) {
+  if (std::getline(*istream, *str)) {
+    // Trim any trailing newline from the end of the line. Allows us
+    // to seamlessly handle both Windows/DOS and Unix formatted input. The
+    // adb tool generally writes logcat dumps in Windows/DOS format.
+    if (!str->empty() && str->at(str->size() - 1) == '\r') {
+      str->erase(str->size() - 1);
+    }
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace google_breakpad {
@@ -183,7 +196,7 @@ Microdump::Microdump(const string& contents)
   string arch;
 
   std::istringstream stream(contents);
-  while (std::getline(stream, line)) {
+  while (GetLine(&stream, &line)) {
     if (line.find(kGoogleBreakpadKey) == string::npos) {
       continue;
     }
@@ -214,7 +227,7 @@ Microdump::Microdump(const string& contents)
       os_tokens >> arch;
       os_tokens >> num_cpus;
       os_tokens >> hw_arch;
-      std::getline(os_tokens, os_version);
+      GetLine(&os_tokens, &os_version);
       os_version.erase(0, 1);  // remove leading space.
 
       system_info_->cpu = hw_arch;
