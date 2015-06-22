@@ -58,6 +58,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionAlgorithm {
     DISALLOW_ALLOCATION();
 public:
     using PositionType = typename Strategy::PositionType;
+    using StrategyType = Strategy;
 
     enum AnchorType : unsigned char {
         PositionIsOffsetInAnchor,

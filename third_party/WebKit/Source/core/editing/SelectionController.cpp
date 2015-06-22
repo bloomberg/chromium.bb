@@ -243,9 +243,10 @@ bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithH
     return updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), ParagraphGranularity);
 }
 
-static int textDistance(const Position& start, const Position& end)
+template <typename PositionType>
+static int textDistance(const PositionType& start, const PositionType& end)
 {
-    return TextIterator::rangeLength(start, end, true);
+    return TextIteratorAlgorithm<typename PositionType::StrategyType>::rangeLength(start, end, true);
 }
 
 bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
