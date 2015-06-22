@@ -711,20 +711,23 @@ VisiblePosition nextWordPosition(const VisiblePosition &c)
 // ---------
 
 enum LineEndpointComputationMode { UseLogicalOrdering, UseInlineBoxOrdering };
-static PositionWithAffinity startPositionForLine(const PositionWithAffinity& c, LineEndpointComputationMode mode)
+template <typename PositionWithAffinityType>
+static PositionWithAffinityType startPositionForLine(const PositionWithAffinityType& c, LineEndpointComputationMode mode)
 {
+    using PositionType = typename PositionWithAffinityType::PositionType;
+
     if (c.isNull())
-        return PositionWithAffinity();
+        return PositionWithAffinityType();
 
     RootInlineBox* rootBox = RenderedPosition(c.position(), c.affinity()).rootBox();
     if (!rootBox) {
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
-        Position p = c.position();
+        PositionType p = c.position();
         if (p.deprecatedNode()->layoutObject() && p.deprecatedNode()->layoutObject()->isLayoutBlock() && !p.deprecatedEditingOffset())
             return c;
 
-        return PositionWithAffinity();
+        return PositionWithAffinityType();
     }
 
     Node* startNode;
@@ -732,14 +735,14 @@ static PositionWithAffinity startPositionForLine(const PositionWithAffinity& c, 
     if (mode == UseLogicalOrdering) {
         startNode = rootBox->getLogicalStartBoxWithNode(startBox);
         if (!startNode)
-            return PositionWithAffinity();
+            return PositionWithAffinityType();
     } else {
         // Generated content (e.g. list markers and CSS :before and :after pseudoelements) have no corresponding DOM element,
         // and so cannot be represented by a VisiblePosition. Use whatever follows instead.
         startBox = rootBox->firstLeafChild();
         while (true) {
             if (!startBox)
-                return PositionWithAffinity();
+                return PositionWithAffinityType();
 
             startNode = startBox->layoutObject().nonPseudoNode();
             if (startNode)
@@ -749,19 +752,21 @@ static PositionWithAffinity startPositionForLine(const PositionWithAffinity& c, 
         }
     }
 
-    return PositionWithAffinity(startNode->isTextNode() ? Position(toText(startNode), toInlineTextBox(startBox)->start()) : positionBeforeNode(startNode));
+    return PositionWithAffinityType(startNode->isTextNode() ? PositionType(toText(startNode), toInlineTextBox(startBox)->start()) : PositionType::beforeNode(startNode));
 }
 
-static PositionWithAffinity startOfLine(const PositionWithAffinity& c, LineEndpointComputationMode mode)
+template <typename PositionWithAffinityType>
+static PositionWithAffinityType startOfLine(const PositionWithAffinityType& c, LineEndpointComputationMode mode)
 {
+    using PositionType = typename PositionWithAffinityType::PositionType;
     // TODO: this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-    PositionWithAffinity visPos = startPositionForLine(c, mode);
+    PositionWithAffinityType visPos = startPositionForLine(c, mode);
 
     if (mode == UseLogicalOrdering) {
         if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
             if (!editableRoot->contains(visPos.position().containerNode()))
-                return PositionWithAffinity(firstPositionInNode(editableRoot));
+                return PositionWithAffinityType(PositionType::firstPositionInNode(editableRoot));
         }
     }
 
@@ -890,7 +895,8 @@ VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
     return endOfLine(currentPosition, UseLogicalOrdering);
 }
 
-bool inSameLine(const PositionWithAffinity& position1, const PositionWithAffinity& position2)
+template <typename PositionWithAffinityType>
+bool inSameLineAlgorithm(const PositionWithAffinityType& position1, const PositionWithAffinityType& position2)
 {
     if (position1.isNull() || position2.isNull())
         return false;
@@ -898,10 +904,15 @@ bool inSameLine(const PositionWithAffinity& position1, const PositionWithAffinit
     PositionWithAffinity startOfLine2 = startOfLine(position2);
     if (startOfLine1 == startOfLine2)
         return true;
-    Position canonicalized1 = canonicalPositionOf(startOfLine1.position());
+    typename PositionWithAffinityType::PositionType canonicalized1 = canonicalPositionOf(startOfLine1.position());
     if (canonicalized1 == startOfLine2.position())
         return true;
     return canonicalized1 == canonicalPositionOf(startOfLine2.position());
+}
+
+bool inSameLine(const PositionWithAffinity& a, const PositionWithAffinity& b)
+{
+    return inSameLineAlgorithm(a, b);
 }
 
 bool inSameLine(const VisiblePosition &a, const VisiblePosition &b)
