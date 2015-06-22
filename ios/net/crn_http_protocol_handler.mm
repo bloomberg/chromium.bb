@@ -977,10 +977,16 @@ void HttpProtocolHandlerCore::PushClients(NSArray* clients) {
 
   _clientThread = [NSThread currentThread];
 
+  // The closure passed to PostTask must to retain the _protocolProxy
+  // scoped_nsobject. A call to getProtocolHandlerProxy before passing
+  // _protocolProxy ensure that _protocolProxy is instanciated before passing
+  // it.
+  [self getProtocolHandlerProxy];
+  DCHECK(_protocolProxy);
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
       ->PostTask(FROM_HERE, base::Bind(&net::HttpProtocolHandlerCore::Start,
-                                       _core, [self getProtocolHandlerProxy]));
+                                       _core, _protocolProxy));
 }
 
 - (id<CRNHTTPProtocolHandlerProxy>)getProtocolHandlerProxy {
