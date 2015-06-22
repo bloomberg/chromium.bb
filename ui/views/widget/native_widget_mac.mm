@@ -445,6 +445,7 @@ bool NativeWidgetMac::IsMinimized() const {
 }
 
 void NativeWidgetMac::Restore() {
+  SetFullscreen(false);
   [GetNativeWindow() deminiaturize:nil];
 }
 

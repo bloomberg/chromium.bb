@@ -149,6 +149,29 @@ TEST_F(BridgedNativeWidgetUITest, FullscreenEnterAndExit) {
   EXPECT_EQ(restored_bounds, widget_->GetRestoredBounds());
 }
 
+// Test that Widget::Restore exits fullscreen.
+TEST_F(BridgedNativeWidgetUITest, FullscreenRestore) {
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
+      [[NSWindowFullscreenNotificationWaiter alloc]
+          initWithWindow:test_window()]);
+
+  EXPECT_FALSE(widget_->IsFullscreen());
+  const gfx::Rect restored_bounds = widget_->GetRestoredBounds();
+  EXPECT_FALSE(restored_bounds.IsEmpty());
+
+  widget_->SetFullscreen(true);
+  EXPECT_TRUE(widget_->IsFullscreen());
+  [waiter waitForEnterCount:1 exitCount:0];
+
+  widget_->Restore();
+  EXPECT_FALSE(widget_->IsFullscreen());
+  [waiter waitForEnterCount:1 exitCount:1];
+  EXPECT_EQ(restored_bounds, widget_->GetRestoredBounds());
+}
+
 namespace {
 
 // This is used to wait for reposted events to be seen. We can't just use
