@@ -34,8 +34,6 @@ class ClobberCommand(cr.Command):
     delete = not cr.context.dry_run
     print 'Clobbering...'
     for f in os.listdir(build_dir):
-      if f == cr.base.client.CLIENT_CONFIG_PATH:
-        continue
       path = os.path.join(build_dir, f)
       if os.path.isfile(path):
         if verbose:
