@@ -76,7 +76,6 @@ import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -85,7 +84,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
-import org.chromium.chrome.browser.toolbar.ToolbarHelper;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
@@ -144,7 +143,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
     private static final String ACTION_CLOSE_TABS =
             "com.google.android.apps.chrome.ACTION_CLOSE_TABS";
 
-    private ToolbarHelper mToolbarHelper;
+    private ToolbarManager mToolbarManager;
 
     private FindToolbarManager mFindToolbarManager;
 
@@ -428,7 +427,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             });
 
             mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
-                    mToolbarHelper.getContextualMenuBar().getCustomSelectionActionModeCallback());
+                    mToolbarManager.getContextualMenuBar().getCustomSelectionActionModeCallback());
 
             OnClickListener tabSwitcherClickHandler = new OnClickListener() {
                 @Override
@@ -451,7 +450,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                 }
             };
 
-            mToolbarHelper.initializeControls(mFindToolbarManager, mLayoutManager, mLayoutManager,
+            mToolbarManager.initializeWithNative(mTabModelSelectorImpl, getFullscreenManager(),
+                    mFindToolbarManager, mLayoutManager, mLayoutManager,
                     tabSwitcherClickHandler, newTabClickHandler, bookmarkClickHandler, null);
 
             mMenuAnchor = findViewById(R.id.menu_anchor_stub);
@@ -585,13 +585,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
     @Override
     public void onOrientationChange(int orientation) {
         super.onOrientationChange(orientation);
-        mToolbarHelper.onOrientationChange();
+        mToolbarManager.onOrientationChange();
     }
 
     @Override
     public void onAccessibilityModeChanged(boolean enabled) {
         super.onAccessibilityModeChanged(enabled);
-        if (mToolbarHelper != null) mToolbarHelper.onAccessibilityStatusChanged(enabled);
+        if (mToolbarManager != null) mToolbarManager.onAccessibilityStatusChanged(enabled);
 
         if (mLayoutManager != null) {
             mLayoutManager.setEnableAnimations(
@@ -709,7 +709,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                     assert false : "Unknown TabOpenType: " + tabOpenType;
                     break;
             }
-            mToolbarHelper.setUrlBarFocus(false);
+            mToolbarManager.setUrlBarFocus(false);
         }
 
         @Override
@@ -802,7 +802,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
         mChromeAppMenuPropertiesDelegate = new ChromeAppMenuPropertiesDelegate(this);
         mAppMenuHandler = new AppMenuHandler(ChromeTabbedActivity.this,
                 mChromeAppMenuPropertiesDelegate, R.menu.main_menu);
-        mToolbarHelper = new ToolbarHelper(this, mControlContainer, mAppMenuHandler,
+        mToolbarManager = new ToolbarManager(this, mControlContainer, mAppMenuHandler,
                 mChromeAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator());
     }
 
@@ -851,7 +851,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             TraceEvent.begin("ChromeTabbedActivity.onDeferredStartup");
             super.onDeferredStartup();
 
-            mToolbarHelper.onDeferredStartup();
+            mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), getClass().getSimpleName());
 
             ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             RecordHistogram.recordSparseSlowlyHistogram(
@@ -917,7 +917,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
             if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
-                mToolbarHelper.setUrlBarFocus(true);
+                mToolbarManager.setUrlBarFocus(true);
             }
         } else if (id == R.id.new_incognito_tab_menu_id) {
             if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
@@ -930,7 +930,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                         fromMenu ? TabLaunchType.FROM_MENU_OR_OVERVIEW
                                 : TabLaunchType.FROM_KEYBOARD);
                 if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
-                    mToolbarHelper.setUrlBarFocus(true);
+                    mToolbarManager.setUrlBarFocus(true);
                 }
             }
         } else if (id == R.id.all_bookmarks_menu_id) {
@@ -980,7 +980,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             boolean isUrlBarVisible = !mLayoutManager.overviewVisible()
                     && (!isTablet() || getCurrentTabModel().getCount() != 0);
             if (isUrlBarVisible) {
-                mToolbarHelper.setUrlBarFocus(true);
+                mToolbarManager.setUrlBarFocus(true);
             }
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
@@ -994,7 +994,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
         final Tab currentTab = getActivityTab();
 
         if (currentTab == null) {
-            if (mToolbarHelper.back()) {
+            if (mToolbarManager.back()) {
                 RecordUserAction.record("SystemBackForNavigation");
                 RecordUserAction.record("MobileTabClobbered");
             } else {
@@ -1021,7 +1021,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             return true;
         }
 
-        if (!mToolbarHelper.back()) {
+        if (!mToolbarManager.back()) {
             final TabLaunchType type = currentTab.getLaunchType();
             final String associatedApp = currentTab.getAppAssociatedWith();
             final int parentId = currentTab.getParentId();
@@ -1092,7 +1092,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             String externalAppId, boolean forceNewTab, Intent intent) {
         if (mUIInitialized) {
             mLayoutManager.hideOverview(false);
-            mToolbarHelper.finishAnimations();
+            mToolbarManager.finishAnimations();
         }
         if (TextUtils.equals(externalAppId, getPackageName())) {
             // If the intent was launched by chrome, open the new tab in the current model.
@@ -1154,7 +1154,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                 model.removeObserver(mTabModelObserver);
             }
         }
-        if (mToolbarHelper != null) mToolbarHelper.destroy();
+        if (mToolbarManager != null) mToolbarManager.destroy();
         if (mUndoBarPopupController != null) mUndoBarPopupController.destroy();
         super.onDestroyInternal();
     }
@@ -1301,7 +1301,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
 
     @Override
     public boolean hasDoneFirstDraw() {
-        return mToolbarHelper.hasDoneFirstDraw();
+        return mToolbarManager.hasDoneFirstDraw();
     }
 
     @Override

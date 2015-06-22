@@ -5,26 +5,39 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
+import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
+import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.ContextualMenuBar;
+import org.chromium.chrome.browser.ContextualMenuBar.ActionBarDelegate;
 import org.chromium.chrome.browser.CustomSelectionActionModeCallback;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
+import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -57,15 +70,17 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Contains logic for managing the toolbar visual component.  This class manages the interactions
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
-class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
+public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
 
     /**
      * Handle UI updates of menu icons. Only applicable for phones.
@@ -79,6 +94,14 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
          */
         public void updateReloadButtonState(boolean isLoading);
     }
+
+    /**
+     * The number of ms to wait before reporting to UMA omnibox interaction metrics.
+     */
+    private static final int RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS = 30000;
+
+    private static final int MIN_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS = 1000;
+    private static final int MAX_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS = 30000;
 
     /**
      * The minimum load progress that can be shown when a page is loading.  This is not 0 so that
@@ -105,7 +128,8 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
     private final FindToolbarObserver mFindToolbarObserver;
     private final OverviewModeObserver mOverviewModeObserver;
     private final SceneChangeObserver mSceneChangeObserver;
-
+    private final ActionBarDelegate mActionBarDelegate;
+    private final ContextualMenuBar mContextualMenuBar;
     private final LoadProgressSimulator mLoadProgressSimulator;
 
     private ChromeFullscreenManager mFullscreenManager;
@@ -122,20 +146,78 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
 
     private HomepageStateListener mHomepageStateListener;
 
+    private boolean mInitializedWithNative;
+
     /**
      * Creates a ToolbarManager object.
      * @param controlContainer The container of the toolbar.
      * @param menuHandler The handler for interacting with the menu.
      */
-    ToolbarManager(ToolbarControlContainer controlContainer, AppMenuHandler menuHandler) {
+    public ToolbarManager(final ChromeActivity activity,
+            ToolbarControlContainer controlContainer, final AppMenuHandler menuHandler,
+            final ChromeAppMenuPropertiesDelegate appMenuPropertiesDelegate,
+            Invalidator invalidator) {
+        mActionBarDelegate = new ContextualMenuBar.ActionBarDelegate() {
+            @Override
+            public void setControlTopMargin(int margin) {
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams)
+                        mControlContainer.getLayoutParams();
+                lp.topMargin = margin;
+                mControlContainer.setLayoutParams(lp);
+            }
+
+            @Override
+            public int getControlTopMargin() {
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams)
+                        mControlContainer.getLayoutParams();
+                return lp.topMargin;
+            }
+
+            @Override
+            public ActionBar getSupportActionBar() {
+                return activity.getSupportActionBar();
+            }
+
+            @Override
+            public void setActionBarBackgroundVisibility(boolean visible) {
+                int visibility = visible ? View.VISIBLE : View.GONE;
+                activity.findViewById(R.id.action_bar_black_background).setVisibility(visibility);
+                // TODO(tedchoc): Add support for changing the color based on the brand color.
+            }
+        };
+        mContextualMenuBar = new ContextualMenuBar(activity, mActionBarDelegate);
+        mContextualMenuBar.setCustomSelectionActionModeCallback(
+                new CustomSelectionActionModeCallback());
+
         mToolbarModel = new ToolbarModelImpl();
         mControlContainer = controlContainer;
         assert mControlContainer != null;
 
         mToolbar = (ToolbarLayout) controlContainer.findViewById(R.id.toolbar);
+
+        mToolbar.setPaintInvalidator(invalidator);
+
+        MenuDelegatePhone menuDelegate = new MenuDelegatePhone() {
+            @Override
+            public void updateReloadButtonState(boolean isLoading) {
+                if (appMenuPropertiesDelegate != null) {
+                    appMenuPropertiesDelegate.loadingStateChanged(isLoading);
+                    menuHandler.menuItemContentChanged(R.id.icon_row_menu_id);
+                }
+            }
+        };
+        setMenuDelegatePhone(menuDelegate);
+
         mLocationBar = mToolbar.getLocationBar();
         mLocationBar.setToolbarDataProvider(mToolbarModel);
         mLocationBar.setUrlFocusChangeListener(this);
+        mLocationBar.setDefaultTextEditActionModeCallback(
+                mContextualMenuBar.getCustomSelectionActionModeCallback());
+        mLocationBar.initializeControls(
+                new WindowDelegate(activity.getWindow()),
+                mContextualMenuBar.getActionBarDelegate(),
+                activity.getWindowAndroid());
+        mLocationBar.setIgnoreURLBarModification(false);
 
         setMenuHandler(menuHandler);
         mToolbar.initialize(mToolbarModel, this, mAppMenuButtonHelper);
@@ -317,6 +399,20 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
                     mToolbar.onTabOrModelChanged();
                 }
             }
+
+            @Override
+            public void onContextualActionBarVisibilityChanged(Tab tab, boolean visible) {
+                if (visible) RecordUserAction.record("MobileActionBarShown");
+                ActionBar actionBar = mActionBarDelegate.getSupportActionBar();
+                if (!visible && actionBar != null) actionBar.hide();
+                if (DeviceFormFactor.isTablet(activity)) {
+                    if (visible) {
+                        mContextualMenuBar.showControls();
+                    } else {
+                        mContextualMenuBar.hideControls();
+                    }
+                }
+            }
         };
 
         mBookmarksObserver = new BookmarksBridge.BookmarkModelObserver() {
@@ -397,9 +493,23 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
             ChromeFullscreenManager fullscreenManager,
             final FindToolbarManager findToolbarManager,
             final OverviewModeBehavior overviewModeBehavior,
-            final LayoutManager layoutDriver) {
+            final LayoutManager layoutDriver,
+            OnClickListener tabSwitcherClickHandler,
+            OnClickListener newTabClickHandler,
+            OnClickListener bookmarkClickHandler,
+            OnClickListener customTabsBackClickHandler) {
+        assert !mInitializedWithNative;
         mTabModelSelector = tabModelSelector;
+
+        mToolbar.getLocationBar().updateVisualsForState();
+        mToolbar.getLocationBar().setUrlToPageUrl();
+        mToolbar.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
+        mToolbar.setOnNewTabClickHandler(newTabClickHandler);
+        mToolbar.setBookmarkClickHandler(bookmarkClickHandler);
+        mToolbar.setCustomTabReturnClickHandler(customTabsBackClickHandler);
+
         mToolbarModel.initializeWithNative();
+
         mToolbar.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override
             public void onViewDetachedFromWindow(View v) {
@@ -450,6 +560,7 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
         if (layoutDriver != null) layoutDriver.addSceneChangeObserver(mSceneChangeObserver);
 
         onNativeLibraryReady();
+        mInitializedWithNative = true;
     }
 
     /**
@@ -457,6 +568,51 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
      */
     public Toolbar getToolbar() {
         return mToolbar;
+    }
+
+    /**
+     * @return The menu bar for handling contextual text selection.
+     */
+    public ContextualMenuBar getContextualMenuBar() {
+        return mContextualMenuBar;
+    }
+
+    /**
+     * @return Whether the UI has been initialized.
+     */
+    public boolean isInitialized() {
+        return mInitializedWithNative;
+    }
+
+    /**
+     * @return The view that the pop up menu should be anchored to on the UI.
+     */
+    public View getMenuAnchor() {
+        return mToolbar.getLocationBar().getMenuAnchor();
+    }
+
+    /**
+     * Adds a custom action button to the {@link Toolbar} if it is supported.
+     * @param buttonSource The {@link Bitmap} resource to use as the source for the button.
+     * @param listener The {@link OnClickListener} to use for clicks to the button.
+     */
+    public void addCustomActionButton(Bitmap buttonSource, OnClickListener listener) {
+        mToolbar.addCustomActionButton(buttonSource, listener);
+    }
+
+    /**
+     * Call to tear down all of the toolbar dependencies.
+     */
+    public void destroy() {
+        Tab currentTab = mToolbarModel.getTab();
+        if (currentTab != null) currentTab.removeObserver(mTabObserver);
+    }
+
+    /**
+     * Called when the orientation of the activity has changed.
+     */
+    public void onOrientationChange() {
+        mContextualMenuBar.showControlsOnOrientationChange();
     }
 
     /**
@@ -560,17 +716,6 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
         mMenuDelegatePhone = menuDelegatePhone;
     }
 
-    /**
-     * Sets a custom ActionMode.Callback instance to the LocationBar's UrlBar.  This lets us
-     * get notified when the user tries to do copy, paste, etc. on the UrlBar.
-     * @param callback The ActionMode.Callback instance to be notified when selection ActionMode
-     * is triggered.
-     */
-    public void setDefaultActionModeCallbackForTextEdit(
-            CustomSelectionActionModeCallback callback) {
-        mLocationBar.setDefaultTextEditActionModeCallback(callback);
-    }
-
     @Override
     public boolean back() {
         Tab tab = mToolbarModel.getTab();
@@ -649,6 +794,58 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
 
         mToolbarModel.setPrimaryColor(color);
         mToolbar.onPrimaryColorChanged();
+    }
+
+    /**
+     * Focuses or unfocuses the URL bar.
+     * @param focused Whether URL bar should be focused.
+     */
+    public void setUrlBarFocus(boolean focused) {
+        if (!isInitialized()) return;
+        mToolbar.getLocationBar().setUrlBarFocus(focused);
+    }
+
+    /**
+     * @return Whether {@link Toolbar} has drawn at least once.
+     */
+    public boolean hasDoneFirstDraw() {
+        return mToolbar.getFirstDrawTime() != 0;
+    }
+
+    /**
+     * Handle all necessary tasks that can be delayed until initialization completes.
+     * @param activityCreationTimeMs The time of creation for the activity this toolbar belongs to.
+     * @param activityName Simple class name for the activity this toolbar belongs to.
+     */
+    public void onDeferredStartup(final long activityCreationTimeMs,
+            final String activityName) {
+        // Record startup performance statistics
+        long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
+        if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
+            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    onDeferredStartup(activityCreationTimeMs, activityName);
+                }
+            }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
+        }
+        RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime." + activityName,
+                mToolbar.getFirstDrawTime() - activityCreationTimeMs, TimeUnit.MILLISECONDS);
+
+        long firstFocusTime = mToolbar.getLocationBar().getFirstUrlBarFocusTime();
+        if (firstFocusTime != 0) {
+            RecordHistogram.recordCustomTimesHistogram(
+                    "MobileStartup.ToolbarFirstFocusTime." + activityName,
+                    firstFocusTime - activityCreationTimeMs, MIN_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS,
+                    MAX_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS, TimeUnit.MILLISECONDS, 50);
+        }
+    }
+
+    /**
+     * Finish any toolbar animations.
+     */
+    public void finishAnimations() {
+        if (isInitialized()) mToolbar.finishAnimations();
     }
 
     /**

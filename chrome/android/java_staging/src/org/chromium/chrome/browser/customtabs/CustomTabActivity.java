@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
-import org.chromium.chrome.browser.toolbar.ToolbarHelper;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -42,7 +42,7 @@ public class CustomTabActivity extends ChromeActivity {
     private static CustomTabContentHandler sActiveContentHandler;
 
     private CustomTab mTab;
-    private ToolbarHelper mToolbarHelper;
+    private ToolbarManager mToolbarManager;
     private CustomTabAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private FindToolbarManager mFindToolbarManager;
@@ -127,13 +127,13 @@ public class CustomTabActivity extends ChromeActivity {
                 mIntentDataProvider.getMenuTitles());
         mAppMenuHandler =
                 new AppMenuHandler(this, mAppMenuPropertiesDelegate, R.menu.custom_tabs_menu);
-        mToolbarHelper = new ToolbarHelper(this, controlContainer,
+        mToolbarManager = new ToolbarManager(this, controlContainer,
                 mAppMenuHandler, mAppMenuPropertiesDelegate,
                 getCompositorViewHolder().getInvalidator());
-        mToolbarHelper.setThemeColor(mIntentDataProvider.getToolbarColor());
+        mToolbarManager.updatePrimaryColor(mIntentDataProvider.getToolbarColor());
         setStatusBarColor(mIntentDataProvider.getToolbarColor());
         if (mIntentDataProvider.shouldShowActionButton()) {
-            mToolbarHelper.addCustomActionButton(mIntentDataProvider.getActionButtonIcon(),
+            mToolbarManager.addCustomActionButton(mIntentDataProvider.getActionButtonIcon(),
                     new OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -166,8 +166,8 @@ public class CustomTabActivity extends ChromeActivity {
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
         mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
-                mToolbarHelper.getContextualMenuBar().getCustomSelectionActionModeCallback());
-        mToolbarHelper.initializeControls(
+                mToolbarManager.getContextualMenuBar().getCustomSelectionActionModeCallback());
+        mToolbarManager.initializeWithNative(getTabModelSelector(), getFullscreenManager(),
                 mFindToolbarManager, null, layoutDriver, null, null, null,
                 new OnClickListener() {
                     @Override
@@ -217,12 +217,12 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     protected void onDeferredStartup() {
         super.onDeferredStartup();
-        mToolbarHelper.onDeferredStartup();
+        mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), getClass().getSimpleName());
     }
 
     @Override
     public boolean hasDoneFirstDraw() {
-        return mToolbarHelper.hasDoneFirstDraw();
+        return mToolbarManager.hasDoneFirstDraw();
     }
 
     @Override
@@ -298,7 +298,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public boolean shouldShowAppMenu() {
-        return mTab != null && mToolbarHelper.isInitialized();
+        return mTab != null && mToolbarManager.isInitialized();
     }
 
     @Override
@@ -317,7 +317,7 @@ public class CustomTabActivity extends ChromeActivity {
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.show_menu) {
             if (shouldShowAppMenu()) {
-                mAppMenuHandler.showAppMenu(mToolbarHelper.getMenuAnchor(), true, false);
+                mAppMenuHandler.showAppMenu(mToolbarManager.getMenuAnchor(), true, false);
                 return true;
             }
         } else if (id == R.id.open_in_chrome_id) {

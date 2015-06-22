@@ -59,7 +59,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Initializa
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
-import org.chromium.chrome.browser.toolbar.ToolbarHelper;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -107,7 +107,7 @@ public class DocumentActivity extends ChromeActivity {
     private int mDefaultThemeColor;
 
     private DocumentTab mDocumentTab;
-    private ToolbarHelper mToolbarHelper;
+    private ToolbarManager mToolbarManager;
 
     private ChromeAppMenuPropertiesDelegate mChromeAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
@@ -181,7 +181,7 @@ public class DocumentActivity extends ChromeActivity {
         mChromeAppMenuPropertiesDelegate = new ChromeAppMenuPropertiesDelegate(this);
         mAppMenuHandler = new AppMenuHandler(this, mChromeAppMenuPropertiesDelegate,
                 R.menu.main_menu);
-        mToolbarHelper = new ToolbarHelper(this, controlContainer, mAppMenuHandler,
+        mToolbarManager = new ToolbarManager(this, controlContainer, mAppMenuHandler,
                 mChromeAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator());
 
         final int tabId = ActivityDelegate.getTabIdFromIntent(getIntent());
@@ -278,12 +278,12 @@ public class DocumentActivity extends ChromeActivity {
     @Override
     protected void onDeferredStartup() {
         super.onDeferredStartup();
-        mToolbarHelper.onDeferredStartup();
+        mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), getClass().getSimpleName());
     }
 
     @Override
     public boolean hasDoneFirstDraw() {
-        return mToolbarHelper.hasDoneFirstDraw();
+        return mToolbarManager.hasDoneFirstDraw();
     }
 
     /**
@@ -410,7 +410,7 @@ public class DocumentActivity extends ChromeActivity {
 
     @Override
     protected void onDestroyInternal() {
-        if (mToolbarHelper != null) mToolbarHelper.destroy();
+        if (mToolbarManager != null) mToolbarManager.destroy();
 
         super.onDestroyInternal();
     }
@@ -435,13 +435,13 @@ public class DocumentActivity extends ChromeActivity {
     @Override
     public void onOrientationChange(int orientation) {
         super.onOrientationChange(orientation);
-        mToolbarHelper.onOrientationChange();
+        mToolbarManager.onOrientationChange();
     }
 
     @Override
     protected void onAccessibilityModeChanged(boolean enabled) {
         super.onAccessibilityModeChanged(enabled);
-        mToolbarHelper.onAccessibilityStatusChanged(enabled);
+        mToolbarManager.onAccessibilityStatusChanged(enabled);
     }
 
     private void loadLastKnownUrl(PendingDocumentData pendingData) {
@@ -581,10 +581,10 @@ public class DocumentActivity extends ChromeActivity {
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
 
         mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
-                mToolbarHelper.getContextualMenuBar()
+                mToolbarManager.getContextualMenuBar()
                         .getCustomSelectionActionModeCallback());
 
-        mToolbarHelper.initializeControls(
+        mToolbarManager.initializeWithNative(getTabModelSelector(), getFullscreenManager(),
                 mFindToolbarManager, null, layoutDriver, null, null, null, null);
 
         mDocumentTab.setFullscreenManager(getFullscreenManager());
@@ -818,12 +818,12 @@ public class DocumentActivity extends ChromeActivity {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
         } else if (id == R.id.show_menu) {
-            if (mToolbarHelper.isInitialized()) {
-                mAppMenuHandler.showAppMenu(mToolbarHelper.getMenuAnchor(), true,
+            if (mToolbarManager.isInitialized()) {
+                mAppMenuHandler.showAppMenu(mToolbarManager.getMenuAnchor(), true,
                         false);
             }
         } else if (id == R.id.focus_url_bar) {
-            if (mToolbarHelper.isInitialized()) mToolbarHelper.setUrlBarFocus(true);
+            if (mToolbarManager.isInitialized()) mToolbarManager.setUrlBarFocus(true);
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
@@ -833,20 +833,20 @@ public class DocumentActivity extends ChromeActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Boolean result = KeyboardShortcuts.dispatchKeyEvent(event, this,
-                mToolbarHelper.isInitialized());
+                mToolbarManager.isInitialized());
         return result != null ? result : super.dispatchKeyEvent(event);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!mToolbarHelper.isInitialized()) return false;
+        if (!mToolbarManager.isInitialized()) return false;
         return KeyboardShortcuts.onKeyDown(event, this, true, false)
                 || super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean shouldShowAppMenu() {
-        if (mDocumentTab == null || !mToolbarHelper.isInitialized()) {
+        if (mDocumentTab == null || !mToolbarManager.isInitialized()) {
             return false;
         }
 
@@ -907,7 +907,7 @@ public class DocumentActivity extends ChromeActivity {
         int color = getThemeColor();
         DocumentUtils.updateTaskDescription(this, label, icon, color,
                 shouldUseDefaultStatusBarColor());
-        mToolbarHelper.setThemeColor(color);
+        mToolbarManager.updatePrimaryColor(color);
 
         ControlContainer controlContainer =
                 (ControlContainer) findViewById(R.id.control_container);
