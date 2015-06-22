@@ -614,6 +614,9 @@
       'filepath': 'third_party/polymer/|'\
                   'ui/webui/resources/polymer_resources.grdp',
     },
+    'precache': {
+      'filepath': '[pP]recache'
+    },
     'predictors': {
       'filepath': 'predictors',
     },
@@ -1067,6 +1070,7 @@
     'permissions': ['mlamouri+watch-permissions@chromium.org'],
     'plugin': ['jam@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
+    'precache': ['wifiprefetch-reviews@google.com'],
     'predictors': ['shishir+watch@chromium.org'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
