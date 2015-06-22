@@ -21,7 +21,6 @@
   },
   "incognito": "split",
   "permissions": [
-    "alarms",
     "desktopCapture",
     "processes",
     "system.cpu",
