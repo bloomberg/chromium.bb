@@ -84,6 +84,20 @@ class Rietveld(object):
     data['description'] = '\n'.join(data['description'].strip().splitlines())
     return data
 
+  def get_depends_on_patchset(self, issue, patchset):
+    """Returns the patchset this patchset depends on if it exists."""
+    url = '/%d/patchset/%d/get_depends_on_patchset' % (issue, patchset)
+    resp = None
+    try:
+      resp = json.loads(self.get(url))
+    except urllib2.HTTPError:
+      # The get_depends_on_patchset endpoint does not exist on this Rietveld
+      # instance yet. Ignore the error and proceed.
+      # TODO(rmistry): Make this an error when all Rietveld instances have
+      # this endpoint.
+      pass
+    return resp
+
   def get_patchset_properties(self, issue, patchset):
     """Returns the patchset properties."""
     url = '/api/%d/%d' % (issue, patchset)
@@ -676,6 +690,9 @@ class ReadOnlyRietveld(object):
 
   def get_patchset_properties(self, issue, patchset):
     return self._rietveld.get_patchset_properties(issue, patchset)
+
+  def get_depends_on_patchset(self, issue, patchset):
+    return self._rietveld.get_depends_on_patchset(issue, patchset)
 
   def get_patch(self, issue, patchset):
     return self._rietveld.get_patch(issue, patchset)

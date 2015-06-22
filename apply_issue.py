@@ -166,52 +166,86 @@ def main():
     options.patchset = properties['patchsets'][-1]
     print('No patchset specified. Using patchset %d' % options.patchset)
 
-  print('Downloading the patch.')
-  try:
-    patchset = obj.get_patch(options.issue, options.patchset)
-  except urllib2.HTTPError as e:
-    print(
-        'Failed to fetch the patch for issue %d, patchset %d.\n'
-        'Try visiting %s/%d') % (
-            options.issue, options.patchset,
-            options.server, options.issue)
-    return 1
-  if options.whitelist:
-    patchset.patches = [patch for patch in patchset.patches
-                        if patch.filename in options.whitelist]
-  if options.blacklist:
-    patchset.patches = [patch for patch in patchset.patches
-                        if patch.filename not in options.blacklist]
-  for patch in patchset.patches:
-    print(patch)
-  full_dir = os.path.abspath(options.root_dir)
-  scm_type = scm.determine_scm(full_dir)
-  if scm_type == 'svn':
-    scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
-  elif scm_type == 'git':
-    scm_obj = checkout.GitCheckout(full_dir, None, None, None, None)
-  elif scm_type == None:
-    scm_obj = checkout.RawCheckout(full_dir, None, None)
-  else:
-    parser.error('Couldn\'t determine the scm')
+  issues_patchsets_to_apply = [(options.issue, options.patchset)]
+  depends_on_info = obj.get_depends_on_patchset(options.issue, options.patchset)
+  while depends_on_info:
+    depends_on_issue = int(depends_on_info['issue'])
+    depends_on_patchset = int(depends_on_info['patchset'])
+    try:
+      depends_on_info = obj.get_depends_on_patchset(depends_on_issue,
+                                                    depends_on_patchset)
+      issues_patchsets_to_apply.insert(0, (depends_on_issue,
+                                           depends_on_patchset))
+    except urllib2.HTTPError:
+      print ('The patchset that was marked as a dependency no longer '
+             'exists: %s/%d/#ps%d' % (
+                 options.server, depends_on_issue, depends_on_patchset))
+      print 'Therefore it is likely that this patch will not apply cleanly.'
+      print
+      depends_on_info = None
 
-  # TODO(maruel): HACK, remove me.
-  # When run a build slave, make sure buildbot knows that the checkout was
-  # modified.
-  if options.root_dir == 'src' and getpass.getuser() == 'chrome-bot':
-    # See sourcedirIsPatched() in:
-    # http://src.chromium.org/viewvc/chrome/trunk/tools/build/scripts/slave/
-    #    chromium_commands.py?view=markup
-    open('.buildbot-patched', 'w').close()
+  num_issues_patchsets_to_apply = len(issues_patchsets_to_apply)
+  if num_issues_patchsets_to_apply > 1:
+    print
+    print 'apply_issue.py found %d dependent CLs.' % (
+        num_issues_patchsets_to_apply - 1)
+    print 'They will be applied in the following order:'
+    num = 1
+    for issue_to_apply, patchset_to_apply in issues_patchsets_to_apply:
+      print '  #%d %s/%d/#ps%d' % (
+          num, options.server, issue_to_apply, patchset_to_apply)
+      num += 1
+    print
 
-  print('\nApplying the patch.')
-  try:
-    scm_obj.apply_patch(patchset, verbose=True)
-  except checkout.PatchApplicationFailed as e:
-    print(str(e))
-    print('CWD=%s' % os.getcwd())
-    print('Checkout path=%s' % scm_obj.project_path)
-    return 1
+  for issue_to_apply, patchset_to_apply in issues_patchsets_to_apply:
+    issue_url = '%s/%d/#ps%d' % (options.server, issue_to_apply,
+                                 patchset_to_apply)
+    print('Downloading patch from %s' % issue_url)
+    try:
+      patchset = obj.get_patch(issue_to_apply, patchset_to_apply)
+    except urllib2.HTTPError as e:
+      print(
+          'Failed to fetch the patch for issue %d, patchset %d.\n'
+          'Try visiting %s/%d') % (
+              issue_to_apply, patchset_to_apply,
+              options.server, issue_to_apply)
+      return 1
+    if options.whitelist:
+      patchset.patches = [patch for patch in patchset.patches
+                          if patch.filename in options.whitelist]
+    if options.blacklist:
+      patchset.patches = [patch for patch in patchset.patches
+                          if patch.filename not in options.blacklist]
+    for patch in patchset.patches:
+      print(patch)
+    full_dir = os.path.abspath(options.root_dir)
+    scm_type = scm.determine_scm(full_dir)
+    if scm_type == 'svn':
+      scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
+    elif scm_type == 'git':
+      scm_obj = checkout.GitCheckout(full_dir, None, None, None, None)
+    elif scm_type == None:
+      scm_obj = checkout.RawCheckout(full_dir, None, None)
+    else:
+      parser.error('Couldn\'t determine the scm')
+
+    # TODO(maruel): HACK, remove me.
+    # When run a build slave, make sure buildbot knows that the checkout was
+    # modified.
+    if options.root_dir == 'src' and getpass.getuser() == 'chrome-bot':
+      # See sourcedirIsPatched() in:
+      # http://src.chromium.org/viewvc/chrome/trunk/tools/build/scripts/slave/
+      #    chromium_commands.py?view=markup
+      open('.buildbot-patched', 'w').close()
+
+    print('\nApplying the patch from %s' % issue_url)
+    try:
+      scm_obj.apply_patch(patchset, verbose=True)
+    except checkout.PatchApplicationFailed as e:
+      print(str(e))
+      print('CWD=%s' % os.getcwd())
+      print('Checkout path=%s' % scm_obj.project_path)
+      return 1
 
   if ('DEPS' in map(os.path.basename, patchset.filenames)
       and not options.ignore_deps):
