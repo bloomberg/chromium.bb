@@ -503,6 +503,11 @@ extern int drmModeAtomicCommit(int fd,
 			       uint32_t flags,
 			       void *user_data);
 
+extern int drmModeCreatePropertyBlob(int fd, const void *data, size_t size,
+				     uint32_t *id);
+extern int drmModeDestroyPropertyBlob(int fd, uint32_t id);
+
+
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif

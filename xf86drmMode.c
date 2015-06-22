@@ -1387,3 +1387,37 @@ out:
 
 	return ret;
 }
+
+int
+drmModeCreatePropertyBlob(int fd, const void *data, size_t length, uint32_t *id)
+{
+	struct drm_mode_create_blob create;
+	int ret;
+
+	if (length >= 0xffffffff)
+		return -ERANGE;
+
+	memclear(create);
+
+	create.length = length;
+	create.data = (uintptr_t) data;
+	create.blob_id = 0;
+	*id = 0;
+
+	ret = DRM_IOCTL(fd, DRM_IOCTL_MODE_CREATEPROPBLOB, &create);
+	if (ret != 0)
+		return ret;
+
+	*id = create.blob_id;
+	return 0;
+}
+
+int
+drmModeDestroyPropertyBlob(int fd, uint32_t id)
+{
+	struct drm_mode_destroy_blob destroy;
+
+	memclear(destroy);
+	destroy.blob_id = id;
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_DESTROYPROPBLOB, &destroy);
+}
