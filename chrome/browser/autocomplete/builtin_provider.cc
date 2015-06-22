@@ -8,56 +8,18 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/url_constants.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/history_provider.h"
 #include "components/url_fixer/url_fixer.h"
 
-namespace {
-
-#if !defined(OS_ANDROID)
-// This list should be kept in sync with chrome/common/url_constants.h.
-// Only include useful sub-pages, confirmation alerts are not useful.
-const char* const kChromeSettingsSubPages[] = {
-  chrome::kAutofillSubPage,
-  chrome::kClearBrowserDataSubPage,
-  chrome::kContentSettingsSubPage,
-  chrome::kContentSettingsExceptionsSubPage,
-  chrome::kImportDataSubPage,
-  chrome::kLanguageOptionsSubPage,
-  chrome::kPasswordManagerSubPage,
-  chrome::kResetProfileSettingsSubPage,
-  chrome::kSearchEnginesSubPage,
-  chrome::kSyncSetupSubPage,
-#if defined(OS_CHROMEOS)
-  chrome::kInternetOptionsSubPage,
-#endif
-};
-#endif // !defined(OS_ANDROID)
-
-}  // namespace
-
 const int BuiltinProvider::kRelevance = 860;
 
-BuiltinProvider::BuiltinProvider()
-    : AutocompleteProvider(AutocompleteProvider::TYPE_BUILTIN) {
-  std::vector<std::string> builtins(
-      chrome::kChromeHostURLs,
-      chrome::kChromeHostURLs + chrome::kNumberOfChromeHostURLs);
-  std::sort(builtins.begin(), builtins.end());
-  for (std::vector<std::string>::iterator i(builtins.begin());
-       i != builtins.end(); ++i)
-    builtins_.push_back(base::ASCIIToUTF16(*i));
-
-#if !defined(OS_ANDROID)
-  base::string16 settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
-                          base::ASCIIToUTF16("/"));
-  for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++) {
-    builtins_.push_back(
-        settings + base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
-  }
-#endif
+BuiltinProvider::BuiltinProvider(AutocompleteProviderClient* client)
+    : AutocompleteProvider(AutocompleteProvider::TYPE_BUILTIN),
+      client_(client) {
+  builtins_ = client_->GetBuiltinURLs();
 }
 
 void BuiltinProvider::Start(const AutocompleteInput& input,
@@ -73,39 +35,36 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   const base::string16 kAbout =
       base::ASCIIToUTF16(url::kAboutScheme) +
       base::ASCIIToUTF16(url::kStandardSchemeSeparator);
-  const base::string16 kChrome = base::ASCIIToUTF16(content::kChromeUIScheme) +
+  const base::string16 embedderAbout =
+      base::UTF8ToUTF16(client_->GetEmbedderRepresentationOfAboutScheme()) +
       base::ASCIIToUTF16(url::kStandardSchemeSeparator);
 
   const int kUrl = ACMatchClassification::URL;
   const int kMatch = kUrl | ACMatchClassification::MATCH;
 
   base::string16 text = input.text();
-  bool starting_chrome = base::StartsWith(kChrome, text, false);
-  if (starting_chrome || base::StartsWith(kAbout, text, false)) {
+  bool starting_about = base::StartsWith(embedderAbout, text, false);
+  if (starting_about || base::StartsWith(kAbout, text, false)) {
     ACMatchClassifications styles;
-    // Highlight the input portion matching "chrome://"; or if the user has
-    // input "about:" (with optional slashes), highlight the whole "chrome://".
-    bool highlight = starting_chrome || text.length() > kAboutSchemeLength;
+    // Highlight the input portion matching |embedderAbout|; or if the user has
+    // input "about:" (with optional slashes), highlight the whole
+    // |embedderAbout|.
+    bool highlight = starting_about || text.length() > kAboutSchemeLength;
     styles.push_back(ACMatchClassification(0, highlight ? kMatch : kUrl));
-    size_t offset = starting_chrome ? text.length() : kChrome.length();
+    size_t offset = starting_about ? text.length() : embedderAbout.length();
     if (highlight)
       styles.push_back(ACMatchClassification(offset, kUrl));
-    // Include some common builtin chrome URLs as the user types the scheme.
-    AddMatch(base::ASCIIToUTF16(chrome::kChromeUIChromeURLsURL),
-             base::string16(), styles);
-#if !defined(OS_ANDROID)
-    AddMatch(base::ASCIIToUTF16(chrome::kChromeUISettingsURL),
-             base::string16(), styles);
-#endif
-    AddMatch(base::ASCIIToUTF16(chrome::kChromeUIVersionURL),
-             base::string16(), styles);
+    // Include some common builtin URLs as the user types the scheme.
+    for (base::string16 url : client_->GetBuiltinsToProvideAsUserTypes())
+      AddMatch(url, base::string16(), styles);
   } else {
-    // Match input about: or chrome: URL input against builtin chrome URLs.
+    // Match input about: or |embedderAbout| URL input against builtin URLs.
     GURL url = url_fixer::FixupURL(base::UTF16ToUTF8(text), std::string());
     // BuiltinProvider doesn't know how to suggest valid ?query or #fragment
-    // extensions to chrome: URLs.
-    if (url.SchemeIs(content::kChromeUIScheme) && url.has_host() &&
-        !url.has_query() && !url.has_ref()) {
+    // extensions to builtin URLs.
+    if (url.SchemeIs(
+            client_->GetEmbedderRepresentationOfAboutScheme().c_str()) &&
+        url.has_host() && !url.has_query() && !url.has_ref()) {
       // Suggest about:blank for substrings, taking URL fixup into account.
       // Chrome does not support trailing slashes or paths for about:blank.
       const base::string16 blank_host = base::ASCIIToUTF16("blank");
@@ -128,14 +87,14 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       // Include the path for sub-pages (e.g. "chrome://settings/browser").
       base::string16 host_and_path = base::UTF8ToUTF16(url.host() + url.path());
       base::TrimString(host_and_path, base::ASCIIToUTF16("/"), &host_and_path);
-      size_t match_length = kChrome.length() + host_and_path.length();
+      size_t match_length = embedderAbout.length() + host_and_path.length();
       for (Builtins::const_iterator i(builtins_.begin());
           (i != builtins_.end()) && (matches_.size() < kMaxMatches); ++i) {
         if (base::StartsWith(*i, host_and_path, false)) {
           ACMatchClassifications styles;
-          // Highlight the "chrome://" scheme, even for input "about:foo".
+          // Highlight |embedderAbout|, even for input "about:foo".
           styles.push_back(ACMatchClassification(0, kMatch));
-          base::string16 match_string = kChrome + *i;
+          base::string16 match_string = embedderAbout + *i;
           if (match_string.length() > match_length)
             styles.push_back(ACMatchClassification(match_length, kUrl));
           AddMatch(match_string, match_string.substr(match_length), styles);

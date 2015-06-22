@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 #define COMPONENTS_OMNIBOX_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
+#include <string>
+
 #include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_scheme_classifier.h"
 #include "components/search_engines/search_terms_data.h"
@@ -55,6 +57,9 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   }
 
   MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());
+  MOCK_METHOD0(GetEmbedderRepresentationOfAboutScheme, std::string());
+  MOCK_METHOD0(GetBuiltinURLs, std::vector<base::string16>());
+  MOCK_METHOD0(GetBuiltinsToProvideAsUserTypes, std::vector<base::string16>());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
   MOCK_CONST_METHOD0(BookmarkBarIsVisible, bool());

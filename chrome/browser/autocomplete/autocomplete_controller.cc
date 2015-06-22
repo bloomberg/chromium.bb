@@ -178,7 +178,7 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
     providers_.push_back(new BookmarkProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
-    providers_.push_back(new BuiltinProvider());
+    providers_.push_back(new BuiltinProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK)
     providers_.push_back(new HistoryQuickProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {

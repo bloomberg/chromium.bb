@@ -7,12 +7,15 @@
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,7 +32,11 @@ class BuiltinProviderTest : public testing::Test {
   BuiltinProviderTest() : provider_(NULL) {}
   ~BuiltinProviderTest() override {}
 
-  void SetUp() override { provider_ = new BuiltinProvider(); }
+  void SetUp() override {
+    profile_.reset(new TestingProfile());
+    client_.reset(new ChromeAutocompleteProviderClient(profile_.get()));
+    provider_ = new BuiltinProvider(client_.get());
+  }
   void TearDown() override { provider_ = NULL; }
 
   void RunTest(const TestData cases[], size_t num_cases) {
@@ -54,6 +61,10 @@ class BuiltinProviderTest : public testing::Test {
     }
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<ChromeAutocompleteProviderClient> client_;
   scoped_refptr<BuiltinProvider> provider_;
 
  private:

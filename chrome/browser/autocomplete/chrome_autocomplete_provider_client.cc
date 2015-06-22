@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -20,12 +21,37 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/notification_service.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/autocomplete/keyword_extensions_delegate_impl.h"
 #endif
+
+#if !defined(OS_ANDROID)
+namespace {
+
+// This list should be kept in sync with chrome/common/url_constants.h.
+// Only include useful sub-pages, confirmation alerts are not useful.
+const char* const kChromeSettingsSubPages[] = {
+    chrome::kAutofillSubPage,
+    chrome::kClearBrowserDataSubPage,
+    chrome::kContentSettingsSubPage,
+    chrome::kContentSettingsExceptionsSubPage,
+    chrome::kImportDataSubPage,
+    chrome::kLanguageOptionsSubPage,
+    chrome::kPasswordManagerSubPage,
+    chrome::kResetProfileSettingsSubPage,
+    chrome::kSearchEnginesSubPage,
+    chrome::kSyncSetupSubPage,
+#if defined(OS_CHROMEOS)
+    chrome::kInternetOptionsSubPage,
+#endif
+};
+
+}  // namespace
+#endif  // !defined(OS_ANDROID)
 
 ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
@@ -119,6 +145,49 @@ ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
 
 std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() const {
   return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+}
+
+std::string
+ChromeAutocompleteProviderClient::GetEmbedderRepresentationOfAboutScheme() {
+  return content::kChromeUIScheme;
+}
+
+std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
+  std::vector<std::string> chrome_builtins(
+      chrome::kChromeHostURLs,
+      chrome::kChromeHostURLs + chrome::kNumberOfChromeHostURLs);
+  std::sort(chrome_builtins.begin(), chrome_builtins.end());
+
+  std::vector<base::string16> builtins;
+
+  for (std::vector<std::string>::iterator i(chrome_builtins.begin());
+       i != chrome_builtins.end(); ++i)
+    builtins.push_back(base::ASCIIToUTF16(*i));
+
+#if !defined(OS_ANDROID)
+  base::string16 settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
+                          base::ASCIIToUTF16("/"));
+  for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++) {
+    builtins.push_back(settings +
+                       base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
+  }
+#endif
+
+  return builtins;
+}
+
+std::vector<base::string16>
+ChromeAutocompleteProviderClient::GetBuiltinsToProvideAsUserTypes() {
+  std::vector<base::string16> builtins_to_provide;
+  builtins_to_provide.push_back(
+      base::ASCIIToUTF16(chrome::kChromeUIChromeURLsURL));
+#if !defined(OS_ANDROID)
+  builtins_to_provide.push_back(
+      base::ASCIIToUTF16(chrome::kChromeUISettingsURL));
+#endif
+  builtins_to_provide.push_back(
+      base::ASCIIToUTF16(chrome::kChromeUIVersionURL));
+  return builtins_to_provide;
 }
 
 bool ChromeAutocompleteProviderClient::IsOffTheRecord() const {

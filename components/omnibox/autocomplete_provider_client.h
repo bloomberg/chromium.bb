@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 #define COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/keyword_id.h"
@@ -63,6 +65,22 @@ class AutocompleteProviderClient {
   // The value to use for Accept-Languages HTTP header when making an HTTP
   // request.
   virtual std::string GetAcceptLanguages() const = 0;
+
+  // The embedder's representation of the |about| URL scheme for builtin URLs
+  // (e.g., |chrome| for Chrome).
+  virtual std::string GetEmbedderRepresentationOfAboutScheme() = 0;
+
+  // The set of built-in URLs considered worth suggesting as autocomplete
+  // suggestions to the user.  Some built-in URLs, e.g. hidden URLs that
+  // intentionally crash the product for testing purposes, may be omitted from
+  // this list if suggesting them is undesirable.
+  virtual std::vector<base::string16> GetBuiltinURLs() = 0;
+
+  // The set of URLs to provide as autocomplete suggestions as the user types a
+  // prefix of the |about| scheme or the embedder's representation of that
+  // scheme. Note that this may be a subset of GetBuiltinURLs(), e.g., only the
+  // most commonly-used URLs from that set.
+  virtual std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() = 0;
 
   virtual bool IsOffTheRecord() const = 0;
   virtual bool SearchSuggestEnabled() const = 0;
