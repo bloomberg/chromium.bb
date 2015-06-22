@@ -57,6 +57,7 @@ public:
     // otherwise it will be converted to DOWNSTREAM
     VisiblePosition() : m_affinity(VP_DEFAULT_AFFINITY) { }
     explicit VisiblePosition(const Position&, EAffinity = VP_DEFAULT_AFFINITY);
+    explicit VisiblePosition(const PositionInComposedTree&, EAffinity = VP_DEFAULT_AFFINITY);
     explicit VisiblePosition(const PositionWithAffinity&);
 
     void clear() { m_deepPosition.clear(); }

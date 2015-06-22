@@ -53,6 +53,11 @@ VisiblePosition::VisiblePosition(const Position &pos, EAffinity affinity)
     init(pos, affinity);
 }
 
+VisiblePosition::VisiblePosition(const PositionInComposedTree& pos, EAffinity affinity)
+    : VisiblePosition(toPositionInDOMTree(pos), affinity)
+{
+}
+
 VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinity)
 {
     init(positionWithAffinity.position(), positionWithAffinity.affinity());
