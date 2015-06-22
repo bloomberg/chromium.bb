@@ -1573,7 +1573,7 @@ TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
 }
 
 // Makes sure the transition from unified to single won't crash
-// with docked wnidows.
+// with docked windows.
 TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
   if (!SupportsMultipleDisplays())
     return;
@@ -1588,11 +1588,12 @@ TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 50, 50)));
   docked->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DOCKED);
   ASSERT_TRUE(wm::GetWindowState(docked.get())->IsDocked());
+  // 47 pixels reserved for launcher shelf height.
   EXPECT_EQ("0,0 250x453", docked->bounds().ToString());
-  UpdateDisplay("300x200");
+  UpdateDisplay("300x300");
   // Make sure the window is still docked.
   EXPECT_TRUE(wm::GetWindowState(docked.get())->IsDocked());
-  EXPECT_EQ("0,0 250x250", docked->bounds().ToString());
+  EXPECT_EQ("0,0 250x253", docked->bounds().ToString());
 }
 
 class ScreenShutdownTest : public test::AshTestBase {
