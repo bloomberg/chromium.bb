@@ -822,7 +822,7 @@ crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
 crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/313846 [ Release XP ] http/tests/images/bmp-partial-load.html [ ImageOnlyFailure Pass ]
 
-crbug.com/390125 media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
+crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
