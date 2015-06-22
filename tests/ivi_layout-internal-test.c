@@ -1047,6 +1047,69 @@ test_layer_remove_notification(struct test_context *ctx)
 #undef LAYER_NUM
 }
 
+static void
+test_layer_bad_properties_changed_notification_callback(struct ivi_layout_layer *ivilayer,
+							const struct ivi_layout_layer_properties *prop,
+							enum ivi_layout_notification_mask mask,
+							void *userdata)
+{
+}
+
+static void
+test_layer_bad_properties_changed_notification(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_layer *ivilayer;
+
+	ivilayer = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
+
+	iassert(ctl->layer_add_notification(
+		    NULL, test_layer_bad_properties_changed_notification_callback, NULL) == IVI_FAILED);
+	iassert(ctl->layer_add_notification(ivilayer, NULL, NULL) == IVI_FAILED);
+
+	ctl->layer_destroy(ivilayer);
+}
+
+static void
+test_surface_bad_configure_notification(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->add_notification_configure_surface(NULL, NULL) == IVI_FAILED);
+}
+
+static void
+test_layer_bad_create_notification(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->add_notification_create_layer(NULL, NULL) == IVI_FAILED);
+}
+
+static void
+test_surface_bad_create_notification(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->add_notification_create_surface(NULL, NULL) == IVI_FAILED);
+}
+
+static void
+test_layer_bad_remove_notification(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->add_notification_remove_layer(NULL, NULL) == IVI_FAILED);
+}
+
+static void
+test_surface_bad_remove_notification(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+
+	iassert(ctl->add_notification_remove_surface(NULL, NULL) == IVI_FAILED);
+}
+
 /************************ tests end ********************************/
 
 static void
@@ -1099,6 +1162,12 @@ run_internal_tests(void *data)
 	test_layer_properties_changed_notification(ctx);
 	test_layer_create_notification(ctx);
 	test_layer_remove_notification(ctx);
+	test_layer_bad_properties_changed_notification(ctx);
+	test_surface_bad_configure_notification(ctx);
+	test_layer_bad_create_notification(ctx);
+	test_surface_bad_create_notification(ctx);
+	test_layer_bad_remove_notification(ctx);
+	test_surface_bad_remove_notification(ctx);
 
 	weston_compositor_exit_with_code(ctx->compositor, EXIT_SUCCESS);
 	free(ctx);
