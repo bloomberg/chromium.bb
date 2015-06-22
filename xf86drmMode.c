@@ -56,14 +56,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifdef HAVE_VALGRIND
-#include <valgrind.h>
-#include <memcheck.h>
-#define VG(x) x
-#else
-#define VG(x)
-#endif
-
 #define memclear(s) memset(&s, 0, sizeof(s))
 
 #define U642VOID(x) ((void *)(unsigned long)(x))
