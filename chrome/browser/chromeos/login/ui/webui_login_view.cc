@@ -343,7 +343,19 @@ void WebUILoginView::SetStatusAreaVisible(bool visible) {
 
 void WebUILoginView::SetUIEnabled(bool enabled) {
   forward_keyboard_event_ = enabled;
-  ash::Shell::GetInstance()->GetPrimarySystemTray()->SetEnabled(enabled);
+  ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+
+  // We disable the UI to prevent user from interracting with UI elements,
+  // particullary with the system tray menu. However, in case if the system tray
+  // bubble is opened at this point, it remains opened and interactictive even
+  // after SystemTray::SetEnabled(false) call, which can be dangerous
+  // (http://crbug.com/497080). Close the menu to fix it. Calling
+  // SystemTray::SetEnabled(false) guarantees, that the menu will not be opened
+  // until the UI is enabled again.
+  if (!enabled && tray->HasSystemBubble())
+    tray->CloseSystemBubble();
+
+  tray->SetEnabled(enabled);
 }
 
 void WebUILoginView::AddFrameObserver(FrameObserver* frame_observer) {
