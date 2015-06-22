@@ -5,7 +5,6 @@
 """A module for the clobber command."""
 
 import os
-import shutil
 
 import cr
 
@@ -30,19 +29,7 @@ class ClobberCommand(cr.Command):
   def Clobber(cls):
     """Performs the clobber."""
     build_dir = cr.context.Get('CR_BUILD_DIR')
-    verbose = cr.context.verbose >= 3 or cr.context.dry_run
-    delete = not cr.context.dry_run
-    print 'Clobbering...'
-    for f in os.listdir(build_dir):
-      path = os.path.join(build_dir, f)
-      if os.path.isfile(path):
-        if verbose:
-          print 'Delete file %s' % path
-        if delete:
-          os.unlink(path)
-      elif os.path.isdir(path):
-        if verbose:
-          print 'Delete folder %s' % path
-        if delete:
-          shutil.rmtree(path)
+    clobber_path = os.path.join('{CR_SRC}', 'build', 'clobber.py')
+    print 'Clobbering output directory %s...' % build_dir
+    cr.Host.Execute(clobber_path, build_dir)
     print 'Done'
