@@ -60,8 +60,6 @@ public:
 
 private:
     explicit WorkerPerformance(WorkerGlobalScope*);
-
-    Member<MemoryInfo> m_memoryInfo;
 };
 
 } // namespace blink

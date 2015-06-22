@@ -58,9 +58,7 @@ ExecutionContext* Performance::executionContext() const
 
 MemoryInfo* Performance::memory()
 {
-    if (!m_memoryInfo)
-        m_memoryInfo = MemoryInfo::create();
-    return m_memoryInfo.get();
+    return MemoryInfo::create();
 }
 
 PerformanceNavigation* Performance::navigation() const
@@ -83,7 +81,6 @@ DEFINE_TRACE(Performance)
 {
     visitor->trace(m_navigation);
     visitor->trace(m_timing);
-    visitor->trace(m_memoryInfo);
     DOMWindowProperty::trace(visitor);
     PerformanceBase::trace(visitor);
 }

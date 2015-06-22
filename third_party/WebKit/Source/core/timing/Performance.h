@@ -64,8 +64,6 @@ private:
 
     mutable Member<PerformanceNavigation> m_navigation;
     mutable Member<PerformanceTiming> m_timing;
-
-    Member<MemoryInfo> m_memoryInfo;
 };
 
 } // namespace blink
