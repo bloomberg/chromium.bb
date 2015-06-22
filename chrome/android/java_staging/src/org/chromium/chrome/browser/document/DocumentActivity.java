@@ -417,11 +417,6 @@ public class DocumentActivity extends ChromeActivity {
 
     @Override
     public void onStopWithNative() {
-        if (mDocumentTab != null) {
-            mDocumentTab.setShouldPreserve(!IntentUtils.safeGetBooleanExtra(getIntent(),
-                    IntentHandler.EXTRA_APPEND_TASK, false));
-            mTabModel.updateEntry(getIntent(), mDocumentTab);
-        }
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onStopWithNative();
     }
