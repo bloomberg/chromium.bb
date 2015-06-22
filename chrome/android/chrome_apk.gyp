@@ -131,9 +131,6 @@
       'type': 'none',
       'variables': {
         'java_in_dir': '<(chrome_java_dir)',
-        'R_package': 'com.google.android.apps.chrome',
-        'R_package_relpath': 'com/google/android/apps/chrome',
-        'has_java_resources': 1,
       },
       'dependencies': [
         'custom_tabs_service_aidl',
