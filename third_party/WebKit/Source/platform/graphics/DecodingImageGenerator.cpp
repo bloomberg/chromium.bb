@@ -63,7 +63,7 @@ SkData* DecodingImageGenerator::onRefEncodedData()
 }
 
 SkImageGenerator::Result DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
-    void* pixels, size_t rowBytes, SkPMColor ctable[], int* ctableCount)
+    void* pixels, size_t rowBytes, const Options&, SkPMColor ctable[], int* ctableCount)
 {
     TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "index", static_cast<int>(m_frameIndex));
 
