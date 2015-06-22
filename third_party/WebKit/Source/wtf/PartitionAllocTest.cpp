@@ -194,6 +194,15 @@ void CycleGenericFreeCache(size_t size)
     }
 }
 
+void CheckPageInCore(void* ptr, bool inCore)
+{
+#if OS(LINUX)
+    unsigned char ret;
+    EXPECT_EQ(0, mincore(ptr, kSystemPageSize, &ret));
+    EXPECT_EQ(inCore, ret);
+#endif
+}
+
 class MockPartitionStatsDumper : public PartitionStatsDumper {
 public:
     MockPartitionStatsDumper()
@@ -1519,7 +1528,7 @@ TEST(PartitionAllocTest, DumpMemoryStats)
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
             partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
-            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+            EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
             size_t slotSize = 65536 + (65536 / kGenericNumBucketsPerOrder);
             const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(slotSize);
@@ -1527,8 +1536,13 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_TRUE(stats->isValid);
             EXPECT_FALSE(stats->isDirectMap);
             EXPECT_EQ(slotSize, stats->bucketSlotSize);
-            // TODO(cevans): add in the extra EXPECTs once
-            // https://codereview.chromium.org/1198803002/ lands.
+            EXPECT_EQ(0u, stats->activeBytes);
+            EXPECT_EQ(slotSize, stats->residentBytes);
+            EXPECT_EQ(slotSize, stats->decommittableBytes);
+            EXPECT_EQ(0u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(1u, stats->numEmptyPages);
+            EXPECT_EQ(0u, stats->numDecommittedPages);
         }
 
         void* ptr2 = partitionAllocGeneric(genericAllocator.root(), 65536 + kSystemPageSize + 1);
@@ -1565,7 +1579,7 @@ TEST(PartitionAllocTest, Purge)
 {
     TestSetup();
 
-    void* ptr = partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize);
+    char* ptr = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize));
     partitionFreeGeneric(genericAllocator.root(), ptr);
     {
         MockPartitionStatsDumper mockStatsDumperGeneric;
@@ -1593,6 +1607,14 @@ TEST(PartitionAllocTest, Purge)
     // Calling purge again here is a good way of testing we didn't mess up the
     // state of the free cache ring.
     partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
+
+    char* bigPtr = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 256 * 1024));
+    partitionFreeGeneric(genericAllocator.root(), bigPtr);
+    partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
+
+    CheckPageInCore(ptr - kPointerOffset, false);
+    CheckPageInCore(bigPtr - kPointerOffset, false);
+
     TestShutdown();
 }
 

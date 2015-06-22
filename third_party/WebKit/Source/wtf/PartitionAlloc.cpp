@@ -928,6 +928,9 @@ void partitionFreeSlowPath(PartitionPage* page)
             (void) partitionSetNewActivePage(bucket);
         ASSERT(bucket->activePagesHead != page);
 
+        partitionPageSetRawSize(page, 0);
+        ASSERT(!partitionPageGetRawSize(page));
+
         partitionRegisterEmptyPage(page);
     } else {
         ASSERT(!partitionBucketIsDirectMapped(bucket));
