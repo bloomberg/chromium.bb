@@ -696,6 +696,54 @@ class TestGitCl(TestCase):
         squash=True,
         expected_upstream_ref='origin/master')
 
+  def test_upload_branch_deps(self):
+    def mock_run_git(*args, **_kwargs):
+      if args[0] == ['for-each-ref',
+                       '--format=%(refname:short) %(upstream:short)',
+                       'refs/heads']:
+        # Create a local branch dependency tree that looks like this:
+        # test1 -> test2 -> test3   -> test4 -> test5
+        #                -> test3.1
+        # test6 -> test0
+        branch_deps = [
+            'test2 test1',    # test1 -> test2
+            'test3 test2',    # test2 -> test3
+            'test3.1 test2',  # test2 -> test3.1
+            'test4 test3',    # test3 -> test4
+            'test5 test4',    # test4 -> test5
+            'test6 test0',    # test0 -> test6
+            'test7',          # test7
+        ]
+        return '\n'.join(branch_deps)
+    self.mock(git_cl, 'RunGit', mock_run_git)
+
+    class RecordCalls:
+      times_called = 0
+    record_calls = RecordCalls()
+    def mock_CMDupload(*args, **_kwargs):
+      record_calls.times_called += 1
+      return 0
+    self.mock(git_cl, 'CMDupload', mock_CMDupload)
+
+    self.calls = [
+        (('[Press enter to continue or ctrl-C to quit]',), ''),
+      ]
+
+    class MockChangelist():
+      def __init__(self):
+        pass
+      def GetBranch(self):
+        return 'test1'
+      def GetIssue(self):
+        return '123'
+      def GetPatchset(self):
+        return '1001'
+
+    ret = git_cl.upload_branch_deps(MockChangelist(), [])
+    # CMDupload should have been called 5 times because of 5 dependent branches.
+    self.assertEquals(5, record_calls.times_called)
+    self.assertEquals(0, ret)
+
   def test_config_gerrit_download_hook(self):
     self.mock(git_cl, 'FindCodereviewSettingsFile', CodereviewSettingsFileMock)
     def ParseCodereviewSettingsContent(content):

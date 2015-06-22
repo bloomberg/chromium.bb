@@ -10,6 +10,7 @@
 from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
 import base64
+import collections
 import glob
 import httplib
 import json
@@ -1516,6 +1517,105 @@ def get_cl_statuses(
       url = cl.GetIssueURL()
       yield (b, url, 'waiting' if url else 'error')
 
+
+def upload_branch_deps(cl, args):
+  """Uploads CLs of local branches that are dependents of the current branch.
+
+  If the local branch dependency tree looks like:
+  test1 -> test2.1 -> test3.1
+                   -> test3.2
+        -> test2.2 -> test3.3
+
+  and you run "git cl upload --dependencies" from test1 then "git cl upload" is
+  run on the dependent branches in this order:
+  test2.1, test3.1, test3.2, test2.2, test3.3
+
+  Note: This function does not rebase your local dependent branches. Use it when
+        you make a change to the parent branch that will not conflict with its
+        dependent branches, and you would like their dependencies updated in
+        Rietveld.
+  """
+  if git_common.is_dirty_git_tree('upload-branch-deps'):
+    return 1
+
+  root_branch = cl.GetBranch()
+  if root_branch is None:
+    DieWithError('Can\'t find dependent branches from detached HEAD state. '
+                 'Get on a branch!')
+  if not cl.GetIssue() or not cl.GetPatchset():
+    DieWithError('Current branch does not have an uploaded CL. We cannot set '
+                 'patchset dependencies without an uploaded CL.')
+
+  branches = RunGit(['for-each-ref',
+                     '--format=%(refname:short) %(upstream:short)',
+                     'refs/heads'])
+  if not branches:
+    print('No local branches found.')
+    return 0
+
+  # Create a dictionary of all local branches to the branches that are dependent
+  # on it.
+  tracked_to_dependents = collections.defaultdict(list)
+  for b in branches.splitlines():
+    tokens = b.split()
+    if len(tokens) == 2:
+      branch_name, tracked = tokens
+      tracked_to_dependents[tracked].append(branch_name)
+
+  print
+  print 'The dependent local branches of %s are:' % root_branch
+  dependents = []
+  def traverse_dependents_preorder(branch, padding=''):
+    dependents_to_process = tracked_to_dependents.get(branch, [])
+    padding += '  '
+    for dependent in dependents_to_process:
+      print '%s%s' % (padding, dependent)
+      dependents.append(dependent)
+      traverse_dependents_preorder(dependent, padding)
+  traverse_dependents_preorder(root_branch)
+  print
+
+  if not dependents:
+    print 'There are no dependent local branches for %s' % root_branch
+    return 0
+
+  print ('This command will checkout all dependent branches and run '
+         '"git cl upload".')
+  ask_for_data('[Press enter to continue or ctrl-C to quit]')
+
+  # Add a default patchset title to all upload calls.
+  args.extend(['-t', 'Updated patchset dependency'])
+  # Record all dependents that failed to upload.
+  failures = {}
+  # Go through all dependents, checkout the branch and upload.
+  try:
+    for dependent_branch in dependents:
+      print
+      print '--------------------------------------'
+      print 'Running "git cl upload" from %s:' % dependent_branch
+      RunGit(['checkout', '-q', dependent_branch])
+      print
+      try:
+        if CMDupload(OptionParser(), args) != 0:
+          print 'Upload failed for %s!' % dependent_branch
+          failures[dependent_branch] = 1
+      except:  # pylint: disable=W0702
+        failures[dependent_branch] = 1
+      print
+  finally:
+    # Swap back to the original root branch.
+    RunGit(['checkout', '-q', root_branch])
+
+  print
+  print 'Upload complete for dependent branches!'
+  for dependent_branch in dependents:
+    upload_status = 'failed' if failures.get(dependent_branch) else 'succeeded'
+    print '  %s : %s' % (dependent_branch, upload_status)
+  print
+
+  return 0
+
+
 def CMDstatus(parser, args):
   """Show status of changelists.
 
@@ -2197,7 +2297,11 @@ def CMDupload(parser, args):
   parser.add_option('--cq-dry-run', dest='cq_dry_run', action='store_true',
                     help='Send the patchset to do a CQ dry run right after '
                          'upload.')
+  parser.add_option('--dependencies', action='store_true',
+                    help='Uploads CLs of all the local branches that depend on '
+                         'the current branch')
 
+  orig_args = args
   add_git_similarity(parser)
   auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
@@ -2282,6 +2386,16 @@ def CMDupload(parser, args):
           options.verbose,
           sys.stdout)
 
+    # Upload all dependencies if specified.
+    if options.dependencies:
+      print
+      print '--dependencies has been specified.'
+      print 'All dependent local branches will be re-uploaded.'
+      print
+      # Remove the dependencies flag from args so that we do not end up in a
+      # loop.
+      orig_args.remove('--dependencies')
+      upload_branch_deps(cl, orig_args)
   return ret
 
 
