@@ -11,15 +11,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Process;
-import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.ui.UiUtils;
 
 import java.lang.ref.WeakReference;
@@ -199,10 +198,7 @@ public class ActivityWindowAndroid
         mHandler.removeCallbacks(mClearPermissionRequestsTask);
 
         // TODO(tedchoc): Remove the MNC check once the SDK version is bumped.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1
-                && !TextUtils.equals("MNC", Build.VERSION.CODENAME)) {
-            return false;
-        }
+        if (!BuildInfo.isMncOrLater()) return false;
 
         // TODO(tedchoc): Remove the reflection aspect of this once a public M SDK is available.
         Activity activity = mActivityRef.get();

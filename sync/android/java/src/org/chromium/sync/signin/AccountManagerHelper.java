@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.net.NetworkChangeNotifier;
@@ -259,8 +260,9 @@ public class AccountManagerHelper {
     }
 
     private boolean hasUseCredentialsPermission() {
-        return mApplicationContext.checkPermission(Manifest.permission.USE_CREDENTIALS,
-                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+        return BuildInfo.isMncOrLater()
+                || mApplicationContext.checkPermission(Manifest.permission.USE_CREDENTIALS,
+                        Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
     }
 
     // Gets the auth token synchronously

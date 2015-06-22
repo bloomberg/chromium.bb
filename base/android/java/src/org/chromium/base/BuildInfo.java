@@ -10,6 +10,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
 
 /**
@@ -121,5 +122,14 @@ public class BuildInfo {
     @CalledByNative
     public static int getSdkInt() {
         return Build.VERSION.SDK_INT;
+    }
+
+    /**
+     * @return Whether the Android build is M or later.
+     */
+    public static boolean isMncOrLater() {
+        // TODO(bauerb): Update this once the SDK is updated.
+        return Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1
+                 || TextUtils.equals("MNC", Build.VERSION.CODENAME);
     }
 }
