@@ -575,6 +575,7 @@
           'type': 'none',
           'dependencies': [
             'activity_type_ids_java',
+            'chrome_locale_paks',
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
             'chrome_version_java',
@@ -641,6 +642,18 @@
           },
           'includes': [
             '../build/java_strings_grd.gypi',
+          ],
+        },
+        {
+          # GN: //chrome/android:chrome_locale_paks
+          'target_name': 'chrome_locale_paks',
+          'type': 'none',
+          'variables': {
+            'locale_pak_files': [ '<@(chrome_android_pak_locale_resources)' ],
+          },
+          'includes': [
+            'chrome_android_paks.gypi',
+            '../build/android/locale_pak_resources.gypi',
           ],
         },
         {
