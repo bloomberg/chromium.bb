@@ -45,26 +45,24 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kDisplayErrorNotificationId,
+      base::string16(),  // title
       l10n_util::GetStringUTF16(message_id),
-      base::string16(),  // message
       bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
       base::string16(),  // display_source
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
           system_notifier::kNotifierDisplayError),
-      message_center::RichNotificationData(),
-      NULL));
+      message_center::RichNotificationData(), NULL));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
-base::string16 DisplayErrorObserver::
-    GetTitleOfDisplayErrorNotificationForTest() {
+base::string16
+DisplayErrorObserver::GetDisplayErrorNotificationMessageForTest() {
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
   for (message_center::NotificationList::Notifications::const_iterator iter =
            notifications.begin(); iter != notifications.end(); ++iter) {
     if ((*iter)->id() == kDisplayErrorNotificationId)
-      return (*iter)->title();
+      return (*iter)->message();
   }
 
   return base::string16();

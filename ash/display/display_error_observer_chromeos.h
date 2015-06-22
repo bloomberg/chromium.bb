@@ -28,7 +28,7 @@ class ASH_EXPORT DisplayErrorObserver
  private:
   friend class DisplayErrorObserverTest;
 
-  base::string16 GetTitleOfDisplayErrorNotificationForTest();
+  base::string16 GetDisplayErrorNotificationMessageForTest();
 
   DISALLOW_COPY_AND_ASSIGN(DisplayErrorObserver);
 };

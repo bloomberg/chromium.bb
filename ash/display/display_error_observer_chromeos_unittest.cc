@@ -31,7 +31,7 @@ class DisplayErrorObserverTest : public test::AshTestBase {
   DisplayErrorObserver* observer() { return observer_.get(); }
 
   base::string16 GetMessageContents() {
-    return observer_->GetTitleOfDisplayErrorNotificationForTest();
+    return observer_->GetDisplayErrorNotificationMessageForTest();
   }
 
  private:
