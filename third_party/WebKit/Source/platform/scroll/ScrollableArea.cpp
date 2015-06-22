@@ -76,8 +76,7 @@ int ScrollableArea::maxOverlapBetweenPages()
 }
 
 ScrollableArea::ScrollableArea()
-    : m_constrainsScrollingToContentEdge(true)
-    , m_inLiveResize(false)
+    : m_inLiveResize(false)
     , m_scrollbarOverlayStyle(ScrollbarOverlayStyleDefault)
     , m_scrollOriginChanged(false)
 {
@@ -309,9 +308,6 @@ ScrollResult ScrollableArea::handleWheel(const PlatformWheelEvent& wheelEvent)
 
 IntPoint ScrollableArea::adjustScrollPositionWithinRange(const IntPoint& scrollPoint) const
 {
-    if (!constrainsScrollingToContentEdge())
-        return scrollPoint;
-
     IntPoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPosition());
     newScrollPosition = newScrollPosition.expandedTo(minimumScrollPosition());
     return newScrollPosition;
@@ -319,8 +315,6 @@ IntPoint ScrollableArea::adjustScrollPositionWithinRange(const IntPoint& scrollP
 
 DoublePoint ScrollableArea::adjustScrollPositionWithinRange(const DoublePoint& scrollPoint) const
 {
-    if (!constrainsScrollingToContentEdge())
-        return scrollPoint;
     DoublePoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPositionDouble());
     newScrollPosition = newScrollPosition.expandedTo(minimumScrollPositionDouble());
     return newScrollPosition;

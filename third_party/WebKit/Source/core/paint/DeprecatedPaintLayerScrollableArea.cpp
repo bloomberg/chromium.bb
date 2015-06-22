@@ -91,8 +91,6 @@ DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(Deprecate
     , m_scrollCorner(nullptr)
     , m_resizer(nullptr)
 {
-    ScrollableArea::setConstrainsScrollingToContentEdge(false);
-
     Node* node = box().node();
     if (node && node->isElementNode()) {
         // We save and restore only the scrollOffset as the other scroll values are recalculated.

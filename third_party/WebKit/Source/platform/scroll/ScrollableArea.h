@@ -93,10 +93,6 @@ public:
 
     virtual ScrollResult handleWheel(const PlatformWheelEvent&);
 
-    // Functions for controlling if you can scroll past the end of the document.
-    bool constrainsScrollingToContentEdge() const { return m_constrainsScrollingToContentEdge; }
-    void setConstrainsScrollingToContentEdge(bool constrainsScrollingToContentEdge) { m_constrainsScrollingToContentEdge = constrainsScrollingToContentEdge; }
-
     // Adjust the passed in scroll position to keep it between the minimum and maximum positions.
     IntPoint adjustScrollPositionWithinRange(const IntPoint&) const;
     DoublePoint adjustScrollPositionWithinRange(const DoublePoint&) const;
@@ -340,7 +336,6 @@ private:
     };
 
     mutable OwnPtr<ScrollableAreaAnimators> m_animators;
-    unsigned m_constrainsScrollingToContentEdge : 1;
 
     unsigned m_inLiveResize : 1;
 

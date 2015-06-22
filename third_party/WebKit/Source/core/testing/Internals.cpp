@@ -849,14 +849,11 @@ void Internals::setFrameViewPosition(Document* document, long x, long y, Excepti
     }
 
     FrameView* frameView = document->view();
-    bool constrainsScrollingToContentEdgeOldValue = frameView->constrainsScrollingToContentEdge();
     bool scrollbarsSuppressedOldValue = frameView->scrollbarsSuppressed();
 
-    frameView->setConstrainsScrollingToContentEdge(false);
     frameView->setScrollbarsSuppressed(false);
     frameView->setScrollOffsetFromInternals(IntPoint(x, y));
     frameView->setScrollbarsSuppressed(scrollbarsSuppressedOldValue);
-    frameView->setConstrainsScrollingToContentEdge(constrainsScrollingToContentEdgeOldValue);
 }
 
 String Internals::viewportAsText(Document* document, float, int availableWidth, int availableHeight, ExceptionState& exceptionState)
