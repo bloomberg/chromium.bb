@@ -16,6 +16,9 @@
     android:gravity="center_vertical|start"
     android:orientation="vertical"
     >
+
+    <!-- Lint flags this as a false positive overlap. -->
+    <!--suppress RelativeOverlap -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
