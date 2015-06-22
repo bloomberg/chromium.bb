@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.ContentProvider;
@@ -12,6 +13,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.UriMatcher;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
@@ -35,7 +37,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.database.SQLiteCursor;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.content.app.ContentApplication;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.sync.AndroidSyncSettings;
 
 import java.util.ArrayList;
@@ -246,6 +253,22 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+        ContentApplication.initCommandLine(getContext());
+
+        BrowserStartupController.get(getContext(), LibraryProcessType.PROCESS_BROWSER)
+                .addStartupCompletedObserver(
+                        new BrowserStartupController.StartupCallback() {
+                            @Override
+                            public void onSuccess(boolean alreadyStarted) {
+                                // TODO(knn): Investigate why this is required.
+                                ensureNativeChromeLoadedOnUIThread();
+                            }
+
+                            @Override
+                            public void onFailure() {
+                            }
+                        });
+
         // Pre-load shared preferences object, this happens on a separate thread
         PreferenceManager.getDefaultSharedPreferences(getContext());
         return true;
@@ -752,21 +775,17 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     /**
-     * Read access restrictions may be set by the manifest or subclasses, but none are set
-     * by default.
      * @return Whether the caller has read access to history and bookmarks information.
      */
-    protected boolean hasReadAccess() {
-        return true;
+    private boolean hasReadAccess() {
+        return hasPermission(Manifest.permission.READ_HISTORY_BOOKMARKS);
     }
 
     /**
-     * Write access restrictions may be set by the manifest or subclasses, but none are set
-     * by default.
      * @return Whether the caller has write access to history and bookmarks information.
      */
-    protected boolean hasWriteAccess() {
-        return true;
+    private boolean hasWriteAccess() {
+        return hasPermission(Manifest.permission.WRITE_HISTORY_BOOKMARKS);
     }
 
     /**
@@ -1277,7 +1296,22 @@ public class ChromeBrowserProvider extends ContentProvider {
     /**
      * This method should only run on UI thread.
      */
-    protected boolean ensureNativeChromeLoadedOnUIThread() {
+    @SuppressFBWarnings("DM_EXIT")
+    private boolean ensureNativeChromeLoadedOnUIThread() {
+        if (isNativeSideInitialized()) return true;
+        // Only start the GoogleServicesManager if we were initialized via a call to the browser
+        // provider.  If it wasn't, let the Chrome browser worry about sequencing the
+        // initialization.
+        boolean shouldStartGoogleServicesManager = mContentProviderApiCalled;
+        try {
+            ((ChromiumApplication) getContext().getApplicationContext())
+                    .startBrowserProcessesAndLoadLibrariesSync(shouldStartGoogleServicesManager);
+        } catch (ProcessInitException e) {
+            // Chrome browser runs in the background, so exit silently; but do exit, since
+            // otherwise the next attempt to use Chrome will find a broken JNI.
+            System.exit(-1);
+        }
+
         if (isNativeSideInitialized()) return true;
         mNativeChromeBrowserProvider = nativeInit();
         return isNativeSideInitialized();
@@ -1330,6 +1364,15 @@ public class ChromeBrowserProvider extends ContentProvider {
             }
         }
         getContext().getContentResolver().notifyChange(uri, null);
+    }
+
+    private boolean hasPermission(String permission) {
+        boolean hasPermission = getContext().checkCallingOrSelfPermission(permission)
+                == PackageManager.PERMISSION_GRANTED;
+        boolean isSystemOrGoogleCaller = ExternalAuthUtils.getInstance().isCallerValid(
+                getContext(), ExternalAuthUtils.FLAG_SHOULD_BE_GOOGLE_SIGNED
+                        | ExternalAuthUtils.FLAG_SHOULD_BE_SYSTEM);
+        return hasPermission || isSystemOrGoogleCaller;
     }
 
     private native long nativeInit();

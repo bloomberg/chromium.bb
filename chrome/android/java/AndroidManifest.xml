@@ -358,7 +358,7 @@ by a child template that "extends" this file.
         </activity>
 
         <!-- Providers for chrome data. -->
-        <provider android:name="org.chromium.chrome.browser.ChromeBrowserProviderStaging"
+        <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
             android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"
             android:exported="true">
             <path-permission android:path="/bookmarks/search_suggest_query"
