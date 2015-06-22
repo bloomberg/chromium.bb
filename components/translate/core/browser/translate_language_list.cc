@@ -254,7 +254,7 @@ void TranslateLanguageList::NotifyEvent(int line, const std::string& message) {
   callback_list_.Notify(details);
 }
 
-void TranslateLanguageList::SetSupportedLanguages(
+bool TranslateLanguageList::SetSupportedLanguages(
     const std::string& language_list) {
   // The format is:
   // /* API response */ sl({
@@ -271,7 +271,7 @@ void TranslateLanguageList::SetSupportedLanguages(
     // We don't have a NOTREACHED here since this can happen in ui_tests, even
     // though the the BrowserMain function won't call us with parameters.ui_task
     // is NULL some tests don't set it, so we must bail here.
-    return;
+    return false;
   }
   static const size_t kLanguageListCallbackNameLength =
       strlen(TranslateLanguageList::kLanguageListCallbackName);
@@ -284,7 +284,7 @@ void TranslateLanguageList::SetSupportedLanguages(
 
   if (json_value == NULL || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
     NOTREACHED();
-    return;
+    return false;
   }
   // The first level dictionary contains three sub-dict, first for source
   // languages and second for target languages, we want to use the target
@@ -296,7 +296,7 @@ void TranslateLanguageList::SetSupportedLanguages(
                                     &target_languages) ||
       target_languages == NULL) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   const std::string& locale =
@@ -327,7 +327,8 @@ void TranslateLanguageList::SetSupportedLanguages(
   if (!language_dict->GetDictionary(TranslateLanguageList::kAlphaLanguagesKey,
                                     &alpha_languages) ||
       alpha_languages == NULL) {
-    return;
+    // Return true since alpha language part is optional.
+    return true;
   }
 
   // We assume that the alpha languages are included in the above target
@@ -340,6 +341,7 @@ void TranslateLanguageList::SetSupportedLanguages(
       continue;
     alpha_languages_.insert(lang);
   }
+  return true;
 }
 
 }  // namespace translate
