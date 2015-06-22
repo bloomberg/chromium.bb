@@ -201,6 +201,7 @@ class VideoImageGenerator : public SkImageGenerator {
   Result onGetPixels(const SkImageInfo& info,
                      void* pixels,
                      size_t row_bytes,
+                     const Options&,
                      SkPMColor ctable[],
                      int* ctable_count) override {
     if (!frame_.get())
