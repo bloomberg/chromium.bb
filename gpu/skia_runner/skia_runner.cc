@@ -9,6 +9,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "gpu/skia_runner/in_process_graphics_system.h"
 #include "gpu/skia_runner/sk_picture_rasterizer.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -94,12 +95,10 @@ skia::RefPtr<SkPicture> ReadPicture(const base::FilePath& path) {
   return picture;
 }
 
-base::FilePath MakeDestinationFilename(
-    base::FilePath source_file,
-    base::FilePath destination_folder,
-    base::FilePath::StringType new_extension) {
+base::FilePath MakeDestinationPNGFilename(base::FilePath source_file,
+                                          base::FilePath destination_folder) {
   base::FilePath filename = source_file.BaseName().RemoveExtension();
-  filename = filename.AddExtension(new_extension);
+  filename = filename.AddExtension(FILE_PATH_LITERAL("png"));
   return destination_folder.AsEndingWithSeparator().Append(filename);
 }
 
@@ -109,9 +108,9 @@ std::vector<std::pair<base::FilePath, base::FilePath>> GetSkpsToRasterize(
   std::vector<std::pair<base::FilePath, base::FilePath>> files;
 
   if (base::DirectoryExists(input_path)) {
-    if (!base::DirectoryExists(output_path)) {
+    if (!output_path.empty() && !base::DirectoryExists(output_path))
       return files;
-    }
+
     base::FilePath::StringType extension = FILE_PATH_LITERAL(".skp");
     base::FileEnumerator file_iter(input_path, false,
                                    base::FileEnumerator::FILES);
@@ -119,20 +118,31 @@ std::vector<std::pair<base::FilePath, base::FilePath>> GetSkpsToRasterize(
       if (file_iter.GetInfo().GetName().MatchesExtension(extension)) {
         base::FilePath skp_file = file_iter.GetInfo().GetName();
         skp_file = input_path.AsEndingWithSeparator().Append(skp_file);
-        base::FilePath png_file = MakeDestinationFilename(
-            skp_file, output_path, FILE_PATH_LITERAL("png"));
+        base::FilePath png_file;
+        if (!output_path.empty())
+          png_file = MakeDestinationPNGFilename(skp_file, output_path);
         files.push_back(std::make_pair(skp_file, png_file));
       }
     }
   } else {
     // Single file passed. If the output file is a folder, make a name.
-    if (base::DirectoryExists(output_path)) {
-      output_path = MakeDestinationFilename(input_path, output_path,
-                                            FILE_PATH_LITERAL("png"));
-    }
+    if (base::DirectoryExists(output_path))
+      output_path = MakeDestinationPNGFilename(input_path, output_path);
     files.push_back(std::make_pair(input_path, output_path));
   }
   return files;
+}
+
+int GetSwitchInt(const base::CommandLine* command_line,
+                 std::string switch_name,
+                 int default_value) {
+  if (command_line->HasSwitch(switch_name)) {
+    std::string value = command_line->GetSwitchValueASCII(switch_name);
+    int result = default_value;
+    if (base::StringToInt(value, &result))
+      return result;
+  }
+  return default_value;
 }
 
 static const char kHelpMessage[] =
@@ -153,7 +163,9 @@ static const char kHelpMessage[] =
     "  --msaa-sample-count=(0|2|4|8|16)\n"
     "      Turn on multi-sample anti-aliasing.\n"
     "  --use-gl=(desktop|osmesa|egl|swiftshader)\n"
-    "      Specify Gl driver. --swiftshader-path required for swiftshader.\n";
+    "      Specify Gl driver. --swiftshader-path required for swiftshader.\n"
+    "  --repeat-raster-count=N\n"
+    "      Specify the number of times to repeat rasterization for timing.\n";
 
 }  // namespace anonymous
 
@@ -167,10 +179,13 @@ int main(int argc, char** argv) {
   base::FilePath input_path(command_line->GetSwitchValuePath("in-skp"));
   base::FilePath output_path(command_line->GetSwitchValuePath("out-png"));
 
-  if (input_path.empty() || output_path.empty()) {
+  if (input_path.empty()) {
     std::cout << kHelpMessage;
     return 0;
   }
+
+  if (output_path.empty())
+    std::cout << "--out-png path not specified.  Timing rasterization only.\n";
 
   std::vector<std::pair<base::FilePath, base::FilePath>> files =
       GetSkpsToRasterize(input_path, output_path);
@@ -197,17 +212,15 @@ int main(int argc, char** argv) {
   picture_rasterizer.set_use_distance_field_text(
       command_line->HasSwitch("use-distance-field-text"));
 
-  if (command_line->HasSwitch("msaa-sample-count")) {
-    std::string value = command_line->GetSwitchValueASCII("msaa-sample-count");
-    int msaa = 0;
-    if (base::StringToInt(value, &msaa))
-      picture_rasterizer.set_msaa_sample_count(msaa);
-
-    if (msaa != 0 && msaa != 2 && msaa != 4 && msaa != 8 && msaa != 16) {
-      std::cout << "Error: msaa sample count must be 0, 2, 4, 8 or 16.\n";
-      return 0;
-    }
+  int msaa = GetSwitchInt(command_line, "msaa-sample-count", 0);
+  if (msaa != 0 && msaa != 2 && msaa != 4 && msaa != 8 && msaa != 16) {
+    std::cout << "Error: msaa sample count must be 0, 2, 4, 8 or 16.\n";
+    return 0;
   }
+  picture_rasterizer.set_msaa_sample_count(msaa);
+
+  int repeat_raster_count =
+      std::max(1, GetSwitchInt(command_line, "repeat-raster-count", 1));
 
   // Disable the security precautions to ensure we correctly read the picture.
   SkPicture::SetPictureIOSecurityPrecautionsEnabled_Dangerous(false);
@@ -219,10 +232,24 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    skia::RefPtr<SkImage> image(picture_rasterizer.Rasterize(picture.get()));
-    if (!WriteSkImagePNG(image.get(), file_pair.second))
-      std::cout << "Error writing: " << file_pair.second.value() << "\n";
-    else
-      std::cout << file_pair.second.value() << " successfully created.\n";
+    // GPU Rasterize the picture and time it.
+    base::TimeTicks rasterize_start = base::TimeTicks::Now();
+    skia::RefPtr<SkImage> image;
+    for (int i = 0; i < repeat_raster_count; ++i) {
+      image = picture_rasterizer.Rasterize(picture.get());
+      graphics_system.GetGrContext()->flush();
+    }
+    base::TimeDelta rasterize_time = base::TimeTicks::Now() - rasterize_start;
+    double average_time = rasterize_time.InSecondsF() / repeat_raster_count;
+    std::cout << "Average rasterization time for " << file_pair.first.value()
+              << ": " << average_time << "s (" << 1.0 / average_time
+              << " fps)\n";
+
+    if (!file_pair.second.empty()) {
+      if (!WriteSkImagePNG(image.get(), file_pair.second))
+        std::cout << "Error writing: " << file_pair.second.value() << "\n";
+      else
+        std::cout << file_pair.second.value() << " successfully created.\n";
+    }
   }
 }

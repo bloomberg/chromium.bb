@@ -81,7 +81,6 @@ skia::RefPtr<SkImage> SkPictureRasterizer::Rasterize(
       tile_rect.fRight =
           std::min(tile_rect.fLeft + max_texture_size_, picture_rect.right());
       skia::RefPtr<SkImage> tile(RasterizeTile(picture, tile_rect));
-      // canvas.drawBitmap(tile, tile_rect.left(), tile_rect.top());
       canvas->drawImage(tile.get(), tile_rect.left(), tile_rect.top());
     }
   }
