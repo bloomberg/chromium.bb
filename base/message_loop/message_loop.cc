@@ -638,6 +638,10 @@ bool MessageLoop::DoIdleWork() {
   return false;
 }
 
+TimeTicks MessageLoop::GetNewlyAddedTaskDelay() {
+  return incoming_task_queue_->GetNewlyAddedTaskDelay();
+}
+
 void MessageLoop::DeleteSoonInternal(const tracked_objects::Location& from_here,
                                      void(*deleter)(const void*),
                                      const void* object) {

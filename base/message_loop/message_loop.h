@@ -465,6 +465,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   bool DoWork() override;
   bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
   bool DoIdleWork() override;
+  TimeTicks GetNewlyAddedTaskDelay() override;
 
   const Type type_;
 

@@ -160,9 +160,22 @@ int GpuMain(const MainFunctionParams& parameters) {
   bool dead_on_arrival = false;
 
 #if defined(OS_WIN)
+  base::MessageLoop::Type loop_type = base::MessageLoop::TYPE_IO;
   // Use a UI message loop because ANGLE and the desktop GL platform can
   // create child windows to render to.
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
+  // TODO(ananta) : Recent changes to the UI message pump class on Windows
+  // will cause delays in tasks getting processed in the GPU process which
+  // will show up on the bots in webgl conformance tests, perf tests etc.
+  // It will be great if we can work around the issues with desktop GL and
+  // avoid creating a child window in the GPU process which requires a UI
+  // message pump.
+  if ((command_line.HasSwitch(switches::kUseGL) &&
+       command_line.GetSwitchValueASCII(switches::kUseGL) == "desktop") ||
+      (command_line.HasSwitch(switches::kUseANGLE) &&
+       command_line.GetSwitchValueASCII(switches::kUseANGLE) == "gl")) {
+    loop_type = base::MessageLoop::TYPE_UI;
+  }
+  base::MessageLoop main_message_loop(loop_type);
 #elif defined(OS_LINUX) && defined(USE_X11)
   // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
   // and https://crbug.com/326995.

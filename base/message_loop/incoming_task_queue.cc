@@ -119,6 +119,11 @@ void IncomingTaskQueue::StartScheduling() {
     ScheduleWork();
 }
 
+TimeTicks IncomingTaskQueue::GetNewlyAddedTaskDelay() {
+  return !incoming_queue_.empty() ? incoming_queue_.front().delayed_run_time :
+      TimeTicks();
+}
+
 IncomingTaskQueue::~IncomingTaskQueue() {
   // Verify that WillDestroyCurrentMessageLoop() has been called.
   DCHECK(!message_loop_);

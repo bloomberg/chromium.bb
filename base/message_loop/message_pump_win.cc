@@ -12,6 +12,7 @@
 #include "base/process/memory.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/wrapped_window_proc.h"
 
@@ -33,6 +34,10 @@ static const wchar_t kWndClassFormat[] = L"Chrome_MessagePumpWindow_%p";
 // Message sent to get an additional time slice for pumping (processing) another
 // task (a series of such messages creates a continuous task pump).
 static const int kMsgHaveWork = WM_USER + 1;
+
+// The default delay for the waitable timer used to wake up the UI worker
+// thread.
+static const int64 kDefaultUIWorkerThreadWakeupTimerMs = 3;
 
 //-----------------------------------------------------------------------------
 // MessagePumpWin public:
@@ -88,37 +93,41 @@ int MessagePumpWin::GetCurrentDelay() const {
 // MessagePumpForUI public:
 
 MessagePumpForUI::MessagePumpForUI()
-    : atom_(0) {
+    : atom_(0),
+      force_fallback_timer_for_tasks_(0) {
   InitMessageWnd();
+
+  ui_worker_thread_timer_.Set(::CreateWaitableTimer(NULL, FALSE, NULL));
+  ui_worker_thread_.reset(new base::Thread("UI Pump Worker thread"));
+  ui_worker_thread_->Start();
+  ui_worker_thread_->WaitUntilThreadStarted();
+  ui_worker_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&MessagePumpForUI::DoWorkerThreadRunLoop,
+                 base::Unretained(this)));
 }
 
 MessagePumpForUI::~MessagePumpForUI() {
   DestroyWindow(message_hwnd_);
   UnregisterClass(MAKEINTATOM(atom_),
                   GetModuleFromAddress(&WndProcThunk));
+
+  ::QueueUserAPC(
+        reinterpret_cast<PAPCFUNC>(&MessagePumpForUI::ShutdownWorkerThread),
+        ui_worker_thread_->thread_handle().platform_handle(), NULL);
+  ui_worker_thread_->Stop();
 }
 
 void MessagePumpForUI::ScheduleWork() {
-  if (InterlockedExchange(&have_work_, 1))
-    return;  // Someone else continued the pumping.
+  // If we have a regular posted task at the head of queue then we need to
+  // process it quickly.
+  if (state_ && state_->delegate->GetNewlyAddedTaskDelay().is_null()) {
+    // Make sure the MessagePump does some work for us.
+    PostWorkMessage();
+    return;
+  }
 
-  // Make sure the MessagePump does some work for us.
-  BOOL ret = PostMessage(message_hwnd_, kMsgHaveWork,
-                         reinterpret_cast<WPARAM>(this), 0);
-  if (ret)
-    return;  // There was room in the Window Message queue.
-
-  // We have failed to insert a have-work message, so there is a chance that we
-  // will starve tasks/timers while sitting in a nested message loop.  Nested
-  // loops only look at Windows Message queues, and don't look at *our* task
-  // queues, etc., so we might not get a time slice in such. :-(
-  // We could abort here, but the fear is that this failure mode is plausibly
-  // common (queue is full, of about 2000 messages), so we'll do a near-graceful
-  // recovery.  Nested loops are pretty transient (we think), so this will
-  // probably be recoverable.
-  InterlockedExchange(&have_work_, 0);  // Clarify that we didn't really insert.
-  UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", MESSAGE_POST_ERROR,
-                            MESSAGE_LOOP_PROBLEM_MAX);
+  ScheduleWorkHelper();
 }
 
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
@@ -281,7 +290,7 @@ void MessagePumpForUI::HandleWorkMessage() {
   // Now give the delegate a chance to do some work.  He'll let us know if he
   // needs to do more work.
   if (state_->delegate->DoWork())
-    ScheduleWork();
+    ScheduleWorkHelper();
   state_->delegate->DoDelayedWork(&delayed_work_time_);
   RescheduleTimer();
 }
@@ -325,7 +334,7 @@ void MessagePumpForUI::RescheduleTimer() {
   int delay_msec = GetCurrentDelay();
   DCHECK_GE(delay_msec, 0);
   if (delay_msec == 0) {
-    ScheduleWork();
+    ScheduleWorkHelper();
   } else {
     if (delay_msec < USER_TIMER_MINIMUM)
       delay_msec = USER_TIMER_MINIMUM;
@@ -409,45 +418,82 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
 }
 
 bool MessagePumpForUI::ProcessPumpReplacementMessage() {
-  // When we encounter a kMsgHaveWork message, this method is called to peek
-  // and process a replacement message, such as a WM_PAINT or WM_TIMER.  The
-  // goal is to make the kMsgHaveWork as non-intrusive as possible, even though
-  // a continuous stream of such messages are posted.  This method carefully
-  // peeks a message while there is no chance for a kMsgHaveWork to be pending,
-  // then resets the have_work_ flag (allowing a replacement kMsgHaveWork to
-  // possibly be posted), and finally dispatches that peeked replacement.  Note
-  // that the re-post of kMsgHaveWork may be asynchronous to this thread!!
-
-  bool have_message = false;
-  MSG msg;
-  // We should not process all window messages if we are in the context of an
-  // OS modal loop, i.e. in the context of a windows API call like MessageBox.
-  // This is to ensure that these messages are peeked out by the OS modal loop.
-  if (MessageLoop::current()->os_modal_loop()) {
-    // We only peek out WM_PAINT and WM_TIMER here for reasons mentioned above.
-    have_message = PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE) ||
-                   PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE);
-  } else {
-    have_message = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE;
-  }
-
-  DCHECK(!have_message || kMsgHaveWork != msg.message ||
-         msg.hwnd != message_hwnd_);
-
   // Since we discarded a kMsgHaveWork message, we must update the flag.
-  int old_have_work = InterlockedExchange(&have_work_, 0);
-  DCHECK(old_have_work);
+  InterlockedExchange(&have_work_, 0);
+  return true;
+}
 
-  // We don't need a special time slice if we didn't have_message to process.
-  if (!have_message)
-    return false;
+void MessagePumpForUI::DoWorkerThreadRunLoop() {
+  DCHECK(ui_worker_thread_timer_.Get());
+  while (TRUE) {
+    DWORD ret = WaitForSingleObjectEx(
+        ui_worker_thread_timer_.Get(), INFINITE, TRUE);
+    // The only APC this thread could receive is the Shutdown APC.
+    if (ret == WAIT_IO_COMPLETION)
+      return;
 
-  // Guarantee we'll get another time slice in the case where we go into native
-  // windows code.   This ScheduleWork() may hurt performance a tiny bit when
-  // tasks appear very infrequently, but when the event queue is busy, the
-  // kMsgHaveWork events get (percentage wise) rarer and rarer.
-  ScheduleWork();
-  return ProcessMessageHelper(msg);
+    // Make sure the MessagePump does some work for us.
+    PostWorkMessage();
+
+    // Set a one shot timer to process pending delayed tasks if any in the
+    // queue. The actual resolution of the timer is dependent on the current
+    // global timer precision and therefore depends on whether Chrome or any
+    // other process has raised the timer frequency with timeBeginPeriod."
+
+    // We should set the timer only once for each iteration. The
+    // InterlockedExchange call below achieves that.
+    if (::InterlockedExchange(&force_fallback_timer_for_tasks_, 0))
+      SetWakeupTimer(kDefaultUIWorkerThreadWakeupTimerMs);
+  }
+}
+
+// static
+void CALLBACK MessagePumpForUI::ShutdownWorkerThread(ULONG_PTR param) {
+  // This function is empty because we only use the fact that an APC was posted
+  // to the worker thread to shut it down.
+  return;
+}
+
+void MessagePumpForUI::PostWorkMessage() {
+  BOOL posted = PostMessage(message_hwnd_, kMsgHaveWork,
+                            reinterpret_cast<WPARAM>(this),
+                            0);
+  if (!posted) {
+    // We have failed to insert a have-work message, so there is a chance
+    // that we will starve tasks/timers while sitting in a nested message
+    // loop. Nested loops only look at Windows Message queues, and don't
+    // look at *our* task queues, etc., so we might not get a time slice in
+    // such. :-(
+    // We could abort here, but the fear is that this failure mode is
+    // plausibly common (queue is full, of about 2000 messages), so we'll
+    // do a near-graceful recovery. Nested loops are pretty transient
+    // (we think), so this will probably be recoverable.
+    UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem",
+                              MESSAGE_POST_ERROR,
+                              MESSAGE_LOOP_PROBLEM_MAX);
+  }
+}
+
+void MessagePumpForUI::SetWakeupTimer(int64 delay_ms) {
+  // Set the timer for the delay passed in. The actual resolution of the
+  // timer is dependent on whether timeBeginPeriod was called.
+  LARGE_INTEGER due_time = {0};
+  due_time.QuadPart = -delay_ms * 10000;
+  BOOL timer_set = ::SetWaitableTimer(ui_worker_thread_timer_.Get(),
+      &due_time, 0, NULL, NULL, FALSE);
+  CHECK(timer_set);
+}
+
+void MessagePumpForUI::ScheduleWorkHelper() {
+  // Set the flag which allows the UI worker thread to repost the timer to
+  // process tasks which may not have been ready to run in the first iteration.
+  ::InterlockedExchange(&force_fallback_timer_for_tasks_, 1);
+
+  // Set a one shot timer to fire after 3 milliseconds. The actual resolution
+  // of the timer is dependent on the current global timer precision and
+  // therefore depends on whether Chrome or any other process has raised the
+  // timer frequency with timeBeginPeriod."
+  SetWakeupTimer(kDefaultUIWorkerThreadWakeupTimerMs);
 }
 
 //-----------------------------------------------------------------------------
