@@ -39,6 +39,8 @@ private:
         }
     };
     Reader* obtainReaderInternal(Client*) override { return new ReaderImpl; }
+
+    const char* debugName() const override { return "WaitingHandle"; }
 };
 
 class RepeatingReader final : public WebDataConsumerHandle::Reader {
@@ -69,11 +71,13 @@ private:
 class DoneHandle final : public WebDataConsumerHandle {
 private:
     Reader* obtainReaderInternal(Client* client) override { return new RepeatingReader(Done, client); }
+    const char* debugName() const override { return "DoneHandle"; }
 };
 
 class UnexpectedErrorHandle final : public WebDataConsumerHandle {
 private:
     Reader* obtainReaderInternal(Client* client) override { return new RepeatingReader(UnexpectedError, client); }
+    const char* debugName() const override { return "UnexpectedErrorHandle"; }
 };
 
 class WebToFetchDataConsumerHandleAdapter : public FetchDataConsumerHandle {
@@ -101,6 +105,8 @@ private:
     };
 
     Reader* obtainReaderInternal(Client* client) override { return new ReaderImpl(m_handle->obtainReader(client)); }
+
+    const char* debugName() const override { return m_handle->debugName(); }
 
     OwnPtr<WebDataConsumerHandle> m_handle;
 };

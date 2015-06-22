@@ -34,6 +34,8 @@ private:
     class ReaderImpl;
     Reader* obtainReaderInternal(Client*) override;
 
+    const char* debugName() const override { return "CompositeDataConsumerHandle"; }
+
     explicit CompositeDataConsumerHandle(PassOwnPtr<WebDataConsumerHandle>);
 
     RefPtr<Context> m_context;
