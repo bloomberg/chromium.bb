@@ -17,3 +17,14 @@ source_set("tracing") {
     "//ipc",
   ]
 }
+
+source_set("startup_tracing") {
+  sources = [
+    "startup_tracing.cc",
+    "startup_tracing.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}

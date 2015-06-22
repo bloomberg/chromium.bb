@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "components/tracing/startup_tracing.h"
 #include "content/browser/browser_main.h"
 #include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
@@ -631,7 +632,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       base::trace_event::TraceLog::GetInstance()->SetEnabled(
           trace_config,
           base::trace_event::TraceLog::RECORDING_MODE);
+    } else if (process_type != switches::kZygoteProcess) {
+      // There is no need to schedule stopping tracing in this case. Telemetry
+      // will stop tracing on demand later.
+      tracing::EnableStartupTracingIfConfigFileExists();
     }
+
 #if defined(OS_WIN)
     // Enable exporting of events to ETW if requested on the command line.
     if (command_line.HasSwitch(switches::kTraceExportEventsToETW))

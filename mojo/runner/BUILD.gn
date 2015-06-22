@@ -45,6 +45,7 @@ source_set("mojo_runner_lib") {
       "desktop/launcher_process.h",
       "desktop/main.cc",
     ]
+    deps += [ "//components/tracing:startup_tracing" ]
   } else {
     sources += [
       "android/context_init.h",

@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "components/tracing/startup_tracing.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
 
@@ -87,6 +88,10 @@ int LauncherProcessMain(int argc, char** argv) {
         base::trace_event::RECORD_UNTIL_FULL);
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
+  } else {
+    // |g_tracing| is not touched in this case and Telemetry will stop tracing
+    // on demand later.
+    tracing::EnableStartupTracingIfConfigFileExists();
   }
 
   // We want the shell::Context to outlive the MessageLoop so that pipes are

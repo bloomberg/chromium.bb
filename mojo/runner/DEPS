@@ -1,5 +1,6 @@
 include_rules = [
   "+components/devtools_service/public",
+  "+components/tracing/startup_tracing.h",
   "+components/view_manager",
   "+components/view_manager/gles2",
   "+components/view_manager/native_viewport",

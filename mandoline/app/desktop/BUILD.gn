@@ -19,6 +19,7 @@ executable("mandoline") {
   deps = [
     "//base",
     "//build/config/sanitizers:deps",
+    "//components/tracing:startup_tracing",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/runner:lib",

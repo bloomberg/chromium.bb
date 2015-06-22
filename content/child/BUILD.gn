@@ -24,6 +24,7 @@ source_set("child") {
     "//base",
     "//components/mime_util",
     "//components/tracing",
+    "//components/tracing:startup_tracing",
     "//components/webcrypto",
     "//content/common:mojo_bindings",
     "//mojo/application/public/interfaces",
