@@ -1092,6 +1092,10 @@ DEFINE_TRACE(VisibleSelection)
     visitor->trace(m_extent);
     visitor->trace(m_start);
     visitor->trace(m_end);
+    visitor->trace(m_baseInComposedTree);
+    visitor->trace(m_extentInComposedTree);
+    visitor->trace(m_startInComposedTree);
+    visitor->trace(m_endInComposedTree);
     visitor->trace(m_changeObserver);
 }
 
