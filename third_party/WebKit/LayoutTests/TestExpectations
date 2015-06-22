@@ -1242,11 +1242,6 @@ crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 crbug.com/346357 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 
-crbug.com/420749 compositing/visibility/visibility-image-layers.html [ NeedsRebaseline ]
-crbug.com/420749 compositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
-crbug.com/420749 compositing/color-matching/image-color-matching.html [ NeedsRebaseline ]
-crbug.com/420749 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsRebaseline ]
-
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
 
 crbug.com/248969 printing/page-count-with-one-word.html [ Pass Timeout ]
