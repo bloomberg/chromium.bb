@@ -38,6 +38,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         TEXT_SELECT_TAP,
         TEXT_SELECT_LONG_PRESS,
         INVALID_SELECTION,
+        CLEARED_SELECTION,
         BASE_PAGE_TAP,
         BASE_PAGE_SCROLL,
         SEARCH_BAR_TAP,

@@ -121,8 +121,6 @@ public class ContextualSearchSelectionController {
         if (baseContentView != null) {
             baseContentView.clearSelection();
         }
-        mHandler.onClearSelection();
-
         resetAllStates();
     }
 
@@ -170,7 +168,7 @@ public class ContextualSearchSelectionController {
                 shouldHandleSelection = true;
                 break;
             case SelectionEventType.SELECTION_CLEARED:
-                mHandler.onClearSelection();
+                mHandler.handleSelectionDismissal();
                 resetAllStates();
                 break;
             case SelectionEventType.SELECTION_DRAG_STARTED:

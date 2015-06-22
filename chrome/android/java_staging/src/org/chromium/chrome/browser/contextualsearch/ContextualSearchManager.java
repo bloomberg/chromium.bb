@@ -128,6 +128,12 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private boolean mIsShowingPromo;
     private boolean mDidLogPromoOutcome;
 
+    /**
+     * Whether contextual search manager is currently promoting a tab. We should be ignoring hide
+     * requests when mIsPromotingTab is set to true.
+     */
+    private boolean mIsPromotingToTab;
+
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
     private ContextualSearchPanelDelegate mSearchPanelDelegate;
 
@@ -374,6 +380,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         mIsShowingPromo = false;
         mSearchPanelDelegate.setIsPromoActive(false);
+        notifyHideContextualSearch();
     }
 
     /**
@@ -1106,6 +1113,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void promoteToTab(boolean shouldFocusOmnibox) {
+        mIsPromotingToTab = true;
         // If the request object is null that means that a Contextual Search has just started
         // and the Search Term Resolution response hasn't arrived yet. In this case, promoting
         // the Panel to a Tab will result in creating a new tab with URL about:blank. To prevent
@@ -1115,7 +1123,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 && mSearchContentViewCore != null
                 && mSearchContentViewCore.getWebContents() != null
                 && !mSearchContentViewCore.getWebContents().getUrl().equals(FIRST_RUN_FLOW_URL)) {
-            mSelectionController.clearSelection();
+
             nativeReleaseWebContents(mNativeContextualSearchManagerPtr);
             mSearchContentViewDelegate.releaseContextualSearchContentViewCore();
             if (!mTabPromotionDelegate.createContextualSearchTab(mSearchContentViewCore)) {
@@ -1146,6 +1154,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 });
             }
         }
+        mIsPromotingToTab = false;
     }
 
     @Override
@@ -1315,15 +1324,17 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void handleSelectionModification(String selection, float x, float y) {
-        if (mSearchPanelDelegate.isShowing()) {
-            getContextualSearchControl().setCentralText(selection);
+    public void handleSelectionDismissal() {
+        if (mSearchPanelDelegate.isShowing() && !mIsPromotingToTab) {
+            hideContextualSearch(StateChangeReason.CLEARED_SELECTION);
         }
     }
 
     @Override
-    public void onClearSelection() {
-        notifyHideContextualSearch();
+    public void handleSelectionModification(String selection, float x, float y) {
+        if (mSearchPanelDelegate.isShowing()) {
+            getContextualSearchControl().setCentralText(selection);
+        }
     }
 
     // --------------------------------------------------------------------------------------------

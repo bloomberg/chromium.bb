@@ -40,7 +40,7 @@ interface ContextualSearchSelectionHandler {
     public void handleSelectionModification(String selection, float x, float y);
 
     /**
-     * Called when the selection is cleared.
+     * Handle a dismissal of the selection on the base page.
      */
-    public void onClearSelection();
+    public void handleSelectionDismissal();
 }
