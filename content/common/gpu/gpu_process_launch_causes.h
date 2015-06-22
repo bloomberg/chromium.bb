@@ -20,6 +20,7 @@ enum CauseForGpuLaunch {
   CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP,
   CAUSE_FOR_GPU_LAUNCH_CANVAS_2D,
   CAUSE_FOR_GPU_LAUNCH_PEPPERVIDEOENCODERACCELERATOR_INITIALIZE,
+  CAUSE_FOR_GPU_LAUNCH_GPU_MEMORY_BUFFER_ALLOCATE,
 
   // All new values should be inserted above this point so that
   // existing values continue to match up with those in histograms.xml.

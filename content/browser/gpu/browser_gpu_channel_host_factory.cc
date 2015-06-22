@@ -4,8 +4,6 @@
 
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 
-#include <set>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
@@ -19,64 +17,15 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/message_filter.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "content/common/gpu/gpu_memory_buffer_factory_surface_texture.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
-#endif
-
 namespace content {
-namespace {
-
-base::LazyInstance<std::set<gfx::GpuMemoryBuffer::Usage>>
-    g_enabled_gpu_memory_buffer_usages;
-
-bool IsGpuMemoryBufferFactoryConfigurationSupported(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
-    gfx::GpuMemoryBufferType type) {
-  switch (type) {
-    case gfx::SHARED_MEMORY_BUFFER:
-      // Shared memory buffers must be created in-process.
-      return false;
-#if defined(OS_MACOSX)
-    case gfx::IO_SURFACE_BUFFER:
-      return GpuMemoryBufferFactoryIOSurface::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-#if defined(OS_ANDROID)
-    case gfx::SURFACE_TEXTURE_BUFFER:
-      return GpuMemoryBufferFactorySurfaceTexture::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-#if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_BUFFER:
-      return GpuMemoryBufferFactoryOzoneNativeBuffer::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-}  // namespace
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
@@ -274,57 +223,12 @@ void BrowserGpuChannelHostFactory::Terminate() {
   instance_ = NULL;
 }
 
-// static
-void BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
-    gfx::GpuMemoryBuffer::Usage usage) {
-  g_enabled_gpu_memory_buffer_usages.Get().insert(usage);
-}
-
-// static
-bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferFactoryUsageEnabled(
-    gfx::GpuMemoryBuffer::Usage usage) {
-  return g_enabled_gpu_memory_buffer_usages.Get().count(usage) != 0;
-}
-
-// static
-uint32 BrowserGpuChannelHostFactory::GetImageTextureTarget(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
-  if (!IsGpuMemoryBufferFactoryUsageEnabled(usage))
-    return GL_TEXTURE_2D;
-
-  std::vector<gfx::GpuMemoryBufferType> supported_types;
-  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
-  DCHECK(!supported_types.empty());
-
-  // The GPU service will always use the preferred type, if the |format| and
-  // |usage| allows.
-  gfx::GpuMemoryBufferType type = supported_types[0];
-
-  if (!IsGpuMemoryBufferFactoryConfigurationSupported(format, usage, type))
-    return GL_TEXTURE_2D;
-
-  switch (type) {
-    case gfx::SURFACE_TEXTURE_BUFFER:
-    case gfx::OZONE_NATIVE_BUFFER:
-      // GPU memory buffers that are shared with the GL using EGLImages require
-      // TEXTURE_EXTERNAL_OES.
-      return GL_TEXTURE_EXTERNAL_OES;
-    case gfx::IO_SURFACE_BUFFER:
-      // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
-      return GL_TEXTURE_RECTANGLE_ARB;
-    default:
-      return GL_TEXTURE_2D;
-  }
-}
-
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       shutdown_event_(new base::WaitableEvent(true, false)),
       gpu_memory_buffer_manager_(
-          new BrowserGpuMemoryBufferManager(this, gpu_client_id_)),
-      gpu_host_id_(0),
-      next_create_gpu_memory_buffer_request_id_(0) {
+          new BrowserGpuMemoryBufferManager(gpu_client_id_)),
+      gpu_host_id_(0) {
 }
 
 BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
@@ -474,12 +378,9 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished1"));
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
-    gpu_channel_ =
-        GpuChannelHost::Create(this,
-                               pending_request_->gpu_info(),
-                               pending_request_->channel_handle(),
-                               shutdown_event_.get(),
-                               BrowserGpuMemoryBufferManager::current());
+    gpu_channel_ = GpuChannelHost::Create(
+        this, pending_request_->gpu_info(), pending_request_->channel_handle(),
+        shutdown_event_.get(), gpu_memory_buffer_manager_.get());
   }
   gpu_host_id_ = pending_request_->gpu_host_id();
   pending_request_ = NULL;
@@ -505,88 +406,6 @@ void BrowserGpuChannelHostFactory::AddFilterOnIO(
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host)
     host->AddFilter(filter.get());
-}
-
-bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferConfigurationSupported(
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage) {
-  // Return early if usage is not enabled.
-  if (!IsGpuMemoryBufferFactoryUsageEnabled(usage))
-    return false;
-
-  std::vector<gfx::GpuMemoryBufferType> supported_types;
-  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
-  DCHECK(!supported_types.empty());
-
-  // The GPU service will always use the preferred type, if the |format| and
-  // |usage| allows.
-  gfx::GpuMemoryBufferType type = supported_types[0];
-
-  return IsGpuMemoryBufferFactoryConfigurationSupported(format, usage, type);
-}
-
-void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::GpuMemoryBuffer::Format format,
-    gfx::GpuMemoryBuffer::Usage usage,
-    int client_id,
-    int32 surface_id,
-    const CreateGpuMemoryBufferCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-  if (!host) {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-    return;
-  }
-
-  uint32 request_id = next_create_gpu_memory_buffer_request_id_++;
-  create_gpu_memory_buffer_requests_[request_id] = callback;
-
-  host->CreateGpuMemoryBuffer(
-      id, size, format, usage, client_id, surface_id,
-      base::Bind(&BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated,
-                 base::Unretained(this), request_id));
-}
-
-void BrowserGpuChannelHostFactory::DestroyGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    int client_id,
-    int32 sync_point) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&BrowserGpuChannelHostFactory::DestroyGpuMemoryBufferOnIO,
-                 base::Unretained(this),
-                 id,
-                 client_id,
-                 sync_point));
-}
-
-void BrowserGpuChannelHostFactory::DestroyGpuMemoryBufferOnIO(
-    gfx::GpuMemoryBufferId id,
-    int client_id,
-    int32 sync_point) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
-  if (!host)
-    return;
-
-  host->DestroyGpuMemoryBuffer(id, client_id, sync_point);
-}
-
-void BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated(
-    uint32 request_id,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  CreateGpuMemoryBufferCallbackMap::iterator iter =
-      create_gpu_memory_buffer_requests_.find(request_id);
-  DCHECK(iter != create_gpu_memory_buffer_requests_.end());
-  iter->second.Run(handle);
-  create_gpu_memory_buffer_requests_.erase(iter);
 }
 
 }  // namespace content

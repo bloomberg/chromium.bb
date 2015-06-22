@@ -11,26 +11,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
 #include "ipc/message_filter.h"
 
 namespace content {
 class BrowserGpuMemoryBufferManager;
 
 class CONTENT_EXPORT BrowserGpuChannelHostFactory
-    : public GpuChannelHostFactory,
-      public GpuMemoryBufferFactoryHost {
+    : public GpuChannelHostFactory {
  public:
   static void Initialize(bool establish_gpu_channel);
   static void Terminate();
   static BrowserGpuChannelHostFactory* instance() { return instance_; }
-
-  static void EnableGpuMemoryBufferFactoryUsage(
-      gfx::GpuMemoryBuffer::Usage usage);
-  static bool IsGpuMemoryBufferFactoryUsageEnabled(
-      gfx::GpuMemoryBuffer::Usage usage);
-  static uint32 GetImageTextureTarget(gfx::GpuMemoryBuffer::Format format,
-                                      gfx::GpuMemoryBuffer::Usage usage);
 
   // Overridden from GpuChannelHostFactory:
   bool IsMainThread() override;
@@ -41,22 +32,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) override;
   IPC::AttachmentBroker* GetAttachmentBroker() override;
-
-  // Overridden from GpuMemoryBufferFactoryHost:
-  bool IsGpuMemoryBufferConfigurationSupported(
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage) override;
-  void CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::GpuMemoryBuffer::Format format,
-      gfx::GpuMemoryBuffer::Usage usage,
-      int client_id,
-      int32 surface_id,
-      const CreateGpuMemoryBufferCallback& callback) override;
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              int32 sync_point) override;
 
   int GpuProcessHostId() { return gpu_host_id_; }
 #if !defined(OS_ANDROID)
@@ -87,11 +62,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
                                        CreateCommandBufferResult result);
   static void AddFilterOnIO(int gpu_host_id,
                             scoped_refptr<IPC::MessageFilter> filter);
-  void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
-                                  int client_id,
-                                  int32 sync_point);
-  void OnGpuMemoryBufferCreated(uint32 request_id,
-                                const gfx::GpuMemoryBufferHandle& handle);
 
   const int gpu_client_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
@@ -100,10 +70,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   int gpu_host_id_;
   scoped_refptr<EstablishRequest> pending_request_;
   std::vector<base::Closure> established_callbacks_;
-  uint32 next_create_gpu_memory_buffer_request_id_;
-  typedef std::map<uint32, CreateGpuMemoryBufferCallback>
-      CreateGpuMemoryBufferCallbackMap;
-  CreateGpuMemoryBufferCallbackMap create_gpu_memory_buffer_requests_;
 
   static BrowserGpuChannelHostFactory* instance_;
 

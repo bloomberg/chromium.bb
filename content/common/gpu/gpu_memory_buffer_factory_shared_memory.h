@@ -11,6 +11,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
+#if DCHECK_IS_ON()
+#include <set>
+#endif
+
 namespace gfx {
 class GLImage;
 }
@@ -22,6 +26,10 @@ class GpuMemoryBufferFactorySharedMemory : public GpuMemoryBufferFactory,
  public:
   GpuMemoryBufferFactorySharedMemory();
   ~GpuMemoryBufferFactorySharedMemory() override;
+
+  static bool IsGpuMemoryBufferConfigurationSupported(
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage);
 
   // Overridden from GpuMemoryBufferFactory:
   void GetSupportedGpuMemoryBufferConfigurations(
@@ -46,6 +54,10 @@ class GpuMemoryBufferFactorySharedMemory : public GpuMemoryBufferFactory,
       int client_id) override;
 
  private:
+#if DCHECK_IS_ON()
+  std::set<gfx::GpuMemoryBufferId> buffers_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactorySharedMemory);
 };
 

@@ -411,7 +411,7 @@ bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
 uint32 GpuProcessTransportFactory::GetImageTextureTarget(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {
-  return BrowserGpuChannelHostFactory::GetImageTextureTarget(format, usage);
+  return BrowserGpuMemoryBufferManager::GetImageTextureTarget(format, usage);
 }
 
 cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {

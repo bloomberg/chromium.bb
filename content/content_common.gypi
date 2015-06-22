@@ -287,7 +287,6 @@
       'common/gpu/client/gpu_channel_host.h',
       'common/gpu/client/gpu_jpeg_decode_accelerator_host.cc',
       'common/gpu/client/gpu_jpeg_decode_accelerator_host.h',
-      'common/gpu/client/gpu_memory_buffer_factory_host.h',
       'common/gpu/client/gpu_memory_buffer_impl.cc',
       'common/gpu/client/gpu_memory_buffer_impl.h',
       'common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.cc',

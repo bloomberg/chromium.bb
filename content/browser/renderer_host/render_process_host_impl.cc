@@ -60,7 +60,7 @@
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/geofencing/geofencing_dispatcher_host.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -117,7 +117,6 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/channel_init.h"
@@ -1146,7 +1145,7 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
           // embedder so we know it here, and pass that decision to the
           // compositor for each usage.
           // crbug.com/490362
-          BrowserGpuChannelHostFactory::GetImageTextureTarget(
+          BrowserGpuMemoryBufferManager::GetImageTextureTarget(
               gfx::GpuMemoryBuffer::BGRA_8888,
               // TODO(danakj): When one-copy supports partial update, change
               // this usage to PERSISTENT_MAP for one-copy.
@@ -1154,7 +1153,7 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   command_line->AppendSwitchASCII(
       switches::kVideoImageTextureTarget,
-      base::UintToString(BrowserGpuChannelHostFactory::GetImageTextureTarget(
+      base::UintToString(BrowserGpuMemoryBufferManager::GetImageTextureTarget(
           gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP)));
 
   // Appending disable-gpu-feature switches due to software rendering list.

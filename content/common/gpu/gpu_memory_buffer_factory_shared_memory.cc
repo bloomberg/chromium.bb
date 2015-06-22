@@ -12,6 +12,21 @@
 #include "ui/gl/gl_image_shared_memory.h"
 
 namespace content {
+namespace {
+
+const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
+    {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
+    {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
+    {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::MAP},
+    {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
+    {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::MAP},
+    {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
+    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP},
+    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
+    {gfx::GpuMemoryBuffer::YUV_420, gfx::GpuMemoryBuffer::MAP},
+    {gfx::GpuMemoryBuffer::YUV_420, gfx::GpuMemoryBuffer::PERSISTENT_MAP}};
+
+}  // namespace
 
 GpuMemoryBufferFactorySharedMemory::GpuMemoryBufferFactorySharedMemory() {
 }
@@ -19,23 +34,24 @@ GpuMemoryBufferFactorySharedMemory::GpuMemoryBufferFactorySharedMemory() {
 GpuMemoryBufferFactorySharedMemory::~GpuMemoryBufferFactorySharedMemory() {
 }
 
+// static
+bool GpuMemoryBufferFactorySharedMemory::
+    IsGpuMemoryBufferConfigurationSupported(gfx::GpuMemoryBuffer::Format format,
+                                            gfx::GpuMemoryBuffer::Usage usage) {
+  for (auto& configuration : kSupportedConfigurations) {
+    if (configuration.format == format && configuration.usage == usage)
+      return true;
+  }
+
+  return false;
+}
+
 void GpuMemoryBufferFactorySharedMemory::
     GetSupportedGpuMemoryBufferConfigurations(
         std::vector<Configuration>* configurations) {
-  const Configuration supported_configurations[] = {
-      {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
-      {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-      {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::MAP},
-      {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-      {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::MAP},
-      {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-      {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP},
-      {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
-      {gfx::GpuMemoryBuffer::YUV_420, gfx::GpuMemoryBuffer::MAP},
-      {gfx::GpuMemoryBuffer::YUV_420, gfx::GpuMemoryBuffer::PERSISTENT_MAP}};
   configurations->assign(
-      supported_configurations,
-      supported_configurations + arraysize(supported_configurations));
+      kSupportedConfigurations,
+      kSupportedConfigurations + arraysize(kSupportedConfigurations));
 }
 
 gfx::GpuMemoryBufferHandle
@@ -55,6 +71,9 @@ GpuMemoryBufferFactorySharedMemory::CreateGpuMemoryBuffer(
   if (!shared_memory.CreateAnonymous(buffer_size))
     return gfx::GpuMemoryBufferHandle();
 
+#if DCHECK_IS_ON()
+  DCHECK(buffers_.insert(id).second);
+#endif
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.id = id;
@@ -65,6 +84,9 @@ GpuMemoryBufferFactorySharedMemory::CreateGpuMemoryBuffer(
 void GpuMemoryBufferFactorySharedMemory::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
+#if DCHECK_IS_ON()
+  DCHECK_EQ(buffers_.erase(id), 1u);
+#endif
 }
 
 gpu::ImageFactory* GpuMemoryBufferFactorySharedMemory::AsImageFactory() {
@@ -78,6 +100,9 @@ GpuMemoryBufferFactorySharedMemory::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     unsigned internalformat,
     int client_id) {
+#if DCHECK_IS_ON()
+  DCHECK_EQ(buffers_.count(handle.id), 1u);
+#endif
   scoped_refptr<gfx::GLImageSharedMemory> image(
       new gfx::GLImageSharedMemory(size, internalformat));
   if (!image->Initialize(handle, format))
