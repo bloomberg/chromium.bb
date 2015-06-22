@@ -167,10 +167,10 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     std::string version_;
 
     // Index for MidiManager.
-    uint32 web_port_index_;
+    uint32 web_port_index_ = 0;
 
     // Port is present in the ALSA system.
-    bool connected_;
+    bool connected_ = true;
 
     DISALLOW_COPY_AND_ASSIGN(MidiPort);
   };
@@ -196,7 +196,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
    protected:
     MidiPortStateBase();
 
-    ScopedVector<MidiPort>* ports() { return &ports_; }
+    std::vector<MidiPort*>& ports() { return ports_.get(); }
 
    private:
     ScopedVector<MidiPort> ports_;
@@ -207,9 +207,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   class TemporaryMidiPortState final : public MidiPortStateBase {
    public:
     // Removes a port from the list without deleting it.
-    iterator weak_erase(iterator position) {
-      return ports()->weak_erase(position);
-    }
+    iterator weak_erase(iterator position) { return ports().erase(position); }
 
     void Insert(scoped_ptr<MidiPort> port);
   };
@@ -352,6 +350,16 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     DISALLOW_COPY_AND_ASSIGN(AlsaCard);
   };
 
+  struct SndSeqDeleter {
+    void operator()(snd_seq_t* seq) const { snd_seq_close(seq); }
+  };
+
+  struct SndMidiEventDeleter {
+    void operator()(snd_midi_event_t* coder) const {
+      snd_midi_event_free(coder);
+    };
+  };
+
   typedef base::hash_map<int, uint32> SourceMap;
   typedef base::hash_map<uint32, int> OutPortMap;
 
@@ -386,13 +394,13 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   MidiPortState port_state_;
 
   // ALSA seq handles.
-  snd_seq_t* in_client_;
-  int in_client_id_;
-  snd_seq_t* out_client_;
-  int out_client_id_;
+  scoped_ptr<snd_seq_t, SndSeqDeleter> in_client_;
+  int in_client_id_ = -1;
+  scoped_ptr<snd_seq_t, SndSeqDeleter> out_client_;
+  int out_client_id_ = -1;
 
   // One input port, many output ports.
-  int in_port_id_;
+  int in_port_id_ = -1;
   OutPortMap out_ports_;       // guarded by out_ports_lock_
   base::Lock out_ports_lock_;  // guards out_ports_
 
@@ -407,10 +415,10 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // about. When this number matches card_client_count_ in AlsaSeqState,
   // we are safe to generate MIDIConnectionEvents. Otherwise we need to
   // wait for our information from ALSA and udev to get back in sync.
-  int alsa_card_midi_count_;
+  int alsa_card_midi_count_ = 0;
 
   // ALSA event -> MIDI coder.
-  snd_midi_event_t* decoder_;
+  scoped_ptr<snd_midi_event_t, SndMidiEventDeleter> decoder_;
 
   // udev, for querying hardware devices.
   device::ScopedUdevPtr udev_;
@@ -419,8 +427,8 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   base::Thread send_thread_;
   base::Thread event_thread_;
 
-  bool event_thread_shutdown_;  // guarded by shutdown_lock_
-  base::Lock shutdown_lock_;    // guards event_thread_shutdown_
+  bool event_thread_shutdown_ = false;  // guarded by shutdown_lock_
+  base::Lock shutdown_lock_;            // guards event_thread_shutdown_
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerAlsa);
 };
