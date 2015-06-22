@@ -99,6 +99,14 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         graphicsContext->endLayer();
 }
 
+static IntRect pixelSnappedOutsetPaintRect(const LayoutRect& baseRect, const LayoutPoint& paintOffset, int outset)
+{
+    LayoutRect box(baseRect);
+    box.moveBy(paintOffset);
+    box.inflate(outset);
+    return pixelSnappedIntRect(box);
+}
+
 void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const LayoutPoint& paintOffset,
     const LayoutRect& lastline, const LayoutRect& thisline, const LayoutRect& nextline, const Color outlineColor)
 {
@@ -108,15 +116,12 @@ void InlinePainter::paintOutlineForLine(GraphicsContext* graphicsContext, const 
 
     int offset = m_layoutInline.style()->outlineOffset();
 
-    LayoutRect box(LayoutPoint(paintOffset.x() + thisline.x() - offset, paintOffset.y() + thisline.y() - offset),
-        LayoutSize(thisline.width() + offset, thisline.height() + offset));
-
-    IntRect pixelSnappedBox = pixelSnappedIntRect(box);
+    IntRect pixelSnappedBox = pixelSnappedOutsetPaintRect(thisline, paintOffset, offset);
     if (pixelSnappedBox.width() < 0 || pixelSnappedBox.height() < 0)
         return;
     // Note that we use IntRect below for working with solely x/width values, simplifying logic at cost of a bit of memory.
-    IntRect pixelSnappedLastLine = pixelSnappedIntRect(paintOffset.x() + lastline.x() - offset, 0, lastline.width() + offset, 0);
-    IntRect pixelSnappedNextLine = pixelSnappedIntRect(paintOffset.x() + nextline.x() - offset, 0, nextline.width() + offset, 0);
+    IntRect pixelSnappedLastLine = pixelSnappedOutsetPaintRect(lastline, paintOffset, offset);
+    IntRect pixelSnappedNextLine = pixelSnappedOutsetPaintRect(nextline, paintOffset, offset);
 
     const int fallbackMaxOutlineX = std::numeric_limits<int>::max();
     const int fallbackMinOutlineX = std::numeric_limits<int>::min();

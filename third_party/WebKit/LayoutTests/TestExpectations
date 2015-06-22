@@ -21,6 +21,9 @@ crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFai
 
 crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 
+crbug.com/495368 fast/inline/outline-offset.html [ NeedsRebaseline ]
+crbug.com/495368 paint/inline/outline-offset.html [ NeedsRebaseline ]
+
 crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
