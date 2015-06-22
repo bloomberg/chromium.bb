@@ -637,7 +637,8 @@ Position canonicalPositionOf(const Position& position)
     return canonicalPosition(position);
 }
 
-void VisiblePosition::init(const Position& position, EAffinity affinity)
+template<typename PositionType>
+void VisiblePosition::init(const PositionType& position, EAffinity affinity)
 {
     m_affinity = affinity;
 

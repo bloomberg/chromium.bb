@@ -112,7 +112,8 @@ public:
 #endif
 
 private:
-    void init(const Position&, EAffinity);
+    template<typename PositionType>
+    void init(const PositionType&, EAffinity);
 
     Position leftVisuallyDistinctCandidate() const;
     Position rightVisuallyDistinctCandidate() const;
