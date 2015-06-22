@@ -1951,7 +1951,9 @@ ivi_layout_layer_set_opacity(struct ivi_layout_layer *ivilayer,
 {
 	struct ivi_layout_layer_properties *prop = NULL;
 
-	if (ivilayer == NULL) {
+	if (ivilayer == NULL ||
+	    opacity < wl_fixed_from_double(0.0) ||
+	    wl_fixed_from_double(1.0) < opacity) {
 		weston_log("ivi_layout_layer_set_opacity: invalid argument\n");
 		return IVI_FAILED;
 	}
