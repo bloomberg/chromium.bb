@@ -470,7 +470,7 @@ struct ivi_controller_interface {
 	/**
 	 * \brief Removes a ivi_layer which is currently managed by the service
 	 */
-	void (*layer_remove)(struct ivi_layout_layer *ivilayer);
+	void (*layer_destroy)(struct ivi_layout_layer *ivilayer);
 
 	/**
 	 * \brief Get all ivi_layers which are currently registered and managed

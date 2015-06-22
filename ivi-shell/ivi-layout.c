@@ -1904,7 +1904,7 @@ ivi_layout_layer_remove_notification_by_callback(struct ivi_layout_layer *ivilay
 }
 
 static void
-ivi_layout_layer_remove(struct ivi_layout_layer *ivilayer)
+ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 {
 	struct ivi_layout *layout = get_instance();
 
@@ -3005,7 +3005,7 @@ static struct ivi_controller_interface ivi_controller_interface = {
 	.add_notification_remove_layer		= ivi_layout_add_notification_remove_layer,
 	.remove_notification_remove_layer	= ivi_layout_remove_notification_remove_layer,
 	.layer_create_with_dimension		= ivi_layout_layer_create_with_dimension,
-	.layer_remove				= ivi_layout_layer_remove,
+	.layer_destroy				= ivi_layout_layer_destroy,
 	.get_layers				= ivi_layout_get_layers,
 	.get_id_of_layer			= ivi_layout_get_id_of_layer,
 	.get_layer_from_id			= ivi_layout_get_layer_from_id,
