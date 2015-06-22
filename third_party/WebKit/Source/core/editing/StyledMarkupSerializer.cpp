@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
@@ -71,7 +72,12 @@ bool handleSelectionBoundary<EditingStrategy>(const Node&)
 template<>
 bool handleSelectionBoundary<EditingInComposedTreeStrategy>(const Node& node)
 {
-    return EditingInComposedTreeStrategy::isSelectionBoundaryShadowHost(node);
+    if (!node.isElementNode())
+        return false;
+    ElementShadow* shadow = toElement(node).shadow();
+    if (!shadow)
+        return false;
+    return shadow->youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot;
 }
 
 } // namespace
