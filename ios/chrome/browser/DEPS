@@ -12,6 +12,7 @@ include_rules = [
   "+components/enhanced_bookmarks",
   "+components/favicon/core",
   "+components/favicon_base",
+  "+components/history/core/browser",
   "+components/infobars/core",
   "+components/keyed_service/core",
   "+components/keyed_service/ios",

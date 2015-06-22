@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h"
 #include "ios/chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
@@ -29,6 +30,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   enhanced_bookmarks::BookmarkServerClusterServiceFactory::GetInstance();
   enhanced_bookmarks::EnhancedBookmarkModelFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
+  ios::TopSitesFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
