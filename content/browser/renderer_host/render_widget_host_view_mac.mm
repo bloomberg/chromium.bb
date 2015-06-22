@@ -909,8 +909,16 @@ void RenderWidgetHostViewMac::WasOccluded() {
   if (render_widget_host_->is_hidden())
     return;
 
-  render_widget_host_->WasHidden();
+  // SuspendBrowserCompositorView() instructs the GPU process to free up
+  // resources such as textures. WasHidden() places the renderer process in the
+  // background and throttles its I/O. We're cafeful to call WasHidden() only
+  // after calling SuspendBrowserCompositorView(), otherwise the backgrounded
+  // and throttled renderer's communication with GPU process will take extra
+  // time to complete. The delay will block the foreground renderer's
+  // communication with the GPU process, resulting in longer tab switching
+  // time. http://crbug.com/502502 .
   SuspendBrowserCompositorView();
+  render_widget_host_->WasHidden();
 }
 
 void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
