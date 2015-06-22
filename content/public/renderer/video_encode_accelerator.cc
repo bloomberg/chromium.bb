@@ -17,7 +17,7 @@ void CreateVideoEncodeAccelerator(
 
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
         RenderThreadImpl::current()->GetGpuFactories();
-  if (!gpu_factories.get()) {
+  if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
     callback.Run(NULL, scoped_ptr<media::VideoEncodeAccelerator>());
     return;
   }
@@ -37,7 +37,7 @@ media::VideoEncodeAccelerator::SupportedProfiles
 GetSupportedVideoEncodeAcceleratorProfiles() {
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories();
-  if (!gpu_factories.get())
+  if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled())
     return media::VideoEncodeAccelerator::SupportedProfiles();
   return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
 }

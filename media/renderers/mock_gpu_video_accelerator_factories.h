@@ -25,6 +25,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
  public:
   MockGpuVideoAcceleratorFactories();
 
+  bool IsGpuVideoAcceleratorEnabled() override;
   // CreateVideo{Decode,Encode}Accelerator returns scoped_ptr, which the mocking
   // framework does not want.  Trampoline them.
   MOCK_METHOD0(DoCreateVideoDecodeAccelerator, VideoDecodeAccelerator*());

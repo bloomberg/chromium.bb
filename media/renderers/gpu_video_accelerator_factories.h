@@ -41,6 +41,8 @@ class VideoDecodeAccelerator;
 class MEDIA_EXPORT GpuVideoAcceleratorFactories
     : public base::RefCountedThreadSafe<GpuVideoAcceleratorFactories> {
  public:
+  // Return whether GPU encoding/decoding is enabled.
+  virtual bool IsGpuVideoAcceleratorEnabled() = 0;
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the
   // VideoDecodeAccelerator interface.

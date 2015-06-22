@@ -365,7 +365,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (gpu_factories.get()) {
+  if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled()) {
     if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding))
       decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
 

@@ -47,6 +47,10 @@ MockGpuVideoAcceleratorFactories::MockGpuVideoAcceleratorFactories() {}
 
 MockGpuVideoAcceleratorFactories::~MockGpuVideoAcceleratorFactories() {}
 
+bool MockGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
+  return true;
+}
+
 scoped_ptr<gfx::GpuMemoryBuffer>
 MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,

@@ -1261,32 +1261,31 @@ RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
   scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       GetMediaThreadTaskRunner();
-  if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
-    if (!gpu_va_context_provider_.get() ||
-        gpu_va_context_provider_->DestroyedOnMainThread()) {
-      if (!gpu_channel_host.get()) {
-        gpu_channel_host = EstablishGpuChannelSync(
-            CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
-      }
-      blink::WebGraphicsContext3D::Attributes attributes;
-      bool lose_context_when_out_of_memory = false;
-      gpu_va_context_provider_ = ContextProviderCommandBuffer::Create(
-          make_scoped_ptr(
-              WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-                  gpu_channel_host.get(),
-                  attributes,
-                  lose_context_when_out_of_memory,
-                  GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"),
-                  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-                  NULL)),
-          GPU_VIDEO_ACCELERATOR_CONTEXT);
+  if (!gpu_va_context_provider_.get() ||
+      gpu_va_context_provider_->DestroyedOnMainThread()) {
+    if (!gpu_channel_host.get()) {
+      gpu_channel_host = EstablishGpuChannelSync(
+          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
     }
+    blink::WebGraphicsContext3D::Attributes attributes;
+    bool lose_context_when_out_of_memory = false;
+    gpu_va_context_provider_ = ContextProviderCommandBuffer::Create(
+        make_scoped_ptr(
+            WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+                gpu_channel_host.get(), attributes,
+                lose_context_when_out_of_memory,
+                GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"),
+                WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+                NULL)),
+        GPU_VIDEO_ACCELERATOR_CONTEXT);
   }
   if (gpu_va_context_provider_.get()) {
+    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    bool enable_video_accelerator =
+        !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
     std::string image_texture_target_string =
         cmd_line->GetSwitchValueASCII(switches::kContentImageTextureTarget);
     unsigned image_texture_target = 0;
@@ -1295,7 +1294,7 @@ RenderThreadImpl::GetGpuFactories() {
     DCHECK(parsed_image_texture_target);
     gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
         gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_,
-        image_texture_target);
+        image_texture_target, enable_video_accelerator);
   }
   return gpu_factories;
 }
