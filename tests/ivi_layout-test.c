@@ -208,6 +208,10 @@ const char * const surface_property_commit_changes_test_names[] = {
 	"commit_changes_after_destination_rectangle_set_surface_destroy",
 };
 
+const char * const render_order_test_names[] = {
+	"layer_render_order",
+};
+
 TEST_P(ivi_layout_runner, basic_test_names)
 {
 	/* an element from basic_test_names */
@@ -308,5 +312,28 @@ TEST(get_surface_after_destroy_wl_surface)
 
 	ivi_surface_destroy(wnd->ivi_surface);
 	free(wnd);
+	runner_destroy(runner);
+}
+
+TEST_P(ivi_layout_layer_render_order_runner, render_order_test_names)
+{
+	/* an element from render_order_test_names */
+	const char * const *test_name = data;
+	struct client *client;
+	struct runner *runner;
+	struct ivi_window *winds[3];
+
+	client = create_client();
+	runner = client_create_runner(client);
+
+	winds[0] = client_create_ivi_window(client, IVI_TEST_SURFACE_ID(0));
+	winds[1] = client_create_ivi_window(client, IVI_TEST_SURFACE_ID(1));
+	winds[2] = client_create_ivi_window(client, IVI_TEST_SURFACE_ID(2));
+
+	runner_run(runner, *test_name);
+
+	ivi_window_destroy(winds[0]);
+	ivi_window_destroy(winds[1]);
+	ivi_window_destroy(winds[2]);
 	runner_destroy(runner);
 }
