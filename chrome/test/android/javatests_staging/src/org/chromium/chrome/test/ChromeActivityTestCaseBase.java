@@ -358,6 +358,20 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     /**
      * Navigates to a URL directly without going through the UrlBar. This bypasses the page
      * preloading mechanism of the UrlBar.
+     * @param url            The url to load in the current tab.
+     * @param secondsToWait  The number of seconds to wait for the page to be loaded.
+     * @return FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the page has been
+     *         prerendered. DEFAULT_PAGE_LOAD if it had not.
+     */
+    public int loadUrl(final String url, long secondsToWait)
+            throws IllegalArgumentException, InterruptedException {
+        return loadUrlInTab(url, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR,
+                getActivity().getActivityTab(), secondsToWait);
+    }
+
+    /**
+     * Navigates to a URL directly without going through the UrlBar. This bypasses the page
+     * preloading mechanism of the UrlBar.
      * @param url The url to load in the current tab.
      * @return FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the page has been
      *         prerendered. DEFAULT_PAGE_LOAD if it had not.
@@ -373,11 +387,12 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
      *                       {@link org.chromium.content.browser.PageTransition}
      *                       for valid values.
      * @param tab            The tab to load the url into.
+     * @param secondsToWait  The number of seconds to wait for the page to be loaded.
      * @return               FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the
      *                       page has been prerendered. DEFAULT_PAGE_LOAD if it had not.
      */
-    public int loadUrlInTab(final String url, final int pageTransition, final Tab tab)
-            throws InterruptedException {
+    public int loadUrlInTab(final String url, final int pageTransition, final Tab tab,
+            long secondsToWait) throws InterruptedException {
         assertNotNull("Cannot load the url in a null tab", tab);
         final AtomicInteger result = new AtomicInteger();
 
@@ -392,9 +407,23 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
                     }
                 });
             }
-        });
+        }, secondsToWait);
         getInstrumentation().waitForIdleSync();
         return result.get();
+    }
+
+    /**
+     * @param url            The url of the page to load.
+     * @param pageTransition The type of transition. see
+     *                       {@link org.chromium.content.browser.PageTransition}
+     *                       for valid values.
+     * @param tab            The tab to load the url into.
+     * @return               FULL_PRERENDERED_PAGE_LOAD or PARTIAL_PRERENDERED_PAGE_LOAD if the
+     *                       page has been prerendered. DEFAULT_PAGE_LOAD if it had not.
+     */
+    public int loadUrlInTab(final String url, final int pageTransition, final Tab tab)
+            throws InterruptedException {
+        return loadUrlInTab(url, pageTransition, tab, CallbackHelper.WAIT_TIMEOUT_SECONDS);
     }
 
     /**
