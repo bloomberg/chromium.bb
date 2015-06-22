@@ -8,7 +8,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.DatePicker;
@@ -17,6 +16,9 @@ import android.widget.TimePicker;
 import android.widget.TimePicker.OnTimeChangedListener;
 
 import org.chromium.ui.R;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         OnDateChangedListener, OnTimeChangedListener {
@@ -118,18 +120,17 @@ public class DateTimePickerDialog extends AlertDialog implements OnClickListener
 
     @Override
     public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-        Time time = new Time();
-        time.set(0, mTimePicker.getCurrentMinute(),
-                mTimePicker.getCurrentHour(), mDatePicker.getDayOfMonth(),
-                mDatePicker.getMonth(), mDatePicker.getYear());
+        Calendar calendar = new GregorianCalendar(mDatePicker.getYear(), mDatePicker.getMonth(),
+                mDatePicker.getDayOfMonth(), mTimePicker.getCurrentHour(),
+                mTimePicker.getCurrentMinute(), 0);
 
-        if (time.toMillis(true) < mMinTimeMillis) {
-            time.set(mMinTimeMillis);
-        } else if (time.toMillis(true) > mMaxTimeMillis) {
-            time.set(mMaxTimeMillis);
+        if (calendar.getTimeInMillis() < mMinTimeMillis) {
+            calendar.setTimeInMillis(mMinTimeMillis);
+        } else if (calendar.getTimeInMillis() > mMaxTimeMillis) {
+            calendar.setTimeInMillis(mMaxTimeMillis);
         }
-        mTimePicker.setCurrentHour(time.hour);
-        mTimePicker.setCurrentMinute(time.minute);
+        mTimePicker.setCurrentHour(calendar.get(Calendar.HOUR));
+        mTimePicker.setCurrentMinute(calendar.get(Calendar.MINUTE));
     }
 
     /**
