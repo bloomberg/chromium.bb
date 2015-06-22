@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <assert.h>
 
 #include "src/compositor.h"
 #include "weston-test-server-protocol.h"
@@ -78,16 +79,28 @@ struct test_launcher {
 	const struct ivi_controller_interface *controller_interface;
 };
 
+struct test_context {
+	const struct ivi_controller_interface *controller_interface;
+	struct wl_resource *runner_resource;
+};
+
+static struct test_context static_context;
+
+static void
+destroy_runner(struct wl_resource *resource)
+{
+	assert(static_context.runner_resource == NULL ||
+	       static_context.runner_resource == resource);
+
+	static_context.controller_interface = NULL;
+	static_context.runner_resource = NULL;
+}
+
 static void
 runner_destroy_handler(struct wl_client *client, struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
 }
-
-struct test_context {
-	const struct ivi_controller_interface *controller_interface;
-	struct wl_resource *runner_resource;
-};
 
 static void
 runner_run_handler(struct wl_client *client, struct wl_resource *resource,
@@ -95,11 +108,13 @@ runner_run_handler(struct wl_client *client, struct wl_resource *resource,
 {
 	struct test_launcher *launcher;
 	const struct runner_test *t;
-	struct test_context ctx;
+
+	assert(static_context.runner_resource == NULL ||
+	       static_context.runner_resource == resource);
 
 	launcher = wl_resource_get_user_data(resource);
-	ctx.controller_interface = launcher->controller_interface;
-	ctx.runner_resource = resource;
+	static_context.controller_interface = launcher->controller_interface;
+	static_context.runner_resource = resource;
 
 	t = find_runner_test(test_name);
 	if (!t) {
@@ -114,7 +129,7 @@ runner_run_handler(struct wl_client *client, struct wl_resource *resource,
 
 	weston_log("weston_test_runner.run(\"%s\")\n", test_name);
 
-	t->run(&ctx);
+	t->run(&static_context);
 
 	weston_test_runner_send_finished(resource);
 }
@@ -139,7 +154,15 @@ bind_runner(struct wl_client *client, void *data,
 	}
 
 	wl_resource_set_implementation(resource, &runner_implementation,
-				       launcher, NULL);
+				       launcher, destroy_runner);
+
+	if (static_context.runner_resource != NULL) {
+		weston_log("test FATAL: "
+			   "attempting to run several tests in parallel.\n");
+		wl_resource_post_error(resource,
+				       WESTON_TEST_RUNNER_ERROR_TEST_FAILED,
+				       "attempt to run parallel tests");
+	}
 }
 
 static void
@@ -240,6 +263,8 @@ runner_assert_fail(const char *cond, const char *file, int line,
 {
 	weston_log("Assert failure in %s:%d, %s: '%s'\n",
 		   file, line, func, cond);
+
+	assert(ctx->runner_resource);
 	wl_resource_post_error(ctx->runner_resource,
 			       WESTON_TEST_RUNNER_ERROR_TEST_FAILED,
 			       "Assert failure in %s:%d, %s: '%s'\n",
