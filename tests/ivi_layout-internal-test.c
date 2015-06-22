@@ -63,7 +63,6 @@ iassert_fail(const char *cond, const char *file, int line,
  * These are all internal ivi_layout API tests that do not require
  * any client objects.
  */
-
 static void
 test_surface_bad_visibility(struct test_context *ctx)
 {
@@ -701,6 +700,106 @@ test_get_layer_after_destory_layer(struct test_context *ctx)
 	iassert(ivilayer == NULL);
 }
 
+static void
+test_screen_id(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_screen **iviscrns;
+	int32_t screen_length = 0;
+	uint32_t id_screen;
+	int32_t i;
+
+	iassert(ctl->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
+	iassert(screen_length > 0);
+
+	for (i = 0; i < screen_length; ++i) {
+		id_screen = ctl->get_id_of_screen(iviscrns[i]);
+		iassert(ctl->get_screen_from_id(id_screen) == iviscrns[i]);
+	}
+
+	if (screen_length > 0)
+		free(iviscrns);
+}
+
+static void
+test_screen_resolution(struct test_context *ctx)
+{
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_screen **iviscrns;
+	int32_t screen_length = 0;
+	struct weston_output *output;
+	int32_t width;
+	int32_t height;
+	int32_t i;
+
+	iassert(ctl->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
+	iassert(screen_length > 0);
+
+	for (i = 0; i < screen_length; ++i) {
+		output = ctl->screen_get_output(iviscrns[i]);
+		iassert(output != NULL);
+		iassert(ctl->get_screen_resolution(
+			    iviscrns[i], &width, &height) == IVI_SUCCEEDED);
+		iassert(width == output->current_mode->width);
+		iassert(height == output->current_mode->height);
+	}
+
+	if (screen_length > 0)
+		free(iviscrns);
+}
+
+static void
+test_screen_render_order(struct test_context *ctx)
+{
+#define LAYER_NUM (3)
+	const struct ivi_controller_interface *ctl = ctx->controller_interface;
+	struct ivi_layout_screen **iviscrns;
+	int32_t screen_length = 0;
+	struct ivi_layout_screen *iviscrn;
+	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
+	struct ivi_layout_layer **array;
+	int32_t length = 0;
+	uint32_t i;
+
+	iassert(ctl->get_screens(&screen_length, &iviscrns) == IVI_SUCCEEDED);
+	iassert(screen_length > 0);
+
+	if (screen_length <= 0)
+		return;
+
+	iviscrn = iviscrns[0];
+
+	for (i = 0; i < LAYER_NUM; i++)
+		ivilayers[i] = ctl->layer_create_with_dimension(IVI_TEST_LAYER_ID(i), 200, 300);
+
+	iassert(ctl->screen_set_render_order(iviscrn, ivilayers, LAYER_NUM) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	iassert(ctl->get_layers_on_screen(iviscrn, &length, &array) == IVI_SUCCEEDED);
+	iassert(length == LAYER_NUM);
+	for (i = 0; i < LAYER_NUM; i++)
+		iassert(array[i] == ivilayers[i]);
+
+	if (length > 0)
+		free(array);
+
+	array = NULL;
+
+	iassert(ctl->screen_set_render_order(iviscrn, NULL, 0) == IVI_SUCCEEDED);
+
+	ctl->commit_changes();
+
+	iassert(ctl->get_layers_on_screen(iviscrn, &length, &array) == IVI_SUCCEEDED);
+	iassert(length == 0 && array == NULL);
+
+	for (i = 0; i < LAYER_NUM; i++)
+		ctl->layer_destroy(ivilayers[i]);
+
+	free(iviscrns);
+#undef LAYER_NUM
+}
+
 /************************ tests end ********************************/
 
 static void
@@ -742,6 +841,10 @@ run_internal_tests(void *data)
 	test_commit_changes_after_destination_rectangle_set_layer_destroy(ctx);
 	test_layer_create_duplicate(ctx);
 	test_get_layer_after_destory_layer(ctx);
+
+	test_screen_id(ctx);
+	test_screen_resolution(ctx);
+	test_screen_render_order(ctx);
 
 	weston_compositor_exit_with_code(ctx->compositor, EXIT_SUCCESS);
 	free(ctx);
