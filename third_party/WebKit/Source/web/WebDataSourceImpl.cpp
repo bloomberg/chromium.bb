@@ -44,9 +44,9 @@ static OwnPtr<WebPluginLoadObserver>& nextPluginLoadObserver()
     return nextPluginLoadObserver;
 }
 
-PassRefPtrWillBeRawPtr<WebDataSourceImpl> WebDataSourceImpl::create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+PassRefPtr<WebDataSourceImpl> WebDataSourceImpl::create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
-    return adoptRefWillBeNoop(new WebDataSourceImpl(frame, request, data));
+    return adoptRef(new WebDataSourceImpl(frame, request, data));
 }
 
 const WebURLRequest& WebDataSourceImpl::originalRequest() const
@@ -160,22 +160,6 @@ WebDataSourceImpl::WebDataSourceImpl(LocalFrame* frame, const ResourceRequest& r
 
 WebDataSourceImpl::~WebDataSourceImpl()
 {
-    // Verify that detachFromFrame() has been called.
-    ASSERT(!m_extraData);
-}
-
-void WebDataSourceImpl::detachFromFrame()
-{
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
-
-    DocumentLoader::detachFromFrame();
-    m_extraData.clear();
-    m_pluginLoadObserver.clear();
-}
-
-DEFINE_TRACE(WebDataSourceImpl)
-{
-    DocumentLoader::trace(visitor);
 }
 
 } // namespace blink

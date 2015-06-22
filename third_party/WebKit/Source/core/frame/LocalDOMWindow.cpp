@@ -1379,7 +1379,7 @@ void LocalDOMWindow::dispatchLoadEvent()
     if (frame() && frame()->loader().documentLoader() && !frame()->loader().documentLoader()->timing().loadEventStart()) {
         // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed while dispatching
         // the event, so protect it to prevent writing the end time into freed memory.
-        RefPtrWillBeRawPtr<DocumentLoader> documentLoader = frame()->loader().documentLoader();
+        RefPtr<DocumentLoader> documentLoader = frame()->loader().documentLoader();
         DocumentLoadTiming& timing = documentLoader->timing();
         timing.markLoadEventStart();
         dispatchEvent(loadEvent, document());

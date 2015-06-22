@@ -100,30 +100,20 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
 FrameLoader* DocumentLoader::frameLoader() const
 {
     if (!m_frame)
-        return nullptr;
+        return 0;
     return &m_frame->loader();
 }
 
 ResourceLoader* DocumentLoader::mainResourceLoader() const
 {
-    return m_mainResource ? m_mainResource->loader() : nullptr;
+    return m_mainResource ? m_mainResource->loader() : 0;
 }
 
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || !isLoading());
-    ASSERT(!m_mainResource);
-    ASSERT(!m_applicationCacheHost);
-}
-
-DEFINE_TRACE(DocumentLoader)
-{
-    visitor->trace(m_frame);
-    visitor->trace(m_fetcher);
-    // TODO(sof): start tracing ResourcePtr<>s (and m_mainResource.)
-    visitor->trace(m_writer);
-    visitor->trace(m_archive);
-    visitor->trace(m_applicationCacheHost);
+    clearMainResourceHandle();
+    m_applicationCacheHost->dispose();
 }
 
 unsigned long DocumentLoader::mainResourceIdentifier() const
@@ -135,7 +125,7 @@ Document* DocumentLoader::document() const
 {
     if (m_frame && m_frame->loader().documentLoader() == this)
         return m_frame->document();
-    return nullptr;
+    return 0;
 }
 
 const ResourceRequest& DocumentLoader::originalRequest() const
@@ -200,8 +190,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
 {
     ASSERT(!error.isNull());
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
-    if (m_applicationCacheHost)
-        m_applicationCacheHost->failedLoadingMainResource();
+    m_applicationCacheHost->failedLoadingMainResource();
     if (!frameLoader())
         return;
     m_mainDocumentError = error;
@@ -216,8 +205,8 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
 // but not loads initiated by child frames' data sources -- that's the WebFrame's job.
 void DocumentLoader::stopLoading()
 {
-    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
-    RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
+    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame);
+    RefPtr<DocumentLoader> protectLoader(this);
 
     m_fetcher->stopFetching();
     if (isLoading())
@@ -245,7 +234,7 @@ void DocumentLoader::notifyFinished(Resource* resource)
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT(m_mainResource);
 
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RefPtr<DocumentLoader> protect(this);
 
     if (!m_mainResource->errorOccurred() && !m_mainResource->wasCanceled()) {
         finishedLoading(m_mainResource->loadFinishTime());
@@ -259,7 +248,7 @@ void DocumentLoader::finishedLoading(double finishTime)
 {
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
 
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RefPtr<DocumentLoader> protect(this);
 
     double responseEndTime = finishTime;
     if (!responseEndTime)
@@ -447,7 +436,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT_UNUSED(handle, !handle);
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RefPtr<DocumentLoader> protect(this);
     ASSERT(frame());
 
     m_applicationCacheHost->didReceiveResponseForMainResource(response);
@@ -552,8 +541,8 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, unsigned
 
     // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
     // by starting a new load, so retain temporarily.
-    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
-    RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
+    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame);
+    RefPtr<DocumentLoader> protectLoader(this);
 
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
@@ -589,24 +578,17 @@ bool DocumentLoader::loadingMultipartContent() const
 void DocumentLoader::detachFromFrame()
 {
     ASSERT(m_frame);
-    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
-    RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
+    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame);
+    RefPtr<DocumentLoader> protectLoader(this);
 
     // It never makes sense to have a document loader that is detached from its
     // frame have any loads active, so go ahead and kill all the loads.
     stopLoading();
 
-    // If that load cancellation triggered another detach, leave.
-    // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
-    if (!m_frame)
-        return;
-
     m_fetcher->clearContext();
-    m_applicationCacheHost->detachFromDocumentLoader();
-    m_applicationCacheHost.clear();
+    m_applicationCacheHost->setApplicationCache(0);
     WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);
-    clearMainResourceHandle();
-    m_frame = nullptr;
+    m_frame = 0;
 }
 
 void DocumentLoader::clearMainResourceLoader()
@@ -619,7 +601,7 @@ void DocumentLoader::clearMainResourceHandle()
     if (!m_mainResource)
         return;
     m_mainResource->removeClient(this);
-    m_mainResource = nullptr;
+    m_mainResource = 0;
 }
 
 bool DocumentLoader::maybeCreateArchive()
@@ -709,7 +691,7 @@ bool DocumentLoader::maybeLoadEmpty()
 
 void DocumentLoader::startLoadingMainResource()
 {
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RefPtr<DocumentLoader> protect(this);
     m_mainDocumentError = ResourceError();
     timing().markNavigationStart();
     ASSERT(!m_mainResource);
@@ -741,8 +723,6 @@ void DocumentLoader::startLoadingMainResource()
         // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost
         // is now in a state where starting an empty load will be inconsistent. Replace it with
         // a new ApplicationCacheHost.
-        if (m_applicationCacheHost)
-            m_applicationCacheHost->detachFromDocumentLoader();
         m_applicationCacheHost = ApplicationCacheHost::create(this);
         maybeLoadEmpty();
         return;
@@ -761,7 +741,7 @@ void DocumentLoader::startLoadingMainResource()
 
 void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
 {
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RefPtr<DocumentLoader> protect(this);
     ResourceError error = resourceError.isNull() ? ResourceError::cancelledError(m_request.url()) : resourceError;
 
     if (mainResourceLoader())

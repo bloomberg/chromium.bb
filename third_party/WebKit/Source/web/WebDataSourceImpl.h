@@ -34,7 +34,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
-#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/web/WebDataSource.h"
 #include "web/WebPluginLoadObserver.h"
@@ -48,7 +47,7 @@ class WebPluginLoadObserver;
 
 class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
 public:
-    static PassRefPtrWillBeRawPtr<WebDataSourceImpl> create(LocalFrame*, const ResourceRequest&, const SubstituteData&);
+    static PassRefPtr<WebDataSourceImpl> create(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
     static WebDataSourceImpl* fromDocumentLoader(DocumentLoader* loader)
     {
@@ -75,12 +74,9 @@ public:
     PassOwnPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
     static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     WebDataSourceImpl(LocalFrame*, const ResourceRequest&, const SubstituteData&);
     virtual ~WebDataSourceImpl();
-    virtual void detachFromFrame() override;
 
     // Mutable because the const getters will magically sync these to the
     // latest version from WebKit.

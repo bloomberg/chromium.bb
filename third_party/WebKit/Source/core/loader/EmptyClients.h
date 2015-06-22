@@ -214,7 +214,7 @@ public:
 
     virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& = String()) override { }
 
-    virtual PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
+    virtual PassRefPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
 
     virtual String userAgent(const KURL&) override { return ""; }
 

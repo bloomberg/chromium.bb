@@ -132,7 +132,7 @@ namespace blink {
         // that match any element on the frame.
         virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) = 0;
 
-        virtual PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) = 0;
+        virtual PassRefPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) = 0;
 
         virtual String userAgent(const KURL&) = 0;
 
