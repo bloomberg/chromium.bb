@@ -130,6 +130,22 @@ ivi_shell_surface_configure(struct weston_surface *surface,
 	}
 }
 
+static void
+layout_surface_cleanup(struct ivi_shell_surface *ivisurf)
+{
+	assert(ivisurf->layout_surface != NULL);
+
+	ivi_layout_surface_destroy(ivisurf->layout_surface);
+	ivisurf->layout_surface = NULL;
+
+	ivisurf->surface->configure = NULL;
+	ivisurf->surface->configure_private = NULL;
+	ivisurf->surface = NULL;
+
+	// destroy weston_surface destroy signal.
+	wl_list_remove(&ivisurf->surface_destroy_listener.link);
+}
+
 /*
  * The ivi_surface wl_resource destructor.
  *
@@ -154,14 +170,8 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 
 	assert(ivisurf != NULL);
 
-	if (ivisurf->surface!=NULL) {
-		ivisurf->surface->configure = NULL;
-		ivisurf->surface->configure_private = NULL;
-		ivisurf->surface = NULL;
-	}
-
-	wl_list_remove(&ivisurf->surface_destroy_listener.link);
-	wl_list_remove(&ivisurf->link);
+	if (ivisurf->layout_surface != NULL)
+		layout_surface_cleanup(ivisurf);
 
 	if (ivisurf->resource != NULL) {
 		wl_resource_set_user_data(ivisurf->resource, NULL);

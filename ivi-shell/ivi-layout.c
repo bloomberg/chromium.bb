@@ -320,28 +320,27 @@ ivi_layout_surface_remove_notification(struct ivi_layout_surface *ivisurf)
 }
 
 /**
- * this shall not be called from controller because this is triggered by ivi_surface.destroy
- * This means that this is called from westonsurface_destroy_from_ivisurface.
+ * Called at destruction of wl_surface/ivi_surface
  */
-static void
-ivi_layout_surface_remove(struct ivi_layout_surface *ivisurf)
+void
+ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 {
 	struct ivi_layout *layout = get_instance();
 
 	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_remove: invalid argument\n");
+		weston_log("%s: invalid argument\n", __func__);
 		return;
 	}
 
-	if (!wl_list_empty(&ivisurf->pending.link)) {
-		wl_list_remove(&ivisurf->pending.link);
-	}
-	if (!wl_list_empty(&ivisurf->order.link)) {
-		wl_list_remove(&ivisurf->order.link);
-	}
-	if (!wl_list_empty(&ivisurf->link)) {
-		wl_list_remove(&ivisurf->link);
-	}
+	wl_list_remove(&ivisurf->surface_rotation.link);
+	wl_list_remove(&ivisurf->layer_rotation.link);
+	wl_list_remove(&ivisurf->surface_pos.link);
+	wl_list_remove(&ivisurf->layer_pos.link);
+	wl_list_remove(&ivisurf->scaling.link);
+
+	wl_list_remove(&ivisurf->pending.link);
+	wl_list_remove(&ivisurf->order.link);
+	wl_list_remove(&ivisurf->link);
 	remove_ordersurface_from_layer(ivisurf);
 
 	wl_signal_emit(&layout->surface_notification.removed, ivisurf);
@@ -350,28 +349,9 @@ ivi_layout_surface_remove(struct ivi_layout_surface *ivisurf)
 
 	ivi_layout_surface_remove_notification(ivisurf);
 
-	free(ivisurf);
-}
-
-/**
- * Called at destruction of ivi_surface
- */
-static void
-westonsurface_destroy_from_ivisurface(struct wl_listener *listener, void *data)
-{
-	struct ivi_layout_surface *ivisurf = NULL;
-
-	ivisurf = container_of(listener, struct ivi_layout_surface,
-			       surface_destroy_listener);
-
-	wl_list_remove(&ivisurf->surface_rotation.link);
-	wl_list_remove(&ivisurf->layer_rotation.link);
-	wl_list_remove(&ivisurf->surface_pos.link);
-	wl_list_remove(&ivisurf->layer_pos.link);
-	wl_list_remove(&ivisurf->scaling.link);
-
 	ivisurf->surface = NULL;
-	ivi_layout_surface_remove(ivisurf);
+
+	free(ivisurf);
 }
 
 /**
@@ -2812,10 +2792,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	ivisurf->layout = layout;
 
 	ivisurf->surface = wl_surface;
-	ivisurf->surface_destroy_listener.notify =
-		westonsurface_destroy_from_ivisurface;
-	wl_resource_add_destroy_listener(wl_surface->resource,
-					 &ivisurf->surface_destroy_listener);
 
 	tmpview = weston_view_create(wl_surface);
 	if (tmpview == NULL) {

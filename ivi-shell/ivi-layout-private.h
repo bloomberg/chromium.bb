@@ -39,7 +39,6 @@ struct ivi_layout_surface {
 	struct ivi_layout *layout;
 	struct weston_surface *surface;
 
-	struct wl_listener surface_destroy_listener;
 	struct weston_transform surface_rotation;
 	struct weston_transform layer_rotation;
 	struct weston_transform surface_pos;
@@ -226,4 +225,6 @@ ivi_layout_transition_move_layer_cancel(struct ivi_layout_layer *layer);
 int
 load_controller_modules(struct weston_compositor *compositor, const char *modules,
 			int *argc, char *argv[]);
+void
+ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf);
 #endif
