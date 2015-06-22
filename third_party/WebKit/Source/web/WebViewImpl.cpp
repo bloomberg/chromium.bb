@@ -3883,7 +3883,7 @@ void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe)
     if (webframe == mainFrame())
         view->resize(mainFrameSize());
     else
-        view->resize(webframe->frameView()->layoutSize());
+        view->resize(webframe->frameView()->size());
 }
 
 void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
