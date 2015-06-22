@@ -27,6 +27,7 @@
 
 [
     DoNotCheckConstants,
+    GarbageCollected,
     // TODO(philipj): Exposed=(Window,SharedWorker)
 ] interface ApplicationCache : EventTarget {
     // update status

@@ -211,6 +211,8 @@ private:
 
     void scheduleCheckCompleted();
 
+    void detachDocumentLoader(RefPtrWillBeMember<DocumentLoader>&);
+
     RawPtrWillBeMember<LocalFrame> m_frame;
 
     // FIXME: These should be OwnPtr<T> to reduce build times and simplify
@@ -226,9 +228,9 @@ private:
     // a new request is being loaded, the old document loader may still be referenced.
     // E.g. while a new request is in the "policy" state, the old document loader may
     // be consulted in particular as it makes sense to imply certain settings on the new loader.
-    RefPtr<DocumentLoader> m_documentLoader;
-    RefPtr<DocumentLoader> m_provisionalDocumentLoader;
-    RefPtr<DocumentLoader> m_policyDocumentLoader;
+    RefPtrWillBeMember<DocumentLoader> m_documentLoader;
+    RefPtrWillBeMember<DocumentLoader> m_provisionalDocumentLoader;
+    RefPtrWillBeMember<DocumentLoader> m_policyDocumentLoader;
 
     RefPtrWillBeMember<HistoryItem> m_currentItem;
     RefPtrWillBeMember<HistoryItem> m_provisionalItem;

@@ -63,6 +63,12 @@ protected:
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
+    virtual void TearDown()
+    {
+        documentLoader->detachFromFrame();
+        documentLoader.clear();
+    }
+
     void expectUpgrade(const char* input, const char* expected)
     {
         expectUpgrade(input, WebURLRequest::RequestContextScript, WebURLRequest::FrameTypeNone, expected);
@@ -108,7 +114,7 @@ protected:
     OwnPtr<DummyPageHolder> dummyPageHolder;
     // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
     // as the ResourceFetcher and Document live due to indirect usage.
-    RefPtr<DocumentLoader> documentLoader;
+    RefPtrWillBePersistent<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
     FetchContext* fetchContext;
 };
@@ -230,6 +236,12 @@ protected:
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
+    virtual void TearDown()
+    {
+        documentLoader->detachFromFrame();
+        documentLoader.clear();
+    }
+
     void expectHeader(const char* input, const char* headerName, bool isPresent, const char* headerValue, float width = 0)
     {
         KURL inputURL(ParsedURLString, input);
@@ -249,7 +261,7 @@ protected:
     OwnPtr<DummyPageHolder> dummyPageHolder;
     // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
     // as the ResourceFetcher and Document live due to indirect usage.
-    RefPtr<DocumentLoader> documentLoader;
+    RefPtrWillBePersistent<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
     FetchContext* fetchContext;
 };
@@ -309,4 +321,3 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints)
 }
 
 } // namespace
-

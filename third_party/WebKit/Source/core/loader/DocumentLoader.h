@@ -48,6 +48,7 @@
 #include "wtf/RefPtr.h"
 
 namespace blink {
+
     class ApplicationCacheHost;
     class ResourceFetcher;
     class DocumentInit;
@@ -57,18 +58,18 @@ namespace blink {
     class ResourceLoader;
     class ThreadedDataReceiver;
 
-    class CORE_EXPORT DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
-        WTF_MAKE_FAST_ALLOCATED(DocumentLoader);
+    class CORE_EXPORT DocumentLoader : public RefCountedWillBeGarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DocumentLoader);
     public:
-        static PassRefPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+        static PassRefPtrWillBeRawPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
         {
-            return adoptRef(new DocumentLoader(frame, request, data));
+            return adoptRefWillBeNoop(new DocumentLoader(frame, request, data));
         }
         virtual ~DocumentLoader();
 
         LocalFrame* frame() const { return m_frame; }
 
-        void detachFromFrame();
+        virtual void detachFromFrame();
 
         unsigned long mainResourceIdentifier() const;
 
@@ -141,6 +142,8 @@ namespace blink {
 
         void startPreload(Resource::Type, FetchRequest&);
 
+        DECLARE_VIRTUAL_TRACE();
+
     protected:
         DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
@@ -181,12 +184,12 @@ namespace blink {
 
         bool shouldContinueForResponse() const;
 
-        LocalFrame* m_frame;
-        RefPtrWillBePersistent<ResourceFetcher> m_fetcher;
+        RawPtrWillBeMember<LocalFrame> m_frame;
+        RefPtrWillBeMember<ResourceFetcher> m_fetcher;
 
         ResourcePtr<RawResource> m_mainResource;
 
-        RefPtrWillBePersistent<DocumentWriter> m_writer;
+        RefPtrWillBeMember<DocumentWriter> m_writer;
 
         // A reference to actual request used to create the data source.
         // The only part of this request that should change is the url, and
@@ -210,20 +213,20 @@ namespace blink {
 
         NavigationType m_navigationType;
 
-        RefPtrWillBePersistent<MHTMLArchive> m_archive;
+        RefPtrWillBeMember<MHTMLArchive> m_archive;
 
         bool m_loadingMainResource;
         DocumentLoadTiming m_documentLoadTiming;
 
         double m_timeOfLastDataReceived;
 
-        friend class ApplicationCacheHost;  // for substitute resource delivery
-        OwnPtrWillBePersistent<ApplicationCacheHost> m_applicationCacheHost;
+        PersistentWillBeMember<ApplicationCacheHost> m_applicationCacheHost;
 
         RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
         ClientHintsPreferences m_clientHintsPreferences;
         InitialScrollState m_initialScrollState;
     };
-}
+
+} // namespace blink
 
 #endif // DocumentLoader_h

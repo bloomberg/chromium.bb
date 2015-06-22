@@ -113,7 +113,7 @@ public:
     virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) override;
     virtual void didDispatchPingLoader(const KURL&) override;
     virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
-    virtual PassRefPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
+    virtual PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
     virtual WTF::String userAgent(const KURL&) override;
     virtual WTF::String doNotTrackValue() override;
     virtual void transitionToCommittedForNewPage() override;

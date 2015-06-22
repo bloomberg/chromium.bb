@@ -2656,7 +2656,7 @@ void Document::dispatchUnloadEvents()
             // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed
             // while dispatching the event, so protect it to prevent writing the end
             // time into freed memory.
-            RefPtr<DocumentLoader> documentLoader =  m_frame->loader().provisionalDocumentLoader();
+            RefPtrWillBeRawPtr<DocumentLoader> documentLoader = m_frame->loader().provisionalDocumentLoader();
             m_loadEventProgress = UnloadEventInProgress;
             RefPtrWillBeRawPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
             if (documentLoader && !documentLoader->timing().unloadEventStart() && !documentLoader->timing().unloadEventEnd()) {
@@ -5263,7 +5263,7 @@ Node* eventTargetNodeForDocument(Document* doc)
     Node* node = doc->focusedElement();
     if (!node && doc->isPluginDocument()) {
         PluginDocument* pluginDocument = toPluginDocument(doc);
-        node =  pluginDocument->pluginNode();
+        node = pluginDocument->pluginNode();
     }
     if (!node && doc->isHTMLDocument())
         node = doc->body();
