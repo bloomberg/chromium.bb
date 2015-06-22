@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/disks/suspend_unmount_manager.h"
 
 namespace chromeos {
 namespace disks {
@@ -29,9 +30,11 @@ class DiskMountManagerImpl : public DiskMountManager {
     already_refreshed_(false),
     weak_ptr_factory_(this) {
     DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
-    DCHECK(dbus_thread_manager);
     cros_disks_client_ = dbus_thread_manager->GetCrosDisksClient();
-    DCHECK(cros_disks_client_);
+    PowerManagerClient* power_manager_client =
+        dbus_thread_manager->GetPowerManagerClient();
+    suspend_unmount_manager_.reset(
+        new SuspendUnmountManager(this, power_manager_client));
     cros_disks_client_->SetMountEventHandler(
         base::Bind(&DiskMountManagerImpl::OnMountEvent,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -624,6 +627,8 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   bool already_refreshed_;
   std::vector<EnsureMountInfoRefreshedCallback> refresh_callbacks_;
+
+  scoped_ptr<SuspendUnmountManager> suspend_unmount_manager_;
 
   base::WeakPtrFactory<DiskMountManagerImpl> weak_ptr_factory_;
 
