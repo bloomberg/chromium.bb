@@ -16,6 +16,12 @@ FAIL namedItem multiple name and ID assert_equals: expected (string) "7" but got
 FAIL namedItem multiple name and ID with multiple attributes assert_equals: expected (string) "9" but got (undefined) undefined
 PASS namedItem id attribute multiple attributes one element 
 PASS namedItem name attribute multiple attributes one element 
+PASS HTMLOptionsCollection [index] method return the item with index 
+PASS HTMLOptionsCollection [name] method return the item with name 
+PASS HTMLOptionsCollection.item(index) method return the item with index 
+PASS HTMLOptionsCollection.item(name) method return the item with index 0 
+PASS HTMLOptionsCollection.add method insert HTMLOptionElement Option element 
+PASS HTMLOptionsCollection.remove method remove Option element by index 
 PASS Add non-option to collection 
 Harness: the test ran to completion.
 

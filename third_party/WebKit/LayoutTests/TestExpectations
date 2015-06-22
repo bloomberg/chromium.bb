@@ -273,7 +273,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-005.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-009.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-011.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-013.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-033.xht [ ImageOnlyFailure ]
@@ -309,7 +308,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-088.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-normal-011.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-plaintext-011.html [ ImageOnlyFailure ]
-crbug.com/471465 imported/csswg-test/css-writing-modes-3/clearance-calculations-vrl-006.xht [ ImageOnlyFailure ]
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-002.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.xht [ ImageOnlyFailure ]
@@ -418,7 +416,7 @@ crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/su
 
 crbug.com/443379 imported/web-platform-tests/gamepad/idlharness.html [ Failure Timeout ]
 
-crbug.com/443382 imported/web-platform-tests/subresource-integrity/subresource-integrity.html [ Failure ]
+crbug.com/443382 imported/web-platform-tests/subresource-integrity/subresource-integrity.html [ Failure Timeout ]
 crbug.com/492957 imported/web-platform-tests/webrtc/promises-call.html [ Failure ]
 crbug.com/492957 imported/web-platform-tests/webrtc/datachannel-emptystring.html [ Failure ]
 
