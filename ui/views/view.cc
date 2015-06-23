@@ -1471,8 +1471,6 @@ void View::OnPaintLayer(const ui::PaintContext& context) {
     ui::PaintRecorder recorder(context);
     recorder.canvas()->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   }
-  if (!visible_)
-    return;
   Paint(context);
 }
 
