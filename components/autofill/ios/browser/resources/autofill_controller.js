@@ -1224,6 +1224,34 @@ __gCrWeb.autofill.inferLabelFromDefinitionList = function(element) {
 };
 
 /**
+ * Checks if the element's closest ancestor is a TD or DIV.
+ *
+ * It is based on the logic in
+ *    bool ClosestAncestorIsDivAndNotTD(const WebFormControlElement& element)
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ *
+ * @param {Element} element An element to examine.
+ * @return {boolean} true if the closest ancestor is a <div> and not a <td>.
+ *     false if the closest ancestor is a <td> tag, or if there is no <div> or
+ *     <td> ancestor.
+ */
+__gCrWeb.autofill.closestAncestorIsDivAndNotTD = function(element) {
+  var parentNode = element.parentNode;
+  while (parentNode) {
+    if (parentNode.nodeType === Node.ELEMENT_NODE) {
+      if (__gCrWeb.autofill.hasTagName(parentNode, 'div')) {
+        return true;
+      }
+      if (__gCrWeb.autofill.hasTagName(parentNode, 'td')) {
+        return false;
+      }
+    }
+    parentNode = parentNode.parentNode;
+  }
+  return false;
+}
+
+/**
  * Infers corresponding label for |element| from surrounding context in the DOM,
  * e.g. the contents of the preceding <p> tag or text element.
  *
@@ -1252,6 +1280,22 @@ __gCrWeb.autofill.inferLabelForElement = function(element) {
     return inferredLabel;
   }
 
+  // If we didn't find a label, check for definition list case.
+  inferredLabel = __gCrWeb.autofill.inferLabelFromDefinitionList(element);
+  if (inferredLabel.length > 0) {
+    return inferredLabel;
+  }
+
+  var checkDivFirst = __gCrWeb.autofill.closestAncestorIsDivAndNotTD(element);
+  if (checkDivFirst) {
+    // If we didn't find a label, check for div table case first since it's the
+    // closest ancestor.
+    inferredLabel = __gCrWeb.autofill.inferLabelFromDivTable(element);
+    if (inferredLabel.length > 0) {
+      return inferredLabel;
+    }
+  }
+
   // If we didn't find a label, check for table cell case.
   inferredLabel = __gCrWeb.autofill.inferLabelFromTableColumn(element);
   if (inferredLabel.length > 0) {
@@ -1264,14 +1308,13 @@ __gCrWeb.autofill.inferLabelForElement = function(element) {
     return inferredLabel;
   }
 
-  // If we didn't find a label, check for definition list case.
-  inferredLabel = __gCrWeb.autofill.inferLabelFromDefinitionList(element);
-  if (inferredLabel.length > 0) {
-    return inferredLabel;
+  if (!checkDivFirst) {
+    // If we didn't find a label from the table, check for div table case if we
+    // haven't already.
+    inferredLabel = __gCrWeb.autofill.inferLabelFromDivTable(element);
   }
 
-  // If we didn't find a label, check for div table case.
-  return __gCrWeb.autofill.inferLabelFromDivTable(element);
+  return inferredLabel;
 };
 
 /**
