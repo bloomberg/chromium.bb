@@ -178,11 +178,11 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
         return false;
 
-    RefPtr<const SkImage> textureImage = m_surface->getBackingTextureImage();
+    RefPtr<const SkImage> textureImage = m_surface->newImageSnapshot();
     if (!textureImage)
         return false;
 
-    ASSERT(textureImage->isTextureBacked());
+    ASSERT(textureImage->isTextureBacked()); // isAccelerated() check above should guarantee this
     // Get the texture ID, flushing pending operations if needed.
     Platform3DObject textureId = textureImage->getTextureHandle(true);
     if (!textureId)
@@ -230,13 +230,13 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
 bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBuffer, SourceDrawingBuffer sourceBuffer)
 {
-    if (!drawingBuffer)
+    if (!drawingBuffer || !m_surface->isAccelerated())
         return false;
     OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!provider)
         return false;
     WebGraphicsContext3D* context3D = provider->context3d();
-    RefPtr<SkImage> textureImage = m_surface->getBackingTextureImage();
+    RefPtr<SkImage> textureImage = m_surface->newImageSnapshot();
     if (!context3D || !textureImage)
         return false;
     ASSERT(textureImage->isTextureBacked());
@@ -244,6 +244,8 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     Platform3DObject textureId = textureImage->getTextureHandle(true);
     if (!textureId)
         return false;
+
+    context3D->flush();
 
     m_surface->invalidateCachedBitmap();
     bool result = drawingBuffer->copyToPlatformTexture(context3D, textureId, GL_RGBA,

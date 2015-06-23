@@ -513,18 +513,10 @@ void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
     m_didRecordDrawCommand = true;
 }
 
-PassRefPtr<SkImage> Canvas2DLayerBridge::getBackingTextureImage()
+PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()
 {
     if (!checkSurfaceValid())
         return nullptr;
-
-    context()->flush();
-
-    return adoptRef(m_canvas->newImageSnapshot());
-}
-
-PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()
-{
     return adoptRef(m_canvas->newImageSnapshot());
 }
 

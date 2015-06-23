@@ -82,11 +82,8 @@ public:
     virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
 
-    // These methods return an SkImage representing the backing texture. We support both variants
-    // to avoid the snapshot overhead (flushing deferred draws, COW semantics, fallback in
-    // RecordingImageBufferSurface) when not strictly required.
-    virtual PassRefPtr<SkImage> newImageSnapshot() const { return nullptr; }
-    virtual PassRefPtr<SkImage> getBackingTextureImage() const { return nullptr; }
+    // May return nullptr if the surface is GPU-backed and the GPU context was lost.
+    virtual PassRefPtr<SkImage> newImageSnapshot() const = 0;
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

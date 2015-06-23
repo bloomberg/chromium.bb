@@ -62,13 +62,6 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     clear();
 }
 
-// This is a duplicate of newImageSnapshot(), but we need different entry points to
-// support Canvas2DLayerBridge's slightly divergent semantics.
-PassRefPtr<SkImage> AcceleratedImageBufferSurface::getBackingTextureImage() const
-{
-    return adoptRef(m_surface->newImageSnapshot());
-}
-
 void AcceleratedImageBufferSurface::didModifyBackingTexture()
 {
     m_surface->getCanvas()->getTopDevice()->accessBitmap(false).notifyPixelsChanged();

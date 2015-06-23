@@ -72,7 +72,6 @@ public:
     bool checkSurfaceValid();
     bool restoreSurface();
     WebLayer* layer() const;
-    PassRefPtr<SkImage> getBackingTextureImage();
     bool isAccelerated() const { return true; }
     void setFilterQuality(SkFilterQuality);
     void setIsHidden(bool);

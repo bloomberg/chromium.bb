@@ -266,13 +266,6 @@ bool RecordingImageBufferSurface::isAccelerated() const
     return ImageBufferSurface::isAccelerated();
 }
 
-PassRefPtr<SkImage> RecordingImageBufferSurface::getBackingTextureImage() const
-{
-    if (m_fallbackSurface)
-        return m_fallbackSurface->getBackingTextureImage();
-    return ImageBufferSurface::getBackingTextureImage();
-}
-
 bool RecordingImageBufferSurface::cachedBitmapEnabled() const
 {
     if (m_fallbackSurface)

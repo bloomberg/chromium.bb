@@ -124,8 +124,7 @@ protected:
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-            EXPECT_CALL(mainMock, flush());
-            unsigned textureId = bridge->getBackingTextureImage()->getTextureHandle(true);
+            unsigned textureId = bridge->newImageSnapshot()->getTextureHandle(true);
             EXPECT_EQ(textureId, 0u);
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
