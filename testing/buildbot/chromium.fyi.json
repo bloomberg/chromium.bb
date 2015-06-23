@@ -20,6 +20,13 @@
       }
     ]
   },
+  "CFI Linux": {
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  },
   "Chromium Mac 10.10": {
     "gtest_tests": [
       {
