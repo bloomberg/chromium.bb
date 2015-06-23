@@ -301,10 +301,6 @@ const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 // Enables testing Metronome client with a periodic timer.
 const char kTestMetronomeTimer[] = "test-metronome-timer";
 
-// Disable memory pressure checks on ChromeOS.
-const char kDisableMemoryPressureSystemChromeOS[] =
-    "disable-memory-pressure-chromeos";
-
 // Enables waking the device based on the receipt of some network packets.
 const char kWakeOnPackets[] = "wake-on-packets";
 
@@ -342,11 +338,10 @@ bool WakeOnWifiEnabled() {
 }
 
 bool MemoryPressureHandlingEnabled() {
-  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableMemoryPressureSystemChromeOS)) ||
-      (base::FieldTrialList::FindFullName(kMemoryPressureExperimentName) ==
-       kMemoryPressureHandlingOff))
+  if (base::FieldTrialList::FindFullName(kMemoryPressureExperimentName) ==
+      kMemoryPressureHandlingOff) {
     return false;
+  }
   return true;
 }
 

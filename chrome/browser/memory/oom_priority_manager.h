@@ -25,8 +25,6 @@ class GURL;
 
 namespace memory {
 
-class LowMemoryObserver;
-
 // The OomPriorityManager periodically checks (see
 // ADJUSTMENT_INTERVAL_SECONDS in the source) the status of renderers
 // and adjusts the out of memory (OOM) adjustment value (in
@@ -159,12 +157,6 @@ class OomPriorityManager : public content::NotificationObserver {
   ProcessScoreMap oom_score_map_;
   // Holds the focused tab's child process host id.
   ProcessInfo focused_tab_process_info_;
-
-  // The old observer for the kernel low memory signal. This is null if
-  // the new MemoryPressureListener is used.
-  // TODO(skuhne): Remove this when the enhanced memory observer is turned on
-  // by default.
-  scoped_ptr<LowMemoryObserver> low_memory_observer_;
 
   // A listener to global memory pressure events. This will be used if the
   // memory pressure system was instantiated - otherwise the LowMemoryObserver

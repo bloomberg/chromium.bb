@@ -1214,12 +1214,6 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_DESCRIPTION" desc="Description for the flag to disable the color calibration of the display.">
     Disable calibrating the color of the display even if the display supports the feature.
   </message>
-  <message name="IDS_FLAGS_DISABLE_MEMORY_PRESSURE_NAME" desc="Name for the flag to disable memory pressure handling on ChromeOS.">
-    Disable memory pressure handling
-  </message>
-  <message name="IDS_FLAGS_DISABLE_MEMORY_PRESSURE_DESCRIPTION" desc="Description for the flag to disable memory pressure handling on ChromeOS.">
-    Disable enhanced memory pressure handling on ChromeOS.
-  </message>
   <message name="IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME" desc="Name for the flag which specifies which memory pressure strategy should be used on ChromeOS.">
     Memory discard strategy for advanced pressure handling
   </message>

@@ -1706,12 +1706,6 @@ const Experiment kExperiments[] = {
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignSettings)},
 #endif
 #if defined(OS_CHROMEOS)
-    {"disable-memory-pressure-chromeos",
-     IDS_FLAGS_DISABLE_MEMORY_PRESSURE_NAME,
-     IDS_FLAGS_DISABLE_MEMORY_PRESSURE_DESCRIPTION,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         chromeos::switches::kDisableMemoryPressureSystemChromeOS)},
     {"memory-pressure-thresholds",
      IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_NAME,
      IDS_FLAGS_MEMORY_PRESSURE_THRESHOLD_DESCRIPTION,

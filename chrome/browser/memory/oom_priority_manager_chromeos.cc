@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/memory/low_memory_observer_chromeos.h"
 #include "chrome/browser/memory/oom_memory_details.h"
 #include "chrome/browser/memory/system_memory_stats_recorder.h"
 #include "chrome/browser/ui/browser.h"
@@ -104,10 +103,6 @@ OomPriorityManager::OomPriorityManager()
     : focused_tab_process_info_(std::make_pair(0, 0)),
       discard_count_(0),
       recent_tab_discard_(false) {
-  // Use the old |LowMemoryObserver| when there is no |MemoryPressureMonitor|.
-  if (!base::MemoryPressureMonitor::Get())
-    low_memory_observer_.reset(new LowMemoryObserver);
-
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -131,22 +126,15 @@ void OomPriorityManager::Start() {
         this, &OomPriorityManager::RecordRecentTabDiscard);
   }
   start_time_ = TimeTicks::Now();
-  // If a |LowMemoryObserver| exists we use the old system, otherwise we create
-  // a |MemoryPressureListener| to listen for memory events.
-  if (low_memory_observer_) {
-    low_memory_observer_->Start();
-  } else {
-    base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
-    if (monitor) {
-      memory_pressure_listener_.reset(
-          new base::MemoryPressureListener(base::Bind(
-              &OomPriorityManager::OnMemoryPressure, base::Unretained(this))));
-      base::MemoryPressureListener::MemoryPressureLevel level =
-          monitor->GetCurrentPressureLevel();
-      if (level ==
-          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-        OnMemoryPressure(level);
-      }
+  // Create a |MemoryPressureListener| to listen for memory events.
+  base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
+  if (monitor) {
+    memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
+        &OomPriorityManager::OnMemoryPressure, base::Unretained(this))));
+    base::MemoryPressureListener::MemoryPressureLevel level =
+        monitor->GetCurrentPressureLevel();
+    if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+      OnMemoryPressure(level);
     }
   }
 }
@@ -154,10 +142,7 @@ void OomPriorityManager::Start() {
 void OomPriorityManager::Stop() {
   timer_.Stop();
   recent_tab_discard_timer_.Stop();
-  if (low_memory_observer_)
-    low_memory_observer_->Stop();
-  else
-    memory_pressure_listener_.reset();
+  memory_pressure_listener_.reset();
 }
 
 std::vector<base::string16> OomPriorityManager::GetTabTitles() {
@@ -407,21 +392,19 @@ void OomPriorityManager::Observe(int type,
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
       oom_score_map_.erase(host->GetID());
-      if (!low_memory_observer_) {
-        // Coming here we know that a renderer was just killed and memory should
-        // come back into the pool. However - the memory pressure observer did
-        // not yet update its status and therefore we ask it to redo the
-        // measurement, calling us again if we have to release more.
-        // Note: We do not only accelerate the discarding speed by doing another
-        // check in short succession - we also accelerate it because the timer
-        // driven MemoryPressureMonitor will continue to produce timed events
-        // on top. So the longer the cleanup phase takes, the more tabs will
-        // get discarded in parallel.
-        base::chromeos::MemoryPressureMonitor* monitor =
-            base::chromeos::MemoryPressureMonitor::Get();
-        if (monitor)
-          monitor->ScheduleEarlyCheck();
-      }
+      // Coming here we know that a renderer was just killed and memory should
+      // come back into the pool. However - the memory pressure observer did
+      // not yet update its status and therefore we ask it to redo the
+      // measurement, calling us again if we have to release more.
+      // Note: We do not only accelerate the discarding speed by doing another
+      // check in short succession - we also accelerate it because the timer
+      // driven MemoryPressureMonitor will continue to produce timed events
+      // on top. So the longer the cleanup phase takes, the more tabs will
+      // get discarded in parallel.
+      base::chromeos::MemoryPressureMonitor* monitor =
+          base::chromeos::MemoryPressureMonitor::Get();
+      if (monitor)
+        monitor->ScheduleEarlyCheck();
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
