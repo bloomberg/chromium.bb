@@ -31,33 +31,20 @@ STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
 STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
                              WebSettings::EditingBehaviorAndroid);
 
+// This change has both Chrome + blink components. The #if-guard allows us
+// to do this in two steps.
+#ifdef CLEANUP_V8_CACHE_OPTIONS_GUARD
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_DEFAULT,
                              WebSettings::V8CacheOptionsDefault);
+STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_NONE,
+                             WebSettings::V8CacheOptionsNone);
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE,
                              WebSettings::V8CacheOptionsParse);
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
                              WebSettings::V8CacheOptionsCode);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE_COMPRESSED,
-                             WebSettings::V8CacheOptionsCodeCompressed);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_NONE,
-                             WebSettings::V8CacheOptionsNone);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE_MEMORY,
-                             WebSettings::V8CacheOptionsParseMemory);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS,
-                             WebSettings::V8CacheOptionsHeuristics);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS_MOBILE,
-                             WebSettings::V8CacheOptionsHeuristicsMobile);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_HEURISTICS_DEFAULT,
-                             WebSettings::V8CacheOptionsHeuristicsDefault);
-STATIC_ASSERT_MATCHING_ENUMS(
-    V8_CACHE_OPTIONS_HEURISTICS_DEFAULT_MOBILE,
-    WebSettings::V8CacheOptionsHeuristicsDefaultMobile);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_RECENT,
-                             WebSettings::V8CacheOptionsRecent);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_RECENT_SMALL,
-                             WebSettings::V8CacheOptionsRecentSmall);
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
-                             WebSettings::V8CacheOptionsRecentSmall);
+                             WebSettings::V8CacheOptionsCode);
+#endif  // CLEANUP_V8_CACHE_OPTIONS_GUARD
 
 STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_ALLOWED,
                              WebSettings::ImageAnimationPolicyAllowed);

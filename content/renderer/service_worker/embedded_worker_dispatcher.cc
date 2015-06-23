@@ -93,8 +93,30 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
       params.wait_for_debugger ?
           blink::WebEmbeddedWorkerStartData::WaitForDebugger :
           blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
+
+// This change has both Chrome + blink components. The #if-guard allows us
+// to do this in two steps.
+#ifdef CLEANUP_V8_CACHE_OPTIONS_GUARD
+  // Proper solution:
   start_data.v8CacheOptions =
       static_cast<blink::WebSettings::V8CacheOptions>(params.v8_cache_options);
+#else
+  // Temporary solution, while not all changes are in:
+  switch (params.v8_cache_options) {
+    case V8_CACHE_OPTIONS_DEFAULT:
+      start_data.v8CacheOptions = blink::WebSettings::V8CacheOptionsDefault;
+      break;
+    case V8_CACHE_OPTIONS_NONE:
+      start_data.v8CacheOptions = blink::WebSettings::V8CacheOptionsNone;
+      break;
+    case V8_CACHE_OPTIONS_PARSE:
+      start_data.v8CacheOptions = blink::WebSettings::V8CacheOptionsParseMemory;
+      break;
+    case V8_CACHE_OPTIONS_CODE:
+      start_data.v8CacheOptions = blink::WebSettings::V8CacheOptionsHeuristics;
+      break;
+  }
+#endif  // CLEANUP_V8_CACHE_OPTIONS_GUARD
 
   wrapper->worker()->startWorkerContext(start_data);
   workers_.AddWithID(wrapper.release(), params.embedded_worker_id);

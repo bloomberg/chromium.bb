@@ -1064,8 +1064,29 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setSelectionIncludesAltImageText(true);
 
+// This change has both Chrome + blink components. The #if-guard allows us
+// to do this in two steps.
+#ifdef CLEANUP_V8_CACHE_OPTIONS_GUARD
+  // Proper solution:
   settings->setV8CacheOptions(
       static_cast<WebSettings::V8CacheOptions>(prefs.v8_cache_options));
+#else
+  // Temporary solution, while not all changes are in:
+  switch (prefs.v8_cache_options) {
+    case V8_CACHE_OPTIONS_DEFAULT:
+      settings->setV8CacheOptions(WebSettings::V8CacheOptionsDefault);
+      break;
+    case V8_CACHE_OPTIONS_NONE:
+      settings->setV8CacheOptions(WebSettings::V8CacheOptionsNone);
+      break;
+    case V8_CACHE_OPTIONS_PARSE:
+      settings->setV8CacheOptions(WebSettings::V8CacheOptionsParseMemory);
+      break;
+    case V8_CACHE_OPTIONS_CODE:
+      settings->setV8CacheOptions(WebSettings::V8CacheOptionsHeuristics);
+      break;
+  }
+#endif  // CLEANUP_V8_CACHE_OPTIONS_GUARD
 
   settings->setImageAnimationPolicy(
       static_cast<WebSettings::ImageAnimationPolicy>(prefs.animation_policy));

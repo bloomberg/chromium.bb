@@ -362,6 +362,14 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     }
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ServiceWorkerBrowserTest::SetUpCommandLine(command_line);
+
+    // Code caching requires a bit more infrastructure that we don't care
+    // about in this test.
+    command_line->AppendSwitchASCII(switches::kV8CacheOptions, "none");
+  }
+
   void StartOnIOThread() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     worker_ = wrapper()->context()->embedded_worker_registry()->CreateWorker();
@@ -383,6 +391,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
         pause_mode_ != DONT_PAUSE,
         base::Bind(&EmbeddedWorkerBrowserTest::StartOnIOThread2, this));
   }
+
   void StartOnIOThread2(ServiceWorkerStatusCode status) {
     last_worker_status_ = worker_->status();
     EXPECT_EQ(SERVICE_WORKER_OK, status);

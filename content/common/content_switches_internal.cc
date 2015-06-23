@@ -70,28 +70,12 @@ V8CacheOptions GetV8CacheOptions() {
       command_line.GetSwitchValueASCII(switches::kV8CacheOptions);
   if (v8_cache_options.empty())
     v8_cache_options = base::FieldTrialList::FindFullName("V8CacheOptions");
-  if (v8_cache_options == "parse") {
+  if (v8_cache_options == "none") {
+    return V8_CACHE_OPTIONS_NONE;
+  } else if (v8_cache_options == "parse") {
     return V8_CACHE_OPTIONS_PARSE;
   } else if (v8_cache_options == "code") {
     return V8_CACHE_OPTIONS_CODE;
-  } else if (v8_cache_options == "code-compressed") {
-    return V8_CACHE_OPTIONS_CODE_COMPRESSED;
-  } else if (v8_cache_options == "none") {
-    return V8_CACHE_OPTIONS_NONE;
-  } else if (v8_cache_options == "parse-memory") {
-    return V8_CACHE_OPTIONS_PARSE_MEMORY;
-  } else if (v8_cache_options == "heuristics") {
-    return V8_CACHE_OPTIONS_HEURISTICS;
-  } else if (v8_cache_options == "heuristics-mobile") {
-    return V8_CACHE_OPTIONS_HEURISTICS_MOBILE;
-  } else if (v8_cache_options == "heuristics-default") {
-    return V8_CACHE_OPTIONS_HEURISTICS_DEFAULT;
-  } else if (v8_cache_options == "heuristics-default-mobile") {
-    return V8_CACHE_OPTIONS_HEURISTICS_DEFAULT_MOBILE;
-  } else if (v8_cache_options == "recent") {
-    return V8_CACHE_OPTIONS_RECENT;
-  } else if (v8_cache_options == "recent-small") {
-    return V8_CACHE_OPTIONS_RECENT_SMALL;
   } else {
     return V8_CACHE_OPTIONS_DEFAULT;
   }
