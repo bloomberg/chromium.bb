@@ -155,9 +155,14 @@ void CommandBufferImpl::BindToRequest(
 }
 
 void CommandBufferImpl::OnConnectionError() {
-  // OnConnectionError() is called on the background thread
-  // |control_task_runner| but objects we own (such as CommandBufferDriver)
-  // need to be destroyed on the thread we were created on.
+  // OnConnectionError() is called on the control thread |control_task_runner|.
+  // sync_point_client_ is assigned and accessed on the control thread and so it
+  // should also be destroyed on the control because InterfacePtrs are thread-
+  // hostile.
+  sync_point_client_.reset();
+
+  // Objects we own (such as CommandBufferDriver) need to be destroyed on the
+  // thread we were created on.
   driver_task_runner_->DeleteSoon(FROM_HERE, this);
 }
 
