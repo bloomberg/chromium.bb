@@ -34,20 +34,6 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,
     bool is_sync,
     bool test_only) {
-  for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
-    bool found =
-        std::find(plane_list->plane_list.begin(), plane_list->plane_list.end(),
-                  plane) != plane_list->plane_list.end();
-    if (!found) {
-      // This plane is being released, so we need to zero it.
-      plane->set_in_use(false);
-      HardwareDisplayPlaneAtomic* atomic_plane =
-          static_cast<HardwareDisplayPlaneAtomic*>(plane);
-      atomic_plane->SetPlaneData(plane_list->atomic_property_set.get(), 0, 0,
-                                 gfx::Rect(), gfx::Rect());
-    }
-  }
-
   std::vector<base::WeakPtr<CrtcController>> crtcs;
   for (HardwareDisplayPlane* plane : plane_list->plane_list) {
     HardwareDisplayPlaneAtomic* atomic_plane =
@@ -70,6 +56,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     PLOG(ERROR) << "Failed to commit properties";
     return false;
   }
+  plane_list->atomic_property_set.reset(drmModePropertySetAlloc());
   return true;
 }
 
