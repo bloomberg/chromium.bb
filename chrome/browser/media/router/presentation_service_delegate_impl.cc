@@ -606,6 +606,19 @@ void PresentationServiceDelegateImpl::JoinSession(
           success_cb, error_cb));
 }
 
+void PresentationServiceDelegateImpl::CloseSession(
+    int render_process_id,
+    int render_frame_id,
+    const std::string& presentation_id) {
+  const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
+      RenderFrameHostId(render_process_id, render_frame_id), presentation_id);
+  if (route_id.empty()) {
+    DVLOG(1) << "No active route for: " << presentation_id;
+    return;
+  }
+  router_->CloseRoute(route_id);
+}
+
 void PresentationServiceDelegateImpl::ListenForSessionMessages(
     int render_process_id,
     int render_frame_id,

@@ -138,6 +138,13 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;
 
+  // Close an existing presentation session.
+  // |render_process_id|, |render_frame_id|: ID for originating frame.
+  // |presentation_id|: The ID of the presentation to close.
+  virtual void CloseSession(int render_process_id,
+                            int render_frame_id,
+                            const std::string& presentation_id) = 0;
+
   // Gets the next batch of messages from all presentation sessions in the frame
   // |render_process_id|, |render_frame_id|: ID for originating frame.
   // |message_cb|: Invoked with a non-empty list of messages.

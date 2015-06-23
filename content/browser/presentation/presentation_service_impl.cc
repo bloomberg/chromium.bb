@@ -417,7 +417,10 @@ void PresentationServiceImpl::OnSendMessageCallback() {
 void PresentationServiceImpl::CloseSession(
     const mojo::String& presentation_url,
     const mojo::String& presentation_id) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "CloseSession " << presentation_id;
+  if (delegate_)
+    delegate_->CloseSession(render_process_id_, render_frame_id_,
+                            presentation_id);
 }
 
 void PresentationServiceImpl::ListenForSessionStateChange(

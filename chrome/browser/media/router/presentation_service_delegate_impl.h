@@ -86,6 +86,9 @@ class PresentationServiceDelegateImpl
                    const std::string& presentation_id,
                    const PresentationSessionSuccessCallback& success_cb,
                    const PresentationSessionErrorCallback& error_cb) override;
+  void CloseSession(int render_process_id,
+                    int render_frame_id,
+                    const std::string& presentation_id) override;
   void ListenForSessionMessages(
       int render_process_id,
       int render_frame_id,
