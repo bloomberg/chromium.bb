@@ -128,7 +128,7 @@ def HaveSrcInternalAccess():
 def LooksLikeGoogler():
   """Checks for a USERDOMAIN environment variable of 'GOOGLE', which
   probably implies the current user is a Googler."""
-  return os.environ.get('USERDOMAIN').upper() == 'GOOGLE'
+  return os.environ.get('USERDOMAIN', '').upper() == 'GOOGLE'
 
 
 def CanAccessToolchainBucket():
@@ -190,6 +190,15 @@ def DownloadUsingGsutil(filename):
   return temp_dir, target_path
 
 
+def RmDir(path):
+  """Deletes path and all the files it contains."""
+  if sys.platform != 'win32':
+    shutil.rmtree(path, ignore_errors=True)
+  else:
+    # shutil.rmtree() doesn't delete read-only files on Windows.
+    subprocess.check_call('rmdir /s/q "%s"' % path, shell=True)
+
+
 def DoTreeMirror(target_dir, tree_sha1):
   """In order to save temporary space on bots that do not have enough space to
   download ISOs, unpack them, and copy to the target location, the whole tree
@@ -200,7 +209,7 @@ def DoTreeMirror(target_dir, tree_sha1):
   with zipfile.ZipFile(local_zip, 'r', zipfile.ZIP_DEFLATED, True) as zf:
     zf.extractall(target_dir)
   if temp_dir:
-    subprocess.check_call('rmdir /s/q "%s"' % temp_dir, shell=True)
+    RmDir(temp_dir)
 
 
 def main():
@@ -222,6 +231,7 @@ def main():
       cmd.extend(['--output-json', winpath(options.output_json)])
     cmd.extend(args)
     sys.exit(subprocess.call(cmd))
+  assert sys.platform != 'cygwin'
 
   # We assume that the Pro hash is the first one.
   desired_hashes = args
@@ -263,12 +273,13 @@ def main():
     print('  desired_hashes: %s' % ', '.join(desired_hashes))
     sys.stdout.flush()
     DelayBeforeRemoving(target_dir)
-    # This stays resident and will make the rmdir below fail.
-    with open(os.devnull, 'wb') as nul:
-      subprocess.call(['taskkill', '/f', '/im', 'mspdbsrv.exe'],
-                      stdin=nul, stdout=nul, stderr=nul)
+    if sys.platform == 'win32':
+      # This stays resident and will make the rmdir below fail.
+      with open(os.devnull, 'wb') as nul:
+        subprocess.call(['taskkill', '/f', '/im', 'mspdbsrv.exe'],
+                        stdin=nul, stdout=nul, stderr=nul)
     if os.path.isdir(target_dir):
-      subprocess.check_call('rmdir /s/q "%s"' % target_dir, shell=True)
+      RmDir(target_dir)
 
     DoTreeMirror(target_dir, desired_hashes[0])
 
