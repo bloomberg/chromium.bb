@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "components/history/core/browser/history_client.h"
 
-class Profile;
-
 namespace bookmarks {
 class BookmarkModel;
 }
@@ -21,27 +19,15 @@ class ChromeHistoryClient : public history::HistoryClient {
   explicit ChromeHistoryClient(bookmarks::BookmarkModel* bookmark_model);
   ~ChromeHistoryClient() override;
 
-  // history::HistoryClient:
+  // history::HistoryClient implementation.
   void Shutdown() override;
-  void BlockUntilBookmarksLoaded() override;
-  bool IsBookmarked(const GURL& url) override;
-  void GetBookmarks(std::vector<history::URLAndTitle>* bookmarks) override;
   bool CanAddURL(const GURL& url) override;
   void NotifyProfileError(sql::InitStatus init_status) override;
-  bool ShouldReportDatabaseError() override;
-#if defined(OS_ANDROID)
-  void OnHistoryBackendInitialized(
-      history::HistoryBackend* history_backend,
-      history::HistoryDatabase* history_database,
-      history::ThumbnailDatabase* thumbnail_database,
-      const base::FilePath& history_dir) override;
-  void OnHistoryBackendDestroyed(history::HistoryBackend* history_backend,
-                                 const base::FilePath& history_dir) override;
-#endif
+  scoped_ptr<history::HistoryBackendClient> CreateBackendClient() override;
 
  private:
-  // The BookmarkModel, this should outlive ChromeHistoryClient. May be null
-  // during testing.
+  // BookmarkModel instance providing access to bookmarks. May be null during
+  // testing but must outlive ChromeHistoryClient if non-null.
   bookmarks::BookmarkModel* bookmark_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeHistoryClient);

@@ -23,7 +23,7 @@ class Time;
 
 namespace history {
 
-class HistoryClient;
+class HistoryBackendClient;
 
 // This database interface is owned by the history backend and runs on the
 // history thread. It is a totally separate component from history partially
@@ -34,7 +34,7 @@ class HistoryClient;
 // higher priority history operations.
 class ThumbnailDatabase {
  public:
-  explicit ThumbnailDatabase(HistoryClient* history_client);
+  explicit ThumbnailDatabase(HistoryBackendClient* backend_client);
   ~ThumbnailDatabase();
 
   // Must be called after creation but before any other methods are called.
@@ -272,7 +272,7 @@ class ThumbnailDatabase {
   sql::Connection db_;
   sql::MetaTable meta_table_;
 
-  HistoryClient* history_client_;
+  HistoryBackendClient* backend_client_;
 };
 
 }  // namespace history

@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/favicon_base/favicon_usage_data.h"
+#include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
@@ -67,15 +68,6 @@ typedef base::Callback<void(const history::URLRow*,
                             const history::URLRow*,
                             const history::URLRow*)>
     SimulateNotificationCallback;
-
-class HistoryClientMock : public history::HistoryClientFakeBookmarks {
- public:
-  explicit HistoryClientMock(const GURL& url_to_bookmark) {
-    AddBookmark(url_to_bookmark);
-  }
-
-  MOCK_METHOD0(BlockUntilBookmarksLoaded, void());
-};
 
 void SimulateNotificationURLVisited(history::HistoryServiceObserver* observer,
                                     const history::URLRow* row1,
@@ -249,7 +241,7 @@ class HistoryBackendTestBase : public testing::Test {
                                       &test_dir_))
       return;
     backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                  &history_client_,
+                                  history_client_.CreateBackendClient(),
                                   base::ThreadTaskRunnerHandle::Get());
     backend_->Init(std::string(), false,
                    TestHistoryDatabaseParamsForPath(test_dir_));
@@ -1697,7 +1689,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
 
   backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                &history_client_,
+                                history_client_.CreateBackendClient(),
                                 base::ThreadTaskRunnerHandle::Get());
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(new_history_path));
@@ -3116,7 +3108,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
 
   backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                &history_client_,
+                                history_client_.CreateBackendClient(),
                                 base::ThreadTaskRunnerHandle::Get());
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(new_history_path));
@@ -3340,10 +3332,9 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 
   // Add a URL.
   GURL url("http://www.google.com");
-  scoped_ptr<HistoryClientMock> history_client(new HistoryClientMock(url));
-  HistoryClientMock* history_client_mock = history_client.get();
-  scoped_ptr<HistoryService> service(new HistoryService(
-      history_client.Pass(), scoped_ptr<history::VisitDelegate>()));
+  scoped_ptr<HistoryService> service(
+      new HistoryService(make_scoped_ptr(new HistoryClientFakeBookmarks),
+                         scoped_ptr<history::VisitDelegate>()));
   EXPECT_TRUE(
       service->Init(kAcceptLanguagesForTest,
                     TestHistoryDatabaseParamsForPath(scoped_temp_dir.path())));
@@ -3354,7 +3345,6 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.
-  EXPECT_CALL(*history_client_mock, BlockUntilBookmarksLoaded());
   service->DeleteURL(url);
 }
 

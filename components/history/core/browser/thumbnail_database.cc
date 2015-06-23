@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/url_database.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
@@ -550,14 +550,14 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
 void DatabaseErrorCallback(sql::Connection* db,
                            const base::FilePath& db_path,
                            size_t startup_kb,
-                           HistoryClient* history_client,
+                           HistoryBackendClient* backend_client,
                            int extended_error,
                            sql::Statement* stmt) {
   // TODO(shess): Assert that this is running on a safe thread.
   // AFAICT, should be the history thread, but at this level I can't
   // see how to reach that.
 
-  if (history_client && history_client->ShouldReportDatabaseError()) {
+  if (backend_client && backend_client->ShouldReportDatabaseError()) {
     GenerateDiagnostics(db, startup_kb, extended_error);
   }
 
@@ -590,8 +590,8 @@ bool ThumbnailDatabase::IconMappingEnumerator::GetNextIconMapping(
   return true;
 }
 
-ThumbnailDatabase::ThumbnailDatabase(HistoryClient* history_client)
-    : history_client_(history_client) {
+ThumbnailDatabase::ThumbnailDatabase(HistoryBackendClient* backend_client)
+    : backend_client_(backend_client) {
 }
 
 ThumbnailDatabase::~ThumbnailDatabase() {
@@ -1212,7 +1212,7 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
 
   db->set_histogram_tag("Thumbnail");
   db->set_error_callback(base::Bind(&DatabaseErrorCallback,
-                                    db, db_name, startup_kb, history_client_));
+                                    db, db_name, startup_kb, backend_client_));
 
   // Thumbnails db now only stores favicons, so we don't need that big a page
   // size or cache.

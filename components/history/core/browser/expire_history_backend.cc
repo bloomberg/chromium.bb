@@ -15,8 +15,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
-#include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/thumbnail_database.h"
 
@@ -128,12 +128,12 @@ ExpireHistoryBackend::DeleteEffects::~DeleteEffects() {
 
 ExpireHistoryBackend::ExpireHistoryBackend(
     HistoryBackendNotifier* notifier,
-    HistoryClient* history_client,
+    HistoryBackendClient* backend_client,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : notifier_(notifier),
-      main_db_(NULL),
-      thumb_db_(NULL),
-      history_client_(history_client),
+      main_db_(nullptr),
+      thumb_db_(nullptr),
+      backend_client_(backend_client),
       task_runner_(task_runner),
       weak_factory_(this) {
   DCHECK(notifier_);
@@ -157,11 +157,10 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     return;
 
   DeleteEffects effects;
-  HistoryClient* history_client = GetHistoryClient();
   for (std::vector<GURL>::const_iterator url = urls.begin(); url != urls.end();
        ++url) {
     const bool is_bookmarked =
-        history_client && history_client->IsBookmarked(*url);
+        backend_client_ && backend_client_->IsBookmarked(*url);
     URLRow url_row;
     if (!main_db_->GetRowForURL(*url, &url_row) && !is_bookmarked) {
       // If the URL isn't in the database and not bookmarked, we should still
@@ -204,7 +203,7 @@ void ExpireHistoryBackend::ExpireHistoryBetween(
     std::set<URLID> url_ids;
     for (std::set<GURL>::const_iterator url = restrict_urls.begin();
         url != restrict_urls.end(); ++url)
-      url_ids.insert(main_db_->GetRowForURL(*url, NULL));
+      url_ids.insert(main_db_->GetRowForURL(*url, nullptr));
     VisitVector all_visits;
     all_visits.swap(visits);
     for (VisitVector::iterator visit = all_visits.begin();
@@ -406,7 +405,6 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
   }
 
   // Check each unique URL with deleted visits.
-  HistoryClient* history_client = GetHistoryClient();
   for (std::map<URLID, ChangedURL>::const_iterator i = changed_urls.begin();
        i != changed_urls.end(); ++i) {
     // The unique URL rows should already be filled in.
@@ -425,7 +423,7 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
 
     // Don't delete URLs with visits still in the DB, or bookmarked.
     bool is_bookmarked =
-        (history_client && history_client->IsBookmarked(url_row.url()));
+        (backend_client_ && backend_client_->IsBookmarked(url_row.url()));
     if (!is_bookmarked && url_row.last_visit().is_null()) {
       // Not bookmarked and no more visits. Nuke the url.
       DeleteOneURL(url_row, is_bookmarked, effects);
@@ -507,15 +505,6 @@ bool ExpireHistoryBackend::ExpireSomeOldHistory(
 
 void ExpireHistoryBackend::ParanoidExpireHistory() {
   // TODO(brettw): Bug 1067331: write this to clean up any errors.
-}
-
-HistoryClient* ExpireHistoryBackend::GetHistoryClient() {
-  // We use the history client to determine if a URL is bookmarked. The data is
-  // loaded on a separate thread and may not be done by the time we get here.
-  // We therefore block until the bookmarks have finished loading.
-  if (history_client_)
-    history_client_->BlockUntilBookmarksLoaded();
-  return history_client_;
 }
 
 }  // namespace history

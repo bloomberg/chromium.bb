@@ -21,8 +21,8 @@ class TestingProfile;
 
 namespace history {
 
+class HistoryBackendClient;
 class HistoryBackendNotifier;
-class HistoryClient;
 class HistoryDatabase;
 class ThumbnailDatabase;
 
@@ -45,12 +45,12 @@ typedef std::vector<const ExpiringVisitsReader*> ExpiringVisitsReaders;
 // StartExpiringOldStuff().
 class ExpireHistoryBackend {
  public:
-  // The delegate pointer must be non-NULL. We will NOT take ownership of it.
-  // HistoryClient may be NULL. The HistoryClient is used when expiring URLS so
-  // that we don't remove any URLs or favicons that are bookmarked (visits are
-  // removed though).
+  // The delegate pointer must be non-null. We will NOT take ownership of it.
+  // HistoryBackendClient may be null. The HistoryBackendClient is used when
+  // expiring URLS so that we don't remove any URLs or favicons that are
+  // bookmarked (visits are removed though).
   ExpireHistoryBackend(HistoryBackendNotifier* notifier,
-                       HistoryClient* history_client,
+                       HistoryBackendClient* backend_client,
                        scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~ExpireHistoryBackend();
 
@@ -214,10 +214,6 @@ class ExpireHistoryBackend {
   // and deletes items. For example, URLs with no visits.
   void ParanoidExpireHistory();
 
-  // Returns the HistoryClient, blocking until the bookmarks are loaded. This
-  // may return NULL during testing.
-  HistoryClient* GetHistoryClient();
-
   // Initializes periodic expiration work queue by populating it with with tasks
   // for all known readers.
   void InitWorkQueue();
@@ -255,11 +251,8 @@ class ExpireHistoryBackend {
   scoped_ptr<ExpiringVisitsReader> all_visits_reader_;
   scoped_ptr<ExpiringVisitsReader> auto_subframe_visits_reader_;
 
-  // The HistoryClient; may be NULL.
-  //
-  // Use GetHistoryClient to access this, which makes sure the bookmarks are
-  // loaded before returning.
-  HistoryClient* history_client_;
+  // The HistoryBackendClient; may be null.
+  HistoryBackendClient* backend_client_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

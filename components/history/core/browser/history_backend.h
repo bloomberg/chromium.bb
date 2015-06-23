@@ -42,10 +42,10 @@ class SingleThreadTaskRunner;
 namespace history {
 class CommitLaterTask;
 struct DownloadRow;
+class HistoryBackendClient;
 class HistoryBackendDBBaseTest;
 class HistoryBackendObserver;
 class HistoryBackendTest;
-class HistoryClient;
 class HistoryDatabase;
 struct HistoryDatabaseParams;
 struct HistoryDetails;
@@ -171,7 +171,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // may be null.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
-  HistoryBackend(Delegate* delegate, HistoryClient* history_client,
+  HistoryBackend(Delegate* delegate,
+                 scoped_ptr<HistoryBackendClient> backend_client,
                  scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Must be called after creation but before any objects are created. If this
@@ -762,10 +763,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Deletes the FTS index database files, which are no longer used.
   void DeleteFTSIndexDatabases();
 
-  // Returns the HistoryClient, blocking until the bookmarks are loaded. This
-  // may return null during testing.
-  HistoryClient* GetHistoryClient();
-
   // Data ----------------------------------------------------------------------
 
   // Delegate. See the class definition above for more information. This will
@@ -823,10 +820,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   std::list<QueuedHistoryDBTask*> queued_history_db_tasks_;
 
   // Used to determine if a URL is bookmarked; may be null.
-  //
-  // Use GetHistoryClient to access this, which makes sure the bookmarks are
-  // loaded before returning.
-  HistoryClient* history_client_;
+  scoped_ptr<HistoryBackendClient> backend_client_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

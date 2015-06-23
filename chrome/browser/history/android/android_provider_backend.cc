@@ -12,8 +12,8 @@
 #include "components/history/core/browser/android/urls_sql_handler.h"
 #include "components/history/core/browser/android/visit_sql_handler.h"
 #include "components/history/core/browser/history_backend.h"
+#include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
-#include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/thumbnail_database.h"
@@ -200,13 +200,13 @@ AndroidProviderBackend::AndroidProviderBackend(
     const base::FilePath& db_name,
     HistoryDatabase* history_db,
     ThumbnailDatabase* thumbnail_db,
-    HistoryClient* history_client,
+    HistoryBackendClient* backend_client,
     HistoryBackendNotifier* notifier)
     : android_cache_db_filename_(db_name),
       db_(&history_db->GetDB()),
       history_db_(history_db),
       thumbnail_db_(thumbnail_db),
-      history_client_(history_client),
+      backend_client_(backend_client),
       initialized_(false),
       notifier_(notifier) {
   DCHECK(notifier_);
@@ -803,13 +803,13 @@ bool AndroidProviderBackend::UpdateRemovedURLs() {
 }
 
 bool AndroidProviderBackend::UpdateBookmarks() {
-  if (history_client_ == NULL) {
+  if (backend_client_ == NULL) {
     LOG(ERROR) << "HistoryClient is not available";
     return false;
   }
 
   std::vector<URLAndTitle> bookmarks;
-  history_client_->GetBookmarks(&bookmarks);
+  backend_client_->GetBookmarks(&bookmarks);
 
   if (bookmarks.empty())
     return true;

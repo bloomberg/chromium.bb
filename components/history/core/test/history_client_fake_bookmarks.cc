@@ -4,44 +4,175 @@
 
 #include "components/history/core/test/history_client_fake_bookmarks.h"
 
+#include <map>
+
+#include "base/synchronization/lock.h"
+#include "components/history/core/browser/history_backend_client.h"
+#include "url/gurl.h"
+
 namespace history {
 
+class FakeBookmarkDatabase : public base::RefCounted<FakeBookmarkDatabase> {
+ public:
+  FakeBookmarkDatabase() {}
+
+  void ClearAllBookmarks();
+  void AddBookmarkWithTitle(const GURL& url, const base::string16& title);
+  void DelBookmark(const GURL& url);
+
+  bool IsBookmarked(const GURL& url);
+  void GetBookmarks(std::vector<URLAndTitle>* bookmarks);
+
+ private:
+  friend class base::RefCounted<FakeBookmarkDatabase>;
+
+  ~FakeBookmarkDatabase() {}
+
+  base::Lock lock_;
+  std::map<GURL, base::string16> bookmarks_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBookmarkDatabase);
+};
+
+void FakeBookmarkDatabase::ClearAllBookmarks() {
+  base::AutoLock with_lock(lock_);
+  bookmarks_.clear();
+}
+
+void FakeBookmarkDatabase::AddBookmarkWithTitle(const GURL& url,
+                                                const base::string16& title) {
+  base::AutoLock with_lock(lock_);
+  bookmarks_.insert(std::make_pair(url, title));
+}
+
+void FakeBookmarkDatabase::DelBookmark(const GURL& url) {
+  base::AutoLock with_lock(lock_);
+  auto iter = bookmarks_.find(url);
+  if (iter != bookmarks_.end())
+    bookmarks_.erase(iter);
+}
+
+bool FakeBookmarkDatabase::IsBookmarked(const GURL& url) {
+  base::AutoLock with_lock(lock_);
+  return bookmarks_.find(url) != bookmarks_.end();
+}
+
+void FakeBookmarkDatabase::GetBookmarks(std::vector<URLAndTitle>* bookmarks) {
+  base::AutoLock with_lock(lock_);
+  bookmarks->reserve(bookmarks->size() + bookmarks_.size());
+  for (const auto& pair : bookmarks_) {
+    URLAndTitle url_and_title = { pair.first, pair.second };
+    bookmarks->push_back(url_and_title);
+  }
+}
+
+namespace {
+
+class HistoryBackendClientFakeBookmarks : public HistoryBackendClient {
+ public:
+  explicit HistoryBackendClientFakeBookmarks(
+      const scoped_refptr<FakeBookmarkDatabase>& bookmarks);
+  ~HistoryBackendClientFakeBookmarks() override;
+
+  // HistoryBackendClient implementation.
+  bool IsBookmarked(const GURL& url) override;
+  void GetBookmarks(std::vector<URLAndTitle>* bookmarks) override;
+  bool ShouldReportDatabaseError() override;
+#if defined(OS_ANDROID)
+  void OnHistoryBackendInitialized(HistoryBackend* history_backend,
+                                   HistoryDatabase* history_database,
+                                   ThumbnailDatabase* thumbnail_database,
+                                   const base::FilePath& history_dir) override;
+  void OnHistoryBackendDestroyed(HistoryBackend* history_backend,
+                                 const base::FilePath& history_dir) override;
+#endif  // defined(OS_ANDROID)
+
+ private:
+  scoped_refptr<FakeBookmarkDatabase> bookmarks_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryBackendClientFakeBookmarks);
+};
+
+HistoryBackendClientFakeBookmarks::HistoryBackendClientFakeBookmarks(
+    const scoped_refptr<FakeBookmarkDatabase>& bookmarks)
+    : bookmarks_(bookmarks) {
+}
+
+HistoryBackendClientFakeBookmarks::~HistoryBackendClientFakeBookmarks() {
+}
+
+bool HistoryBackendClientFakeBookmarks::IsBookmarked(const GURL& url) {
+  return bookmarks_->IsBookmarked(url);
+}
+
+void HistoryBackendClientFakeBookmarks::GetBookmarks(
+    std::vector<URLAndTitle>* bookmarks) {
+  bookmarks_->GetBookmarks(bookmarks);
+}
+
+bool HistoryBackendClientFakeBookmarks::ShouldReportDatabaseError() {
+  return false;
+}
+
+#if defined(OS_ANDROID)
+void HistoryBackendClientFakeBookmarks::OnHistoryBackendInitialized(
+    HistoryBackend* history_backend,
+    HistoryDatabase* history_database,
+    ThumbnailDatabase* thumbnail_database,
+    const base::FilePath& history_dir) {
+}
+
+void HistoryBackendClientFakeBookmarks::OnHistoryBackendDestroyed(
+    HistoryBackend* history_backend,
+    const base::FilePath& history_dir) {
+}
+#endif  // defined(OS_ANDROID)
+
+}  // namespace
+
 HistoryClientFakeBookmarks::HistoryClientFakeBookmarks() {
+  bookmarks_ = new FakeBookmarkDatabase;
 }
 
 HistoryClientFakeBookmarks::~HistoryClientFakeBookmarks() {
 }
 
 void HistoryClientFakeBookmarks::ClearAllBookmarks() {
-  bookmarks_.clear();
+  bookmarks_->ClearAllBookmarks();
 }
 
 void HistoryClientFakeBookmarks::AddBookmark(const GURL& url) {
-  AddBookmarkWithTitle(url, base::string16());
+  bookmarks_->AddBookmarkWithTitle(url, base::string16());
 }
 
 void HistoryClientFakeBookmarks::AddBookmarkWithTitle(
     const GURL& url,
     const base::string16& title) {
-  bookmarks_.insert(std::make_pair(url, title));
+  bookmarks_->AddBookmarkWithTitle(url, title);
 }
 
 void HistoryClientFakeBookmarks::DelBookmark(const GURL& url) {
-  bookmarks_.erase(url);
+  bookmarks_->DelBookmark(url);
 }
 
 bool HistoryClientFakeBookmarks::IsBookmarked(const GURL& url) {
-  return bookmarks_.find(url) != bookmarks_.end();
+  return bookmarks_->IsBookmarked(url);
 }
 
-void HistoryClientFakeBookmarks::GetBookmarks(
-    std::vector<URLAndTitle>* bookmarks) {
-  bookmarks->reserve(bookmarks->size() + bookmarks_.size());
-  typedef std::map<GURL, base::string16>::const_iterator iterator;
-  for (iterator i = bookmarks_.begin(); i != bookmarks_.end(); ++i) {
-    URLAndTitle urlAndTitle = {i->first, i->second};
-    bookmarks->push_back(urlAndTitle);
-  }
+void HistoryClientFakeBookmarks::Shutdown() {
+}
+
+bool HistoryClientFakeBookmarks::CanAddURL(const GURL& url) {
+  return url.is_valid();
+}
+
+void HistoryClientFakeBookmarks::NotifyProfileError(
+    sql::InitStatus init_status) {
+}
+
+scoped_ptr<HistoryBackendClient>
+HistoryClientFakeBookmarks::CreateBackendClient() {
+  return make_scoped_ptr(new HistoryBackendClientFakeBookmarks(bookmarks_));
 }
 
 }  // namespace history

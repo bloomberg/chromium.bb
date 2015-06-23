@@ -5,11 +5,16 @@
 #ifndef COMPONENTS_HISTORY_CORE_TEST_HISTORY_CLIENT_FAKE_BOOKMARKS_H_
 #define COMPONENTS_HISTORY_CORE_TEST_HISTORY_CLIENT_FAKE_BOOKMARKS_H_
 
-#include <map>
-
+#include "base/memory/ref_counted.h"
+#include "base/strings/string16.h"
 #include "components/history/core/browser/history_client.h"
 
+class GURL;
+
 namespace history {
+
+class FakeBookmarkDatabase;
+class HistoryBackendClient;
 
 // The class HistoryClientFakeBookmarks implements HistoryClient faking the
 // methods relating to bookmarks for unit testing.
@@ -22,13 +27,16 @@ class HistoryClientFakeBookmarks : public HistoryClient {
   void AddBookmark(const GURL& url);
   void AddBookmarkWithTitle(const GURL& url, const base::string16& title);
   void DelBookmark(const GURL& url);
+  bool IsBookmarked(const GURL& url);
 
-  // HistoryClient:
-  bool IsBookmarked(const GURL& url) override;
-  void GetBookmarks(std::vector<URLAndTitle>* bookmarks) override;
+  // HistoryClient implementation.
+  void Shutdown() override;
+  bool CanAddURL(const GURL& url) override;
+  void NotifyProfileError(sql::InitStatus init_status) override;
+  scoped_ptr<HistoryBackendClient> CreateBackendClient() override;
 
  private:
-  std::map<GURL, base::string16> bookmarks_;
+  scoped_refptr<FakeBookmarkDatabase> bookmarks_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryClientFakeBookmarks);
 };

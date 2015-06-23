@@ -21,6 +21,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database.h"
@@ -51,7 +52,8 @@ bool MockCanAddURLToHistory(const GURL& url) {
 class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
  public:
   ExpireHistoryTest()
-      : expirer_(this, &history_client_, message_loop_.task_runner()),
+      : backend_client_(history_client_.CreateBackendClient()),
+        expirer_(this, backend_client_.get(), message_loop_.task_runner()),
         now_(base::Time::Now()) {}
 
  protected:
@@ -93,6 +95,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
   base::ScopedTempDir tmp_dir_;
 
   HistoryClientFakeBookmarks history_client_;
+  scoped_ptr<HistoryBackendClient> backend_client_;
 
   base::MessageLoopForUI message_loop_;
 

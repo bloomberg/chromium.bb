@@ -1687,6 +1687,8 @@
       'browser/history/android/bookmark_model_sql_handler.h',
       'browser/history/android/sqlite_cursor.cc',
       'browser/history/android/sqlite_cursor.h',
+      'browser/history/chrome_history_backend_client.cc',
+      'browser/history/chrome_history_backend_client.h',
       'browser/history/chrome_history_client.cc',
       'browser/history/chrome_history_client.h',
       'browser/history/history_service_factory.cc',

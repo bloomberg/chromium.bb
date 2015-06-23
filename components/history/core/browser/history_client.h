@@ -5,12 +5,11 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_CLIENT_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_CLIENT_H_
 
-#include <vector>
-
 #include "base/macros.h"
-#include "base/strings/string16.h"
+#include "base/memory/scoped_ptr.h"
 #include "sql/init_status.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace base {
 class FilePath;
@@ -19,64 +18,29 @@ class FilePath;
 namespace history {
 
 class HistoryBackend;
+class HistoryBackendClient;
 class HistoryDatabase;
 class ThumbnailDatabase;
-
-struct URLAndTitle {
-  GURL url;
-  base::string16 title;
-};
 
 // This class abstracts operations that depend on the embedder's environment,
 // e.g. Chrome.
 class HistoryClient {
  public:
-  HistoryClient();
-  virtual ~HistoryClient();
+  HistoryClient() {}
+  virtual ~HistoryClient() {}
 
   // Called before HistoryService is shutdown.
-  virtual void Shutdown();
-
-  // Waits until the bookmarks have been loaded.
-  //
-  // Must not be called from the main thread.
-  virtual void BlockUntilBookmarksLoaded();
-
-  // Returns true if the specified URL is bookmarked.
-  //
-  // If not on the main thread, then BlockUntilBookmarksLoaded must be called.
-  virtual bool IsBookmarked(const GURL& url);
-
-  // Returns, by reference in |bookmarks|, the set of bookmarked urls and their
-  // titles. This returns the unique set of URLs. For example, if two bookmarks
-  // reference the same URL only one entry is added even if the title are not
-  // the same.
-  //
-  // If not on the main thread, then BlockUntilBookmarksLoaded must be called.
-  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks);
+  virtual void Shutdown() = 0;
 
   // Returns true if this look like the type of URL that should be added to the
   // history.
-  virtual bool CanAddURL(const GURL& url);
+  virtual bool CanAddURL(const GURL& url) = 0;
 
   // Notifies the embedder that there was a problem reading the database.
-  //
-  // Must be called from the main thread.
-  virtual void NotifyProfileError(sql::InitStatus init_status);
+  virtual void NotifyProfileError(sql::InitStatus init_status) = 0;
 
-  // Returns whether database errors should be reported to the crash server.
-  virtual bool ShouldReportDatabaseError();
-
-  // Called upon initialization of the HistoryBackend.
-  virtual void OnHistoryBackendInitialized(
-      HistoryBackend* history_backend,
-      HistoryDatabase* history_database,
-      ThumbnailDatabase* thumbnail_database,
-      const base::FilePath& history_dir);
-
-  // Called upon destruction of the HistoryBackend.
-  virtual void OnHistoryBackendDestroyed(HistoryBackend* history_backend,
-                                         const base::FilePath& history_dir);
+  // Returns a new HistoryBackendClient instance.
+  virtual scoped_ptr<HistoryBackendClient> CreateBackendClient() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryClient);

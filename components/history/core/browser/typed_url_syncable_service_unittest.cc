@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/history/core/browser/history_backend.h"
+#include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_types.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"

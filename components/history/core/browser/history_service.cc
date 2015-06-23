@@ -32,6 +32,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_backend.h"
+#include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -877,7 +878,8 @@ bool HistoryService::Init(
   scoped_refptr<HistoryBackend> backend(new HistoryBackend(
       new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
                           base::ThreadTaskRunnerHandle::Get()),
-      history_client_.get(), thread_->task_runner()));
+      history_client_ ? history_client_->CreateBackendClient() : nullptr,
+      thread_->task_runner()));
   history_backend_.swap(backend);
 
   ScheduleTask(PRIORITY_UI,
