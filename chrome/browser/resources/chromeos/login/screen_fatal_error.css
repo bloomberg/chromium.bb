@@ -8,6 +8,14 @@
   width: 722px;  /* Should be the same as #gaia-signin. */
 }
 
+/* Size is set explicitly to make <img> consume the space before the image is
+   loaded. This ensures correct screen's size calculation in
+   DisplayManager.updateScreenSize. */
+#fatal-error-message-container img {
+  height: 85px;
+  width: 112px;
+}
+
 #fatal-error-message-container {
   text-align: center;
   width: 100%;
