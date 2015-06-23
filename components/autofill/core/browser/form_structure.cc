@@ -43,6 +43,7 @@ const char kAttributeClientVersion[] = "clientversion";
 const char kAttributeDataPresent[] = "datapresent";
 const char kAttributeFieldID[] = "fieldid";
 const char kAttributeFieldType[] = "fieldtype";
+const char kAttributeFieldLabel[] = "label";
 const char kAttributeFormSignature[] = "formsignature";
 const char kAttributeName[] = "name";
 const char kAttributeSignature[] = "signature";
@@ -126,6 +127,10 @@ buzz::XmlElement* EncodeFieldForQuery(const AutofillField& field,
     }
     field_element->SetAttr(buzz::QName(kAttributeControlType),
                            field.form_control_type);
+    if (!field.label.empty()) {
+      field_element->SetAttr(buzz::QName(kAttributeFieldLabel),
+                             base::UTF16ToUTF8(field.label));
+    }
   }
   parent->AddElement(field_element);
   return field_element;
