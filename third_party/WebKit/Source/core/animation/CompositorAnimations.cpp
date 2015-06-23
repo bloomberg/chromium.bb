@@ -33,8 +33,8 @@
 
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationTranslationUtil.h"
-#include "core/animation/ElementAnimations.h"
 #include "core/animation/CompositorAnimationsImpl.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"

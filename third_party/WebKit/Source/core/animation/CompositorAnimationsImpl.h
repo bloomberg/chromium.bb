@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef CompositorAnimationsImpl_h
+#define CompositorAnimationsImpl_h
+
 #include "core/CoreExport.h"
 #include "core/animation/EffectModel.h"
 #include "core/animation/KeyframeEffectModel.h"
@@ -71,3 +74,5 @@ private:
 };
 
 } // namespace blink
+
+#endif
