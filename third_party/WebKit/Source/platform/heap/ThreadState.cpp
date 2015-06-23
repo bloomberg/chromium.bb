@@ -697,6 +697,8 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
     if (sweepForbidden())
         return;
 
+    TRACE_EVENT1("blink_gc", "ThreadState::performIdleLazySweep", "idleDeltaInSeconds", deadlineSeconds - Platform::current()->monotonicallyIncreasingTime());
+
     bool sweepCompleted = true;
     SweepForbiddenScope scope(this);
     {
