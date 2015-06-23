@@ -17,9 +17,11 @@ var remoting = remoting || {};
 /**
  * @param {Window} sandbox The Javascript Window object representing the
  *     sandboxed WCS driver.
+ * @param {base.WindowMessageDispatcher} windowMessageDispatcher
  * @constructor
+ * @implements {base.Disposable}
  */
-remoting.WcsSandboxContainer = function(sandbox) {
+remoting.WcsSandboxContainer = function(sandbox, windowMessageDispatcher) {
   /** @private */
   this.sandbox_ = sandbox;
   /** @private {?function(string):void} */
@@ -36,7 +38,11 @@ remoting.WcsSandboxContainer = function(sandbox) {
   /** @private */
   this.accessTokenRefreshTimerStarted_ = false;
 
-  window.addEventListener('message', this.onMessage_.bind(this), false);
+  /** @private {base.WindowMessageDispatcher} */
+  this.windowMessageDispatcher_ = windowMessageDispatcher;
+
+  this.windowMessageDispatcher_.registerMessageHandler(
+      'wcs-sandbox', this.onMessage_.bind(this));
 
   if (base.isAppsV2()) {
     var message = {
@@ -44,6 +50,10 @@ remoting.WcsSandboxContainer = function(sandbox) {
     };
     this.sandbox_.postMessage(message, '*');
   }
+};
+
+remoting.WcsSandboxContainer.prototype.dispose = function() {
+  this.windowMessageDispatcher_.unregisterMessageHandler('wcs-sandbox');
 };
 
 /**
@@ -127,8 +137,12 @@ remoting.WcsSandboxContainer.prototype.sendIq = function(stanza) {
  * Event handler to process messages from the sandbox.
  *
  * @param {Event} event
+ * @private
  */
 remoting.WcsSandboxContainer.prototype.onMessage_ = function(event) {
+  base.debug.assert(typeof event.data === 'object' &&
+                    event.data['source'] == 'wcs-sandbox');
+
   switch (event.data['command']) {
 
     case 'onLocalJid':

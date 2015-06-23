@@ -122,6 +122,7 @@ remoting.WcsSandboxContent.prototype.onMessage_ = function(event) {
 remoting.WcsSandboxContent.prototype.onLocalJid_ = function(localJid) {
   remoting.wcs.setOnIq(this.onIq_.bind(this));
   var message = {
+    'source': 'wcs-sandbox',
     'command': 'onLocalJid',
     'localJid': localJid
   };
@@ -136,6 +137,7 @@ remoting.WcsSandboxContent.prototype.onLocalJid_ = function(localJid) {
  */
 remoting.WcsSandboxContent.prototype.onError_ = function(error) {
   var message = {
+    'source': 'wcs-sandbox',
     'command': 'onError',
     'error': error
   };
@@ -153,6 +155,7 @@ remoting.WcsSandboxContent.prototype.sendXhr = function(xhr) {
   var id = this.nextXhrId_++;
   this.pendingXhrs_[id] = xhr;
   var message = {
+    'source': 'wcs-sandbox',
     'command': 'sendXhr',
     'id': id,
     'parameters': xhr.sandboxIpc
@@ -175,6 +178,7 @@ remoting.WcsSandboxContent.prototype.abortXhr = function(id) {
     return;
   }
   var message = {
+    'source': 'wcs-sandbox',
     'command': 'abortXhr',
     'id': id
   };
@@ -191,6 +195,7 @@ remoting.WcsSandboxContent.prototype.abortXhr = function(id) {
 remoting.WcsSandboxContent.prototype.onIq_ = function(stanza) {
   remoting.wcs.setOnIq(this.onIq_.bind(this));
   var message = {
+    'source': 'wcs-sandbox',
     'command': 'onIq',
     'stanza': stanza
   };

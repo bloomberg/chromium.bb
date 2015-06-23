@@ -31,6 +31,7 @@ MessageWindowImpl.prototype.sendReply_ = function(
   // Only forward the first reply that we receive.
   if (!this.sentReply_) {
     var message = {
+      source: 'message-window',
       command: 'messageWindowResult',
       id: messageId,
       result: result

@@ -66,7 +66,7 @@ remoting.MessageWindow = function(options) {
   var onTimeout = options.onTimeout;
 
   /** @type {number} */
-  this.id_ = remoting.MessageWindowManager.addMessageWindow(this);
+  this.id_ = remoting.messageWindowManager.addMessageWindow(this);
 
   /** @type {?function(number):void} */
   this.onResult_ = onResult;
@@ -176,7 +176,7 @@ remoting.MessageWindow.prototype.close = function() {
   // Unregister the window with the window manager.
   // After this call, events sent to this window will no longer trigger the
   // onResult callback.
-  remoting.MessageWindowManager.deleteMessageWindow(this.id_);
+  remoting.messageWindowManager.deleteMessageWindow(this.id_);
   this.window_.close();
   this.window_ = null;
 };
@@ -276,6 +276,6 @@ remoting.MessageWindow.showErrorMessage = function(title, message) {
  * @param {number} result The dialog result.
  */
 remoting.MessageWindow.quitApp = function(result) {
-  remoting.MessageWindowManager.closeAllMessageWindows();
+  remoting.messageWindowManager.closeAllMessageWindows();
   window.close();
 };

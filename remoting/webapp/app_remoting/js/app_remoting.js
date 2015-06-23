@@ -61,7 +61,10 @@ remoting.AppRemoting.prototype.signInFailed_ = function(error) {
 /**
  * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.initApplication_ = function() {};
+remoting.AppRemoting.prototype.initApplication_ = function() {
+  remoting.messageWindowManager = new remoting.MessageWindowManager(
+      this.windowMessageDispatcher_);
+};
 
 /**
  * @param {string} token An OAuth access token.
@@ -84,6 +87,6 @@ remoting.AppRemoting.prototype.startApplication_ = function(token) {
  * @override {remoting.ApplicationInterface}
  */
 remoting.AppRemoting.prototype.exitApplication_ = function() {
-  this.activity_.dispose();
+  base.dispose(this.activity_);
   this.closeMainWindow_();
 };

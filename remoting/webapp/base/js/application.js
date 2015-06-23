@@ -21,10 +21,19 @@ remoting.testEvents;
 
 /**
  * @constructor
+ * @implements {base.Disposable}
  */
 remoting.Application = function() {
   // Create global factories.
   remoting.ClientPlugin.factory = new remoting.DefaultClientPluginFactory();
+
+  /** @private {base.WindowMessageDispatcher} */
+  this.windowMessageDispatcher_ = new base.WindowMessageDispatcher();
+};
+
+remoting.Application.prototype.dispose = function() {
+  base.dispose(this.windowMessageDispatcher_);
+  this.windowMessageDispatcher_ = null;
 };
 
 /* Public method to exit the application. */
@@ -76,9 +85,11 @@ remoting.Application.prototype.initGlobalObjects_ = function() {
 
   console.log(this.getExtensionInfo());
   l10n.localize();
+
   var sandbox =
       /** @type {HTMLIFrameElement} */ (document.getElementById('wcs-sandbox'));
-  remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
+  remoting.wcsSandbox = new remoting.WcsSandboxContainer(
+      sandbox.contentWindow, this.windowMessageDispatcher_);
   remoting.initModalDialogs();
 
   remoting.testEvents = new base.EventSourceImpl();
