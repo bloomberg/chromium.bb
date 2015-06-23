@@ -477,6 +477,10 @@ bool Tab::IsActive() const {
   return controller_->IsActiveTab(this);
 }
 
+void Tab::ActiveStateChanged() {
+  GetMediaIndicatorButton()->UpdateEnabledForMuteToggle();
+}
+
 bool Tab::IsSelected() const {
   return controller_->IsTabSelected(this);
 }
@@ -592,6 +596,17 @@ void Tab::StartPinnedTabTitleAnimation() {
 
 void Tab::StopPinnedTabTitleAnimation() {
   StopAndDeleteAnimation(pinned_title_change_animation_.Pass());
+}
+
+int Tab::GetWidthOfLargestSelectableRegion() const {
+  // Assume the entire region to the left of the media indicator and/or close
+  // buttons is available for click-to-select.  If neither are visible, the
+  // entire tab region is available.
+  const int indicator_left = showing_media_indicator_ ?
+      media_indicator_button_->x() : width();
+  const int close_button_left = showing_close_button_ ?
+      close_button_->x() : width();
+  return std::min(indicator_left, close_button_left);
 }
 
 // static
@@ -1524,7 +1539,7 @@ void Tab::GetTabIdAndFrameId(views::Widget* widget,
 
 MediaIndicatorButton* Tab::GetMediaIndicatorButton() {
   if (!media_indicator_button_) {
-    media_indicator_button_ = new MediaIndicatorButton();
+    media_indicator_button_ = new MediaIndicatorButton(this);
     AddChildView(media_indicator_button_);  // Takes ownership.
   }
   return media_indicator_button_;

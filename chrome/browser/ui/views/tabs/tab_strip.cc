@@ -830,6 +830,13 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
 
 void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
                             const ui::ListSelectionModel& new_selection) {
+  if (old_selection.active() != new_selection.active()) {
+    if (old_selection.active() >= 0)
+      tab_at(old_selection.active())->ActiveStateChanged();
+    if (new_selection.active() >= 0)
+      tab_at(new_selection.active())->ActiveStateChanged();
+  }
+
   if (touch_layout_) {
     touch_layout_->SetActiveIndex(new_selection.active());
     // Only start an animation if we need to. Otherwise clicking on an

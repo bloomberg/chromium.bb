@@ -10,6 +10,8 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view_targeter_delegate.h"
 
+class Tab;
+
 namespace gfx {
 class Animation;
 class AnimationDelegate;
@@ -29,7 +31,7 @@ class MediaIndicatorButton : public views::ImageButton,
   // The MediaIndicatorButton's class name.
   static const char kViewClassName[];
 
-  MediaIndicatorButton();
+  explicit MediaIndicatorButton(Tab* parent_tab);
   ~MediaIndicatorButton() override;
 
   // Returns the current TabMediaState except, while the indicator image is
@@ -42,12 +44,19 @@ class MediaIndicatorButton : public views::ImageButton,
   // activates/deactivates button functionality as appropriate.
   void TransitionToMediaState(TabMediaState next_state);
 
+  // Determines whether the MediaIndicatorButton will be clickable for toggling
+  // muting.  This should be called whenever the active/inactive state of a tab
+  // has changed.  Internally, TransitionToMediaState() and OnBoundsChanged()
+  // calls this when the TabMediaState or the bounds have changed.
+  void UpdateEnabledForMuteToggle();
+
  protected:
   // views::View:
   const char* GetClassName() const override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   // views::ViewTargeterDelegate
@@ -57,8 +66,16 @@ class MediaIndicatorButton : public views::ImageButton,
   // views::Button:
   void NotifyClick(const ui::Event& event) override;
 
+  // views::CustomButton:
+  bool IsTriggerableEvent(const ui::Event& event) override;
+
  private:
   class FadeAnimationDelegate;
+
+  // Returns the tab (parent view) of this MediaIndicatorButton.
+  Tab* GetTab() const;
+
+  Tab* const parent_tab_;
 
   TabMediaState media_state_;
 

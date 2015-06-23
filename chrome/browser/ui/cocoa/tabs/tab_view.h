@@ -116,6 +116,10 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 // will make it fade away.
 - (void)cancelAlert;
 
+// Returns the width of the largest part of the tab that is available for the
+// user to click to select/activate the tab.
+- (int)widthOfLargestSelectableRegion;
+
 @end
 
 // The TabController |controller_| is not the only owner of this view. If the

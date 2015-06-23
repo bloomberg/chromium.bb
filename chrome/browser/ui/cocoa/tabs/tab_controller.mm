@@ -388,6 +388,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
           std::floor((NSHeight(newFrame) - NSHeight(closeButtonFrame)) / 2);
     }
     [mediaIndicatorButton_ setFrame:newFrame];
+    [mediaIndicatorButton_ updateEnabledForMuteToggle];
   }
 
   // Adjust the title view based on changes to the icon's and close button's

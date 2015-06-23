@@ -74,6 +74,10 @@ class Tab : public gfx::AnimationDelegate,
   // Returns true if this tab is the active tab.
   bool IsActive() const;
 
+  // Notifies the MediaIndicatorButton that the active state of this tab has
+  // changed.
+  void ActiveStateChanged();
+
   // Returns true if the tab is selected.
   bool IsSelected() const;
 
@@ -110,6 +114,10 @@ class Tab : public gfx::AnimationDelegate,
   views::GlowHoverController* hover_controller() {
     return &hover_controller_;
   }
+
+  // Returns the width of the largest part of the tab that is available for the
+  // user to click to select/activate the tab.
+  int GetWidthOfLargestSelectableRegion() const;
 
   // Returns the inset within the first dragged tab to use when calculating the
   // "drag insertion point".  If we simply used the x-coordinate of the tab,

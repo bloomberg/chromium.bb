@@ -14,6 +14,17 @@
 
 using base::UserMetricsAction;
 
+namespace {
+
+// The minimum required click-to-select area of an inactive Tab before allowing
+// the click-to-mute functionality to be enabled.  These values are in terms of
+// some percentage of the MediaIndicatorButton's width.  See comments in
+// UpdateEnabledForMuteToggle().
+const int kMinMouseSelectableAreaPercent = 250;
+const int kMinGestureSelectableAreaPercent = 400;
+
+}  // namespace
+
 const char MediaIndicatorButton::kViewClassName[] = "MediaIndicatorButton";
 
 class MediaIndicatorButton::FadeAnimationDelegate
@@ -44,10 +55,12 @@ class MediaIndicatorButton::FadeAnimationDelegate
   DISALLOW_COPY_AND_ASSIGN(FadeAnimationDelegate);
 };
 
-MediaIndicatorButton::MediaIndicatorButton()
+MediaIndicatorButton::MediaIndicatorButton(Tab* parent_tab)
     : views::ImageButton(NULL),
+      parent_tab_(parent_tab),
       media_state_(TAB_MEDIA_STATE_NONE),
       showing_media_state_(TAB_MEDIA_STATE_NONE) {
+  DCHECK(parent_tab_);
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
@@ -90,9 +103,9 @@ void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
     fade_animation_->Start();
   }
 
-  SetEnabled(chrome::IsTabAudioMutingFeatureEnabled() &&
-             (next_state == TAB_MEDIA_STATE_AUDIO_PLAYING ||
-              next_state == TAB_MEDIA_STATE_AUDIO_MUTING));
+  media_state_ = next_state;
+
+  UpdateEnabledForMuteToggle();
 
   // An indicator state change should be made visible immediately, instead of
   // the user being surprised when their mouse leaves the button.
@@ -101,10 +114,26 @@ void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
              views::CustomButton::STATE_DISABLED);
   }
 
-  media_state_ = next_state;
-
   // Note: The calls to SetImage(), SetEnabled(), and SetState() above will call
   // SchedulePaint() if necessary.
+}
+
+void MediaIndicatorButton::UpdateEnabledForMuteToggle() {
+  bool enable = chrome::IsTabAudioMutingFeatureEnabled() &&
+      (media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING ||
+       media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING);
+
+  // If the tab is not the currently-active tab, make sure it is wide enough
+  // before enabling click-to-mute.  This ensures that there is enough click
+  // area for the user to activate a tab rather than unintentionally muting it.
+  // Note that IsTriggerableEvent() is also overridden to provide an even wider
+  // requirement for tap gestures.
+  if (enable && !GetTab()->IsActive()) {
+    const int required_width = width() * kMinMouseSelectableAreaPercent / 100;
+    enable = (GetTab()->GetWidthOfLargestSelectableRegion() >= required_width);
+  }
+
+  SetEnabled(enable);
 }
 
 const char* MediaIndicatorButton::GetClassName() const {
@@ -130,6 +159,10 @@ bool MediaIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
       state() == views::CustomButton::STATE_NORMAL)
     content::RecordAction(UserMetricsAction("MediaIndicatorButton_Dragged"));
   return ret;
+}
+
+void MediaIndicatorButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  UpdateEnabledForMuteToggle();
 }
 
 void MediaIndicatorButton::OnPaint(gfx::Canvas* canvas) {
@@ -160,7 +193,23 @@ void MediaIndicatorButton::NotifyClick(const ui::Event& event) {
   else
     NOTREACHED();
 
-  DCHECK(parent() && !strcmp(parent()->GetClassName(), Tab::kViewClassName));
-  Tab* const tab = static_cast<Tab*>(parent());
-  tab->controller()->ToggleTabAudioMute(tab);
+  GetTab()->controller()->ToggleTabAudioMute(GetTab());
+}
+
+bool MediaIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
+  // For gesture events on an inactive tab, require an even wider tab before
+  // click-to-mute can be triggered.  See comments in
+  // UpdateEnabledForMuteToggle().
+  if (event.IsGestureEvent() && !GetTab()->IsActive()) {
+    const int required_width = width() * kMinGestureSelectableAreaPercent / 100;
+    if (GetTab()->GetWidthOfLargestSelectableRegion() < required_width)
+      return false;
+  }
+
+  return views::ImageButton::IsTriggerableEvent(event);
+}
+
+Tab* MediaIndicatorButton::GetTab() const {
+  DCHECK_EQ(static_cast<views::View*>(parent_tab_), parent());
+  return parent_tab_;
 }

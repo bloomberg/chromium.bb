@@ -64,6 +64,12 @@ class AnimationDelegate;
 // button functionality as appropriate.
 - (void)transitionToMediaState:(TabMediaState)nextState;
 
+// Determines whether the MediaIndicatorButtonCocoa will be clickable for
+// toggling muting.  This should be called whenever the frame of this view is
+// changed, and also whenever the active/inactive state of the tab has changed.
+// Internally, |-transitionToMediaState:| will call this.
+- (void)updateEnabledForMuteToggle;
+
 // Register a message be sent to |target| whenever fade animations complete.  A
 // weak reference on |target| is held.
 - (void)setAnimationDoneTarget:(id)target withAction:(SEL)action;
