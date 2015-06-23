@@ -1240,4 +1240,23 @@ TEST_F(AutofillProfileSyncableServiceTest, ClientOverwritesUsageStats) {
   autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
+// Server profile updates should be ignored.
+TEST_F(AutofillProfileSyncableServiceTest, IgnoreServerProfileUpdate) {
+  EXPECT_CALL(autofill_syncable_service_, LoadAutofillData(_))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(autofill_syncable_service_, SaveChangesToWebData(_))
+      .Times(1)
+      .WillOnce(Return(true));
+  autofill_syncable_service_.MergeDataAndStartSyncing(
+      syncer::AUTOFILL_PROFILE, syncer::SyncDataList(),
+      make_scoped_ptr(new TestSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+  AutofillProfile server_profile(AutofillProfile::SERVER_PROFILE, "server-id");
+
+  // Should not crash:
+  autofill_syncable_service_.AutofillProfileChanged(AutofillProfileChange(
+      AutofillProfileChange::UPDATE, server_profile.guid(), &server_profile));
+}
+
 }  // namespace autofill

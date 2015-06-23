@@ -5,16 +5,19 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
 
+#include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 
 namespace autofill {
 
 class AutofillProfile;
+class CreditCard;
 
 // For classic Autofill form fields, the KeyType is AutofillKey.
-// Autofill++ types such as AutofillProfile and CreditCard simply use an int.
+// Autofill++ types such as AutofillProfile and CreditCard simply use a string.
 template <typename KeyType>
 class GenericAutofillChange {
  public:
@@ -49,26 +52,39 @@ class AutofillChange : public GenericAutofillChange<AutofillKey> {
 
 typedef std::vector<AutofillChange> AutofillChangeList;
 
-// Change notification details for Autofill profile changes.
-class AutofillProfileChange : public GenericAutofillChange<std::string> {
+// Change notification details for Autofill profile or credit card changes.
+template <typename DataType>
+class AutofillDataModelChange : public GenericAutofillChange<std::string> {
  public:
   // The |type| input specifies the change type.  The |key| input is the key,
-  // which is expected to be the GUID identifying the |profile|.
-  // When |type| == ADD, |profile| should be non-NULL.
-  // When |type| == UPDATE, |profile| should be non-NULL.
-  // When |type| == REMOVE, |profile| should be NULL.
-  AutofillProfileChange(Type type,
-                        const std::string& key,
-                        const AutofillProfile* profile);
-  ~AutofillProfileChange() override;
+  // which is expected to be the GUID identifying the |data_model|.
+  // When |type| == ADD, |data_model| should be non-NULL.
+  // When |type| == UPDATE, |data_model| should be non-NULL.
+  // When |type| == REMOVE, |data_model| should be NULL.
+  AutofillDataModelChange(Type type,
+                          const std::string& key,
+                          const DataType* data_model)
+      : GenericAutofillChange<std::string>(type, key), data_model_(data_model) {
+    DCHECK(type == REMOVE ? !data_model
+                          : data_model && data_model->guid() == key);
+  }
 
-  const AutofillProfile* profile() const { return profile_; }
-  bool operator==(const AutofillProfileChange& change) const;
+  ~AutofillDataModelChange() override {}
+
+  const DataType* data_model() const { return data_model_; }
+
+  bool operator==(const AutofillDataModelChange<DataType>& change) const {
+    return type() == change.type() && key() == change.key() &&
+           (type() == REMOVE || *data_model() == *change.data_model());
+  }
 
  private:
   // Weak reference, can be NULL.
-  const AutofillProfile* profile_;
+  const DataType* data_model_;
 };
+
+typedef AutofillDataModelChange<AutofillProfile> AutofillProfileChange;
+typedef AutofillDataModelChange<CreditCard> CreditCardChange;
 
 }  // namespace autofill
 

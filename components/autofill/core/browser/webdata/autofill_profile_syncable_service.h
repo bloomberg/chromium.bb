@@ -36,7 +36,10 @@ class AutofillWebDataService;
 
 extern const char kAutofillProfileTag[];
 
-// The sync implementation for AutofillProfiles.
+// The sync implementation for local AutofillProfiles, which can be managed in
+// settings and can be written to the sync server. (Server profiles cannot be
+// managed in settings and can only be read from the sync server.)
+//
 // MergeDataAndStartSyncing() called first, it does cloud->local and
 // local->cloud syncs. Then for each cloud change we receive
 // ProcessSyncChanges() and for each local change Observe() is called.

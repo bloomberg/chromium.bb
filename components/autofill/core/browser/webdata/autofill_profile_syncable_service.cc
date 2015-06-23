@@ -547,10 +547,17 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
 
 void AutofillProfileSyncableService::ActOnChange(
      const AutofillProfileChange& change) {
-  DCHECK((change.type() == AutofillProfileChange::REMOVE &&
-          !change.profile()) ||
-         (change.type() != AutofillProfileChange::REMOVE && change.profile()));
+  DCHECK(
+      (change.type() == AutofillProfileChange::REMOVE &&
+       !change.data_model()) ||
+      (change.type() != AutofillProfileChange::REMOVE && change.data_model()));
   DCHECK(sync_processor_.get());
+
+  if (change.data_model() &&
+      change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
+    return;
+  }
+
   syncer::SyncChangeList new_changes;
   DataBundle bundle;
   switch (change.type()) {
@@ -558,21 +565,21 @@ void AutofillProfileSyncableService::ActOnChange(
       new_changes.push_back(
           syncer::SyncChange(FROM_HERE,
                              syncer::SyncChange::ACTION_ADD,
-                             CreateData(*(change.profile()))));
-      DCHECK(profiles_map_.find(change.profile()->guid()) ==
+                             CreateData(*(change.data_model()))));
+      DCHECK(profiles_map_.find(change.data_model()->guid()) ==
              profiles_map_.end());
-      profiles_.push_back(new AutofillProfile(*(change.profile())));
-      profiles_map_[change.profile()->guid()] = profiles_.get().back();
+      profiles_.push_back(new AutofillProfile(*(change.data_model())));
+      profiles_map_[change.data_model()->guid()] = profiles_.get().back();
       break;
     case AutofillProfileChange::UPDATE: {
       GUIDToProfileMap::iterator it = profiles_map_.find(
-          change.profile()->guid());
+          change.data_model()->guid());
       DCHECK(it != profiles_map_.end());
-      *(it->second) = *(change.profile());
+      *(it->second) = *(change.data_model());
       new_changes.push_back(
           syncer::SyncChange(FROM_HERE,
                              syncer::SyncChange::ACTION_UPDATE,
-                             CreateData(*(change.profile()))));
+                             CreateData(*(change.data_model()))));
       break;
     }
     case AutofillProfileChange::REMOVE: {

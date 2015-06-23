@@ -31,10 +31,10 @@ class AutofillWebDataBackend {
   // Remove expired elements from the database and commit if needed.
   virtual void RemoveExpiredFormElements() = 0;
 
-  // Notifies listeners on the UI thread that multiple changes have been made to
-  // to Autofill records of the database.
-  // NOTE: This method is intended to be called from the DB thread. It
-  // asynchronously notifies listeners on the UI thread.
+  // Notifies listeners on both DB and UI threads that multiple changes have
+  // been made to to Autofill records of the database.
+  // NOTE: This method is intended to be called from the DB thread. The UI
+  // thread notifications are asynchronous.
   virtual void NotifyOfMultipleAutofillChanges() = 0;
 };
 
