@@ -21,7 +21,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_register.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sys_memory.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
@@ -143,14 +143,11 @@ static void TrySuspendingMutatorThread(struct NaClApp *nap) {
  * by the (trusted) test code to return.  This is used for testing
  * suspension of a thread that's inside a syscall.
  */
-static int32_t SpinWaitTestSyscall(struct NaClAppThread *natp) {
-  uint32_t test_shm_uptr;
+static int32_t SpinWaitTestSyscall(struct NaClAppThread *natp,
+                                   uintptr_t test_shm_uptr) {
   struct SuspendTestShm *test_shm;
   uint32_t next_val = 0;
 
-  NaClCopyDropLock(natp->nap);
-  CHECK(NaClCopyInFromUser(natp->nap, &test_shm_uptr, natp->usr_syscall_args,
-                           sizeof(test_shm_uptr)));
   test_shm = (struct SuspendTestShm *) NaClUserToSysAddrRange(
       natp->nap, test_shm_uptr, sizeof(*test_shm));
 
@@ -166,6 +163,8 @@ static int32_t SpinWaitTestSyscall(struct NaClAppThread *natp) {
   test_shm->var = 1;
   return 0;
 }
+
+NACL_DEFINE_SYSCALL_1(SpinWaitTestSyscall)
 
 /*
  * This test checks that a thread running a NaCl syscall will not be
@@ -417,13 +416,14 @@ static void TestGettingRegisterSnapshotInSyscall(struct NaClApp *nap) {
  * trusted/untrusted context switches.
  */
 static int32_t SimpleTestSyscall(struct NaClAppThread *natp) {
-  NaClCopyDropLock(natp->nap);
   g_simple_syscall_called = 1;
   if (g_simple_syscall_should_exit) {
     NaClAppThreadTeardown(natp);
   }
   return 0;
 }
+
+NACL_DEFINE_SYSCALL_0(SimpleTestSyscall)
 
 /*
  * Test getting the register state of a thread suspended during a
@@ -496,8 +496,8 @@ int main(int argc, char **argv) {
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
 
-  NaClAddSyscall(NACL_sys_test_syscall_1, SpinWaitTestSyscall);
-  NaClAddSyscall(NACL_sys_test_syscall_2, SimpleTestSyscall);
+  NACL_REGISTER_SYSCALL(SpinWaitTestSyscall, NACL_sys_test_syscall_1);
+  NACL_REGISTER_SYSCALL(SimpleTestSyscall, NACL_sys_test_syscall_2);
 
   /*
    * We reuse the same sandbox for both tests.

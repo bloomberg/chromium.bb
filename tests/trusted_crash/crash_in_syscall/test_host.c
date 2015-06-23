@@ -17,7 +17,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_register.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 
@@ -277,6 +277,9 @@ int32_t JumpIntoSandboxCrashSyscall(struct NaClAppThread *natp) {
   return 1;
 }
 
+NACL_DEFINE_SYSCALL_0(JumpToZeroCrashSyscall)
+NACL_DEFINE_SYSCALL_0(JumpIntoSandboxCrashSyscall)
+
 int main(int argc, char **argv) {
   struct NaClApp app;
 
@@ -308,8 +311,8 @@ int main(int argc, char **argv) {
 #endif
   }
 
-  NaClAddSyscall(NACL_sys_test_syscall_1, JumpToZeroCrashSyscall);
-  NaClAddSyscall(NACL_sys_test_syscall_2, JumpIntoSandboxCrashSyscall);
+  NACL_REGISTER_SYSCALL(JumpToZeroCrashSyscall, NACL_sys_test_syscall_1);
+  NACL_REGISTER_SYSCALL(JumpIntoSandboxCrashSyscall, NACL_sys_test_syscall_2);
 
   RegisterHandlers();
 

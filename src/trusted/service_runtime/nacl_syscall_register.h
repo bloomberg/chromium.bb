@@ -10,6 +10,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
 /*
  * This file defines macros for defining and registering NaCl syscalls.
