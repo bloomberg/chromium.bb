@@ -36,8 +36,6 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-class ParsedStyleSheet;
-
 namespace blink {
 
 class CSSMediaRule;
@@ -158,9 +156,7 @@ private:
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
     String sourceMapURL();
     String sourceURL();
-    bool ensureText();
     void ensureFlatRules();
-    bool originalStyleSheetText(String* result);
     bool resourceStyleSheetText(String* result);
     bool inlineStyleSheetText(String* result);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > selectorsFromSource(const CSSRuleSourceData*, const String&);
@@ -170,9 +166,8 @@ private:
     bool startsAtZero();
 
     unsigned indexOf(CSSStyleDeclaration*);
-    bool ensureParsedDataReady();
     void replaceText(const SourceRange&, const String& text, SourceRange* newRange, String* oldText);
-    void innerSetText(const String& newText);
+    void innerSetText(const String& newText, bool markAsLocallyModified);
     Element* ownerStyleElement();
 
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
@@ -180,7 +175,8 @@ private:
     RefPtrWillBeMember<CSSStyleSheet> m_pageStyleSheet;
     TypeBuilder::CSS::StyleSheetOrigin::Enum m_origin;
     String m_documentURL;
-    OwnPtrWillBeMember<ParsedStyleSheet> m_parsedStyleSheet;
+    OwnPtrWillBeMember<RuleSourceDataList> m_sourceData;
+    String m_text;
     CSSRuleVector m_flatRules;
     String m_sourceURL;
 };
