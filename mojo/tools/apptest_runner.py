@@ -55,6 +55,7 @@ def main():
 
   tests = []
   failed = []
+  failed_suites = 0
   for _ in range(args.repeat_count):
     for test_dict in test_list:
       test = test_dict["test"]
@@ -73,6 +74,13 @@ def main():
       result = test and not fail
       print "[  PASSED  ]" if result else "[  FAILED  ]",
       print test_name if args.verbose or not result else ""
+      # Abort when 3 apptest suites, or a tenth of all, have failed.
+      # base::TestLauncher does this for timeouts and unknown results.
+      failed_suites += 0 if result else 1
+      if failed_suites >= max(3, len(test_list) / 10):
+        print "Too many failing suites (%d), exiting now." % failed_suites
+        failed.append("Test runner aborted for excessive failures.")
+        break;
 
     if failed:
       break;

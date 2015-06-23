@@ -37,15 +37,31 @@ def run_apptest(config, shell, args, apptest, isolate):
   failed = []
   if not isolate:
     # TODO(msw): Parse fixture-granular successes and failures in this case.
-    if not _run_apptest(config, shell, args, apptest):
+    # TODO(msw): Retry fixtures that failed, not the entire apptest suite.
+    if not _run_apptest_with_retry(config, shell, args, apptest):
       failed.append(apptest)
   else:
     tests = _get_fixtures(config, shell, args, apptest)
     for fixture in tests:
       arguments = args + ["--gtest_filter=%s" % fixture]
-      if not _run_apptest(config, shell, arguments, apptest):
+      if not _run_apptest_with_retry(config, shell, arguments, apptest):
         failed.append(fixture)
+      # Abort when 20 fixtures, or a tenth of the apptest fixtures, have failed.
+      # base::TestLauncher does this for timeouts and unknown results.
+      if len(failed) >= max(20, len(tests) / 10):
+        print "Too many failing fixtures (%d), exiting now." % len(failed)
+        return (tests, failed + [apptest + " aborted for excessive failures."])
   return (tests, failed)
+
+
+# TODO(msw): Determine proper test retry counts; allow configuration.
+def _run_apptest_with_retry(config, shell, args, apptest, try_count=3):
+  """Runs an apptest, retrying on failure; returns True if any run passed."""
+  for try_number in range(try_count):
+    if _run_apptest(config, shell, args, apptest):
+      return True
+    print "Failed %s/%s test run attempts." % (try_number + 1, try_count)
+  return False
 
 
 def _run_apptest(config, shell, args, apptest):
