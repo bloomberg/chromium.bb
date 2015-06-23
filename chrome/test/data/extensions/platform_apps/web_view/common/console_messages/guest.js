@@ -31,17 +31,20 @@ var onPostMessageReceived = function(e) {
   // Tests.
   // These logs trigger event listeners in the embedder.
   switch (data[0]) {
-    case 'test-1':
-      window.console.log('log-one');  // LevelLog = 0.
+    case 'test-1a':
+      window.console.log('log-one-a');  // LOG_INFO = 0.
+      break;
+    case 'test-1b':
+      window.console.info('log-one-b');  // LOG_INFO = 0.
       break;
     case 'test-2':
-      window.console.warn('log-two');  // LevelWarning = 1.
+      window.console.warn('log-two');  // LOG_WARNING = 1.
       break;
     case 'test-3':
-      window.console.error('log-three');  // LevelDebug = 2.
+      window.console.error('log-three');  // LOG_ERROR = 2.
       break;
     case 'test-4':
-      window.console.debug('log-four');  // LevelError = -1.
+      window.console.debug('log-four');  // LOG_VERBOSE = -1.
       break;
     case 'test-throw':
       throw Error('log-five');

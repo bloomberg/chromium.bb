@@ -1070,7 +1070,7 @@
         "parameters": [
           {
             "name": "level",
-            "description": "The severity level of the log message. Ranges from 0 to 4.",
+            "description": "The severity level of the log message. Ranges from -1 to 2. LOG_VERBOSE (console.debug) = -1, LOG_INFO (console.log, console.info) = 0, LOG_WARNING (console.warn) = 1, LOG_ERROR (console.error) = 2.",
             "type": "integer"
           },
           {

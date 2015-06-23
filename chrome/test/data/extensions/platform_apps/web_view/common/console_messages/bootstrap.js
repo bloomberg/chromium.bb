@@ -19,6 +19,7 @@ var run = function() {
     utils.setUp(chromeConfig, config);
     embedder.loadGuest(function() {
       chrome.test.runTests([
+        consoleTests.testLogLog,
         consoleTests.testLogInfo,
         consoleTests.testLogWarn,
         consoleTests.testLogError,
@@ -43,8 +44,12 @@ consoleTests.testLogHelper_ = function(
 };
 
 // Tests.
+consoleTests.testLogLog = function testLogLog() {
+  consoleTests.testLogHelper_('test-1a', 0, 'log-one-a');
+};
+
 consoleTests.testLogInfo = function testLogInfo() {
-  consoleTests.testLogHelper_('test-1', 0, 'log-one');
+  consoleTests.testLogHelper_('test-1b', 0, 'log-one-b');
 };
 
 consoleTests.testLogWarn = function testLogWarn() {
