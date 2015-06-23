@@ -10,8 +10,6 @@
 #include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportLoader.h"
 
-#include <stdio.h>
-
 namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskRunQueue)

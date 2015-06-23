@@ -25,6 +25,8 @@ public:
     void requestDispatchIfNeeded();
     bool isEmpty() const;
 
+    // Must be promptly finalized to prevent unsafe dispatching.
+    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
 private:
