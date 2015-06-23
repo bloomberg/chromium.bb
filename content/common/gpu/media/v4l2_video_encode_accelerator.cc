@@ -614,8 +614,8 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   DCHECK_EQ(device_input_format_, frame->format());
   for (size_t i = 0; i < input_planes_count_; ++i) {
     qbuf.m.planes[i].bytesused =
-        base::checked_cast<__u32>(media::VideoFrame::PlaneAllocationSize(
-            frame->format(), i, input_allocated_size_));
+        base::checked_cast<__u32>(media::VideoFrame::PlaneSize(
+            frame->format(), i, input_allocated_size_).GetArea());
 
     switch (input_memory_type_) {
       case V4L2_MEMORY_USERPTR:

@@ -304,13 +304,11 @@ void PipelineIntegrationTestBase::OnVideoFramePaint(
     const scoped_refptr<VideoFrame>& frame) {
   last_video_frame_format_ = frame->format();
   int result;
-  if (frame->metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
-                                    &result)) {
+  if (frame->metadata()->GetInteger(VideoFrameMetadata::COLOR_SPACE, &result))
     last_video_frame_color_space_ = static_cast<VideoFrame::ColorSpace>(result);
-  }
   if (!hashing_enabled_)
     return;
-  frame->HashFrameForTesting(&md5_context_);
+  VideoFrame::HashFrameForTesting(&md5_context_, frame);
 }
 
 std::string PipelineIntegrationTestBase::GetVideoHash() {

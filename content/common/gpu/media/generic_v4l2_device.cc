@@ -252,8 +252,8 @@ EGLImageKHR GenericV4L2Device::CreateEGLImage(EGLDisplay egl_display,
     if (v4l2_plane + 1 < num_v4l2_planes) {
       ++v4l2_plane;
     } else {
-      plane_offset += media::VideoFrame::PlaneAllocationSize(
-          vf_format, plane, frame_buffer_size);
+      plane_offset += media::VideoFrame::PlaneSize(
+          vf_format, plane, frame_buffer_size).GetArea();
     }
   }
 

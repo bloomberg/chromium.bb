@@ -108,6 +108,20 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // destroyed.
   typedef base::Callback<void(uint32)> ReleaseMailboxCB;
 
+  // Interface representing client operations on a SyncPoint, i.e. insert one in
+  // the GPU Command Buffer and wait for it.
+  class SyncPointClient {
+   public:
+    SyncPointClient() {}
+    virtual uint32 InsertSyncPoint() = 0;
+    virtual void WaitSyncPoint(uint32 sync_point) = 0;
+
+   protected:
+    virtual ~SyncPointClient() {}
+
+    DISALLOW_COPY_AND_ASSIGN(SyncPointClient);
+  };
+
   // Returns the name of a Format as a string.
   static std::string FormatToString(Format format);
 
@@ -272,17 +286,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // given coded size and format.
   static size_t AllocationSize(Format format, const gfx::Size& coded_size);
 
-  // Returns the plane size (in bytes) for a plane of the given coded size and
-  // format.
+  // Returns the plane gfx::Size (in bytes) for a plane of the given coded size
+  // and format.
   static gfx::Size PlaneSize(Format format,
                              size_t plane,
                              const gfx::Size& coded_size);
-
-  // Returns the required allocation size for a (tightly packed) plane of the
-  // given coded size and format.
-  static size_t PlaneAllocationSize(Format format,
-                                    size_t plane,
-                                    const gfx::Size& coded_size);
 
   // Returns horizontal bits per pixel for given |plane| and |format|.
   static int PlaneHorizontalBitsPerPixel(Format format, size_t plane);
@@ -301,6 +309,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the number of columns for the given plane, format, and width.
   // The width may be aligned to format requirements.
   static size_t Columns(size_t plane, Format format, int width);
+
+  // Used to keep a running hash of seen frames.  Expects an initialized MD5
+  // context.  Calls MD5Update with the context and the contents of the frame.
+  static void HashFrameForTesting(base::MD5Context* context,
+                                  const scoped_refptr<VideoFrame>& frame);
 
   // Returns true if |frame| is accessible and mapped in the VideoFrame memory
   // space. If false, clients should refrain from accessing data(),
@@ -392,29 +405,26 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     timestamp_ = timestamp;
   }
 
-  class SyncPointClient {
-   public:
-    SyncPointClient() {}
-    virtual uint32 InsertSyncPoint() = 0;
-    virtual void WaitSyncPoint(uint32 sync_point) = 0;
-
-   protected:
-    virtual ~SyncPointClient() {}
-
-    DISALLOW_COPY_AND_ASSIGN(SyncPointClient);
-  };
   // It uses |client| to insert a new sync point and potentially waits on a
   // older sync point. The final sync point will be used to release this
   // VideoFrame.
   // This method is thread safe. Both blink and compositor threads can call it.
   void UpdateReleaseSyncPoint(SyncPointClient* client);
 
-  // Used to keep a running hash of seen frames.  Expects an initialized MD5
-  // context.  Calls MD5Update with the context and the contents of the frame.
-  void HashFrameForTesting(base::MD5Context* context);
-
  private:
   friend class base::RefCountedThreadSafe<VideoFrame>;
+
+  static scoped_refptr<VideoFrame> WrapExternalStorage(
+      Format format,
+      StorageType storage_type,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8* data,
+      size_t data_size,
+      base::TimeDelta timestamp,
+      base::SharedMemoryHandle handle,
+      size_t data_offset);
 
   // Clients must use the static factory/wrapping methods to create a new frame.
   VideoFrame(Format format,
@@ -440,18 +450,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const ReleaseMailboxCB& mailbox_holder_release_cb,
              base::TimeDelta timestamp);
   virtual ~VideoFrame();
-
-  static scoped_refptr<VideoFrame> WrapExternalStorage(
-      Format format,
-      StorageType storage_type,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      uint8* data,
-      size_t data_size,
-      base::TimeDelta timestamp,
-      base::SharedMemoryHandle handle,
-      size_t data_offset);
 
   void AllocateYUV();
 

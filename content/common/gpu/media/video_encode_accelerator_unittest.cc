@@ -251,8 +251,8 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   // the VEA; each row of visible_bpl bytes in the original file needs to be
   // copied into a row of coded_bpl bytes in the aligned file.
   for (size_t i = 0; i < num_planes; i++) {
-    size_t size =
-        media::VideoFrame::PlaneAllocationSize(kInputFormat, i, coded_size);
+    const size_t size =
+        media::VideoFrame::PlaneSize(kInputFormat, i, coded_size).GetArea();
     test_stream->aligned_plane_size.push_back(Align64Bytes(size));
     test_stream->aligned_buffer_size += test_stream->aligned_plane_size.back();
 
@@ -262,7 +262,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
         i, kInputFormat, test_stream->visible_size.width());
     visible_plane_rows[i] = media::VideoFrame::Rows(
         i, kInputFormat, test_stream->visible_size.height());
-    size_t padding_rows =
+    const size_t padding_rows =
         media::VideoFrame::Rows(i, kInputFormat, coded_size.height()) -
         visible_plane_rows[i];
     padding_sizes[i] = padding_rows * coded_bpl[i] + Align64Bytes(size) - size;

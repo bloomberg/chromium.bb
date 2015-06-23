@@ -256,8 +256,8 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
   format.fmt.pix_mp.num_planes = input_planes_count_;
   for (size_t i = 0; i < input_planes_count_; ++i) {
     format.fmt.pix_mp.plane_fmt[i].sizeimage =
-        media::VideoFrame::PlaneAllocationSize(
-            input_format_, i, input_allocated_size_);
+        media::VideoFrame::PlaneSize(input_format_, i, input_allocated_size_)
+            .GetArea();
     format.fmt.pix_mp.plane_fmt[i].bytesperline =
         base::checked_cast<__u32>(input_allocated_size_.width());
   }
@@ -306,8 +306,8 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   format.fmt.pix_mp.num_planes = output_planes_count_;
   for (size_t i = 0; i < output_planes_count_; ++i) {
     format.fmt.pix_mp.plane_fmt[i].sizeimage =
-        media::VideoFrame::PlaneAllocationSize(
-            output_format_, i, output_allocated_size_);
+        media::VideoFrame::PlaneSize(output_format_, i, output_allocated_size_)
+            .GetArea();
     format.fmt.pix_mp.plane_fmt[i].bytesperline =
         base::checked_cast<__u32>(output_allocated_size_.width());
   }
@@ -608,8 +608,8 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   qbuf.m.planes = qbuf_planes;
   qbuf.length = input_planes_count_;
   for (size_t i = 0; i < input_planes_count_; ++i) {
-    qbuf.m.planes[i].bytesused = media::VideoFrame::PlaneAllocationSize(
-        input_record.frame->format(), i, input_allocated_size_);
+    qbuf.m.planes[i].bytesused = media::VideoFrame::PlaneSize(
+        input_record.frame->format(), i, input_allocated_size_).GetArea();
     qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
     qbuf.m.planes[i].m.userptr =
         reinterpret_cast<unsigned long>(input_record.frame->data(i));

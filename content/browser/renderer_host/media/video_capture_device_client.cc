@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/video_capture_device_client.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -233,10 +235,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   int destination_width = new_unrotated_width;
   int destination_height = new_unrotated_height;
-  if (rotation == 90 || rotation == 270) {
-    destination_width = new_unrotated_height;
-    destination_height = new_unrotated_width;
-  }
+  if (rotation == 90 || rotation == 270)
+    std::swap(destination_width, destination_height);
 
   DCHECK_EQ(rotation % 90, 0)
       << " Rotation must be a multiple of 90, now: " << rotation;
@@ -262,15 +262,16 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (!buffer.get())
     return;
 
+  const size_t y_plane_size = VideoFrame::PlaneSize(
+      VideoFrame::I420, VideoFrame::kYPlane, dimensions).GetArea();
+  const size_t u_plane_size = VideoFrame::PlaneSize(
+      VideoFrame::I420, VideoFrame::kUPlane, dimensions).GetArea();
   uint8* const yplane = reinterpret_cast<uint8*>(buffer->data());
-  uint8* const uplane =
-      yplane + VideoFrame::PlaneAllocationSize(VideoFrame::I420,
-                                               VideoFrame::kYPlane, dimensions);
-  uint8* const vplane =
-      uplane + VideoFrame::PlaneAllocationSize(VideoFrame::I420,
-                                               VideoFrame::kUPlane, dimensions);
-  int yplane_stride = dimensions.width();
-  int uv_plane_stride = yplane_stride / 2;
+  uint8* const uplane = yplane + y_plane_size;
+  uint8* const vplane = uplane + u_plane_size;
+
+  const int yplane_stride = dimensions.width();
+  const int uv_plane_stride = yplane_stride / 2;
   int crop_x = 0;
   int crop_y = 0;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
@@ -383,10 +384,10 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
 
   // Blit (copy) here from y,u,v into buffer.data()). Needed so we can return
   // the parameter buffer synchronously to the driver.
-  const size_t y_plane_size = VideoFrame::PlaneAllocationSize(VideoFrame::I420,
-      VideoFrame::kYPlane, frame_format.frame_size);
-  const size_t u_plane_size = VideoFrame::PlaneAllocationSize(
-      VideoFrame::I420, VideoFrame::kUPlane, frame_format.frame_size);
+  const size_t y_plane_size = VideoFrame::PlaneSize(
+      VideoFrame::I420, VideoFrame::kYPlane, frame_format.frame_size).GetArea();
+  const size_t u_plane_size = VideoFrame::PlaneSize(
+      VideoFrame::I420, VideoFrame::kUPlane, frame_format.frame_size).GetArea();
   uint8* const dst_y = reinterpret_cast<uint8*>(buffer->data());
   uint8* const dst_u = dst_y + y_plane_size;
   uint8* const dst_v = dst_u + u_plane_size;
