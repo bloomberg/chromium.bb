@@ -11,23 +11,17 @@
   margin-bottom: 14px;
 }
 
-/* ':host' and '[icon]' are needed to increase selector's specificity. */
-:host core-icon[icon] {
+:host iron-icon {
   height: 28px;
   width: 28px;
 }
 
-core-icon[icon=warning] {
-  color: rgb(251, 192, 45);
+iron-icon[icon=warning] {
+  color: var(--google-yellow-500);
 }
 
-core-icon[icon=done] {
-  color: rgb(15, 157, 88);
-}
-
-#heading {
-  font-size: 20px;
-  margin-bottom: 14px;
+iron-icon[icon=done] {
+  color: var(--google-green-500);
 }
 
 #text-container {
@@ -37,14 +31,8 @@ core-icon[icon=done] {
   text-align: center;
 }
 
-paper-button {
-  background-color: rgb(66, 133, 244);
-  color: rgb(255, 255, 255);
-  min-width: 126px;
-}
-
 a {
-  color: rgb(66, 133, 244);
+  color: var(--google-blue-500);
   text-decoration: none;
 }
 

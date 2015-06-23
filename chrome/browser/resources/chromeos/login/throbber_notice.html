@@ -1,12 +1,16 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/paper-spinner/paper-spinner.html">
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
 
-<polymer-element name="throbber-notice" attributes="text" noscript>
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<dom-module name="throbber-notice">
+  <link rel="stylesheet" href="throbber_notice.css">
   <template>
-    <link rel="stylesheet" href="throbber_notice.css">
-    <div id="spinner-container" vertical layout center>
-      <paper-spinner dir="ltr" active></paper-spinner>
-    </div>
-    <div id="spinner-comment">{{text}}</div>
+    <paper-spinner dir="ltr" active></paper-spinner>
+    <div id="spinner-comment"><span>[[text]]</span></div>
   </template>
-</polymer-element>
+</dom-module>
+

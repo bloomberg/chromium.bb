@@ -2,13 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('pairing-device-list', (function() {
+Polymer((function() {
   /** @const */ var ICON_COLORS = ['#F0B9CB', '#F0ACC3', '#F098B6', '#F084A9',
                                    '#F06D99', '#F05287', '#F0467F', '#F03473',
                                    '#F01E65', '#F00051'];
   return {
+    is: 'pairing-device-list',
+
+    properties: {
+      devices: Array,
+
+      selected: {
+        type: String,
+        notify: true
+      },
+
+      connecting: {
+        type: Boolean,
+        reflectToAttribute: true
+      }
+    },
+
+    getStyleForDeviceIcon_: function(deviceName) {
+      return 'color: ' + this.colorByName_(deviceName);
+    },
+
     /* Returns pseudo-random color depending of hash of the |name|. */
-    colorByName: function(name) {
+    colorByName_: function(name) {
       var hash = 0;
       for (var i = 0; i < name.length; ++i)
         hash = (name.charCodeAt(i) + 31 * hash) | 0;
@@ -17,7 +37,58 @@ Polymer('pairing-device-list', (function() {
   };
 })());
 
-Polymer('controller-pairing-screen', (function() {
+Polymer({
+  is: 'controller-pairing-page',
+
+  behaviors: [
+    Polymer.NeonSharedElementAnimatableBehavior
+  ],
+
+  properties: {
+    sharedElements: {
+      value: function() {
+        return {
+          'top-hero': this.$.top,
+          'bottom-hero': this.$.bottom
+        };
+      }
+    },
+
+    animationConfig: {
+      value: function() {
+        return {
+          'entry': [{
+            name: 'hero-animation',
+            id: 'top-hero',
+            toPage: this
+          }, {
+            name: 'hero-animation',
+            id: 'bottom-hero',
+            toPage: this
+          }, {
+            name: 'fade-in-animation',
+            node: this
+          }],
+
+          'exit': [{
+            name: 'hero-animation',
+            id: 'top-hero',
+            fromPage: this
+          }, {
+            name: 'hero-animation',
+            id: 'bottom-hero',
+            fromPage: this
+          }, {
+            name: 'fade-out-animation',
+            node: this
+          }]
+        };
+      }
+    }
+  }
+});
+
+Polymer((function() {
   'use strict';
 
   // Keep these constants synced with corresponding constants defined in
@@ -31,46 +102,66 @@ Polymer('controller-pairing-screen', (function() {
   /** @const */ var PAGE_AUTHENTICATION = 'authentication';
 
   return {
-    gaiaHost_: null,
-    selectedDevice: null,
+    is: 'controller-pairing-screen',
 
-    observe: {
-      'C.devices': 'deviceListChanged',
-      'C.page': 'pageChanged'
+    behaviors: [
+      login.OobeScreenBehavior
+    ],
+
+    properties: {
+      selectedDevice: {
+        type: String,
+        observer: 'selectedDeviceChanged_'
+      }
+    },
+
+    observers: [
+      'deviceListChanged_(C.devices)'
+    ],
+
+    ready: function() {
+      /**
+       * Workaround for
+       * https://github.com/PolymerElements/neon-animation/issues/32
+       * TODO(dzhioev): Remove when fixed in Polymer.
+       */
+      var pages = this.$.pages;
+      delete pages._squelchNextFinishEvent;
+      Object.defineProperty(pages, '_squelchNextFinishEvent',
+          { get: function() { return false; } });
     },
 
     /** @override */
     initialize: function() {
+      ['code',
+       'controlsDisabled',
+       'devices',
+       'enrollmentDomain',
+       'page'].forEach(this.registerBoundContextField, this);
       this.context.set(CONTEXT_KEY_CONTROLS_DISABLED, true);
       this.commitContextChanges();
     },
 
-    pageChanged: function(oldPage, newPage) {
-      if (newPage == PAGE_AUTHENTICATION) {
-        this.gaiaHost_.load(cr.login.GaiaAuthHost.AuthMode.DEFAULT,
-                            {},
-                            this.onAuthCompleted_.bind(this));
-      }
+    deviceListChanged_: function() {
+      this.selectedDevice = this.context.get(CONTEXT_KEY_SELECTED_DEVICE, null);
     },
 
-    deviceListChanged: function() {
-      this.selectedDevice = this.context.get(CONTEXT_KEY_SELECTED_DEVICE);
-    },
-
-    selectedDeviceChanged: function() {
+    selectedDeviceChanged_: function(selectedDevice) {
       this.context.set(CONTEXT_KEY_SELECTED_DEVICE,
-          this.selectedDevice ? this.selectedDevice : '');
+          selectedDevice ? selectedDevice : '');
       this.commitContextChanges();
     },
 
-    helpButtonClicked: function() {
+    helpButtonClicked_: function() {
       console.error('Help is not implemented yet.');
     },
 
-    onAuthCompleted_: function(credentials) {
-      this.context.set(CONTEXT_KEY_ACCOUNT_ID, credentials.email);
-      this.commitContextChanges();
-      this.send(login.Screen.CALLBACK_USER_ACTED, ACTION_ENROLL);
+    getHostEnrollmentStepTitle_: function(domain) {
+      return this.i18n(['enrollmentInProgress', domain]);
+    },
+
+    getSuccessMessage_: function(selectedDevice) {
+      return this.i18n(['successText', selectedDevice]);
     }
   };
 })());

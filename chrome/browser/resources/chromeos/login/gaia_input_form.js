@@ -1,24 +1,44 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-Polymer('gaia-input-form', (function() {
-  return {
-    onButtonClicked: function() {
-      this.fire('submit');
+Polymer({
+  is: 'gaia-input-form',
+
+  properties: {
+    disabled: {
+      type: Boolean,
+      observer: 'onDisabledChanged_',
     },
 
-    onKeyDown: function(e) {
-      if (e.keyCode == 13 && !this.$.button.disabled)
-        this.onButtonClicked();
-    },
+    buttonText: String
+  },
 
-    set disabled(value) {
-      var controls = this.querySelectorAll(
-          ':host /deep/ [role="button"], :host /deep/ [is="core-input"]');
-      for (var i = 0, control; control = controls[i]; ++i)
-        control.disabled = value;
-    },
-  };
-})());
+  onButtonClicked_: function() {
+    this.fire('submit');
+  },
+
+  getInputs_: function() {
+    return Polymer.dom(this.$.inputs).getDistributedNodes();
+  },
+
+  onKeyDown_: function(e) {
+    if (e.keyCode != 13 || this.$.button.disabled)
+      return;
+    if (this.getInputs_().indexOf(e.target) == -1)
+      return;
+    this.onButtonClicked_();
+  },
+
+  getControls_: function() {
+    var controls = this.getInputs_();
+    controls.push(this.$.button);
+    return controls.concat(Polymer.dom(this).querySelectorAll('gaia-button'));
+  },
+
+  onDisabledChanged_: function(disabled) {
+    this.getControls_().forEach(function(control) {
+      control.disabled = disabled;
+    });
+  }
+});

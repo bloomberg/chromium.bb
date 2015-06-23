@@ -3,6 +3,12 @@
  * found in the LICENSE file.
  */
 
-#iconButton {
-  padding: 0;
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#email {
+  font-size: 20px;
 }

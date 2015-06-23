@@ -3,17 +3,24 @@
  * found in the LICENSE file.
  */
 
-paper-spinner::shadow .circle {
-  border-color: rgb(66, 133, 244);
+:host {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+paper-spinner {
+  --paper-spinner-layer-1-color: var(--google-blue-500);
+  --paper-spinner-layer-2-color: var(--google-blue-500);
+  --paper-spinner-layer-3-color: var(--google-blue-500);
+  --paper-spinner-layer-4-color: var(--google-blue-500);
 }
 
 paper-spinner {
   height: 38px;
-  width: 38px;
-}
-
-#spinner-container {
   margin-bottom: 28px;
+  width: 38px;
 }
 
 #spinner-comment {

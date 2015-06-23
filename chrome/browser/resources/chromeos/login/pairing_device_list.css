@@ -18,20 +18,13 @@ core-selector {
   pointer-events: none;
 }
 
-core-item {
-  padding-bottom: 22px;
-  padding-top: 22px;
-}
-
-/* [icon] is needed to increase specificity. */
-core-item core-icon[icon] {
-  height: 40px;
-  margin-right: 1em;
-  width: 40px;
+paper-icon-item {
+  padding-bottom: 18px;
+  padding-top: 18px;
 }
 
 /* Items separator. */
-core-item:not(:last-child)::after {
+paper-icon-item:not(:last-of-type)::after {
   background-color: rgba(0, 0, 0, 0.1);
   bottom: 0;
   content: '';
@@ -42,11 +35,21 @@ core-item:not(:last-child)::after {
   right: 0;
 }
 
+iron-icon {
+  height: 40px;
+  margin-right: 1em;
+  width: 40px;
+}
+
 .throbber {
   display: none;
 }
 
-:host([connecting]) core-item.core-selected .throbber {
+.iron-selected {
+  font-weight: bold;
+}
+
+:host([connecting]) .iron-selected .throbber {
   background: url(chrome://resources/images/throbber.svg) no-repeat;
   background-size: cover;
   display: inline-block;

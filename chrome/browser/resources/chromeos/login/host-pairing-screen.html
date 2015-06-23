@@ -1,10 +1,19 @@
-<link rel="import" href="chrome://oobe/custom_elements.html">
-<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
-<link rel="import" href="chrome://resources/polymer/core-iconset-svg/core-iconset-svg.html">
-<link rel="import" href="chrome://resources/polymer/core-item/core-item.html">
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
 
-<core-iconset-svg id="host-pairing-icons" iconSize="48">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<iron-iconset-svg name="host-pairing-icons" size="48">
   <svg>
     <defs>
       <g id="cast">
@@ -12,12 +21,13 @@
       </g>
     </defs>
   </svg>
-</core-iconset-svg>
+</iron-iconset-svg>
 
-<polymer-element name="host-pairing-page" noscript>
+<dom-module name="host-pairing-page">
+
+  <link rel="stylesheet" href="oobe_screen_host_pairing_page.css">
+
   <template>
-    <link rel="stylesheet" href="oobe_screen_host_pairing_page.css">
-
     <div id="title">
       <content select=".title"></content>
     </div>
@@ -25,52 +35,59 @@
       <content></content>
     </div>
   </template>
-</polymer-element>
+</dom-module>
 
-<polymer-element name="host-pairing-screen" extends="oobe-screen">
+<dom-module name="host-pairing-screen">
+
+  <link rel="stylesheet" href="oobe_screen_host_pairing.css">
+
   <template>
-    <link rel="stylesheet" href="oobe_screen_host_pairing.css">
-
-    <core-animated-pages transitions="cross-fade-all"
-                         selected="{{C.page}}">
+    <neon-animated-pages attr-for-selected="name" selected="[[C.page]]"
+        entry-animation="fade-in-animation" exit-animation="fade-out-animation">
       <host-pairing-page name="welcome">
-        <div class="title">{{'welcomeTitle' | i18n}}</div>
-        <div>{{'welcomeText' | i18n}}</div>
+        <div class="title" i18n-content="login_HostPairingScreen_welcomeTitle">
+        </div>
+        <div i18n-content="login_HostPairingScreen_welcomeText"></div>
       </host-pairing-page>
       <host-pairing-page name="code-confirmation">
-        <div class="title">{{'confirmationTitle' | i18n}}</div>
+        <div class="title"
+            i18n-content="login_HostPairingScreen_confirmationTitle">
+        </div>
         <div id="code">{{C.code}}</div>
       </host-pairing-page>
       <host-pairing-page name="update">
-        <div class="title">{{'updatingTitle' | i18n}}</div>
-        <!-- Not yet implemented on backend side. -->
-        <!--div>{{['updatingText', C.downloadedMb, C.totalMb] | i18n}}</div-->
+        <div class="title" i18n-content="login_HostPairingScreen_updatingTitle">
+        </div>
       </host-pairing-page>
       <host-pairing-page name="enrollment-introduction">
-        <div class="title">{{'enrollTitle' | i18n}}</div>
+        <div class="title" i18n-content="login_HostPairingScreen_enrollTitle">
+        </div>
       </host-pairing-page>
       <host-pairing-page name="enrollment">
         <div class="title">
           <!-- 'enrollmentTitle' contains <strong> tag. We need to wrap it in
                'html-echo' to prevent HTML escaping. -->
-          <html-echo
-              content="{{['enrollingTitle', C.enrollmentDomain] | i18n}}">
+          <html-echo content="[[getEnrollmentStepTitle_(C.enrollmentDomain)]]">
           </html-echo>
         </div>
       </host-pairing-page>
       <host-pairing-page name="enrollment-error">
-        <div class="title">{{'enrollmentErrorTitle' | i18n}}</div>
-        <div>{{'errorNeedsRestart' | i18n}}</div>
+        <div class="title"
+            i18n-content="login_HostPairingScreen_enrollmentErrorTitle">
+        </div>
+        <div i18n-content="login_HostPairingScreen_errorNeedsRestart"></div>
       </host-pairing-page>
       <host-pairing-page name="pairing-done">
-        <div class="title">{{'doneTitle' | i18n}}</div>
-        <div>{{'doneText' | i18n}}</div>
+        <div class="title" i18n-content="login_HostPairingScreen_doneTitle">
+        </div>
+        <div i18n-content="login_HostPairingScreen_doneText"></div>
       </host-pairing-page>
-    </core-animated-pages>
-    <core-item id="device-indicator"class="font-scalable"
-        icon="host-pairing-icons:cast">
+    </neon-animated-pages>
+    <paper-icon-item id="device-indicator">
+      <iron-icon icon="host-pairing-icons:cast" item-icon></iron-icon>
       <div id="device-label">{{C.deviceName}}</div>
-    </core-item>
+    </paper-icon-item>
     <div id="illustration"></div>
   </template>
-</polymer-element>
+</dom-module>
+

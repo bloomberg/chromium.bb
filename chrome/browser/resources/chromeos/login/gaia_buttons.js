@@ -1,48 +1,73 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-Polymer('gaia-button', {
-  ready: function() {
-    this.typeChanged();
-  },
+Polymer({
+  is: 'gaia-button',
 
-  onKeyDown: function(e) {
-    if (!this.disabled && (e.keyCode == 13 || e.keyCode == 32)) {
-      this.fire('tap');
-      this.fire('click');
-      e.stopPropagation();
+  properties: {
+    disabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true
+    },
+
+    type: {
+      type: String,
+      value: '',
+      reflectToAttribute: true,
+      observer: 'typeChanged_'
     }
   },
 
-  onFocus: function() {
+  focusedChanged_: function() {
     if (this.type == 'link' || this.type == 'dialog')
       return;
-    this.raised = true;
+    this.$.button.raised = this.$.button.focused;
   },
 
-  onBlur: function() {
-    if (this.type == 'link' || this.type == 'dialog')
-      return;
-    this.raised = false;
-  },
-
-  typeChanged: function() {
+  typeChanged_: function() {
     if (this.type == 'link')
-      this.setAttribute('noink', '');
+      this.$.button.setAttribute('noink', '');
     else
-      this.removeAttribute('noink');
-  },
-});
-
-Polymer('gaia-icon-button', {
-  ready: function() {
-    this.classList.add('custom-appearance');
+      this.$.button.removeAttribute('noink');
   },
 
-  onMouseDown: function(e) {
-    /* Prevents button focusing after mouse click. */
-    e.preventDefault();
+  onClick_: function(e) {
+    if (this.disabled)
+      e.stopPropagation();
   }
 });
+
+Polymer({
+  is: 'gaia-icon-button',
+
+  properties: {
+    disabled: {
+      type: Boolean,
+      value: false,
+      observer: 'disabledChanged_',
+      reflectToAttribute: true
+    },
+
+    icon: String,
+
+    ariaLabel: String
+  },
+
+  onClick_: function(e) {
+    if (this.disabled)
+      e.stopPropagation();
+  },
+
+  disabledChanged_: function(disabled) {
+    // TODO(dzhioev): remove after
+    // https://github.com/PolymerElements/paper-icon-button/issues/20 is fixed.
+    if (!disabled) {
+      this.async(function() {
+        this.$.iconButton.tabIndex = '0';
+      });
+    }
+  }
+});
+

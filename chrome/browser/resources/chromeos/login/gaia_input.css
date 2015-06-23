@@ -3,22 +3,24 @@
  * found in the LICENSE file.
  */
 
-paper-input-decorator /deep/ .unfocused-underline {
-  background-color: rgb(212, 212, 212);
+:host {
+  display: block;
 }
 
-paper-input-decorator /deep/ .focused-underline {
-  background-color: rgb(66, 133, 244);
+paper-input-container {
+  --paper-input-container-color: rgb(212, 212, 212);
+  --paper-input-container-focus-color: var(--google-blue-500);
+  --paper-input-container-input {
+    font-size: 15px;
+  };
+  --paper-input-container-input-color: rgba(0, 0, 0, 0.87);
+  --paper-input-container-label: {
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 15px;
+  };
 }
 
-paper-input-decorator /deep/ ::-webkit-input-placeholder,
-paper-input-decorator /deep/ .label-text {
-  color: rgba(0, 0, 0, 0.54) !important;
-}
-
-paper-input-decorator {
-  color: rgba(0, 0, 0, 0.87);
-  font-size: 15px;
+paper-input-container {
   padding: 0;
 }
 

@@ -2,19 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('host-pairing-screen', (function() {
+Polymer({
+  is: 'host-pairing-page',
+
+  behaviors: [Polymer.NeonAnimatableBehavior]
+});
+
+Polymer((function() {
   'use strict';
 
   /** @const */ var CALLBACK_CONTEXT_READY = 'contextReady';
 
   return {
+    is: 'host-pairing-screen',
+
+    behaviors: [login.OobeScreenBehavior],
+
     onBeforeShow: function() {
       Oobe.getInstance().headerHidden = true;
     },
 
     /** @override */
     initialize: function() {
+      ['code',
+       'deviceName',
+       'enrollmentDomain',
+       'page'].forEach(this.registerBoundContextField, this);
       this.send(CALLBACK_CONTEXT_READY);
+    },
+
+    getEnrollmentStepTitle_: function(enrollmentDomain) {
+      return this.i18n(['enrollingTitle', enrollmentDomain]);
     }
   };
 })());

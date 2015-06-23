@@ -1,9 +1,16 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/polymer/layout.html">
-<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
-<link rel="import" href="chrome://resources/polymer/core-animated-pages/transitions/slide-from-right.html">
-<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/paper-dialog/paper-action-dialog.html">
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-from-left-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-left-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
   Offline UI for the New Gaia flow.
@@ -33,62 +40,71 @@
                  screen to password input and shows error that previously
                  entered password is incorrect.
 -->
-<polymer-element name="offline-gaia" vertical layout
-    attributes="enterpriseInfo emailDomain">
+<dom-module name="offline-gaia">
+  <link rel="stylesheet" href="offline_gaia.css">
+
   <template>
-    <link rel="stylesheet" href="offline_gaia.css">
-    <core-animated-pages id="animatedPages" transitions="slide-from-right"
-        valueattr="id"
-        on-core-animated-pages-transition-end="{{onTransitionEnd}}" flex>
-      <section flex id="emailSection">
-        <gaia-card>
-          <div class="header" flex vertical layout end-justified start>
+    <neon-animated-pages id="animatedPages" class="fit" attr-for-selected="id"
+        entry-animation="slide-from-right-animation"
+        exit-animation="slide-to-left-animation"
+        on-neon-animation-finish="onAnimationFinish_" selected="emailSection">
+
+      <neon-animatable id="emailSection" class="fit">
+        <gaia-card class="fit">
+          <div class="header flex vertical layout end-justified start">
             <h1 class="welcome-message" i18n-content="offlineLoginWelcome"></h1>
-            <p class="enterprise-info"  hidden?="{{!enterpriseInfo}}">
-              {{enterpriseInfo}}
+            <p class="enterprise-info"  hidden$="[[!enterpriseInfo]]">
+              <span>[[enterpriseInfo]]</span>
             </p>
           </div>
-          <div class="footer" flex vertical layout justified>
-            <gaia-input-form i18n-values="buttonText:offlineLoginNextBtn"
-                on-submit="{{onEmailSubmitted}}">
+          <div class="footer flex vertical layout justified">
+            <gaia-input-form on-submit="onEmailSubmitted_"
+                disabled="[[disabled]]"
+                i18n-values="button-text:offlineLoginNextBtn">
               <gaia-input id="emailInput" type="email" required
-                  domain="{{emailDomain}}"
+                  domain="[[emailDomain]]"
                   i18n-values="error:offlineLoginInvalidEmail;
                                label:offlineLoginEmail">
               </gaia-input>
             </gaia-input-form>
-            <img self-center src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
-                alt="">
+            <img src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
+                class="self-center" alt="">
           </div>
         </gaia-card>
-      </section>
-      <section flex id="passwordSection">
-        <gaia-card>
-          <gaia-header class="header" id="passwordHeader">
+      </neon-animatable>
+
+      <neon-animatable id="passwordSection" class="fit">
+        <gaia-card id="passwordCard" class="fit">
+          <gaia-header class="header flex" id="passwordHeader">
           </gaia-header>
-          <gaia-input-form class="footer"
-              i18n-values="buttonText:offlineLoginNextBtn"
-              on-submit="{{onPasswordSubmitted}}">
+          <gaia-input-form class="footer" disabled="[[disabled]]"
+              on-submit="onPasswordSubmitted_"
+              i18n-values="button-text:offlineLoginNextBtn">
             <gaia-input id="passwordInput" type="password" required
                 i18n-values="error:offlineLoginInvalidPassword;
                              label:offlineLoginPassword">
             </gaia-input>
-            <gaia-button type="link" on-tap="{{onForgotPasswordClicked}}"
+            <gaia-button type="link" on-tap="onForgotPasswordClicked_"
                 i18n-content="offlineLoginForgotPasswordBtn">
             </gaia-button>
-            <paper-action-dialog id="forgotPasswordDlg" autoCloseDisabled
-                backdrop on-keydown="{{onKeyDownOnDialog}}">
-              <p i18n-content="offlineLoginForgotPasswordDlg"></p>
-              <gaia-button type="dialog" affirmative autofocus
-                  i18n-content="offlineLoginCloseBtn">
-              </gaia-button>
-            </paper-action-dialog>
           </gaia-input-form>
         </gaia-card>
-      </section>
-    </core-animated-pages>
-    <button id="backButton" is="gaia-icon-button" icon="arrow-back"
-        i18n-values="aria-label:backButton" on-click="{{onBack}}">
-    </button>
+      </neon-animatable>
+    </neon-animated-pages>
+
+    <gaia-icon-button id="backButton" icon="arrow-back" disabled="[[disabled]]"
+        on-tap="onBack_" hidden>
+    </gaia-icon-button>
+
+    <paper-dialog id="forgotPasswordDlg" no-cancel-on-outside-click
+        on-iron-overlay-closed="onDialogOverlayClosed_">
+      <p i18n-content="offlineLoginForgotPasswordDlg"></p>
+      <div class="buttons">
+        <gaia-button type="dialog" dialog-confirm autofocus
+            i18n-content="offlineLoginCloseBtn">
+        </gaia-button>
+      </div>
+    </paper-dialog>
   </template>
-</polymer-element>
+</dom-module>
+

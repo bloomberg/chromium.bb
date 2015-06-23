@@ -1,46 +1,62 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-Polymer('offline-gaia', (function() {
+Polymer((function() {
   var DEFAULT_EMAIL_DOMAIN = '@gmail.com';
 
   return {
-    onTransitionEnd: function() {
+    is: 'offline-gaia',
+
+    properties: {
+      disabled: {
+        type: Boolean,
+        value: false
+      },
+
+      enterpriseInfo: String,
+
+      emailDomain: String
+    },
+
+    ready: function() {
+      /**
+       * Workaround for
+       * https://github.com/PolymerElements/neon-animation/issues/32
+       * TODO(dzhioev): Remove when fixed in Polymer.
+       */
+      var pages = this.$.animatedPages;
+      delete pages._squelchNextFinishEvent;
+      Object.defineProperty(pages, '_squelchNextFinishEvent',
+          { get: function() { return false; } });
+    },
+
+    onAnimationFinish_: function() {
+      this.$.backButton.hidden = this.isEmailSectionActive_();
       this.focus();
     },
 
     focus: function() {
-      if (this.$.animatedPages.selected == 'emailSection')
+      if (this.isEmailSectionActive_())
         this.$.emailInput.focus();
       else
         this.$.passwordInput.focus();
     },
 
-    onForgotPasswordClicked: function() {
-      this.$.forgotPasswordDlg.toggle();
+    onForgotPasswordClicked_: function() {
+      this.$.forgotPasswordDlg.fitInto = this;
+      this.disabled = true;
+      this.$.forgotPasswordDlg.open();
+      this.$.passwordCard.classList.add('full-disabled');
+      this.$.forgotPasswordDlg.focus();
     },
 
-    onForgotPasswordKeyDown: function(e) {
-      if (e.keyCode == 13 || e.keyCode == 32)
-        return this.onForgotPasswordClicked();
-    },
-
-    onKeyDownOnDialog: function(e) {
-      if (e.keyCode == 27) {
-        // Esc
-        this.$.forgotPasswordDlg.close();
-        e.preventDefault();
-      }
+    onDialogOverlayClosed_: function() {
+      this.disabled = false;
+      this.$.passwordCard.classList.remove('full-disabled');
     },
 
     setEmail: function(email) {
-      // Reorder elements for proper animation for rtl languages.
-      if (document.querySelector('html[dir=rtl]')) {
-        this.$.emailSection.parentNode.insertBefore(this.$.passwordSection,
-                                                    this.$.emailSection);
-      }
       if (email) {
         if (this.emailDomain)
           email = email.replace(this.emailDomain, '');
@@ -52,15 +68,29 @@ Polymer('offline-gaia', (function() {
       }
     },
 
-    onBack: function() {
+    onBack_: function() {
+      this.$.backButton.hidden = true;
       this.switchToEmailCard();
+    },
+
+    isRTL_: function() {
+      return !!document.querySelector('html[dir=rtl]');
+    },
+
+    isEmailSectionActive_: function() {
+      return this.$.animatedPages.selected == 'emailSection';
     },
 
     switchToEmailCard() {
       this.$.passwordInput.value = '';
       this.$.passwordInput.isInvalid = false;
       this.$.emailInput.isInvalid = false;
-      this.$.backButton.hidden = true;
+      if (this.isEmailSectionActive_())
+        return;
+      this.$.animatedPages.entryAnimation =
+          'slide-from-' + (this.isRTL_() ? 'right' : 'left') + '-animation';
+      this.$.animatedPages.exitAnimation =
+          'slide-' + (this.isRTL_() ? 'left' : 'right') + '-animation';
       this.$.animatedPages.selected = 'emailSection';
     },
 
@@ -73,18 +103,23 @@ Polymer('offline-gaia', (function() {
           email = email + DEFAULT_EMAIL_DOMAIN;
       }
       this.$.passwordHeader.email = email;
-      this.$.backButton.hidden = false;
+      if (!this.isEmailSectionActive_())
+        return;
+      this.$.animatedPages.entryAnimation =
+          'slide-from-' + (this.isRTL_() ? 'left' : 'right') + '-animation';
+      this.$.animatedPages.exitAnimation =
+          'slide-' + (this.isRTL_() ? 'right' : 'left') + '-animation';
       this.$.animatedPages.selected = 'passwordSection';
     },
 
-    onEmailSubmitted: function() {
+    onEmailSubmitted_: function() {
       if (this.$.emailInput.checkValidity())
         this.switchToPasswordCard(this.$.emailInput.value);
       else
         this.$.emailInput.focus();
     },
 
-    onPasswordSubmitted: function() {
+    onPasswordSubmitted_: function() {
       if (!this.$.passwordInput.checkValidity())
         return;
       var msg = {

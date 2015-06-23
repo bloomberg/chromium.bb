@@ -879,6 +879,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         return;
       }
 
+      $('offline-gaia').switchToEmailCard();
+
       this.classList.remove('whitelist-error');
       Oobe.showUserPods();
     },

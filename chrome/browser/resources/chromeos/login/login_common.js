@@ -404,7 +404,7 @@ disableTextSelectAndDrag(function(e) {
 (function() {
   'use strict';
 
-  function initializeOobe() {
+  document.addEventListener('DOMContentLoaded', function() {
     // Immediately load async assets.
     // TODO(dconnelly): remove this at some point and only load as needed.
     // See crbug.com/236426
@@ -416,15 +416,5 @@ disableTextSelectAndDrag(function(e) {
     });
 
     cr.ui.Oobe.initialize();
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    if (!window['WAIT_FOR_POLYMER']) {
-      initializeOobe();
-      return;
-    }
-    window.addEventListener('polymer-ready', function() {
-      initializeOobe();
-    });
   });
 })();

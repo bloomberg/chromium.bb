@@ -11,7 +11,7 @@
         marginheight="0"
         frameborder="0"
         scrolling="no"></iframe>
-      <offline-gaia id="offline-gaia" hidden></offline-gaia>
+      <offline-gaia id="offline-gaia" class="fit" hidden></offline-gaia>
     </div>
     <div id="gaia-signin-divider" class="signin-divider" hidden></div>
     <div id="signin-right" hidden>
@@ -35,8 +35,8 @@
     <throbber-notice i18n-values="text:gaiaLoadingNewGaia"></throbber-notice>
   </div>
   <notification-card id="gaia-whitelist-error" type="fail"
-      i18n-values="buttonLabel:tryAgainButton;
-                   linkLabel:learnMoreButton">
+      i18n-values="button-label:tryAgainButton;
+                   link-label:learnMoreButton">
   </notification-card>
   <div id="enterprise-info-container" hidden>
     <include src="enterprise_info.html">
@@ -44,8 +44,10 @@
   <div id="saml-notice-container" hidden>
     <span id="saml-notice-message"></span>
   </div>
-  <button id="back-button-item" is="gaia-icon-button" icon="arrow-back" hidden
-      i18n-values="aria-label:backButton" tabindex="0"></button>
-  <button id="close-button-item" is="gaia-icon-button" icon="close" hidden
-      i18n-values="aria-label:closeButton" tabindex="0"></button>
+  <gaia-icon-button id="back-button-item" icon="arrow-back" hidden
+      i18n-values="aria-label:backButton">
+  </gaia-icon-button>
+  <gaia-icon-button id="close-button-item" icon="close" hidden
+      i18n-values="aria-label:closeButton">
+  </gaia-icon-button>
 </div>

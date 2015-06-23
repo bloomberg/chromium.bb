@@ -1,9 +1,31 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-Polymer('gaia-password-changed', {
+Polymer({
+  is: 'gaia-password-changed',
+
+  properties: {
+    email: String,
+
+    disabled: {
+      type: Boolean,
+      value: false
+    }
+  },
+
+  ready: function() {
+    /**
+     * Workaround for
+     * https://github.com/PolymerElements/neon-animation/issues/32
+     * TODO(dzhioev): Remove when fixed in Polymer.
+     */
+    var pages = this.$.animatedPages;
+    delete pages._squelchNextFinishEvent;
+    Object.defineProperty(pages, '_squelchNextFinishEvent',
+        { get: function() { return false; } });
+  },
+
   invalidate: function() {
     this.$.oldPasswordInput.isInvalid = true;
   },
@@ -17,39 +39,31 @@ Polymer('gaia-password-changed', {
     this.$.oldPasswordCard.classList.remove('disabled');
   },
 
-  ready: function() {
-    this.$.oldPasswordInputForm.addEventListener('submit', function() {
-      var inputPassword = this.$.oldPasswordInput.value;
-      if (!inputPassword)
-        this.invalidate();
-      else {
-        this.$.oldPasswordCard.classList.add('disabled');
-        this.disabled = true;
-        this.fire('passwordEnter', {password: inputPassword});
-      }
-    }.bind(this));
-  },
 
   focus: function() {
     if (this.$.animatedPages.selected == 0)
       this.$.oldPasswordInput.focus();
   },
 
-  set disabled(value) {
-    this.$.oldPasswordInputForm.disabled = value;
+  onPasswordSubmitted_: function() {
+    if (!this.$.oldPasswordInput.checkValidity())
+      return;
+    this.$.oldPasswordCard.classList.add('disabled');
+    this.disabled = true;
+    this.fire('passwordEnter', {password: this.$.oldPasswordInput.value});
   },
 
-  onForgotPasswordClicked: function() {
+  onForgotPasswordClicked_: function() {
     this.clearPassword();
     this.$.animatedPages.selected += 1;
   },
 
-  onTryAgainClicked: function() {
+  onTryAgainClicked_: function() {
     this.$.oldPasswordInput.isInvalid = false;
     this.$.animatedPages.selected -= 1;
   },
 
-  onTransitionEnd: function() {
+  onAnimationFinish_: function() {
     this.focus();
   },
 
@@ -57,15 +71,14 @@ Polymer('gaia-password-changed', {
     this.$.oldPasswordInput.value = '';
   },
 
-  onProceedClicked: function() {
+  onProceedClicked_: function() {
     this.disabled = true;
     this.$.closeButton.hidden = true;
     this.$.animatedPages.selected = 2;
     this.fire('proceedAnyway');
   },
 
-  onClose: function() {
-    this.disabled = true;
+  onClose_: function() {
     this.fire('cancel');
-  },
+  }
 });

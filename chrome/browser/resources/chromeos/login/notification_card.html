@@ -2,23 +2,22 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
   A simple notification card with a button, link (optional) and icon (optional).
   Example:
-    <notification-card buttonLabel="OK" linkLabel="What?" heading="Hello!"
-        type="success">
+    <notification-card button-label="OK" link-label="What?" type="success">
       Great success!
     </notification-card>
 
   Atributes:
-   'buttonLabel' - label displayed on the button. If empty or not set, the
+   'button-label' - label displayed on the button. If empty or not set, the
                    button is hidden.
-   'linkLabel' - text of the link. If empty or not set, the link is hidden.
-   'heading' - heading. Can be omitted.
+   'link-label' - text of the link. If empty or not set, the link is hidden.
    'type' - icon type. Can be either 'success' or 'fail'. If not set, no icon
             is displayed.
 
@@ -27,36 +26,31 @@
     'linkclick' - fired on link click.
 
 -->
-<polymer-element name="notification-card"
-    attributes="buttonLabel linkLabel heading type">
-  <template>
-    <link rel="stylesheet" href="notification_card.css">
+<dom-module name="notification-card">
+  <link rel="stylesheet" href="notification_card.css">
 
-    <div id="container" vertical layout center fit>
-      <div flex vertical layout center center-justified>
-        <div id="icon-container" vertical layout center hidden?="{{!type}}">
-          <template if="{{type == 'fail'}}">
-            <core-icon icon="warning"></core-icon>
-          </template>
-          <template if="{{type == 'success'}}">
-            <core-icon icon="done"></core-icon>
-          </template>
-        </div>
-        <div id="heading" hidden?="{{!heading}}">
-          {{heading}}
-        </div>
+  <template>
+    <div id="container" class="vertical layout center fit">
+      <div class="flex vertical layout center center-justified">
+        <template is="dom-if" if="[[type]]">
+          <div id="icon-container" class="vertical layout center">
+            <iron-icon icon$="[[iconNameByType_(type)]]">
+            </iron-icon>
+          </div>
+        </template>
         <div id="text-container">
           <content></content>
         </div>
       </div>
-      <div self-stretch horizontal reverse layout justified center>
-        <paper-button on-tap="{{buttonClicked}}" hidden?="{{!buttonLabel}}">
-          {{buttonLabel}}
-        </paper-button>
-        <a href="#" on-click="{{linkClicked}}" hidden?="{{!linkLabel}}">
-          {{linkLabel}}
+      <div class="self-stretch horizontal-reverse layout justified center">
+        <gaia-button on-tap="buttonClicked_" hidden$="[[!buttonLabel]]">
+          <span>[[buttonLabel]]</span>
+        </gaia-button>
+        <a href="#" on-click="linkClicked_" hidden$="{{!linkLabel}}">
+          <span>[[linkLabel]]</span>
         </a>
       </div>
     </div>
   </template>
-</polymer-element>
+</dom-module>
+

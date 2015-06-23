@@ -16,11 +16,6 @@
   width: 720px;
 }
 
-.gaia-frame {
-  height: 300px;
-  width: 339px;
-}
-
 controller-pairing-page[name='device-select']::shadow #top,
 controller-pairing-page[name='establishing-connection']::shadow #top {
   height: 200px;
@@ -37,9 +32,12 @@ controller-pairing-page[name='authentication']::shadow #top {
   height: 100px;
 }
 
-indeterminate-progress {
+paper-progress {
+  --paper-progress-active-color: var(--google-green-500);
+  --paper-progress-container-color: var(--google-green-100);
   margin-bottom: 28px;
   margin-top: 28px;
+  width: 100%;
 }
 
 #code {

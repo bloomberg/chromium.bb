@@ -7,7 +7,7 @@
 
 :host {
   -webkit-user-select: none;
-  background-color: rgb(242, 166, 0);
+  background-color: var(--google-yellow-500);
   color: white;
   display: block;
   font-family: 'Roboto';
@@ -15,7 +15,7 @@
   height: 100%;
 }
 
-core-animated-pages {
+neon-animated-pages {
   left: 114px;
   position: absolute;
   right: 0;
@@ -40,12 +40,17 @@ core-animated-pages {
 }
 
 #device-label {
-  margin-left: -0.3em;
+  margin-left: 0.4em;
 }
 
 #code {
   font-family: 'Roboto';
   font-size: 120px;
   font-weight: lighter;
+}
+
+iron-icon {
+  height: 48px;
+  width: 48px;
 }
 

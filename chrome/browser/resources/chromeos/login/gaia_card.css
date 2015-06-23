@@ -4,19 +4,25 @@
  */
 
 :host {
-  height: 528px;
-  width: 448px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .gaia-header {
-  background-color: rgb(66, 133, 244);
-  color: rgb(255, 255, 255);
-  height: 164px;
+  background-color: var(--google-blue-500);
+  color: white;
+  height: 198px;
 }
 
-.gaia-footer,
-#progress-bar::shadow #progressContainer {
-  background-color: rgba(0, 0, 0, 0.02);
+:host(:not(.disabled)) .gaia-header {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.17);
+  /* z-index is needed to make shadow visible. */
+  z-index: 1;
+}
+
+.gaia-footer {
+  background-color: rgb(238, 238, 238);
 }
 
 .gaia-footer {
@@ -24,33 +30,32 @@
 }
 
 .header-container {
-  padding: 34px 40px 16px;
+  padding: 50px 40px 18px;
 }
 
 .footer-container {
   padding: 24px 40px 34px;
 }
 
-::content /deep/ div.gaia-body-text {
+::content div.gaia-body-text {
   margin-bottom: 24px;
 }
 
-::content /deep/ div.gaia-body-text p {
+::content div.gaia-body-text p {
   color: rgba(0, 0, 0, 0.87);
   font-size: 14px;
   line-height: 20px;
   margin: 0;
 }
 
-::content /deep/ p.email,
-::content /deep/ p.enterprise-info {
-  color: rgb(255, 255, 255);
+::content p.enterprise-info {
+  color: white;
   font-size: 15px;
   margin: 8px 0 0 0;
 }
 
-::content /deep/ h1.welcome-message {
-  color: rgb(255, 255, 255);
+::content h1.welcome-message {
+  color: white;
   font-size: 20px;
   font-weight: normal;
   margin-bottom: 0;
@@ -67,13 +72,14 @@
   z-index: 11;
 }
 
-#progress-bar {
+paper-progress#progress-bar {
+  --paper-progress-active-color: var(--google-yellow-500);
+  --paper-progress-container-color: var(--google-yellow-100);
+  bottom: 0;
   display: none;
+  height: 3px;
+  position: absolute;
   width: 100%;
-}
-
-#progress-bar::shadow #activeProgress {
-  background-color: rgb(255, 184, 9);
 }
 
 :host(.full-disabled) #full-overlay,

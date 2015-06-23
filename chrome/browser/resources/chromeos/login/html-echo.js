@@ -2,8 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('html-echo', {
-  contentChanged: function() {
-    this.innerHTML = this.content;
+Polymer({
+  is: 'html-echo',
+
+  properties: {
+    content: {
+      type: String,
+      observer: 'contentChanged_'
+    }
+  },
+
+  contentChanged_: function(content) {
+    this.innerHTML = content;
   }
 });

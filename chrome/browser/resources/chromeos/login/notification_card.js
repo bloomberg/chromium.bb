@@ -2,15 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('notification-card', (function() {
-  return {
-    buttonClicked: function() {
-      this.fire('buttonclick');
+Polymer({
+  is: 'notification-card',
+
+  properties: {
+    buttonLabel: {
+      type: String,
+      value: ''
     },
 
-    linkClicked: function(e) {
-      this.fire('linkclick');
-      e.preventDefault();
+    linkLabel: {
+      type: String,
+      value: ''
+    },
+
+    type: {
+      type: String,
+      value: ''
     }
-  };
-})());
+  },
+
+  iconNameByType_: function(type) {
+    if (type == 'fail')
+      return 'warning';
+    if (type == 'success')
+      return 'done';
+    console.error('Unknown type "' + type + '".');
+    return '';
+  },
+
+  buttonClicked_: function() {
+    this.fire('buttonclick');
+  },
+
+  linkClicked_: function(e) {
+    this.fire('linkclick');
+    e.preventDefault();
+  }
+});

@@ -43,11 +43,20 @@ OobeWebUITest.prototype = {
   setUp: function() {
     testing.Test.prototype.setUp.call(this);
 
-    // Polymer issue https://github.com/Polymer/polymer/issues/1081
+    /* False positives. http://crbug.com/501489 */
     this.accessibilityAuditConfig.ignoreSelectors('badAriaAttributeValue',
-                                                  'PAPER-BUTTON');
-    this.accessibilityAuditConfig.ignoreSelectors('badAriaAttributeValue',
-                                                  '#progressContainer');
+                                                  '#cancelConfirmDlg');
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'nonExistentAriaLabelledbyElement',
+        '#cancelConfirmDlg');
+
+    /**
+     * False positive AX_FOCUS_01.
+     * https://github.com/GoogleChrome/accessibility-developer-tools/issues/171
+     */
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'focusableElementNotVisibleAndNotAriaHidden',
+        '#iconButton');
   },
 };
 

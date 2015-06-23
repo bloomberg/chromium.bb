@@ -1,23 +1,49 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-Polymer('gaia-input', (function() {
+Polymer((function() {
   var INPUT_EMAIL_PATTERN = "^[a-zA-Z0-9.!#$%&'*+=?^_`{|}~-]+(@[^\\s@]+)?$";
 
   return {
-    required: false,
+    is: 'gaia-input',
 
-    ready: function() {
-      this.typeChanged();
+    properties: {
+      label: String,
+      value: {
+        notify: true,
+        observer: 'updateDomainVisibility_',
+        type: String
+      },
+
+      type: {
+        observer: 'typeChanged_',
+        type: String
+      },
+
+      domain: {
+        observer: 'updateDomainVisibility_',
+        type: String
+      },
+
+      disabled: Boolean,
+
+      required: Boolean,
+
+      error: String,
+
+      isInvalid: Boolean
+    },
+
+    attached: function() {
+      this.typeChanged_();
     },
 
     onKeyDown: function(e) {
       this.isInvalid = false;
     },
 
-    setDomainVisibility: function() {
+    updateDomainVisibility_: function() {
       this.$.domainLabel.hidden = (this.type !== 'email') || !this.domain ||
           (this.value && this.value.indexOf('@') !== -1);
     },
@@ -31,12 +57,12 @@ Polymer('gaia-input', (function() {
     },
 
     checkValidity: function() {
-      var isValid = this.$.input.validity.valid;
-      this.isInvalid = !isValid;
-      return isValid;
+      var valid = this.$.input.validate();
+      this.isInvalid = !valid;
+      return valid;
     },
 
-    typeChanged: function() {
+    typeChanged_: function() {
       if (this.type == 'email') {
         this.$.input.pattern = INPUT_EMAIL_PATTERN;
         this.$.input.type = 'text';
@@ -44,16 +70,8 @@ Polymer('gaia-input', (function() {
         this.$.input.removeAttribute('pattern');
         this.$.input.type = this.type;
       }
-      this.setDomainVisibility();
-    },
-
-    valueChanged: function() {
-      this.setDomainVisibility();
-    },
-
-    domainChanged: function() {
-      this.setDomainVisibility();
-    },
+      this.updateDomainVisibility_();
+    }
   };
 })());
 

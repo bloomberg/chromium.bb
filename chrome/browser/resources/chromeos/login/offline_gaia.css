@@ -4,10 +4,11 @@
  */
 
 :host {
+  display: flex;
+  flex-direction: column;
   font-size: 18px;
-  height: 100%;
   overflow: hidden;
-  width: 100%;
+  position: relative;
 }
 
 #backButton {
@@ -23,3 +24,18 @@
   right: 10px;
   transform: scaleX(-1);
 }
+
+paper-dialog {
+  --paper-dialog-title: {
+    font-size: 15px;
+  };
+
+  /**
+   * TODO(dzhioev): remove when
+   * https://github.com/PolymerElements/iron-fit-behavior/issues/12 is fixed.
+   */
+  position: absolute !important;
+
+  width: 384px;
+}
+

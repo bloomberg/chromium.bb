@@ -4,7 +4,7 @@
  */
 
 :host {
-  background-color: rgb(15, 157, 88);
+  background-color: var(--google-green-500);
   color: white;
 }
 
@@ -32,7 +32,7 @@ content::content strong {
 /* Separator. */
 
 #separator {
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: var(--google-green-100);
   bottom: 0;
   display: block;
   height: 1px;
@@ -45,11 +45,14 @@ content::content strong {
   display: none;
 }
 
-#separator indeterminate-progress {
+#separator paper-progress {
+  --paper-progress-active-color: white;
+  --paper-progress-container-color: var(--google-green-100);
   display: none;
+  width: 100%;
 }
 
-:host(.progress) #separator indeterminate-progress {
+:host(.progress) #separator paper-progress {
   display: block;
 }
 
@@ -95,16 +98,7 @@ content::content strong {
   margin-right: 1em;
 }
 
-:host(.split) #controls content[select='paper-button']::content
-    :last-child {
-  color: rgb(15, 157, 88);
-}
-
-content::content paper-button[disabled] {
-  /* In Polymer 0.3 disabled button 'background-color' defined with '!important'
-   * flag, so we need '!important' here to override it.
-   * TODO(dzhioev): remove '!important' when Polymer is updated.
-   */
-  background: transparent !important;
+:host(.split) #controls content[select='paper-button']::content :last-child {
+  color: var(--google-green-500);
 }
 

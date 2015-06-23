@@ -1,13 +1,29 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('oobe-screen', (function() {
+cr.define('login', function() {
   /** @const */ var CALLBACK_USER_ACTED = 'userActed';
 
-  function doNothing() {};
+  var OobeScreenBehavior = {
+    properties: {
+      /**
+       * Internal storage of |this.context|. Short name has been choosen for
+       * reason: such name doesn't take much space in HTML data bindings, which
+       * are used very often.
+       * C binded to the native part of the context, that means that all the
+       * changes in the native part appear in C automatically. Reverse is not
+       * true, you should use:
+       *    this.context.set(...);
+       *    this.context.commitContextChanges();
+       * to send updates to the native part.
+       * TODO(dzhioev): make binding two-way.
+       */
+      C: Object,
 
-  return {
+      name: String
+    },
+
     /**
      * The login.Screen which is hosting |this|.
      */
@@ -25,23 +41,9 @@ Polymer('oobe-screen', (function() {
     context: null,
 
     /**
-     * Internal storage of |this.context|. Short name has been choosen for
-     * reason: such name doesn't take much space in HTML data bindings, which
-     * are used very often.
-     * C binded to the native part of the context, that means that all the
-     * changes in the native part appear in C automatically. Reverse is not
-     * true, you should use:
-     *    this.context.set(...);
-     *    this.context.commitContextChanges();
-     * to send updates to the native part.
-     * TODO(dzhioev): make binding two-way.
-     */
-    C: null,
-
-    /**
      * Called when the screen is being registered.
      */
-    initialize: doNothing,
+    initialize: function() {},
 
     ready: function() {
       if (this.decorate_) {
@@ -51,8 +53,9 @@ Polymer('oobe-screen', (function() {
       }
     },
 
-    userActed: function(_, _, source) {
-      this.send(CALLBACK_USER_ACTED, source.getAttribute('action'));
+    userActed: function(e) {
+      this.send(CALLBACK_USER_ACTED,
+                e.detail.sourceEvent.target.getAttribute('action'));
     },
 
     i18n: function(args) {
@@ -76,6 +79,18 @@ Polymer('oobe-screen', (function() {
       } else {
         this.decorate_ = true;
       }
+    },
+
+    /**
+     * Should be called for every context field which is used in Polymer
+     * declarative data bindings (e.g. {{C.fieldName}}).
+     */
+    registerBoundContextField: function(fieldName) {
+      this.addContextObserver(fieldName, this.onContextFieldChanged_);
+    },
+
+    onContextFieldChanged_: function(_, _, fieldName) {
+      this.notifyPath('C.' + fieldName, this.C[fieldName]);
     },
 
     /**
@@ -211,5 +226,9 @@ Polymer('oobe-screen', (function() {
       return '';
     }
   };
-})());
+
+  return {
+    OobeScreenBehavior: OobeScreenBehavior
+  };
+});
 

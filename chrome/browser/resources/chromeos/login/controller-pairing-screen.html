@@ -1,11 +1,22 @@
-<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
-<link rel="import" href="chrome://resources/polymer/core-iconset-svg/core-iconset-svg.html">
-<link rel="import" href="chrome://resources/polymer/core-item/core-item.html">
-<link rel="import" href="chrome://resources/polymer/core-selector/core-selector.html">
-<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/hero-animation.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-shared-element-animatable-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
 List of devices.
@@ -16,33 +27,31 @@ Published properties:
   * connecting - a binary attribute. If set, the list does not respond to the
     user actions and a spinner is shown near selected device.
 -->
-<polymer-element name="pairing-device-list"
-    attributes="devices selected connecting">
+<dom-module name="pairing-device-list">
+  <link rel="stylesheet" href="pairing_device_list.css">
+
+  <iron-iconset-svg name="pairing-device-list-icons">
+    <svg><defs><g id="circle">
+      <circle cx="12" cy="12" r="12"></circle>
+    </g></defs></svg>
+  </iron-iconset-svg>
+
   <template>
-    <link rel="stylesheet" href="pairing_device_list.css">
-
-    <core-iconset-svg id="icon" iconSize="24">
-      <svg><defs><g id="circle">
-        <circle cx="12" cy="12" r="12"></circle>
-      </g></defs></svg>
-    </core-iconset-svg>
-
-    <core-selector selected="{{selected}}">
-      <template repeat="{{device in devices}}">
-        <!-- TODO(dzhioev): replace 'core-item' with 'paper-item'.
-             http://crbug.com/423368 -->
-        <core-item name="{{device}}" relative>
-          <core-icon icon="icon:circle"
-              style="color: {{device | colorByName}}"></core-icon>
-          <div>{{device}}</div>
-          <div flex horizontal end-justified layout center>
+    <iron-selector selected="{{selected}}" attr-for-selected="name">
+      <template is="dom-repeat" items="[[devices]]">
+        <paper-icon-item name$="[[item]]" class="relative">
+          <iron-icon icon="pairing-device-list-icons:circle" item-icon
+              style$="[[getStyleForDeviceIcon_(item)]]">
+          </iron-icon>
+          <div><span>[[item]]</span></div>
+          <div class="flex horizontal end-justified layout center">
             <div class="throbber"></div>
           </div>
-        </core-item>
+        </paper-icon-item>
       </template>
-    </core-selector>
+    </iron-selector>
   </template>
-</polymer-element>
+</dom-module>
 
 <!--
 Single page of the controller's out-of-box flow.
@@ -66,25 +75,25 @@ controller-pairing-page::shadow #top {
   height: 100px;
 }
 -->
-<polymer-element name="controller-pairing-page" noscript>
-  <template>
-    <link rel="stylesheet" href="controller_pairing_page.css">
+<dom-module name="controller-pairing-page">
+  <link rel="stylesheet" href="controller_pairing_page.css">
 
-    <div vertical layout fit>
-      <div id="top" hero hero-id="top" relative vertical end-justified layout>
-        <content select=".title"></content>
+  <template>
+    <div class="vertical layout fit">
+      <div id="top" class="relative vertical end-justified layout">
+        <div id="title">
+          <content select=".title"></content>
+        </div>
         <div id="separator">
-          <indeterminate-progress fill runnerColor="white"
-              backgroundColor="#87ceac" runnerPortion="40">
-          </indeterminate-progress>
+          <paper-progress indeterminate></paper-progress>
         </div>
       </div>
-      <div id="bottom" hero hero-id="bottom" flex vertical layout>
-        <div flex vertical layout>
+      <div id="bottom" class="flex vertical layout">
+        <div class="flex vertical layout">
           <content select=":not(paper-button)"></content>
         </div>
-        <div id="controls" horizontal layout center>
-          <div flex>
+        <div id="controls" class="horizontal layout center">
+          <div class="flex">
             <content select="paper-button.help-button"></content>
           </div>
           <content select="paper-button"></content>
@@ -92,129 +101,162 @@ controller-pairing-page::shadow #top {
       </div>
     </div>
   </template>
-</polymer-element>
+</dom-module>
 
-<polymer-element name="controller-pairing-screen" extends="oobe-screen">
+<dom-module name="controller-pairing-screen">
+  <link rel="stylesheet" href="oobe_screen_controller_pairing.css">
+
   <template>
-    <link rel="stylesheet" href="oobe_screen_controller_pairing.css">
+    <paper-material class="fit">
+      <neon-animated-pages id="pages" selected="{{C.page}}"
+          attr-for-selected="name" class="fit">
+        <controller-pairing-page name="devices-discovery" class="big-font">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_welcomeTitle">
+          </div>
+          <div i18n-content="login_ControllerPairingScreen_searching"></div>
+          <paper-button class="help-button" on-tap="helpButtonClicked_"
+              i18n-content="login_ControllerPairingScreen_helpBtn">
+          </paper-button>
+        </controller-pairing-page>
 
-    <template id="help-button">
-      <paper-button class="help-button" on-tap="{{helpButtonClicked}}">
-        {{'helpBtn' | i18n}}
-      </paper-button>
-    </template>
+        <controller-pairing-page name="device-select" class="split">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_selectTitle">
+          </div>
+          <pairing-device-list devices="[[C.devices]]"
+              selected="{{selectedDevice}}">
+          </pairing-device-list>
+          <paper-button class="help-button" on-tap="helpButtonClicked_"
+              i18n-content="login_ControllerPairingScreen_helpBtn">
+          </paper-button>
+          <paper-button on-tap="userActed" action="chooseDevice"
+              disabled$="[[C.controlsDisabled]]"
+              i18n-content="login_ControllerPairingScreen_connectBtn">
+          </paper-button>
+        </controller-pairing-page>
 
-    <template id="progress">
-      <indeterminate-progress runnerColor="#0f9d58" backgroundColor="#87ceac"
-          runnerPortion="23"></indeterminate-progress>
-    </template>
+        <controller-pairing-page name="device-not-found">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_troubleConnectingTitle">
+          </div>
+          <div i18n-content="login_ControllerPairingScreen_connectingAdvice">
+          </div>
+          <paper-button on-tap="userActed" action="repeatDiscovery"
+              i18n-content="login_ControllerPairingScreen_adviceGotItBtn">
+          </paper-button>
+        </controller-pairing-page>
 
-    <paper-shadow z="1" fit>
-    <core-animated-pages transitions="cross-fade-all hero-transition"
-        selected="{{C.page}}" fit>
-      <controller-pairing-page name="devices-discovery" class="big-font">
-        <div class="title">{{'welcomeTitle' | i18n}}</div>
-        <div>{{'searching' | i18n}}</div>
-        <template bind ref="help-button"></template>
-      </controller-pairing-page>
+        <controller-pairing-page name="establishing-connection" class="split">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_selectTitle">
+          </div>
+          <pairing-device-list devices="[[C.devices]]"
+              selected="{{selectedDevice}}" connecting>
+          </pairing-device-list>
+          <paper-button class="help-button" on-tap="helpButtonClicked_"
+              i18n-content="login_ControllerPairingScreen_helpBtn">
+          </paper-button>
+          <paper-button disabled
+              i18n-content="login_ControllerPairingScreen_connecting">
+          </paper-button>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="device-select" class="split">
-        <div class="title">{{'selectTitle' | i18n}}</div>
-        <pairing-device-list devices="{{C.devices}}"
-            selected="{{selectedDevice}}"></pairing-device-list>
-        <template bind ref="help-button"></template>
-        <paper-button on-tap="{{userActed}}" action="chooseDevice"
-            disabled?="{{C.controlsDisabled}}">
-         {{'connectBtn' | i18n}}
-        </paper-button>
-      </controller-pairing-page>
+        <controller-pairing-page name="establishing-connection-error">
+          <!-- TODO(dzhioev): Strings TBD. http://crbug.com/423740 -->
+          <div class="title">
+            Unable to connect to <span>[[selectedDevice]]<span>
+          </div>
+          <paper-button on-tap="userActed" action="repeatDiscovery">
+            Repeat discovery
+          </paper-button>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="device-not-found">
-        <div class="title">{{'troubleConnectingTitle' | i18n}}</div>
-        <div>{{'connectingAdvice' | i18n}}</div>
-        <paper-button on-tap="{{userActed}}" action="repeatDiscovery">
-          {{'adviceGotItBtn' | i18n}}
-        </paper-button>
-      </controller-pairing-page>
+        <controller-pairing-page name="code-confirmation" class="split">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_confirmationTitle">
+          </div>
+          <div
+              i18n-content="login_ControllerPairingScreen_confirmationQuestion">
+          </div>
+          <div id="code"><span>[[C.code]]</span></div>
+          <paper-button on-tap="userActed" action="rejectCode"
+              disabled$="[[C.controlsDisabled]"
+              i18n-content="login_ControllerPairingScreen_rejectCodeBtn">
+          </paper-button>
+          <paper-button on-tap="userActed" action="acceptCode"
+              disabled$="[[C.controlsDisabled]]"
+              i18n-content="login_ControllerPairingScreen_acceptCodeBtn">
+          </paper-button>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="establishing-connection" class="split">
-        <div class="title">{{'selectTitle' | i18n}}</div>
-        <pairing-device-list devices="{{C.devices}}"
-            selected="{{selectedDevice}}" connecting></pairing-device-list>
-        <template bind ref="help-button"></template>
-        <paper-button disabled>{{'connecting' | i18n}}</paper-button>
-      </controller-pairing-page>
+        <controller-pairing-page name="host-update" class="split">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_updateTitle">
+          </div>
+          <div i18n-content="login_ControllerPairingScreen_updateText"></div>
+          <paper-progress indeterminate></paper-progress>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="establishing-connection-error">
-        <!-- TODO(dzhioev): Strings TBD. http://crbug.com/423740 -->
-        <div class="title">Unable to connect to {{selectedDevice}}</div>
-        <paper-button on-tap="{{userActed}}" action="repeatDiscovery">
-          Repeat discovery
-        </paper-button>
-      </controller-pairing-page>
+        <controller-pairing-page name="host-connection-lost" class="split">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_connectionLostTitle">
+          </div>
+          <div i18n-content="login_ControllerPairingScreen_connectionLostText">
+          </div>
+          <paper-progress indeterminate></paper-progress>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="code-confirmation" class="split">
-        <div class="title">{{'confirmationTitle' | i18n}}</div>
-        <div>{{'confirmationQuestion' | i18n}}</div>
-        <div id="code">{{C.code}}</div>
-        <paper-button on-tap="{{userActed}}" action="rejectCode"
-            disabled?="{{C.controlsDisabled}}">
-          {{'rejectCodeBtn' | i18n}}
-        </paper-button>
-        <paper-button on-tap="{{userActed}}" action="acceptCode"
-            disabled?="{{C.controlsDisabled}}">
-          {{'acceptCodeBtn' | i18n}}
-        </paper-button>
-      </controller-pairing-page>
+        <controller-pairing-page name="enrollment-introduction" class="split">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_enrollTitle">
+          </div>
+          <p i18n-content="login_ControllerPairingScreen_enrollText1"></p>
+          <p>
+            <strong i18n-content="login_ControllerPairingScreen_enrollText2">
+            </strong>
+          </p>
+          <paper-button on-tap="userActed" action="proceedToAuthentication"
+              disabled$="[[C.controlsDisabled]]"
+              i18n-content="login_ControllerPairingScreen_continueBtn">
+          </paper-button>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="host-update" class="split">
-        <div class="title">{{'updateTitle' | i18n}}</div>
-        <div>{{'updateText' | i18n}}</div>
-        <template bind ref="progress"></template>
-      </controller-pairing-page>
+        <controller-pairing-page name="authentication" class="split">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_enrollTitle">
+          </div>
+          <div>Not implemented.</div>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="host-connection-lost" class="split">
-        <div class="title">{{'connectionLostTitle' | i18n}}</div>
-        <div>{{'connectionLostText' | i18n}}</div>
-        <template bind ref="progress"></template>
-      </controller-pairing-page>
+        <controller-pairing-page name="host-enrollment" class="progress">
+          <!-- This title contains <strong> tag inside. -->
+          <html-echo class="title"
+              content="[[getHostEnrollmentStepTitle_(C.enrollmentDomain)]]">
+          </html-echo>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="enrollment-introduction" class="split">
-        <div class="title">{{'enrollTitle' | i18n}}</div>
-        <p>{{'enrollText1' | i18n}}</p>
-        <p><strong>{{'enrollText2' | i18n}}</strong></p>
-        <paper-button on-click="{{userActed}}" action="proceedToAuthentication"
-            disabled?="{{C.controlsDisabled}}">
-          {{'continueBtn' | i18n}}
-        </paper-button>
-      </controller-pairing-page>
+        <controller-pairing-page name="host-enrollment-error" class="progress">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_enrollmentErrorTitle">
+          </div>
+          <div
+              i18n-content="login_ControllerPairingScreen_enrollmentErrorHostRestarts">
+          </div>
+        </controller-pairing-page>
 
-      <controller-pairing-page name="authentication" class="split">
-        <div class="title">{{'enrollTitle' | i18n}}</div>
-        <div>Not implemented.</div>
-      </controller-pairing-page>
-
-      <controller-pairing-page name="host-enrollment" class="progress">
-        <!-- 'enrollmentTitle' contains <strong> tag. -->
-        <html-echo class="title"
-            content="{{['enrollmentInProgress', C.enrollmentDomain] | i18n}}">
-        </html-echo>
-      </controller-pairing-page>
-
-      <controller-pairing-page name="host-enrollment-error" class="progress">
-        <div class="title">{{'enrollmentErrorTitle' | i18n}}</div>
-        <div>{{'enrollmentErrorHostRestarts' | i18n}}</div>
-      </controller-pairing-page>
-
-      <controller-pairing-page name="pairing-done" class="big-font">
-        <div class="title">{{'successTitle' | i18n}}</div>
-        <div>{{['successText', selectedDevice] | i18n}}</div>
-        <paper-button on-click="{{userActed}}" action="startSession"
-            disabled?="{{C.controlsDisabled}}">
-          {{'continueToHangoutsBtn' | i18n}}
-        </paper-button>
-      </controller-pairing-page>
-    </core-animated-pages>
-    </paper-shadow>
+        <controller-pairing-page name="pairing-done" class="big-font">
+          <div class="title"
+              i18n-content="login_ControllerPairingScreen_successTitle">
+          </div>
+          <div><span>[[getSuccessMessage_(selectedDevice)]]</div>
+          <paper-button on-tap="userActed" action="startSession"
+              disabled$="{{C.controlsDisabled}}"
+              i18n-content="login_ControllerPairingScreen_continueToHangoutsBtn">
+          </paper-button>
+        </controller-pairing-page>
+      </neon-animated-pages>
+    </paper-material>
   </template>
-</polymer-element>
+</dom-module>
+

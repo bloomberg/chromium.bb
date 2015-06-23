@@ -111,14 +111,6 @@
   display: none;
 }
 
-#new-flow-throbber {
-  display: none;
-}
-
-.new-gaia-flow #new-flow-throbber {
-  display: block;
-}
-
 .image-loading.user-image .new-gaia-flow #step-logo {
   display: none;
 }

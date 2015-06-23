@@ -1,7 +1,12 @@
-<link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
-<link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
-<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
   Material design buttons that mimic GAIA's buttons.
@@ -15,27 +20,39 @@
              more like a link (type="link").
     'disabled' - button is disabled when the attribute is set.
 -->
-<polymer-element name="gaia-button" extends="paper-button"
-    attributes="type" on-keydown="{{onKeyDown}}" on-focus="{{onFocus}}"
-    on-blur="{{onBlur}}" tabindex="0">
+<dom-module id="gaia-button">
+  <link rel="stylesheet" href="gaia_button.css">
+
   <template>
-    <link rel="stylesheet" href="gaia_button.css">
-    <shadow></shadow>
+    <div on-click="onClick_" on-tap="onClick_">
+      <paper-button id="button" disabled="[[disabled]]"
+          on-focused-changed="focusedChanged_">
+        <content></content>
+      </paper-button>
+    </div>
   </template>
-</polymer-element>
+</dom-module>
 
 <!--
-  Decorator for a <button>. When applied to a <button>, the button looks like
-  an icon from a material-design icons set. Icon's name should be specified in
-  'icon' attribute.
+  Material desing icon button with a special styling.
 
   Example:
-    <button is="gaia-icon-button" icon="close"></button>
+    <gaia-icon-button icon="close"></gaia-icon>
+
+  Attributes:
+    'icon' - a name of icon from material design set to show on button.
+    'disabled' - button is disabled when the attribute is set.
+    'aria-label' - accessibility label.
 -->
-<polymer-element name="gaia-icon-button" extends="button" attributes="icon"
-    on-mousedown="{{onMouseDown}}">
+<dom-module id="gaia-icon-button">
+  <link rel="stylesheet" href="gaia_icon_button.css">
+
   <template>
-    <link rel="stylesheet" href="gaia_icon_button.css">
-    <core-icon icon="{{icon}}" fit></core-icon>
+    <div on-click="onClick_" on-tap="onClick_">
+      <paper-icon-button id="iconButton" icon="[[icon]]" disabled="[[disabled]]"
+          aria-label="[[ariaLabel]]">
+      </paper-icon-button>
+    </div>
   </template>
-</polymer-element>
+</dom-module>
+

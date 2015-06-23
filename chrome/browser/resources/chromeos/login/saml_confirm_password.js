@@ -1,23 +1,38 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-Polymer('saml-confirm-password', {
-  onClose: function() {
-    this.disabled = true;
-    this.$.cancelConfirmDlg.toggle();
+Polymer({
+  is: 'saml-confirm-password',
+
+  properties: {
+    email: String,
+
+    disabled: {
+      type: Boolean,
+      value: false,
+      observer: 'disabledChanged_'
+    }
   },
 
-  onConfirmCancel: function() {
-    this.fire('cancel');
+  ready: function() {
+    /**
+     * Workaround for
+     * https://github.com/PolymerElements/neon-animation/issues/32
+     * TODO(dzhioev): Remove when fixed in Polymer.
+     */
+    var pages = this.$.animatedPages;
+    delete pages._squelchNextFinishEvent;
+    Object.defineProperty(pages, '_squelchNextFinishEvent',
+        { get: function() { return false; } });
   },
 
   reset: function() {
     this.$.cancelConfirmDlg.close();
     this.disabled = false;
     this.$.closeButton.hidden = false;
-    this.$.animatedPages.selected = 0;
+    if (this.$.animatedPages.selected != 0)
+      this.$.animatedPages.selected = 0;
     this.$.passwordInput.value = '';
   },
 
@@ -30,28 +45,34 @@ Polymer('saml-confirm-password', {
       this.$.passwordInput.focus();
   },
 
-  onPasswordSubmitted: function() {
-    var inputPassword = this.$.passwordInput.value;
-    this.$.passwordInput.value = '';
-    if (!inputPassword) {
-      this.invalidate();
-    } else {
-      this.$.animatedPages.selected += 1;
-      this.$.closeButton.hidden = true;
-      this.fire('passwordEnter', {password: inputPassword});
-    }
+  onClose_: function() {
+    this.disabled = true;
+    this.$.cancelConfirmDlg.fitInto = this;
+    this.$.cancelConfirmDlg.open();
   },
 
-  set disabled(value) {
-    this.$.confirmPasswordCard.classList.toggle('full-disabled', value);
-    this.$.inputForm.disabled = value;
-    this.$.closeButton.disabled = value;
+  onConfirmCancel_: function() {
+    this.fire('cancel');
   },
 
-  ready: function() {
-    this.$.cancelConfirmDlg.addEventListener('core-overlay-close-completed',
-        function() {
-          this.disabled = false;
-        }.bind(this));
+  onPasswordSubmitted_: function() {
+    if (!this.$.passwordInput.checkValidity())
+      return;
+    this.$.animatedPages.selected = 1;
+    this.$.closeButton.hidden = true;
+    this.fire('passwordEnter', {password: this.$.passwordInput.value});
+  },
+
+  onDialogOverlayClosed_: function() {
+    this.disabled = false;
+  },
+
+  disabledChanged_: function(disabled) {
+    this.$.confirmPasswordCard.classList.toggle('full-disabled', disabled);
+  },
+
+  onAnimationFinish_: function() {
+    if (this.$.animatedPages.selected == 1)
+      this.$.passwordInput.value = '';
   }
 });

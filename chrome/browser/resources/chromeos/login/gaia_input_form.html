@@ -1,37 +1,41 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/polymer/layout.html">
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
   A simple input form with a button. Being used for typing email or password.
   User should put one or more <gaia-input>s inside.
 
   Example:
-    <gaia-input-form buttonText="Submit">
+    <gaia-input-form button-text="Submit">
       <gaia-input label="Email" type="email"></gaia-input>
       <gaia-input label="Password" type="password"></gaia-input>
       <gaia-input label="OTP"></gaia-input>
     </gaia-input-form>
 
   Attributes:
-    'buttonText' - text on the button.
+    'button-text' - text on the button.
 
   Events:
     'submit' - fired on button click or "Enter" press inside input field.
 
-  Methods:
-    'focus' - focuses input field.
 -->
-<polymer-element name="gaia-input-form" vertical start-justified layout
-    attributes="buttonText"
-    on-keydown="{{onKeyDown}}">
+<dom-module name="gaia-input-form">
+  <link rel="stylesheet" href="gaia_input_form.css">
+
   <template>
-    <link rel="stylesheet" href="gaia_input_form.css">
-    <content id="inputs" select="gaia-input"></content>
-    <div horizontal justified layout center reverse>
-      <gaia-button id="button" on-tap="{{onButtonClicked}}" self-end>
-        {{buttonText}}
-      </gaia-button>
-      <content> </content>
+    <div on-keydown="onKeyDown_">
+      <content id="inputs" select="gaia-input"></content>
+      <div class="horizontal-reverse justified layout center">
+        <gaia-button id="button" on-tap="onButtonClicked_" class="self-end">
+          <span>[[buttonText]]</span>
+        </gaia-button>
+        <content> </content>
+      </div>
     </div>
   </template>
-</polymer-element>
+</dom-module>
+

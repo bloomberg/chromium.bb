@@ -171,7 +171,7 @@ class LoginTest : public chromeos::LoginManagerTest {
     JSExpect("document.querySelector('#signin-frame').hidden");
     const std::string js =
         animated_pages +
-        ".addEventListener('core-animated-pages-transition-end',"
+        ".addEventListener('neon-animation-finish',"
         "function() {"
         "window.domAutomationController.setAutomationId(0);"
         "window.domAutomationController.send('switchToPassword');"

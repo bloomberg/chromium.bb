@@ -1,6 +1,11 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/polymer/layout.html">
-<link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
+<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
   Simple Gaia card which should be used for local UI elements that look like
@@ -18,23 +23,23 @@
   Add class |header| to all which you want to go inside blue header.  Similar
   with class |footer|.
 -->
-<polymer-element name="gaia-card" noscript vertical layout>
+<dom-module name="gaia-card">
+  <link rel="stylesheet" href="gaia_card.css">
+
   <template>
-    <link rel="stylesheet" href="gaia_card.css">
-    <div class="gaia-header" vertical layout>
-      <div class="header-container" flex vertical layout>
+    <div class="gaia-header vertical layout relative">
+      <div class="header-container flex vertical layout relative">
         <content select=".header"></content>
       </div>
+      <paper-progress id="progress-bar" indeterminate></paper-progress>
     </div>
-    <paper-progress id="progress-bar" indeterminate></paper-progress>
-    <div class="gaia-footer" flex vertical layout>
-      <div class="footer-container" flex vertical layout>
+    <div class="gaia-footer flex vertical layout">
+      <div class="footer-container flex vertical layout">
         <content select=".footer"></content>
       </div>
-      <div id="bottom-overlay" class="overlay">
-      </div>
+      <div id="bottom-overlay" class="overlay"></div>
     </div>
-    <div id="full-overlay" class="overlay">
-    </div>
+    <div id="full-overlay" class="overlay"></div>
   </template>
-</polymer-element>
+</dom-module>
+

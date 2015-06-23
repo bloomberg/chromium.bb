@@ -23,12 +23,8 @@
   display: none;
 }
 
-throbber-notice {
+#inner-container:not(.new-gaia-flow) throbber-notice {
   display: none;
-}
-
-.new-gaia-flow throbber-notice {
-  display: block;
 }
 
 #gaia-signin.full-width {
@@ -73,8 +69,8 @@ throbber-notice {
   z-index: 1;
 }
 
-#close-button-item:disabled,
-#back-button-item:disabled {
+#close-button-item[disabled],
+#back-button-item[disabled] {
   color: rgb(127, 127, 127);
 }
 
@@ -288,8 +284,3 @@ webview#signin-frame.show {
   visibility: hidden;
 }
 
-html /deep/ #forgotPasswordDlg {
-  position: fixed;
-  top: 200px;
-  width: 350px;
-}
