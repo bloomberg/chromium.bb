@@ -576,11 +576,13 @@ bool DrmDevice::SetCapability(uint64_t capability, uint64_t value) {
 }
 
 bool DrmDevice::SetMaster() {
+  TRACE_EVENT1("drm", "DrmDevice::SetMaster", "path", device_path_.value());
   DCHECK(file_.IsValid());
   return (drmSetMaster(file_.GetPlatformFile()) == 0);
 }
 
 bool DrmDevice::DropMaster() {
+  TRACE_EVENT1("drm", "DrmDevice::DropMaster", "path", device_path_.value());
   DCHECK(file_.IsValid());
   return (drmDropMaster(file_.GetPlatformFile()) == 0);
 }

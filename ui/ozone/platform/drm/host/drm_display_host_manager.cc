@@ -178,14 +178,43 @@ void DrmDisplayHostManager::RemoveDelegate(DrmNativeDisplayDelegate* delegate) {
 
 void DrmDisplayHostManager::TakeDisplayControl(
     const DisplayControlCallback& callback) {
+  if (display_control_change_pending_) {
+    LOG(ERROR) << "TakeDisplayControl called while change already pending";
+    callback.Run(false);
+    return;
+  }
+
+  if (!display_externally_controlled_) {
+    LOG(ERROR) << "TakeDisplayControl called while display already owned";
+    callback.Run(true);
+    return;
+  }
+
   take_display_control_callback_ = callback;
+  display_control_change_pending_ = true;
+
   if (!proxy_->Send(new OzoneGpuMsg_TakeDisplayControl()))
     OnTakeDisplayControl(false);
 }
 
 void DrmDisplayHostManager::RelinquishDisplayControl(
     const DisplayControlCallback& callback) {
+  if (display_control_change_pending_) {
+    LOG(ERROR)
+        << "RelinquishDisplayControl called while change already pending";
+    callback.Run(false);
+    return;
+  }
+
+  if (display_externally_controlled_) {
+    LOG(ERROR) << "RelinquishDisplayControl called while display not owned";
+    callback.Run(true);
+    return;
+  }
+
   relinquish_display_control_callback_ = callback;
+  display_control_change_pending_ = true;
+
   if (!proxy_->Send(new OzoneGpuMsg_RelinquishDisplayControl()))
     OnRelinquishDisplayControl(false);
 }
@@ -395,23 +424,39 @@ void DrmDisplayHostManager::OnHDCPStateUpdated(int64_t display_id,
 }
 
 void DrmDisplayHostManager::OnTakeDisplayControl(bool status) {
-  if (!take_display_control_callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(take_display_control_callback_, status));
-    take_display_control_callback_.Reset();
-  } else {
+  if (take_display_control_callback_.is_null()) {
     LOG(ERROR) << "No callback for take display control";
+    return;
   }
+
+  DCHECK(display_externally_controlled_);
+  DCHECK(display_control_change_pending_);
+
+  if (status)
+    display_externally_controlled_ = false;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(take_display_control_callback_, status));
+  take_display_control_callback_.Reset();
+  display_control_change_pending_ = false;
 }
 
 void DrmDisplayHostManager::OnRelinquishDisplayControl(bool status) {
-  if (!relinquish_display_control_callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(relinquish_display_control_callback_, status));
-    relinquish_display_control_callback_.Reset();
-  } else {
+  if (relinquish_display_control_callback_.is_null()) {
     LOG(ERROR) << "No callback for relinquish display control";
+    return;
   }
+
+  DCHECK(!display_externally_controlled_);
+  DCHECK(display_control_change_pending_);
+
+  if (status)
+    display_externally_controlled_ = true;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(relinquish_display_control_callback_, status));
+  relinquish_display_control_callback_.Reset();
+  display_control_change_pending_ = false;
 }
 
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(

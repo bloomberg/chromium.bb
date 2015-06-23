@@ -109,8 +109,9 @@ class DrmDisplayHostManager : public DeviceEventObserver,
 
   GetDisplaysCallback get_displays_callback_;
 
+  bool display_externally_controlled_ = false;
+  bool display_control_change_pending_ = false;
   DisplayControlCallback take_display_control_callback_;
-
   DisplayControlCallback relinquish_display_control_callback_;
 
   // Used to serialize display event processing. This is done since
