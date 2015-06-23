@@ -244,7 +244,7 @@ int ScrollbarTheme::thumbPosition(ScrollbarThemeClient* scrollbar)
         float size = scrollbar->totalSize() - scrollbar->visibleSize();
         // Avoid doing a floating point divide by zero and return 1 when usedTotalSize == visibleSize.
         if (!size)
-            return 1;
+            return 0;
         float pos = std::max(0.0f, scrollbar->currentPos()) * (trackLength(scrollbar) - thumbLength(scrollbar)) / size;
         return (pos < 1 && pos > 0) ? 1 : pos;
     }

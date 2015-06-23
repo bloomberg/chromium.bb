@@ -410,6 +410,8 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-0
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-009.xht [ ImageOnlyFailure ]
 
+crbug.com/502228 fast/repaint/overflow-outline-repaint.html [ NeedsRebaseline ]
+
 crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ ImageOnlyFailure ]

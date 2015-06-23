@@ -311,6 +311,10 @@ void Scrollbar::moveThumb(int pos, bool draggingDocument)
     int thumbPos = theme()->thumbPosition(this);
     int thumbLen = theme()->thumbLength(this);
     int trackLen = theme()->trackLength(this);
+    ASSERT(thumbLen <= trackLen);
+    if (thumbLen == trackLen)
+        return;
+
     if (delta > 0)
         delta = std::min(trackLen - thumbLen - thumbPos, delta);
     else if (delta < 0)
