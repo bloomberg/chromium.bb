@@ -14,11 +14,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 
 class ExtensionGalleriesHost;
@@ -111,9 +113,13 @@ class MediaFileSystemRegistry
 
   // Map an extension to the ExtensionGalleriesHost.
   typedef std::map<std::string /*extension_id*/,
-                   scoped_refptr<ExtensionGalleriesHost> > ExtensionHostMap;
+                   scoped_refptr<ExtensionGalleriesHost>> ExtensionHostMap;
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
+  // Map a profile to a shutdown notification subscription.
+  typedef ScopedPtrMap<Profile*,
+                       scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
+      ProfileSubscriptionMap;
 
   void OnPermissionRemoved(MediaGalleriesPreferences* pref,
                            const std::string& extension_id,
@@ -130,8 +136,14 @@ class MediaFileSystemRegistry
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);
 
+  void OnProfileShutdown(Profile* profile);
+
   // This map owns all the ExtensionGalleriesHost objects created.
   ExtensionGalleriesHostMap extension_hosts_map_;
+
+  // The above map uses raw Profile pointers as keys. This map removes those
+  // entries when the Profile is destroyed.
+  ProfileSubscriptionMap profile_subscription_map_;
 
   scoped_ptr<MediaFileSystemContext> file_system_context_;
 

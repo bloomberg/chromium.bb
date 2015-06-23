@@ -10,7 +10,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +25,26 @@ namespace {
 
 // Don't send a notification more than once per 3 seconds (chosen arbitrarily).
 const int kMinNotificiationDelayInSeconds = 3;
+
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "GalleryWatchManager") {
+    DependsOn(MediaGalleriesPreferencesFactory::GetInstance());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
 
 }  // namespace.
 
@@ -187,6 +209,19 @@ void GalleryWatchManager::ShutdownBrowserContext(
   size_t observed = observed_preferences_.erase(preferences);
   if (observed > 0)
     preferences->RemoveGalleryChangeObserver(this);
+
+  WatchesMap::iterator it = watches_.begin();
+  while (it != watches_.end()) {
+    if (it->first.browser_context == browser_context) {
+      DeactivateFileWatch(it->first, it->second);
+      // Post increment moves iterator to next element while deleting current.
+      watches_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+
+  browser_context_subscription_map_.erase(browser_context);
 }
 
 void GalleryWatchManager::AddWatch(BrowserContext* browser_context,
@@ -234,6 +269,7 @@ void GalleryWatchManager::AddWatch(BrowserContext* browser_context,
   }
 
   watches_[owner] = path;
+  EnsureBrowserContextSubscription(owner.browser_context);
 
   // Start the FilePathWatcher on |gallery_path| if necessary.
   if (ContainsKey(watched_paths_, path)) {
@@ -300,6 +336,19 @@ MediaGalleryPrefIdSet GalleryWatchManager::GetWatchSet(
     }
   }
   return result;
+}
+
+void GalleryWatchManager::EnsureBrowserContextSubscription(
+    BrowserContext* browser_context) {
+  auto it = browser_context_subscription_map_.find(browser_context);
+  if (it == browser_context_subscription_map_.end()) {
+    browser_context_subscription_map_.set(
+        browser_context,
+        ShutdownNotifierFactory::GetInstance()
+            ->Get(browser_context)
+            ->Subscribe(base::Bind(&GalleryWatchManager::ShutdownBrowserContext,
+                                   base::Unretained(this), browser_context)));
+  }
 }
 
 void GalleryWatchManager::DeactivateFileWatch(const WatchOwner& owner,

@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,6 +51,26 @@ using storage_monitor::StorageInfo;
 using storage_monitor::StorageMonitor;
 
 namespace {
+
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "MediaFileSystemRegistry") {
+    DependsOn(MediaGalleriesPreferencesFactory::GetInstance());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
 
 struct InvalidatedGalleriesInfo {
   std::set<ExtensionGalleriesHost*> extension_hosts;
@@ -558,6 +579,12 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   // Create an empty ExtensionHostMap for this profile on first initialization.
   if (!ContainsKey(extension_hosts_map_, profile)) {
     extension_hosts_map_[profile] = ExtensionHostMap();
+    DCHECK(!ContainsKey(profile_subscription_map_, profile));
+    profile_subscription_map_.set(
+        profile,
+        ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
+            base::Bind(&MediaFileSystemRegistry::OnProfileShutdown,
+                       base::Unretained(this), profile)));
     media_galleries::UsageCount(media_galleries::PROFILES_WITH_USAGE);
   }
 
@@ -844,4 +871,16 @@ void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
     MediaGalleriesPreferences* preferences = GetPreferences(profile);
     preferences->RemoveGalleryChangeObserver(this);
   }
+}
+
+void MediaFileSystemRegistry::OnProfileShutdown(Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto extension_hosts_it = extension_hosts_map_.find(profile);
+  DCHECK(extension_hosts_it != extension_hosts_map_.end());
+  extension_hosts_map_.erase(extension_hosts_it);
+
+  auto profile_subscription_it = profile_subscription_map_.find(profile);
+  DCHECK(profile_subscription_it != profile_subscription_map_.end());
+  profile_subscription_map_.erase(profile_subscription_it);
 }

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/linked_ptr.h"
@@ -17,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 
 class GalleryWatchManagerObserver;
@@ -107,6 +109,14 @@ class GalleryWatchManager
   typedef std::map<base::FilePath, NotificationInfo> WatchedPaths;
   typedef std::map<content::BrowserContext*, GalleryWatchManagerObserver*>
       ObserverMap;
+  typedef ScopedPtrMap<content::BrowserContext*,
+                       scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
+      BrowserContextSubscriptionMap;
+
+  // Ensure there is a subscription to shutdown notifications for
+  // |browser_context|.
+  void EnsureBrowserContextSubscription(
+      content::BrowserContext* browser_context);
 
   // Stop the FilePathWatcher for |path|. Updates |watched_paths_| but not
   // |registered_watches_|.
@@ -150,6 +160,10 @@ class GalleryWatchManager
 
   // Helper that does the watches on the FILE thread.
   scoped_ptr<FileWatchManager> watch_manager_;
+
+  // Removes watches when a browser context is shut down as watches contain raw
+  // pointers.
+  BrowserContextSubscriptionMap browser_context_subscription_map_;
 
   base::WeakPtrFactory<GalleryWatchManager> weak_factory_;
 
