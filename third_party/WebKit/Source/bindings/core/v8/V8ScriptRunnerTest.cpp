@@ -101,7 +101,6 @@ int V8ScriptRunnerTest::counter = 0;
 TEST_F(V8ScriptRunnerTest, resourcelessShouldPass)
 {
     EXPECT_TRUE(compileScript(V8CacheOptionsNone));
-    EXPECT_TRUE(compileScript(V8CacheOptionsParseMemory));
     EXPECT_TRUE(compileScript(V8CacheOptionsParse));
     EXPECT_TRUE(compileScript(V8CacheOptionsCode));
 }
@@ -110,18 +109,6 @@ TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler)
 {
     setEmptyResource();
     EXPECT_FALSE(cacheHandler());
-}
-
-TEST_F(V8ScriptRunnerTest, parseMemoryOption)
-{
-    setResource();
-    EXPECT_TRUE(compileScript(V8CacheOptionsParseMemory));
-    EXPECT_TRUE(cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));
-    EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
-    // The cached data is associated with the encoding.
-    ResourceRequest request(url());
-    ResourcePtr<ScriptResource> anotherResource = new ScriptResource(request, "UTF-16");
-    EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(anotherResource->cacheHandler())));
 }
 
 TEST_F(V8ScriptRunnerTest, parseOption)
@@ -139,21 +126,17 @@ TEST_F(V8ScriptRunnerTest, parseOption)
 TEST_F(V8ScriptRunnerTest, codeOption)
 {
     setResource();
+
+    // Compile twice, since 'code' has a probation period before it caches.
     EXPECT_TRUE(compileScript(V8CacheOptionsCode));
+    EXPECT_TRUE(compileScript(V8CacheOptionsCode));
+
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));
     EXPECT_TRUE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
     // The cached data is associated with the encoding.
     ResourceRequest request(url());
     ResourcePtr<ScriptResource> anotherResource = new ScriptResource(request, "UTF-16");
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(anotherResource->cacheHandler())));
-}
-
-TEST_F(V8ScriptRunnerTest, codeCompressedOptions)
-{
-    setResource();
-    EXPECT_TRUE(compileScript(V8CacheOptionsCodeCompressed));
-    EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));
-    EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
 }
 
 } // namespace

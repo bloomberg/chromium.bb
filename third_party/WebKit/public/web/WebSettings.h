@@ -39,6 +39,10 @@ namespace blink {
 
 class WebString;
 
+// Temporary #if guard for a multi-CL change across blink + Chrome.
+// See crrev.com/1192323002 for details.
+#define CLEANUP_V8_CACHE_OPTIONS_GUARD
+
 // WebSettings is owned by the WebView and allows code to modify the settings for
 // the WebView's page without any knowledge of WebCore itself.  For the most part,
 // these functions have a 1:1 mapping with the methods in WebCore/page/Settings.h.
@@ -59,17 +63,9 @@ public:
 
     enum V8CacheOptions {
         V8CacheOptionsDefault,
+        V8CacheOptionsNone,
         V8CacheOptionsParse,
         V8CacheOptionsCode,
-        V8CacheOptionsCodeCompressed,
-        V8CacheOptionsNone,
-        V8CacheOptionsParseMemory,
-        V8CacheOptionsHeuristics,
-        V8CacheOptionsHeuristicsMobile,
-        V8CacheOptionsHeuristicsDefault,
-        V8CacheOptionsHeuristicsDefaultMobile,
-        V8CacheOptionsRecent,
-        V8CacheOptionsRecentSmall
     };
 
     // Bit field values indicating available pointer types. Identical to

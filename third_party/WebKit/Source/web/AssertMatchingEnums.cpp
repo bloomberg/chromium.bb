@@ -677,19 +677,9 @@ STATIC_ASSERT_MATCHING_ENUM(WebSettings::ImageAnimationPolicyAnimateOnce, ImageA
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::ImageAnimationPolicyNoAnimation, ImageAnimationPolicyNoAnimation);
 
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsDefault, V8CacheOptionsDefault);
+STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsNone, V8CacheOptionsNone);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsCode, V8CacheOptionsCode);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsCodeCompressed, V8CacheOptionsCodeCompressed);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsNone, V8CacheOptionsNone);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParseMemory, V8CacheOptionsParseMemory);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristics, V8CacheOptionsHeuristics);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristicsMobile, V8CacheOptionsHeuristicsMobile);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristics, V8CacheOptionsHeuristics);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristicsMobile, V8CacheOptionsHeuristicsMobile);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristicsDefault, V8CacheOptionsHeuristicsDefault);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsHeuristicsDefaultMobile, V8CacheOptionsHeuristicsDefaultMobile);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsRecent, V8CacheOptionsRecent);
-STATIC_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsRecentSmall, V8CacheOptionsRecentSmall);
 
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::PointerTypeNone, PointerTypeNone);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::PointerTypeCoarse, PointerTypeCoarse);
