@@ -2442,11 +2442,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Push state about whether or not the top controls can show or hide to the renderer.
      */
     public void updateFullscreenEnabledState() {
-        if (isFrozen() || mFullscreenManager == null) return;
+        if (isFrozen()) return;
 
         updateTopControlsState(getTopControlsStateConstraints(), TopControlsState.BOTH, true);
 
-        if (getContentViewCore() != null) {
+        if (getContentViewCore() != null && mFullscreenManager != null) {
             getContentViewCore().updateMultiTouchZoomSupport(
                     !mFullscreenManager.getPersistentFullscreenMode());
         }
@@ -2510,6 +2510,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         enableHidingTopControls &= !mIsImeShowing;
         enableHidingTopControls &= !mIsShowingErrorPage;
         enableHidingTopControls &= !webContents.isShowingInterstitialPage();
+        enableHidingTopControls &= (mFullscreenManager != null);
 
         return enableHidingTopControls;
     }
