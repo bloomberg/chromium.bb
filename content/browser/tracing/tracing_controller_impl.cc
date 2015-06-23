@@ -140,12 +140,20 @@ bool TracingControllerImpl::EnableRecording(
       base::Bind(&TracingControllerImpl::OnEnableRecordingDone,
                  base::Unretained(this),
                  trace_config, callback);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
-                 base::Unretained(this),
-                 trace_config,
-                 base::trace_event::TraceLog::RECORDING_MODE,
-                 on_enable_recording_done_callback));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
+                     base::Unretained(this), trace_config,
+                     base::trace_event::TraceLog::RECORDING_MODE,
+                     on_enable_recording_done_callback))) {
+    // BrowserThread::PostTask fails if the threads haven't been created yet,
+    // so it should be safe to just use TraceLog::SetEnabled directly.
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            on_enable_recording_done_callback);
+  }
+
   return true;
 }
 
@@ -254,12 +262,19 @@ bool TracingControllerImpl::EnableMonitoring(
       base::Bind(&TracingControllerImpl::OnEnableMonitoringDone,
                  base::Unretained(this),
                  trace_config, callback);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
-                 base::Unretained(this),
-                 trace_config,
-                 base::trace_event::TraceLog::MONITORING_MODE,
-                 on_enable_monitoring_done_callback));
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
+                     base::Unretained(this), trace_config,
+                     base::trace_event::TraceLog::MONITORING_MODE,
+                     on_enable_monitoring_done_callback))) {
+    // BrowserThread::PostTask fails if the threads haven't been created yet,
+    // so it should be safe to just use TraceLog::SetEnabled directly.
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        trace_config, base::trace_event::TraceLog::MONITORING_MODE);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            on_enable_monitoring_done_callback);
+  }
   return true;
 }
 
