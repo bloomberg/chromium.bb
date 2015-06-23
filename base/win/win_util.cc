@@ -19,11 +19,14 @@
 #include <signal.h>
 #include <stdlib.h>
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/metro.h"
 #include "base/win/registry.h"
@@ -58,24 +61,44 @@ const wchar_t kWindows8OSKRegPath[] =
     L"Software\\Classes\\CLSID\\{054AAE20-4BEA-4347-8A35-64A533254A9D}"
     L"\\LocalServer32";
 
+}  // namespace
+
 // Returns true if a physical keyboard is detected on Windows 8 and up.
 // Uses the Setup APIs to enumerate the attached keyboards and returns true
 // if the keyboard count is 1 or more.. While this will work in most cases
 // it won't work if there are devices which expose keyboard interfaces which
 // are attached to the machine.
-bool IsKeyboardPresentOnSlate() {
+bool IsKeyboardPresentOnSlate(std::string* reason) {
+  bool result = false;
+
   // This function is only supported for Windows 8 and up.
-  DCHECK(GetVersion() >= VERSION_WIN8);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableUsbKeyboardDetect)) {
+    if (reason)
+      *reason = "Detection disabled";
+    return false;
+  }
 
   // This function should be only invoked for machines with touch screens.
   if ((GetSystemMetrics(SM_DIGITIZER) & NID_INTEGRATED_TOUCH)
         != NID_INTEGRATED_TOUCH) {
-    return true;
+    if (reason) {
+      *reason += "NID_INTEGRATED_TOUCH\n";
+      result = true;
+    } else {
+      return true;
+    }
   }
 
   // If the device is docked, the user is treating the device as a PC.
-  if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0)
-    return true;
+  if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0) {
+    if (reason) {
+      *reason += "SM_SYSTEMDOCKED\n";
+      result = true;
+    } else {
+      return true;
+    }
+  }
 
   // To determine whether a keyboard is present on the device, we do the
   // following:-
@@ -106,7 +129,13 @@ bool IsKeyboardPresentOnSlate() {
       // If there is no auto rotation sensor or rotation is not supported in
       // the current configuration, then we can assume that this is a desktop
       // or a traditional laptop.
-      return true;
+      if (reason) {
+        *reason += (auto_rotation_state & AR_NOSENSOR) ? "AR_NOSENSOR\n" :
+                                                         "AR_NOT_SUPPORTED\n";
+        result = true;
+      } else {
+        return true;
+      }
     }
   }
 
@@ -117,8 +146,15 @@ bool IsKeyboardPresentOnSlate() {
   POWER_PLATFORM_ROLE role = PowerDeterminePlatformRole();
 
   if (((role == PlatformRoleMobile) || (role == PlatformRoleSlate)) &&
-       (GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0))
-    return false;
+       (GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0)) {
+      if (reason) {
+        *reason += (role == PlatformRoleMobile) ? "PlatformRoleMobile\n" :
+                                                  "PlatformRoleSlate\n";
+        // Don't change result here if it's already true.
+      } else {
+        return false;
+      }
+  }
 
   const GUID KEYBOARD_CLASS_GUID =
       { 0x4D36E96B, 0xE325,  0x11CE,
@@ -127,13 +163,15 @@ bool IsKeyboardPresentOnSlate() {
   // Query for all the keyboard devices.
   HDEVINFO device_info =
       SetupDiGetClassDevs(&KEYBOARD_CLASS_GUID, NULL, NULL, DIGCF_PRESENT);
-  if (device_info == INVALID_HANDLE_VALUE)
-    return false;
+  if (device_info == INVALID_HANDLE_VALUE) {
+    if (reason)
+      *reason += "No keyboard info\n";
+    return result;
+  }
 
   // Enumerate all keyboards and look for ACPI\PNP and HID\VID devices. If
   // the count is more than 1 we assume that a keyboard is present. This is
   // under the assumption that there will always be one keyboard device.
-  int keyboard_count = 0;
   for (DWORD i = 0;; ++i) {
     SP_DEVINFO_DATA device_info_data = { 0 };
     device_info_data.cbSize = sizeof(device_info_data);
@@ -151,17 +189,21 @@ bool IsKeyboardPresentOnSlate() {
       // prefixes in the keyboard device ids.
       if (StartsWith(device_id, L"ACPI", CompareCase::INSENSITIVE_ASCII) ||
           StartsWith(device_id, L"HID\\VID", CompareCase::INSENSITIVE_ASCII)) {
-        keyboard_count++;
+        if (reason) {
+          *reason += "device: ";
+          *reason += WideToUTF8(device_id);
+          *reason += '\n';
+        }
+        // The heuristic we are using is to check the count of keyboards and
+        // return true if the API's report one or more keyboards. Please note
+        // that this will break for non keyboard devices which expose a
+        // keyboard PDO.
+        result = true;
       }
     }
   }
-  // The heuristic we are using is to check the count of keyboards and return
-  // true if the API's report one or more keyboards. Please note that this
-  // will break for non keyboard devices which expose a keyboard PDO.
-  return keyboard_count >= 1;
+  return result;
 }
-
-}  // namespace
 
 static bool g_crash_on_process_detach = false;
 
@@ -352,7 +394,7 @@ bool DisplayVirtualKeyboard() {
   if (GetVersion() < VERSION_WIN8)
     return false;
 
-  if (IsKeyboardPresentOnSlate())
+  if (IsKeyboardPresentOnSlate(nullptr))
     return false;
 
   static LazyInstance<string16>::Leaky osk_path = LAZY_INSTANCE_INITIALIZER;
