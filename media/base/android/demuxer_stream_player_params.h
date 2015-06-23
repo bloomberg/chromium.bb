@@ -67,11 +67,4 @@ struct MEDIA_EXPORT DemuxerData {
 
 };  // namespace media
 
-// For logging
-MEDIA_EXPORT
-std::ostream& operator<<(std::ostream& os, const media::AccessUnit& au);
-
-MEDIA_EXPORT
-std::ostream& operator<<(std::ostream& os, const media::DemuxerConfigs& conf);
-
 #endif  // MEDIA_BASE_ANDROID_DEMUXER_STREAM_PLAYER_PARAMS_H_
