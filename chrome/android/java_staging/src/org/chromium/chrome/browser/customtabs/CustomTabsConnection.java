@@ -36,6 +36,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -56,7 +57,6 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
     private static final String TAG = "cr.ChromeConnection";
     private static final long RESULT_OK = 0;
     private static final long RESULT_ERROR = -1;
-    private static final String KEY_CUSTOM_TABS_REFERRER = "android.support.CUSTOM_TABS:referrer";
 
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
     private static final int NO_PREDICTION = 0;
@@ -71,12 +71,15 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
         public final long mSessionId;
         public final WebContents mWebContents;
         public final String mUrl;
+        public final String mReferrer;
         public final Bundle mExtras;
 
-        PrerenderedUrlParams(long sessionId, WebContents webContents, String url, Bundle extras) {
+        PrerenderedUrlParams(long sessionId, WebContents webContents, String url, String referrer,
+                Bundle extras) {
             mSessionId = sessionId;
             mWebContents = webContents;
             mUrl = url;
+            mReferrer = referrer;
             mExtras = extras;
         }
     }
@@ -284,11 +287,11 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
      *
      * This resets the internal WebContents; a subsequent call to this method
      * returns null. Must be called from the UI thread.
-     * If a prerender exists for a different URL with the same sessionId, then
-     * this is treated as a mispredict from the client application, and cancels
-     * the previous prerender. This is done to avoid keeping resources laying
-     * around for too long, but is subject to a race condition, as the following
-     * scenario is possible:
+     * If a prerender exists for a different URL with the same sessionId or with
+     * a different referrer, then this is treated as a mispredict from the
+     * client application, and cancels the previous prerender. This is done to
+     * avoid keeping resources laying around for too long, but is subject to a
+     * race condition, as the following scenario is possible:
      * The application calls:
      * 1. mayLaunchUrl(url1) <- IPC
      * 2. loadUrl(url2) <- Intent
@@ -302,17 +305,21 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
      *
      * @param sessionId The session ID, returned by {@link newSession}.
      * @param url The URL the WebContents is for.
-     * @param extras from the intent.
+     * @param referrer The referrer to use for |url|.
      * @return The prerendered WebContents, or null.
      */
-    WebContents takePrerenderedUrl(long sessionId, String url, Bundle extras) {
+    WebContents takePrerenderedUrl(long sessionId, String url, String referrer) {
         ThreadUtils.assertOnUiThread();
         if (mPrerender == null || mPrerender.mSessionId != sessionId) return null;
         WebContents webContents = mPrerender.mWebContents;
         String prerenderedUrl = mPrerender.mUrl;
+        String prerenderReferrer = mPrerender.mReferrer;
+        if (referrer == null) referrer = "";
         mPrerender = null;
-        // TODO(lizeb): Referrer
-        if (TextUtils.equals(prerenderedUrl, url)) return webContents;
+        if (TextUtils.equals(prerenderedUrl, url)
+                && TextUtils.equals(prerenderReferrer, referrer)) {
+            return webContents;
+        }
         mExternalPrerenderHandler.cancelCurrentPrerender();
         webContents.destroy();
         return null;
@@ -507,11 +514,13 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
         Point contentSize = estimateContentSize();
-        String referrer = "";
-        if (extras != null) referrer = extras.getString(KEY_CUSTOM_TABS_REFERRER, "");
+        Intent extrasIntent = new Intent().putExtras(extras);
+        String referrer =
+                IntentHandler.getReferrerUrl(extrasIntent, mApplication.getApplicationContext());
+        if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
                 Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y);
-        mPrerender = new PrerenderedUrlParams(sessionId, webContents, url, extras);
+        mPrerender = new PrerenderedUrlParams(sessionId, webContents, url, referrer, extras);
     }
 
     /**

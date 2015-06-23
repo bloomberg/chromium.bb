@@ -156,8 +156,10 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void finishNativeInitialization() {
         String url = IntentHandler.getUrlFromIntent(getIntent());
+        String referrer = IntentHandler.getReferrerUrl(getIntent(), this);
         mSessionId = mIntentDataProvider.getSessionId();
-        mTab = new CustomTab(this, getWindowAndroid(), mSessionId, url, Tab.INVALID_TAB_ID);
+        mTab = new CustomTab(this, getWindowAndroid(), mSessionId, url, referrer,
+                Tab.INVALID_TAB_ID);
         getTabModelSelector().setTab(mTab);
 
         ToolbarControlContainer controlContainer = (ToolbarControlContainer) findViewById(

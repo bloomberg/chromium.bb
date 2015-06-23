@@ -132,12 +132,12 @@ public class CustomTab extends ChromeTab {
      * {@link CustomTabsConnectionService} has successfully warmed up for the url.
      */
     public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid,
-            long sessionId, String url, int parentTabId) {
+            long sessionId, String url, String referrer, int parentTabId) {
         super(Tab.generateValidId(Tab.INVALID_TAB_ID), activity, false, windowAndroid,
                 TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(activity.getApplication());
-        WebContents webContents = customTabsConnection.takePrerenderedUrl(sessionId, url, null);
+        WebContents webContents = customTabsConnection.takePrerenderedUrl(sessionId, url, referrer);
         if (webContents == null) {
             webContents = WebContentsFactory.createWebContents(isIncognito(), false);
         }
