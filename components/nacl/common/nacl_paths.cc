@@ -40,12 +40,13 @@ bool PathProvider(int key, base::FilePath* result) {
     case FILE_NACL_HELPER:
       return GetNaClHelperPath(kInternalNaClHelperFileName, result);
     case FILE_NACL_HELPER_NONSFI:
-      if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kUseNaClHelperNonSfi)) {
-        // Currently nacl_helper_nonsfi is disabled, so use nacl_helper
-        // in Non-SFI mode instead.
-        // TODO(hidehiko): Remove this code path after nacl_helper_nonsfi
-        // is supported.
+      if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kUseNaClHelperNonSfi) == "false") {
+        // nacl_helper_nonsfi is disabled by the flag. So, use nacl_helper
+        // in Non-SFI mode instead. This is old behavior just in case.
+        // TODO(hidehiko): Remove this code path, when the old feature is
+        // cleaned after nacl_helper_nonsfi is officially launched and
+        // its stability is confirmed.
         return GetNaClHelperPath(kInternalNaClHelperFileName, result);
       }
       return GetNaClHelperPath(kInternalNaClHelperNonSfiFileName, result);

@@ -433,7 +433,7 @@ void PPAPINaClPNaClTransitionalNonSfiTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   PPAPINaClPNaClNonSfiTest::SetUpCommandLine(command_line);
 #if !defined(DISABLE_NACL)
-  command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
+  command_line->AppendSwitchASCII(switches::kUseNaClHelperNonSfi, "false");
 #endif
 }
 
@@ -447,7 +447,7 @@ void PPAPIPrivateNaClPNaClTransitionalNonSfiTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   PPAPIPrivateNaClPNaClNonSfiTest::SetUpCommandLine(command_line);
 #if !defined(DISABLE_NACL)
-  command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
+  command_line->AppendSwitchASCII(switches::kUseNaClHelperNonSfi, "false");
 #endif
 }
 
