@@ -1,6 +1,6 @@
-FAIL document.styleSheets[1].rules[0].style.cssText should be -webkit-mask-repeat: repeat-x; -webkit-mask-repeat-y: inherit;. Was -webkit-mask: inherit;.
-FAIL document.styleSheets[1].rules[0].style.getPropertyValue('-webkit-mask') should be . Was inherit.
-FAIL document.styleSheets[1].rules[0].style.getPropertyValue('-webkit-mask-repeat') should be repeat inherit. Was inherit.
+PASS document.styleSheets[1].rules[0].style.cssText is "-webkit-mask-repeat-x: repeat; -webkit-mask-repeat-y: inherit;"
+FAIL document.styleSheets[1].rules[0].style.getPropertyValue('-webkit-mask') should be  (of type string). Was null (of type object).
+FAIL document.styleSheets[1].rules[0].style.getPropertyValue('-webkit-mask-repeat') should be . Was inherit.
 PASS successfullyParsed is true
 
 TEST COMPLETE
