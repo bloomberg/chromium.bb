@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/child/fixed_received_data.h"
 
 namespace content {
@@ -22,8 +23,7 @@ class DelegateThreadSafeReceivedData final
  public:
   explicit DelegateThreadSafeReceivedData(
       scoped_ptr<RequestPeer::ReceivedData> data)
-      : data_(data.Pass()),
-        task_runner_(base::MessageLoop::current()->task_runner()) {}
+      : data_(data.Pass()), task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
   ~DelegateThreadSafeReceivedData() override {
     if (!task_runner_->BelongsToCurrentThread()) {
       // Delete the data on the original thread.
@@ -49,10 +49,13 @@ using Result = blink::WebDataConsumerHandle::Result;
 class SharedMemoryDataConsumerHandle::Context final
     : public base::RefCountedThreadSafe<Context> {
  public:
-  Context()
+  explicit Context(const base::Closure& on_reader_detached)
       : result_(Ok),
         first_offset_(0),
         client_(nullptr),
+        writer_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        on_reader_detached_(on_reader_detached),
+        is_on_reader_detached_valid_(!on_reader_detached_.is_null()),
         is_handle_active_(true),
         is_two_phase_read_in_progress_(false) {}
 
@@ -60,6 +63,12 @@ class SharedMemoryDataConsumerHandle::Context final
   void ClearIfNecessary() {
     if (!is_handle_locked() && !is_handle_active()) {
       // No one is interested in the contents.
+      if (is_on_reader_detached_valid_) {
+        // We post a task even in the writer thread in order to avoid a
+        // reentrance problem as calling |on_reader_detached_| may manipulate
+        // the context synchronously.
+        writer_task_runner_->PostTask(FROM_HERE, on_reader_detached_);
+      }
       Clear();
     }
   }
@@ -80,7 +89,7 @@ class SharedMemoryDataConsumerHandle::Context final
   void AcquireReaderLock(Client* client) {
     DCHECK(!notification_task_runner_);
     DCHECK(!client_);
-    notification_task_runner_ = base::MessageLoop::current()->task_runner();
+    notification_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     client_ = client;
     if (client && !(IsEmpty() && result() == Ok)) {
       // We cannot notify synchronously because the user doesn't have the reader
@@ -105,6 +114,24 @@ class SharedMemoryDataConsumerHandle::Context final
                      base::Bind(&Context::NotifyInternal, this, false));
   }
   void Notify() { NotifyInternal(true); }
+  // This function doesn't work in the destructor if |on_reader_detached_| is
+  // not null.
+  void ResetOnReaderDetached() {
+    if (on_reader_detached_.is_null()) {
+      DCHECK(!is_on_reader_detached_valid_);
+      return;
+    }
+    is_on_reader_detached_valid_ = false;
+    if (writer_task_runner_->BelongsToCurrentThread()) {
+      // We can reset the closure immediately.
+      on_reader_detached_.Reset();
+    } else {
+      // We need to reset |on_reader_detached_| on the right thread because it
+      // might lead to the object destruction.
+      writer_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&Context::ResetOnReaderDetachedWithLock, this));
+    }
+  }
   bool is_handle_locked() const { return notification_task_runner_; }
   bool IsReaderBoundToCurrentThread() const {
     return notification_task_runner_ &&
@@ -159,10 +186,19 @@ class SharedMemoryDataConsumerHandle::Context final
     queue_.clear();
     first_offset_ = 0;
     client_ = nullptr;
+    // Note this doesn't work in the destructor if |on_reader_detached_| is not
+    // null. We have an assert in the destructor.
+    ResetOnReaderDetached();
+  }
+  void ResetOnReaderDetachedWithLock() {
+    base::AutoLock lock(lock_);
+    ResetOnReaderDetached();
   }
 
   friend class base::RefCountedThreadSafe<Context>;
   ~Context() {
+    DCHECK(on_reader_detached_.is_null());
+
     // This is necessary because the queue stores raw pointers.
     Clear();
   }
@@ -177,6 +213,13 @@ class SharedMemoryDataConsumerHandle::Context final
   size_t first_offset_;
   Client* client_;
   scoped_refptr<base::SingleThreadTaskRunner> notification_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> writer_task_runner_;
+  base::Closure on_reader_detached_;
+  // We need this boolean variable to remember if |on_reader_detached_| is
+  // callable because we need to reset |on_reader_detached_| only on the writer
+  // thread and hence |on_reader_detached_.is_null()| is untrustworthy on
+  // other threads.
+  bool is_on_reader_detached_valid_;
   bool is_handle_active_;
   bool is_two_phase_read_in_progress_;
 
@@ -191,6 +234,8 @@ SharedMemoryDataConsumerHandle::Writer::Writer(
 
 SharedMemoryDataConsumerHandle::Writer::~Writer() {
   Close();
+  base::AutoLock lock(context_->lock());
+  context_->ResetOnReaderDetached();
 }
 
 void SharedMemoryDataConsumerHandle::Writer::AddData(
@@ -234,6 +279,7 @@ void SharedMemoryDataConsumerHandle::Writer::Close() {
     base::AutoLock lock(context_->lock());
     if (context_->result() == Ok) {
       context_->set_result(Done);
+      context_->ResetOnReaderDetached();
       needs_notification = context_->IsEmpty();
     }
   }
@@ -260,6 +306,7 @@ void SharedMemoryDataConsumerHandle::Writer::Fail() {
         context_->ClearQueue();
       }
 
+      context_->ResetOnReaderDetached();
       needs_notification = true;
     }
   }
@@ -362,7 +409,14 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::endRead(size_t read_size) {
 SharedMemoryDataConsumerHandle::SharedMemoryDataConsumerHandle(
     BackpressureMode mode,
     scoped_ptr<Writer>* writer)
-    : context_(new Context) {
+    : SharedMemoryDataConsumerHandle(mode, base::Closure(), writer) {
+}
+
+SharedMemoryDataConsumerHandle::SharedMemoryDataConsumerHandle(
+    BackpressureMode mode,
+    const base::Closure& on_reader_detached,
+    scoped_ptr<Writer>* writer)
+    : context_(new Context(on_reader_detached)) {
   writer->reset(new Writer(context_, mode));
 }
 

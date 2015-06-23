@@ -85,6 +85,17 @@ class LoggingFixedReceivedData final : public RequestPeer::ReceivedData {
   DISALLOW_COPY_AND_ASSIGN(LoggingFixedReceivedData);
 };
 
+class DestructionTrackingFunction
+    : public base::RefCountedThreadSafe<DestructionTrackingFunction> {
+ public:
+  MOCK_METHOD0(Destruct, void(void));
+  MOCK_METHOD0(Call, void(void));
+
+ protected:
+  friend class base::RefCountedThreadSafe<DestructionTrackingFunction>;
+  virtual ~DestructionTrackingFunction() { Destruct(); }
+};
+
 class MockClient : public WebDataConsumerHandle::Client {
  public:
   MOCK_METHOD0(didGetReadable, void());
@@ -580,6 +591,115 @@ TEST_P(SharedMemoryDataConsumerHandleTest, TwoPhaseReadSimple) {
   EXPECT_EQ(kDone, result);
   EXPECT_EQ(0u, size);
   EXPECT_EQ(nullptr, buffer);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, CallOnClearWhenDestructed1) {
+  // Call |on_clear| when the handle is gone and if there is no reader.
+  Checkpoint checkpoint;
+  scoped_refptr<DestructionTrackingFunction> on_clear(
+      new StrictMock<DestructionTrackingFunction>);
+
+  InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*on_clear, Call());
+  EXPECT_CALL(*on_clear, Destruct());
+  EXPECT_CALL(checkpoint, Call(2));
+
+  checkpoint.Call(0);
+  handle_.reset(new SharedMemoryDataConsumerHandle(
+      kApplyBackpressure,
+      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+  handle_.reset();
+  on_clear = nullptr;
+  checkpoint.Call(1);
+  RunPostedTasks();
+  checkpoint.Call(2);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, CallOnClearWhenDestructed2) {
+  // Call |on_clear| when the reader is gone if the handle is alredy gone.
+  Checkpoint checkpoint;
+  scoped_refptr<DestructionTrackingFunction> on_clear(
+      new StrictMock<DestructionTrackingFunction>);
+
+  InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(checkpoint, Call(3));
+  EXPECT_CALL(*on_clear, Call());
+  EXPECT_CALL(*on_clear, Destruct());
+  EXPECT_CALL(checkpoint, Call(4));
+
+  checkpoint.Call(0);
+  handle_.reset(new SharedMemoryDataConsumerHandle(
+      kApplyBackpressure,
+      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+  auto reader = handle_->ObtainReader(nullptr);
+  handle_.reset();
+  on_clear = nullptr;
+  checkpoint.Call(1);
+  RunPostedTasks();
+  checkpoint.Call(2);
+  reader.reset();
+  checkpoint.Call(3);
+  RunPostedTasks();
+  checkpoint.Call(4);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, DoNotCallOnClearWhenDone) {
+  Checkpoint checkpoint;
+  scoped_refptr<DestructionTrackingFunction> on_clear(
+      new StrictMock<DestructionTrackingFunction>);
+
+  InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*on_clear, Destruct());
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(checkpoint, Call(3));
+  EXPECT_CALL(checkpoint, Call(4));
+
+  checkpoint.Call(0);
+  handle_.reset(new SharedMemoryDataConsumerHandle(
+      kApplyBackpressure,
+      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+  on_clear = nullptr;
+  checkpoint.Call(1);
+  writer_->Close();
+  checkpoint.Call(2);
+  handle_.reset();
+  checkpoint.Call(3);
+  RunPostedTasks();
+  checkpoint.Call(4);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, DoNotCallOnClearWhenErrored) {
+  Checkpoint checkpoint;
+  scoped_refptr<DestructionTrackingFunction> on_clear(
+      new StrictMock<DestructionTrackingFunction>);
+
+  InSequence s;
+  EXPECT_CALL(checkpoint, Call(0));
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*on_clear, Destruct());
+  EXPECT_CALL(checkpoint, Call(2));
+  EXPECT_CALL(checkpoint, Call(3));
+  EXPECT_CALL(checkpoint, Call(4));
+
+  checkpoint.Call(0);
+  handle_.reset(new SharedMemoryDataConsumerHandle(
+      kApplyBackpressure,
+      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+  on_clear = nullptr;
+  checkpoint.Call(1);
+  writer_->Fail();
+  checkpoint.Call(2);
+  handle_.reset();
+  checkpoint.Call(3);
+  RunPostedTasks();
+  checkpoint.Call(4);
 }
 
 TEST_P(SharedMemoryDataConsumerHandleTest, TwoPhaseReadWithMultipleData) {

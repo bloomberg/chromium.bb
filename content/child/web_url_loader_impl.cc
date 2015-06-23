@@ -323,6 +323,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   friend class base::RefCounted<Context>;
   ~Context() override;
 
+  // Called when the body data stream is detached from the reader side.
+  void CancelBodyStreaming();
   // We can optimize the handling of data URLs in most cases.
   bool CanHandleDataURLRequestLocally() const;
   void HandleDataURL();
@@ -618,11 +620,18 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       mode = SharedMemoryDataConsumerHandle::kApplyBackpressure;
     }
 
-    auto reader = make_scoped_ptr(
-        new SharedMemoryDataConsumerHandle(mode, &body_stream_writer_));
+    auto read_handle = make_scoped_ptr(new SharedMemoryDataConsumerHandle(
+        mode, base::Bind(&Context::CancelBodyStreaming, this),
+        &body_stream_writer_));
 
-    // The client takes |reader|'s ownership.
-    client_->didReceiveResponse(loader_, response, reader.release());
+    // Here |body_stream_writer_| has an indirect reference to |this| and that
+    // creates a reference cycle, but it is not a problem because the cycle
+    // will break if one of the following happens:
+    //  1) The body data transfer is done (with or without an error).
+    //  2) |read_handle| (and its reader) is detached.
+
+    // The client takes |read_handle|'s ownership.
+    client_->didReceiveResponse(loader_, response, read_handle.release());
     // TODO(yhirano): Support ftp listening and multipart
     return;
   } else {
@@ -752,6 +761,32 @@ WebURLLoaderImpl::Context::~Context() {
   if (request_id_ >= 0) {
     resource_dispatcher_->RemovePendingRequest(request_id_);
   }
+}
+
+void WebURLLoaderImpl::Context::CancelBodyStreaming() {
+  scoped_refptr<Context> protect(this);
+
+  // Notify renderer clients that the request is canceled.
+  if (ftp_listing_delegate_) {
+    ftp_listing_delegate_->OnCompletedRequest();
+    ftp_listing_delegate_.reset(NULL);
+  } else if (multipart_delegate_) {
+    multipart_delegate_->OnCompletedRequest();
+    multipart_delegate_.reset(NULL);
+  }
+
+  if (body_stream_writer_) {
+    body_stream_writer_->Fail();
+    body_stream_writer_.reset();
+  }
+  if (client_) {
+    // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
+    client_->didFail(
+        loader_, CreateWebURLError(request_.url(), false, net::ERR_ABORTED));
+  }
+
+  // Notify the browser process that the request is canceled.
+  Cancel();
 }
 
 bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
