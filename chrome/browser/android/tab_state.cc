@@ -429,8 +429,6 @@ WebContents* WebContentsState::RestoreContentsFromByteBuffer(
   ScopedVector<content::NavigationEntry> scoped_entries =
       sessions::ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, profile);
-  std::vector<content::NavigationEntry*> entries;
-  scoped_entries.release(&entries);
 
   if (is_off_the_record)
     profile = profile->GetOffTheRecordProfile();
@@ -440,7 +438,7 @@ WebContents* WebContentsState::RestoreContentsFromByteBuffer(
   web_contents->GetController().Restore(
       current_entry_index,
       NavigationController::RESTORE_CURRENT_SESSION,
-      &entries);
+      &scoped_entries);
   return web_contents.release();
 }
 

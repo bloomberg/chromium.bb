@@ -851,7 +851,9 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
 
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
   scoped_ptr<LoadCommittedDetails> details(new LoadCommittedDetails());
-  details->entry = NavigationEntry::Create();
+  scoped_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  details->entry = entry.get();
   details->entry->SetPageID(0);
   details->entry->SetTransitionType(ui::PAGE_TRANSITION_LINK);
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -31,7 +32,7 @@ class NavigationEntry {
  public:
   virtual ~NavigationEntry() {}
 
-  CONTENT_EXPORT static NavigationEntry* Create();
+  CONTENT_EXPORT static scoped_ptr<NavigationEntry> Create();
 
   // Page-related stuff --------------------------------------------------------
 

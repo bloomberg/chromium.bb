@@ -68,8 +68,8 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
   return copy.Pass();
 }
 
-NavigationEntry* NavigationEntry::Create() {
-  return new NavigationEntryImpl();
+scoped_ptr<NavigationEntry> NavigationEntry::Create() {
+  return make_scoped_ptr(new NavigationEntryImpl()).Pass();
 }
 
 NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
@@ -80,6 +80,11 @@ NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
 const NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
     const NavigationEntry* entry) {
   return static_cast<const NavigationEntryImpl*>(entry);
+}
+
+scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::FromNavigationEntry(
+    scoped_ptr<NavigationEntry> entry) {
+  return make_scoped_ptr(FromNavigationEntry(entry.release()));
 }
 
 NavigationEntryImpl::NavigationEntryImpl()
@@ -365,14 +370,15 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
   extra_data_.erase(key);
 }
 
-NavigationEntryImpl* NavigationEntryImpl::Clone() const {
+scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::Clone() const {
   return NavigationEntryImpl::CloneAndReplace(nullptr, nullptr);
 }
 
-NavigationEntryImpl* NavigationEntryImpl::CloneAndReplace(
+scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
     FrameTreeNode* frame_tree_node,
     FrameNavigationEntry* frame_navigation_entry) const {
-  NavigationEntryImpl* copy = new NavigationEntryImpl();
+  scoped_ptr<NavigationEntryImpl> copy =
+      make_scoped_ptr(new NavigationEntryImpl());
 
   // TODO(creis): Only share the same FrameNavigationEntries if cloning within
   // the same tab.
@@ -413,7 +419,7 @@ NavigationEntryImpl* NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: intent_received_timestamp_
   copy->extra_data_ = extra_data_;
 
-  return copy;
+  return copy.Pass();
 }
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(

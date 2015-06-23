@@ -75,14 +75,11 @@ WebContents* CreateRestoredTab(
   ScopedVector<NavigationEntry> scoped_entries =
       ContentSerializedNavigationBuilder::ToNavigationEntries(
           navigations, browser->profile());
-  // NavigationController::Restore() expects to take ownership of the entries.
-  std::vector<NavigationEntry*> entries;
-  scoped_entries.release(&entries);
   web_contents->SetUserAgentOverride(user_agent_override);
   web_contents->GetController().Restore(
       selected_navigation, GetRestoreType(browser, from_last_session),
-      &entries);
-  DCHECK_EQ(0u, entries.size());
+      &scoped_entries);
+  DCHECK_EQ(0u, scoped_entries.size());
 
   return web_contents;
 }
