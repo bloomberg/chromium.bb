@@ -336,13 +336,14 @@ def PNaClForceNative(env):
 
 # Get an environment for nacl-gcc when in PNaCl mode.
 def PNaClGetNNaClEnv(env):
-  assert(env.Bit('bitcode'))
+  assert(env.Bit('bitcode') or env.Bit('nacl_clang'))
   assert(not env.Bit('build_mips32'))
 
   # This is kind of a hack. We clone the environment,
   # clear the bitcode bit, and then reload naclsdk.py
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
+  native_env.ClearBits('nacl_clang')
   if env.Bit('built_elsewhere'):
     _StubOutEnvToolsForBuiltElsewhere(env)
   else:
