@@ -8,6 +8,7 @@
 
 #include "content/common/gpu/gpu_channel.h"
 
+#include <algorithm>
 #include <queue>
 #include <vector>
 
@@ -19,6 +20,8 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
@@ -435,6 +438,9 @@ GpuChannel::~GpuChannel() {
   subscription_ref_set_->RemoveObserver(this);
   if (preempting_flag_.get())
     preempting_flag_->Reset();
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void GpuChannel::Init(base::SingleThreadTaskRunner* io_task_runner,
@@ -453,6 +459,9 @@ void GpuChannel::Init(base::SingleThreadTaskRunner* io_task_runner,
   io_task_runner_ = io_task_runner;
   channel_->AddFilter(filter_.get());
   pending_valuebuffer_state_ = new gpu::ValueStateMap();
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, base::ThreadTaskRunnerHandle::Get());
 }
 
 std::string GpuChannel::GetChannelName() {
@@ -863,6 +872,20 @@ scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
 void GpuChannel::HandleUpdateValueState(
     unsigned int target, const gpu::ValueState& state) {
   pending_valuebuffer_state_->UpdateState(target, state);
+}
+
+bool GpuChannel::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+  auto dump_name = GetChannelName();
+  std::replace(dump_name.begin(), dump_name.end(), '.', '_');
+
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(base::StringPrintf("gl/%s", dump_name.c_str()));
+
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  GetMemoryUsage());
+
+  return true;
 }
 
 }  // namespace content

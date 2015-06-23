@@ -14,6 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
@@ -54,8 +55,10 @@ class GpuWatchdog;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
-class GpuChannel : public IPC::Listener, public IPC::Sender,
-                   public gpu::gles2::SubscriptionRefSet::Observer {
+class GpuChannel : public IPC::Listener,
+                   public IPC::Sender,
+                   public gpu::gles2::SubscriptionRefSet::Observer,
+                   public base::trace_event::MemoryDumpProvider {
  public:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -170,6 +173,9 @@ class GpuChannel : public IPC::Listener, public IPC::Sender,
   const gpu::ValueStateMap* pending_valuebuffer_state() const {
     return pending_valuebuffer_state_.get();
   }
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   friend class GpuChannelMessageFilter;
