@@ -194,19 +194,19 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     whitelist_version_directory_ = whitelist_directory_.AppendASCII(kVersion);
     whitelist_path_ = whitelist_version_directory_.AppendASCII(kWhitelistFile);
 
-    scoped_ptr<base::DictionaryValue> contentPackDict(
+    scoped_ptr<base::DictionaryValue> whitelist_dict(
         new base::DictionaryValue);
-    contentPackDict->SetString("sites", kWhitelistFile);
-    manifest_.Set("content_pack", contentPackDict.release());
+    whitelist_dict->SetString("file", kWhitelistFile);
+    manifest_.Set("whitelist", whitelist_dict.release());
     manifest_.SetString("version", kVersion);
 
-    scoped_ptr<base::DictionaryValue> whitelist_dict(new base::DictionaryValue);
-    whitelist_dict->SetString("name", kName);
+    scoped_ptr<base::DictionaryValue> crx_dict(new base::DictionaryValue);
+    crx_dict->SetString("name", kName);
     scoped_ptr<base::ListValue> clients(new base::ListValue);
     clients->AppendString(kClientId);
     clients->AppendString(kOtherClientId);
-    whitelist_dict->Set("clients", clients.release());
-    pref_.Set(kCrxId, whitelist_dict.release());
+    crx_dict->Set("clients", clients.release());
+    pref_.Set(kCrxId, crx_dict.release());
   }
 
  protected:

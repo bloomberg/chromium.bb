@@ -2,7 +2,7 @@
   "name": "Test Content Pack",
   "version": "0.1",
   "manifest_version": 2,
-  "content_pack": {
-    "sites": "site_list.json"
+  "whitelist": {
+    "file": "site_list.json"
   }
 }

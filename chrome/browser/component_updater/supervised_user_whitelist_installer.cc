@@ -32,21 +32,20 @@ namespace component_updater {
 
 namespace {
 
-// See the corresponding entries in extensions::manifest_keys.
-const char kContentPack[] = "content_pack";
-const char kContentPackSites[] = "sites";
+const char kWhitelist[] = "whitelist";
+const char kFile[] = "file";
 
 const char kClients[] = "clients";
 const char kName[] = "name";
 
 base::FilePath GetWhitelistPath(const base::DictionaryValue& manifest,
                                 const base::FilePath& install_dir) {
-  const base::DictionaryValue* content_pack_dict = nullptr;
-  if (!manifest.GetDictionary(kContentPack, &content_pack_dict))
+  const base::DictionaryValue* whitelist_dict = nullptr;
+  if (!manifest.GetDictionary(kWhitelist, &whitelist_dict))
     return base::FilePath();
 
   base::FilePath::StringType whitelist_file;
-  if (!content_pack_dict->GetString(kContentPackSites, &whitelist_file))
+  if (!whitelist_dict->GetString(kFile, &whitelist_file))
     return base::FilePath();
 
   return install_dir.Append(whitelist_file);
