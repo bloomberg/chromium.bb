@@ -55,6 +55,7 @@
 #include "url/url_constants.h"
 
 using base::UserMetricsAction;
+using content::GlobalRequestID;
 using content::RenderFrameHost;
 using content::ResourceType;
 using content::StoragePartition;
@@ -998,14 +999,14 @@ void WebViewGuest::NavigateGuest(const std::string& src,
   // if the navigation is embedder-initiated. For browser-initiated navigations,
   // content scripts will be ready.
   if (force_navigation) {
-    SignalWhenReady(
-        base::Bind(&WebViewGuest::LoadURLWithParams,
-                   weak_ptr_factory_.GetWeakPtr(), url, content::Referrer(),
-                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, force_navigation));
+    SignalWhenReady(base::Bind(
+        &WebViewGuest::LoadURLWithParams, weak_ptr_factory_.GetWeakPtr(), url,
+        content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+        GlobalRequestID(), force_navigation));
     return;
   }
   LoadURLWithParams(url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                    force_navigation);
+                    GlobalRequestID(), force_navigation);
 }
 
 bool WebViewGuest::HandleKeyboardShortcuts(
@@ -1267,6 +1268,7 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
   // about:blank.
   if (params.disposition == CURRENT_TAB) {
     LoadURLWithParams(params.url, params.referrer, params.transition,
+                      params.transferred_global_request_id,
                       true /* force_navigation */);
     return web_contents();
   }
@@ -1322,10 +1324,12 @@ bool WebViewGuest::IsFullscreenForTabOrPending(
   return is_guest_fullscreen_;
 }
 
-void WebViewGuest::LoadURLWithParams(const GURL& url,
-                                     const content::Referrer& referrer,
-                                     ui::PageTransition transition_type,
-                                     bool force_navigation) {
+void WebViewGuest::LoadURLWithParams(
+    const GURL& url,
+    const content::Referrer& referrer,
+    ui::PageTransition transition_type,
+    const GlobalRequestID& transferred_global_request_id,
+    bool force_navigation) {
   // Do not allow navigating a guest to schemes other than known safe schemes.
   // This will block the embedder trying to load unwanted schemes, e.g.
   // chrome://.
@@ -1354,6 +1358,7 @@ void WebViewGuest::LoadURLWithParams(const GURL& url,
   load_url_params.referrer = referrer;
   load_url_params.transition_type = transition_type;
   load_url_params.extra_headers = std::string();
+  load_url_params.transferred_global_request_id = transferred_global_request_id;
   if (is_overriding_user_agent_) {
     load_url_params.override_user_agent =
         content::NavigationController::UA_OVERRIDE_TRUE;

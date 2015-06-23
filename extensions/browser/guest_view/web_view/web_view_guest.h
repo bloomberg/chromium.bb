@@ -23,6 +23,10 @@ namespace blink {
 struct WebFindOptions;
 }  // nanespace blink
 
+namespace content {
+struct GlobalRequestID;
+}  // namespace content
+
 namespace extensions {
 
 class WebViewInternalFindFunction;
@@ -317,10 +321,12 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   // Loads the |url| provided. |force_navigation| indicates whether to reload
   // the content if the provided |url| matches the current page of the guest.
-  void LoadURLWithParams(const GURL& url,
-                         const content::Referrer& referrer,
-                         ui::PageTransition transition_type,
-                         bool force_navigation);
+  void LoadURLWithParams(
+      const GURL& url,
+      const content::Referrer& referrer,
+      ui::PageTransition transition_type,
+      const content::GlobalRequestID& transferred_global_request_id,
+      bool force_navigation);
 
   void RequestNewWindowPermission(
       WindowOpenDisposition disposition,
