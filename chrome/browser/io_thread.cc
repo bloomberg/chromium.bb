@@ -46,6 +46,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/common/user_agent.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
 #include "net/base/network_quality_estimator.h"
@@ -1308,6 +1309,8 @@ void IOThread::ConfigureQuicGlobals(
     quic_user_agent_id.push_back(' ');
   chrome::VersionInfo version_info;
   quic_user_agent_id.append(version_info.ProductNameAndVersionForUserAgent());
+  quic_user_agent_id.push_back(' ');
+  quic_user_agent_id.append(content::BuildOSCpuInfo());
   globals->quic_user_agent_id.set(quic_user_agent_id);
 
   net::QuicVersion version = GetQuicVersion(command_line, quic_trial_params);
