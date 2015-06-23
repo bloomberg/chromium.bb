@@ -2419,18 +2419,42 @@ static bool HasScrollAncestor(LayerImpl* child, LayerImpl* scroll_ancestor) {
   return false;
 }
 
+InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
+    LayerImpl* scrolling_layer_impl,
+    InputHandler::ScrollInputType type) {
+  if (!scrolling_layer_impl)
+    return SCROLL_IGNORED;
+
+  top_controls_manager_->ScrollBegin();
+
+  active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
+  should_bubble_scrolls_ = (type != NON_BUBBLING_GESTURE);
+  wheel_scrolling_ = (type == WHEEL);
+  client_->RenewTreePriority();
+  UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
+  return SCROLL_STARTED;
+}
+
+InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
+    InputHandler::ScrollInputType type) {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::RootScrollBegin");
+
+  DCHECK(!CurrentlyScrollingLayer());
+  ClearCurrentlyScrollingLayer();
+
+  return ScrollBeginImpl(InnerViewportScrollLayer(), type);
+}
+
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     const gfx::Point& viewport_point,
     InputHandler::ScrollInputType type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
-  top_controls_manager_->ScrollBegin();
-
   DCHECK(!CurrentlyScrollingLayer());
   ClearCurrentlyScrollingLayer();
 
-  gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
-                                                      device_scale_factor_);
+  gfx::PointF device_viewport_point =
+      gfx::ScalePoint(viewport_point, device_scale_factor_);
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
@@ -2443,27 +2467,16 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   }
 
   bool scroll_on_main_thread = false;
-  LayerImpl* scrolling_layer_impl =
-      FindScrollLayerForDeviceViewportPoint(device_viewport_point,
-                                            type,
-                                            layer_impl,
-                                            &scroll_on_main_thread,
-                                            &scroll_affects_scroll_handler_);
+  LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
+      device_viewport_point, type, layer_impl, &scroll_on_main_thread,
+      &scroll_affects_scroll_handler_);
 
   if (scroll_on_main_thread) {
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
     return SCROLL_ON_MAIN_THREAD;
   }
 
-  if (scrolling_layer_impl) {
-    active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
-    should_bubble_scrolls_ = (type != NON_BUBBLING_GESTURE);
-    wheel_scrolling_ = (type == WHEEL);
-    client_->RenewTreePriority();
-    UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
-    return SCROLL_STARTED;
-  }
-  return SCROLL_IGNORED;
+  return ScrollBeginImpl(scrolling_layer_impl, type);
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(

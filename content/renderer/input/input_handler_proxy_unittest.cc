@@ -87,6 +87,8 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD2(ScrollBegin,
                ScrollStatus(const gfx::Point& viewport_point,
                             cc::InputHandler::ScrollInputType type));
+  MOCK_METHOD1(RootScrollBegin,
+               ScrollStatus(cc::InputHandler::ScrollInputType type));
   MOCK_METHOD2(ScrollAnimated,
                ScrollStatus(const gfx::Point& viewport_point,
                             const gfx::Vector2dF& scroll_delta));
@@ -390,6 +392,21 @@ TEST_F(InputHandlerProxyTest, GestureScrollIgnored) {
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
   gesture_.type = WebInputEvent::GestureScrollEnd;
   EXPECT_CALL(mock_input_handler_, ScrollEnd()).WillOnce(testing::Return());
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_F(InputHandlerProxyTest, GestureScrollBeginThatTargetViewport) {
+  // We shouldn't send any events to the widget for this gesture.
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, RootScrollBegin(testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+
+  gesture_.type = WebInputEvent::GestureScrollBegin;
+  gesture_.data.scrollBegin.targetViewport = true;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();

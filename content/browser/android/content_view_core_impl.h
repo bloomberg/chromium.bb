@@ -122,13 +122,25 @@ class ContentViewCoreImpl : public ContentViewCore,
                                jfloat y,
                                jfloat vertical_axis,
                                jfloat horizontal_axis);
-  void ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
-                   jfloat x, jfloat y, jfloat hintx, jfloat hinty);
+  void ScrollBegin(JNIEnv* env,
+                   jobject obj,
+                   jlong time_ms,
+                   jfloat x,
+                   jfloat y,
+                   jfloat hintx,
+                   jfloat hinty,
+                   jboolean target_viewport);
   void ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms);
   void ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
                 jfloat x, jfloat y, jfloat dx, jfloat dy);
-  void FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
-                  jfloat x, jfloat y, jfloat vx, jfloat vy);
+  void FlingStart(JNIEnv* env,
+                  jobject obj,
+                  jlong time_ms,
+                  jfloat x,
+                  jfloat y,
+                  jfloat vx,
+                  jfloat vy,
+                  jboolean target_viewport);
   void FlingCancel(JNIEnv* env, jobject obj, jlong time_ms);
   void SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
                  jfloat x, jfloat y);

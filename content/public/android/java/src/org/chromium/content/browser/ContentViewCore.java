@@ -1310,11 +1310,11 @@ public class ContentViewCore implements
         nativeDoubleTap(mNativeContentViewCore, timeMs, x, y);
     }
 
-    public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
+    public void flingViewport(long timeMs, int velocityX, int velocityY) {
         if (mNativeContentViewCore == 0) return;
         nativeFlingCancel(mNativeContentViewCore, timeMs);
-        nativeScrollBegin(mNativeContentViewCore, timeMs, x, y, velocityX, velocityY);
-        nativeFlingStart(mNativeContentViewCore, timeMs, x, y, velocityX, velocityY);
+        nativeScrollBegin(mNativeContentViewCore, timeMs, 0, 0, velocityX, velocityY, true);
+        nativeFlingStart(mNativeContentViewCore, timeMs, 0, 0, velocityX, velocityY, true);
     }
 
     /**
@@ -1798,7 +1798,7 @@ public class ContentViewCore implements
         // be active when programatically scrolling. Cancelling the fling in
         // such cases ensures a consistent gesture event stream.
         if (mPotentiallyActiveFlingCount > 0) nativeFlingCancel(mNativeContentViewCore, time);
-        nativeScrollBegin(mNativeContentViewCore, time, 0, 0, -dxPix, -dyPix);
+        nativeScrollBegin(mNativeContentViewCore, time, 0, 0, -dxPix, -dyPix, false);
         nativeScrollBy(mNativeContentViewCore, time, 0, 0, dxPix, dyPix);
         nativeScrollEnd(mNativeContentViewCore, time);
     }
@@ -3138,9 +3138,8 @@ public class ContentViewCore implements
             long nativeContentViewCoreImpl, long timeMs, float x, float y, float verticalAxis,
             float horizontalAxis);
 
-    private native void nativeScrollBegin(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y, float hintX,
-            float hintY);
+    private native void nativeScrollBegin(long nativeContentViewCoreImpl, long timeMs, float x,
+            float y, float hintX, float hintY, boolean targetViewport);
 
     private native void nativeScrollEnd(long nativeContentViewCoreImpl, long timeMs);
 
@@ -3148,8 +3147,8 @@ public class ContentViewCore implements
             long nativeContentViewCoreImpl, long timeMs, float x, float y,
             float deltaX, float deltaY);
 
-    private native void nativeFlingStart(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y, float vx, float vy);
+    private native void nativeFlingStart(long nativeContentViewCoreImpl, long timeMs, float x,
+            float y, float vx, float vy, boolean targetViewport);
 
     private native void nativeFlingCancel(long nativeContentViewCoreImpl, long timeMs);
 

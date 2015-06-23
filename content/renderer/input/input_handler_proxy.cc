@@ -426,8 +426,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   DCHECK(!expect_scroll_update_end_);
   expect_scroll_update_end_ = true;
 #endif
-  cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
-      gfx::Point(gesture_event.x, gesture_event.y), cc::InputHandler::GESTURE);
+  cc::InputHandler::ScrollStatus scroll_status;
+  if (gesture_event.data.scrollBegin.targetViewport) {
+    scroll_status = input_handler_->RootScrollBegin(cc::InputHandler::GESTURE);
+  } else {
+    scroll_status = input_handler_->ScrollBegin(
+        gfx::Point(gesture_event.x, gesture_event.y),
+        cc::InputHandler::GESTURE);
+  }
   UMA_HISTOGRAM_ENUMERATION("Renderer4.CompositorScrollHitTestResult",
                             scroll_status,
                             cc::InputHandler::ScrollStatusCount);
@@ -487,9 +493,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
   cc::InputHandler::ScrollStatus scroll_status;
 
   if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad) {
-    scroll_status = input_handler_->ScrollBegin(
-        gfx::Point(gesture_event.x, gesture_event.y),
-        cc::InputHandler::NON_BUBBLING_GESTURE);
+    if (gesture_event.data.flingStart.targetViewport) {
+      scroll_status = input_handler_->RootScrollBegin(
+          cc::InputHandler::NON_BUBBLING_GESTURE);
+    } else {
+      scroll_status = input_handler_->ScrollBegin(
+          gfx::Point(gesture_event.x, gesture_event.y),
+          cc::InputHandler::NON_BUBBLING_GESTURE);
+    }
   } else {
     if (!gesture_scroll_on_impl_thread_)
       scroll_status = cc::InputHandler::SCROLL_ON_MAIN_THREAD;

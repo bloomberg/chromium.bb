@@ -122,7 +122,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().fling(SystemClock.uptimeMillis(), 0, 0, vx, vy);
+                getContentViewCore().flingViewport(SystemClock.uptimeMillis(), vx, vy);
             }
         });
     }

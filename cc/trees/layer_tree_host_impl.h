@@ -159,6 +159,8 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandler::ScrollStatus ScrollBegin(
       const gfx::Point& viewport_point,
       InputHandler::ScrollInputType type) override;
+  InputHandler::ScrollStatus RootScrollBegin(
+      InputHandler::ScrollInputType type) override;
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;
@@ -596,6 +598,10 @@ class CC_EXPORT LayerTreeHostImpl
   // Scroll by preferring to move the inner viewport first, only moving the
   // outer if the inner is at its scroll extents.
   void ScrollViewportInnerFirst(gfx::Vector2dF scroll_delta);
+
+  InputHandler::ScrollStatus ScrollBeginImpl(
+      LayerImpl* scrolling_layer_impl,
+      InputHandler::ScrollInputType type);
 
   void AnimateInput(base::TimeTicks monotonic_time);
   void AnimatePageScale(base::TimeTicks monotonic_time);

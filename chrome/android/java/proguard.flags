@@ -114,7 +114,7 @@
   *;
 }
 
-# fling is used by Android WebView and a Chrome test.
+# flingViewport is used by Android WebView and a Chrome test.
 -keepclassmembers class org.chromium.content.browser.ContentViewCore {
-  public void fling(long, int, int, int, int);
+  public void flingViewport(long, int, int);
 }

@@ -7322,6 +7322,34 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
   }
 }
 
+TEST_F(LayerTreeHostImplVirtualViewportTest,
+       ScrollBeginEventThatTargetsViewportLayerSkipsHitTest) {
+  gfx::Size content_size = gfx::Size(100, 160);
+  gfx::Size outer_viewport = gfx::Size(50, 80);
+  gfx::Size inner_viewport = gfx::Size(25, 40);
+
+  SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
+
+  LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
+
+  scoped_ptr<LayerImpl> child =
+      CreateScrollableLayer(10, outer_viewport, outer_scroll);
+  LayerImpl* child_scroll = child.get();
+  outer_scroll->children()[0]->AddChild(child.Pass());
+
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->RootScrollBegin(InputHandler::GESTURE));
+  EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), inner_scroll);
+  host_impl_->ScrollEnd();
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
+  EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child_scroll);
+  host_impl_->ScrollEnd();
+}
+
 class LayerTreeHostImplWithImplicitLimitsTest : public LayerTreeHostImplTest {
  public:
   void SetUp() override {

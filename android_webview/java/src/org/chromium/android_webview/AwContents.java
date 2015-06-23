@@ -1950,7 +1950,7 @@ public class AwContents implements SmartClipProvider,
         // should add a method flingRootLayer to ContentViewCore
         // and call it here to specifically target the scroll at
         // the root layer.
-        mContentViewCore.fling(SystemClock.uptimeMillis(), 0, 0, -velocityX, -velocityY);
+        mContentViewCore.flingViewport(SystemClock.uptimeMillis(), -velocityX, -velocityY);
     }
 
     /**

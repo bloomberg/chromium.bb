@@ -88,6 +88,9 @@ class CC_EXPORT InputHandler {
   virtual ScrollStatus ScrollBegin(const gfx::Point& viewport_point,
                                    ScrollInputType type) = 0;
 
+  // Similar to ScrollBegin, except the hit test is skipped and scroll always
+  // targets at the root layer.
+  virtual ScrollStatus RootScrollBegin(ScrollInputType type) = 0;
   virtual ScrollStatus ScrollAnimated(const gfx::Point& viewport_point,
                                       const gfx::Vector2dF& scroll_delta) = 0;
 
