@@ -1163,7 +1163,6 @@ void FrameLoader::detach()
         m_progressTracker->dispose();
         m_progressTracker.clear();
     }
-    setOpener(0);
 }
 
 void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const ResourceError& error)

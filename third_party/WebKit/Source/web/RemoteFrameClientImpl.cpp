@@ -55,9 +55,9 @@ Frame* RemoteFrameClientImpl::opener() const
     return toCoreFrame(m_webFrame->opener());
 }
 
-void RemoteFrameClientImpl::setOpener(Frame*)
+void RemoteFrameClientImpl::setOpener(Frame* opener)
 {
-    // FIXME: Implement.
+    m_webFrame->setOpener(WebFrame::fromFrame(opener));
 }
 
 Frame* RemoteFrameClientImpl::parent() const
