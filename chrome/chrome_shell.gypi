@@ -97,7 +97,7 @@
         'native_lib_version_name': '<(version_full)',
         'java_in_dir': 'android/shell/java',
         'resource_dir': 'android/shell/res',
-        'asset_location': '<(PRODUCT_DIR)/../assets/<(package_name)',
+        'asset_location': '<(PRODUCT_DIR)/assets/<(package_name)',
         'native_lib_target': 'libchromeshell',
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',
@@ -150,7 +150,7 @@
         'native_lib_version_name': '<(version_full)',
         'java_in_dir': 'android/shell/java',
         'resource_dir': 'android/shell/res',
-        'asset_location': '<(PRODUCT_DIR)/../assets/<(package_name)',
+        'asset_location': '<(PRODUCT_DIR)/assets/<(package_name)',
         'native_lib_target': 'libchromesyncshell',
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',

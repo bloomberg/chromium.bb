@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'variables': {
-    'chrome_android_pak_output_folder': '<@(PRODUCT_DIR)/../assets/<(package_name)',
+    'chrome_android_pak_output_folder': '<@(PRODUCT_DIR)/assets/<(package_name)',
     'chrome_android_pak_input_resources': [
       '<(PRODUCT_DIR)/resources.pak',
       '<(PRODUCT_DIR)/chrome_100_percent.pak',
