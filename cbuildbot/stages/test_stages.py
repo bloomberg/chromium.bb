@@ -257,6 +257,11 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                       'See UploadTestArtifacts for details.')
       return
 
+    if (self.suite_config.suite == constants.HWTEST_AFDO_SUITE and
+        not self._run.attrs.metadata.GetValue('chrome_was_uprevved')):
+      logging.info('Chrome was not uprevved. Nothing to do in this stage')
+      return
+
     build = '/'.join([self._bot_id, self.version])
     if self._run.options.remote_trybot and self._run.options.hwtest:
       debug = self._run.options.debug_forced
