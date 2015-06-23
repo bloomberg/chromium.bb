@@ -161,7 +161,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
 }
 
 // TCM: 3705291
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2ETestAddThenDelete) {
+// crbug.com/503646: Disabled as E2ETest.
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenDelete) {
   const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
