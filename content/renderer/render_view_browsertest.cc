@@ -676,8 +676,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // This test is invalid in --site-per-process mode, as swapped-out is no
   // longer used.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (RenderFrameProxy::IsSwappedOutStateForbidden()) {
     return;
   }
   LoadHTML("<div>Page A</div>");
@@ -728,8 +727,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
 TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   // This test is invalid in --site-per-process mode, as swapped-out is no
   // longer used.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (RenderFrameProxy::IsSwappedOutStateForbidden()) {
     return;
   }
 

@@ -170,8 +170,7 @@ TEST_F(RendererAccessibilityTest,
   // the main frame and it cannot be further navigated.
   // TODO(nasko): Figure out what this behavior looks like when swapped out
   // no longer exists.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (RenderFrameProxy::IsSwappedOutStateForbidden()) {
     return;
   }
   std::string html =

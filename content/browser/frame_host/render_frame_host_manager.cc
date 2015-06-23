@@ -50,6 +50,12 @@ bool RenderFrameHostManager::ClearRFHsPendingShutdown(FrameTreeNode* node) {
   return true;
 }
 
+// static
+bool RenderFrameHostManager::IsSwappedOutStateForbidden() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+}
+
 RenderFrameHostManager::RenderFrameHostManager(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostDelegate* render_frame_delegate,
@@ -614,8 +620,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
   // SwapOut creates a RenderFrameProxy, so set the proxy to be initialized.
   proxy->set_render_frame_proxy_created(true);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
     // In --site-per-process, frames delete their RFH rather than storing it
     // in the proxy.  Schedule it for deletion once the SwapOutACK comes in.
     // TODO(creis): This will be the default when we remove swappedout://.
@@ -655,8 +660,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     if (!render_frame_host->is_swapped_out())
       render_frame_host->SwapOut(proxy, false);
 
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+    if (!RenderFrameHostManager::IsSwappedOutStateForbidden()) {
       DCHECK(frame_tree_node_->IsMainFrame());
       proxy->TakeFrameHostOwnership(render_frame_host.Pass());
     }
@@ -932,8 +936,7 @@ bool RenderFrameHostManager::ClearProxiesInSiteInstance(
         proxy->render_frame_host() &&
         proxy->render_frame_host()->rfh_state() ==
             RenderFrameHostImpl::STATE_PENDING_SWAP_OUT) {
-      DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess));
+      DCHECK(!RenderFrameHostManager::IsSwappedOutStateForbidden());
       scoped_ptr<RenderFrameHostImpl> swapped_out_rfh =
           proxy->PassFrameHostOwnership();
       node->render_manager()->MoveToPendingDeleteHosts(swapped_out_rfh.Pass());
@@ -1468,11 +1471,12 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     int flags,
     int* view_routing_id_ptr) {
   bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
+  bool swapped_out_forbidden = IsSwappedOutStateForbidden();
   bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSitePerProcess);
 
   CHECK(instance);
-  CHECK_IMPLIES(is_site_per_process, !swapped_out);
+  CHECK_IMPLIES(swapped_out_forbidden, !swapped_out);
   CHECK_IMPLIES(!is_site_per_process, frame_tree_node_->IsMainFrame());
 
   // Swapped out views should always be hidden.
@@ -1492,7 +1496,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // remove it from the list of proxy hosts below if it will be active.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
   if (proxy && proxy->render_frame_host()) {
-    CHECK(!is_site_per_process);
+    CHECK(!swapped_out_forbidden);
     if (view_routing_id_ptr)
       *view_routing_id_ptr = proxy->GetRenderViewHost()->GetRoutingID();
     // Delete the existing RenderFrameProxyHost, but reuse the RenderFrameHost.
@@ -1587,13 +1591,11 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   CHECK(instance);
   CHECK_NE(instance, render_frame_host_->GetSiteInstance());
 
-  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
   RenderViewHostImpl* render_view_host = nullptr;
 
   // Ensure a RenderViewHost exists for |instance|, as it creates the page
   // level structure in Blink.
-  if (is_site_per_process) {
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
     render_view_host =
         frame_tree_node_->frame_tree()->GetRenderViewHost(instance);
     if (!render_view_host) {
@@ -1613,7 +1615,8 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
     proxy_hosts_[instance->GetId()] = proxy;
   }
 
-  if (is_site_per_process && frame_tree_node_->IsMainFrame()) {
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden() &&
+      frame_tree_node_->IsMainFrame()) {
     InitRenderView(
         render_view_host, MSG_ROUTING_NONE, proxy->GetRoutingID(), true);
     proxy->set_render_frame_proxy_created(true);
@@ -1758,8 +1761,6 @@ void RenderFrameHostManager::CommitPending() {
   bool browser_side_navigation =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation);
-  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
 
   // First check whether we're going to want to focus the location bar after
   // this commit.  We do this now because the navigation hasn't formally
@@ -1866,7 +1867,7 @@ void RenderFrameHostManager::CommitPending() {
   // If this is committing a main frame navigation, update it and set the
   // routing id in the RenderViewHost associated with the old RenderFrameHost
   // to MSG_ROUTING_NONE.
-  if (is_main_frame && is_site_per_process) {
+  if (is_main_frame && RenderFrameHostManager::IsSwappedOutStateForbidden()) {
     render_frame_host_->render_view_host()->set_main_frame_routing_id(
         render_frame_host_->routing_id());
     old_render_frame_host->render_view_host()->set_main_frame_routing_id(
@@ -1877,11 +1878,11 @@ void RenderFrameHostManager::CommitPending() {
   // This will swap it out and then put it on the proxy list (if there are other
   // active views in its SiteInstance) or schedule it for deletion when the swap
   // out ack arrives (or immediately if the process isn't live).
-  // In the --site-per-process case, old subframe RHFs are not kept alive inside
+  // In the --site-per-process case, old subframe RFHs are not kept alive inside
   // the proxy.
   SwapOutOldFrame(old_render_frame_host.Pass());
 
-  if (is_site_per_process) {
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
     // Since the new RenderFrameHost is now committed, there must be no proxies
     // for its SiteInstance. Delete any existing ones.
     RenderFrameProxyHostMap::iterator iter =
@@ -1890,7 +1891,10 @@ void RenderFrameHostManager::CommitPending() {
       delete iter->second;
       proxy_hosts_.erase(iter);
     }
+  }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
     // If this is a subframe, it should have a CrossProcessFrameConnector
     // created already.  Use it to link the new RFH's view to the proxy that
     // belongs to the parent frame's SiteInstance. If this navigation causes
@@ -2223,8 +2227,7 @@ int RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
     return rvh->GetRoutingID();
 
   int render_view_routing_id = MSG_ROUTING_NONE;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
     // Ensure that all the nodes in the opener's frame tree have
     // RenderFrameProxyHosts for the new SiteInstance.
     frame_tree->CreateProxiesForSiteInstance(nullptr, instance);

@@ -459,8 +459,6 @@ TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
 // Test that navigating across a site boundary creates a new RenderViewHost
 // with a new SiteInstance.  Going back should do the same.
 TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
-  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
   TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
   int orig_rvh_delete_count = 0;
   orig_rfh->GetRenderViewHost()->set_delete_counter(&orig_rvh_delete_count);
@@ -540,8 +538,10 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
     contents()->GetMainFrame()->PrepareForCommit();
   }
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
-  if (!is_site_per_process)
+  if (!RenderFrameHostManager::IsSwappedOutStateForbidden()) {
+    // Recycling the rfh is a behavior specific to swappedout://
     EXPECT_EQ(orig_rfh, goback_rfh);
+  }
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Navigations should be suspended in goback_rfh until BeforeUnloadACK.

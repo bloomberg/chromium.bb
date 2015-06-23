@@ -227,8 +227,7 @@ void FrameTree::CreateProxiesForSiteInstance(
   if (!source || !source->IsMainFrame()) {
     RenderViewHostImpl* render_view_host = GetRenderViewHost(site_instance);
     if (!render_view_host) {
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess)) {
+      if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
         root()->render_manager()->CreateRenderFrameProxy(site_instance);
       } else {
         root()->render_manager()->CreateRenderFrame(

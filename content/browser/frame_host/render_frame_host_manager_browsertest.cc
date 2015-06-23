@@ -1165,10 +1165,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SwappedOutViewHasCorrectVisibilityState) {
   // This test is invalid in --site-per-process mode, as swapped-out is no
   // longer used.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden())
     return;
-  }
   StartServer();
 
   // Load a page with links that open in a new window.

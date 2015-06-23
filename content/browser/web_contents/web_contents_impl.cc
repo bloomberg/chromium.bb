@@ -3949,8 +3949,7 @@ bool WebContentsImpl::AddMessageToConsole(int32 level,
 int WebContentsImpl::CreateSwappedOutRenderView(
     SiteInstance* instance) {
   int render_view_routing_id = MSG_ROUTING_NONE;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess)) {
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
     GetRenderManager()->CreateRenderFrameProxy(instance);
   } else {
     GetRenderManager()->CreateRenderFrame(
