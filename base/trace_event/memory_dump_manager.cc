@@ -53,23 +53,6 @@ uint32 g_periodic_dumps_count = 0;
 MemoryDumpManager* g_instance_for_testing = nullptr;
 MemoryDumpProvider* g_mmaps_dump_provider = nullptr;
 
-const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type) {
-  switch (dump_type) {
-    case MemoryDumpType::TASK_BEGIN:
-      return "TASK_BEGIN";
-    case MemoryDumpType::TASK_END:
-      return "TASK_END";
-    case MemoryDumpType::PERIODIC_INTERVAL:
-      return "PERIODIC_INTERVAL";
-    case MemoryDumpType::PERIODIC_INTERVAL_WITH_MMAPS:
-      return "PERIODIC_INTERVAL_WITH_MMAPS";
-    case MemoryDumpType::EXPLICITLY_TRIGGERED:
-      return "EXPLICITLY_TRIGGERED";
-  }
-  NOTREACHED();
-  return "UNKNOWN";
-}
-
 // Internal class used to hold details about ProcessMemoryDump requests for the
 // current process.
 class ProcessMemoryDumpHolder

@@ -13,6 +13,7 @@
       'trace_event/memory_dump_manager.cc',
       'trace_event/memory_dump_manager.h',
       'trace_event/memory_dump_provider.h',
+      'trace_event/memory_dump_request_args.cc',
       'trace_event/memory_dump_request_args.h',
       'trace_event/memory_dump_session_state.cc',
       'trace_event/memory_dump_session_state.h',

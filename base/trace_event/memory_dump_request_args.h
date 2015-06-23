@@ -26,6 +26,9 @@ enum class MemoryDumpType {
   LAST = EXPLICITLY_TRIGGERED // For IPC macros.
 };
 
+// Returns the name in string for the dump type given.
+BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);
+
 using MemoryDumpCallback = Callback<void(uint64 dump_guid, bool success)>;
 
 struct BASE_EXPORT MemoryDumpRequestArgs {

@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,6 +21,8 @@
 
 namespace {
 
+using base::trace_event::MemoryDumpManager;
+using base::trace_event::MemoryDumpType;
 using tracing::BeginTracingWithWatch;
 using tracing::WaitForWatchEvent;
 using tracing::EndTracing;
@@ -107,4 +110,38 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
   ASSERT_TRUE(EndTracing(&json_events));
 }
 
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
+  std::string json_events;
+  base::TimeDelta no_timeout;
+
+  GURL url1("about:blank");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
+
+  // Begin tracing and watch for multiple periodic dump trace events.
+  std::string event_name = base::trace_event::MemoryDumpTypeToString(
+      MemoryDumpType::PERIODIC_INTERVAL);
+  ASSERT_TRUE(BeginTracingWithWatch(MemoryDumpManager::kTraceCategoryForTesting,
+                                    MemoryDumpManager::kTraceCategoryForTesting,
+                                    event_name, 10));
+
+  GURL url2("chrome://credits/");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
+
+  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
+  ASSERT_TRUE(EndTracing(&json_events));
+
+  // Expect the basic memory dumps to be present in the trace.
+  EXPECT_NE(std::string::npos, json_events.find("process_totals"));
+
+  EXPECT_NE(std::string::npos, json_events.find("malloc"));
+  EXPECT_NE(std::string::npos, json_events.find("v8"));
+  EXPECT_NE(std::string::npos, json_events.find("blink_gc"));
+  EXPECT_NE(std::string::npos, json_events.find("gpumemorybuffer"));
+}
 }  // namespace
