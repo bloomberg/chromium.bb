@@ -94,6 +94,13 @@ class BitmapFetcherServiceTest : public testing::Test,
     const_cast<chrome::BitmapFetcher*>(fetcher)->OnImageDecoded(SkBitmap());
   }
 
+  // A failed decode results in a nullptr image.
+  void FailDecode(const GURL& url) {
+    const chrome::BitmapFetcher* fetcher = service_->FindFetcherForUrl(url);
+    ASSERT_TRUE(fetcher);
+    const_cast<chrome::BitmapFetcher*>(fetcher)->OnDecodeImageFailed();
+  }
+
  protected:
   scoped_ptr<BitmapFetcherService> service_;
 
@@ -166,6 +173,17 @@ TEST_F(BitmapFetcherServiceTest, CancelRequest) {
   EXPECT_EQ(4, images_changed_);
 }
 
+TEST_F(BitmapFetcherServiceTest, FailedNullRequestsAreHandled) {
+  service_->RequestImage(url1_, new TestObserver(this));
+  service_->RequestImage(url2_, new TestObserver(this));
+  EXPECT_EQ(0U, cache_size());
+
+  CompleteFetch(url1_);
+  EXPECT_EQ(1U, cache_size());
+
+  FailDecode(url2_);
+  EXPECT_EQ(1U, cache_size());
+}
 TEST_F(BitmapFetcherServiceTest, FailedRequestsDontEnterCache) {
   service_->RequestImage(url1_, new TestObserver(this));
   service_->RequestImage(url2_, new TestObserver(this));
