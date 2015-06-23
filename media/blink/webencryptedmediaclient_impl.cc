@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/key_systems.h"
+#include "media/base/media_client.h"
 #include "media/base/media_permission.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
@@ -94,6 +95,12 @@ WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() {
 void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     blink::WebEncryptedMediaRequest request) {
   GetReporter(request.keySystem())->ReportRequested();
+
+  if (GetMediaClient()) {
+    GetMediaClient()->RecordRapporURL(
+        "Media.OriginUrl.EME", GURL(request.securityOrigin().toString()));
+  }
+
   key_system_config_selector_.SelectConfig(
       request.keySystem(), request.supportedConfigurations(),
       request.securityOrigin(), are_secure_codecs_supported_cb_.Run(),
