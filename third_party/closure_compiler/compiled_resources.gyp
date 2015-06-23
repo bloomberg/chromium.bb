@@ -25,6 +25,7 @@
         '../../chrome/browser/resources/options/compiled_resources.gyp:*',
         '../../chrome/browser/resources/ntp4/compiled_resources.gyp:*',
         '../../chrome/browser/resources/uber/compiled_resources.gyp:*',
+        '../../remoting/remoting_webapp_compile.gypi:*',
         '../../ui/file_manager/audio_player/js/compiled_resources.gyp:*',
         '../../ui/file_manager/file_manager/background/js/compiled_resources.gyp:*',
         '../../ui/file_manager/file_manager/foreground/js/compiled_resources.gyp:*',
@@ -36,9 +37,6 @@
         '../../ui/webui/resources/js/chromeos/compiled_resources.gyp:*',
         '../../ui/webui/resources/js/compiled_resources.gyp:*',
         '../../ui/webui/resources/js/cr/ui/compiled_resources.gyp:*',
-      ],
-      'includes': [
-        '../../remoting/remoting_webapp_compile.gypi',
       ],
     },
   ]

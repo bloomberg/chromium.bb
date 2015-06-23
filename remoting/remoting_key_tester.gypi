@@ -48,27 +48,12 @@
           'conditions': [
             ['run_jscompile != 0', {
               'variables': {
-                'success_stamp': '<(PRODUCT_DIR)/<(_target_name).stamp',
+                'source_files': [
+                  '<@(remoting_key_tester_js_files)',
+                ],
+                'out_file': '<(PRODUCT_DIR)/<(_target_name).stamp',
               },
-              'actions': [
-                {
-                  'action_name': 'jscompile remoting_key_tester',
-                  'inputs': [
-                    '<@(remoting_key_tester_js_files)',
-                  ],
-                  'outputs': [
-                    '<(success_stamp)',
-                  ],
-                  'action': [
-                    'python', '../third_party/closure_compiler/compile.py',
-                    '--strict',
-                    '--no-single-file',
-                    '--externs', '<(DEPTH)/third_party/closure_compiler/externs/chrome_extensions.js',
-                    '--success-stamp', '<(success_stamp)',
-                    '<@(remoting_key_tester_js_files)',
-                  ],
-                },
-              ],  # actions
+              'includes': ['compile_js.gypi'],
             }],
           ],
         },  # end of target 'remoting_key_tester_jscompile'

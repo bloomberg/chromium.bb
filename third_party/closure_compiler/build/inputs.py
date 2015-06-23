@@ -72,21 +72,25 @@ def resolve_recursive_dependencies(source, input_depends, depends_externs):
 
 def GetInputs(args):
   parser = argparse.ArgumentParser()
-  parser.add_argument("source", nargs=1)
+  parser.add_argument("sources", nargs=argparse.ONE_OR_MORE)
   parser.add_argument("-d", "--depends", nargs=argparse.ZERO_OR_MORE,
                       default=[])
   parser.add_argument("-e", "--externs", nargs=argparse.ZERO_OR_MORE,
                       default=[])
   opts = parser.parse_args(args)
 
-  source = opts.source[0]
-  depends, externs = resolve_recursive_dependencies(
-      os.path.normpath(os.path.join(os.getcwd(), source)),
-      opts.depends,
-      opts.externs)
+  # TODO(twellington): resolve dependencies for multiple sources.
+  if len(opts.sources) == 1:
+    depends, externs = resolve_recursive_dependencies(
+        os.path.normpath(os.path.join(os.getcwd(), opts.sources[0])),
+        opts.depends,
+        opts.externs)
+  else:
+    depends = opts.depends
+    externs = set(opts.externs)
 
   files = set()
-  for file in {source} | set(depends) | externs:
+  for file in set(opts.sources) | set(depends) | externs:
     files.add(file)
     files.update(processor.Processor(file).included_files)
 

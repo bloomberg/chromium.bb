@@ -9,6 +9,7 @@ import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_options.gni")
 import("//remoting/remoting_version.gni")
 import("//remoting/webapp/files.gni")
+import("//third_party/closure_compiler/closure_args.gni")
 
 # The base remoting directory that is used as the root directory for file
 # references. Many of the scripts rely on the files being specified relative
@@ -64,16 +65,21 @@ template("build_webapp_html") {
         target_jscompile_stamp,
       ]
 
-      args = [
-        "--strict",
-        "--no-single-file",
+      extra_closure_args = [
+        "jscomp_error=reportUnknownTypes",
+        "jscomp_error=duplicate",
+        "jscomp_error=misplacedTypeAnnotation",
       ]
-      args += [ "--externs" ] + rebase_path(externs, root_build_dir)
+
+      args = rebase_path(js_files, root_build_dir)
       args += [
-        "--success-stamp",
-        rebase_path(target_jscompile_stamp, root_build_dir),
-      ]
-      args += rebase_path(js_files, root_build_dir)
+                "--no-single-file",
+                "--externs",
+                rebase_path(externs, root_build_dir),
+                "--out-file",
+                rebase_path(target_jscompile_stamp, root_build_dir),
+                "--closure-args",
+              ] + closure_args + extra_closure_args
     }
   }
 

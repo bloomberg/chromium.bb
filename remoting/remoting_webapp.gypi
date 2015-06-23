@@ -23,7 +23,7 @@
   ],
   'conditions': [
     ['run_jscompile != 0', {
-      'includes': ['remoting_webapp_compile.gypi'],
+      'dependencies': ['remoting_webapp_compile.gypi:*'],
     }],
   ],
   'actions': [

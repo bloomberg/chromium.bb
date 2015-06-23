@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from ast import literal_eval
 import os
 import tempfile
 import unittest
@@ -22,6 +23,9 @@ _POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v1_0",
                                 "polymer.externs.js")
 _CHROME_SEND_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
                                     "externs", "chrome_send.js")
+_GYPI_DICT = literal_eval(open(os.path.join(_SCRIPT_DIR, 'compile_js.gypi')).read())
+_COMMON_CLOSURE_ARGS =_GYPI_DICT['variables']['closure_args+']
+_COMMON_CLOSURE_ARGS += _GYPI_DICT['actions'][0]['variables']['disabled_closure_args%']
 
 
 class CompilerTest(unittest.TestCase):
@@ -38,16 +42,17 @@ class CompilerTest(unittest.TestCase):
       if os.path.exists(file):
         os.remove(file)
 
-  def _runChecker(self, source_code, output_wrapper=None):
+  def _runChecker(self, source_code, closure_args=None):
     file_path = "/script.js"
     FileCache._cache[file_path] = source_code
     out_file, out_map = self._createOutFiles()
+    args = _COMMON_CLOSURE_ARGS + (closure_args or [])
 
     externs = [_POLYMER_EXTERNS, _CHROME_SEND_EXTERNS]
     found_errors, stderr = self._checker.check(file_path,
                                                externs=externs,
                                                out_file=out_file,
-                                               output_wrapper=output_wrapper)
+                                               closure_args=args)
     return found_errors, stderr, out_file, out_map
 
   def _runCheckerTestExpectError(self, source_code, expected_error):
@@ -60,9 +65,9 @@ class CompilerTest(unittest.TestCase):
     self.assertFalse(os.path.exists(out_map))
 
   def _runCheckerTestExpectSuccess(self, source_code, expected_output=None,
-                                   output_wrapper=None):
+                                   closure_args=None):
     found_errors, stderr, out_file, out_map = self._runChecker(source_code,
-                                                               output_wrapper)
+                                                               closure_args)
 
     self.assertFalse(found_errors,
         msg="Expected success, but got failure\n\nOutput:\n%s\n" % stderr)
@@ -285,9 +290,9 @@ var testScript = function() {
 """
     expected_output = ("""(function(){'use strict';var testScript=function()"""
                        """{console.log("hello world")};})();\n""")
-    output_wrapper="(function(){%output%})();"
+    closure_args=["output_wrapper='(function(){%output%})();'"]
     self._runCheckerTestExpectSuccess(source_code, expected_output,
-                                      output_wrapper=output_wrapper)
+                                      closure_args)
 
   def testCheckMultiple(self):
     source_file1 = tempfile.NamedTemporaryFile(delete=False)
@@ -311,9 +316,9 @@ testScript();
     out_file, out_map = self._createOutFiles()
     sources = [source_file1.name, source_file2.name]
     externs = [_POLYMER_EXTERNS]
-    found_errors, stderr = self._checker.check_multiple(sources,
-                                                        externs=externs,
-                                                        out_file=out_file)
+    found_errors, stderr = self._checker.check_multiple(
+        sources, externs=externs, out_file=out_file,
+        closure_args=_COMMON_CLOSURE_ARGS)
     self.assertFalse(found_errors,
         msg="Expected success, but got failure\n\nOutput:\n%s\n" % stderr)
 

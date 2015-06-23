@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/closure_compiler/closure_args.gni")
+import("//third_party/document_image_extractor/document_image_extractor.gni")
 import("//tools/grit/grit_rule.gni")
 
-closure_out_dir = "$root_gen_dir/closure/components/resources/enhanced_bookmarks"
+closure_out_dir =
+    "$root_gen_dir/closure/components/resources/enhanced_bookmarks"
 
 # GYP version: components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.gyp
-#              (generate_enhanced_bookmarks_resources action)
 grit("enhanced_bookmarks_resources") {
   source = "enhanced_bookmarks_resources.grd"
 
@@ -35,10 +37,8 @@ grit("enhanced_bookmarks_resources") {
 }
 
 # GYP version: components/resources/enhanced_bookmarks/enhanced_bookmarks.gypi
-import("//third_party/document_image_extractor/document_image_extractor.gni")
-
 rebased_closure_out_dir = rebase_path(root_gen_dir, "../") +
-    "/closure/components/resources/enhanced_bookmarks/"
+                          "/closure/components/resources/enhanced_bookmarks/"
 
 action("document_image_extractor") {
   script = "//third_party/closure_compiler/compile.py"
@@ -52,15 +52,11 @@ action("document_image_extractor") {
   document_image_extractor_sources =
       rebase_path(document_image_extractor_js_files, "third_party/", "../")
 
-  args =
-         [ "../../components/resources/enhanced_bookmarks/get_salient_image_url.js" ] +
-         document_image_extractor_sources +
-         [
-           "--out_file=${rebased_closure_out_dir}/get_salient_image_url.js",
+  args = [ "../../components/resources/enhanced_bookmarks/get_salient_image_url.js" ] + document_image_extractor_sources + [
+           "--out-file=${rebased_closure_out_dir}/get_salient_image_url.js",
            "--no-single-file",
-           "--output_wrapper",
-           "(function(){%output% return GetSalientImageUrl();})();",
-         ]
+           "--closure-args",
+         ] + closure_args + default_disabled_closure_args + [ "output_wrapper='(function(){%output% return GetSalientImageUrl();})();'" ]
 }
 
 action("dom_initializer") {
@@ -79,9 +75,9 @@ action("dom_initializer") {
       [ "../../components/resources/enhanced_bookmarks/dom_initializer.js" ] +
       dom_controller_sources +
       [
-        "--out_file=${rebased_closure_out_dir}/dom_initializer.js",
+        "--out-file=${rebased_closure_out_dir}/dom_initializer.js",
         "--no-single-file",
-        "--output_wrapper",
-        "(function(){%output%})();",
-      ]
+        "--closure-args",
+      ] + closure_args + default_disabled_closure_args +
+      [ "output_wrapper='(function(){%output%})();'" ]
 }

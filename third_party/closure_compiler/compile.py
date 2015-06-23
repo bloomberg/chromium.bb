@@ -25,67 +25,6 @@ class Checker(object):
   """Runs the Closure compiler on given source files to typecheck them
   and produce minified output."""
 
-  _COMMON_JSCOMP_ERRORS = [
-    "accessControls",
-    "ambiguousFunctionDecl",
-    "checkStructDictInheritance",
-    "checkTypes",
-    "checkVars",
-    "constantProperty",
-    "deprecated",
-    "externsValidation",
-    "globalThis",
-    "invalidCasts",
-    "missingProperties",
-    "missingReturn",
-    "nonStandardJsDocs",
-    "suspiciousCode",
-    "undefinedNames",
-    "undefinedVars",
-    "unknownDefines",
-    "uselessCode",
-    "visibility",
-  ]
-
-  # Extra @jsDocAnnotations used when compiling polymer code.
-  _POLYMER_EXTRA_ANNOTATIONS = [
-    "attribute",
-    "status",
-    "element",
-    "homepage",
-    "submodule",
-    "group",
-  ]
-
-  _COMMON_CLOSURE_ARGS = [
-    "--accept_const_keyword",
-    "--language_in=ECMASCRIPT5_STRICT",
-    "--summary_detail_level=3",
-    "--compilation_level=SIMPLE_OPTIMIZATIONS",
-    "--source_map_format=V3",
-    "--polymer_pass",
-  ] + [
-    "--jscomp_error=%s" % err for err in _COMMON_JSCOMP_ERRORS
-  ] + [
-    "--extra_annotation_name=%s" % a for a in _POLYMER_EXTRA_ANNOTATIONS
-  ]
-
-  # These are the extra flags used when compiling in strict mode.
-  # Flags that are normally disabled are turned on for strict mode.
-  _STRICT_CLOSURE_ARGS = [
-    "--jscomp_error=reportUnknownTypes",
-    "--jscomp_error=duplicate",
-    "--jscomp_error=misplacedTypeAnnotation",
-  ]
-
-  _DISABLED_CLOSURE_ARGS = [
-    # TODO(dbeam): happens when the same file is <include>d multiple times.
-    "--jscomp_off=duplicate",
-    # TODO(fukino): happens when cr.defineProperty() has a type annotation.
-    # Avoiding parse-time warnings needs 2 pass compiling. crbug.com/421562.
-    "--jscomp_off=misplacedTypeAnnotation",
-  ]
-
   _JAR_COMMAND = [
     "java",
     "-jar",
@@ -134,12 +73,6 @@ class Checker(object):
       msg: An error message to log.
     """
     print >> sys.stderr, "(ERROR) %s" % msg
-
-  def _common_args(self):
-    """Returns an array of the common closure compiler args."""
-    if self._strict:
-      return self._COMMON_CLOSURE_ARGS + self._STRICT_CLOSURE_ARGS
-    return self._COMMON_CLOSURE_ARGS + self._DISABLED_CLOSURE_ARGS
 
   def _run_jar(self, jar, args):
     """Runs a .jar from the command line with arguments.
@@ -253,15 +186,14 @@ class Checker(object):
     return tmp_file.name
 
   def _run_js_check(self, sources, out_file=None, externs=None,
-                    output_wrapper=None):
+                    closure_args=None):
     """Check |sources| for type errors.
 
     Args:
       sources: Files to check.
       out_file: A file where the compiled output is written to.
       externs: @extern files that inform the compiler about custom globals.
-      output_wrapper: Wraps output into this string at the place denoted by the
-          marker token %output%.
+      closure_args: Arguments passed directly to the Closure compiler.
 
     Returns:
       (errors, stderr) A parsed list of errors (strings) found by the compiler
@@ -279,10 +211,10 @@ class Checker(object):
     if externs:
       args += ["--externs=%s" % e for e in externs]
 
-    if output_wrapper:
-      args += ['--output_wrapper="%s"' % output_wrapper]
+    if closure_args:
+      args += ["--%s" % arg for arg in closure_args]
 
-    args_file_content = " %s" % " ".join(self._common_args() + args)
+    args_file_content = " %s" % " ".join(args)
     self._log_debug("Args: %s" % args_file_content.strip())
 
     args_file = self._create_temp_file(args_file_content)
@@ -311,7 +243,7 @@ class Checker(object):
     return errors, stderr
 
   def check(self, source_file, out_file=None, depends=None, externs=None,
-            output_wrapper=None):
+            closure_args=None):
     """Closure compiler |source_file| while checking for errors.
 
     Args:
@@ -319,8 +251,7 @@ class Checker(object):
       out_file: A file where the compiled output is written to.
       depends: Files that |source_file| requires to run (e.g. earlier <script>).
       externs: @extern files that inform the compiler about custom globals.
-      output_wrapper: Wraps output into this string at the place denoted by the
-          marker token %output%.
+      closure_args: Arguments passed directly to the Closure compiler.
 
     Returns:
       (found_errors, stderr) A boolean indicating whether errors were found and
@@ -349,7 +280,7 @@ class Checker(object):
 
     errors, stderr = self._run_js_check([self._expanded_file],
                                         out_file=out_file, externs=externs,
-                                        output_wrapper=output_wrapper)
+                                        closure_args=closure_args)
     filtered_errors = self._filter_errors(errors)
     cleaned_errors = map(self._clean_up_error, filtered_errors)
     output = self._format_errors(cleaned_errors)
@@ -363,24 +294,23 @@ class Checker(object):
     self._nuke_temp_files()
     return bool(cleaned_errors), stderr
 
-  def check_multiple(self, sources, out_file=None, output_wrapper=None,
-                     externs=None):
+  def check_multiple(self, sources, out_file=None, externs=None,
+                     closure_args=None):
     """Closure compile a set of files and check for errors.
 
     Args:
       sources: An array of files to check.
       out_file: A file where the compiled output is written to.
-      output_wrapper: Wraps output into this string at the place denoted by the
-          marker token %output%.
       externs: @extern files that inform the compiler about custom globals.
+      closure_args: Arguments passed directly to the Closure compiler.
 
     Returns:
       (found_errors, stderr) A boolean indicating whether errors were found and
           the raw Closure Compiler stderr (as a string).
     """
     errors, stderr = self._run_js_check(sources, out_file=out_file,
-                                        output_wrapper=output_wrapper,
-                                        externs=externs)
+                                        externs=externs,
+                                        closure_args=closure_args)
     self._nuke_temp_files()
     return bool(errors), stderr
 
@@ -394,22 +324,19 @@ if __name__ == "__main__":
   single_file_group.add_argument("--single-file", dest="single_file",
                                  action="store_true",
                                  help="Process each source file individually")
+  # TODO(twellington): remove --no-single-file and use len(opts.sources).
   single_file_group.add_argument("--no-single-file", dest="single_file",
                                  action="store_false",
                                  help="Process all source files as a group")
   parser.add_argument("-d", "--depends", nargs=argparse.ZERO_OR_MORE)
   parser.add_argument("-e", "--externs", nargs=argparse.ZERO_OR_MORE)
-  parser.add_argument("-o", "--out_file",
+  parser.add_argument("-o", "--out-file", dest="out_file",
                       help="A file where the compiled output is written to")
-  parser.add_argument("-w", "--output_wrapper",
-                      help="Wraps output into this string at the place"
-                         + " denoted by the marker token %output%")
+  parser.add_argument("-c", "--closure-args", dest="closure_args",
+                      nargs=argparse.ZERO_OR_MORE,
+                      help="Arguments passed directly to the Closure compiler")
   parser.add_argument("-v", "--verbose", action="store_true",
                       help="Show more information as this script runs")
-  parser.add_argument("--strict", action="store_true",
-                      help="Enable strict type checking")
-  parser.add_argument("--success-stamp",
-                      help="Timestamp file to update upon success")
 
   parser.set_defaults(single_file=True, strict=False)
   opts = parser.parse_args()
@@ -432,19 +359,15 @@ if __name__ == "__main__":
 
       found_errors, _ = checker.check(source, out_file=opts.out_file,
                                       depends=depends, externs=externs,
-                                      output_wrapper=opts.output_wrapper)
+                                      closure_args=opts.closure_args)
       if found_errors:
         sys.exit(1)
   else:
     found_errors, stderr = checker.check_multiple(
         opts.sources,
         out_file=opts.out_file,
-        output_wrapper=opts.output_wrapper,
-        externs=externs)
+        externs=externs,
+        closure_args=opts.closure_args)
     if found_errors:
       print stderr
       sys.exit(1)
-
-  if opts.success_stamp:
-    with open(opts.success_stamp, "w"):
-      os.utime(opts.success_stamp, None)

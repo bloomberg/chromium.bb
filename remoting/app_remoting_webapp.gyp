@@ -7,92 +7,24 @@
     '../remoting/remoting_locales.gypi',
     '../remoting/app_remoting_webapp_build.gypi',
   ],
-
   'target_defaults': {
     'variables': {
       'ar_internal': 0,
-      'compiler_flags': [
-        '--strict',
-        '--no-single-file',
-        '--externs',
-        '../third_party/closure_compiler/externs/chrome_extensions.js',
-      ],
     },
-
-    'conditions': [
+   'conditions': [
       ['run_jscompile != 0', {
-        'actions': [
-          {
-            'action_name': 'Verify >(ar_app_name) main.html',
-            'variables': {
-              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_main_jscompile.stamp',
-            },
-            'inputs': [
-              '<@(ar_main_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-              # Include zip as input so that this action is run after the build.
-              '<(zip_path)',
-            ],
-            'outputs': [
-              '<(success_stamp)',
-            ],
-            'action': [
-              'python', '../third_party/closure_compiler/compile.py',
-              '<@(compiler_flags)',
-              '--success-stamp', '<(success_stamp)',
-              '<@(ar_main_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-            ],
-          },
-          {
-            'action_name': 'Verify >(ar_app_name) background.js',
-            'variables': {
-              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_background_jscompile.stamp',
-            },
-            'inputs': [
-              '<@(ar_background_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-              # Include zip as input so that this action is run after the build.
-              '<(zip_path)',
-            ],
-            'outputs': [
-              '<(success_stamp)',
-            ],
-            'action': [
-              'python', '../third_party/closure_compiler/compile.py',
-              '<@(compiler_flags)',
-              '--success-stamp', '<(success_stamp)',
-              '<@(ar_background_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-            ],
-          },
-          {
-            'action_name': 'Verify >(ar_app_name) feedback_consent.html',
-            'variables': {
-              'success_stamp': '<(PRODUCT_DIR)/>(_target_name)_feedback_consent_jscompile.stamp',
-            },
-            'inputs': [
-              '<@(ar_feedback_consent_html_all_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-              # Include zip as input so that this action is run after the build.
-              '<(zip_path)',
-            ],
-            'outputs': [
-              '<(success_stamp)',
-            ],
-            'action': [
-              'python', '../third_party/closure_compiler/compile.py',
-              '<@(compiler_flags)',
-              '--success-stamp', '<(success_stamp)',
-              '<@(ar_feedback_consent_html_all_js_files)',
-              '<@(remoting_webapp_js_proto_files)',
-            ],
-          },
-        ],  # actions
+        'dependencies': [
+          'app_remoting_webapp_compile.gypi:verify_main.html',
+          'app_remoting_webapp_compile.gypi:verify_background.js',
+          'app_remoting_webapp_compile.gypi:verify_feedback_consent.html',
+        ],
+      'inputs': [
+        # Include zip as input so that this action is run after the build.
+        '<(zip_path)',
+      ],
       }],
-    ],  # conditions
+    ], # conditions
   },
-
   'targets': [
     {
       # GN version: //remoting/webapp:ar_sample_app
