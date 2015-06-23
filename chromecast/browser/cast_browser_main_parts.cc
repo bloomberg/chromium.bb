@@ -46,8 +46,8 @@
 #include "ui/compositor/compositor_switches.h"
 
 #if defined(OS_ANDROID)
+#include "chromecast/app/android/crash_handler.h"
 #include "chromecast/browser/media/cast_media_client_android.h"
-#include "chromecast/crash/android/crash_handler.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
 #include "media/base/android/media_client_android.h"
 #include "net/android/network_change_notifier_factory_android.h"

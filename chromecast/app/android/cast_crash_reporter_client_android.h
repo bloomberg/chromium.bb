@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_CRASH_ANDROID_CAST_CRASH_REPORTER_CLIENT_ANDROID_H_
-#define CHROMECAST_CRASH_ANDROID_CAST_CRASH_REPORTER_CLIENT_ANDROID_H_
+#ifndef CHROMECAST_APP_ANDROID_CAST_CRASH_REPORTER_CLIENT_ANDROID_H_
+#define CHROMECAST_APP_ANDROID_CAST_CRASH_REPORTER_CLIENT_ANDROID_H_
 
 #include "base/compiler_specific.h"
 #include "components/crash/app/crash_reporter_client.h"
@@ -23,8 +23,7 @@ class CastCrashReporterClientAndroid
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
   int GetAndroidMinidumpDescriptor() override;
   bool GetCollectStatsConsent() override;
-  bool EnableBreakpadForProcess(
-      const std::string& process_type) override;
+  bool EnableBreakpadForProcess(const std::string& process_type) override;
   size_t RegisterCrashKeys() override;
 
  private:
@@ -35,4 +34,4 @@ class CastCrashReporterClientAndroid
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_CRASH_ANDROID_CAST_CRASH_REPORTER_CLIENT_ANDROID_H_
+#endif  // CHROMECAST_APP_ANDROID_CAST_CRASH_REPORTER_CLIENT_ANDROID_H_

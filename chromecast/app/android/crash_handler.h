@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_CRASH_ANDROID_CRASH_HANDLER_H_
-#define CHROMECAST_CRASH_ANDROID_CRASH_HANDLER_H_
+#ifndef CHROMECAST_APP_ANDROID_CRASH_HANDLER_H_
+#define CHROMECAST_APP_ANDROID_CRASH_HANDLER_H_
 
 #include <jni.h>
 #include <string>
@@ -54,4 +54,4 @@ class CrashHandler {
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_CRASH_ANDROID_CRASH_HANDLER_H_
+#endif  // CHROMECAST_APP_ANDROID_CRASH_HANDLER_H_

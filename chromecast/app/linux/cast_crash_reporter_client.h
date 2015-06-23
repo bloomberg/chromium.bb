@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_CRASH_CAST_CRASH_REPORTER_CLIENT_H_
-#define CHROMECAST_CRASH_CAST_CRASH_REPORTER_CLIENT_H_
+#ifndef CHROMECAST_APP_LINUX_CAST_CRASH_REPORTER_CLIENT_H_
+#define CHROMECAST_APP_LINUX_CAST_CRASH_REPORTER_CLIENT_H_
 
 #include <string>
 
@@ -20,12 +20,11 @@ class CastCrashReporterClient : public crash_reporter::CrashReporterClient {
   ~CastCrashReporterClient() override;
 
   // crash_reporter::CrashReporterClient implementation:
-  bool EnableBreakpadForProcess(
-      const std::string& process_type) override;
+  bool EnableBreakpadForProcess(const std::string& process_type) override;
   bool HandleCrashDump(const char* crashdump_filename) override;
 
  private:
-  static char* GetProcessType();
+  static const char* GetProcessType();
   static uint64_t GetProcessStartTime();
 
   DISALLOW_COPY_AND_ASSIGN(CastCrashReporterClient);
@@ -33,4 +32,4 @@ class CastCrashReporterClient : public crash_reporter::CrashReporterClient {
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_CRASH_CAST_CRASH_REPORTER_CLIENT_H_
+#endif  // CHROMECAST_APP_LINUX_CAST_CRASH_REPORTER_CLIENT_H_

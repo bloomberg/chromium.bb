@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/crash/android/crash_handler.h"
+#include "chromecast/app/android/crash_handler.h"
 
 #include <jni.h>
 #include <stdlib.h>
@@ -15,8 +15,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/handler/minidump_descriptor.h"
+#include "chromecast/app/android/cast_crash_reporter_client_android.h"
 #include "chromecast/base/version.h"
-#include "chromecast/crash/android/cast_crash_reporter_client_android.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/app/crash_reporter_client.h"
 #include "content/public/common/content_switches.h"
@@ -54,8 +54,8 @@ void CrashHandler::Initialize(const std::string& process_type,
 // static
 bool CrashHandler::GetCrashDumpLocation(base::FilePath* crash_dir) {
   DCHECK(g_crash_handler);
-  return g_crash_handler->crash_reporter_client_->
-      GetCrashDumpLocation(crash_dir);
+  return g_crash_handler->crash_reporter_client_->GetCrashDumpLocation(
+      crash_dir);
 }
 
 // static
@@ -94,11 +94,12 @@ void CrashHandler::Initialize() {
 void CrashHandler::InitializeUploader() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> crash_dump_path_java =
-      base::android::ConvertUTF8ToJavaString(env,
-                                             crash_dump_path_.value());
+      base::android::ConvertUTF8ToJavaString(env, crash_dump_path_.value());
   Java_CastCrashHandler_initializeUploader(
-      env, base::android::GetApplicationContext(),
-      crash_dump_path_java.obj(), UploadCrashToStaging());
+      env,
+      base::android::GetApplicationContext(),
+      crash_dump_path_java.obj(),
+      UploadCrashToStaging());
 }
 
 }  // namespace chromecast

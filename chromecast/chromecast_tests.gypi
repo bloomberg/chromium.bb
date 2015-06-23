@@ -20,7 +20,21 @@
         'base/process_utils_unittest.cc',
         'base/serializers_unittest.cc',
       ],
-    },
+    },  # end of cast_base_unittests
+    {
+      'target_name': 'cast_crash_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'chromecast.gyp:cast_crash',
+        '../base/base.gyp:run_all_unittests',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'crash/linux/dump_info_unittest.cc',
+        'crash/linux/synchronized_minidump_manager_unittest.cc',
+        'crash/linux/minidump_writer_unittest.cc',
+      ],
+    },  # end of cast_crash_unittests
     {
       'target_name': 'cast_tests',
       'type': 'none',
@@ -41,6 +55,7 @@
       'type': 'none',
       'dependencies': [
         'cast_base_unittests',
+        'cast_crash_unittests',
         '../base/base.gyp:base_unittests',
         '../content/content_shell_and_tests.gyp:content_unittests',
         '../crypto/crypto.gyp:crypto_unittests',
@@ -113,6 +128,7 @@
         }],
         ['OS!="android"', {
           'dependencies': [
+            'cast_shell_unittests',
             'cast_shell_browser_test',
             'media/media.gyp:cast_media_unittests',
           ],
@@ -274,6 +290,18 @@
             'browser/test/chromecast_shell_browser_test.cc',
           ],
         },
+        {
+          'target_name': 'cast_shell_unittests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            'chromecast.gyp:cast_crash_client',
+            '../base/base.gyp:run_all_unittests',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'sources': [
+            'app/linux/cast_crash_reporter_client_unittest.cc',
+          ],
+        },  # end of cast_shell_unittests
       ],  # end of targets
     }],
   ],  # end of conditions

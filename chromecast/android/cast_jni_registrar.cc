@@ -7,11 +7,11 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "chromecast/android/cast_metrics_helper_android.h"
+#include "chromecast/app/android/crash_handler.h"
 #include "chromecast/base/cast_sys_info_android.h"
 #include "chromecast/base/chromecast_config_android.h"
 #include "chromecast/browser/android/cast_window_android.h"
 #include "chromecast/browser/android/cast_window_manager.h"
-#include "chromecast/crash/android/crash_handler.h"
 #include "components/external_video_surface/component_jni_registrar.h"
 
 namespace chromecast {

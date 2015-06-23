@@ -2,11 +2,66 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/version.gni")  # TODO layering violation!
+import("//testing/test.gni")
+
 source_set("base") {
   sources = [
     "cast_paths.cc",
     "cast_paths.h",
+    "chromecast_switches.cc",
+    "chromecast_switches.h",
+    "error_codes.cc",
+    "error_codes.h",
+    "metrics/cast_histograms.h",
+    "metrics/cast_metrics_helper.cc",
+    "metrics/cast_metrics_helper.h",
+    "metrics/grouped_histogram.cc",
+    "metrics/grouped_histogram.h",
+    "path_utils.cc",
+    "path_utils.h",
+    "process_utils.cc",
+    "process_utils.h",
+    "serializers.cc",
+    "serializers.h",
+  ]
+
+  deps = [
+    "//base",
   ]
 
   configs += [ "//chromecast:config" ]
+}
+
+test("cast_base_unittests") {
+  sources = [
+    "path_utils_unittest.cc",
+    "process_utils_unittest.cc",
+    "serializers_unittest.cc",
+  ]
+
+  deps = [
+    ":base",
+    "//base/test:run_all_unittests",
+    "//testing/gtest",
+  ]
+}
+
+process_version("cast_version") {
+  template_file = "version.h.in"
+  output = "$target_gen_dir/version.h"
+  extra_args = [
+    "-e",
+    "VERSION_FULL=\"%s.%s.%s.%s\"%(MAJOR,MINOR,BUILD,PATCH)",
+
+    # TODO(slan): Populate the fields below with real values
+    "-e",
+    "CAST_BUILD_INCREMENTAL=20150608.181153",
+    "-e",
+    "CAST_BUILD_RELEASE=1.15",
+    "-e",
+    "CAST_IS_DEBUG_BUILD=1",
+    "-e",
+    "CAST_PRODUCT_TYPE=0",
+  ]
 }

@@ -16,7 +16,6 @@
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/common/global_descriptors.h"
-#include "chromecast/crash/cast_crash_reporter_client.h"
 #include "chromecast/renderer/cast_content_renderer_client.h"
 #include "components/crash/app/crash_reporter_client.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -24,7 +23,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
-#include "chromecast/crash/android/crash_handler.h"
+#include "chromecast/app/android/crash_handler.h"
+#else
+#include "chromecast/app/linux/cast_crash_reporter_client.h"
 #endif  // defined(OS_ANDROID)
 
 namespace {

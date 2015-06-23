@@ -12,7 +12,7 @@ group("media") {
   ]
 }
 
-test("unittests") {
+test("cast_media_unittests") {
   sources = [
     "//media/base",
     "cma/backend/audio_video_pipeline_device_unittest.cc",

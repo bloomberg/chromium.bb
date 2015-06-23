@@ -62,6 +62,8 @@
         'base/cast_paths.h',
         'base/chromecast_switches.cc',
         'base/chromecast_switches.h',
+        'base/error_codes.cc',
+        'base/error_codes.h',
         'base/metrics/cast_histograms.h',
         'base/metrics/cast_metrics_helper.cc',
         'base/metrics/cast_metrics_helper.h',
@@ -76,29 +78,54 @@
       ],
     },  # end of target 'cast_base'
     {
+      'target_name': 'cast_crash',
+      'type': '<(component)',
+      'include_dirs': [
+        # TODO(gfhuang): we should not need to include this directly, but
+        # somehow depending on component.gyp:breakpad_component is not
+        # working as expected.
+        '../breakpad/src',
+      ],
+      'dependencies': [
+        'cast_base',
+        'cast_version_header',
+        '../breakpad/breakpad.gyp:breakpad_client',
+      ],
+      'sources': [
+        'crash/app_state_tracker.cc',
+        'crash/app_state_tracker.h',
+        'crash/cast_crash_keys.cc',
+        'crash/cast_crash_keys.h',
+        'crash/cast_crashdump_uploader.cc',
+        'crash/cast_crashdump_uploader.h',
+        'crash/linux/crash_util.cc',
+        'crash/linux/crash_util.h',
+        'crash/linux/dummy_minidump_generator.cc',
+        'crash/linux/dummy_minidump_generator.h',
+        'crash/linux/dump_info.cc',
+        'crash/linux/dump_info.h',
+        'crash/linux/minidump_generator.h',
+        'crash/linux/synchronized_minidump_manager.cc',
+        'crash/linux/synchronized_minidump_manager.h',
+        'crash/linux/minidump_params.cc',
+        'crash/linux/minidump_params.h',
+        'crash/linux/minidump_writer.cc',
+        'crash/linux/minidump_writer.h',
+      ],
+    },  # end of target 'cast_crash'
+    {
       'target_name': 'cast_crash_client',
       'type': '<(component)',
       'dependencies': [
-        '../breakpad/breakpad.gyp:breakpad_client',
+        'cast_crash',
         '../components/components.gyp:crash_component',
+        '../content/content.gyp:content_common',
       ],
-      'sources': [
-        'crash/cast_crash_keys.cc',
-        'crash/cast_crash_keys.h',
-        'crash/cast_crash_reporter_client.cc',
-        'crash/cast_crash_reporter_client.h',
+      'sources' : [
+        # TODO(slan): Move android crash_client here as well.
+        'app/linux/cast_crash_reporter_client.cc',
+        'app/linux/cast_crash_reporter_client.h',
       ],
-      'conditions': [
-        ['chromecast_branding=="Chrome"', {
-          'dependencies': [
-            'internal/chromecast_internal.gyp:crash_internal',
-          ],
-        }, {
-          'sources': [
-            'crash/cast_crash_reporter_client_simple.cc',
-          ],
-        }],
-      ]
     },  # end of target 'cast_crash_client'
     {
       'target_name': 'cast_net',
@@ -451,24 +478,24 @@
             '../breakpad/src',
           ],
           'sources': [
-            'base/cast_sys_info_android.cc',
-            'base/cast_sys_info_android.h',
-            'base/chromecast_config_android.cc',
-            'base/chromecast_config_android.h',
             'android/cast_jni_registrar.cc',
             'android/cast_jni_registrar.h',
             'android/cast_metrics_helper_android.cc',
             'android/cast_metrics_helper_android.h',
             'android/platform_jni_loader.h',
+            'app/android/cast_crash_reporter_client_android.cc',
+            'app/android/cast_crash_reporter_client_android.h',
             'app/android/cast_jni_loader.cc',
+            'app/android/crash_handler.cc',
+            'app/android/crash_handler.h',
+            'base/cast_sys_info_android.cc',
+            'base/cast_sys_info_android.h',
+            'base/chromecast_config_android.cc',
+            'base/chromecast_config_android.h',
             'browser/android/cast_window_android.cc',
             'browser/android/cast_window_android.h',
             'browser/android/cast_window_manager.cc',
             'browser/android/cast_window_manager.h',
-            'crash/android/cast_crash_reporter_client_android.cc',
-            'crash/android/cast_crash_reporter_client_android.h',
-            'crash/android/crash_handler.cc',
-            'crash/android/crash_handler.h',
           ],
           'conditions': [
             ['chromecast_branding=="Chrome"', {

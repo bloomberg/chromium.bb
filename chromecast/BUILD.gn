@@ -16,6 +16,18 @@ component("chromecast") {
   deps = [
     "//chromecast/base",
     "//chromecast/base/metrics",
+    "//chromecast/crash",
     "//chromecast/media",
+  ]
+}
+
+group("chromecast_unittests") {
+  testonly = true
+
+  deps = [
+    "//chromecast/app:cast_shell_unittests",
+    "//chromecast/base:cast_base_unittests",
+    "//chromecast/crash:cast_crash_unittests",
+    "//chromecast/media:cast_media_unittests",
   ]
 }
