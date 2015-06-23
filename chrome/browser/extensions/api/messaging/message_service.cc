@@ -522,7 +522,7 @@ void MessageService::OpenChannelToTab(
     // in every frame.
     // TODO(robwu): Update logic so that frames that are not hosted in the main
     // frame's process can also receive the port.
-    receiver_routing_id = contents->GetMainFrame()->GetRoutingID();
+    receiver_routing_id = MSG_ROUTING_CONTROL;
   }
   receiver.reset(new ExtensionMessagePort(
           contents->GetRenderProcessHost(), receiver_routing_id, extension_id));

@@ -649,9 +649,8 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   if (orig_mime_type == content::kBrowserPluginMimeType) {
     bool guest_view_api_available = false;
     extension_dispatcher_->script_context_set().ForEach(
-        render_frame->GetRenderView(),
-        base::Bind(&IsGuestViewApiAvailableToScriptContext,
-                   &guest_view_api_available));
+        render_frame, base::Bind(&IsGuestViewApiAvailableToScriptContext,
+                                 &guest_view_api_available));
     if (guest_view_api_available)
       return false;
   }

@@ -44,7 +44,6 @@ ExtensionHelper::~ExtensionHelper() {
 bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AddMessageToConsole,
                         OnAddMessageToConsole)
@@ -78,16 +77,6 @@ void ExtensionHelper::DidMatchCSS(
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   dispatcher_->DidMatchCSS(
       frame, newly_matching_selectors, stopped_matching_selectors);
-}
-
-void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
-                                               const std::string& module_name,
-                                               const std::string& function_name,
-                                               const base::ListValue& args,
-                                               bool user_gesture) {
-  dispatcher_->InvokeModuleSystemMethod(
-      render_view(), extension_id, module_name, function_name, args,
-      user_gesture);
 }
 
 void ExtensionHelper::OnSetFrameName(const std::string& name) {

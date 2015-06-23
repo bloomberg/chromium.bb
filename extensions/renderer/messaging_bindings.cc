@@ -515,13 +515,9 @@ void MessagingBindings::DispatchOnConnect(
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id,
     content::RenderFrame* restrict_to_render_frame) {
-  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
-  content::RenderView* restrict_to_render_view =
-      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
-                               : NULL;
   bool port_created = false;
   context_set.ForEach(
-      info.target_id, restrict_to_render_view,
+      info.target_id, restrict_to_render_frame,
       base::Bind(&DispatchOnConnectToScriptContext, target_port_id,
                  channel_name, &source, info, tls_channel_id, &port_created));
 
@@ -539,12 +535,8 @@ void MessagingBindings::DeliverMessage(
     int target_port_id,
     const Message& message,
     content::RenderFrame* restrict_to_render_frame) {
-  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
-  content::RenderView* restrict_to_render_view =
-      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
-                               : NULL;
   context_set.ForEach(
-      restrict_to_render_view,
+      restrict_to_render_frame,
       base::Bind(&DeliverMessageToScriptContext, message, target_port_id));
 }
 
@@ -554,12 +546,8 @@ void MessagingBindings::DispatchOnDisconnect(
     int port_id,
     const std::string& error_message,
     content::RenderFrame* restrict_to_render_frame) {
-  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
-  content::RenderView* restrict_to_render_view =
-      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
-                               : NULL;
   context_set.ForEach(
-      restrict_to_render_view,
+      restrict_to_render_frame,
       base::Bind(&DispatchOnDisconnectToScriptContext, port_id, error_message));
 }
 

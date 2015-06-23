@@ -9,6 +9,7 @@
 
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -64,13 +65,10 @@ void AppWindowContentsImpl::NativeWindowChanged(
   args.Append(dictionary);
   host_->GetSerializedState(dictionary);
 
-  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),
-                                           host_->extension_id(),
-                                           "app.window",
-                                           "updateAppWindowProperties",
-                                           args,
-                                           false));
+  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
+  rfh->Send(new ExtensionMsg_MessageInvoke(
+      rfh->GetRoutingID(), host_->extension_id(), "app.window",
+      "updateAppWindowProperties", args, false));
 }
 
 void AppWindowContentsImpl::NativeWindowClosed() {
@@ -80,13 +78,10 @@ void AppWindowContentsImpl::NativeWindowClosed() {
 
 void AppWindowContentsImpl::DispatchWindowShownForTests() const {
   base::ListValue args;
-  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  rvh->Send(new ExtensionMsg_MessageInvoke(rvh->GetRoutingID(),
-                                           host_->extension_id(),
-                                           "app.window",
-                                           "appWindowShownForTests",
-                                           args,
-                                           false));
+  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
+  rfh->Send(new ExtensionMsg_MessageInvoke(
+      rfh->GetRoutingID(), host_->extension_id(), "app.window",
+      "appWindowShownForTests", args, false));
 }
 
 content::WebContents* AppWindowContentsImpl::GetWebContents() const {

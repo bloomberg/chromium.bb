@@ -28,7 +28,7 @@ class WebSecurityOrigin;
 }
 
 namespace content {
-class RenderView;
+class RenderFrame;
 }
 
 namespace extensions {
@@ -79,23 +79,23 @@ class ScriptContextSet {
   ScriptContext* GetByV8Context(const v8::Local<v8::Context>& context) const;
 
   // Synchronously runs |callback| with each ScriptContext that belongs to
-  // |extension_id| in |render_view|.
+  // |extension_id| in |render_frame|.
   //
-  // An empty |extension_id| will match all extensions, and a NULL |render_view|
-  // will match all render views, but try to use the inline variants of these
-  // methods instead.
+  // An empty |extension_id| will match all extensions, and a null
+  // |render_frame| will match all render views, but try to use the inline
+  // variants of these methods instead.
   void ForEach(const std::string& extension_id,
-               content::RenderView* render_view,
+               content::RenderFrame* render_frame,
                const base::Callback<void(ScriptContext*)>& callback) const;
   // ForEach which matches all extensions.
-  void ForEach(content::RenderView* render_view,
+  void ForEach(content::RenderFrame* render_frame,
                const base::Callback<void(ScriptContext*)>& callback) const {
-    ForEach("", render_view, callback);
+    ForEach(std::string(), render_frame, callback);
   }
   // ForEach which matches all render views.
   void ForEach(const std::string& extension_id,
                const base::Callback<void(ScriptContext*)>& callback) const {
-    ForEach(extension_id, NULL, callback);
+    ForEach(extension_id, nullptr, callback);
   }
 
   // Cleans up contexts belonging to an unloaded extension.

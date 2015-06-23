@@ -131,6 +131,7 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -202,6 +203,17 @@ void ExtensionFrameHelper::OnExtensionResponse(int request_id,
                                              success,
                                              response,
                                              error);
+}
+
+void ExtensionFrameHelper::OnExtensionMessageInvoke(
+    const std::string& extension_id,
+    const std::string& module_name,
+    const std::string& function_name,
+    const base::ListValue& args,
+    bool user_gesture) {
+  extension_dispatcher_->InvokeModuleSystemMethod(render_frame(), extension_id,
+                                                  module_name, function_name,
+                                                  args, user_gesture);
 }
 
 }  // namespace extensions

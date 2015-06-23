@@ -22,7 +22,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
@@ -108,7 +107,6 @@ using blink::WebString;
 using blink::WebVector;
 using blink::WebView;
 using content::RenderThread;
-using content::RenderView;
 
 namespace extensions {
 
@@ -394,7 +392,7 @@ void Dispatcher::DispatchEvent(const std::string& extension_id,
                                kEventDispatchFunction, &args));
 }
 
-void Dispatcher::InvokeModuleSystemMethod(content::RenderView* render_view,
+void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
                                           const std::string& extension_id,
                                           const std::string& module_name,
                                           const std::string& function_name,
@@ -405,7 +403,7 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderView* render_view,
     web_user_gesture.reset(new WebScopedUserGesture);
 
   script_context_set_->ForEach(
-      extension_id, render_view,
+      extension_id, render_frame,
       base::Bind(&CallModuleMethod, module_name, function_name, &args));
 
   // Reset the idle handler each time there's any activity like event or message

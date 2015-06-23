@@ -40,11 +40,6 @@ class ExtensionHelper
       override;
   void DraggableRegionsChanged(blink::WebFrame* frame) override;
 
-  void OnExtensionMessageInvoke(const std::string& extension_id,
-                                const std::string& module_name,
-                                const std::string& function_name,
-                                const base::ListValue& args,
-                                bool user_gesture);
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
   void OnAppWindowClosed();

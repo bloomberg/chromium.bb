@@ -116,7 +116,7 @@ class Dispatcher : public content::RenderProcessObserver,
                      const std::string& event_name) const;
 
   // Shared implementation of the various MessageInvoke IPCs.
-  void InvokeModuleSystemMethod(content::RenderView* render_view,
+  void InvokeModuleSystemMethod(content::RenderFrame* render_frame,
                                 const std::string& extension_id,
                                 const std::string& module_name,
                                 const std::string& function_name,
