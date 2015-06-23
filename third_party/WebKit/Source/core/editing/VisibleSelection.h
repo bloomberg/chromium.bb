@@ -149,6 +149,7 @@ public:
     Node* nonBoundaryShadowTreeRootNode() const;
 
     VisiblePosition visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
+    PositionWithAffinity positionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
 
     void setWithoutValidation(const Position&, const Position&);
 

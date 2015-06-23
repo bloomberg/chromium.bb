@@ -1016,22 +1016,27 @@ void VisibleSelection::adjustStartAndEndInComposedTree()
 
 VisiblePosition VisibleSelection::visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
 {
+    return VisiblePosition(positionRespectingEditingBoundary(localPoint, targetNode));
+}
+
+PositionWithAffinity VisibleSelection::positionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
+{
     if (!targetNode->layoutObject())
-        return VisiblePosition();
+        return PositionWithAffinity();
 
     LayoutPoint selectionEndPoint = localPoint;
     Element* editableElement = rootEditableElement();
 
     if (editableElement && !editableElement->contains(targetNode)) {
         if (!editableElement->layoutObject())
-            return VisiblePosition();
+            return PositionWithAffinity();
 
         FloatPoint absolutePoint = targetNode->layoutObject()->localToAbsolute(FloatPoint(selectionEndPoint));
         selectionEndPoint = roundedLayoutPoint(editableElement->layoutObject()->absoluteToLocal(absolutePoint));
         targetNode = editableElement;
     }
 
-    return VisiblePosition(targetNode->layoutObject()->positionForPoint(selectionEndPoint));
+    return targetNode->layoutObject()->positionForPoint(selectionEndPoint);
 }
 
 
