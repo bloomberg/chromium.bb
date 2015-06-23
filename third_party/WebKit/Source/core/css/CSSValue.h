@@ -39,12 +39,12 @@ public:
     GC_PLUGIN_IGNORE("crbug.com/443854")
     void* operator new(size_t size)
     {
-        return allocateObject(size);
+        return allocateObject(size, false);
     }
-    static void* allocateObject(size_t size)
+    static void* allocateObject(size_t size, bool isEager)
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<CSSValue>::Affinity>::state();
-        return Heap::allocateOnHeapIndex(state, size, CSSValueHeapIndex, GCInfoTrait<CSSValue>::index());
+        return Heap::allocateOnHeapIndex(state, size, isEager ? EagerSweepHeapIndex : CSSValueHeapIndex, GCInfoTrait<CSSValue>::index());
     }
 #else
     // Override RefCounted's deref() to ensure operator delete is called on

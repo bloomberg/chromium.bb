@@ -66,6 +66,11 @@ public:
 
     bool equals(const CSSCrossfadeValue&) const;
 
+    // Promptly remove as a ImageResource client.
+    EAGERLY_FINALIZE();
+#if ENABLE(OILPAN)
+    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+#endif
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
