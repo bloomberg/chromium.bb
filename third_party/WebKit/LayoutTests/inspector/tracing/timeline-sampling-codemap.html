@@ -1,0 +1,64 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+function test()
+{
+    var codemap = new WebInspector.TimelineJSProfileProcessor.CodeMap();
+    for (var i = 0; i < 10; i++) {
+        var address = i * 0x100 + 0x77000;
+        codemap.addEntry("0x" + address.toString(16), 0x80, "frame" + i);
+    }
+
+    codemap.addEntry( "0x77010", 0x10, "frame1killer");
+    codemap.addEntry( "0x77090", 0x200, "frames234killer");
+    codemap.moveEntry("0x77090", "0x55000", 0x300);
+    codemap.moveEntry("0x77500", "0xfffffffffffff000", 0x80);
+    codemap.moveEntry("0x77600", "0x77700", 0x80);
+
+    //                  fedcba9876543210
+    //          bank -> BBBAAAAAAAAAAAAA <- address
+    codemap.addEntry("0xffffffffffffff00", 2, "frameA");
+    codemap.addEntry("0xffffffffffffff02", 2, "frameB");
+    codemap.addEntry("0xffffffffffffff04", 2, "frameC");
+    codemap.addEntry("0xffffffffffffff06", 2, "frameD");
+    codemap.addEntry("0xffffffffffffff01", 5, "frameE");
+
+    InspectorTest.addResult("Lookup test:");
+    var addresses = [
+        "0x0",
+        "0x7700f",
+        "0x77010",
+        "0x77011",
+        "0x7701f",
+        "0x77020",
+        "0x77800",
+        "0x55007",
+        "0x88000",
+        "0xffffffffffffff00",
+        "0xffffffffffffff01",
+        "0xffffffffffffff02",
+        "0xffffffffffffff07",
+        "0xffffffffffffff08",
+    ];
+    for (var i = 0; i < addresses.length; ++i)
+        InspectorTest.addResult("  " + addresses[i] + " -> " + codemap.lookupEntry(addresses[i]));
+
+    InspectorTest.addResult("");
+    for (var bankName of codemap._banks.keysArray()) {
+        InspectorTest.addResult("Bank \"" + bankName + "\":");
+        var bank = codemap._banks.get(bankName);
+        for (var i = 0; i < bank._entries.length; ++i) {
+            var entry = bank._entries[i];
+            InspectorTest.addResult("  0x" + entry.address.toString(16) + " / " + entry.size + " : " + entry.callFrame);
+        }
+    }
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

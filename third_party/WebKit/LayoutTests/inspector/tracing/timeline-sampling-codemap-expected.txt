@@ -1,0 +1,29 @@
+Lookup test:
+  0x0 -> null
+  0x7700f -> null
+  0x77010 -> frame1killer
+  0x77011 -> frame1killer
+  0x7701f -> frame1killer
+  0x77020 -> null
+  0x77800 -> frame8
+  0x55007 -> frames234killer
+  0x88000 -> null
+  0xffffffffffffff00 -> null
+  0xffffffffffffff01 -> frameE
+  0xffffffffffffff02 -> frameE
+  0xffffffffffffff07 -> frameD
+  0xffffffffffffff08 -> null
+
+Bank "":
+  0x55000 / 768 : frames234killer
+  0x77010 / 16 : frame1killer
+  0x77300 / 128 : frame3
+  0x77400 / 128 : frame4
+  0x77700 / 128 : frame6
+  0x77800 / 128 : frame8
+  0x77900 / 128 : frame9
+Bank "fff":
+  0xffffffffff000 / 128 : frame5
+  0xfffffffffff01 / 5 : frameE
+  0xfffffffffff06 / 2 : frameD
+
