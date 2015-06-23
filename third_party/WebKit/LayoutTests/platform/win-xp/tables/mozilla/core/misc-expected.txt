@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 20: "foo"
       LayoutBlockFlow (anonymous) at (0,50) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
-      LayoutBlockFlow {HR} at (0,78) size 600x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,78) size 602x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,88) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,108) size 600x111
