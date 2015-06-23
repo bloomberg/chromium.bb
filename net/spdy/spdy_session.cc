@@ -2333,6 +2333,8 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
 void SpdySession::OnHeaders(SpdyStreamId stream_id,
                             bool has_priority,
                             SpdyPriority priority,
+                            SpdyStreamId parent_stream_id,
+                            bool exclusive,
                             bool fin,
                             const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);

@@ -51,6 +51,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   virtual void OnHeaders(SpdyStreamId stream_id,
                          bool has_priority,
                          SpdyPriority priority,
+                         SpdyStreamId parent_stream_id,
+                         bool exclusive,
                          bool fin,
                          const SpdyHeaderBlock& headers) = 0;
 
@@ -152,6 +154,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
                  SpdyPriority priority,
+                 SpdyStreamId parent_stream_id,
+                 bool exclusive,
                  bool fin,
                  bool end) override;
   bool OnControlFrameHeaderData(SpdyStreamId stream_id,
@@ -277,6 +281,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     SpdyStreamId promised_stream_id;
     bool has_priority;
     SpdyPriority priority;
+    SpdyStreamId parent_stream_id;
+    bool exclusive;
     uint8 credential_slot;
     bool fin;
     bool unidirectional;

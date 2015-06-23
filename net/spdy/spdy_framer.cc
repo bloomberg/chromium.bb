@@ -64,6 +64,16 @@ uint32 PackStreamDependencyValues(bool exclusive,
   return parent | e_bit;
 }
 
+// Unpack parent stream ID and exclusive flag from the format used by HTTP/2
+// headers and priority frames.
+void UnpackStreamDependencyValues(uint32 packed,
+                                  bool* exclusive,
+                                  SpdyStreamId* parent_stream_id) {
+  *exclusive = (packed >> 31) != 0;
+  // Zero out the highest-order bit to get the parent stream id.
+  *parent_stream_id = packed & 0x7fffffff;
+}
+
 struct DictionaryIds {
   DictionaryIds()
     : v2_dictionary_id(CalculateDictionaryId(kV2Dictionary, kV2DictionarySize)),
@@ -1504,9 +1514,15 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           const bool has_priority =
               (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0;
           SpdyPriority priority = 0;
+          uint32 parent_stream_id = 0;
+          bool exclusive = false;
           if (protocol_version() > SPDY3 && has_priority) {
-            // TODO(jgraettinger): Process dependency rather than ignoring it.
-            reader.Seek(kPriorityDependencyPayloadSize);
+            uint32 stream_dependency;
+            successful_read = reader.ReadUInt32(&stream_dependency);
+            DCHECK(successful_read);
+            UnpackStreamDependencyValues(stream_dependency, &exclusive,
+                                         &parent_stream_id);
+
             uint8 weight = 0;
             successful_read = reader.ReadUInt8(&weight);
             if (successful_read) {
@@ -1528,6 +1544,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             visitor_->OnHeaders(
                 current_frame_stream_id_,
                 (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0, priority,
+                parent_stream_id, exclusive,
                 (current_frame_flags_ & CONTROL_FLAG_FIN) != 0,
                 expect_continuation_ == 0);
           }
@@ -1876,16 +1893,15 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
         break;
       case PRIORITY: {
           DCHECK_LT(SPDY3, protocol_version());
+          uint32 stream_dependency;
           uint32 parent_stream_id;
-          uint8 weight;
           bool exclusive;
-          bool successful_read = true;
-          successful_read = reader.ReadUInt32(&parent_stream_id);
+          uint8 weight;
+          bool successful_read = reader.ReadUInt32(&stream_dependency);
           DCHECK(successful_read);
-          // Exclusivity is indicated by a single bit flag.
-          exclusive = (parent_stream_id >> 31) != 0;
-          // Zero out the highest-order bit to get the parent stream id.
-          parent_stream_id &= 0x7fffffff;
+          UnpackStreamDependencyValues(stream_dependency, &exclusive,
+                                       &parent_stream_id);
+
           successful_read = reader.ReadUInt8(&weight);
           DCHECK(successful_read);
           DCHECK(reader.IsDoneReading());

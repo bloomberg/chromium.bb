@@ -52,12 +52,14 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
                     bool,
                     const SpdyHeaderBlock&));
   MOCK_METHOD3(OnSynReply, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
-  MOCK_METHOD5(OnHeaders,
-               void(SpdyStreamId,
-                    bool,
-                    SpdyPriority,
-                    bool,
-                    const SpdyHeaderBlock&));
+  MOCK_METHOD7(OnHeaders,
+               void(SpdyStreamId stream_id,
+                    bool has_priority,
+                    SpdyPriority priority,
+                    SpdyStreamId parent_stream_id,
+                    bool exclusive,
+                    bool fin,
+                    const SpdyHeaderBlock& headers));
   MOCK_METHOD3(OnDataFrameHeader, void(SpdyStreamId, size_t, bool));
   MOCK_METHOD4(OnStreamFrameData, void(SpdyStreamId,
                                        const char*,
@@ -367,8 +369,9 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound) {
           .WillOnce(SaveArg<2>(&actual_header_block));
     } else {
       EXPECT_CALL(*spdy_framer_visitor_,
-                  OnHeaders(stream_id, false, 0, false, _))
-          .WillOnce(SaveArg<4>(&actual_header_block));
+                  OnHeaders(stream_id, /*has_priority=*/false, _, _, _,
+                            /*fin=*/false, _))
+          .WillOnce(SaveArg<6>(&actual_header_block));
     }
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
@@ -446,8 +449,9 @@ TEST_P(SpdySMProxyTest, SendSynReply) {
           .WillOnce(SaveArg<2>(&actual_header_block));
     } else {
       EXPECT_CALL(*spdy_framer_visitor_,
-                  OnHeaders(stream_id, false, 0, false, _))
-          .WillOnce(SaveArg<4>(&actual_header_block));
+                  OnHeaders(stream_id, /*has_priority=*/false, _, _, _,
+                            /*fin=*/false, _))
+          .WillOnce(SaveArg<6>(&actual_header_block));
     }
   }
 
@@ -572,8 +576,9 @@ TEST_P(SpdySMServerTest, NewStreamError) {
           .WillOnce(SaveArg<2>(&actual_header_block));
     } else {
       EXPECT_CALL(*spdy_framer_visitor_,
-                  OnHeaders(stream_id, false, 0, false, _))
-          .WillOnce(SaveArg<4>(&actual_header_block));
+                  OnHeaders(stream_id, /*has_priority=*/false, _, _, _,
+                            /*fin=*/false, _))
+          .WillOnce(SaveArg<6>(&actual_header_block));
     }
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,

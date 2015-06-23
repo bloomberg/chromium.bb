@@ -55,8 +55,14 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnPing, void(SpdyPingId unique_id, bool is_ack));
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId last_accepted_stream_id,
                               SpdyGoAwayStatus status));
-  MOCK_METHOD5(OnHeaders, void(SpdyStreamId stream_id, bool has_priority,
-                               SpdyPriority priority, bool fin, bool end));
+  MOCK_METHOD7(OnHeaders,
+               void(SpdyStreamId stream_id,
+                    bool has_priority,
+                    SpdyPriority priority,
+                    SpdyStreamId parent_stream_id,
+                    bool exclusive,
+                    bool fin,
+                    bool end));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
                                     uint32 delta_window_size));
   MOCK_METHOD2(OnCredentialFrameData, bool(const char* credential_data,
@@ -158,11 +164,17 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
 
     // Parse the outgoing data and check that it matches was was written.
     if (type == SYN_STREAM) {
-      EXPECT_CALL(visitor_, OnHeaders(stream_id, kHasPriority, priority, fin,
-                                      kFrameComplete));
+      EXPECT_CALL(visitor_, OnHeaders(stream_id, kHasPriority, priority,
+                                      /*parent_stream_id=*/0,
+                                      /*exclusive=*/false,
+
+                                      fin, kFrameComplete));
     } else {
-      EXPECT_CALL(visitor_, OnHeaders(stream_id, !kHasPriority,
-                                      /*priority=*/0, fin, kFrameComplete));
+      EXPECT_CALL(visitor_,
+                  OnHeaders(stream_id, !kHasPriority,
+                            /*priority=*/0,
+                            /*parent_stream_id=*/0,
+                            /*exclusive=*/false, fin, kFrameComplete));
     }
     EXPECT_CALL(visitor_, OnControlFrameHeaderData(stream_id, _, _))
         .WillRepeatedly(WithArgs<1, 2>(

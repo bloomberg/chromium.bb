@@ -79,6 +79,8 @@ void BufferedSpdyFramer::OnSynStream(SpdyStreamId stream_id,
 void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
                                    bool has_priority,
                                    SpdyPriority priority,
+                                   SpdyStreamId parent_stream_id,
+                                   bool exclusive,
                                    bool fin,
                                    bool end) {
   frames_received_++;
@@ -89,6 +91,8 @@ void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
   control_frame_fields_->has_priority = has_priority;
   if (control_frame_fields_->has_priority) {
     control_frame_fields_->priority = priority;
+    control_frame_fields_->parent_stream_id = parent_stream_id;
+    control_frame_fields_->exclusive = exclusive;
   }
   control_frame_fields_->fin = fin;
 
@@ -145,8 +149,9 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
         visitor_->OnHeaders(control_frame_fields_->stream_id,
                             control_frame_fields_->has_priority,
                             control_frame_fields_->priority,
-                            control_frame_fields_->fin,
-                            headers);
+                            control_frame_fields_->parent_stream_id,
+                            control_frame_fields_->exclusive,
+                            control_frame_fields_->fin, headers);
         break;
       case PUSH_PROMISE:
         DCHECK_LT(SPDY3, protocol_version());

@@ -152,15 +152,20 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
 
-    void OnHeaders(SpdyStreamId stream_id, bool has_priority,
-                   SpdyPriority priority, bool fin, bool end) override {
+    void OnHeaders(SpdyStreamId stream_id,
+                   bool has_priority,
+                   SpdyPriority priority,
+                   SpdyStreamId parent_stream_id,
+                   bool exclusive,
+                   bool fin,
+                   bool end) override {
       SpdyFramer framer(version_);
       framer.set_enable_compression(false);
       SpdyHeadersIR headers(stream_id);
       headers.set_has_priority(has_priority);
-      if (headers.has_priority()) {
-        headers.set_priority(priority);
-      }
+      headers.set_priority(priority);
+      headers.set_parent_stream_id(parent_stream_id);
+      headers.set_exclusive(exclusive);
       headers.set_fin(fin);
       scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers));
       ResetBuffer();
@@ -399,13 +404,21 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++goaway_count_;
   }
 
-  void OnHeaders(SpdyStreamId stream_id, bool has_priority,
-                 SpdyPriority priority, bool fin, bool end) override {
+  void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
+                 SpdyStreamId parent_stream_id,
+                 bool exclusive,
+                 bool fin,
+                 bool end) override {
     ++headers_frame_count_;
     InitHeaderStreaming(HEADERS, stream_id);
     if (fin) {
       ++fin_flag_count_;
     }
+    header_has_priority_ = has_priority;
+    header_parent_stream_id_ = parent_stream_id;
+    header_exclusive_ = exclusive;
   }
 
   void OnWindowUpdate(SpdyStreamId stream_id,
@@ -563,6 +576,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyFrameType header_control_type_;
   bool header_buffer_valid_;
   SpdyHeaderBlock headers_;
+  bool header_has_priority_;
+  SpdyStreamId header_parent_stream_id_;
+  bool header_exclusive_;
 };
 
 class SpdyFramerPeer {
@@ -760,6 +776,38 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
 
   EXPECT_EQ(0, visitor.zero_length_control_frame_header_data_count_);
   EXPECT_EQ(0u, visitor.headers_.size());
+}
+
+// Test that we can encode and decode stream dependency values in a header
+// frame.
+TEST_P(SpdyFramerTest, HeaderStreamDependencyValues) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+  SpdyFramer framer(spdy_version_);
+  framer.set_enable_compression(false);
+
+  const SpdyStreamId parent_stream_id_test_array[] = {0, 3};
+  for (SpdyStreamId parent_stream_id : parent_stream_id_test_array) {
+    const bool exclusive_test_array[] = {true, false};
+    for (bool exclusive : exclusive_test_array) {
+      SpdyHeadersIR headers(1);
+      headers.set_has_priority(true);
+      headers.set_parent_stream_id(parent_stream_id);
+      headers.set_exclusive(exclusive);
+      scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers));
+      EXPECT_TRUE(frame.get() != NULL);
+
+      TestSpdyVisitor visitor(spdy_version_);
+      visitor.use_compression_ = false;
+      visitor.SimulateInFramer(reinterpret_cast<unsigned char*>(frame->data()),
+                               frame->size());
+
+      EXPECT_TRUE(visitor.header_has_priority_);
+      EXPECT_EQ(parent_stream_id, visitor.header_parent_stream_id_);
+      EXPECT_EQ(exclusive, visitor.header_exclusive_);
+    }
+  }
 }
 
 // Test that if we receive a SYN_REPLY with stream ID zero, we signal an error
@@ -5279,6 +5327,8 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     if (IsHttp2() && (flags & HEADERS_FLAG_PRIORITY)) {
       headers_ir.set_priority(3);
       headers_ir.set_has_priority(true);
+      headers_ir.set_parent_stream_id(5);
+      headers_ir.set_exclusive(true);
     }
     headers_ir.SetHeader("foo", "bar");
     scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers_ir));
@@ -5299,18 +5349,22 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
                                       HEADERS_FLAG_PRIORITY)) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
+      // Expected callback values
+      SpdyStreamId stream_id = 57;
+      bool has_priority = false;
+      SpdyPriority priority = 0;
+      SpdyStreamId parent_stream_id = 0;
+      bool exclusive = false;
+      bool fin = flags & CONTROL_FLAG_FIN;
+      bool end = !IsHttp2() || (flags & HEADERS_FLAG_END_HEADERS);
       if (spdy_version_ > SPDY3 && flags & HEADERS_FLAG_PRIORITY) {
-        EXPECT_CALL(visitor, OnHeaders(57,    // stream id
-                                       true,  // has priority?
-                                       3,     // priority
-                                       flags & CONTROL_FLAG_FIN,  // fin?
-                                       (flags & HEADERS_FLAG_END_HEADERS) ||
-                                           !IsHttp2()));  // end headers?
-      } else {
-        EXPECT_CALL(visitor, OnHeaders(57, false, 0, flags & CONTROL_FLAG_FIN,
-                                       (flags & HEADERS_FLAG_END_HEADERS) ||
-                                           !IsHttp2()));
+        has_priority = true;
+        priority = 3;
+        parent_stream_id = 5;
+        exclusive = true;
       }
+      EXPECT_CALL(visitor, OnHeaders(stream_id, has_priority, priority,
+                                     parent_stream_id, exclusive, fin, end));
       EXPECT_CALL(visitor, OnControlFrameHeaderData(57, _, _))
           .WillRepeatedly(testing::Return(true));
       if (flags & DATA_FLAG_FIN &&
@@ -5484,7 +5538,7 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
 
     EXPECT_CALL(debug_visitor, OnSendCompressedFrame(42, HEADERS, _, _));
     EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(42, HEADERS, _));
-    EXPECT_CALL(visitor, OnHeaders(42, false, 0, 0, false));
+    EXPECT_CALL(visitor, OnHeaders(42, false, 0, 0, false, false, false));
     EXPECT_CALL(visitor, OnControlFrameHeaderData(42, _, _))
           .WillRepeatedly(testing::Return(true));
 
