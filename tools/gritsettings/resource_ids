@@ -55,12 +55,6 @@
     "includes": [6100],
     "structures": [6150],
   },
-  "athena/resources/athena_resources.grd": {
-    "structures": [6400],
-  },
-  "athena/strings/athena_strings.grd": {
-    "messages": [6500],
-  },
   "chrome/app/theme/theme_resources.grd": {
     "structures": [7000],
   },
