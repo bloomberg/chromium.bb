@@ -299,8 +299,13 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
       IDS_OPTIONS_SETTINGS_LANGUAGE_AND_INPUT_SETTINGS },
+#if defined(OS_CHROMEOS)
+    { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
+      IDS_SHORT_PRODUCT_OS_NAME },
+#else
     { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
       IDS_SHORT_PRODUCT_NAME },
+#endif
     { "linkDoctorPref", IDS_OPTIONS_LINKDOCTOR_PREF },
     { "manageAutofillSettings", IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK },
     { "manageLanguages", IDS_OPTIONS_TRANSLATE_MANAGE_LANGUAGES },

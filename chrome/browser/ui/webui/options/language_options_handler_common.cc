@@ -48,6 +48,13 @@ LanguageOptionsHandlerCommon::~LanguageOptionsHandlerCommon() {
 void LanguageOptionsHandlerCommon::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
+
+#if defined(OS_CHROMEOS)
+  const int product_id = IDS_PRODUCT_OS_NAME;
+#else
+  const int product_id = IDS_PRODUCT_NAME;
+#endif
+
   static OptionsStringResource resources[] = {
     { "addButton", IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON },
     { "languages", IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES },
@@ -55,13 +62,13 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS },
     { "cannotBeDisplayedInThisLanguage",
       IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
-      IDS_PRODUCT_NAME },
+      product_id },
     { "isDisplayedInThisLanguage",
       IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
-      IDS_PRODUCT_NAME },
+      product_id },
     { "displayInThisLanguage",
       IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
-      IDS_PRODUCT_NAME },
+      product_id },
     { "restartRequired", IDS_OPTIONS_RELAUNCH_REQUIRED },
   // OS X uses the OS native spellchecker so no need for these strings.
 #if !defined(OS_MACOSX)
