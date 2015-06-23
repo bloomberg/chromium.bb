@@ -353,6 +353,10 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockDownloadWebContentsDelegate);
 };
 
+// TODO(wjmaclean): Fix this test class at some point so it can be re-enabled on
+// the site isolation bots, and then look at re-enabling WebViewFocusTest when
+// that happens.
+// https://crbug.com/503751
 class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
   void SetUp() override {
@@ -2404,6 +2408,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGarbageCollect) {
 }
 
 #if defined(USE_AURA)
+// TODO(wjmaclean): when WebViewTest is re-enabled on the site-isolation
+// bots, then re-enable this test class as well.
+// https://crbug.com/503751
 class WebViewFocusTest : public WebViewTest {
  public:
   ~WebViewFocusTest() override {}
