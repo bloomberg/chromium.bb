@@ -1375,7 +1375,33 @@ void ThreadState::promptlyFreed(size_t gcInfoIndex)
 void ThreadState::takeSnapshot()
 {
     ASSERT(isInGC());
-    // TODO(ssid): Implement this.
+
+    int numberOfHeapsReported = 0;
+#define SNAPSHOT_HEAP(HeapType)                                                                                \
+    {                                                                                                          \
+        numberOfHeapsReported++;                                                                               \
+        String allocatorBaseName;                                                                              \
+        allocatorBaseName = String::format("blink_gc/thread_%lu/heaps/" #HeapType, (unsigned long)(m_thread)); \
+        m_heaps[HeapType##HeapIndex]->takeSnapshot(allocatorBaseName);                                         \
+    }
+
+    SNAPSHOT_HEAP(NormalPage1);
+    SNAPSHOT_HEAP(NormalPage2);
+    SNAPSHOT_HEAP(NormalPage3);
+    SNAPSHOT_HEAP(NormalPage4);
+    SNAPSHOT_HEAP(EagerSweep);
+    SNAPSHOT_HEAP(Vector1);
+    SNAPSHOT_HEAP(Vector2);
+    SNAPSHOT_HEAP(Vector3);
+    SNAPSHOT_HEAP(Vector4);
+    SNAPSHOT_HEAP(InlineVector);
+    SNAPSHOT_HEAP(HashTable);
+    SNAPSHOT_HEAP(LargeObject);
+    FOR_EACH_TYPED_HEAP(SNAPSHOT_HEAP);
+
+    ASSERT(numberOfHeapsReported == NumberOfHeaps);
+
+#undef SNAPSHOT_HEAP
 }
 
 #if ENABLE(GC_PROFILING)

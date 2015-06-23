@@ -34,6 +34,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/Task.h"
 #include "platform/TraceEvent.h"
+#include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/PageMemory.h"
@@ -41,6 +42,7 @@
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebMemoryAllocatorDump.h"
 #include "wtf/Assertions.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/LeakAnnotations.h"
@@ -255,6 +257,16 @@ void BaseHeap::cleanupPages()
         Heap::orphanedPagePool()->addOrphanedPage(heapIndex(), page);
     }
     m_firstPage = nullptr;
+}
+
+void BaseHeap::takeSnapshot(const String& dumpBaseName)
+{
+    size_t pageCount = 0;
+    for (BasePage* page = m_firstUnsweptPage; page; page = page->next()) {
+        pageCount++;
+    }
+    WebMemoryAllocatorDump* allocatorDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpBaseName);
+    allocatorDump->AddScalar("blink_page_count", "objects", pageCount);
 }
 
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
@@ -1753,10 +1765,15 @@ void Heap::init()
     s_estimatedMarkingTimePerByte = 0.0;
 
     GCInfoTable::init();
+
+    if (Platform::current() && Platform::current()->currentThread())
+        Platform::current()->registerMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
 }
 
 void Heap::shutdown()
 {
+    if (Platform::current() && Platform::current()->currentThread())
+        Platform::current()->unregisterMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
     s_shutdownCalled = true;
     ThreadState::shutdownHeapIfNecessary();
 }
@@ -2009,6 +2026,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
         "gcReason", gcReasonString(reason));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
+
+    if (gcType == ThreadState::TakeSnapshot)
+        BlinkGCMemoryDumpProvider::instance()->clearProcessDumpForCurrentGC();
 
     // Disallow allocation during garbage collection (but not during the
     // finalization that happens when the gcScope is torn down).

@@ -30,7 +30,6 @@
 
 #include "config.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
-#include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -49,18 +48,14 @@ void Platform::initialize(Platform* platform)
         s_platform->m_mainThread = platform->currentThread();
 
     // TODO(ssid): remove this check after fixing crbug.com/486782.
-    if (s_platform && s_platform->m_mainThread) {
+    if (s_platform && s_platform->m_mainThread)
         s_platform->registerMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance());
-        s_platform->registerMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
-    }
 }
 
 void Platform::shutdown()
 {
-    if (s_platform->m_mainThread) {
+    if (s_platform->m_mainThread)
         s_platform->unregisterMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance());
-        s_platform->unregisterMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
-    }
 
     if (s_platform)
         s_platform->m_mainThread = 0;

@@ -683,6 +683,7 @@ public:
     virtual ~BaseHeap();
     void cleanupPages();
 
+    void takeSnapshot(const String& dumpBaseName);
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     BasePage* findPageFromAddress(Address);
 #endif

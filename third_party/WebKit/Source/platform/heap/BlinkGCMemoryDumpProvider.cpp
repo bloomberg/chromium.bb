@@ -6,6 +6,7 @@
 #include "Source/platform/heap/BlinkGCMemoryDumpProvider.h"
 
 #include "platform/heap/Handle.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/StdLibExtras.h"
@@ -19,8 +20,13 @@ BlinkGCMemoryDumpProvider* BlinkGCMemoryDumpProvider::instance()
     return &instance;
 }
 
+BlinkGCMemoryDumpProvider::~BlinkGCMemoryDumpProvider()
+{
+}
+
 bool BlinkGCMemoryDumpProvider::onMemoryDump(blink::WebProcessMemoryDump* memoryDump)
 {
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
     String dumpName = String::format("blink_gc/thread_%lu", static_cast<unsigned long>(WTF::currentThread()));
     WebMemoryAllocatorDump* allocatorDump = memoryDump->createMemoryAllocatorDump(dumpName);
     allocatorDump->AddScalar("size", "bytes", Heap::allocatedSpace());
@@ -30,15 +36,25 @@ bool BlinkGCMemoryDumpProvider::onMemoryDump(blink::WebProcessMemoryDump* memory
     objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
     objectsDump->AddScalar("estimated_live_object_size", "bytes", Heap::estimatedLiveObjectSize());
 
+    // Merge all dumps collected by Heap::collectGarbage.
+    memoryDump->takeAllDumpsFrom(m_currentProcessMemoryDump.get());
     return true;
 }
 
-BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
+WebMemoryAllocatorDump* BlinkGCMemoryDumpProvider::createMemoryAllocatorDumpForCurrentGC(const String& absoluteName)
 {
+    return m_currentProcessMemoryDump->createMemoryAllocatorDump(absoluteName);
 }
 
-BlinkGCMemoryDumpProvider::~BlinkGCMemoryDumpProvider()
+void BlinkGCMemoryDumpProvider::clearProcessDumpForCurrentGC()
 {
+    m_currentProcessMemoryDump->clear();
+}
+
+BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
+    : m_currentProcessMemoryDump(adoptPtr(Platform::current()->createProcessMemoryDump()))
+{
+    ASSERT(m_currentProcessMemoryDump);
 }
 
 } // namespace blink
