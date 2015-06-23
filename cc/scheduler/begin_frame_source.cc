@@ -207,7 +207,6 @@ void BackToBackBeginFrameSource::AsValueInto(
 // SyntheticBeginFrameSource ---------------------------------------------
 scoped_ptr<SyntheticBeginFrameSource> SyntheticBeginFrameSource::Create(
     base::SingleThreadTaskRunner* task_runner,
-    base::TimeTicks initial_vsync_timebase,
     base::TimeDelta initial_vsync_interval) {
   scoped_ptr<DelayBasedTimeSource> time_source =
       DelayBasedTimeSource::Create(initial_vsync_interval, task_runner);

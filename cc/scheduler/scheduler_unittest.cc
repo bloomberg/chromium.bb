@@ -258,16 +258,13 @@ class SchedulerTest : public testing::Test {
 
  protected:
   TestScheduler* CreateScheduler() {
-    scoped_ptr<FakeExternalBeginFrameSource> fake_external_begin_frame_source;
     if (scheduler_settings_.use_external_begin_frame_source) {
-      fake_external_begin_frame_source.reset(
+      fake_external_begin_frame_source_.reset(
           new FakeExternalBeginFrameSource(client_.get()));
-      fake_external_begin_frame_source_ =
-          fake_external_begin_frame_source.get();
     }
     scheduler_ = TestScheduler::Create(now_src_.get(), client_.get(),
                                        scheduler_settings_, 0, task_runner_,
-                                       fake_external_begin_frame_source.Pass());
+                                       fake_external_begin_frame_source_.get());
     DCHECK(scheduler_);
     client_->set_scheduler(scheduler_.get());
     return scheduler_.get();
@@ -405,7 +402,7 @@ class SchedulerTest : public testing::Test {
   }
 
   FakeExternalBeginFrameSource* fake_external_begin_frame_source() const {
-    return fake_external_begin_frame_source_;
+    return fake_external_begin_frame_source_.get();
   }
 
   void MainFrameInHighLatencyMode(
@@ -421,7 +418,7 @@ class SchedulerTest : public testing::Test {
 
   scoped_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  FakeExternalBeginFrameSource* fake_external_begin_frame_source_;
+  scoped_ptr<FakeExternalBeginFrameSource> fake_external_begin_frame_source_;
   SchedulerSettings scheduler_settings_;
   scoped_ptr<FakeSchedulerClient> client_;
   scoped_ptr<TestScheduler> scheduler_;

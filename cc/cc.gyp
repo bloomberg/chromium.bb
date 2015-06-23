@@ -330,7 +330,6 @@
         'output/texture_mailbox_deleter.h',
         'output/viewport_selection_bound.cc',
         'output/viewport_selection_bound.h',
-        'output/vsync_parameter_observer.h',
         'playback/clip_display_item.cc',
         'playback/clip_display_item.h',
         'playback/clip_path_display_item.cc',

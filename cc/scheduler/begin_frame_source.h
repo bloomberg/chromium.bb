@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/output/vsync_parameter_observer.h"
 #include "cc/scheduler/delay_based_time_source.h"
 
 namespace cc {
@@ -208,21 +207,18 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
 // A frame source which is locked to an external parameters provides from a
 // vsync source and generates BeginFrameArgs for it.
 class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
-                                            public VSyncParameterObserver,
                                             public TimeSourceClient {
  public:
   static scoped_ptr<SyntheticBeginFrameSource> Create(
       base::SingleThreadTaskRunner* task_runner,
-      base::TimeTicks initial_vsync_timebase,
       base::TimeDelta initial_vsync_interval);
   ~SyntheticBeginFrameSource() override;
 
+  void OnUpdateVSyncParameters(base::TimeTicks new_vsync_timebase,
+                               base::TimeDelta new_vsync_interval);
+
   // Tracing
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
-
-  // VSyncParameterObserver
-  void OnUpdateVSyncParameters(base::TimeTicks new_vsync_timebase,
-                               base::TimeDelta new_vsync_interval) override;
 
   // TimeSourceClient
   void OnTimerTick() override;

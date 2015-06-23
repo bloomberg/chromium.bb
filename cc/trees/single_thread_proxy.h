@@ -151,6 +151,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   RendererCapabilities renderer_capabilities_for_main_thread_;
 
   // Accessed from both threads.
+  scoped_ptr<BeginFrameSource> external_begin_frame_source_;
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
   ProxyTimingHistory timing_history_;
 

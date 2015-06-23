@@ -159,31 +159,6 @@ class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
   DISALLOW_COPY_AND_ASSIGN(TestSyntheticBeginFrameSource);
 };
 
-class TestScheduler;
-class TestSchedulerFrameSourcesConstructor
-    : public SchedulerFrameSourcesConstructor {
- public:
-  ~TestSchedulerFrameSourcesConstructor() override;
-
- protected:
-  BeginFrameSource* ConstructPrimaryFrameSource(Scheduler* scheduler) override;
-  BeginFrameSource* ConstructUnthrottledFrameSource(
-      Scheduler* scheduler) override;
-
-  OrderedSimpleTaskRunner* test_task_runner_;
-  // Not owned.
-  base::SimpleTestTickClock* now_src_;
-
- protected:
-  explicit TestSchedulerFrameSourcesConstructor(
-      OrderedSimpleTaskRunner* test_task_runner,
-      base::SimpleTestTickClock* now_src);
-  friend class TestScheduler;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestSchedulerFrameSourcesConstructor);
-};
-
 class TestScheduler : public Scheduler {
  public:
   static scoped_ptr<TestScheduler> Create(
@@ -192,18 +167,7 @@ class TestScheduler : public Scheduler {
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source) {
-    TestSchedulerFrameSourcesConstructor frame_sources_constructor(
-        task_runner.get(), now_src);
-    return make_scoped_ptr(new TestScheduler(
-                                   now_src,
-                                   client,
-                                   scheduler_settings,
-                                   layer_tree_host_id,
-                                   task_runner,
-                                   &frame_sources_constructor,
-                                   external_begin_frame_source.Pass()));
-  }
+      BeginFrameSource* external_frame_source);
 
   // Extra test helper functionality
   bool IsBeginRetroFrameArgsEmpty() const {
@@ -226,13 +190,15 @@ class TestScheduler : public Scheduler {
   base::TimeTicks Now() const override;
 
  private:
-  TestScheduler(base::SimpleTestTickClock* now_src,
-                SchedulerClient* client,
-                const SchedulerSettings& scheduler_settings,
-                int layer_tree_host_id,
-                const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner,
-                TestSchedulerFrameSourcesConstructor* frame_sources_constructor,
-                scoped_ptr<BeginFrameSource> external_begin_frame_source);
+  TestScheduler(
+      base::SimpleTestTickClock* now_src,
+      SchedulerClient* client,
+      const SchedulerSettings& scheduler_settings,
+      int layer_tree_host_id,
+      const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+      BeginFrameSource* external_frame_source,
+      scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
+      scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source);
 
   // Not owned.
   base::SimpleTestTickClock* now_src_;

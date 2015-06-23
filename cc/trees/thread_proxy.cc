@@ -1085,11 +1085,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   SchedulerSettings scheduler_settings(
       layer_tree_host()->settings().ToSchedulerSettings());
   impl().scheduler = Scheduler::Create(
-                         this,
-                         scheduler_settings,
-                         impl().layer_tree_host_id,
-                         ImplThreadTaskRunner(),
-                         impl().external_begin_frame_source.Pass());
+      this, scheduler_settings, impl().layer_tree_host_id,
+      ImplThreadTaskRunner(), impl().external_begin_frame_source.get());
   impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
   impl_thread_weak_ptr_ = impl().weak_factory.GetWeakPtr();
   completion->Signal();
@@ -1136,6 +1133,7 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   DCHECK(IsImplThread());
   DCHECK(IsMainThreadBlocked());
   impl().scheduler = nullptr;
+  impl().external_begin_frame_source = nullptr;
   impl().layer_tree_host_impl = nullptr;
   impl().weak_factory.InvalidateWeakPtrs();
   // We need to explicitly shutdown the notifier to destroy any weakptrs it is

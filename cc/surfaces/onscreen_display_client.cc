@@ -6,7 +6,6 @@
 
 #include "base/trace_event/trace_event.h"
 #include "cc/output/output_surface.h"
-#include "cc/output/vsync_parameter_observer.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface_display_output_surface.h"
@@ -28,7 +27,6 @@ OnscreenDisplayClient::OnscreenDisplayClient(
                            bitmap_manager,
                            gpu_memory_buffer_manager,
                            settings)),
-      vsync_observer_(nullptr),
       task_runner_(task_runner),
       output_surface_lost_(false),
       disable_gpu_vsync_(settings.disable_gpu_vsync) {
@@ -43,20 +41,19 @@ bool OnscreenDisplayClient::Initialize() {
   if (max_frames_pending <= 0)
     max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
 
+  BeginFrameSource* frame_source;
   if (disable_gpu_vsync_) {
-    begin_frame_source_ =
+    unthrottled_frame_source_ =
         BackToBackBeginFrameSource::Create(task_runner_.get());
+    frame_source = unthrottled_frame_source_.get();
   } else {
-    scoped_ptr<SyntheticBeginFrameSource> synthetic_source =
-        SyntheticBeginFrameSource::Create(task_runner_.get(), base::TimeTicks(),
-                                          BeginFrameArgs::DefaultInterval());
-    vsync_observer_ = synthetic_source.get();
-    begin_frame_source_ = synthetic_source.Pass();
+    synthetic_frame_source_ = SyntheticBeginFrameSource::Create(
+        task_runner_.get(), BeginFrameArgs::DefaultInterval());
+    frame_source = synthetic_frame_source_.get();
   }
 
-  scheduler_.reset(new DisplayScheduler(display_.get(),
-                                        begin_frame_source_.get(), task_runner_,
-                                        max_frames_pending));
+  scheduler_.reset(new DisplayScheduler(display_.get(), frame_source,
+                                        task_runner_, max_frames_pending));
 
   return display_->Initialize(output_surface_.Pass(), scheduler_.get());
 }
@@ -69,8 +66,8 @@ void OnscreenDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,
   }
 
   surface_display_output_surface_->ReceivedVSyncParameters(timebase, interval);
-  if (vsync_observer_)
-    vsync_observer_->OnUpdateVSyncParameters(timebase, interval);
+  if (synthetic_frame_source_.get())
+    synthetic_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void OnscreenDisplayClient::OutputSurfaceLost() {

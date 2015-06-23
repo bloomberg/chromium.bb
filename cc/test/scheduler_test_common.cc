@@ -65,51 +65,24 @@ TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
 TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
 }
 
-TestSchedulerFrameSourcesConstructor::TestSchedulerFrameSourcesConstructor(
-    OrderedSimpleTaskRunner* test_task_runner,
-    base::SimpleTestTickClock* now_src)
-    : test_task_runner_(test_task_runner), now_src_(now_src) {
-}
-
-TestSchedulerFrameSourcesConstructor::~TestSchedulerFrameSourcesConstructor() {
-}
-
-BeginFrameSource*
-TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
-    Scheduler* scheduler) {
-  if (scheduler->settings_.use_external_begin_frame_source) {
-    return SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
-        scheduler);
-  } else {
-    TRACE_EVENT1(
-        "cc",
-        "TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource",
-        "source",
-        "TestSyntheticBeginFrameSource");
-    scoped_ptr<TestSyntheticBeginFrameSource> synthetic_source =
-        TestSyntheticBeginFrameSource::Create(
-            now_src_, test_task_runner_, BeginFrameArgs::DefaultInterval());
-
-    DCHECK(!scheduler->vsync_observer_);
-    scheduler->vsync_observer_ = synthetic_source.get();
-
-    DCHECK(!scheduler->primary_frame_source_internal_);
-    scheduler->primary_frame_source_internal_ = synthetic_source.Pass();
-    return scheduler->primary_frame_source_internal_.get();
+scoped_ptr<TestScheduler> TestScheduler::Create(
+    base::SimpleTestTickClock* now_src,
+    SchedulerClient* client,
+    const SchedulerSettings& settings,
+    int layer_tree_host_id,
+    const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+    BeginFrameSource* external_frame_source) {
+  scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source;
+  if (!settings.use_external_begin_frame_source) {
+    synthetic_frame_source = TestSyntheticBeginFrameSource::Create(
+        now_src, task_runner.get(), BeginFrameArgs::DefaultInterval());
   }
-}
-
-BeginFrameSource*
-TestSchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource(
-    Scheduler* scheduler) {
-  TRACE_EVENT1(
-      "cc",
-      "TestSchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource",
-      "source", "TestBackToBackBeginFrameSource");
-  DCHECK(!scheduler->unthrottled_frame_source_internal_);
-  scheduler->unthrottled_frame_source_internal_ =
-      TestBackToBackBeginFrameSource::Create(now_src_, test_task_runner_);
-  return scheduler->unthrottled_frame_source_internal_.get();
+  scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source =
+      TestBackToBackBeginFrameSource::Create(now_src, task_runner.get());
+  return make_scoped_ptr(new TestScheduler(
+      now_src, client, settings, layer_tree_host_id, task_runner,
+      external_frame_source, synthetic_frame_source.Pass(),
+      unthrottled_frame_source.Pass()));
 }
 
 TestScheduler::TestScheduler(
@@ -117,15 +90,17 @@ TestScheduler::TestScheduler(
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
-    const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner,
-    TestSchedulerFrameSourcesConstructor* frame_sources_constructor,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source)
+    const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+    BeginFrameSource* external_frame_source,
+    scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
+    scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source)
     : Scheduler(client,
                 scheduler_settings,
                 layer_tree_host_id,
-                test_task_runner,
-                external_begin_frame_source.Pass(),
-                frame_sources_constructor),
+                task_runner,
+                external_frame_source,
+                synthetic_frame_source.Pass(),
+                unthrottled_frame_source.Pass()),
       now_src_(now_src) {
 }
 

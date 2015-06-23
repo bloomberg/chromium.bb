@@ -18,98 +18,70 @@
 
 namespace cc {
 
-BeginFrameSource* SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
-    Scheduler* scheduler) {
-  if (scheduler->settings_.use_external_begin_frame_source) {
-    TRACE_EVENT1("cc",
-                 "Scheduler::Scheduler()",
-                 "PrimaryFrameSource",
-                 "ExternalBeginFrameSource");
-    DCHECK(scheduler->primary_frame_source_internal_)
-        << "Need external BeginFrameSource";
-    return scheduler->primary_frame_source_internal_.get();
-  } else {
-    TRACE_EVENT1("cc",
-                 "Scheduler::Scheduler()",
-                 "PrimaryFrameSource",
-                 "SyntheticBeginFrameSource");
-    scoped_ptr<SyntheticBeginFrameSource> synthetic_source =
-        SyntheticBeginFrameSource::Create(scheduler->task_runner_.get(),
-                                          scheduler->Now(),
-                                          BeginFrameArgs::DefaultInterval());
-
-    DCHECK(!scheduler->vsync_observer_);
-    scheduler->vsync_observer_ = synthetic_source.get();
-
-    DCHECK(!scheduler->primary_frame_source_internal_);
-    scheduler->primary_frame_source_internal_ = synthetic_source.Pass();
-    return scheduler->primary_frame_source_internal_.get();
+scoped_ptr<Scheduler> Scheduler::Create(
+    SchedulerClient* client,
+    const SchedulerSettings& settings,
+    int layer_tree_host_id,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    BeginFrameSource* external_frame_source) {
+  scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source;
+  if (!settings.use_external_begin_frame_source) {
+    synthetic_frame_source = SyntheticBeginFrameSource::Create(
+        task_runner.get(), BeginFrameArgs::DefaultInterval());
   }
-}
-
-BeginFrameSource*
-SchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource(
-    Scheduler* scheduler) {
-  TRACE_EVENT1("cc", "Scheduler::Scheduler()", "UnthrottledFrameSource",
-               "BackToBackBeginFrameSource");
-  DCHECK(!scheduler->unthrottled_frame_source_internal_);
-  scheduler->unthrottled_frame_source_internal_ =
-      BackToBackBeginFrameSource::Create(scheduler->task_runner_.get());
-  return scheduler->unthrottled_frame_source_internal_.get();
+  scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source =
+      BackToBackBeginFrameSource::Create(task_runner.get());
+  return make_scoped_ptr(new Scheduler(
+      client, settings, layer_tree_host_id, task_runner, external_frame_source,
+      synthetic_frame_source.Pass(), unthrottled_frame_source.Pass()));
 }
 
 Scheduler::Scheduler(
     SchedulerClient* client,
-    const SchedulerSettings& scheduler_settings,
+    const SchedulerSettings& settings,
     int layer_tree_host_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source,
-    SchedulerFrameSourcesConstructor* frame_sources_constructor)
-    : frame_source_(),
-      primary_frame_source_(NULL),
-      primary_frame_source_internal_(external_begin_frame_source.Pass()),
-      vsync_observer_(NULL),
-      authoritative_vsync_interval_(base::TimeDelta()),
-      last_vsync_timebase_(base::TimeTicks()),
-      throttle_frame_production_(false),
-      settings_(scheduler_settings),
+    BeginFrameSource* external_frame_source,
+    scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source,
+    scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source)
+    : settings_(settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
+      external_frame_source_(external_frame_source),
+      synthetic_frame_source_(synthetic_frame_source.Pass()),
+      unthrottled_frame_source_(unthrottled_frame_source.Pass()),
+      frame_source_(BeginFrameSourceMultiplexer::Create()),
+      throttle_frame_production_(false),
       begin_impl_frame_deadline_mode_(
           SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE),
       begin_impl_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
-      state_machine_(scheduler_settings),
+      state_machine_(settings),
       inside_process_scheduled_actions_(false),
       inside_action_(SchedulerStateMachine::ACTION_NONE),
       weak_factory_(this) {
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
-               "Scheduler::Scheduler",
-               "settings",
-               settings_.AsValue());
+  TRACE_EVENT1("cc", "Scheduler::Scheduler", "settings", settings_.AsValue());
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeeded());
+  DCHECK_IMPLIES(settings_.use_external_begin_frame_source,
+                 external_frame_source_);
+  DCHECK_IMPLIES(!settings_.use_external_begin_frame_source,
+                 synthetic_frame_source_);
+  DCHECK(unthrottled_frame_source_);
 
   begin_retro_frame_closure_ =
       base::Bind(&Scheduler::BeginRetroFrame, weak_factory_.GetWeakPtr());
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
 
-  frame_source_ = BeginFrameSourceMultiplexer::Create();
   frame_source_->AddObserver(this);
+  frame_source_->AddSource(primary_frame_source());
+  primary_frame_source()->SetClientReady();
 
-  // Primary frame source
-  primary_frame_source_ =
-      frame_sources_constructor->ConstructPrimaryFrameSource(this);
-  frame_source_->AddSource(primary_frame_source_);
-  primary_frame_source_->SetClientReady();
+  frame_source_->AddSource(unthrottled_frame_source_.get());
+  unthrottled_frame_source_->SetClientReady();
 
-  // Unthrottled frame source
-  unthrottled_frame_source_ =
-      frame_sources_constructor->ConstructUnthrottledFrameSource(this);
-  frame_source_->AddSource(unthrottled_frame_source_);
-
-  SetThrottleFrameProduction(scheduler_settings.throttle_frame_production);
+  SetThrottleFrameProduction(settings_.throttle_frame_production);
 }
 
 Scheduler::~Scheduler() {
@@ -138,8 +110,8 @@ void Scheduler::CommitVSyncParameters(base::TimeTicks timebase,
 
   last_vsync_timebase_ = timebase;
 
-  if (vsync_observer_)
-    vsync_observer_->OnUpdateVSyncParameters(timebase, interval);
+  if (synthetic_frame_source_)
+    synthetic_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void Scheduler::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
@@ -176,9 +148,9 @@ void Scheduler::NotifyReadyToDraw() {
 void Scheduler::SetThrottleFrameProduction(bool throttle) {
   throttle_frame_production_ = throttle;
   if (throttle) {
-    frame_source_->SetActiveSource(primary_frame_source_);
+    frame_source_->SetActiveSource(primary_frame_source());
   } else {
-    frame_source_->SetActiveSource(unthrottled_frame_source_);
+    frame_source_->SetActiveSource(unthrottled_frame_source_.get());
   }
   ProcessScheduledActions();
 }
@@ -360,8 +332,10 @@ void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
 
 void Scheduler::SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) {
   authoritative_vsync_interval_ = interval;
-  if (vsync_observer_)
-    vsync_observer_->OnUpdateVSyncParameters(last_vsync_timebase_, interval);
+  if (synthetic_frame_source_) {
+    synthetic_frame_source_->OnUpdateVSyncParameters(last_vsync_timebase_,
+                                                     interval);
+  }
 }
 
 void Scheduler::SetVideoNeedsBeginFrames(bool video_needs_begin_frames) {

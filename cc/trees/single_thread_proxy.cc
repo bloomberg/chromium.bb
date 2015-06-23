@@ -41,6 +41,7 @@ SingleThreadProxy::SingleThreadProxy(
     : Proxy(main_task_runner, NULL),
       layer_tree_host_(layer_tree_host),
       client_(client),
+      external_begin_frame_source_(external_begin_frame_source.Pass()),
       timing_history_(layer_tree_host->rendering_stats_instrumentation()),
       next_frame_is_newly_committed_frame_(false),
 #if DCHECK_IS_ON()
@@ -64,7 +65,7 @@ SingleThreadProxy::SingleThreadProxy(
     scheduler_settings.commit_to_active_tree = CommitToActiveTree();
     scheduler_on_impl_thread_ = Scheduler::Create(
         this, scheduler_settings, layer_tree_host_->id(),
-        MainThreadTaskRunner(), external_begin_frame_source.Pass());
+        MainThreadTaskRunner(), external_begin_frame_source_.get());
   }
 }
 
