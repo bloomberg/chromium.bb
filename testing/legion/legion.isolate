@@ -13,6 +13,7 @@
       'rpc_methods.py',
       'rpc_server.py',
       'run_task.py',
+      'ssl_util.py',
       'task_controller.py',
       'task_registration_server.py',
       'test_controller.py',

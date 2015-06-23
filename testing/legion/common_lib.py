@@ -34,10 +34,3 @@ def InitLogging():
   logging.basicConfig(
       format='%(asctime)s %(filename)s:%(lineno)s %(levelname)s] %(message)s',
       datefmt='%H:%M:%S', level=args.verbosity)
-
-
-def ConnectToServer(server):
-  """Connect to an RPC server."""
-  addr = 'http://%s:%d' % (server, SERVER_PORT)
-  logging.debug('Connecting to RPC server at %s', addr)
-  return xmlrpclib.Server(addr, allow_none=True)

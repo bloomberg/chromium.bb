@@ -24,6 +24,7 @@ import SocketServer
 #pylint: disable=relative-import
 import common_lib
 import rpc_methods
+import ssl_util
 
 
 class RequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
@@ -47,17 +48,16 @@ class RequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
       return SimpleXMLRPCServer.SimpleXMLRPCRequestHandler.do_POST(self)
 
 
-class RPCServer(SimpleXMLRPCServer.SimpleXMLRPCServer,
+class RpcServer(ssl_util.SslRpcServer,
                 SocketServer.ThreadingMixIn):
   """Restricts all endpoints to only specified IP addresses."""
 
   def __init__(self, authorized_address,
                idle_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS):
-    SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(
+    ssl_util.SslRpcServer.__init__(
         self, (common_lib.SERVER_ADDRESS, common_lib.SERVER_PORT),
         allow_none=True, logRequests=False,
         requestHandler=RequestHandler)
-
     self.authorized_address = authorized_address
     self.idle_timeout_secs = idle_timeout_secs
     self.register_instance(rpc_methods.RPCMethods(self))

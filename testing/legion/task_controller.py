@@ -18,6 +18,7 @@ import xmlrpclib
 #pylint: disable=relative-import
 import common_lib
 import process
+import ssl_util
 
 ISOLATE_PY = os.path.join(common_lib.SWARMING_DIR, 'isolate.py')
 SWARMING_PY = os.path.join(common_lib.SWARMING_DIR, 'swarming.py')
@@ -208,6 +209,6 @@ class TaskController(object):
     """Receives task ip address on connection."""
     self._ip_address = ip_address
     self._connected = True
-    self._rpc = common_lib.ConnectToServer(self._ip_address)
+    self._rpc = ssl_util.SslRpcServer.Connect(self._ip_address)
     logging.info('%s connected from %s', self._name, ip_address)
     self._connect_event.set()
