@@ -124,14 +124,21 @@ class BisectPrinter(object):
                                   last_broken_rev, 100, final_step=False)
 
   def _PrintAbortResults(self, abort_reason):
-
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart('Results')
+
+    # Metric string in config is not split in case of return code mode.
+    if (self.opts.metric and
+        self.opts.bisect_mode != bisect_utils.BISECT_MODE_RETURN_CODE):
+      metric = '/'.join(self.opts.metric)
+    else:
+      metric = self.opts.metric
+
     print ABORT_REASON_TEMPLATE % {
         'abort_reason': abort_reason,
         'bug_id': self.opts.bug_id or 'NOT SPECIFIED',
         'command': self.opts.command,
-        'metric': '/'.join(self.opts.metric),
+        'metric': metric,
         'good_revision': self.opts.good_revision,
         'bad_revision': self.opts.bad_revision,
     }

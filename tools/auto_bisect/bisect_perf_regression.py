@@ -2307,9 +2307,18 @@ class BisectPerformanceMetrics(object):
 
       # We need these reference values to determine if later runs should be
       # classified as pass or fail.
+
       known_bad_value = bad_results[0]
       known_good_value = good_results[0]
 
+      # Abort bisect early when the return codes for known good
+      # and known bad revisions are same.
+      if (self._IsBisectModeReturnCode() and
+          known_bad_value['mean'] == known_good_value['mean']):
+        return BisectResults(abort_reason=('known good and known bad revisions '
+            'returned same return code (return code=%s). '
+            'Continuing bisect might not yield any results.' %
+            known_bad_value['mean']))
       # Check the direction of improvement only if the improvement_direction
       # option is set to a specific direction (1 for higher is better or -1 for
       # lower is better).

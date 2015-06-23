@@ -114,13 +114,19 @@ DEFAULT_OPTIONS = {
 # that use _MockRunTests.
 _MockResultsGenerator = (x for x in [])
 
+def _MakeMockRunTests(bisect_mode_is_return_code=False):
+  def _MockRunTests(*args, **kwargs):  # pylint: disable=unused-argument
+    return _FakeTestResult(
+        _MockResultsGenerator.next(), bisect_mode_is_return_code)
 
-def _MockRunTests(*args, **kwargs):  # pylint: disable=unused-argument
-  return _FakeTestResult(_MockResultsGenerator.next())
+  return _MockRunTests
 
 
-def _FakeTestResult(values):
-  result_dict = {'mean': 0.0, 'std_err': 0.0, 'std_dev': 0.0, 'values': values}
+def _FakeTestResult(values, bisect_mode_is_return_code):
+  mean = 0.0
+  if bisect_mode_is_return_code:
+    mean = 0 if (all(v == 0 for v in values)) else 1
+  result_dict = {'mean': mean, 'std_err': 0.0, 'std_dev': 0.0, 'values': values}
   success_code = 0
   return (result_dict, success_code)
 
@@ -375,7 +381,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
     _MockResultsGenerator = (r for r in results)
     bisect_class = bisect_perf_regression.BisectPerformanceMetrics
     original_run_tests = bisect_class.RunPerformanceTestAndParseResults
-    bisect_class.RunPerformanceTestAndParseResults = _MockRunTests
+    bisect_class.RunPerformanceTestAndParseResults = _MakeMockRunTests()
 
     try:
       dry_run_results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
@@ -405,6 +411,36 @@ class BisectPerfRegressionTest(unittest.TestCase):
 
   def testBisectNotAborted_MultipleValues(self):
     self.assertFalse(self._CheckAbortsEarly(MULTIPLE_VALUES))
+
+  def _CheckAbortsEarlyForReturnCode(self, results):
+    """Returns True if the bisect job would abort early in return code mode."""
+    global _MockResultsGenerator
+    _MockResultsGenerator = (r for r in results)
+    bisect_class = bisect_perf_regression.BisectPerformanceMetrics
+    original_run_tests = bisect_class.RunPerformanceTestAndParseResults
+    bisect_class.RunPerformanceTestAndParseResults = _MakeMockRunTests(True)
+    options = dict(DEFAULT_OPTIONS)
+    options.update({'bisect_mode': 'return_code'})
+    try:
+      dry_run_results = _GenericDryRun(options)
+    except StopIteration:
+      # If StopIteration was raised, that means that the next value after
+      # the first two values was requested, so the job was not aborted.
+      return False
+    finally:
+      bisect_class.RunPerformanceTestAndParseResults = original_run_tests
+
+    # If the job was aborted, there should be a warning about it.
+    if ('known good and known bad revisions returned same' in
+        dry_run_results.abort_reason):
+      return True
+    return False
+
+  def testBisectAbortOn_SameReturnCode(self):
+    self.assertTrue(self._CheckAbortsEarlyForReturnCode([[0,0,0], [0,0,0]]))
+
+  def testBisectNotAbortedOn_DifferentReturnCode(self):
+    self.assertFalse(self._CheckAbortsEarlyForReturnCode([[1,1,1], [0,0,0]]))
 
   def testGetCommitPosition(self):
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
