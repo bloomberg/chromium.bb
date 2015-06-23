@@ -103,6 +103,9 @@
         "test": "cast_shell_browser_test"
       },
       {
+        "args": [
+          "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:OutOfProcessPPAPITest.BrowserFont"
+        ],
         "test": "content_browsertests"
       },
       {
