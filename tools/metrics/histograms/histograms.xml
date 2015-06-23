@@ -33896,6 +33896,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.ReadyToDrawTileDrawStatus" enum="UsedInDraw">
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    For each tile that was ready to draw at some point, logs whether the tile
+    was actually used in a draw. This is logged at tile destruction time.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.renderPassCount">
   <owner>wiltzius@chromium.org</owner>
   <summary>
@@ -68110,6 +68118,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="kBlobURLScheme"/>
   <int value="9" label="kDataURLScheme"/>
   <int value="10" label="kFileSystemScheme"/>
+</enum>
+
+<enum name="UsedInDraw" type="int">
+  <int value="0" label="Was not used in draw"/>
+  <int value="1" label="Was used in draw"/>
 </enum>
 
 <enum name="UserChannels" type="int">

@@ -813,6 +813,9 @@ void TileManager::UpdateTileDrawInfo(
     draw_info.contents_swizzled_ =
         tile_task_runner_->GetResourceRequiresSwizzle();
   }
+  DCHECK(draw_info.IsReadyToDraw());
+  draw_info.set_was_ever_ready_to_draw();
+
   client_->NotifyTileStateChanged(tile);
 }
 

@@ -80,6 +80,9 @@ class CC_EXPORT TileDrawInfo {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
+  void set_was_ever_ready_to_draw() { was_ever_ready_to_draw_ = true; }
+  void set_was_ever_used_to_draw() { was_ever_used_to_draw_ = true; }
+
  private:
   friend class Tile;
   friend class TileManager;
@@ -97,6 +100,10 @@ class CC_EXPORT TileDrawInfo {
   SkColor solid_color_;
   scoped_ptr<ScopedResource> resource_;
   bool contents_swizzled_;
+
+  // Used for gathering UMA stats.
+  bool was_ever_ready_to_draw_;
+  bool was_ever_used_to_draw_;
 };
 
 }  // namespace cc

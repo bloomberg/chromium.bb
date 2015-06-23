@@ -301,6 +301,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
                        texture_rect, draw_info.resource_size(),
                        draw_info.contents_swizzled(), nearest_neighbor_);
           ValidateQuadResources(quad);
+          iter->draw_info().set_was_ever_used_to_draw();
           has_draw_quad = true;
           break;
         }
@@ -310,6 +311,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
                        draw_info.solid_color(), false);
           ValidateQuadResources(quad);
+          iter->draw_info().set_was_ever_used_to_draw();
           has_draw_quad = true;
           break;
         }
