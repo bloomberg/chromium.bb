@@ -167,22 +167,27 @@ def main():
     print('No patchset specified. Using patchset %d' % options.patchset)
 
   issues_patchsets_to_apply = [(options.issue, options.patchset)]
-  depends_on_info = obj.get_depends_on_patchset(options.issue, options.patchset)
-  while depends_on_info:
-    depends_on_issue = int(depends_on_info['issue'])
-    depends_on_patchset = int(depends_on_info['patchset'])
-    try:
-      depends_on_info = obj.get_depends_on_patchset(depends_on_issue,
-                                                    depends_on_patchset)
-      issues_patchsets_to_apply.insert(0, (depends_on_issue,
-                                           depends_on_patchset))
-    except urllib2.HTTPError:
-      print ('The patchset that was marked as a dependency no longer '
-             'exists: %s/%d/#ps%d' % (
-                 options.server, depends_on_issue, depends_on_patchset))
-      print 'Therefore it is likely that this patch will not apply cleanly.'
-      print
-      depends_on_info = None
+
+  # Temporary comment out the below while we try to figure out what to do with
+  # patchset dependencies on trybots.
+  # TODO(rmistry): Uncomment the below after a solution is found.
+  # depends_on_info = obj.get_depends_on_patchset(options.issue,
+  #                                               options.patchset)
+  # while depends_on_info:
+  #   depends_on_issue = int(depends_on_info['issue'])
+  #   depends_on_patchset = int(depends_on_info['patchset'])
+  #   try:
+  #     depends_on_info = obj.get_depends_on_patchset(depends_on_issue,
+  #                                                   depends_on_patchset)
+  #     issues_patchsets_to_apply.insert(0, (depends_on_issue,
+  #                                          depends_on_patchset))
+  #   except urllib2.HTTPError:
+  #     print ('The patchset that was marked as a dependency no longer '
+  #            'exists: %s/%d/#ps%d' % (
+  #                options.server, depends_on_issue, depends_on_patchset))
+  #     print 'Therefore it is likely that this patch will not apply cleanly.'
+  #     print
+  #     depends_on_info = None
 
   num_issues_patchsets_to_apply = len(issues_patchsets_to_apply)
   if num_issues_patchsets_to_apply > 1:
