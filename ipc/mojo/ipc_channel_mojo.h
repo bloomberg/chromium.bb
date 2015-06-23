@@ -169,7 +169,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   scoped_ptr<mojo::embedder::ChannelInfo,
              ChannelInfoDeleter> channel_info_;
 
-  // Guards |message_reader_| and |pending_messages_|
+  // Guards |message_reader_|, |waiting_connect_| and |pending_messages_|
   //
   // * The contents of |pending_messages_| can be modified from any thread.
   // * |message_reader_| is modified only from the IO thread,
@@ -177,6 +177,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   base::Lock lock_;
   scoped_ptr<internal::MessagePipeReader, ReaderDeleter> message_reader_;
   ScopedVector<Message> pending_messages_;
+  bool waiting_connect_;
 
   scoped_ptr<ScopedIPCSupport> ipc_support_;
 

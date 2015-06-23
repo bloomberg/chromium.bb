@@ -570,6 +570,55 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ParamTraitInvalidMessagePipeClient) {
   return 0;
 }
 
+TEST_F(IPCChannelMojoTest, SendFailAfterClose) {
+  InitWithMojo("IPCChannelMojoTestSendOkClient");
+
+  ListenerThatExpectsOK listener;
+  CreateChannel(&listener);
+  ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
+
+  base::MessageLoop::current()->Run();
+  this->channel()->Close();
+  ASSERT_FALSE(this->channel()->Send(new IPC::Message()));
+
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannel();
+}
+
+class ListenerSendingOneOk : public IPC::Listener {
+ public:
+  ListenerSendingOneOk() {
+  }
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return true;
+  }
+
+  void OnChannelConnected(int32 peer_pid) override {
+    ListenerThatExpectsOK::SendOK(sender_);
+    base::MessageLoop::current()->Quit();
+  }
+
+  void set_sender(IPC::Sender* sender) { sender_ = sender; }
+
+ private:
+  IPC::Sender* sender_;
+};
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendOkClient) {
+  ListenerSendingOneOk listener;
+  ChannelClient client(&listener, "IPCChannelMojoTestSendOkClient");
+  client.Connect();
+  listener.set_sender(client.channel());
+
+  base::MessageLoop::current()->Run();
+
+  client.Close();
+
+  return 0;
+}
+
 #if defined(OS_WIN)
 class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
  protected:

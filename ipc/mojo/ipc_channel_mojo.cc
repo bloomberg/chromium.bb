@@ -291,6 +291,7 @@ ChannelMojo::ChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
       peer_pid_(base::kNullProcessId),
       io_runner_(io_runner),
       channel_info_(nullptr, ChannelInfoDeleter(nullptr)),
+      waiting_connect_(true),
       weak_factory_(this) {
   // Create MojoBootstrap after all members are set as it touches
   // ChannelMojo from a different thread.
@@ -368,6 +369,8 @@ void ChannelMojo::Close() {
     // but the instance has to be deleted outside.
     base::AutoLock l(lock_);
     to_be_deleted = message_reader_.Pass();
+    // We might Close() before we Connect().
+    waiting_connect_ = false;
   }
 
   channel_info_.reset();
@@ -417,6 +420,7 @@ void ChannelMojo::InitMessageReader(mojo::ScopedMessagePipeHandle pipe,
     // care. They cannot be sent anyway.
     message_reader_.reset(reader.release());
     pending_messages_.clear();
+    waiting_connect_ = false;
   }
 
   set_peer_pid(peer_pid);
@@ -439,7 +443,9 @@ bool ChannelMojo::Send(Message* message) {
   base::AutoLock l(lock_);
   if (!message_reader_) {
     pending_messages_.push_back(message);
-    return true;
+    // Counts as OK before the connection is established, but it's an
+    // error otherwise.
+    return waiting_connect_;
   }
 
   return message_reader_->Send(make_scoped_ptr(message));
