@@ -288,6 +288,21 @@ class HWTestList(object):
     default_dict.update(kwargs)
     return config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
 
+  @classmethod
+  def WiFiCellPoolPreCQ(cls, **kwargs):
+    """Return a list of HWTestConfigs which run wifi tests.
+
+    This should be used by the ChromeOS WiFi team to ensure changes pass the
+    wifi tests as a pre-cq sanity check.
+    """
+    default_dict = dict(pool=constants.HWTEST_WIFICELL_PRE_CQ_POOL,
+                        blocking=True, file_bugs=False,
+                        priority=constants.HWTEST_DEFAULT_PRIORITY,
+                        retry=False, max_retries=None, minimum_duts=1)
+    default_dict.update(kwargs)
+    suite_list = [config_lib.HWTestConfig(constants.WIFICELL_PRE_CQ,
+                                          **default_dict)]
+    return suite_list
 
 def append_useflags(useflags):
   """Used to append a set of useflags to existing useflags.
@@ -2225,6 +2240,13 @@ def GetConfig():
       _release, 'lakitu-release',
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE]
+  )
+
+  site_config.AddConfig(
+      pre_cq, constants.WIFICELL_PRE_CQ,
+      internal,
+      boards=['samus'],
+      hw_tests=HWTestList.WiFiCellPoolPreCQ()
   )
 
   ### Per-chipset release groups

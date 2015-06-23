@@ -24518,6 +24518,19 @@
         ],
         "vm_tests": []
     },
+    "wificell-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "samus"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"pool\": \"wificell-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"wificell-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "wificell-pre-cq",
+        "overlays": "both"
+    },
     "winky-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [

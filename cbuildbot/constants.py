@@ -502,6 +502,7 @@ HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
+HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
 
 
 # Master build timeouts in seconds. This is the overall timeout set by the
@@ -870,6 +871,7 @@ CQ_MASTER = 'master-paladin'
 CANARY_MASTER = 'master-release'
 PFQ_MASTER = 'master-chromium-pfq'
 BINHOST_PRE_CQ = 'binhost-pre-cq'
+WIFICELL_PRE_CQ = 'wificell-pre-cq'
 
 
 # Email validation regex. Not quite fully compliant with RFC 2822, but good
