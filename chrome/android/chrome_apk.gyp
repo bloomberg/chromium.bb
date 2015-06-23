@@ -17,56 +17,6 @@
     'chrome_java_test_support_dir': '../test/android/javatests_staging',
     'chrome_native_sources_dir': '../browser/android/',
     # This list is shared with GN.
-    'chrome_staging_jni_files': [
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/bookmark/EditBookmarkHelper.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/compositor/CompositorView.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/compositor/scene_layer/ContextualSearchSceneLayer.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/compositor/scene_layer/ReaderModeSceneLayer.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/compositor/scene_layer/TabListSceneLayer.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/compositor/scene_layer/TabStripSceneLayer.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchTabHelper.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/document/DocumentWebContentsDelegate.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/rlz/RevenueStats.java',
-      '<(chrome_java_dir)/src/org/chromium/chrome/browser/tab/ThumbnailTabHelper.java',
-    ],
-    # This list is shared with GN.
-    'chrome_staging_native_sources': [
-      '<(chrome_native_sources_dir)/bookmark/edit_bookmark_helper.cc',
-      '<(chrome_native_sources_dir)/bookmark/edit_bookmark_helper.h',
-      '<(chrome_native_sources_dir)/chrome_main_delegate_staging_android.cc',
-      '<(chrome_native_sources_dir)/chrome_main_delegate_staging_android.h',
-      '<(chrome_native_sources_dir)/compositor/compositor_view.cc',
-      '<(chrome_native_sources_dir)/compositor/compositor_view.h',
-      '<(chrome_native_sources_dir)/compositor/layer/reader_mode_layer.cc',
-      '<(chrome_native_sources_dir)/compositor/layer/reader_mode_layer.h',
-      '<(chrome_native_sources_dir)/compositor/layer/tab_handle_layer.cc',
-      '<(chrome_native_sources_dir)/compositor/layer/tab_handle_layer.h',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/contextual_search_scene_layer.cc',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/contextual_search_scene_layer.h',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/reader_mode_scene_layer.cc',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/reader_mode_scene_layer.h',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/tab_list_scene_layer.cc',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/tab_list_scene_layer.h',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/tab_strip_scene_layer.cc',
-      '<(chrome_native_sources_dir)/compositor/scene_layer/tab_strip_scene_layer.h',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_context.cc',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_context.h',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_delegate.cc',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_delegate.h',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_manager.cc',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_manager.h',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_tab_helper.cc',
-      '<(chrome_native_sources_dir)/contextualsearch/contextual_search_tab_helper.h',
-      '<(chrome_native_sources_dir)/document/document_web_contents_delegate.cc',
-      '<(chrome_native_sources_dir)/rlz/revenue_stats.cc',
-      '<(chrome_native_sources_dir)/rlz/revenue_stats.h',
-      '<(chrome_native_sources_dir)/staging_jni_registrar.cc',
-      '<(chrome_native_sources_dir)/staging_jni_registrar.h',
-      '<(chrome_native_sources_dir)/tab/thumbnail_tab_helper_android.cc',
-      '<(chrome_native_sources_dir)/tab/thumbnail_tab_helper_android.h',
-    ],
-    # This list is shared with GN.
     # Defines a list of source files should be present in the open-source
     # chrome-apk but not in the published static_library which is included in the
     # real chrome for android.
@@ -78,52 +28,10 @@
     ],
   },
   'targets': [
-    {
-      # GN: //chrome/browser/android:chrome_staging
+     {
+      # TODO(newt): delete this once all references are gone.
       'target_name': 'libchrome_staging',
-      'type': 'static_library',
-      'dependencies': [
-        'staging_jni_headers',
-        '<(DEPTH)/chrome/chrome.gyp:browser',
-        '<(DEPTH)/components/components.gyp:component_metrics_proto',
-        '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-      ],
-      'sources': [
-        '<@(chrome_staging_native_sources)',
-      ],
-      'include_dirs': [
-        '<(DEPTH)',
-        '<(SHARED_INTERMEDIATE_DIR)/staging/android',
-        '<(android_ndk_include)',  # For native_window.h, GL includes, etc.
-        '<(DEPTH)/skia/config',
-      ],
-      'link_settings': {
-        'libraries': [
-          '-landroid',      # ANativeWindow
-          '-ljnigraphics',  # NDK access to bitmap
-        ],
-      },
-      'conditions': [
-        ['safe_browsing!=0', {
-          'sources': [
-            '<(chrome_native_sources_dir)/spdy_proxy_resource_throttle.cc',
-            '<(chrome_native_sources_dir)/spdy_proxy_resource_throttle.h',
-          ],
-        }],
-      ],
-    },
-    {
-      # GN: //chrome/android:staging_jni_headers
-      'target_name': 'staging_jni_headers',
       'type': 'none',
-      'sources': [
-        '<@(chrome_staging_jni_files)',
-      ],
-      'variables': {
-        'jni_gen_package': 'staging/android',
-      },
-      'includes': [ '../../build/jni_generator.gypi' ],
     },
     {
       # GN: //chrome/android:chrome_staging_java
@@ -224,7 +132,6 @@
       'target_name': 'libchrome_public',
       'type': 'shared_library',
       'dependencies': [
-        'libchrome_staging',
         '<(DEPTH)/chrome/chrome.gyp:chrome_android_core',
       ],
       'include_dirs': [
@@ -317,28 +224,23 @@
       'includes': [ '../../build/apk_fake_jar.gypi' ],
     },
     {
-      # GN: //chrome/browser/android:chrome_staging_unittests
+      # TODO(newt): delete this target once all references are gone.
       'target_name': 'chrome_staging_unittests',
       'type': 'static_library',
       'sources': [
-        '<(chrome_native_sources_dir)/contextualsearch/contextual_search_delegate_unittest.cc',
-        '<(chrome_native_sources_dir)/history_report/delta_file_commons_unittest.cc',
-        '<(chrome_native_sources_dir)/history_report/delta_file_backend_leveldb_unittest.cc',
-        '<(chrome_native_sources_dir)/history_report/usage_reports_buffer_backend_unittest.cc',
-        '<(chrome_native_sources_dir)/policy/policy_manager_unittest.cc',
+        # This file is already tested elsewhere but is included here to
+        # prevent this from being an empty static_library, which would
+        # break the the test APK that depends on this.
+        '../browser/android/policy/policy_manager_unittest.cc',
       ],
       'dependencies': [
-        'libchrome_staging',
         '<(DEPTH)/base/base.gyp:base_java',
+        '<(DEPTH)/chrome/chrome.gyp:browser',
         '<(DEPTH)/chrome/chrome.gyp:chrome_java',
-        '<(DEPTH)/chrome/chrome.gyp:delta_file_proto',
         '<(DEPTH)/chrome/chrome.gyp:test_support_unit',
         '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
         '<(DEPTH)/testing/gtest.gyp:gtest',
-      ],
-       'include_dirs': [
-        '<(DEPTH)',
       ],
     },
     {

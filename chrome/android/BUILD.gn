@@ -671,53 +671,8 @@ android_library("chrome_staging_test_java") {
   ]
 }
 
-# GYP: //chrome/android/chrome_apk.gyp:staging_jni_headers
-generate_jni("staging_jni_headers") {
-  jni_package = "staging/android"
-  gypi_values = exec_script("//build/gypi_to_gn.py",
-                            [
-                              rebase_path("chrome_apk.gyp"),
-                              "--replace=<(chrome_java_dir)=java_staging",
-                            ],
-                            "scope",
-                            [ "chrome_apk.gyp" ])
-  sources = gypi_values.chrome_staging_jni_files
-}
-
-# GYP: //chrome/android/chrome_apk.gyp:libchrome_staging
-static_library("chrome_staging") {
-  deps = [
-    ":staging_jni_headers",
-    "//chrome/browser",
-    "//chrome:strings",
-    "//components/enhanced_bookmarks",
-    "//components/metrics/proto",
-    "//third_party/leveldatabase",
-  ]
-
-  gypi_values = exec_script(
-          "//build/gypi_to_gn.py",
-          [
-            rebase_path("chrome_apk.gyp"),
-            "--replace=<(chrome_native_sources_dir)=../browser/android/",
-          ],
-          "scope",
-          [ "chrome_apk.gyp" ])
-  sources = gypi_values.chrome_staging_native_sources
-
-  if (safe_browsing_mode != 0) {
-    sources += [
-      "../browser/android/spdy_proxy_resource_throttle.cc",
-      "../browser/android/spdy_proxy_resource_throttle.h",
-    ]
-  }
-
-  libs = [
-    "android",
-    "jnigraphics",
-  ]
-
-  defines = []
+# TODO(newt): delete this once all references are gone.
+group("chrome_staging") {
 }
 
 chrome_public_apk_assets_dir = "$root_build_dir/chrome_public_apk_assets"
@@ -770,7 +725,6 @@ jinja_template_resources("chrome_public_template_resources") {
 # GYP: //chrome/android/chrome_apk.gyp:libchrome_public
 shared_library("chrome_public") {
   deps = [
-    "//chrome/android:chrome_staging",
     "//chrome:chrome_android_core",
   ]
   gypi_values = exec_script(
