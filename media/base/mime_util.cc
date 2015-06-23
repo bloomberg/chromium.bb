@@ -477,19 +477,16 @@ void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
   allow_proprietary_codecs_ = false;
 }
 
-// Returns true iff |profile_str| conforms to hex string "42y0", where y is one
-// of [8..F]. Requiring constraint_set0_flag be set and profile_idc be 0x42 is
-// taken from ISO-14496-10 7.3.2.1, 7.4.2.1, and Annex A.2.1.
+// Returns true iff |profile_str| conforms to hex string "42y0".
 //
-// |profile_str| is the first four characters of the H.264 suffix string
-// (ignoring the last 2 characters of the full 6 character suffix that are
-// level_idc). From ISO-14496-10 7.3.2.1, it consists of:
-// 8 bits: profile_idc: required to be 0x42 here.
-// 1 bit: constraint_set0_flag : required to be true here.
-// 1 bit: constraint_set1_flag : ignored here.
-// 1 bit: constraint_set2_flag : ignored here.
-// 1 bit: constraint_set3_flag : ignored here.
-// 4 bits: reserved : required to be 0 here.
+// |profile_str| is the first four characters of the H.264 suffix string. From
+// ISO-14496-10 7.3.2.1, it consists of:
+//   8 bits: profile_idc; required to be 0x42 here.
+//   1 bit: constraint_set0_flag; ignored here.
+//   1 bit: constraint_set1_flag; ignored here.
+//   1 bit: constraint_set2_flag; ignored here.
+//   1 bit: constraint_set3_flag; ignored here.
+//   4 bits: reserved; required to be 0 here.
 //
 // The spec indicates other ways, not implemented here, that a |profile_str|
 // can indicate a baseline conforming decoder is sufficient for decode in Annex
@@ -497,17 +494,9 @@ void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
 // in which level_idc and constraint_set3_flag represent a level less than or
 // equal to the specified level."
 static bool IsValidH264BaselineProfile(const std::string& profile_str) {
-  uint32 constraint_set_bits;
-  if (profile_str.size() != 4 ||
-      profile_str[0] != '4' ||
-      profile_str[1] != '2' ||
-      profile_str[3] != '0' ||
-      !base::HexStringToUInt(base::StringPiece(profile_str.c_str() + 2, 1),
-                             &constraint_set_bits)) {
-    return false;
-  }
-
-  return constraint_set_bits >= 8;
+  return (profile_str.size() == 4 && profile_str[0] == '4' &&
+          profile_str[1] == '2' && IsHexDigit(profile_str[2]) &&
+          profile_str[3] == '0');
 }
 
 static bool IsValidH264Level(const std::string& level_str) {
