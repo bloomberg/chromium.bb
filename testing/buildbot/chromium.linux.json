@@ -100,6 +100,9 @@
         "test": "cast_shell_browser_test"
       },
       {
+        "test": "content_browsertests"
+      },
+      {
         "test": "content_unittests"
       },
       {
