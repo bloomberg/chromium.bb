@@ -65,20 +65,6 @@ FileChooser::~FileChooser()
 {
 }
 
-void FileChooser::chooseFiles(const Vector<String>& filenames)
-{
-    // FIXME: This is inelegant. We should not be looking at settings here.
-    if (m_settings.selectedFiles == filenames)
-        return;
-
-    if (m_client) {
-        Vector<FileChooserFileInfo> files;
-        for (unsigned i = 0; i < filenames.size(); ++i)
-            files.append(FileChooserFileInfo(filenames[i]));
-        m_client->filesChosen(files);
-    }
-}
-
 void FileChooser::chooseFiles(const Vector<FileChooserFileInfo>& files)
 {
     // FIXME: This is inelegant. We should not be looking at settings here.
