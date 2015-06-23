@@ -251,6 +251,7 @@
 <translation id="42981349822642051">展開</translation>
 <translation id="7774497835322490043">啟用 GDB 偵錯 Stub。這會使 Native Client 應用程式停留在起始畫面，直到 nacl-gdb (來自 NaCl SDK) 附加完成為止。</translation>
 <translation id="2686444421126615064">查看帳戶</translation>
+<translation id="9215293857209265904">已新增「<ph name="EXTENSION_NAME"/>」</translation>
 <translation id="7693221960936265065">不限時間</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">下列網站已遭封鎖，無法在您瀏覽此網頁時追蹤您的位置：</translation>
@@ -996,7 +997,6 @@
 <translation id="7986039047000333986">「<ph name="PRODUCT_NAME"/>」剛才套用了特殊安全性更新。建議您立即重新啟動，更新才能生效 (我們會恢復您的分頁)。</translation>
 <translation id="2787591391657537328">允許透過 [繼續] 內容選單項目繼續下載或重新開始已中斷的下載項目。</translation>
 <translation id="3926862159284741883">啟用 WebGL 草稿擴充功能</translation>
-<translation id="8347255769289079987">一律不顯示 [閱讀器模式] 按鈕</translation>
 <translation id="9152722471788855605">安全瀏覽壓縮檔分析工具</translation>
 <translation id="2537271621194795300">啟動</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME"/>，您好！</translation>
@@ -1659,6 +1659,7 @@
 <translation id="7256069811654036843">返回</translation>
 <translation id="4811502511369621968">輸入的電子郵件地址有誤。請檢查拼寫是否正確，然後再試一次。</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
+<translation id="8602851771975208551">電腦中其他程式所新增的應用程式可能會變更 Chrome 的運作方式。</translation>
 <translation id="2655386581175833247">使用者憑證：</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5435964418642993308">按 Enter 鍵可返回上一頁，按相關內容選單鍵可查看記錄</translation>
@@ -1832,7 +1833,6 @@
 <translation id="1901377140875308934">登入 <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">目前使用的桌布是由「<ph name="APP_NAME"/>」設定</translation>
 <translation id="5074318175948309511">您可能需要重新載入這個網頁，新設定才會生效。</translation>
-<translation id="3740150184898623344">在所有網頁上顯示 [閱讀器模式] 按鈕</translation>
 <translation id="3947376313153737208">未選取任何項目</translation>
 <translation id="6405640832764359650">啟用 Google Payments 信用卡儲存功能核取方塊</translation>
 <translation id="1346104802985271895">越南文輸入法 (TELEX)</translation>
@@ -4758,6 +4758,7 @@
 <translation id="634208815998129842">工作管理員</translation>
 <translation id="2735698359135166290">羅馬尼亞文標準鍵盤</translation>
 <translation id="1701062906490865540">移除這個使用者</translation>
+<translation id="8475313423285172237">電腦中其他程式所新增的擴充功能可能會變更 Chrome 的運作方式。</translation>
 <translation id="4850458635498951714">新增裝置</translation>
 <translation id="3140353188828248647">將焦點移至網址列</translation>
 <translation id="1371806038977523515">這些設定是由下列擴充功能控制：</translation>
@@ -4770,7 +4771,6 @@
 <translation id="5868927042224783176">在重新驗證頁面禁止執行</translation>
 <translation id="3355936511340229503">連線錯誤</translation>
 <translation id="736108944194701898">滑鼠速度：</translation>
-<translation id="745374297349407796">在完整格式內容的網頁上顯示 [閱讀器模式] 按鈕</translation>
 <translation id="8371937549687734176">將桌面或視窗投放至...</translation>
 <translation id="4350711002179453268">無法透過加密通訊協定連線至伺服器，伺服器可能發生問題，或是您未具備伺服器要求的用戶端授權憑證。</translation>
 <translation id="4731422630970790516">檔案櫃項目 3</translation>
@@ -4989,7 +4989,6 @@
 <translation id="6929555043669117778">繼續封鎖彈出式視窗</translation>
 <translation id="3508920295779105875">選擇另一個資料夾...</translation>
 <translation id="7903925330883316394">公用程式：<ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">在使用文章結構化標記的網頁上顯示 [閱讀器模式] 按鈕</translation>
 <translation id="5549518587357384553">控制 JavaScript 中的 document.body.scrollTop/scrollLeft 是反映標準互通性行為 (啟用時) 或傳統 WebKit 行為 (停用時)。
         啟用時，document.scrollingElement 是 document.documentElement，停用時則是 document.body (針對嚴格模式網頁)。</translation>
 <translation id="904451693890288097">請輸入「<ph name="DEVICE_NAME"/>」的密碼金鑰：</translation>
@@ -5823,6 +5822,7 @@
 <translation id="6059652578941944813">憑證階層</translation>
 <translation id="3153094071447713741">實驗性輸入檢視功能。</translation>
 <translation id="5729712731028706266">檢視(&amp;V)</translation>
+<translation id="9170884462774788842">電腦中其他程式所新增的主題可能會變更 Chrome 的運作方式。</translation>
 <translation id="8571108619753148184">伺服器 4</translation>
 <translation id="4508765956121923607">檢視原始碼(&amp;O)</translation>
 <translation id="5975083100439434680">縮小</translation>

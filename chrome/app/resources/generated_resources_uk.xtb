@@ -254,6 +254,7 @@
 <translation id="42981349822642051">Розгорнути</translation>
 <translation id="7774497835322490043">Увімкнути заглушку налагодження через GDB. Це зупинятиме програму Native Client під час запуску та чекатиме, доки до неї буде прикріплено версію nacl-gdb (з NaCl SDK).</translation>
 <translation id="2686444421126615064">Переглянути обліковий запис</translation>
+<translation id="9215293857209265904">Додано розширення &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7693221960936265065">весь період</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">На цій сторінці заборонено відстежувати ваше місцезнаходження таким сайтам:</translation>
@@ -999,7 +1000,6 @@
 <translation id="7986039047000333986">Щойно було застосовано спеціальне оновлення для захисту <ph name="PRODUCT_NAME"/>. Щоб оновлення почало діяти, потрібно перезапустити програму (ваші вкладки буде відновлено).</translation>
 <translation id="2787591391657537328">Дозволяти продовження чи відновлення перерваних завантажень за допомогою елемента контекстного меню &quot;Відновити&quot;.</translation>
 <translation id="3926862159284741883">Увімкнути чернетки розширень WebGL</translation>
-<translation id="8347255769289079987">Не показувати кнопку &quot;Режим читання&quot;</translation>
 <translation id="9152722471788855605">Засіб перевірки файлів .zip сервісу Безпечний перегляд</translation>
 <translation id="2537271621194795300">Запуски</translation>
 <translation id="3636096452488277381">Вітаємо, <ph name="USER_GIVEN_NAME"/>!</translation>
@@ -1661,6 +1661,7 @@
 <translation id="7256069811654036843">Повернутися!</translation>
 <translation id="4811502511369621968">Недійсна електронна адреса. Перевірте й повторіть спробу.</translation>
 <translation id="175196451752279553">В&amp;ідкрити закриту вкладку знову</translation>
+<translation id="8602851771975208551">Інша програма на вашому комп’ютері додала програму, яка може змінити роботу Chrome.</translation>
 <translation id="2655386581175833247">Сертифікат користувача:</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5435964418642993308">Натисніть Enter, щоб повернутися, а кнопку контекстного меню – щоб переглянути історію</translation>
@@ -1833,7 +1834,6 @@
 <translation id="1901377140875308934">Увійти в <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Додаток &quot;<ph name="APP_NAME"/>&quot; встановив поточний фоновий малюнок</translation>
 <translation id="5074318175948309511">Щоб нові налаштування почали діяти, можливо, потрібно буде оновити цю сторінку.</translation>
-<translation id="3740150184898623344">Показувати кнопку &quot;Режим читання&quot; на всіх сторінках</translation>
 <translation id="3947376313153737208">Не вибрано</translation>
 <translation id="6405640832764359650">Пропонувати зберігати дані карток Google Payments</translation>
 <translation id="1346104802985271895">Метод введення для в'єтнамської мови (TELEX)</translation>
@@ -4738,6 +4738,7 @@
 <translation id="634208815998129842">Диспетчер завдань</translation>
 <translation id="2735698359135166290">Стандартна румунська клавіатура</translation>
 <translation id="1701062906490865540">Видалити цього користувача</translation>
+<translation id="8475313423285172237">Інша програма на вашому комп’ютері додала розширення, яке може змінити роботу Chrome.</translation>
 <translation id="4850458635498951714">Додати пристрій</translation>
 <translation id="3140353188828248647">Активувати адресний рядок</translation>
 <translation id="1371806038977523515">Цими налаштуваннями керує розширення:</translation>
@@ -4750,7 +4751,6 @@
 <translation id="5868927042224783176">Заборонити для повторної автентифікації</translation>
 <translation id="3355936511340229503">Помилка з’єднання</translation>
 <translation id="736108944194701898">Швидкість миші:</translation>
-<translation id="745374297349407796">Показувати кнопку &quot;Режим читання&quot; на сторінках із довгими формами</translation>
 <translation id="8371937549687734176">Транслювати робочий стіл або вікно на…</translation>
 <translation id="4350711002179453268">Не вдалося створити безпечне з'єднання із сервером. Це може бути спричинено проблемою із сервером, або сервер вимагає сертифікат автентифікації клієнта, якого у вас немає.</translation>
 <translation id="4731422630970790516">Елемент полиці 3</translation>
@@ -4971,7 +4971,6 @@
 <translation id="6929555043669117778">Продовжити блокування спливаючих вікон</translation>
 <translation id="3508920295779105875">Вибрати іншу папку...</translation>
 <translation id="7903925330883316394">Службовий додаток: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Показувати кнопку &quot;Режим читання&quot; на сторінках із розміткою, структурованою для статей</translation>
 <translation id="5549518587357384553">Можна вибрати, чи властивість document.body.scrollTop/scrollLeft у JavaScript працюватиме як стандартна та сумісна (увімкнено), чи як застаріла WebKit (вимкнено).
         Коли ввімкнено, document.scrollingElement є властивістю document.documentElement, коли вимкнено – document.body (для сторінок зі строгим режимом).</translation>
 <translation id="904451693890288097">Введіть ключ для пристрою &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5259,7 +5258,7 @@
 <translation id="5300589172476337783">Показати</translation>
 <translation id="3160041952246459240">У вас записано сертифікати, які ідентифікують такі сервери:</translation>
 <translation id="6305328361606238230">Отримувати push-повідомлення</translation>
-<translation id="566920818739465183">Ви вперше відвідали цей сайт <ph name="VISIT_DATE"/>.</translation>
+<translation id="566920818739465183">Ви вперше відвідали цей сайт <ph name="VISIT_DATE"/></translation>
 <translation id="2961695502793809356">Натисніть, щоб перейти далі; утримуйте, щоб переглянути історію</translation>
 <translation id="4092878864607680421">Найновіша версія програми &quot;<ph name="APP_NAME"/>&quot; потребує більше дозволів, тому її вимкнено.</translation>
 <translation id="5828228029189342317">Ви вирішили автоматично відкривати певні типи файлів після завантаження.</translation>
@@ -5808,6 +5807,7 @@
 <translation id="6059652578941944813">Ієрархія сертифіката</translation>
 <translation id="3153094071447713741">Експериментальні функції вікна введення.</translation>
 <translation id="5729712731028706266">&amp;Перегляд</translation>
+<translation id="9170884462774788842">Інша програма на вашому комп’ютері додала тему, яка може змінити роботу Chrome.</translation>
 <translation id="8571108619753148184">Сервер 4</translation>
 <translation id="4508765956121923607">Переглянути д&amp;жерело</translation>
 <translation id="5975083100439434680">Зменшити масштаб</translation>

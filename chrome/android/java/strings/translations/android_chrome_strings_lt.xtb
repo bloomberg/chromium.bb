@@ -190,14 +190,13 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="5487729733663684359">„Chrome“ naujiniai daugiau nepalaikomi naudojant šios versijos „Android“.</translation>
 <translation id="5100237604440890931">Sutraukta – spustelėkite, kad išskleistumėte</translation>
-<translation id="2750015191954606595">Įveskite užrašą</translation>
 <translation id="1201402288615127009">Toliau</translation>
 <translation id="2414886740292270097">Tamsi</translation>
 <translation id="2487368562788861256">Išleiskite mažiau duomenims naudodami „Google“, kad <ph name="BEGIN_LINK"/>optimizuotumėte puslapius, kuriuose lankotės<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
 <translation id="3927692899758076493">Be užraitų</translation>
 <translation id="4645575059429386691">Tvarko vienas iš jūsų tėvų</translation>
-<translation id="3184369589781594823">Importuoti visas žymes iš „Android“ naršyklės?</translation>
+<translation id="3184369589781594823">Importuoti visas vietines žymes iš „Android“ naršyklės?</translation>
 <translation id="8562452229998620586">Čia bus rodomi išsaugoti slaptažodžiai.</translation>
 <translation id="238909021488141516">Atsisiunčiant turinį įvyko klaida.</translation>
 <translation id="8730621377337864115">Atlikta</translation>
@@ -364,7 +363,7 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="5345040418939504969">Ištrinta „<ph name="BOOKMARK_TITLE"/>“</translation>
 <translation id="7232255641409319872">Leisti vaizdus nurodytose svetainėse, tačiau blokuoti visur kitur žiniatinklyje</translation>
 <translation id="2360035970720276770">Galima atsisiųsti tik iš HTTP arba HTTPS protokolo URL</translation>
-<translation id="7926911226829060241">Atidarytos, žymės, istorija, slaptažodžiai ir kiti duomenys yra sinchronizuojami „Google“ paskyroje.</translation>
+<translation id="7926911226829060241">Atidarytos žymės, istorija, slaptažodžiai ir kiti duomenys yra sinchronizuojami „Google“ paskyroje.</translation>
 <translation id="4871370605780490696">Žymės pridėjimas</translation>
 <translation id="6570560778840017462">Nebūsite atjungti nuo <ph name="BEGIN_LINK"/>„Google“ paskyrų<ph name="END_LINK"/></translation>
 <translation id="9063523880881406963">Išjungti stalinio kompiuterio svetainės užklausą</translation>
@@ -442,7 +441,6 @@ Naudojimo statistika yra įvairi informacija, įskaitant nuostatas, mygtukų pas
 <translation id="9065203028668620118">Redaguoti</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="6512448926095770873">Išeiti iš šio puslapio</translation>
-<translation id="6605823718624717484">Redaguoti žymes</translation>
 <translation id="3414952576877147120">Dydis:</translation>
 <translation id="945632385593298557">Prieiga prie mikrofono</translation>
 <translation id="5626134646977739690">Pavadinimas:</translation>
@@ -478,7 +476,7 @@ Naudojimo statistika yra įvairi informacija, įskaitant nuostatas, mygtukų pas
 <translation id="5596627076506792578">Daugiau parinkčių</translation>
 <translation id="8920114477895755567">Laukiama išsamios tėvų informacijos.</translation>
 <translation id="3988213473815854515">Vietovės informacija leidžiama</translation>
-<translation id="1513352483775369820">Žymės ir žiniatinklio istorija</translation>
+<translation id="1513352483775369820">Žymių ir žiniatinklio istorija</translation>
 <translation id="8912362522468806198">„Google“ paskyra</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="3003595280608617736">Nėra SD kortelės</translation>

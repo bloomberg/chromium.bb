@@ -254,6 +254,7 @@
 <translation id="42981349822642051">Išskleisti</translation>
 <translation id="7774497835322490043">Įgalinkite GDB derinimo pakaitą. Tai sustabdys „Native Client“ programą ją paleidus ir bus laukiama, kol „nacl-gdb“ (iš „NaCl“ SDK) bus pridėtas prie jos.</translation>
 <translation id="2686444421126615064">Žiūrėti paskyrą</translation>
+<translation id="9215293857209265904">Pridėtas „<ph name="EXTENSION_NAME"/>“</translation>
 <translation id="7693221960936265065">laiko pradžios</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Šios svetainės buvo užblokuotos, kad nebūtų galima šiame puslapyje stebėti jūsų vietovės:</translation>
@@ -1013,7 +1014,6 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="7986039047000333986">Ką tik pritaikytas specialus „<ph name="PRODUCT_NAME"/>“ skirtas saugos naujinys; kad jis pradėtų veikti, turite dabar paleisti iš naujo (atkursime visus skirtukų lapus).</translation>
 <translation id="2787591391657537328">Leisti atsisiuntimams, kurie buvo nutraukti, toliau veikti arba paleisti juos iš naujo naudojant kontekstinio meniu „Atkurti“ elementą.</translation>
 <translation id="3926862159284741883">Įgalinti „WebGL“ juodraščio plėtinius</translation>
-<translation id="8347255769289079987">Niekada nerodyti skaitymo režimo mygtuko</translation>
 <translation id="9152722471788855605">Saugaus naršymo ZIP failų analizatorius</translation>
 <translation id="2537271621194795300">Paleidimas</translation>
 <translation id="3636096452488277381">Sveiki, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1679,6 +1679,7 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="7256069811654036843">Grįžti atgal.</translation>
 <translation id="4811502511369621968">Netinkamas el. pašto adresas. Patikrinkite ir bandykite dar kartą.</translation>
 <translation id="175196451752279553">I&amp;š naujo atidaryti uždarytą skirtuką</translation>
+<translation id="8602851771975208551">Kita jūsų kompiuteryje esanti programa pridėjo programą, kuri gali pakeisti „Chrome“ veikimo būdą.</translation>
 <translation id="2655386581175833247">Naudotojo sertifikatas:</translation>
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="5435964418642993308">Jei norite grįžti, paspauskite „Enter“; jei norite peržiūrėti istoriją – kontekstinio meniu klavišą</translation>
@@ -1853,7 +1854,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="1901377140875308934">Prisijungti prie <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Dabartinį ekrano foną nustatė „<ph name="APP_NAME"/>“</translation>
 <translation id="5074318175948309511">Kad nauji nustatymai įsigaliotų, šį puslapį gali tekti įkelti iš naujo.</translation>
-<translation id="3740150184898623344">Rodyti skaitymo režimo mygtuką visuose puslapiuose</translation>
 <translation id="3947376313153737208">Nepasirinkta</translation>
 <translation id="6405640832764359650">Įgalinti „Google Payments“ kortelės išsaugojimo žymimąjį laukelį</translation>
 <translation id="1346104802985271895">Įvesties vietnamiečių k. metodas (TELEX)</translation>
@@ -4802,6 +4802,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="634208815998129842">Užduočių tvarkytuvė</translation>
 <translation id="2735698359135166290">Rumunų k. standartinė klaviatūra</translation>
 <translation id="1701062906490865540">Pašalinti šį asmenį</translation>
+<translation id="8475313423285172237">Kita jūsų kompiuteryje esanti programa pridėjo plėtinį, kuris gali pakeisti „Chrome“ veikimo būdą.</translation>
 <translation id="4850458635498951714">Pridėti įrenginį</translation>
 <translation id="3140353188828248647">Fokusuoti adreso juostą</translation>
 <translation id="1371806038977523515">Šiuos nustatymus valdo:</translation>
@@ -4814,7 +4815,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="5868927042224783176">Neleisti pakartotinio autentifikavimo</translation>
 <translation id="3355936511340229503">Ryšio klaida</translation>
 <translation id="736108944194701898">Pelės greitis:</translation>
-<translation id="745374297349407796">Rodyti skaitymo režimo mygtuką puslapiuose, kurie yra ilgo turinio formos</translation>
 <translation id="8371937549687734176">Darbalaukio arba lango perdavimas į...</translation>
 <translation id="4350711002179453268">Neįmanoma užmegzti saugaus ryšio su serveriu.Tai gali būti serverio problema arba gali būti, kad serveris reikalauja kliento tapatybės nustatymo sertifikato, kurio jūs neturite.</translation>
 <translation id="4731422630970790516">3 lentynos elementas</translation>
@@ -5034,7 +5034,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME"/>“?</translation>
 <translation id="6929555043669117778">Tęsti iššokančiųjų langų blokavimą</translation>
 <translation id="3508920295779105875">Pasirinkti kitą aplanką...</translation>
 <translation id="7903925330883316394">Paslaugų programa: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Rodyti skaitymo režimo mygtuką puslapiuose su straipsnio struktūros žymėjimu</translation>
 <translation id="5549518587357384553">Valdykite, ar „JavaScript“ funkcija „document.body.scrollTop/scrollLeft“ atitinka standartinį suderinamą veikimą (įgalinta) arba seną „WebKit“ veikimą (išjungta).
         Kai ši parinktis įgalinta, elementas „document.scrollingElement“ yra „document.documentElement“, kai išjungta – „document.body“ (griežto režimo puslapiuose).</translation>
 <translation id="904451693890288097">Įveskite „<ph name="DEVICE_NAME"/>“ prieigos raktą:</translation>
@@ -5874,6 +5873,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="6059652578941944813">Sertifikatų hierarchija</translation>
 <translation id="3153094071447713741">Eksperimentinės įvesties rodinio funkcijos.</translation>
 <translation id="5729712731028706266">Žiūrėti</translation>
+<translation id="9170884462774788842">Kita jūsų kompiuteryje esanti programa pridėjo temą, kuri gali pakeisti „Chrome“ veikimo būdą.</translation>
 <translation id="8571108619753148184">4 serveris</translation>
 <translation id="4508765956121923607">Žiūrėti ša&amp;ltinį</translation>
 <translation id="5975083100439434680">Tolinti</translation>

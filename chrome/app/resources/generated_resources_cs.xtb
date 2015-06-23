@@ -251,6 +251,7 @@
 <translation id="42981349822642051">Rozbalit</translation>
 <translation id="7774497835322490043">Povolit ladicí program GDB. Tato možnost zastaví aplikaci Native Client při spuštění a počká, dokud se k ní nepřipojí ladicí nástroj nacl-gdb (ze sady SDK NaCl).</translation>
 <translation id="2686444421126615064">Zobrazit účet</translation>
+<translation id="9215293857209265904">Bylo přidáno rozšíření <ph name="EXTENSION_NAME"/></translation>
 <translation id="7693221960936265065">od počátku věků</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Těmto webům bylo na této stránce zakázáno sledování vaší polohy.</translation>
@@ -1002,7 +1003,6 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="7986039047000333986">Právě byla použita mimořádná bezpečnostní aktualizace pro prohlížeč <ph name="PRODUCT_NAME"/>. Změny se projeví až po jeho restartování (karty se automaticky obnoví).</translation>
 <translation id="2787591391657537328">Povolit navázání nebo nové zahájení přerušených stahování pomocí položky Pokračovat v kontextové nabídce.</translation>
 <translation id="3926862159284741883">Aktivovat rozšíření WebGL ve stavu konceptu</translation>
-<translation id="8347255769289079987">Tlačítko režimu čtečky nikdy nezobrazovat</translation>
 <translation id="9152722471788855605">Analyzátor souborů ZIP Bezpečného prohlížení</translation>
 <translation id="2537271621194795300">Spouštění</translation>
 <translation id="3636096452488277381">Ahoj uživateli <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1664,6 +1664,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="7256069811654036843">Chci se vrátit zpět.</translation>
 <translation id="4811502511369621968">Neplatná e-mailová adresa. Zkontrolujte zadaný údaj a zkuste to znovu.</translation>
 <translation id="175196451752279553">Znovu ot&amp;evřít zavřenou kartu</translation>
+<translation id="8602851771975208551">Jiný program ve vašem počítači nainstaloval aplikaci, která může měnit funkce Chromu.</translation>
 <translation id="2655386581175833247">Certifikát uživatele:</translation>
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5435964418642993308">Zpět se dostanete stiskem klávesy Enter, historii zobrazíte pomocí klávesy kontextové nabídky</translation>
@@ -1735,7 +1736,7 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="3759461132968374835">Nemáte žádná nedávno hlášená selhání. Selhání, ke kterým došlo, když byla služba hlášení o selháních vypnutá, se zde nezobrazují.</translation>
 <translation id="189210018541388520">Otevřít v režimu celé obrazovky</translation>
 <translation id="8795668016723474529">Přidat platební kartu</translation>
-<translation id="5860033963881614850">VYP</translation>
+<translation id="5860033963881614850">Vypnuto</translation>
 <translation id="7483734554143933755">Pokračovat v blokování pluginů</translation>
 <translation id="6575251558004911012">Zeptat se, když web požaduje přístup k vaší kameře (doporučeno)</translation>
 <translation id="4116663294526079822">Povolit vždy na tomto webu</translation>
@@ -1836,7 +1837,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="1901377140875308934">Přihlásit se do prohlížeče <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Aktuální tapetu nastavila aplikace <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Aby nové nastavení vstoupilo v platnost, pravděpodobně bude nutné načíst stránku znovu.</translation>
-<translation id="3740150184898623344">Zobrazovat tlačítko režimu čtečky na všech stránkách</translation>
 <translation id="3947376313153737208">Žádný výběr</translation>
 <translation id="6405640832764359650">Aktivovat zaškrtávací políčko k uložení karty do služby Google Payments</translation>
 <translation id="1346104802985271895">Metoda zadávání vietnamštiny (TELEX)</translation>
@@ -2273,7 +2273,7 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="9157595877708044936">Nastavování...</translation>
 <translation id="499955951116857523">Správce souborů</translation>
 <translation id="9033453977881595182">ID tokenu</translation>
-<translation id="4475552974751346499">Prohledat stažené soubory</translation>
+<translation id="4475552974751346499">Hledat stažené soubory</translation>
 <translation id="6624687053722465643">Zákusek</translation>
 <translation id="8083739373364455075">Získejte zdarma 100 GB na Disku Google</translation>
 <translation id="271083069174183365">Nastavení zadávání japonštiny</translation>
@@ -4261,7 +4261,7 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="338583716107319301">Oddělovač</translation>
 <translation id="2079053412993822885">Smažete-li jeden z vlastních certifikátů, nebudete ho již moci používat k identifikaci své osoby.</translation>
 <translation id="7221869452894271364">Načíst tuto stránku znovu</translation>
-<translation id="8446884382197647889">Další informace</translation>
+<translation id="8446884382197647889">Další informace</translation>
 <translation id="9006533633560719845">Souhlas uživatele se skripty rozšíření</translation>
 <translation id="4555769855065597957">Stín</translation>
 <translation id="4366837566726634418">Kombinované využití sdílené paměti všemi procesy, které souvisí s <ph name="SHORT_PRODUCT_NAME"/></translation>
@@ -4762,6 +4762,7 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="634208815998129842">Správce úloh</translation>
 <translation id="2735698359135166290">Standardní rumunská klávesnice</translation>
 <translation id="1701062906490865540">Odebrat tohoto uživatele</translation>
+<translation id="8475313423285172237">Jiný program ve vašem počítači nainstaloval rozšíření, které může měnit funkce Chromu.</translation>
 <translation id="4850458635498951714">Přidat zařízení</translation>
 <translation id="3140353188828248647">Přepnout do adresního řádku</translation>
 <translation id="1371806038977523515">Tato nastavení jsou řízena následujícím rozšířením:</translation>
@@ -4774,7 +4775,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="5868927042224783176">Zakázat pro opětovnou autorizaci</translation>
 <translation id="3355936511340229503">Chyba připojení</translation>
 <translation id="736108944194701898">Rychlost myši:</translation>
-<translation id="745374297349407796">Zobrazovat tlačítko režimu čtečky na stránkách, které vypadají jako dlouhý obsah formuláře</translation>
 <translation id="8371937549687734176">Odeslat plochu nebo okno do...</translation>
 <translation id="4350711002179453268">K serveru nelze vytvořit zabezpečené připojení. Může se jednat o problém se serverem, nebo server může vyžadovat klientský ověřovací certifikát, který nemáte.</translation>
 <translation id="4731422630970790516">Položka č. 3 v poličce</translation>
@@ -4994,7 +4994,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="6929555043669117778">Pokračovat v blokování vyskakovacích oken</translation>
 <translation id="3508920295779105875">Zvolit jinou složku...</translation>
 <translation id="7903925330883316394">Nástroj: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Zobrazovat tlačítko režimu čtečky na stránkách se strukturovaným označením článku</translation>
 <translation id="5549518587357384553">Ovládá, zda document.body.scrollTop/scrollLeft v JavaScriptu odráží standardní interoperabilní chování (aktivováno), nebo starší chování WebKit (zakázáno).
 Když je tato možnost aktivována, element document.scrollingElement odpovídá elementu document.documentElement. Když je zakázáno, odpovídá elementu document.body (pro stránky ve striktním režimu).</translation>
 <translation id="904451693890288097">Zadejte prosím přístupový klíč pro zařízení <ph name="DEVICE_NAME"/>:</translation>
@@ -5070,7 +5069,7 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="5067867186035333991">Zobrazit dotaz, pokud bude chtít web <ph name="HOST"/> používat mikrofon</translation>
 <translation id="4074900173531346617">Certifikát autora podpisu e-mailu</translation>
 <translation id="437184764829821926">Rozšířené nastavení písma</translation>
-<translation id="6165508094623778733">Další informace</translation>
+<translation id="6165508094623778733">Další informace</translation>
 <translation id="9052208328806230490">Registrovali jste tiskárny ve službě <ph name="CLOUD_PRINT_NAME"/> pomocí účtu <ph name="EMAIL"/></translation>
 <translation id="2803887722080936828"><ph name="BEGIN_H3"/>Funkce ladění<ph name="END_H3"/>
     <ph name="BR"/>
@@ -5832,6 +5831,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="6059652578941944813">Hierarchie certifikátů</translation>
 <translation id="3153094071447713741">Funkce experimentálního zobrazení zadávání.</translation>
 <translation id="5729712731028706266">&amp;Zobrazit</translation>
+<translation id="9170884462774788842">Jiný program ve vašem počítači nainstaloval motiv, který může měnit funkce Chromu.</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="4508765956121923607">Z&amp;obrazit zdrojový kód</translation>
 <translation id="5975083100439434680">Oddálit</translation>

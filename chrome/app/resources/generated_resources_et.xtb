@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Laienda</translation>
 <translation id="7774497835322490043">Lubage GDB silumise tupikprogramm. See peatab Native Clienti rakenduse käivitumisel ja ootab nacl-gdb (üksusest NaCl SDK) manustamist.</translation>
 <translation id="2686444421126615064">Konto kuvamine</translation>
+<translation id="9215293857209265904">Lisati „<ph name="EXTENSION_NAME"/>”</translation>
 <translation id="7693221960936265065">algusest peale</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Sellel lehel on järgmiseid saite blokeeritud nii, et need ei saa teie asukohta jälgida:</translation>
@@ -1015,7 +1016,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7986039047000333986">Rakendati just spetsiaalne turvavärskendus rakendusele <ph name="PRODUCT_NAME"/>. Selle jõustamiseks peate kohe taaskäivitama (taastame teie vahelehed).</translation>
 <translation id="2787591391657537328">Lubage katkestatud allalaadimistel jätkuda või uuesti käivituda, kasutades kontekstimenüü üksust Jätka.</translation>
 <translation id="3926862159284741883">Luba WebGL-i mustandlaiendused</translation>
-<translation id="8347255769289079987">Ära kunagi kuva nuppu Lugejarežiim</translation>
 <translation id="9152722471788855605">Turvalise sirvimise ZIP-faili analüüsija</translation>
 <translation id="2537271621194795300">Käivitamised</translation>
 <translation id="3636096452488277381">Terekest, <ph name="USER_GIVEN_NAME"/>!</translation>
@@ -1680,6 +1680,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY"/> võib järgmisel korral kasulikuks o
 <translation id="7256069811654036843">Vii mind tagasi!</translation>
 <translation id="4811502511369621968">Vale e-posti aadress. Kontrollige ja proovige uuesti.</translation>
 <translation id="175196451752279553">&amp;Ava suletud vaheleht uuesti</translation>
+<translation id="8602851771975208551">Teine programm teie arvutis lisas rakenduse, mis võib muuta Chrome'i toimimist.</translation>
 <translation id="2655386581175833247">Kasutaja sertifikaat:</translation>
 <translation id="5039804452771397117">Luba</translation>
 <translation id="5435964418642993308">Vajutage tagasiminemiseks sisestusklahvi, ajaloo nägemiseks kontekstimenüü klahvi</translation>
@@ -1852,7 +1853,6 @@ Pärast uue jälgitava kasutaja loomist saate igal ajal ja igas seadmes saidil w
 <translation id="1901377140875308934">Sisselogimine teenusesse <ph name="SHORT_PRODUCT_NAME"/> ...</translation>
 <translation id="5529098031581368697">Praeguse taustapildi määras „<ph name="APP_NAME"/>”</translation>
 <translation id="5074318175948309511">Uute seadete jõustamiseks peate lehe võib-olla uuesti laadima.</translation>
-<translation id="3740150184898623344">Kuva nupp Lugejarežiim kõikidel lehtedel</translation>
 <translation id="3947376313153737208">Ühtegi valikut pole tehtud</translation>
 <translation id="6405640832764359650">Teenuse Google Payments kaardi salvestamise märkeruudu lubamine</translation>
 <translation id="1346104802985271895">Vietnami sisestusviis (TELEX)</translation>
@@ -4784,6 +4784,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME"/>.
 <translation id="634208815998129842">Tegumihaldur</translation>
 <translation id="2735698359135166290">Rumeenia standardne klaviatuur</translation>
 <translation id="1701062906490865540">Eemalda see isik</translation>
+<translation id="8475313423285172237">Teine programm teie arvutis lisas laienduse, mis võib muuta Chrome'i toimimist.</translation>
 <translation id="4850458635498951714">Lisa seade</translation>
 <translation id="3140353188828248647">Keskendub aadressiribale</translation>
 <translation id="1371806038977523515">Neid seadeid juhib:</translation>
@@ -4796,7 +4797,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME"/>.
 <translation id="5868927042224783176">Keela uuesti autentimise puhul</translation>
 <translation id="3355936511340229503">Ühenduse viga</translation>
 <translation id="736108944194701898">Hiire kiirus:</translation>
-<translation id="745374297349407796">Kuva nupp Lugejarežiim lehtedel, kus tundub olevat pikas vormis sisu</translation>
 <translation id="8371937549687734176">Kanna töölaud või aken üle asukohta ...</translation>
 <translation id="4350711002179453268">Serveriga ei õnnestunud turvalist ühendust luua. Tegemist võib olla serveriprobleemiga või nõuab server sellist kliendi autentimise sertifikaati, mida teil pole.</translation>
 <translation id="4731422630970790516">Riiuliüksus 3</translation>
@@ -5016,7 +5016,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME"/>.
 <translation id="6929555043669117778">Jätka hüpikakende blokeerimist</translation>
 <translation id="3508920295779105875">Valige muu kaust...</translation>
 <translation id="7903925330883316394">Utiliit: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Kuva nupp Lugejarežiim lehtedel, kus artiklite märgistus on struktureeritud</translation>
 <translation id="5549518587357384553">Juhtige, kas JavaScripti kirje document.body.scrollTop/scrollLeft kajastab standardset koostalitlusvõime käitumist (lubatud) või pärand-WebKiti käitumist (keelatud).
         Kui see on lubatud, on kirje document.scrollingElement kirje document.documentElement. Kui see on keelatud, on see kirje document.body (range režiimiga lehtedel).</translation>
 <translation id="904451693890288097">Sisestage seadme „<ph name="DEVICE_NAME"/>” pääsuvõti:</translation>
@@ -5855,6 +5854,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="6059652578941944813">Sertifikaatide hierarhia</translation>
 <translation id="3153094071447713741">Katselised sisendkuva funktsioonid.</translation>
 <translation id="5729712731028706266">&amp;Kuva</translation>
+<translation id="9170884462774788842">Teine programm teie arvutis lisas teema, mis võib muuta Chrome'i toimimist.</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="4508765956121923607">Vaata a&amp;llikat</translation>
 <translation id="5975083100439434680">Suumib välja</translation>

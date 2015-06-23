@@ -250,6 +250,7 @@
 <translation id="42981349822642051">הרחב</translation>
 <translation id="7774497835322490043">‏אפשר מקטע ניקוי באגים מסוג GDB. דבר זה יגרום לעצירת יישום Native Client בעת האתחול והמתנה ל-nacl-gdb (מה-NaCl SDK) כדי לצרף אליו.</translation>
 <translation id="2686444421126615064">הצג חשבון</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; נוסף</translation>
 <translation id="7693221960936265065">משחר ההיסטוריה</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">האתרים הבאים נחסמו ממעקב אחר המיקום שלך בדף זה:</translation>
@@ -1008,7 +1009,6 @@
 <translation id="7986039047000333986">עדכון אבטחה מיוחד עבור <ph name="PRODUCT_NAME"/> הוחל; עליך להפעיל מחדש כעת כדי שייכנס לתוקפו (נשחזר את הכרטיסיות שלך).</translation>
 <translation id="2787591391657537328">אפשר המשך או הפעלה מחדש של הורדות שנקטעו באמצעות הפריט 'המשך' שבתפריט ההקשר.</translation>
 <translation id="3926862159284741883">‏הפעל תוספי טיוטה של WebGL</translation>
-<translation id="8347255769289079987">לעולם אל תציג את הלחצן 'מצב קורא'</translation>
 <translation id="9152722471788855605">‏מנתח קובצי ה-Zip בגלישה בטוחה</translation>
 <translation id="2537271621194795300">אתחולים</translation>
 <translation id="3636096452488277381">אהלן, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1036,7 +1036,7 @@
 <translation id="3825863595139017598">מקלדת מונגולית</translation>
 <translation id="8184538546369750125">השתמש בברירת המחדל הכללית (אפשר)</translation>
 <translation id="1506687042165942984">הצג עותק שמור (כלומר, ידוע שהוא עדכני) של הדף הזה.</translation>
-<translation id="4594109696316595112">‏הפעלה חד-פעמית: הקלד את הסיסמה שלך כדי להפעיל את Smart Lock ב-<ph name="DEVICE_TYPE"/> הזה. עם Smart Lock, הטלפון שלך יבטל את נעילת המכשיר - ללא צורך בסיסמה. כדי לשנות או להשבית תכונה זו, עבור אל ההגדרות של <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="4594109696316595112">‏הפעלה חד-פעמית: הקלד את הסיסמה שלך כדי להפעיל את Smart Lock ב-<ph name="DEVICE_TYPE"/> הזה. באמצעות Smart Lock, הטלפון שלך יבטל את נעילת המכשיר - ללא צורך בסיסמה. כדי לשנות או להשבית תכונה זו, עבור אל ההגדרות של <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="2018352199541442911">מצטערים, מכשיר האחסון החיצוני שלך אינו נתמך בשלב זה.</translation>
 <translation id="2678063897982469759">הפוך מחדש לפעיל</translation>
 <translation id="1779766957982586368">סגור חלון</translation>
@@ -1671,6 +1671,7 @@
 <translation id="7256069811654036843">קח אותי בחזרה!</translation>
 <translation id="4811502511369621968">כתובת אימייל לא חוקית. בדוק ונסה שוב.</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
+<translation id="8602851771975208551">‏תכנית אחרת במחשב שלך הוסיפה יישום שעשוי לשנות את אופן הפעולה של Chrome.</translation>
 <translation id="2655386581175833247">אישור משתמש:</translation>
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5435964418642993308">‏הקש Enter כדי לחזור, ועל מקש תפריט הקשר כדי להציג היסטוריה </translation>
@@ -1841,7 +1842,6 @@
 <translation id="1901377140875308934">היכנס ל-<ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">הטפט הנוכחי נקבע על ידי '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">ייתכן שיהיה צורך לטעון מחדש דף זה על מנת שההגדרות החדשות ייכנסו לתוקף.</translation>
-<translation id="3740150184898623344">הצג את הלחצן 'מצב קורא' בכל הדפים</translation>
 <translation id="3947376313153737208">ללא בחירה</translation>
 <translation id="6405640832764359650">‏הצג את תיבת הסימון לשמירה של כרטיס Google Payments</translation>
 <translation id="1346104802985271895">‏שיטת קלט וייטנאמית (TELEX)</translation>
@@ -2597,7 +2597,7 @@
 <translation id="7314244761674113881">‏מארח SOCKS</translation>
 <translation id="4630590996962964935">תו לא חוקי: $ 1</translation>
 <translation id="7709980197120276510">בלחיצה על 'המשך', אתה מביע הסכמה ל<ph name="LEGAL_DOC_LINK_TEXT_1"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_2"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_3"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, ו<ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
-<translation id="8556377764941071135">‏הפעל זיהוי קירבה ב-Smart Lock.</translation>
+<translation id="8556377764941071135">‏הפעלת זיהוי קירבה ב-Smart Lock.</translation>
 <translation id="7533451546919522717">‏נקה קובצי cookie ונתונים אחרים של אתרים ויישומי פלאגין כשאתה מתנתק</translation>
 <translation id="8382645631174981738"><ph name="EXTENSION_NAME"/> הותקן מרחוק</translation>
 <translation id="542872847390508405">אתה גולש כאורח</translation>
@@ -2889,7 +2889,7 @@
 <translation id="5148652308299789060">‏בטל rasterizer של תוכנות תלת ממד</translation>
 <translation id="9205143043463108573">ממקם את מפעיל היישומים במרכז המסך עם יחס של מסך לרוחב.</translation>
 <translation id="7996005831155352675">הפעל מילוי אוטומטי בלחיצה אחת</translation>
-<translation id="870112442358620996">‏הצע לשמור סיסמאות עם Google Smart Lock for Passwords</translation>
+<translation id="870112442358620996">‏הצע לשמור סיסמאות באמצעות Google Smart Lock לסיסמאות</translation>
 <translation id="1414648216875402825">אתה מעדכן לגרסה לא יציבה של <ph name="PRODUCT_NAME"/> המכילה תכונות שנמצאות בתהליך. ייתכנו קריסות מחשב ובאגים לא צפויים. המשך בזהירות.</translation>
 <translation id="8382913212082956454">העתק &amp;כתובת אימייל</translation>
 <translation id="7887192723714330082">‏הגב ל-&quot;Ok Google&quot; כשהמסך פועל ואינו נעול</translation>
@@ -3619,7 +3619,7 @@
 <translation id="1464258312790801189">החשבונות שלך</translation>
 <translation id="163309982320328737">רוחב התו הראשוני הוא מלא</translation>
 <translation id="6596092346130528198">האם זהו דף הכרטיסייה החדשה שציפית לראות?</translation>
-<translation id="3926002189479431949">‏בוצע שינוי ב-Smart Lock בטלפון</translation>
+<translation id="3926002189479431949">‏הטלפון המשמש ל-Smart Lock הוחלף</translation>
 <translation id="6965648386495488594">יציאה</translation>
 <translation id="7631887513477658702">&amp;פתח תמיד קבצים מסוג זה</translation>
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
@@ -3986,7 +3986,7 @@
 <translation id="1859234291848436338">כיוון כתיבה</translation>
 <translation id="5038625366300922036">פרטים נוספים...</translation>
 <translation id="8437209419043462667">ארה&quot;ב</translation>
-<translation id="3172213052701798825">Google Smart Lock for Passwords</translation>
+<translation id="3172213052701798825">‏Google Smart Lock לסיסמאות</translation>
 <translation id="5045550434625856497">סיסמה שגויה</translation>
 <translation id="6397592254427394018">פתח את כל הסימניות בחלון &amp;גלישה בסתר</translation>
 <translation id="8155481074575809396">אם מופעל, טקסט מוצג עם שדות מרחק חתומים במקום עם מסכות אלפא של מפת סיביות.</translation>
@@ -4541,7 +4541,7 @@
 <translation id="8434480141477525001">יציאת ניקוי באגים של לקוח מקומי</translation>
 <translation id="8957210676456822347">הרשאת פורטל חובה</translation>
 <translation id="1979444449436715782">איכות בעת הקטנת קנה מידה של צילום כרטיסייה.</translation>
-<translation id="7002055706763150362">‏כדי להגדיר את ‏Smart Lock for Chromebook‏, Google צריכה לאמת את הזהות שלך - הזן את הסיסמה שלך כדי להתחיל.</translation>
+<translation id="7002055706763150362">‏כדי להגדיר את ‏Smart Lock for Chromebook‏, Google צריכה לאמת את הזהות שלך - כדי להתחיל הזן את הסיסמה.</translation>
 <translation id="8579549103199280730">שאל כברירת מחדל</translation>
 <translation id="1330145147221172764">הפעל מקלדת על המסך</translation>
 <translation id="8925458182817574960">&amp;הגדרות</translation>
@@ -4589,7 +4589,7 @@
 <translation id="9203478404496196495">בטל השתקת כרטיסייה</translation>
 <translation id="2143778271340628265">‏תצורת שרת proxy ידנית</translation>
 <translation id="8888432776533519951">צבע:</translation>
-<translation id="5247176778442128277">‏השבת את Smart Lock</translation>
+<translation id="5247176778442128277">‏השבתת Smart Lock</translation>
 <translation id="5294529402252479912">‏עדכן את Adobe Reader עכשיו</translation>
 <translation id="79962507603257656">סטטוס הורדה במרכז ההודעות</translation>
 <translation id="2231990265377706070">סימן קריאה</translation>
@@ -4753,6 +4753,7 @@
 <translation id="634208815998129842">מנהל המשימות</translation>
 <translation id="2735698359135166290">מקלדת רומנית רגילה</translation>
 <translation id="1701062906490865540">הסר משתמש זה</translation>
+<translation id="8475313423285172237">‏תכנית אחרת במחשב שלך הוסיפה תוסף שעשוי לשנות את אופן הפעולה של Chrome.</translation>
 <translation id="4850458635498951714">הוסף מכשיר</translation>
 <translation id="3140353188828248647">התמקד בסרגל הכתובות</translation>
 <translation id="1371806038977523515">ההגדרות האלה נשלטות על ידי:</translation>
@@ -4765,7 +4766,6 @@
 <translation id="5868927042224783176">אל תאפשר אימות מחדש</translation>
 <translation id="3355936511340229503">שגיאת חיבור</translation>
 <translation id="736108944194701898">מהירות עכבר:</translation>
-<translation id="745374297349407796">הצג את הלחצן 'מצב קורא' בדפים שנראים כמכילים תוכן ארוך</translation>
 <translation id="8371937549687734176">העברת שולחן עבודה או חלון אל...</translation>
 <translation id="4350711002179453268">אין אפשרות ליצור חיבור מאובטח לשרת. ייתכן שיש בעיה בשרת או שנדרש אישור אימות לקוח שאין לך.</translation>
 <translation id="4731422630970790516">פריט מדף 3</translation>
@@ -4985,7 +4985,6 @@
 <translation id="6929555043669117778">המשך לחסום חלונות קופצים</translation>
 <translation id="3508920295779105875">בחר תיקייה אחרת...</translation>
 <translation id="7903925330883316394">תכנית שירות: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">הצגת הלחצן 'מצב קורא' בדפים בעלי סימון של מבנה מאמר</translation>
 <translation id="5549518587357384553">‏קבע אם document.body.scrollTop/scrollLeft ב-JavaScript ישקף את ההתנהגות הרגילה של יכולת פעולה הדדית (מופעל) או את ההתנהגות של WebKit מדור קודם (מושבת).
         במצב מופעל, document.scrollingElement הוא document.documentElement, ובמצב מושבת הוא document.body (עבור דפים במצב מחמיר [strict mode]).</translation>
 <translation id="904451693890288097">הזן סיסמה עבור &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5295,7 +5294,7 @@ Del</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
 <translation id="9003647077635673607">אפשר בכל האתרים</translation>
 <translation id="8689341121182997459">בתוקף עד:</translation>
-<translation id="236128817791440714">‏מומלץ: הגדר את Smart Lock עבור Android</translation>
+<translation id="236128817791440714">‏מומלץ: הגדר את Smart Lock ל-Android</translation>
 <translation id="899403249577094719">‏כתובת אתר בסיסית של אישור Netscape</translation>
 <translation id="2737363922397526254">כווץ...</translation>
 <translation id="8605428685123651449">‏זיכרון SQLite</translation>
@@ -5766,7 +5765,7 @@ Del</translation>
 <translation id="9111742992492686570">הורד עדכון אבטחה קריטי</translation>
 <translation id="1979280758666859181">אתה עובר לערוץ עם גרסה ישנה יותר של <ph name="PRODUCT_NAME"/>. שינוי הערוץ יוחל כאשר גרסת הערוץ תתאים לגרסה המותקנת כעת במכשיר שלך.</translation>
 <translation id="304009983491258911">‏שנה PIN של כרטיס SIM</translation>
-<translation id="7556033326131260574">‏מערכת Smart Lock לא הצליחה לאמת את חשבונך. הזן את הסיסמה שלך כדי להיכנס.</translation>
+<translation id="7556033326131260574">‏מערכת Smart Lock לא הצליחה לאמת את חשבונך. כדי להיכנס, הזן את הסיסמה.</translation>
 <translation id="8600929685092827187">Wake On Packets</translation>
 <translation id="2045969484888636535">‏המשך לחסום קובצי Cookie</translation>
 <translation id="8131740175452115882">אישור</translation>
@@ -5825,6 +5824,7 @@ Del</translation>
 <translation id="6059652578941944813">היררכיית אישורים</translation>
 <translation id="3153094071447713741">תכונות ניסיוניות של תצוגת קלט.</translation>
 <translation id="5729712731028706266">&amp;הצג</translation>
+<translation id="9170884462774788842">‏תכנית אחרת במחשב שלך הוסיפה עיצוב שעשוי לשנות את אופן הפעולה של Chrome.</translation>
 <translation id="8571108619753148184">שרת 4</translation>
 <translation id="4508765956121923607">הצג מ&amp;קור</translation>
 <translation id="5975083100439434680">התרחק</translation>

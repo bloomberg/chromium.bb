@@ -49,7 +49,7 @@
 <translation id="1644574205037202324">Historique</translation>
 <translation id="4761374747761474835">Sélectionnez un compte pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="4803910478683254032">Échec de l'importation</translation>
-<translation id="3485544713029068372">Smart Lock for Passwords</translation>
+<translation id="3485544713029068372">Smart Lock pour les mots de passe</translation>
 <translation id="6999892069268112724">Confirmer le compte Google</translation>
 <translation id="1446450296470737166">Autoriser le contrôle complet des appareils MIDI</translation>
 <translation id="7851858861565204677">Autres appareils</translation>
@@ -190,7 +190,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="7029809446516969842">Mots de passe</translation>
 <translation id="5487729733663684359">Les mises à jour de Chrome ne sont plus disponibles avec cette version d'Android.</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
-<translation id="2750015191954606595">Saisir une note</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="2414886740292270097">Foncé</translation>
 <translation id="2487368562788861256">Consommez moins de données grâce à l'<ph name="BEGIN_LINK"/>optimisation des pages<ph name="END_LINK"/> par Google.</translation>
@@ -442,7 +441,6 @@ Les statistiques d'utilisation englobent des informations telles que les préfé
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="6512448926095770873">Quitter cette page</translation>
-<translation id="6605823718624717484">Modifier les favoris</translation>
 <translation id="3414952576877147120">Taille :</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
 <translation id="5626134646977739690">Nom :</translation>

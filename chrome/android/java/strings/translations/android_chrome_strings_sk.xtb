@@ -190,7 +190,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="7029809446516969842">Heslá</translation>
 <translation id="5487729733663684359">Pre túto verziu systému Android už nie sú podporované aktualizácie prehliadača Chrome</translation>
 <translation id="5100237604440890931">Zbalená (rozbalíte ju kliknutím)</translation>
-<translation id="2750015191954606595">Zadajte poznámku</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="2414886740292270097">Tmavý režim</translation>
 <translation id="2487368562788861256">Využite službu Google na <ph name="BEGIN_LINK"/>optimalizáciu navštívených stránok<ph name="END_LINK"/> a ušetrite za dátové pripojenie.</translation>
@@ -344,7 +343,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="8168435359814927499">Obsah</translation>
 <translation id="5424715742813396254">Úprava uloženého mena/hesla alebo výnimky</translation>
 <translation id="6978479750597523876">Obnoviť nastavenia prekladov</translation>
-<translation id="2476578072172137802">Nastavenia stránok</translation>
+<translation id="2476578072172137802">Nastavenia webu</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6963766334940102469">Odstrániť záložky</translation>
 <translation id="7095930899177687653">Otvorené karty: <ph name="OPEN_TABS"/></translation>
@@ -424,7 +423,7 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="2501278716633472235">Prejsť späť</translation>
 <translation id="8941248009481596111">Vaše pripojenie k týmto stránkam je súkromné.</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
-<translation id="4165986682804962316">Nastavenia webovej stránky</translation>
+<translation id="4165986682804962316">Nastavenia webu</translation>
 <translation id="3672452749423051839">Návrhy v prípade chýb navigácie</translation>
 <translation id="2956410042958133412">Tento účet je spravovaný používateľmi <ph name="PARENT_NAME_1"/> a <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
@@ -441,7 +440,6 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="9065203028668620118">Upraviť</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="6512448926095770873">Odísť z tejto stránky</translation>
-<translation id="6605823718624717484">Upraviť záložky</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
 <translation id="945632385593298557">Prístup k mikrofónu</translation>
 <translation id="5626134646977739690">Názov:</translation>

@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Expand</translation>
 <translation id="7774497835322490043">Enable GDB debug stub. This will stop a Native Client application on startup and wait for nacl-gdb (from the NaCl SDK) to attach to it.</translation>
 <translation id="2686444421126615064">View account</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; added</translation>
 <translation id="7693221960936265065">the beginning of time</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">The following sites have been blocked from tracking your location on this page:</translation>
@@ -1013,7 +1014,6 @@ All users must sign out to continue.</translation>
 <translation id="7986039047000333986">A special security update for <ph name="PRODUCT_NAME"/> has just been applied; you should restart now for it to take effect (we'll restore your tabs).</translation>
 <translation id="2787591391657537328">Allow downloads that have been interrupted to be continued or restarted, using the Resume context menu item.</translation>
 <translation id="3926862159284741883">Enable WebGL Draft Extensions</translation>
-<translation id="8347255769289079987">Never show Reader Mode button</translation>
 <translation id="9152722471788855605">Safe Browsing Zip File Analyser</translation>
 <translation id="2537271621194795300">Startups</translation>
 <translation id="3636096452488277381">Hi, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1678,6 +1678,7 @@ Calculating remaining time</translation>
 <translation id="7256069811654036843">Take me back!</translation>
 <translation id="4811502511369621968">Invalid email address. Please check and try again.</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
+<translation id="8602851771975208551">Another programme on your computer added an app that may change the way Chrome works.</translation>
 <translation id="2655386581175833247">User certificate:</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5435964418642993308">Press enter to go back, context menu key to see history</translation>
@@ -1851,7 +1852,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="1901377140875308934">Sign in to <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Current wallpaper is set by '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">This page may need to be reloaded before the new settings take effect.</translation>
-<translation id="3740150184898623344">Show Reader Mode button on all pages</translation>
 <translation id="3947376313153737208">No selection</translation>
 <translation id="6405640832764359650">Enable Google Payments card saving tick box</translation>
 <translation id="1346104802985271895">Vietnamese input method (TELEX)</translation>
@@ -4789,6 +4789,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="634208815998129842">Task manager</translation>
 <translation id="2735698359135166290">Romanian standard keyboard</translation>
 <translation id="1701062906490865540">Remove this person</translation>
+<translation id="8475313423285172237">Another programme on your computer added an extension that may change the way Chrome works.</translation>
 <translation id="4850458635498951714">Add a device</translation>
 <translation id="3140353188828248647">Focus address bar</translation>
 <translation id="1371806038977523515">These settings are controlled by:</translation>
@@ -4801,7 +4802,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="5868927042224783176">Disallow for reauth</translation>
 <translation id="3355936511340229503">Connection error</translation>
 <translation id="736108944194701898">Mouse speed:</translation>
-<translation id="745374297349407796">Show the Reader Mode button on pages that appear to be long form content</translation>
 <translation id="8371937549687734176">Cast desktop or window to...</translation>
 <translation id="4350711002179453268">Unable to make a secure connection to the server. This may be a problem with the server or it may be requiring a client authentication certificate that you don't have.</translation>
 <translation id="4731422630970790516">Shelf item 3</translation>
@@ -5021,7 +5021,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="6929555043669117778">Continue blocking pop-ups</translation>
 <translation id="3508920295779105875">Choose Another Folder...</translation>
 <translation id="7903925330883316394">Utility: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Show the Reader Mode button on pages with article structured markup</translation>
 <translation id="5549518587357384553">Control whether document.body.scrollTop/scrollLeft in JavaScript reflects the standard interoperable behavior (enabled) or legacy WebKit behavior (disabled).
         When enabled, document.scrollingElement is document.documentElement, when disabled it's document.body (for strict-mode pages).</translation>
 <translation id="904451693890288097">Please enter the passkey for &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5861,6 +5860,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="6059652578941944813">Certificate Hierarchy</translation>
 <translation id="3153094071447713741">Experimental input view features.</translation>
 <translation id="5729712731028706266">&amp;View</translation>
+<translation id="9170884462774788842">Another programme on your computer added a theme that may change the way Chrome works.</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="4508765956121923607">View S&amp;ource</translation>
 <translation id="5975083100439434680">Zoom out</translation>

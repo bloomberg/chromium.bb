@@ -254,6 +254,7 @@
 <translation id="42981349822642051">Razširi</translation>
 <translation id="7774497835322490043">Omogočanje slepe procedure za iskanje napak na podlagi GBD. S tem se tehnologija Native Client ob zagonu ustavi in čaka, da se ji priloži nacl-gbd (iz kompleta za razvoj programske opreme tehnologije Native Client).</translation>
 <translation id="2686444421126615064">Ogled računa</translation>
+<translation id="9215293857209265904">Razširitev »<ph name="EXTENSION_NAME"/>« je dodana</translation>
 <translation id="7693221960936265065">vse od začetka</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Zaradi blokade ta spletna mesta ne morejo slediti vaši lokaciji na tej strani:</translation>
@@ -1013,7 +1014,6 @@
 <translation id="7986039047000333986">Pravkar ste namestili posebno varnostno posodobitev za <ph name="PRODUCT_NAME"/>. Zdaj znova zaženite računalnik, da začne veljati (vaše zavihke bomo obnovili).</translation>
 <translation id="2787591391657537328">Omogočanje nadaljevanja ali vnovičnega začetka prenosov, ki so bili prekinjeni, z možnostjo »Nadaljuj« v priročnem meniju.</translation>
 <translation id="3926862159284741883">Omogoči osnutek razširitev WebGL</translation>
-<translation id="8347255769289079987">Nikoli ne pokaži gumba za način bralnika</translation>
 <translation id="9152722471788855605">Pripomoček za analiziranje datotek zip za Varno brskanje</translation>
 <translation id="2537271621194795300">Zagoni</translation>
 <translation id="3636096452488277381">Zdravo, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1678,6 +1678,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7256069811654036843">Hočem nazaj!</translation>
 <translation id="4811502511369621968">Neveljaven e-poštni naslov. Preverite ga in poskusite znova.</translation>
 <translation id="175196451752279553">&amp;Znova odpri zaprt zavihek</translation>
+<translation id="8602851771975208551">Drug program v računalniku je dodal aplikacijo, ki lahko spremeni način delovanja Chroma.</translation>
 <translation id="2655386581175833247">Uporabniško potrdilo:</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5435964418642993308">Če se želite vrniti, pritisnite Enter. Če si želite ogledati zgodovino, pritisnite tipko za priročni meni.</translation>
@@ -1850,7 +1851,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="1901377140875308934">Prijavite se v <ph name="SHORT_PRODUCT_NAME"/> ...</translation>
 <translation id="5529098031581368697">Trenutno ozadje je nastavila aplikacija »<ph name="APP_NAME"/>«</translation>
 <translation id="5074318175948309511">Nove nastavitve bodo morda začele veljati, šele ko znova naložite to stran.</translation>
-<translation id="3740150184898623344">Pokaži gumb za način bralnika na vseh straneh</translation>
 <translation id="3947376313153737208">Brez izbora</translation>
 <translation id="6405640832764359650">Omogoči potrditveno polje za shranjevanje kartice za Google Payments</translation>
 <translation id="1346104802985271895">Vietnamski način vnosa (TELEX)</translation>
@@ -4791,6 +4791,7 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="634208815998129842">Upravitelj opravil</translation>
 <translation id="2735698359135166290">Romunska standardna tipkovnica</translation>
 <translation id="1701062906490865540">Odstrani to osebo</translation>
+<translation id="8475313423285172237">Drug program v računalniku je dodal razširitev, ki lahko spremeni način delovanja Chroma.</translation>
 <translation id="4850458635498951714">Dodajanje naprave</translation>
 <translation id="3140353188828248647">Preklopi na naslovno vrstico</translation>
 <translation id="1371806038977523515">Te nastavitve nadzira:</translation>
@@ -4803,7 +4804,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="5868927042224783176">Onemogočanje za vnovično preverjanje pristnosti</translation>
 <translation id="3355936511340229503">Napaka povezave</translation>
 <translation id="736108944194701898">Hitrost miške:</translation>
-<translation id="745374297349407796">Pokaži gumb za način bralnika na straneh, pri katerih je videti, da imajo dolgo vsebino</translation>
 <translation id="8371937549687734176">Predvajanje vsebine namizja ali okna na …</translation>
 <translation id="4350711002179453268">Ni bilo mogoče vzpostaviti varne povezave s strežnikom. Morda gre za težavo strežnika ali pa ta zahteva potrdilo za preverjanje pristnosti odjemalca, ki ga nimate.</translation>
 <translation id="4731422630970790516">Element na polici 3</translation>
@@ -5024,7 +5024,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="6929555043669117778">Še naprej blokiraj pojavna okna</translation>
 <translation id="3508920295779105875">Izberite drugo mapo ...</translation>
 <translation id="7903925330883316394">Pripomoček: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Pokaži gumb za način bralnika na straneh z označevalnim jezikom s strukturo člankov</translation>
 <translation id="5549518587357384553">Nadzor nad tem, ali document.body.scrollTop/scrollLeft v JavaScriptu odraža standardno združljivo delovanje (omogočeno) ali podedovano delovanje WebKita (onemogočeno).
         Če je ta možnost omogočena, je document.scrollingElement document.documentElement, če je onemogočena, pa document.body (za strani v strogem načinu).</translation>
 <translation id="904451693890288097">Vnesite geslo za napravo »<ph name="DEVICE_NAME"/>«:</translation>
@@ -5864,6 +5863,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="6059652578941944813">Hierarhija potrdil</translation>
 <translation id="3153094071447713741">Poskusne funkcije ogleda vnosov.</translation>
 <translation id="5729712731028706266">&amp;Pogled</translation>
+<translation id="9170884462774788842">Drug program v računalniku je dodal temo, ki lahko spremeni način delovanja Chroma.</translation>
 <translation id="8571108619753148184">Strežnik 4</translation>
 <translation id="4508765956121923607">Prikaz &amp;izvorne kode</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>

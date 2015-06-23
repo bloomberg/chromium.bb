@@ -12,11 +12,11 @@
 <translation id="166179487779922818">Kata laluan terlalu pendek.</translation>
 <translation id="2345460471437425338">Sijil yang salah untuk hos.</translation>
 <translation id="3688507211863392146">Tulis pada fail dan folder yang anda buka dalam aplikasi</translation>
-<translation id="226269835214688456">Jika anda matikan Smart Lock untuk Chromebook, anda tidak akan dapat membuka kunci peranti Chrome menggunakan telefon. Anda perlu menaip kata laluan anda.</translation>
+<translation id="226269835214688456">Jika anda matikan Smart Lock untuk Chromebook, anda tidak dapat membuka kunci peranti Chrome menggunakan telefon lagi. Anda perlu menaip kata laluan anda.</translation>
 <translation id="8996941253935762404">Laman web yang akan dilayari mengandungi atur cara berbahaya</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
 <translation id="8098352321677019742">Pemberitahuan <ph name="PRODUCT_NAME"/></translation>
-<translation id="5186650237607254032">Kemas kini kunci skrin telefon anda supaya ia dimatikan apabila anda berada berdekatan. Anda akan membuka kunci telefon dengan lebih cepat dan menikmati pengalaman Smart Lock yang lebih baik pada <ph name="DEVICE_TYPE"/> anda.</translation>
+<translation id="5186650237607254032">Kemas kini kunci skrin telefon anda supaya dimatikan apabila anda berada berdekatan. Anda akan membuka kunci telefon dengan lebih cepat dan menikmati pengalaman Smart Lock yang lebih baik pada <ph name="DEVICE_TYPE"/> anda.</translation>
 <translation id="3566021033012934673">Sambungan anda tidak diperibadikan</translation>
 <translation id="3751522270321808809">Tapak ini mungkin cuba menipu anda untuk mencuri maklumat anda (contohnya: kata laluan, mesej atau kad kredit).</translation>
 <translation id="3228679360002431295">Menyambung dan mengesahkan<ph name="ANIMATED_ELLIPSIS"/></translation>
@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Kembangkan</translation>
 <translation id="7774497835322490043">Dayakan keratan nyahpepijat GDB. Tindakan ini akan memberhentikan aplikasi Native Client semasa bermula dan menunggu nacl-gdb (dari NaCl SDK) untuk disambungkan kepadanya.</translation>
 <translation id="2686444421126615064">Lihat akaun</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; ditambah</translation>
 <translation id="7693221960936265065">permulaan masa</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Tapak berikut telah disekat daripada menjejaki lokasi anda pada halaman ini:</translation>
@@ -281,7 +282,7 @@
 <translation id="558170650521898289">Pengesahan Pemacu Perkakasan Microsoft Windows</translation>
 <translation id="4395129973926795186"><ph name="START_DATE"/> hingga <ph name="END_DATE"/></translation>
 <translation id="98515147261107953">Lanskap</translation>
-<translation id="7334190995941642545">Kunci Pintar tidak tersedia buat masa ini. Sila cuba lagi kemudian.</translation>
+<translation id="7334190995941642545">Smart Lock tidak tersedia buat masa ini. Sila cuba lagi kemudian.</translation>
 <translation id="1303101771013849280">Menandakan Fail HTML</translation>
 <translation id="8974161578568356045">Auto Kesan</translation>
 <translation id="1549045574060481141">Sahkan Muat Turun</translation>
@@ -586,7 +587,7 @@
 <translation id="715487527529576698">Mod Bahasa China Permulaan adalah Bahasa Cina Ringkas</translation>
 <translation id="6522350652862471760">Dayakan nama dan ikon profil Google</translation>
 <translation id="2164862903024139959">Papan kekunci bahasa Vietnam (TCVN)</translation>
-<translation id="8885197664446363138">Kunci Pintar tidak tersedia</translation>
+<translation id="8885197664446363138">Smart Lock tidak tersedia</translation>
 <translation id="1697532407822776718">Anda telah bersedia!</translation>
 <translation id="8373553483208508744">Redam beberapa tab</translation>
 <translation id="8703575177326907206">Sambungan anda ke <ph name="DOMAIN"/> tidak disulitkan.</translation>
@@ -1010,13 +1011,12 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="9153341767479566106">Sambungan lain yang gagal untuk dimuatkan:</translation>
 <translation id="1864111464094315414">Log masuk</translation>
 <translation id="3451859089869683931">Nombor telefon tidak sah. Sila semak dan cuba lagi.</translation>
-<translation id="7130666834200497454">Untuk memastikan <ph name="DEVICE_TYPE"/> anda selamat, Smart Lock untuk Chromebook memerlukan kunci skrin pada telefon yang membuka kuncinya. Sudah menyelamatkan telefon anda? Klik “Semak lagi” untuk mengesahkan dan teruskan persediaan.</translation>
+<translation id="7130666834200497454">Untuk memastikan <ph name="DEVICE_TYPE"/> anda selamat, Smart Lock untuk Chromebook memerlukan kunci skrin pada telefon yang membuka kuncinya. Sudah memastikan telefon anda selamat? Klik “Semak lagi” untuk mengesahkan dan teruskan persediaan.</translation>
 <translation id="5414882716132603766">Gugurkan bukti kelayakan disegerakkan daripada pengurus kata laluan.</translation>
 <translation id="6353618411602605519">Papan kekunci Croatia</translation>
 <translation id="7986039047000333986">Kemas kini keselamatan khas untuk <ph name="PRODUCT_NAME"/> baru sahaja digunakan; anda perlu memulakan semula sekarang supaya ia boleh berfungsi (kami akan memulihkan tab anda).</translation>
 <translation id="2787591391657537328">Membenarkan muat turun yang telah diganggu diteruskan atau dimulakan semula, dengan menggunakan item menu konteks Sambung Semula.</translation>
 <translation id="3926862159284741883">Dayakan Sambungan Draf WebGL</translation>
-<translation id="8347255769289079987">Jangan sekali-kali tunjukkan butang Mod Pembaca</translation>
 <translation id="9152722471788855605">Penganalisis Fail Zip Penyemakan Imbas Selamat</translation>
 <translation id="2537271621194795300">Pemula</translation>
 <translation id="3636096452488277381">Helo, <ph name="USER_GIVEN_NAME"/> .</translation>
@@ -1679,6 +1679,7 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="7256069811654036843">Bawa saya kembali!</translation>
 <translation id="4811502511369621968">Alamat e-mel tidak sah. Sila semak dan cuba lagi.</translation>
 <translation id="175196451752279553">B&amp;uka semula tab yang ditutup</translation>
+<translation id="8602851771975208551">Program lain pada komputer anda menambah apl yang boleh mengubah cara Chrome berfungsi.</translation>
 <translation id="2655386581175833247">Sijil pengguna:</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5435964418642993308">Tekan masuk untuk undur, kekunci menu konteks untuk melihat sejarah</translation>
@@ -1851,7 +1852,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="1901377140875308934">Log masuk ke <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Kertas dinding semasa ditetapkan oleh '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Halaman ini mungkin perlu dimuat semula sebelum tetapan baru berkesan.</translation>
-<translation id="3740150184898623344">Tunjukkan butang Mod Pembaca pada semua halaman</translation>
 <translation id="3947376313153737208">Tiada pemilihan</translation>
 <translation id="6405640832764359650">Dayakan kotak pilihan penyimpanan kad Google Payments</translation>
 <translation id="1346104802985271895">Kaedah input bahasa Vietnam (TELEX)</translation>
@@ -2080,7 +2080,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
           menyelesaikan masalah ini.</translation>
 <translation id="6316671927443834085">Gagal untuk memutuskan sambungan dari &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="1962233722219655970">Halaman ini menggunakan aplikasi Native Client yang tidak berfungsi pada komputer anda.</translation>
-<translation id="5458733660263868683">Jangan gunakan Kunci Pintar, yang membolehkan anda membuka kunci Chromebook anda apabila berada berhampiran dengan telefon anda. Jika anda pemilik peranti, ini juga akan mematikan Kunci Pintar pada skrin log masuk.</translation>
+<translation id="5458733660263868683">Jangan gunakan Smart Lock, yang membolehkan anda membuka kunci Chromebook anda apabila berada berhampiran dengan telefon anda. Jika anda pemilik peranti, Smart Lock akan dimatikan pada skrin masuk juga.</translation>
 <translation id="1108685299869803282">Lebih daripada 80% orang yang melihat amaran ini membuat pilihan yang selamat dan bukannya mengambil risiko daripada serangan perisian hasad. Walau bagaimanapun, jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK"/>melawati tapak web yang tidak selamat ini<ph name="END_LINK"/> sebelum program berbahaya dialih keluar.</translation>
 <translation id="219008588003277019">Modul Klien Asli: <ph name="NEXE_NAME"/></translation>
 <translation id="8228447825257396644">Lumpuhkan papan kekunci paparan input dalam reka bentuk bahan.</translation>
@@ -4175,7 +4175,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="249113932447298600">Maaf, peranti <ph name="DEVICE_LABEL"/> tidak disokong pada masa ini.</translation>
 <translation id="6401445054534215853">Item rak 1</translation>
 <translation id="6113134669445407638">Lumpuhkan Delay Agnostic AEC dalam WebRTC. Gunakan jika kelengahan sistem yang dilaporkan adalah amat dipercayai atau jika yang lain mengalami gema daripada mesin anda.</translation>
-<translation id="2365626167708453863">Pilih akaun dari Kunci Pintar Google anda</translation>
+<translation id="2365626167708453863">Pilih akaun daripada Google Smart Lock anda</translation>
 <translation id="232562464593865424">Mari latih Chromebook anda</translation>
 <translation id="2351520734632194850"><ph name="MHZ"/> MHz</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
@@ -4188,7 +4188,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="5469954281417596308">Pengurus penanda halaman</translation>
 <translation id="106153153543631784">Sila masukkan semula kata laluan untuk mengemaskinikan profil Chromebook anda.</translation>
 <translation id="3064388234319122767">Pengalihan huruf (zdravo → здраво)</translation>
-<translation id="5425722269016440406">Anda mesti berada dalam talian untuk mematikan Kunci Pintar kerana tetapan ini disegerakkan ke telefon anda dan peranti lain. Sila bersambung kepada rangkaian dahulu.</translation>
+<translation id="5425722269016440406">Anda mesti berada dalam talian untuk mematikan Smart Lock kerana tetapan ini disegerakkan ke telefon anda dan peranti lain. Sila bersambung kepada rangkaian dahulu.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="7730494089396812859">Tunjukkan butiran sandaran Awan</translation>
 <translation id="1143142264369994168">Penandatangan Sijil</translation>
@@ -4256,7 +4256,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="6151417162996330722">Sijil pelayan mempunyai tempoh sah yang terlalu panjang.</translation>
 <translation id="952992212772159698">Tidak diaktifkan</translation>
 <translation id="443464694732789311">Teruskan</translation>
-<translation id="140250605646987970">Telefon anda telah dijumpai. Tetapi Smart Lock hanya berfungsi pada peranti yang mempunyai Android 5.0 dan ke atas. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
+<translation id="140250605646987970">Telefon anda telah dijumpai. Tetapi Smart Lock hanya berfungsi pada peranti dengan OS Android 5.0 dan ke atas. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
 <translation id="8299269255470343364">Bahasa Jepun</translation>
 <translation id="9088659014978240063">Metrik berkaitan dengan kesan <ph name="SHORT_PRODUCT_NAME"/> terhadap CPU sistem</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
@@ -4643,7 +4643,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="9203478404496196495">Nyahredam Tab</translation>
 <translation id="2143778271340628265">Konfigurasi proksi manual</translation>
 <translation id="8888432776533519951">Warna:</translation>
-<translation id="5247176778442128277">Lumpuhkan Kunci Pintar</translation>
+<translation id="5247176778442128277">Lumpuhkan Smart Lock</translation>
 <translation id="5294529402252479912">Kemas Kini Adobe Reader sekarang</translation>
 <translation id="79962507603257656">Status Muat Turun di Pusat Pemberitahuan</translation>
 <translation id="2231990265377706070">Tanda seru</translation>
@@ -4711,7 +4711,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7179921470347911571">Lancarkan Semula Sekarang</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="6978611942794658017">Fail ini direka untuk sebuah komputer yang menggunakan perisian Windows. Ini tidak serasi dengan peranti anda yang menjalankan OS Chrome. Sila cari di Kedai Web Chrome untuk mendapatkan apl ganti yang sesuai.</translation>
-<translation id="3002017044809397427"><ph name="PHONE_TYPE"/> anda telah dijumpai. Tetapi Smart Lock hanya berfungsi pada peranti yang mempunyai Android 5.0 dan ke atas. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
+<translation id="3002017044809397427"><ph name="PHONE_TYPE"/> anda telah dijumpai. Tetapi Smart Lock hanya berfungsi pada peranti dengan OS Android 5.0 dan ke atas. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
 <translation id="2251218783371366160">Buka dengan pemapar sistem</translation>
 <translation id="1177863135347784049">Tersuai</translation>
 <translation id="4881695831933465202">Buka</translation>
@@ -4807,6 +4807,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="634208815998129842">Pengurus tugas</translation>
 <translation id="2735698359135166290">Papan kekunci standard Romania</translation>
 <translation id="1701062906490865540">Alih keluar orang ini</translation>
+<translation id="8475313423285172237">Program lain pada komputer anda menambah sambungan yang boleh mengubah cara Chrome berfungsi.</translation>
 <translation id="4850458635498951714">Tambah peranti</translation>
 <translation id="3140353188828248647">Tumpukan bar alamat</translation>
 <translation id="1371806038977523515">Tetapan ini dikawal oleh:</translation>
@@ -4819,7 +4820,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="5868927042224783176">Tidak mengizinkan untuk membenarkan semula</translation>
 <translation id="3355936511340229503">Ralat sambungan</translation>
 <translation id="736108944194701898">Kelajuan tetikus:</translation>
-<translation id="745374297349407796">Tunjukkan butang Mod Pembaca pada halaman yang kelihatan seperti kandungan berbentuk panjang</translation>
 <translation id="8371937549687734176">Hantar desktop atau tetingkap ke...</translation>
 <translation id="4350711002179453268">Tidak dapat membuat sambungan selamat ke pelayan. Ini mungkin adalah masalah dengan pelayan, atau ia memerlukan sijil pengesahan klien yang anda tidak miliki.</translation>
 <translation id="4731422630970790516">Item rak 3</translation>
@@ -5040,7 +5040,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="6929555043669117778">Teruskan menyekat pop timbul</translation>
 <translation id="3508920295779105875">Pilih Folder yang lain...</translation>
 <translation id="7903925330883316394">Utiliti: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Tunjukkan butang Mod Pembaca pada halaman dengan penanda berstruktur artikel</translation>
 <translation id="5549518587357384553">Kawal sama ada document.body.scrollTop/scrollLeft dalam JavaScript menggambarkan kelakuan saling boleh kendali standard (didayakan) atau kelakuan WebKit lama (dilumpuhkan).
         Apabila didayakan, document.scrollingElement ialah document.documentElement, apabila dilumpuhkan kelakuan ini menjadi document.body (untuk halaman mod tegas).</translation>
 <translation id="904451693890288097">Sila masukkan kekunci laluan untuk &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5161,7 +5160,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="8677914765885474883">Amaran: Data tidak dikumpulkan! Halaman mungkin menjadi perlahan!</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="3551117997325569860">Untuk menukar proksi, dayakan tetapan &quot;<ph name="USE_SHARED_PROXIES"/>&quot;.</translation>
-<translation id="2810731435681289055">Lain kali anda membuka kunci <ph name="DEVICE_TYPE"/> ini, Kunci Pintar akan mengemas kini supaya anda boleh klik sahaja gambar anda untuk masuk.</translation>
+<translation id="2810731435681289055">Apabila anda membuka kunci <ph name="DEVICE_TYPE"/> ini pada kali berikutnya, Smart Lock akan dikemas kini supaya anda dapat mengklik sahaja gambar anda untuk masuk.</translation>
 <translation id="6110413515502722199">Jika ditetapkan, log masuk akan dilakukan menggunakan aliran GAIA lama dan bukannya aliran baharu yang berasaskan WebView.</translation>
 <translation id="6268747994388690914">Import Penanda Halaman dari Fail HTML...</translation>
 <translation id="6096047740730590436">Buka Dimaksimumkan</translation>
@@ -5820,7 +5819,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="9111742992492686570">Muat Turun Kemas Kini Keselamatan Kritikal</translation>
 <translation id="1979280758666859181">Anda sedang beralih kepada saluran dengan versi <ph name="PRODUCT_NAME"/> yang lebih lama. Perubahan saluran akan dilaksanakan apabila versi saluran sepadan dengan versi yang sedang terpasang pada peranti anda.</translation>
 <translation id="304009983491258911">Tukar PIN kad SIM</translation>
-<translation id="7556033326131260574">Kunci Pintar tidak dapat mengesahkan akaun anda. Taip kata laluan anda untuk masuk.</translation>
+<translation id="7556033326131260574">Smart Lock tidak dapat mengesahkan akaun anda. Taip kata laluan anda untuk masuk.</translation>
 <translation id="8600929685092827187">Aktifkan Apabila Menerima Paket</translation>
 <translation id="2045969484888636535">Terus menyekat kuki</translation>
 <translation id="8131740175452115882">Sahkan</translation>
@@ -5879,6 +5878,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="6059652578941944813">Hierarki Sijil</translation>
 <translation id="3153094071447713741">Ciri paparan input eksperimen.</translation>
 <translation id="5729712731028706266">&amp;Lihat</translation>
+<translation id="9170884462774788842">Program lain pada komputer anda menambah tema yang boleh mengubah cara Chrome berfungsi.</translation>
 <translation id="8571108619753148184">Pelayan 4</translation>
 <translation id="4508765956121923607">Paparkan S&amp;umber</translation>
 <translation id="5975083100439434680">Zum keluar</translation>

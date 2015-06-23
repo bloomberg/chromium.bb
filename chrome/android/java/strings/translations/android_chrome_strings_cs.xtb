@@ -170,7 +170,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="8583805026567836021">Mazání dat účtu</translation>
 <translation id="6464825623202322042">Toto zařízení</translation>
-<translation id="5860033963881614850">VYP</translation>
+<translation id="5860033963881614850">Vypnuto</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
 <translation id="3198916472715691905">Uložená data: <ph name="STORAGE_AMOUNT"/></translation>
@@ -190,7 +190,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="7029809446516969842">Hesla</translation>
 <translation id="5487729733663684359">V této verzi platformy Android již aktualizace prohlížeče Chrome nejsou podporovány.</translation>
 <translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
-<translation id="2750015191954606595">Zadejte poznámku</translation>
 <translation id="1201402288615127009">Další</translation>
 <translation id="2414886740292270097">Tmavé</translation>
 <translation id="2487368562788861256">Využijte Google k <ph name="BEGIN_LINK"/>optimalizaci navštěvovaných stránek<ph name="END_LINK"/> a utrácejte za data méně.</translation>
@@ -441,7 +440,6 @@ Statistiky využití obsahují informace, jako jsou předvolby, kliknutí na tla
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="6512448926095770873">Opustit tuto stránku</translation>
-<translation id="6605823718624717484">Upravit záložky</translation>
 <translation id="3414952576877147120">Velikost:</translation>
 <translation id="945632385593298557">Přístup k mikrofonu</translation>
 <translation id="5626134646977739690">Jméno:</translation>
@@ -479,7 +477,7 @@ Statistiky využití obsahují informace, jako jsou předvolby, kliknutí na tla
 <translation id="3988213473815854515">Přístup k poloze je povolen</translation>
 <translation id="1513352483775369820">Záložky a webová historie</translation>
 <translation id="8912362522468806198">Účet Google</translation>
-<translation id="6165508094623778733">Další informace</translation>
+<translation id="6165508094623778733">Další informace</translation>
 <translation id="3003595280608617736">SD karta není k dispozici</translation>
 <translation id="6337234675334993532">Šifrování</translation>
 <translation id="862875433388403934">Obsah (filmy, hudba atd.) stažený v jiných aplikacích možná nebude možné přehrát, dokud dané aplikace znovu nezískají licence s novými identifikačními údaji zařízení.

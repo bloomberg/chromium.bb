@@ -258,6 +258,7 @@
 <translation id="42981349822642051">विस्तृत करें</translation>
 <translation id="7774497835322490043">GDB डीबग स्टब सक्षम करें. इससे स्टार्टअप पर स्थानीय क्लाइंट ऐप्स  बंद हो जाएगा और वह उसमें nacl-gdb (NaCl SDK की ओर से) के अनुलग्न होने की प्रतीक्षा करेगा.</translation>
 <translation id="2686444421126615064">खाता देखें</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; जोड़ा गया</translation>
 <translation id="7693221960936265065">प्रारंभ से</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">निम्न साइटों को इस पृष्ठ पर आपकी स्थिति ट्रैक करने से अवरोधित कर दिया गया है:</translation>
@@ -1017,7 +1018,6 @@
 <translation id="7986039047000333986"><ph name="PRODUCT_NAME"/> के लिए कोई विशेष सुरक्षा अपडेट अभी-अभी लागू किया गया था; इसके प्रभावशील होने के लिए आपको अभी पुन: प्रारंभ करना चाहिए (हम आपके टैब पुनर्स्‍थापित कर देंगे).</translation>
 <translation id="2787591391657537328">मेनू आइटम, फिर से शुरू करें का उपयोग करके, उन डाउनलोड को अनुमति दें जो जारी रहने या पुन: प्रारंभ होने में बाधित हो गए हैं.</translation>
 <translation id="3926862159284741883">WebGL अधूरा ईमेल एक्सटेंशन सक्षम करें</translation>
-<translation id="8347255769289079987">रीडर मोड बटन कभी नहीं दिखाएं</translation>
 <translation id="9152722471788855605">सुरक्षित ब्राउज़िंग ज़िप फ़ाइल विश्‍लेषक</translation>
 <translation id="2537271621194795300">स्टार्टअप</translation>
 <translation id="3636096452488277381">कैसे हैं, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1680,6 +1680,7 @@
 <translation id="7256069811654036843">मुझे वापस ले जाएं!</translation>
 <translation id="4811502511369621968">अमान्य ईमेल पता. कृपया जांचें और पुन: प्रयास करें.</translation>
 <translation id="175196451752279553">बंद किए गए टैब पु&amp;न: खोलें</translation>
+<translation id="8602851771975208551">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने ऐप्स  जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
 <translation id="2655386581175833247">उपयोगकर्ता प्रमाणपत्र:</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5435964418642993308">वापस जाने के लिए enter दबाएं, इतिहास देखने के लिए प्रसंग मेनू कुंजी दबाएं</translation>
@@ -1853,7 +1854,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> में प्रवेश करें...</translation>
 <translation id="5529098031581368697">वर्तमान वॉलपेपर '<ph name="APP_NAME"/>' द्वारा सेट किया गया है</translation>
 <translation id="5074318175948309511">नई सेटिंग के प्रभावी होने से पहले इस पृष्‍ठ को रीलोड करने की आवश्‍यकता हो सकती है.</translation>
-<translation id="3740150184898623344">सभी पृष्ठों पर रीडर मोड बटन दिखाएं</translation>
 <translation id="3947376313153737208">कोई चयन नहीं</translation>
 <translation id="6405640832764359650">Google पेमेंट्स कार्ड सहेजने का चेकबॉक्स सक्षम करें</translation>
 <translation id="1346104802985271895">वियतनामी इनपुट विधि (TELEX)</translation>
@@ -2477,7 +2477,7 @@
 <translation id="1166359541137214543">ABC</translation>
 <translation id="540296380408672091"><ph name="HOST"/> पर कुकी को हमेशा अवरुद्ध करें</translation>
 <translation id="3227137524299004712">माइक्रोफ़ोन</translation>
-<translation id="5528368756083817449">बुकमार्क प्रबंधक</translation>
+<translation id="5528368756083817449">Bookmark manager</translation>
 <translation id="7705600705238488017">इसके बजाय <ph name="BEGIN_LINK"/>Chrome वेब स्‍टोर ब्राउज़ करना<ph name="END_LINK"/> चाहते हैं?</translation>
 <translation id="2826760142808435982">कनेक्शन को <ph name="CIPHER"/> का उपयोग करके एन्क्रिप्ट और प्रमाणित किया गया है और यह कुंजी विनिमय तकनीक के रूप में <ph name="KX"/> का उपयोग करता है.</translation>
 <translation id="215753907730220065">पूर्ण स्क्रीन से बाहर निकलें</translation>
@@ -4187,7 +4187,7 @@
 <translation id="890308499387283275">Chrome यह फ़ाइल डाउनलोड नहीं कर सकता.</translation>
 <translation id="6557565812667414268">केवल उच्च-DPI प्रदर्शनों के लिए सक्षम</translation>
 <translation id="7331991248529612614">रीडर मोड बटन एनिमेशन सक्षम करें</translation>
-<translation id="5469954281417596308">बुकमार्क प्रबंधक</translation>
+<translation id="5469954281417596308">Bookmark manager</translation>
 <translation id="106153153543631784">अपनी Chromebook प्रोफ़ाइल को अपडेट करने के लिए कृपया अपना पासवर्ड पुनः डालें.</translation>
 <translation id="3064388234319122767">लिप्यंतरण (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Smart Lock बंद करने के लिए आपको ऑनलाइन होना होगा क्‍योंकि यह सेटिंग आपके फ़ोन और अन्‍य डिवाइस से समन्‍वयित की जाती है. कृपया पहले किसी नेटवर्क से कनेक्‍ट करें.</translation>
@@ -4810,6 +4810,7 @@
 <translation id="634208815998129842">कार्य प्रबंधक</translation>
 <translation id="2735698359135166290">रोमानियाई मानक कीबोर्ड</translation>
 <translation id="1701062906490865540">इस व्यक्ति को निकालें</translation>
+<translation id="8475313423285172237">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने एक्सटेंशन जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
 <translation id="4850458635498951714">डिवाइस जोड़ें</translation>
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
 <translation id="1371806038977523515">ये सेटिंग इसके द्वारा नियंत्रित की जाती है:</translation>
@@ -4822,7 +4823,6 @@
 <translation id="5868927042224783176">reauth के लिए अनुमति न दें</translation>
 <translation id="3355936511340229503">कनेक्शन त्रुटि</translation>
 <translation id="736108944194701898">माउस गति:</translation>
-<translation id="745374297349407796">रीडर मोड बटन को उन पृष्ठों पर दिखाएं जो लंबी फ़ॉर्म सामग्री जैसे दिखाई देते हैं</translation>
 <translation id="8371937549687734176">डेस्कटॉप या विंडो को इस पर कास्ट करें...</translation>
 <translation id="4350711002179453268">सर्वर से कोई सुरक्षित कनेक्शन बनाने में असमर्थ. सर्वर के साथ कोई समस्या हो सकती है, या इसके लिए किसी ऐसे क्लाइंट प्रमाणीकरण प्रमाणपत्र की आवश्यकता हो सकती है जो आपके पास नहीं है.</translation>
 <translation id="4731422630970790516">शेल्फ़ आइटम 3</translation>
@@ -5043,7 +5043,6 @@
 <translation id="6929555043669117778">पॉप-अप को अवरोधित करना जारी रखें</translation>
 <translation id="3508920295779105875">कोई अन्य फ़ोल्डर चुनें...</translation>
 <translation id="7903925330883316394">उपयोगिता: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">रीडर मोड बटन को लेख संरचित मार्कअप वाले पृष्ठों पर दिखाएं</translation>
 <translation id="5549518587357384553">यह नियंत्रित करें कि JavaScript में document.body.scrollTop/scrollLeft, मानक अंतःप्रचालनीय व्यवहार (सक्षम किया गया) दर्शाता है या लीगेसी WebKit व्यवहार (अक्षम किया गया).
         सक्षम किए जाने पर document.scrollingElement, document.documentElement होता है, अक्षम किए जाने पर यह document.body (सख्त-मोड पृष्ठों के लिए) होता है.</translation>
 <translation id="904451693890288097">कृपया &quot;<ph name="DEVICE_NAME"/>&quot; के लिए पासकुंजी दर्ज करें:</translation>
@@ -5882,6 +5881,7 @@
 <translation id="6059652578941944813">प्रमाणपत्र पदानुक्रम</translation>
 <translation id="3153094071447713741">प्रयोगात्मक इनपुट दृश्य सुविधाएं.</translation>
 <translation id="5729712731028706266">&amp;देखें</translation>
+<translation id="9170884462774788842">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने एक्सटेंशन जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
 <translation id="8571108619753148184">सर्वर 4</translation>
 <translation id="4508765956121923607">स्रो&amp;त देखें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>

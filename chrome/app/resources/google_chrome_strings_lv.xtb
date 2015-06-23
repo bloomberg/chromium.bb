@@ -78,7 +78,7 @@
 <translation id="1073391069195728457">Chrome — paziņojumi</translation>
 <translation id="6368805772029492593">Papildu drošības nolūkos Google Chrome šifrēs jūsu datus.</translation>
 <translation id="7339898014177206373">Jauns logs</translation>
-<translation id="3282568296779691940">Pierakstīšanās pārlūkā Chrome</translation>
+<translation id="3282568296779691940">Pierakstīties pārlūkā Chrome</translation>
 <translation id="3089968997497233615">Ir pieejama jauna un drošāka Google Chrome versija.</translation>
 <translation id="5037239767309817516">Lai izmaiņas stātos spēkā, aizveriet visus Google Chrome logus un restartējiet pārlūku.</translation>
 <translation id="1619887657840448962">Lai uzlabotu Chrome drošību, mēs atspējojām tālāk norādīto paplašinājumu, kas nav norādīts vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> un iespējams, tika pievienots, jums nezinot.</translation>
@@ -172,7 +172,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2316129865977710310">Nē, paldies</translation>
 <translation id="1104959162601287462">Par &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome binārie faili</translation>
-<translation id="7626032353295482388">Laipni lūdzam Chrome!</translation>
+<translation id="7626032353295482388">Laipni lūdzam pārlūkā Chrome</translation>
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
 <translation id="1759301979429102118">Izmantojot datus no savas kontaktinformācijas, pārlūkā Chrome varat ērtāk aizpildīt veidlapas.</translation>
 <translation id="7787950393032327779">Šķiet, ka profils tiek izmantots citā Google Chrome procesā (<ph name="PROCESS_ID"/>) citā datorā (<ph name="HOST_NAME"/>). Lai profils netiktu bojāts, pārlūkā Chrome tas ir bloķēts. Ja esat pārliecināts, ka šis profils netiek izmantots citos procesos, varat to atbloķēt un restartēt pārlūku Chrome.</translation>

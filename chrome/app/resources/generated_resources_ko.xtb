@@ -255,6 +255,7 @@
 <translation id="42981349822642051">펼치기</translation>
 <translation id="7774497835322490043">GDB 디버깅 스터브를 사용하도록 설정합니다. 이렇게 하면 시작 시 기본 클라이언트 애플리케이션이 중단되고 NaCl SDK에서 온 nacl-gdb가 연결될 때까지 기다리게 됩니다.</translation>
 <translation id="2686444421126615064">계정 보기</translation>
+<translation id="9215293857209265904">'<ph name="EXTENSION_NAME"/>'이(가) 추가됨</translation>
 <translation id="7693221960936265065">전체</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">이 페이지에서 사용자 위치 추적이 차단된 사이트는 다음과 같습니다.</translation>
@@ -1015,7 +1016,6 @@
 <translation id="7986039047000333986"><ph name="PRODUCT_NAME"/>에 대한 특별한 보안 업데이트를 방금 적용했습니다. 적용하려면 지금 다시 시작하세요. 이렇게 하면 탭이 복원됩니다.</translation>
 <translation id="2787591391657537328">'계속' 컨텍스트 메뉴 항목을 사용하여 중단된 다운로드를 계속하거나 다시 시작합니다.</translation>
 <translation id="3926862159284741883">WebGL 초안 확장 프로그램 사용</translation>
-<translation id="8347255769289079987">리더 모드 버튼 표시 안함</translation>
 <translation id="9152722471788855605">세이프 브라우징 Zip 파일 분석기</translation>
 <translation id="2537271621194795300">시작</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME"/>님, 반갑습니다.</translation>
@@ -1681,6 +1681,7 @@
 <translation id="7256069811654036843">돌아가기</translation>
 <translation id="4811502511369621968">이메일 주소가 잘못되었습니다. 확인한 다음 다시 시도하세요.</translation>
 <translation id="175196451752279553">닫은 탭 다시 열기(&amp;E)</translation>
+<translation id="8602851771975208551">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 앱을 추가했습니다.</translation>
 <translation id="2655386581175833247">사용자 인증서:</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5435964418642993308">돌아가려면 Enter 키를 누르고, 기록을 보려면 컨텍스트 메뉴 키를 누릅니다.</translation>
@@ -1853,7 +1854,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/>에 로그인...</translation>
 <translation id="5529098031581368697">현재 배경화면은 '<ph name="APP_NAME"/>'에서 설정했습니다.</translation>
 <translation id="5074318175948309511">새로운 설정을 적용하기 전에 페이지를 다시 로드해야 할 수도 있습니다.</translation>
-<translation id="3740150184898623344">리더 모드 버튼을 모든 페이지에 표시</translation>
 <translation id="3947376313153737208">선택사항 없음</translation>
 <translation id="6405640832764359650">Google Payments 카드 저장 체크박스 사용</translation>
 <translation id="1346104802985271895">베트남어 입력 방법(TELEX)</translation>
@@ -4790,6 +4790,7 @@
 <translation id="634208815998129842">작업 관리자</translation>
 <translation id="2735698359135166290">루마니아 표준 키보드</translation>
 <translation id="1701062906490865540">이 사용자 삭제</translation>
+<translation id="8475313423285172237">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 확장 프로그램을 추가했습니다.</translation>
 <translation id="4850458635498951714">기기 추가</translation>
 <translation id="3140353188828248647">주소 표시줄로 이동</translation>
 <translation id="1371806038977523515">이 설정을 제어하는 프로그램:</translation>
@@ -4802,7 +4803,6 @@
 <translation id="5868927042224783176">재인증에 허용 안함</translation>
 <translation id="3355936511340229503">연결 오류</translation>
 <translation id="736108944194701898">마우스 속도:</translation>
-<translation id="745374297349407796">길이가 긴 콘텐츠로 보이는 페이지에 리더 모드 버튼 표시</translation>
 <translation id="8371937549687734176">바탕화면 또는 창 전송 대상:</translation>
 <translation id="4350711002179453268">서버에 안전하게 연결할 수 없습니다. 서버에 문제가 있거나 사용자가 보유하지 않은 클라이언트 인증서가 필요하기 때문일 수 있습니다.</translation>
 <translation id="4731422630970790516">서가 항목 3</translation>
@@ -5023,7 +5023,6 @@
 <translation id="6929555043669117778">팝업 계속 차단</translation>
 <translation id="3508920295779105875">다른 폴더 선택...</translation>
 <translation id="7903925330883316394">유틸리티: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">리더 모드 버튼을 도움말 구조의 마크업이 있는 페이지에 표시</translation>
 <translation id="5549518587357384553">자바스크립트에서 document.body.scrollTop/scrollLeft에 대한 표준 상호 동작(사용) 또는 기존 웹킷 행동(사용 안함)의 반영 여부를 관리합니다.
         사용하도록 설정하면 document.scrollingElement는 document.documentElement이며, 사용하지 않도록 설정하면 document.body(엄격 페이지 모드의 경우)입니다.</translation>
 <translation id="904451693890288097">'<ph name="DEVICE_NAME"/>'의 암호를 입력하세요:</translation>
@@ -5863,6 +5862,7 @@
 <translation id="6059652578941944813">인증서 계층</translation>
 <translation id="3153094071447713741">실험적인 입력 화면 기능입니다.</translation>
 <translation id="5729712731028706266">보기(&amp;V)</translation>
+<translation id="9170884462774788842">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 테마를 추가했습니다.</translation>
 <translation id="8571108619753148184">서버 4</translation>
 <translation id="4508765956121923607">소스 보기(&amp;O)</translation>
 <translation id="5975083100439434680">축소</translation>

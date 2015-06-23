@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Développer</translation>
 <translation id="7774497835322490043">Activer le fichier stub de débogage avec GDB. Cela interrompt le lancement d'une application Native Client jusqu'à ce que le fichier nacl-gdb lui soit attribué (à partir du SDK NaCl).</translation>
 <translation id="2686444421126615064">Afficher le compte</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; ajoutée</translation>
 <translation id="7693221960936265065">tous</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Le suivi de votre position géographique sur cette page a été bloqué pour les sites suivants :</translation>
@@ -1011,7 +1012,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="7986039047000333986">Une mise à jour spéciale de sécurité pour <ph name="PRODUCT_NAME"/> vient d'être installée. Redémarrez maintenant pour qu'elle soit prise en compte (vos onglets seront restaurés).</translation>
 <translation id="2787591391657537328">Autoriser la reprise ou le redémarrage des téléchargements interrompus à l'aide de l'option du menu contextuel &quot;Reprendre&quot;</translation>
 <translation id="3926862159284741883">Activer les extensions WebGL brouillon</translation>
-<translation id="8347255769289079987">Ne jamais afficher le bouton du mode lecteur</translation>
 <translation id="9152722471788855605">Analyse de fichiers .zip pour une navigation sécurisée</translation>
 <translation id="2537271621194795300">Temps de lancement</translation>
 <translation id="3636096452488277381">Bonjour <ph name="USER_GIVEN_NAME"/></translation>
@@ -1677,6 +1677,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7256069811654036843">Revenir en arrière</translation>
 <translation id="4811502511369621968">Adresse e-mail non valide. Veuillez la vérifier, puis réessayer.</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
+<translation id="8602851771975208551">Un autre programme sur votre ordinateur a ajouté une application qui risque de modifier le fonctionnement de Google Chrome.</translation>
 <translation id="2655386581175833247">Certificat utilisateur :</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5435964418642993308">Appuyer sur Entrée pour revenir en arrière et sur la touche de menu contextuel pour afficher l'historique</translation>
@@ -1849,7 +1850,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="1901377140875308934">Se connecter à <ph name="SHORT_PRODUCT_NAME"/>…</translation>
 <translation id="5529098031581368697">Le fond d'écran actuel a été défini par <ph name="APP_NAME"/>.</translation>
 <translation id="5074318175948309511">Vous devrez peut-être actualiser cette page pour que les nouveaux paramètres soient appliqués.</translation>
-<translation id="3740150184898623344">Afficher le bouton du mode lecteur sur toutes les pages</translation>
 <translation id="3947376313153737208">Aucune sélection</translation>
 <translation id="6405640832764359650">Activer la case à cocher permettant d'enregistrer des cartes Google Payments</translation>
 <translation id="1346104802985271895">Mode de saisie du vietnamien (TELEX)</translation>
@@ -4794,6 +4794,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="634208815998129842">Gestionnaire de tâches</translation>
 <translation id="2735698359135166290">Clavier roumain standard</translation>
 <translation id="1701062906490865540">Supprimer ce profil utilisateur</translation>
+<translation id="8475313423285172237">Un autre programme sur votre ordinateur a ajouté une extension qui risque de modifier le fonctionnement de Google Chrome.</translation>
 <translation id="4850458635498951714">Ajouter un appareil</translation>
 <translation id="3140353188828248647">Activer la barre d'adresse</translation>
 <translation id="1371806038977523515">Ces paramètres sont contrôlés par :</translation>
@@ -4806,7 +4807,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="5868927042224783176">Interdire pour les pages reauth</translation>
 <translation id="3355936511340229503">Erreur de connexion</translation>
 <translation id="736108944194701898">Vitesse de la souris :</translation>
-<translation id="745374297349407796">Afficher le bouton du mode lecteur sur les pages qui semblent présenter un contenu en version longue</translation>
 <translation id="8371937549687734176">Caster le Bureau ou une fenêtre sur…</translation>
 <translation id="4350711002179453268">Impossible d'établir une connexion sécurisée avec le serveur. Le serveur a peut-être rencontré un problème ou exige un certificat d'authentification du client dont vous ne disposez pas.</translation>
 <translation id="4731422630970790516">Élément d'étagère 3</translation>
@@ -5026,7 +5026,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="6929555043669117778">Continuer à bloquer les fenêtres pop-up</translation>
 <translation id="3508920295779105875">Choisir un autre dossier...</translation>
 <translation id="7903925330883316394">Utilitaire : <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Afficher le bouton du mode lecteur sur les pages présentant des articles avec un balisage structuré</translation>
 <translation id="5549518587357384553">Contrôler si l'élément document.body.scrollTop/scrollLeft dans JavaScript reflète le comportement interopérable standard (activé) ou l'ancien comportement WebKit (désactivé).
         Si l'élément est activé, document.scrollingElement devient document.documentElement. S'il est désactivé, il devient document.body (pour les pages en mode strict).</translation>
 <translation id="904451693890288097">Veuillez saisir la clé d'accès de &quot;<ph name="DEVICE_NAME"/>&quot; :</translation>
@@ -5864,6 +5863,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="6059652578941944813">Hiérarchie des certificats</translation>
 <translation id="3153094071447713741">Fonctionnalités expérimentales des interfaces de saisie</translation>
 <translation id="5729712731028706266">&amp;Afficher</translation>
+<translation id="9170884462774788842">Un autre programme sur votre ordinateur a ajouté un thème qui risque de modifier le fonctionnement de Google Chrome.</translation>
 <translation id="8571108619753148184">Serveur 4</translation>
 <translation id="4508765956121923607">Afficher la s&amp;ource</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>

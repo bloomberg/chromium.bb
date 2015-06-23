@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
 <translation id="8793430725658173476">Copia URL</translation>
-<translation id="1095407227123756519">Aggiungi un account per visualizzare i tuoi segnalibri, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
+<translation id="1095407227123756519">Aggiungi un account per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="8588878054171169263">Salva immagine</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
 <translation id="666268767214822976">Utilizza un servizio di previsione per visualizzare query correlate e siti web popolari durante la digitazione nella barra degli indirizzi</translation>
 <translation id="8275038454117074363">Importa</translation>
 <translation id="2707726405694321444">Aggiorna la pagina</translation>
 <translation id="3303414029551471755">Procedere al download dei contenuti?</translation>
-<translation id="1389974829397082527">Nessun segnalibro qui</translation>
+<translation id="1389974829397082527">Nessun Preferito qui</translation>
 <translation id="6698801883190606802">Gestisci dati sincronizzati</translation>
 <translation id="1657479659644194568">Configura Chrome</translation>
 <translation id="6448273550210938826">Suggerimenti di ricerca e URL</translation>
@@ -47,7 +47,7 @@
 <translation id="5275558766013849309">Le schede saranno insieme alle app recenti.</translation>
 <translation id="8069239273282989646">Dopo la compressione</translation>
 <translation id="1644574205037202324">Cronologia</translation>
-<translation id="4761374747761474835">Seleziona un account per visualizzare i tuoi segnalibri, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
+<translation id="4761374747761474835">Seleziona un account per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="4803910478683254032">Importazione non riuscita</translation>
 <translation id="3485544713029068372">Smart Lock per password</translation>
 <translation id="6999892069268112724">Conferma account Google</translation>
@@ -131,8 +131,8 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8218346974737627104">Conferma accesso</translation>
 <translation id="5832934273103296195">Visualizzazione espansa. Fai clic per comprimere</translation>
-<translation id="8457451314607652708">Importa segnalibri</translation>
-<translation id="6612856669344839356">Salva segnalibro</translation>
+<translation id="8457451314607652708">Importa Preferiti</translation>
+<translation id="6612856669344839356">Salva Preferito</translation>
 <translation id="3350687908700087792">Chiudi tutte le schede di navigazione in incognito</translation>
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="6627583120233659107">Modifica cartella</translation>
@@ -140,7 +140,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="5017989644593831205">Non sei <ph name="NOT_YOU_USER_NAME"/>?</translation>
 <translation id="8997842057643556822">Impossibile creare la directory di download nell'archivio USB.</translation>
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION"/></translation>
-<translation id="6868088497967843822">Accedi per visualizzare i tuoi segnalibri, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
+<translation id="6868088497967843822">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, scheda</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS"/> account</translation>
 <translation id="1272079795634619415">Interrompi</translation>
@@ -151,7 +151,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="5150703642582475397">Unisci schede e app</translation>
 <translation id="5228579091201413441">Abilita sincronizzazione</translation>
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
-<translation id="5719837394786370183">Le pagine visualizzate nelle schede in incognito non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i segnalibri da te creati vengono mantenuti.
+<translation id="5719837394786370183">Le pagine visualizzate nelle schede in incognito non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i Preferiti da te creati vengono mantenuti.
 
 Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione in incognito non consente di nascondere la navigazione al tuo datore di lavoro, al tuo provider di servizi Internet o ai siti web da te visitati.</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
@@ -161,7 +161,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="988938288723502454">Impossibile creare la directory di download nella scheda SD.</translation>
 <translation id="3896036286668839683">Visualizzatore certificati</translation>
 <translation id="8660471606262461360">Da Google Payments</translation>
-<translation id="724999909741939927">Importazione dei segnalibri</translation>
+<translation id="724999909741939927">Importazione dei Preferiti</translation>
 <translation id="1825719650605518411">Esperienza prima esecuzione</translation>
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
@@ -190,14 +190,13 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="7029809446516969842">Password</translation>
 <translation id="5487729733663684359">Gli aggiornamenti di Chrome non sono più supportati per questa versione di Android.</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
-<translation id="2750015191954606595">Inserisci una nota</translation>
 <translation id="1201402288615127009">Avanti</translation>
 <translation id="2414886740292270097">Scuro</translation>
 <translation id="2487368562788861256">Consuma meno dati utilizzando Google per <ph name="BEGIN_LINK"/>ottimizzare le pagine che visiti<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Traduttore</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
-<translation id="3184369589781594823">Importare tutti i segnalibri locali dal browser Android?</translation>
+<translation id="3184369589781594823">Importare tutti i Preferiti locali dal browser Android?</translation>
 <translation id="8562452229998620586">Le password salvate verranno visualizzate qui.</translation>
 <translation id="238909021488141516">Si è verificato un errore durante il download dei contenuti.</translation>
 <translation id="8730621377337864115">Fine</translation>
@@ -265,7 +264,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="7711895876052978264">È stata attivata la modalità a schermo intero del sito.
 Per uscire premi il pulsante Indietro.</translation>
 <translation id="5684874026226664614">Spiacenti. Impossibile tradurre questa pagina.</translation>
-<translation id="4543087392704641517">Titolo del segnalibro</translation>
+<translation id="4543087392704641517">Titolo del Preferito</translation>
 <translation id="1987317783729300807">Account</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="6064211167623632605">Percorso eseguibile</translation>
@@ -283,7 +282,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="6231464350722415003">Consenti JavaScript sui siti web da te specificati e bloccalo per tutti gli altri siti web</translation>
 <translation id="7366340029385295517">Trasmissione su <ph name="SCREEN_NAME"/> in corso</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
-<translation id="1197267115302279827">Sposta i segnalibri</translation>
+<translation id="1197267115302279827">Sposta i Preferiti</translation>
 <translation id="583891442612896534">Chrome non riesce a contattare i server di Google per la compressione dei dati. I salvataggi di dati potrebbero essere limitati.</translation>
 <translation id="4827948050554950725">Aggiungi carta di credito</translation>
 <translation id="2316129865977710310">No, grazie</translation>
@@ -329,7 +328,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="1943432128510653496">Salva password</translation>
 <translation id="4113030288477039509">Gestito dall'amministratore</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
-<translation id="5042680980623431490">Si è verificato un problema durante l'importazione dei segnalibri dal browser Android.</translation>
+<translation id="5042680980623431490">Si è verificato un problema durante l'importazione dei Preferiti dal browser Android.</translation>
 <translation id="1829244130665387512">Trova nella pagina</translation>
 <translation id="4259722352634471385">Navigazione bloccata: <ph name="URL"/></translation>
 <translation id="4148957013307229264">Installazione...</translation>
@@ -346,7 +345,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="6978479750597523876">Reimposta impostazioni traduzione</translation>
 <translation id="2476578072172137802">Impostazioni sito</translation>
 <translation id="6820686453637990663">CVC</translation>
-<translation id="6963766334940102469">Elimina segnalibri</translation>
+<translation id="6963766334940102469">Elimina Preferiti</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS"/> schede aperte</translation>
 <translation id="7925108652071887026">Dati della Compilazione automatica</translation>
 <translation id="3774280986422214650">Se attivi questa funzione, parteciperai a un esperimento che esegue il proxy delle pagine HTTPS tramite i server di Google.</translation>
@@ -359,11 +358,11 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="4351244548802238354">Chiudi finestra di dialogo</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
 <translation id="5899349522111170522">Crea nuovo file</translation>
-<translation id="3158619413803296679">Scegli un segnalibro</translation>
+<translation id="3158619413803296679">Scegli un Preferito</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> eliminato</translation>
 <translation id="7232255641409319872">Consenti le immagini sui siti web da te specificati e bloccale per tutti gli altri siti web</translation>
 <translation id="2360035970720276770">È possibile scaricare soltanto URL http o https</translation>
-<translation id="7926911226829060241">I segnalibri aperti, la cronologia, le password e altri dati sono in fase di sincronizzazione con il tuo account Google.</translation>
+<translation id="7926911226829060241">I Preferiti aperti, la cronologia, le password e altri dati sono in fase di sincronizzazione con il tuo account Google.</translation>
 <translation id="4871370605780490696">Aggiungi preferito</translation>
 <translation id="6570560778840017462">Non uscirai dai tuoi <ph name="BEGIN_LINK"/>account Google<ph name="END_LINK"/></translation>
 <translation id="9063523880881406963">Disattiva Richiedi sito desktop</translation>
@@ -384,7 +383,7 @@ Apri Chrome sul computer, apri il menu e seleziona &quot;Accedi a Chrome…&quot
 <translation id="7191430249889272776">Scheda aperta in background.</translation>
 <translation id="8514577642972634246">Accedi alla modalità di navigazione in incognito</translation>
 <translation id="1056898198331236512">Avviso</translation>
-<translation id="3287852534598822456">Il segnalibro non esiste più. Aggiorna.</translation>
+<translation id="3287852534598822456">Il Preferito non esiste più. Aggiorna.</translation>
 <translation id="7299721129597238157">Elimina preferito</translation>
 <translation id="4885273946141277891">Numero di istanze di Chrome non supportato.</translation>
 <translation id="6575643671698722332">Reimpostazione non riuscita. Verifica che il dispositivo sia online e riprova.</translation>
@@ -392,7 +391,7 @@ Apri Chrome sul computer, apri il menu e seleziona &quot;Accedi a Chrome…&quot
 <translation id="654446541061731451">Seleziona una scheda da trasmettere</translation>
 <translation id="4089831646916293264">Questa funzione potrebbe interferire con l'accesso ai servizi di dati premium forniti dal tuo operatore.</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
-<translation id="9156605176886108508">Nessuna cartella di segnalibri</translation>
+<translation id="9156605176886108508">Nessuna cartella di Preferiti</translation>
 <translation id="4269820728363426813">Copia indirizzo link</translation>
 <translation id="5806294296882899667">Errore caricamento predefinita</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -441,7 +440,6 @@ Le statistiche sull'utilizzo includono informazioni quali preferenze, clic sui p
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="4881695831933465202">Apri</translation>
 <translation id="6512448926095770873">Esci dalla pagina</translation>
-<translation id="6605823718624717484">Modifica segnalibri</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
 <translation id="945632385593298557">Accesso al microfono</translation>
 <translation id="5626134646977739690">Nome:</translation>
@@ -477,7 +475,7 @@ Le statistiche sull'utilizzo includono informazioni quali preferenze, clic sui p
 <translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>
 <translation id="3988213473815854515">La localizzazione è consentita</translation>
-<translation id="1513352483775369820">Segnalibri e cronologia web</translation>
+<translation id="1513352483775369820">Preferiti e cronologia web</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="3003595280608617736">Nessuna scheda SD</translation>
@@ -538,7 +536,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="1709438864123551175">Risparmio dati</translation>
 <translation id="2770465223704140727">Rimuovi dall'elenco</translation>
 <translation id="5210714456814679336">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>
-<translation id="1568822834048182062">I segnalibri, la cronologia, le password e altre impostazioni verranno sincronizzate con il tuo account Google.</translation>
+<translation id="1568822834048182062">I Preferiti, la cronologia, le password e altre impostazioni verranno sincronizzate con il tuo account Google.</translation>
 <translation id="2073235970478114994">Carica immagini</translation>
 <translation id="6027491994609789413">Video in riproduzione</translation>
 <translation id="7561196759112975576">Sempre</translation>

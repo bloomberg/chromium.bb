@@ -259,6 +259,7 @@
 <translation id="42981349822642051">વિસ્તૃત કરો</translation>
 <translation id="7774497835322490043">GDB ડિબગ સ્ટબ સક્ષમ કરો. આ સ્ટાર્ટઅપ પર મૂળ ક્લાઇન્ટ એપ્લિકેશન થોભાવશે અને તેને તેમાં જોડવા માટે nacl-gdb (NaCl SDK પરથી) ની રાહ જોશે.</translation>
 <translation id="2686444421126615064">એકાઉન્ટ જુઓ</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; ઉમેરાયું</translation>
 <translation id="7693221960936265065">શરૂઆતથી</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">નીચેની સાઇટ્સને આ પૃષ્ઠ પર તમારા સ્થાનને ટ્રેક કરવાથી અવરોધિત કરી છે:</translation>
@@ -590,7 +591,7 @@
 <translation id="715487527529576698">પ્રારંભિક ચીની મોડ એ સરળીકૃત ચીની છે</translation>
 <translation id="6522350652862471760">Google પ્રોફાઇલ નામ અને આયકન સક્ષમ કરો</translation>
 <translation id="2164862903024139959">વિયેતનામીસ કીબોર્ડ (TCVN)</translation>
-<translation id="8885197664446363138">સ્માર્ટ લૉક અનુપલબ્ધ છે</translation>
+<translation id="8885197664446363138">Smart Lock અનુપલબ્ધ છે</translation>
 <translation id="1697532407822776718">તમારું બધું સેટ છે!</translation>
 <translation id="8373553483208508744">ટૅબ્સને મ્યૂટ કરો</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટેડ નથી.</translation>
@@ -1020,7 +1021,6 @@
 <translation id="7986039047000333986"><ph name="PRODUCT_NAME"/> માટેનું વિશિષ્ટ સુરક્ષા અપડેટ હમણાં જ લાગુ થયું; તેને પ્રભાવિત કરવા માટે તમારે અત્યારે પુનઃપ્રારંભ કરવું જોઈએ (અમે તમારા ટૅબ્સ પુનર્સ્થાપિત કરીશું).</translation>
 <translation id="2787591391657537328">ફરી શરૂ કરવું સંદર્ભ મેનુ આઇટમનો ઉપયોગ કરીને જે ચાલુ રાખવા માટે અથવા ફરી શરૂ કરવા માટે વિક્ષેપિત કરવામાં આવેલ હોય, તે ડાઉનલોડ્સને મંજૂરી આપો.</translation>
 <translation id="3926862159284741883">WebGL ડ્રાફ્ટ એક્સ્ટેન્શન્સને સક્ષમ કરો</translation>
-<translation id="8347255769289079987">રીડર મોડ બટન ક્યારેય બતાવશો નહીં</translation>
 <translation id="9152722471788855605">સલામત બ્રાઉઝિંગ ઝિપ ફાઇલ વિશ્લેષક</translation>
 <translation id="2537271621194795300">સ્ટાર્ટઅપ્સ</translation>
 <translation id="3636096452488277381">હેલો, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1686,6 +1686,7 @@
 <translation id="7256069811654036843">મને પાછો લો!</translation>
 <translation id="4811502511369621968">અમાન્ય ઇમેઇલ સરનામું. કૃપા કરીને તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="175196451752279553">બંધ કરેલું ટેબ ફરિથી ખોલો</translation>
+<translation id="8602851771975208551">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક એપ્લિકેશન ઉમેરી જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
 <translation id="2655386581175833247">વપરાશકર્તા પ્રમાણપત્ર:</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5435964418642993308">પાછળ જવા માટે એન્ટર અને ઇતિહાસ જોવા માટે સંદર્ભ મેનૂ કી દબાવો</translation>
@@ -1859,7 +1860,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> પર સાઇન ઇન કરો...</translation>
 <translation id="5529098031581368697">'<ph name="APP_NAME"/>' દ્વારા વર્તમાન વૉલપેપર સેટ કરવામાં આવ્યું છે</translation>
 <translation id="5074318175948309511">નવી સેટિંગ્સ પ્રભાવમાં આવે તે પહેલાં આ પૃષ્ઠને ફરીથી લોડ કરવાની જરૂર પડી શકે છે.</translation>
-<translation id="3740150184898623344">દરેક પૃષ્ઠો પર રીડર મોડ બટન દર્શાવો</translation>
 <translation id="3947376313153737208">પસંદગી નથી</translation>
 <translation id="6405640832764359650">Google Payments કાર્ડ સાચવવાનું ચેકબોક્સ સક્ષમ કરો</translation>
 <translation id="1346104802985271895">વિયેતનામીઝ ઇનપુટ મેથડ (ટીઇએલઇએક્સ)</translation>
@@ -4176,7 +4176,7 @@
 <translation id="5469954281417596308">બુકમાર્ક સંચાલક</translation>
 <translation id="106153153543631784">તમારી Chromebook પ્રોફાઇલને અપડેટ કરવા માટે કૃપા કરીને તમારો પાસવર્ડ ફરીથી દાખલ કરો.</translation>
 <translation id="3064388234319122767">લિવ્યંતરણ (zdravo → здраво)</translation>
-<translation id="5425722269016440406">સ્માર્ટ લૉક બંધ કરવા માટે તમારે ઓનલાઇન થવું આવશ્યક છે કારણ કે આ સેટિંગ તમારા ફોન અને અન્ય ઉપકરણો પર સમન્વયિત થાય છે. કૃપા કરીને પહેલા એક નેટવર્કથી કનેક્ટ કરો.</translation>
+<translation id="5425722269016440406">Smart Lock બંધ કરવા માટે તમારે ઓનલાઇન થવું આવશ્યક છે કારણ કે આ સેટિંગ તમારા ફોન અને અન્ય ઉપકરણો પર સમન્વયિત થાય છે. કૃપા કરીને પહેલા એક નેટવર્કથી કનેક્ટ કરો.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="7730494089396812859">મેઘ બેકઅપ વિગતો દર્શાવો</translation>
 <translation id="1143142264369994168">પ્રમાણપત્ર હસ્તાક્ષરકર્તા</translation>
@@ -4795,6 +4795,7 @@
 <translation id="634208815998129842">કાર્ય સંચાલક</translation>
 <translation id="2735698359135166290">રોમાનિયન માનક કીબોર્ડ</translation>
 <translation id="1701062906490865540">આ વ્યક્તિને દૂર કરો</translation>
+<translation id="8475313423285172237">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક એક્સ્ટેંશન ઉમેર્યું જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
 <translation id="4850458635498951714">ઉપકરણ ઉમેરો</translation>
 <translation id="3140353188828248647">સરનામાં બાર પર ફોકસ કરો</translation>
 <translation id="1371806038977523515">આ સેટિંગ્સ આના દ્વારા નિયંત્રિત કરવામાં આવે છે:</translation>
@@ -4807,7 +4808,6 @@
 <translation id="5868927042224783176">પુનઃપ્રમાણન માટે નામંજૂર કરો</translation>
 <translation id="3355936511340229503">કનેક્શન ભૂલ</translation>
 <translation id="736108944194701898">માઉસની ગતિ:</translation>
-<translation id="745374297349407796">લાંબી સ્વરૂપની દેખાતી સામગ્રી ધરાવતા પૃષ્ઠો પર રીડર મોડ બટન દર્શાવો</translation>
 <translation id="8371937549687734176">ડેસ્કટૉપ અથવા વિંડો આની પર કાસ્ટ કરો...</translation>
 <translation id="4350711002179453268">સર્વર સાથે એક સુરક્ષિત કનેક્શન બનાવવામાં અક્ષમ છે. આ સર્વર સાથે કોઈ સમસ્યા હોઈ શકે છે, અથવા તેને માટે ક્લાયંટ પ્રમાણીકરણ પ્રમાણપત્રની આવશ્યકતા હોઈ શકે છે જે તમારી પાસે નથી.</translation>
 <translation id="4731422630970790516">શેલ્ફ આઇટમ 3</translation>
@@ -5026,7 +5026,6 @@
 <translation id="6929555043669117778">પૉપ-અપ્સને અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="3508920295779105875">બીજું ફોલ્ડર પસંદ કરો...</translation>
 <translation id="7903925330883316394">ઉપયોગિતા: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">લેખ સંરચના માર્કઅપ ધરાવતા પૃષ્ઠો પર રીડર મોડ બટન દર્શાવો</translation>
 <translation id="5549518587357384553">JavaScript માં document.body.scrollTop/scrollLeft માનક ઇન્ટરઓપરેબલ વર્તણુંક (સક્ષમ કરાયેલ) અથવા લેગેસી WebKit વર્તણુંક (અક્ષમ કરાયેલ) પ્રતિબિંબિત કરે કે નહીં તેનું નિયંત્રણ કરો.
         સક્ષમ કરાયેલ હોય ત્યારે, document.scrollingElement એ document.documentElement હોય છે, જ્યારે અક્ષમ કરેલ હોય ત્યારે તે document.body (strict-mode પૃષ્ઠો માટે) હોય છે.</translation>
 <translation id="904451693890288097">કૃપા કરીને &quot;<ph name="DEVICE_NAME"/>&quot; માટે પાસકી દાખલ કરો:</translation>
@@ -5860,6 +5859,7 @@
 <translation id="6059652578941944813">પ્રમાણપત્ર હાયરાર્કી</translation>
 <translation id="3153094071447713741">પ્રાયોગિક ઇનપુટ દૃશ્ય સુવિધાઓ.</translation>
 <translation id="5729712731028706266">&amp;જુઓ</translation>
+<translation id="9170884462774788842">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક થીમ ઉમેરી જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
 <translation id="8571108619753148184">સર્વર 4</translation>
 <translation id="4508765956121923607">સ્રો&amp;ત જુઓ</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>

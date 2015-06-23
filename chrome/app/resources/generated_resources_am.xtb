@@ -258,6 +258,7 @@
 <translation id="42981349822642051">ዘርጋ</translation>
 <translation id="7774497835322490043">የGDB ማረም ቁራጭ ያንቁ። ይሄ ጅምር ላይ ቤተኛ ደንበኛ መተግበሪያዎች የሚያቆምና nacl-gdb (ከNaCl SDK የመጣ) ከእሱ ጋር እስኪያያዝ ድረስ ይጠብቃል።</translation>
 <translation id="2686444421126615064">መለያን ይመልከቱ</translation>
+<translation id="9215293857209265904">«<ph name="EXTENSION_NAME"/>» ታክሏል</translation>
 <translation id="7693221960936265065">የጊዜ መጀመሪያ</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">የሚከተለሉት ጣቢያዎች በዚህ ገጽ ላይ አካባቢዎን ከመከታተል ታግደዋል፦</translation>
@@ -1024,7 +1025,6 @@ nil</translation>
 <translation id="7986039047000333986">ልዩ የ<ph name="PRODUCT_NAME"/> ደህንነት ዝማኔ አሁን ተጭኗል፤ አሁን እንዲተገበር ዳግም ማስጀመር አለብዎት (ትሮችዎን እናስመልሳቸዋለን)።</translation>
 <translation id="2787591391657537328">ከቆመበት ቀጥል የሚለውን የአውድ ምናሌ ንጥሉን በመጠቀም የተቋረጡ ውርዶች እንዲቀጥሉ ወይም ዳግም እንዲጀመሩ ይፍቀዱ።</translation>
 <translation id="3926862159284741883">የWebGL ረቂቅ ቅጥያዎችን አንቃ</translation>
-<translation id="8347255769289079987">የአንባቢ ሁነታ አዝራርን በጭራሽ አታሳይ</translation>
 <translation id="9152722471788855605">ደህንነቱ የተጠበቀ አሰሳ ዚፕ ፋይል ተንታኝ</translation>
 <translation id="2537271621194795300">ጅምሮች</translation>
 <translation id="3636096452488277381">እሺ፣ እንዴት ነው <ph name="USER_GIVEN_NAME"/>?</translation>
@@ -1689,6 +1689,7 @@ nil</translation>
 <translation id="7256069811654036843">መልሰኝ!</translation>
 <translation id="4811502511369621968">ልክ ያልሆነ የኢሜይል አድራሻ። እባክዎ ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="175196451752279553">የተ&amp;ዘጋውን ትር ዳግም ክፈት</translation>
+<translation id="8602851771975208551">በኮምፒውተርዎ ላይ ያለ ሌላ ፕሮግራም Chrome የሚሰራበት መንገድ ሊቀይር የሚችል አንድ መተግበሪያ አክሏል።</translation>
 <translation id="2655386581175833247">የተጠቃሚ እውቅና ማረጋገጫ፦</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="5435964418642993308">ለመመለስ enterን፣ ታሪክን ለማየት የአገባበ ምናሌ ቁልፉን ይጫኑ</translation>
@@ -1861,7 +1862,6 @@ nil</translation>
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> ውስጥ ይግቡ...</translation>
 <translation id="5529098031581368697">የአሁኑ ልጣፍ  በ«<ph name="APP_NAME"/>» ነው የተዘጋጀው</translation>
 <translation id="5074318175948309511">አዲሶቹ ቅንብሮች ከመተግበራቸው በፊት ይህ ገጽ ዳግም መጫን ሊኖርበት ይችላል።</translation>
-<translation id="3740150184898623344">የአንባቢ ሁነታ አዝራርን በሁሉም ገጾች ላይ አሳይ</translation>
 <translation id="3947376313153737208">ምርጫ የለም</translation>
 <translation id="6405640832764359650">የGoogle ክፍያዎች ካርድ ቁጠባ አመልካች ሳጥኑን አንቃ</translation>
 <translation id="1346104802985271895">የቪዬትናምኛ ግቤት ስልት (TELEX)</translation>
@@ -4811,6 +4811,7 @@ nil</translation>
 <translation id="634208815998129842">ተግባር አስተዳዳሪ</translation>
 <translation id="2735698359135166290">የሮማኒያኛ መደበኛ የቁልፍ ሰሌዳ</translation>
 <translation id="1701062906490865540">ይህን ሰው አስወግድ</translation>
+<translation id="8475313423285172237">በኮምፒውተርዎ ላይ ያለ ሌላ ፕሮግራም Chrome የሚሰራበት መንገድ ሊቀይር የሚችል አንድ ቅጥያ አክሏል።</translation>
 <translation id="4850458635498951714">መሣሪያ ያክሉ</translation>
 <translation id="3140353188828248647">የአድራሻ አሞሌ ላይ አተኩር</translation>
 <translation id="1371806038977523515">እነዚህን ቅንብሮች የሚቆጣጠረው፦</translation>
@@ -4823,7 +4824,6 @@ nil</translation>
 <translation id="5868927042224783176">ለreauth አትፍቀድ</translation>
 <translation id="3355936511340229503">የግንኙነት ስህተት</translation>
 <translation id="736108944194701898">የመዳፊት ፍጥነት፦</translation>
-<translation id="745374297349407796">ረዥም የቅርጽ ይዘት ሆኖ የሚታየውን የአንባቢ ሁነታ አዝራር በገጾች ላይ አሳይ</translation>
 <translation id="8371937549687734176">ዴስክቶፕን ወይም መስኮትን ውሰድ ወደ...</translation>
 <translation id="4350711002179453268">ከአገልጋዩ ጋር ደህንነቱ የተጠበቀ ግንኙነት ማድረግ አልተቻለም። ይህም የአገልጋዩ ችግር ሊሆን ይችላል፣ ወይም ርስዎ የሌለዎት የተገልጋይ ማረጋገጫ ሰርቲፊኬት ያስፈልገው ይሆናል።</translation>
 <translation id="4731422630970790516">የመደርደሪያ ንጥል 3</translation>
@@ -5044,7 +5044,6 @@ nil</translation>
 <translation id="6929555043669117778">ብቅ-ባዮችን ማገድ ቀጥል</translation>
 <translation id="3508920295779105875">ሌላ አቃፊ ምረጥ…</translation>
 <translation id="7903925330883316394">ፍጆታ፦ <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">ምልክት ተደርጎባቸው ከተዋቀሩ መጣጥፎች ገጾች ላይ የአንባቢ ሁነታ አዝራርን አሳይ</translation>
 <translation id="5549518587357384553">Control whether document.body.scrollTop/scrollLeft in JavaScript reflects the standard interoperable behavior (enabled) or legacy WebKit behavior (disabled).
         When enabled, document.scrollingElement is document.documentElement, when disabled it's document.body (for strict-mode pages).</translation>
 <translation id="904451693890288097">እባክዎ የ«<ph name="DEVICE_NAME"/>» ይለፍ ቁልፍ ያስገቡ፦</translation>
@@ -5889,6 +5888,7 @@ nil</translation>
 <translation id="6059652578941944813">የሰርቲፊኬት ተዋረድ</translation>
 <translation id="3153094071447713741">የሙከራ የግቤት እይታ ባህሪያት</translation>
 <translation id="5729712731028706266">&amp;እይታ</translation>
+<translation id="9170884462774788842">በኮምፒውተርዎ ላይ ያለ ሌላ ፕሮግራም Chrome የሚሰራበት መንገድ ሊቀይር የሚችል አንድ ገጽታ አክሏል።</translation>
 <translation id="8571108619753148184">አገልጋይ 4</translation>
 <translation id="4508765956121923607">ም&amp;ንጭ አሳይ</translation>
 <translation id="5975083100439434680">አሳንስ</translation>

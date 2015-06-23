@@ -12,7 +12,7 @@
 <translation id="166179487779922818">Hasło jest zbyt krótkie.</translation>
 <translation id="2345460471437425338">Nieprawidłowy certyfikat hosta</translation>
 <translation id="3688507211863392146">Zapisywać dane w plikach i folderach otwieranych w aplikacji</translation>
-<translation id="226269835214688456">Jeśli wyłączysz Smart Lock na Chromebooki, nie odblokujesz urządzenia z Chrome, używając telefonu. Będziesz musiał wpisać hasło.</translation>
+<translation id="226269835214688456">Jeśli wyłączysz Smart Lock na Chromebooki, nie odblokujesz urządzenia z Chrome, używając telefonu. Trzeba będzie wpisać hasło.</translation>
 <translation id="8996941253935762404">Na następnej stronie znajdują się szkodliwe programy</translation>
 <translation id="3595596368722241419">Bateria naładowana</translation>
 <translation id="8098352321677019742"><ph name="PRODUCT_NAME"/> – powiadomienia</translation>
@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Rozwiń</translation>
 <translation id="7774497835322490043">Włącz kod pośredniczący debugowania przy użyciu GDB. Spowoduje to zatrzymanie aplikacji klienta natywnego przy uruchomieniu i oczekiwanie na przyłączenie się do niej debugera nacl-gdb (z pakietu NaCL SDK).</translation>
 <translation id="2686444421126615064">Wyświetl konto</translation>
+<translation id="9215293857209265904">Dodano „<ph name="EXTENSION_NAME"/>”</translation>
 <translation id="7693221960936265065">od samego początku</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Następującym witrynom zablokowano możliwość śledzenia Twojej lokalizacji na tej stronie:</translation>
@@ -281,7 +282,7 @@
 <translation id="558170650521898289">Weryfikacja sprzętowych sterowników systemu Microsoft Windows</translation>
 <translation id="4395129973926795186">Od <ph name="START_DATE"/> do <ph name="END_DATE"/></translation>
 <translation id="98515147261107953">Poziomo</translation>
-<translation id="7334190995941642545">Inteligentna blokada jest obecnie niedostępna. Spróbuj ponownie później.</translation>
+<translation id="7334190995941642545">Smart Lock jest obecnie niedostępny. Spróbuj ponownie później.</translation>
 <translation id="1303101771013849280">Plik HTML z zakładkami</translation>
 <translation id="8974161578568356045">Wykrywaj automatycznie</translation>
 <translation id="1549045574060481141">Potwierdź pobranie</translation>
@@ -579,7 +580,7 @@
 <translation id="715487527529576698">Początkowy tryb wprowadzania języka chińskiego: chiński uproszczony</translation>
 <translation id="6522350652862471760">Włącz nazwę profilu i ikonę Google</translation>
 <translation id="2164862903024139959">Klawiatura wietnamska (TCVN)</translation>
-<translation id="8885197664446363138">Inteligentna blokada jest niedostępna</translation>
+<translation id="8885197664446363138">Smart Lock jest niedostępny</translation>
 <translation id="1697532407822776718">Wszystko gotowe.</translation>
 <translation id="8373553483208508744">Wycisz karty</translation>
 <translation id="8703575177326907206">Połączenie z witryną <ph name="DOMAIN"/> nie jest szyfrowane.</translation>
@@ -1006,7 +1007,6 @@ Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="7986039047000333986">Właśnie została zastosowana specjalna aktualizacja zabezpieczeń przeglądarki <ph name="PRODUCT_NAME"/>. Uruchom teraz przeglądarkę ponownie, aby zmiany zostały wprowadzone (karty zostaną przywrócone).</translation>
 <translation id="2787591391657537328">Po przerwaniu pobrań zezwól na ich kontynuowanie lub ponowne uruchomienie przy użyciu elementu menu kontekstowego Wznów.</translation>
 <translation id="3926862159284741883">Włącz rozszerzenia WebGL w wersjach roboczych</translation>
-<translation id="8347255769289079987">Nigdy nie pokazuj przycisku trybu czytnika</translation>
 <translation id="9152722471788855605">Analizator plików ZIP w Bezpiecznym przeglądaniu</translation>
 <translation id="2537271621194795300">Uruchomienia</translation>
 <translation id="3636096452488277381">Cześć <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1669,6 +1669,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="7256069811654036843">Zabierz mnie stąd!</translation>
 <translation id="4811502511369621968">Nieprawidłowy adres e-mail. Sprawdź wpisane informacje i spróbuj ponownie.</translation>
 <translation id="175196451752279553">Prz&amp;ywróć zamkniętą kartę</translation>
+<translation id="8602851771975208551">Inny program na Twoim komputerze dodał aplikację, która może zmienić działanie Chrome.</translation>
 <translation id="2655386581175833247">Certyfikat użytkownika:</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5435964418642993308">Naciśnij klawisz Enter, aby przejść z powrotem, lub klawisz menu kontekstowego, aby wyświetlić historię</translation>
@@ -1841,7 +1842,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="1901377140875308934">Zaloguj się w <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Aktualna tapeta została ustawiona przez aplikację „<ph name="APP_NAME"/>”</translation>
 <translation id="5074318175948309511">Aby nowe ustawienia zaczęły działać, być może trzeba odświeżyć tę stronę.</translation>
-<translation id="3740150184898623344">Pokazuj przycisk trybu czytnika na wszystkich stronach</translation>
 <translation id="3947376313153737208">Nie wybrano</translation>
 <translation id="6405640832764359650">Włącz pole zapisywania kart w Google Payments</translation>
 <translation id="1346104802985271895">wietnamski (TELEX)</translation>
@@ -2061,7 +2061,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="158917669717260118">Nie można wczytać strony internetowej, ponieważ komputer przeszedł w tryb uśpienia lub hibernacji. Gdy to następuje, połączenia sieciowe są zamykane, a nowe żądania kończą się niepowodzeniem. Ponowne załadowanie strony powinno rozwiązać problem.</translation>
 <translation id="6316671927443834085">Nie można odłączyć od urządzenia „<ph name="DEVICE_NAME"/>”.</translation>
 <translation id="1962233722219655970">Ta strona używa aplikacji klienta natywnego, która nie działa na Twoim komputerze.</translation>
-<translation id="5458733660263868683">Jeśli Twój telefon znajduje się w pobliżu, nie używaj inteligentnej blokady, która umożliwia odblokowanie Chromebooka. Jeśli jesteś właścicielem urządzenia, inteligentna blokada zostanie wyłączona również na ekranie logowania.</translation>
+<translation id="5458733660263868683">Jeśli Twój telefon znajduje się w pobliżu, nie używaj funkcji Smart Lock, która umożliwia odblokowanie Chromebooka. Jeśli jesteś właścicielem urządzenia, Smart Lock zostanie wyłączony również na ekranie logowania.</translation>
 <translation id="1108685299869803282">Ponad 80% osób, które widzą to ostrzeżenie, wybiera bezpieczeństwo zamiast ryzykować narażenie się na działanie złośliwego oprogramowania. Jeśli jednak rozumiesz zagrożenie, możesz <ph name="BEGIN_LINK"/>odwiedzić tę niebezpieczną stronę<ph name="END_LINK"/>, zanim niebezpieczne programy zostaną usunięte.</translation>
 <translation id="219008588003277019">Moduł klienta natywnego: <ph name="NEXE_NAME"/></translation>
 <translation id="8228447825257396644">Wyłącz klawiaturę z widokiem wprowadzania w stylu Material Design.</translation>
@@ -2892,12 +2892,12 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="1122960773616686544">Nazwa zakładki</translation>
 <translation id="5966707198760109579">Tydzień</translation>
 <translation id="7854323427075506422">Wyłącz proces programu do rozpakowywania plików ZIP używającego interfejsu API dostawcy systemu plików.</translation>
-<translation id="4635114802498986446">Włącza ustawienie funkcji Smart Lock, które umożliwia odblokowane urządzenia tylko wtedy, gdy Twój telefon znajduje się bardzo blisko (mniej więcej na długość ramienia) urządzenia z Chrome.</translation>
+<translation id="4635114802498986446">Włącza ustawienie funkcji Smart Lock, które umożliwia odblokowane urządzenia tylko wtedy, gdy Twój telefon znajduje się bardzo blisko (mniej więcej na długość ramienia) urządzenia z systemem Chrome.</translation>
 <translation id="7371490661692457119">Domyślna szerokość kafelków</translation>
 <translation id="5148652308299789060">Wyłącz programowy rasteryzator 3D</translation>
 <translation id="9205143043463108573">Umieszcza Menu z aplikacjami na środku ekranu i nadaje mu orientację poziomą.</translation>
 <translation id="7996005831155352675">Włącz autouzupełnianie po jednym kliknięciu</translation>
-<translation id="870112442358620996">Proponuj zapisywanie haseł w Smart Lock Google do haseł.</translation>
+<translation id="870112442358620996">Proponuj zapisywanie haseł w Google Smart Lock na hasła.</translation>
 <translation id="1414648216875402825">Aktualizujesz <ph name="PRODUCT_NAME"/> do niestabilnej wersji zawierającej funkcje, nad którymi wciąż pracujemy. Będą występować awarie i nieoczekiwane błędy. Zachowaj ostrożność.</translation>
 <translation id="8382913212082956454">Kopiuj adres &amp;e-mail</translation>
 <translation id="7887192723714330082">Reaguje na „Ok Google”, gdy ekran jest włączony i odblokowany</translation>
@@ -3588,7 +3588,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="4756388243121344051">&amp;Historia</translation>
 <translation id="7614030880636783720">Wi-Fi i komórkowa transmisja danych są niedostępne. Strona wczyta się po połączeniu z siecią.</translation>
 <translation id="1146673768181266552">Identyfikator awarii: <ph name="CRASH_ID"/> (<ph name="CRASH_LOCAL_ID"/>)</translation>
-<translation id="3544347428588533940">Funkcja Smart Lock jest prawie gotowa do użycia</translation>
+<translation id="3544347428588533940">Smart Lock jest prawie gotowy do użycia</translation>
 <translation id="8044899503464538266">Powoli</translation>
 <translation id="3789841737615482174">Zainstaluj</translation>
 <translation id="4782449893814226250">Zapytałeś rodziców, czy możesz wejść na tę stronę.</translation>
@@ -3630,7 +3630,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="1464258312790801189">Twoje konta</translation>
 <translation id="163309982320328737">Początkowa szerokość znaków: pełna</translation>
 <translation id="6596092346130528198">Czy to oczekiwana strona nowej karty?</translation>
-<translation id="3926002189479431949">Telefon powiązany z funkcją Smart Lock został zmieniony</translation>
+<translation id="3926002189479431949">Telefon z funkcją Smart Lock został zmieniony</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="7631887513477658702">&amp;Zawsze otwieraj pliki tego typu</translation>
 <translation id="3858027520442213535">Zaktualizuj datę i godzinę</translation>
@@ -4000,12 +4000,12 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="1859234291848436338">Kierunek pisania</translation>
 <translation id="5038625366300922036">Zobacz więcej...</translation>
 <translation id="8437209419043462667">amerykański</translation>
-<translation id="3172213052701798825">Smart Lock Google do haseł</translation>
+<translation id="3172213052701798825">Smart Lock Google na hasła</translation>
 <translation id="5045550434625856497">Nieprawidłowe hasło</translation>
 <translation id="6397592254427394018">Otwórz wszystkie zakładki w oknie &amp;incognito</translation>
 <translation id="8155481074575809396">Po włączeniu tekst jest renderowany z podpisanymi polami odległości, a nie z użyciem masek alfa map bitowych.</translation>
 <translation id="2453860139492968684">Zakończ</translation>
-<translation id="2168409157521005492">Logowanie się za pomocą Google Smart Lock jako „<ph name="FULL_NAME"/>”</translation>
+<translation id="2168409157521005492">Logowanie za pomocą Google Smart Lock jako „<ph name="FULL_NAME"/>”</translation>
 <translation id="756445078718366910">Otwórz okno przeglądarki</translation>
 <translation id="6132383530370527946">Przeczytaj umowę</translation>
 <translation id="9033780830059217187">Serwer proxy jest egzekwowany przez rozszerzenie.</translation>
@@ -4148,7 +4148,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="5469954281417596308">Menedżer zakładek</translation>
 <translation id="106153153543631784">Wpisz ponownie hasło, by zaktualizować swój profil na Chromebooku.</translation>
 <translation id="3064388234319122767">Transliteracja (zdravo → здраво)</translation>
-<translation id="5425722269016440406">Inteligentna blokada jest synchronizowana z Twoim telefonem i innymi urządzeniami, dlatego by wyłączyć to ustawienie, musisz być online. Połącz się z siecią.</translation>
+<translation id="5425722269016440406">Smart Lock jest synchronizowany z Twoim telefonem i innymi urządzeniami, dlatego by wyłączyć to ustawienie, musisz być online. Połącz się z siecią.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="7730494089396812859">Pokaż szczegóły kopii zapasowej w chmurze</translation>
 <translation id="1143142264369994168">Podmiot podpisujący certyfikat</translation>
@@ -4552,7 +4552,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="8434480141477525001">Port debugowania NaCl</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>
 <translation id="1979444449436715782">Zrzut karty z niższą rozdzielczością.</translation>
-<translation id="7002055706763150362">Aby skonfigurować Smart Lock na Chromebooki, Google musi mieć pewność, że jesteś tym, za kogo się podajesz. Najpierw wpisz hasło.</translation>
+<translation id="7002055706763150362">Aby skonfigurować Smart Lock na Chromebooki, Google musi mieć pewność, że jesteś osobą, za którą się podajesz. Najpierw wpisz hasło.</translation>
 <translation id="8579549103199280730">Pytaj (domyślnie)</translation>
 <translation id="1330145147221172764">Włącz klawiaturę ekranową</translation>
 <translation id="8925458182817574960">&amp;Ustawienia</translation>
@@ -4601,7 +4601,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="9203478404496196495">Wyłącz wyciszenie karty</translation>
 <translation id="2143778271340628265">Ręczna konfiguracja serwera proxy</translation>
 <translation id="8888432776533519951">Kolor:</translation>
-<translation id="5247176778442128277">Wyłącz inteligentną blokadę</translation>
+<translation id="5247176778442128277">Wyłącz funkcję Smart Lock</translation>
 <translation id="5294529402252479912">Aktualizuj program Adobe Reader teraz</translation>
 <translation id="79962507603257656">Stan pobierania w Centrum powiadomień</translation>
 <translation id="2231990265377706070">Wykrzyknik</translation>
@@ -4765,6 +4765,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="634208815998129842">Menedżer zadań</translation>
 <translation id="2735698359135166290">Standardowa klawiatura rumuńska</translation>
 <translation id="1701062906490865540">Usuń tę osobę</translation>
+<translation id="8475313423285172237">Inny program na Twoim komputerze dodał rozszerzenie, które może zmienić działanie Chrome.</translation>
 <translation id="4850458635498951714">Dodaj urządzenie</translation>
 <translation id="3140353188828248647">Ustaw fokus na pasek adresu</translation>
 <translation id="1371806038977523515">Te ustawienia są kontrolowane przez:</translation>
@@ -4777,7 +4778,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="5868927042224783176">Nie zezwalaj na używanie do ponownego uwierzytelnienia</translation>
 <translation id="3355936511340229503">Błąd połączenia</translation>
 <translation id="736108944194701898">Szybkość myszy:</translation>
-<translation id="745374297349407796">Pokazuj przycisk trybu czytnika na stronach zawierających długie materiały</translation>
 <translation id="8371937549687734176">Prześlij pulpit lub okno na...</translation>
 <translation id="4350711002179453268">Nie można nawiązać bezpiecznego połączenia z serwerem. To może być problem z serwerem lub wymagany jest certyfikat uwierzytelniania klienta, którego nie masz.</translation>
 <translation id="4731422630970790516">3 element na półce</translation>
@@ -4997,7 +4997,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="6929555043669117778">Nadal blokuj wyskakujące okienka</translation>
 <translation id="3508920295779105875">Wybierz inny folder...</translation>
 <translation id="7903925330883316394">Narzędzie: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Pokazuj przycisk trybu czytnika na stronach zawierających znacznik struktury artykułu</translation>
 <translation id="5549518587357384553">Określa, czy metoda document.body.scrollTop/scrollLeft w JavaScripcie ma być interpretowana w sposób standardowy i interoperacyjny (opcja włączona) czy zgodnie ze starszą wersją WebKit (opcja wyłączona).
         Po włączeniu tej opcji metoda document.scrollingElement jest interpretowana jako document.documentElement, a po jej wyłączeniu jako document.body (dla stron w trybie ścisłym).</translation>
 <translation id="904451693890288097">Wpisz klucz urządzenia „<ph name="DEVICE_NAME"/>”:</translation>
@@ -5118,7 +5117,7 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="8677914765885474883">Ostrzeżenie: dane nie są agregowane. Może to powodować wolne działanie strony.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="3551117997325569860">Aby zmienić proxy, włącz ustawienie „<ph name="USE_SHARED_PROXIES"/>”.</translation>
-<translation id="2810731435681289055">Gdy następnym razem ten <ph name="DEVICE_TYPE"/> zostanie odblokowany, inteligentna blokada się zaktualizuje. Dzięki temu, gdy zechcesz odblokować urządzenie, wystarczy, że klikniesz swoje zdjęcie.</translation>
+<translation id="2810731435681289055">Gdy następnym razem ten <ph name="DEVICE_TYPE"/> zostanie odblokowany, Smart Lock się zaktualizuje. Dzięki temu, gdy zechcesz odblokować urządzenie, wystarczy, że klikniesz swoje zdjęcie.</translation>
 <translation id="6110413515502722199">Po ustawieniu tej opcji logowanie odbywa się za pomocą starszego procesu GAIA zamiast nowego, opartego na WebView.</translation>
 <translation id="6268747994388690914">Importuj zakładki z pliku HTML</translation>
 <translation id="6096047740730590436">Otwórz zmaksymalizowane</translation>
@@ -5771,7 +5770,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="9111742992492686570">Pobierz krytyczną aktualizację zabezpieczeń</translation>
 <translation id="1979280758666859181">Przechodzisz na kanał, w którym <ph name="PRODUCT_NAME"/> jest w starszej wersji. Zmiana nastąpi wtedy, gdy wersja na wybranym kanale będzie zgodna z tą zainstalowaną na Twoim urządzeniu.</translation>
 <translation id="304009983491258911">Zmień PIN karty SIM</translation>
-<translation id="7556033326131260574">Inteligentna blokada nie mogła zweryfikować Twojego konta. Wpisz hasło, by uzyskać dostęp do urządzenia.</translation>
+<translation id="7556033326131260574">Smart Lock nie mógł zweryfikować Twojego konta. Wpisz hasło, by uzyskać dostęp do urządzenia.</translation>
 <translation id="8600929685092827187">Wybudzanie pakietami</translation>
 <translation id="2045969484888636535">Nadal blokuj pliki cookie</translation>
 <translation id="8131740175452115882">Potwierdź</translation>
@@ -5830,6 +5829,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="6059652578941944813">Hierarchia certyfikatów</translation>
 <translation id="3153094071447713741">Eksperymentalne funkcje widoku wprowadzania danych.</translation>
 <translation id="5729712731028706266">&amp;Widok</translation>
+<translation id="9170884462774788842">Inny program na Twoim komputerze dodał motyw, który może zmienić działanie Chrome.</translation>
 <translation id="8571108619753148184">Serwer 4</translation>
 <translation id="4508765956121923607">Wyświetl ź&amp;ródło</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>

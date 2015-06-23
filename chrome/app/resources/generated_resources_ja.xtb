@@ -255,6 +255,7 @@
 <translation id="42981349822642051">展開</translation>
 <translation id="7774497835322490043">GDB デバッグ スタブを有効にします。これにより、起動時にネイティブ クライアント アプリケーションは停止し、nacl-gdb（NaCl SDK）アプリケーションが接続するまで待ちます。</translation>
 <translation id="2686444421126615064">アカウントを表示</translation>
+<translation id="9215293857209265904">「<ph name="EXTENSION_NAME"/>」が追加されました</translation>
 <translation id="7693221960936265065">すべて</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">以下のサイトは、このページ内であなたの現在地を追跡できないようブロックされています:</translation>
@@ -1007,7 +1008,6 @@
 <translation id="7986039047000333986"><ph name="PRODUCT_NAME"/> の特別なセキュリティ アップデートが適用されました。反映するには今すぐ再起動してください（タブは復元されます）。</translation>
 <translation id="2787591391657537328">コンテキスト メニューの [再開] を使用して、中断されたダウンロードの続行、再開を許可します。</translation>
 <translation id="3926862159284741883">WebGL ドラフト拡張機能を有効にする</translation>
-<translation id="8347255769289079987">リーダーモード ボタンを表示しない</translation>
 <translation id="9152722471788855605">セーフ ブラウジング Zip ファイル アナライザー</translation>
 <translation id="2537271621194795300">起動</translation>
 <translation id="3636096452488277381">こんにちは、<ph name="USER_GIVEN_NAME"/> さん。</translation>
@@ -1671,6 +1671,7 @@
 <translation id="7256069811654036843">安全なページに戻る</translation>
 <translation id="4811502511369621968">メール アドレスが無効です。確認してから、もう一度お試しください。</translation>
 <translation id="175196451752279553">閉じたタブを開く(&amp;R)</translation>
+<translation id="8602851771975208551">パソコン上の別のプログラムにより、Chrome の動作方法を変更する可能性のあるアプリが追加されました。</translation>
 <translation id="2655386581175833247">ユーザー証明書:</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5435964418642993308">Enter キーを押すと前に戻り、コンテキスト メニュー キーを押すと履歴が表示されます</translation>
@@ -1844,7 +1845,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> にログイン...</translation>
 <translation id="5529098031581368697">現在の壁紙は「<ph name="APP_NAME"/>」により設定されています</translation>
 <translation id="5074318175948309511">新しい設定を有効にするには、ページの再読み込みが必要な可能性があります。</translation>
-<translation id="3740150184898623344">すべてのページにリーダーモード ボタンを表示する</translation>
 <translation id="3947376313153737208">未選択</translation>
 <translation id="6405640832764359650">Google ペイメント カードの保存チェックボックスを有効にする</translation>
 <translation id="1346104802985271895">ベトナム語の入力方法（TELEX）</translation>
@@ -4114,7 +4114,7 @@
 <translation id="6374100501221763867">ハードウェア アクセラレーションによる動画デコードを無効にする</translation>
 <translation id="9101691533782776290">アプリを起動</translation>
 <translation id="4057896668975954729">ストアで見る</translation>
-<translation id="7477347901712410606">パスフレーズをお忘れの場合、<ph name="BEGIN_LINK"/>Google ダッシュボード<ph name="END_LINK"/>から同期を停止してリセットしてください。</translation>
+<translation id="7477347901712410606">パスフレーズをお忘れの場合は、<ph name="BEGIN_LINK"/>Google ダッシュボード<ph name="END_LINK"/>から同期の停止とリセットを行ってください。</translation>
 <translation id="2262903407161221567">一部のユーザー インターフェース要素で、タッチ操作に対して視覚的なフィードバックが返されます。</translation>
 <translation id="4677772697204437347">GPU メモリ</translation>
 <translation id="3085235303151103497">パッケージ化されたアプリのデバッグの有効化。</translation>
@@ -4786,6 +4786,7 @@
 <translation id="634208815998129842">タスク マネージャ</translation>
 <translation id="2735698359135166290">ルーマニア語標準キーボード</translation>
 <translation id="1701062906490865540">このユーザーを削除</translation>
+<translation id="8475313423285172237">パソコン上の別のプログラムにより、Chrome の動作方法を変更する可能性のある拡張機能が追加されました。</translation>
 <translation id="4850458635498951714">デバイスを追加</translation>
 <translation id="3140353188828248647">アドレスバーにフォーカスを移す</translation>
 <translation id="1371806038977523515">これらの設定は次の拡張機能によって制御されています:</translation>
@@ -4798,7 +4799,6 @@
 <translation id="5868927042224783176">再認証を許可しない</translation>
 <translation id="3355936511340229503">接続エラー</translation>
 <translation id="736108944194701898">マウスの速度:</translation>
-<translation id="745374297349407796">長文コンテンツと認識されたページにリーダーモード ボタンを表示する</translation>
 <translation id="8371937549687734176">デスクトップまたはウィンドウをキャスト...</translation>
 <translation id="4350711002179453268">サーバーとの安全な接続を確立できません。サーバー側に問題があるか、サーバーが必要とするクライアント認証証明書を所持していない可能性があります。</translation>
 <translation id="4731422630970790516">シェルフ アイテム 3</translation>
@@ -5019,7 +5019,6 @@
 <translation id="6929555043669117778">ポップアップを引き続きブロックする</translation>
 <translation id="3508920295779105875">別のフォルダを選択...</translation>
 <translation id="7903925330883316394">ユーティリティ: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">構造化マークアップ記事のあるページにリーダーモード ボタンを表示する</translation>
 <translation id="5549518587357384553">JavaScript の document.body.scrollTop / scrollLeft に、標準の相互運用可能な動作（有効）または以前の WebKit の動作（無効）を反映させるかどうかを制御します。
 有効にした場合、document.scrollingElement は document.documentElement となり、無効にした場合、document.body（strict モードのページに適用）となります。</translation>
 <translation id="904451693890288097">「<ph name="DEVICE_NAME"/>」のパスキーを入力してください:</translation>
@@ -5763,7 +5762,7 @@
 <translation id="5826507051599432481">一般名（CN）</translation>
 <translation id="8914326144705007149">極大</translation>
 <translation id="5154702632169343078">サブジェクト</translation>
-<translation id="2817861546829549432">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがリクエストに応じるかどうか、およびリクエストがどう解釈されるかによって異なります。たとえば、一部のウェブサイトでは、その閲覧者のウェブサイト アクセス履歴を基にした広告表示を行わない、という対応をしています。今後もたとえば、セキュリティの向上、そのサイト上のコンテンツ、サービス、広告、おすすめの提供、レポート統計の生成のために、多くのウェブサイトが閲覧データの収集と使用を続けるものと思われます。</translation>
+<translation id="2817861546829549432">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがリクエストに応じるかどうか、およびリクエストがどう解釈されるかによって異なります。たとえば、一部のウェブサイトでは、その閲覧者のウェブサイト アクセス履歴を基にした広告表示を行わない、という対応をしています。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、コンテンツ、サービス、広告、ウェブサイトのおすすめ情報の提供、レポート統計情報の作成などにこれらのデータが利用されます。</translation>
 <translation id="5228076606934445476">デバイスに問題があります。このエラーから回復するには、デバイスを再起動して、もう一度お試しください。</translation>
 <translation id="8241806945692107836">デバイスの設定を確認しています...</translation>
 <translation id="2273562597641264981">事業者:</translation>
@@ -5856,6 +5855,7 @@
 <translation id="6059652578941944813">証明書の階層</translation>
 <translation id="3153094071447713741">試験運用版の入力ビュー機能。</translation>
 <translation id="5729712731028706266">表示(&amp;V)</translation>
+<translation id="9170884462774788842">パソコン上の別のプログラムにより、Chrome の動作方法を変更する可能性のあるテーマが追加されました。</translation>
 <translation id="8571108619753148184">サーバー 4</translation>
 <translation id="4508765956121923607">ソースを表示(&amp;O)</translation>
 <translation id="5975083100439434680">縮小する</translation>

@@ -48,7 +48,7 @@
 <translation id="8069239273282989646">Poscompresión</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="4761374747761474835">Selecciona una cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
-<translation id="4803910478683254032">Error al importar</translation>
+<translation id="4803910478683254032">Error al importar elemento</translation>
 <translation id="3485544713029068372">Smart Lock para contraseñas</translation>
 <translation id="6999892069268112724">Confirmar la cuenta de Google</translation>
 <translation id="1446450296470737166">Control de dispositivos MIDI</translation>
@@ -111,7 +111,7 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="6159335304067198720"><ph name="PERCENT"/> de ahorro de datos</translation>
 <translation id="1086169178231554178">Tarjeta SD no disponible</translation>
-<translation id="2816165854387457183">Conexión lenta detectada</translation>
+<translation id="2816165854387457183">Se detectó una conexión lenta.</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
 <translation id="2060102051813087825">Permite acceder automáticamente a los sitios web con las credenciales almacenadas (cuando esta función está desactivada, se te solicitará verificación antes de acceder a un sitio web).</translation>
 <translation id="2498359688066513246">Ayuda y comentarios</translation>
@@ -190,7 +190,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="5487729733663684359">Las actualizaciones de Chrome ya no son compatibles con esta versión de Android.</translation>
 <translation id="5100237604440890931">Contraído; haz clic para expandir.</translation>
-<translation id="2750015191954606595">Ingresar una nota</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2487368562788861256">Gasta menos en tu plan de datos al usar Google para <ph name="BEGIN_LINK"/>optimizar las páginas que visitas<ph name="END_LINK"/>.</translation>
@@ -206,7 +205,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="8035133914807600019">Nueva carpeta…</translation>
 <translation id="138361230106469022">Hola, <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
-<translation id="5771382037724542929">¿Quieres reemplazar el <ph name="FILE_NAME"/> existente en <ph name="DIRECTORY_NAME"/>?</translation>
+<translation id="5771382037724542929">¿Quieres reemplazar el archivo <ph name="FILE_NAME"/> existente en <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Error al sincronizar</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="9219103736887031265">Imágenes</translation>
@@ -364,16 +363,16 @@ Para salir de esta vista, presiona el botón Atrás.</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> borrado</translation>
 <translation id="7232255641409319872">Admite las imágenes de los sitios web que especifiques a la vez que las bloquea en el resto de la Web.</translation>
 <translation id="2360035970720276770">Solo se pueden descargar URL &quot;http&quot; o &quot;https&quot;.</translation>
-<translation id="7926911226829060241">Se están sincronizando los marcadores abiertos, el historial, las contraseñas y más con tu cuenta de Google.</translation>
+<translation id="7926911226829060241">Se están sincronizando los marcadores abiertos, el historial, las contraseñas y más elementos con tu cuenta de Google.</translation>
 <translation id="4871370605780490696">Agregar marcador</translation>
 <translation id="6570560778840017462">No saldrás de tus <ph name="BEGIN_LINK"/>cuentas de Google<ph name="END_LINK"/>.</translation>
-<translation id="9063523880881406963">Desactivar Solicitar versión de escritorio</translation>
+<translation id="9063523880881406963">Desactivar la opción para solicitar versión de escritorio</translation>
 <translation id="5414836363063783498">Verificando…</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK"/>Configuración<ph name="END_LINK"/>.</translation>
 <translation id="4970484396410298643">Accede aquí a las pestañas que abriste en la computadora.
 
 Abre Chrome en la computadora, accede al menú y selecciona &quot;Acceder a Chrome…&quot;.</translation>
-<translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB"/>.</translation>
+<translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Sin controlar</translation>
 <translation id="2699916814609764774">Ruta del perfil</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
@@ -414,7 +413,7 @@ Abre Chrome en la computadora, accede al menú y selecciona &quot;Acceder a Chro
 <translation id="7363354739009474003">Cargando &quot;<ph name="VIDEO_TITLE"/>&quot;</translation>
 <translation id="5712189971979076230">Ayúdanos a establecer prioridades entre las características y las mejoras en las que debemos trabajar: envía información a Google acerca de los archivos, las aplicaciones y los servicios en ejecución cuando se produce un bloqueo.
 
-        Las estadísticas de uso incluyen información, como las preferencias, los clics en los botones y el uso de memoria. No se incluyen las URL de las páginas web ni ninguna información personal. Los informes de fallos incluyen la información del sistema en el momento del bloqueo y podrían contener URL de páginas web o información personal, según lo que haya ocurrido en el momento del bloqueo.</translation>
+Las estadísticas de uso incluyen información, como las preferencias, los clics en los botones y el uso de memoria. No se incluyen las URL de las páginas web ni ninguna información personal. Los informes de fallos incluyen la información del sistema en el momento del bloqueo y podrían contener URL de páginas web o información personal, según lo que haya ocurrido en el momento del bloqueo.</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="7400448254438078120">No se puede transmitir el video debido a las restricciones del sitio.</translation>
 <translation id="4271185234001491831">Nunca traducir <ph name="LANGUAGE"/></translation>
@@ -442,7 +441,6 @@ Abre Chrome en la computadora, accede al menú y selecciona &quot;Acceder a Chro
 <translation id="9065203028668620118">Editar</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
-<translation id="6605823718624717484">Editar marcadores</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
 <translation id="945632385593298557">Acceso al micrófono</translation>
 <translation id="5626134646977739690">Nombre:</translation>
@@ -529,7 +527,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="5916664084637901428">Activada</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER"/> de <ph name="TOTAL_RESULTS"/></translation>
 <translation id="6965382102122355670">Aceptar</translation>
-<translation id="2038563949887743358">Activar Solicitar versión de escritorio</translation>
+<translation id="2038563949887743358">Activar la opción para solicitar versión de escritorio</translation>
 <translation id="4440256989292146959">Navega más y gasta menos</translation>
 <translation id="4023950129927433024">Si olvidaste tu frase de contraseña, detén y restablece la sincronización mediante el <ph name="BEGIN_LINK"/>Panel de control de Google<ph name="END_LINK"/>.</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>

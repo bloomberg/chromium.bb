@@ -254,6 +254,7 @@
 <translation id="42981349822642051">Espandi</translation>
 <translation id="7774497835322490043">Consente di attivare lo stub di debug GDB. Verrà interrotta un'applicazione Native Client all'avvio e si attenderà nacl-gdb (dall'SDK NaCl) per aggiungerlo.</translation>
 <translation id="2686444421126615064">Visualizza account</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; aggiunta</translation>
 <translation id="7693221960936265065">tutto</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Il monitoraggio della tua posizione da parte dei seguenti siti è stato bloccato su questa pagina:</translation>
@@ -996,7 +997,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="7986039047000333986">È stato appena applicato un aggiornamento di sicurezza speciale per <ph name="PRODUCT_NAME"/>; è necessario riavviare ora affinché abbia effetto (le schede verranno ripristinate).</translation>
 <translation id="2787591391657537328">Consente di continuare o riavviare i download che sono stati interrotti utilizzando la voce del menu contestuale Riprendi.</translation>
 <translation id="3926862159284741883">Attiva estensioni bozza WebGL</translation>
-<translation id="8347255769289079987">Non mostrare mai il pulsante Modalità Reader</translation>
 <translation id="9152722471788855605">Safe Browsing Zip File Analyzer</translation>
 <translation id="2537271621194795300">Avvii</translation>
 <translation id="3636096452488277381">Salve <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1657,6 +1657,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME"/> pu�
 <translation id="7256069811654036843">Riportami indietro.</translation>
 <translation id="4811502511369621968">Indirizzo email non valido. Controlla e riprova.</translation>
 <translation id="175196451752279553">R&amp;iapri scheda chiusa</translation>
+<translation id="8602851771975208551">Un altro programma sul computer ha aggiunto un'applicazione che potrebbe modificare il funzionamento di Chrome.</translation>
 <translation id="2655386581175833247">Certificato utente:</translation>
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5435964418642993308">Premi Invio per tornare indietro, il tasto del menu contestuale per visualizzare la cronologia</translation>
@@ -1829,7 +1830,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni i
 <translation id="1901377140875308934">Accedi a <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Lo sfondo attuale è stato impostato da &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Potrebbe essere necessario ricaricare la pagina per applicare le nuove impostazioni.</translation>
-<translation id="3740150184898623344">Mostra il pulsante Modalità Reader in tutte le pagine</translation>
 <translation id="3947376313153737208">Nessuna selezione</translation>
 <translation id="6405640832764359650">Attiva la casella di controllo per salvare carte Google Payments</translation>
 <translation id="1346104802985271895">Metodo di immissione vietnamita (TELEX)</translation>
@@ -2433,7 +2433,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="1166359541137214543">ABC</translation>
 <translation id="540296380408672091">Blocca sempre i cookie su <ph name="HOST"/></translation>
 <translation id="3227137524299004712">Microfono</translation>
-<translation id="5528368756083817449">Gestione Preferiti</translation>
+<translation id="5528368756083817449">Bookmark Manager</translation>
 <translation id="7705600705238488017">Preferisci <ph name="BEGIN_LINK"/>visitare il Chrome Web Store<ph name="END_LINK"/>?</translation>
 <translation id="2826760142808435982">La connessione è stata crittografata e autenticata utilizzando <ph name="CIPHER"/> e <ph name="KX"/> come meccanismo di scambio delle chiavi.</translation>
 <translation id="215753907730220065">Esci da schermo intero</translation>
@@ -4121,7 +4121,7 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="890308499387283275">Chrome non può scaricare questo file.</translation>
 <translation id="6557565812667414268">Attivato solo per display con valore DPI elevato</translation>
 <translation id="7331991248529612614">Attiva animazione del pulsante Modalità Reader</translation>
-<translation id="5469954281417596308">Gestione Preferiti</translation>
+<translation id="5469954281417596308">Bookmark Manager</translation>
 <translation id="106153153543631784">Inserisci di nuovo la password per aggiornare il tuo profilo Chromebook.</translation>
 <translation id="3064388234319122767">Traslitterazione (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Devi essere online per poter disattivare Smart Lock perché questa impostazione viene sincronizzata con il telefono e con altri dispositivi. Collegati prima a una rete.</translation>
@@ -4739,6 +4739,7 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="634208815998129842">Task Manager</translation>
 <translation id="2735698359135166290">Tastiera Rumeno standard</translation>
 <translation id="1701062906490865540">Rimuovi questa persona</translation>
+<translation id="8475313423285172237">Un altro programma sul computer ha aggiunto un'estensione che potrebbe modificare il funzionamento di Chrome.</translation>
 <translation id="4850458635498951714">Aggiungi un dispositivo</translation>
 <translation id="3140353188828248647">Area attiva nella barra degli indirizzi</translation>
 <translation id="1371806038977523515">Queste impostazioni sono controllate da:</translation>
@@ -4751,7 +4752,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="5868927042224783176">Non consentire per nuova autorizzazione</translation>
 <translation id="3355936511340229503">Errore di connessione</translation>
 <translation id="736108944194701898">Velocità mouse:</translation>
-<translation id="745374297349407796">Mostra il pulsante Modalità Reader nelle pagine in formato esteso</translation>
 <translation id="8371937549687734176">Trasmetti desktop o finestra a...</translation>
 <translation id="4350711002179453268">Impossibile stabilire una connessione sicura con il server. Può trattarsi di un problema con il server oppure esso potrebbe richiedere un certificato di autenticazione client non disponibile.</translation>
 <translation id="4731422630970790516">Elemento 3 della shelf</translation>
@@ -4971,7 +4971,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="6929555043669117778">Continua a bloccare i popup</translation>
 <translation id="3508920295779105875">Scegli un'altra cartella...</translation>
 <translation id="7903925330883316394">Utility: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Mostra il pulsante Modalità Reader nelle pagine con markup strutturato dell'articolo</translation>
 <translation id="5549518587357384553">Controlla se document.body.scrollTop/scrollLeft in JavaScript riflette il comportamento interoperativo standard (attivato) o il comportamento WebKit precedente (disattivato).
         Quando è attivato, document.scrollingElement è document.documentElement, quando è disattivato, è document.body (per pagine in modalità strict).</translation>
 <translation id="904451693890288097">Inserisci la passkey di &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5753,7 +5752,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7353601530677266744">Riga di comando</translation>
 <translation id="2766006623206032690">In&amp;colla e vai</translation>
 <translation id="5253753933804516447">Abilita &quot;Ok Google&quot; per eseguire ricerche vocali quando lo schermo è attivo e sbloccato</translation>
-<translation id="1568822834048182062">I segnalibri, la cronologia, le password e altre impostazioni verranno sincronizzate con il tuo account Google.</translation>
+<translation id="1568822834048182062">I Preferiti, la cronologia, le password e altre impostazioni verranno sincronizzate con il tuo account Google.</translation>
 <translation id="5511823366942919280">Vuoi configurare questo dispositivo come dispositivo &quot;Shark&quot;?</translation>
 <translation id="5286673433070377078">Percorsi rendering Bleeding Edge - IL BROWSER POTREBBE ARRESTARSI IN MODO ANOMALO</translation>
 <translation id="6843725295806269523">disattiva audio</translation>
@@ -5805,6 +5804,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="6059652578941944813">Gerarchia certificati</translation>
 <translation id="3153094071447713741">Funzioni di visualizzazione immissione sperimentali.</translation>
 <translation id="5729712731028706266">&amp;Visualizza</translation>
+<translation id="9170884462774788842">Un altro programma sul computer ha aggiunto un tema che potrebbe modificare il funzionamento di Chrome.</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="4508765956121923607">Visualizza s&amp;orgente</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>

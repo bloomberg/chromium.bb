@@ -15,7 +15,7 @@
 <translation id="8996941253935762404">تحتوي مقدمة الموقع على برامج ضارة</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
 <translation id="8098352321677019742">إشعارات <ph name="PRODUCT_NAME"/></translation>
-<translation id="5186650237607254032">حدّث قفل الشاشة في هاتفك بحيث يتم إيقاف التشغيل عندما تكون بالقرب منه. ستتمكن من إلغاء قفل الهاتف بشكل أسرع والتمتع بتجربة &quot;القفل الذكي&quot; على جهاز <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="5186650237607254032">‏حدّث قفل الشاشة في هاتفك بحيث يتم إيقاف التشغيل عندما تكون بالقرب منه. ستتمكن من إلغاء قفل الهاتف بشكل أسرع والتمتع بتجربة Smart Lock على جهاز <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="3566021033012934673">اتصالك ليس خاصًا</translation>
 <translation id="3751522270321808809">قد يحاول هذا الموقع الاحتيال عليك لسرقة معلوماتك (أمثلة: كلمات المرور أو الرسائل أو بطاقات الائتمان).</translation>
 <translation id="3228679360002431295">جارٍ الاتصال والتحقق<ph name="ANIMATED_ELLIPSIS"/></translation>
@@ -254,6 +254,7 @@
 <translation id="42981349822642051">توسيع</translation>
 <translation id="7774497835322490043">‏تمكين التنويه عن تصليح الأخطاء المستندة إلى قاعدة بيانات GDB. وهذا من شأنه إيقاف التطبيق Native Client أثناء بدء التشغيل والانتظار حتى يتم الاتصال مع قاعدة بيانات nacl-gdb (من NaCl SDK).</translation>
 <translation id="2686444421126615064">عرض الحساب</translation>
+<translation id="9215293857209265904">تمت إضافة &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7693221960936265065">بداية الوقت</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">تم حظر تتبع المواقع التالية لموقعك في هذه الصفحة:</translation>
@@ -280,7 +281,7 @@
 <translation id="558170650521898289">‏التحقق من برنامج تشغيل الأجهزة لـ Microsoft Windows</translation>
 <translation id="4395129973926795186"><ph name="START_DATE"/> إلى <ph name="END_DATE"/></translation>
 <translation id="98515147261107953">أفقي</translation>
-<translation id="7334190995941642545">القفل الذكي غير متاح حاليًا. يُرجى المحاولة مرة أخرى في وقت لاحق.</translation>
+<translation id="7334190995941642545">‏Smart Lock غير متاح حاليًا. يُرجى المحاولة مرة أخرى في وقت لاحق.</translation>
 <translation id="1303101771013849280">‏لوضع إشارة مرجعية لملف HTML</translation>
 <translation id="8974161578568356045">اكتشاف تلقائي</translation>
 <translation id="1549045574060481141">تأكيد التنزيل</translation>
@@ -582,7 +583,7 @@
 <translation id="715487527529576698">الوضع الأولي للغة الصينية هو الصينية المبسطة.</translation>
 <translation id="6522350652862471760">‏تمكين اسم الملف الشخصي في Google ورمزه</translation>
 <translation id="2164862903024139959">‏لوحة المفاتيح الفيتنامية (TCVN)</translation>
-<translation id="8885197664446363138">القفل الذكي غير متاح</translation>
+<translation id="8885197664446363138">‏Smart Lock غير متاح</translation>
 <translation id="1697532407822776718">أنت الآن على أتم استعداد.</translation>
 <translation id="8373553483208508744">تجاهل علامات التبويب</translation>
 <translation id="8703575177326907206">الاتصال بالموقع <ph name="DOMAIN"/> غير محميّ بنظام تشفير.</translation>
@@ -855,7 +856,7 @@
 <translation id="1274997165432133392">ملفات تعريف الارتباط وبيانات الموقع الأخرى</translation>
 <translation id="4299729908419173967">البرازيلية</translation>
 <translation id="375841316537350618">جارٍ تنزيل النص البرمجي للخادم الوكيل...</translation>
-<translation id="7988930390477596403">سيتم التنشيط عندما تقوم بإلغاء قفل جهاز <ph name="DEVICE_TYPE"/> هذا في المرة القادمة. باستخدام &quot;القفل الذكي&quot;، سيتمكن هاتفك من إلغاء قفل هذا الجهاز - بدون كلمة مرور. سيتم تشغيل البلوتوث لتمكين &quot;القفل الذكي&quot;.</translation>
+<translation id="7988930390477596403">‏سيتم التنشيط عندما تقوم بإلغاء قفل جهاز <ph name="DEVICE_TYPE"/> هذا في المرة القادمة. باستخدام &quot;القفل الذكي&quot;، سيتمكن هاتفك من إلغاء قفل هذا الجهاز - بدون كلمة مرور. سيتم تشغيل البلوتوث لتمكين Smart Lock</translation>
 <translation id="45400070127195133">‏يؤدي تمكين هذا الخيار إلى السماح لتطبيقات الويب بالدخول إلى إضافات WebGL والتي لا تزال في حالة المسودة.</translation>
 <translation id="9169664750068251925">الحظر دومًا على هذا الموقع</translation>
 <translation id="6406303162637086258">محاكاة إعادة تشغيل المتصفح</translation>
@@ -1000,7 +1001,6 @@
 <translation id="7986039047000333986">تم الآن تطبيق تحديث أمان خاص لـ <ph name="PRODUCT_NAME"/>؛ تجب إعادة التشغيل الآن لتسري التغييرات التي أجريتها (ستتم استعادة علامات التبويب).</translation>
 <translation id="2787591391657537328">السماح للتنزيلات التي تمت مقاطعتها بالاستمرار أو إعادة التشغيل باستخدام عنصر قائمة سياقات &quot;استئناف&quot;.</translation>
 <translation id="3926862159284741883">‏تمكين إضافات مسودة WebGL</translation>
-<translation id="8347255769289079987">عدم إظهار زر وضع القارئ أبدًا</translation>
 <translation id="9152722471788855605">‏محلل ملف Zip للتصفح الآمن</translation>
 <translation id="2537271621194795300">عمليات بدء التشغيل</translation>
 <translation id="3636096452488277381">مرحبًا، <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1663,6 +1663,7 @@
 <translation id="7256069811654036843">رجوع إلى الصفحة السابقة!</translation>
 <translation id="4811502511369621968">عنوان بريد إلكتروني غير صالح. الرجاء التحقق وإعادة المحاولة.</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
+<translation id="8602851771975208551">‏أضاف برنامج آخر بجهاز الكمبيوتر تطبيقًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
 <translation id="2655386581175833247">شهادة المستخدم:</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5435964418642993308">‏اضغط على مفتاح enter للرجوع، ومفتاح قائمة السياقات لعرض السجلّ</translation>
@@ -1836,7 +1837,6 @@
 <translation id="1901377140875308934">تسجيل الدخول إلى <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">الخلفية الحالية من إعداد &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">قد تحتاج هذه الصفحة إلى إعادة التحميل قبل تنفيذ الإعدادات الجديدة.</translation>
-<translation id="3740150184898623344">إظهار زر وضع القارئ في جميع الصفحات</translation>
 <translation id="3947376313153737208">لم يتم التحديد</translation>
 <translation id="6405640832764359650">‏تمكين مربع اختيار حفظ Google Payments</translation>
 <translation id="1346104802985271895">‏أسلوب الإدخال الفيتنامي (TELEX)</translation>
@@ -2064,7 +2064,7 @@
 <translation id="158917669717260118">تعذر تحميل صفحة الويب نظرًا لدخول الجهاز في وضع السكون أو السبات. عندما يحدث ذلك، يتم إيقاف تشغيل اتصالات الشبكة وتخفق الطلبات الجديدة المرسلة إلى الشبكة. ستؤدي إعادة تحميل الصفحة إلى حل هذه المشكلة.</translation>
 <translation id="6316671927443834085">أخفق قطع الاتصال بـ &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="1962233722219655970">‏هذه الصفحة تستخدم تطبيق Native Client وهو لا يعمل على جهاز الكمبيوتر التابع لك.</translation>
-<translation id="5458733660263868683">‏لا تستخدم القفل الذكي، والذي يسمح لك بإلغاء قفل جهاز Chromebook عندما تكون بالقرب من هاتفك. إذا كنت صاحب الجهاز، وهذا أيضا يعمل على إيقاف القفل الذكي على شاشة تسجيل الدخول.</translation>
+<translation id="5458733660263868683">‏لا تستخدم Smart Lock، والذي يسمح لك بإلغاء قفل جهاز Chromebook عندما تكون بالقرب من هاتفك. إذا كنت صاحب الجهاز، وهذا أيضا يعمل على إيقاف Smart Lock على شاشة تسجيل الدخول.</translation>
 <translation id="1108685299869803282">يختار أكثر من 80% من الأشخاص الذين يرون هذا التحذير التوقف عن المتابعة من أجل السلامة بدلاً من التعرض لخطر البرامج الضارة. ولكن إذا كنت على دراية بالمخاطر على أمنك، يمكنك <ph name="BEGIN_LINK"/>زيارة هذا الموقع غير الآمن<ph name="END_LINK"/> قبل أن تتم إزالة البرامج الخطيرة.</translation>
 <translation id="219008588003277019">وحدة البرنامج العميل الأصلي: <ph name="NEXE_NAME"/></translation>
 <translation id="8228447825257396644">تعطيل لوحة مفاتيح عرض المدخلات في التصميم متعدد الأبعاد</translation>
@@ -2599,7 +2599,7 @@
 <translation id="7314244761674113881">‏مضيف SOCKS</translation>
 <translation id="4630590996962964935">حرف غير صالح: $1</translation>
 <translation id="7709980197120276510">يُعد النقر على &quot;متابعة&quot; بمثابة موافقة منك على <ph name="LEGAL_DOC_LINK_TEXT_1"/>، و<ph name="LEGAL_DOC_LINK_TEXT_2"/>، و<ph name="LEGAL_DOC_LINK_TEXT_3"/>، و<ph name="LEGAL_DOC_LINK_TEXT_4"/>، و<ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
-<translation id="8556377764941071135">يمكنك تمكين اكتشاف التقارب في &quot;القفل الذكي&quot;.</translation>
+<translation id="8556377764941071135">‏يمكنك تمكين اكتشاف التقارب في Smart Lock.</translation>
 <translation id="7533451546919522717">محو ملفات تعريف الارتباط وبيانات الموقع والمكونات الإضافية الأخرى عند الخروج</translation>
 <translation id="8382645631174981738">تم تثبيت <ph name="EXTENSION_NAME"/> عن بُعد</translation>
 <translation id="542872847390508405">أنت تتصفح كضيف</translation>
@@ -2893,7 +2893,7 @@
 <translation id="1122960773616686544">اسم الإشارة</translation>
 <translation id="5966707198760109579">الأسبوع</translation>
 <translation id="7854323427075506422">‏تعطيل تدفق أداة فتح ملفات ZIP الجديدة، استنادًا إلى مزود نظام الملفات.</translation>
-<translation id="4635114802498986446">‏يُمكّن إعداد &quot;القفل الذكي&quot; الذي يقيد إلغاء القفل بحيث لا يعمل إلا عندما يكون هاتفك قريبًا جدًا من (تقريبًا، ضمن مسافة ذراع) جهاز Chrome.</translation>
+<translation id="4635114802498986446">‏يُمكّن إعداد Smart Lock الذي يقيد إلغاء القفل بحيث لا يعمل إلا عندما يكون هاتفك قريبًا جدًا من (تقريبًا، ضمن مسافة ذراع) جهاز Chrome.</translation>
 <translation id="7371490661692457119">عرض جزء الصورة الافتراضي</translation>
 <translation id="5148652308299789060">تعطيل أداة تحويل البرنامج ثلاثي الأبعاد</translation>
 <translation id="9205143043463108573">‏لوضع Launcher تطبيقات في وسط الشاشة باتجاه أفقي.</translation>
@@ -3584,7 +3584,7 @@
 <translation id="4756388243121344051">ال&amp;سجل</translation>
 <translation id="7614030880636783720">‏لا تتوفر شبكة Wi-Fi وبيانات الجوال. يمكن تحميل الصفحة بعد اتصال الجهاز بشبكة.</translation>
 <translation id="1146673768181266552">معرِّف العطل <ph name="CRASH_ID"/> (<ph name="CRASH_LOCAL_ID"/>)</translation>
-<translation id="3544347428588533940">&quot;القفل الذكي&quot; جاهز تقريبًا</translation>
+<translation id="3544347428588533940">‏Smart Lock جاهز تقريبًا</translation>
 <translation id="8044899503464538266">بطيء</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="4782449893814226250">لقد سألت والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
@@ -3626,7 +3626,7 @@
 <translation id="1464258312790801189">حساباتك</translation>
 <translation id="163309982320328737">العرض الأولي للحرف هو عرض بالكامل</translation>
 <translation id="6596092346130528198">هل هذه هي صفحة علامة التبويب الجديدة التي كنت تتوقع ظهورها؟</translation>
-<translation id="3926002189479431949">تم تغيير هاتف القفل الذكي</translation>
+<translation id="3926002189479431949">‏تم تغيير هاتف Smart Lock</translation>
 <translation id="6965648386495488594">المنفذ</translation>
 <translation id="7631887513477658702">فت&amp;ح هذا النوع من الملفات دومًا</translation>
 <translation id="3858027520442213535">تحديث التاريخ والوقت</translation>
@@ -4129,7 +4129,7 @@
 <translation id="249113932447298600">عذرًا، لا يتوفر الجهاز <ph name="DEVICE_LABEL"/> في الوقت الحالي.</translation>
 <translation id="6401445054534215853">بند الرف 1</translation>
 <translation id="6113134669445407638">‏تعطيل Delay Agnostic AEC في WebRTC. تُستخدم إذا كانت تأخيرات النظام المُبلغ عنها موثوقًا بها للغاية، أو إذا واجه الآخرون صدى من جهازك.</translation>
-<translation id="2365626167708453863">‏اختيار حساب من القفل الذكي من Google</translation>
+<translation id="2365626167708453863">‏اختيار حساب من Smart Lock من Google</translation>
 <translation id="232562464593865424">‏دعنا ندرب جهاز Chromebook</translation>
 <translation id="2351520734632194850"><ph name="MHZ"/> ميغا هرتز</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
@@ -4142,7 +4142,7 @@
 <translation id="5469954281417596308">مدير الإشارات</translation>
 <translation id="106153153543631784">‏يُرجى إعادة إدخال كلمة المرور لتحديث ملف التعريف الشخصي في Chromebook.</translation>
 <translation id="3064388234319122767">‏التحويل الصوتي (ذدرافو ← здраво)</translation>
-<translation id="5425722269016440406">يجب أن تكون متصلاً بالإنترنت لإيقاف تشغيل القفل الذكي لأن هذا الإعداد متزامن مع هاتفك وأجهزة أخرى. يُرجى الاتصال بإحدى الشبكات أولاً.</translation>
+<translation id="5425722269016440406">‏يجب أن تكون متصلاً بالإنترنت لإيقاف تشغيل Smart Lock لأن هذا الإعداد متزامن مع هاتفك وأجهزة أخرى. يُرجى الاتصال بإحدى الشبكات أولاً.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="7730494089396812859">عرض تفاصيل النسخ الاحتياطي عبر السحاب</translation>
 <translation id="1143142264369994168">الموقّع على الشهادات</translation>
@@ -4593,7 +4593,7 @@
 <translation id="9203478404496196495">إلغاء تجاهل علامة التبويب</translation>
 <translation id="2143778271340628265">تهيئة يدوية للخادم الوكيل</translation>
 <translation id="8888432776533519951">اللون:</translation>
-<translation id="5247176778442128277">تعطيل القفل الذكي</translation>
+<translation id="5247176778442128277">‏تعطيل Smart Lock</translation>
 <translation id="5294529402252479912">‏تحديث Adobe Reader الآن</translation>
 <translation id="79962507603257656">تنزيل الحالة في مركز الإشعارات</translation>
 <translation id="2231990265377706070">علامة تعجب</translation>
@@ -4759,6 +4759,7 @@
 <translation id="634208815998129842">إدارة المهام</translation>
 <translation id="2735698359135166290">لوحة المفاتيح الرومانية القياسية</translation>
 <translation id="1701062906490865540">إزالة هذا الشخص</translation>
+<translation id="8475313423285172237">‏أضاف برنامج آخر بجهاز الكمبيوتر إضافة قد تؤدي إلى تغيير طريقة عمل Chrome.</translation>
 <translation id="4850458635498951714">إضافة جهاز</translation>
 <translation id="3140353188828248647">تركيز شريط العناوين</translation>
 <translation id="1371806038977523515">يتم التحكم في هذه الإعدادات بواسطة:</translation>
@@ -4771,7 +4772,6 @@
 <translation id="5868927042224783176">عدم السماح بإعادة المصادقة</translation>
 <translation id="3355936511340229503">خطأ الاتصال</translation>
 <translation id="736108944194701898">سرعة الماوس:</translation>
-<translation id="745374297349407796">إظهار زر وضع القارئ في الصفحات التي تظهر كمحتوى نموذج طويل</translation>
 <translation id="8371937549687734176">إرسال سطح المكتب أو النافذة إلى...</translation>
 <translation id="4350711002179453268">تعذر إنشاء اتصال آمن بالخادم. قد تكون المشكلة في الخادم أو قد يتطلب الاتصال شهادة مصادقة للعميل ليست لديك.</translation>
 <translation id="4731422630970790516">بند الرف 3</translation>
@@ -4991,7 +4991,6 @@
 <translation id="6929555043669117778">متابعة منع عرض النوافذ المنبثقة</translation>
 <translation id="3508920295779105875">اختيار مجلد آخر ...</translation>
 <translation id="7903925330883316394">الأداة: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">إظهار زر وضع القارئ في الصفحات مع الترميز المهيكل للمقال</translation>
 <translation id="5549518587357384553">‏التحكم في ما إذا كان document.body.scrollTop/scrollLeft في جافا سكريبت يعكس السلوك القياسي التبادلي (مُمكن) أو سلوك WebKit القديم (مُعطل)
         عند التمكين، document.scrollingElement يمثل document.documentElement، وعند التعطيل، يكون document.body (للصفحات في وضع مقيد).</translation>
 <translation id="904451693890288097">الرجاء إدخال مفتاح المرور لـ &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5112,7 +5111,7 @@
 <translation id="8677914765885474883">تحذير: لم يتم جمع البيانات. قد يؤدي هذا إلى إبطاء الصفحة.</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="3551117997325569860">لتغيير الخادم الوكيل، مكّن الإعداد &quot;<ph name="USE_SHARED_PROXIES"/>&quot;.</translation>
-<translation id="2810731435681289055">في المرة القادمة عند إلغاء قفل هذا <ph name="DEVICE_TYPE"/>، سيتم تحديث القفل الذكي حتى يُمكنك النقر فقط على صورتك للدخول.</translation>
+<translation id="2810731435681289055">‏في المرة القادمة عند إلغاء قفل هذا <ph name="DEVICE_TYPE"/>، سيتم تحديث Smart Lock حتى يُمكنك النقر فقط على صورتك للدخول.</translation>
 <translation id="6110413515502722199">‏إذا تم التعيين، فسيتم تنفيذ تسجيل الدخول باستخدام تدفق GAIA بدلاً من التدفق الجديد القائم على WebView.</translation>
 <translation id="6268747994388690914">‏استيراد الإشارات المرجعية من ملف HTML...</translation>
 <translation id="6096047740730590436">فتح في وضع التكبير</translation>
@@ -5298,7 +5297,7 @@
 <translation id="7592362899630581445">تنتهك شهادة الخادم القيود المفروضة على الاسم.</translation>
 <translation id="9003647077635673607">السماح على جميع مواقع الويب</translation>
 <translation id="8689341121182997459">تاريخ انتهاء الصلاحية:</translation>
-<translation id="236128817791440714">‏مُقترح: إعداد &quot;القفل الذكي&quot; لجهاز Android</translation>
+<translation id="236128817791440714">‏مُقترح: إعداد Smart Lock لجهاز Android</translation>
 <translation id="899403249577094719">‏عنوان URL الأساسي لشهادة Netscape</translation>
 <translation id="2737363922397526254">تصغير...</translation>
 <translation id="8605428685123651449">‏ذاكرة SQLite</translation>
@@ -5769,7 +5768,7 @@
 <translation id="9111742992492686570">تنزيل تحديث الأمان الضروري</translation>
 <translation id="1979280758666859181">أنت الآن تُجري تغييرًا إلى قناة ذات إصدار سابق من <ph name="PRODUCT_NAME"/>. وسيسري تغيير القناة عند تطابق إصدار القناة مع الإصدار المثبت حاليًا على الجهاز.</translation>
 <translation id="304009983491258911">‏تغيير رقم التعريف الشخصي لبطاقة SIM</translation>
-<translation id="7556033326131260574">لم يتمكن القفل الذكي من التحقق من حسابك. اكتب كلمة المرور للدخول.</translation>
+<translation id="7556033326131260574">‏لم يتمكن Smart Lock من التحقق من حسابك. اكتب كلمة المرور للدخول.</translation>
 <translation id="8600929685092827187">تنشيط لدى وصول الحزم</translation>
 <translation id="2045969484888636535">متابعة حظر تشغيل ملفات تعريف الارتباط</translation>
 <translation id="8131740175452115882">التأكيد</translation>
@@ -5824,10 +5823,11 @@
 <translation id="7685049629764448582">ذاكرة جافا سكريبت</translation>
 <translation id="6398765197997659313">إنهاء وضع ملء الشاشة</translation>
 <translation id="4641635164232599739"><ph name="FILE_NAME"/> لا يتم تنزيله بشكل شائع وربما يكون خطرًا.</translation>
-<translation id="7974067550340408553">الحصول على إشعار على هاتفك في كل مرة يلغي فيها &quot;القفل الذكي&quot; قفل جهاز <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="7974067550340408553">‏الحصول على إشعار على هاتفك في كل مرة يلغي فيها Smart Lock قفل جهاز <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="6059652578941944813">التسلسل الهرمي للشهادة</translation>
 <translation id="3153094071447713741">الميزات التجريبية لنافذة الإدخال.</translation>
 <translation id="5729712731028706266">&amp;عرض</translation>
+<translation id="9170884462774788842">‏أضاف برنامج آخر بجهاز الكمبيوتر مظهرًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="4508765956121923607">عرض الم&amp;صدر</translation>
 <translation id="5975083100439434680">تصغير</translation>

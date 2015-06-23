@@ -15,7 +15,7 @@
 <translation id="3748537968684000502">Estás viendo una página de Chromium segura.</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="1065672644894730302">No se pueden leer tus preferencias. Es posible que algunas funciones no estén disponibles y que no se guarden los cambios realizados a las preferencias.</translation>
-<translation id="2233513990531887259">Reiniciando en el modo envolvente de Chromium</translation>
+<translation id="2233513990531887259">Reiniciar en el modo envolvente de Chromium</translation>
 <translation id="7861509383340276692">Ve
           al menú de Chromium &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -27,7 +27,7 @@
 <translation id="4423735387467980091">Personaliza y controla Chromium</translation>
 <translation id="1881322772814446296">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Chromium. Tus datos de Chromium, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME"/> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. También puedes crear un perfil para mantener separados tus datos de Chromium. <ph name="LEARN_MORE"/></translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
-<translation id="7723128346970903111">Cuando está habilitada esta opción, se usará el flujo de acceso a Chromium basado en marcos flotantes; de lo contrario, se usará el flujo basado en la vista web.</translation>
+<translation id="7723128346970903111">Cuando está habilitada esta opción, se usa el flujo de acceso a Chromium basado en marcos flotantes; de lo contrario, se usa el flujo basado en la vista web.</translation>
 <translation id="731644333568559921">Actualizar &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="1185134272377778587">Acerca de Chromium</translation>
@@ -73,7 +73,7 @@
 <translation id="2347108572062610441">Esta extensión cambió la página que se muestra al iniciar Chromium.</translation>
 <translation id="3849925841547750267">Lamentablemente, tu configuración de Mozilla Firefox no está disponible cuando se ejecuta ese navegador. Para importar la configuración de Chromium, guarda tu trabajo y cierra todas las ventanas de Firefox. A continuación, haz clic en Continuar.</translation>
 <translation id="7027298027173928763">Chromium no pudo actualizarse a la versión más reciente, por lo que no estás aprovechando las funciones geniales ni las correcciones de seguridad que se agregaron. Debes reinstalar Chromium de forma manual.</translation>
-<translation id="2718390899429598676">Para mayor seguridad, Chormium encriptará los datos.</translation>
+<translation id="2718390899429598676">Para mayor seguridad, Chromium encriptará los datos.</translation>
 <translation id="8897323336392112261">También controla qué página se muestra al iniciar Chromium o al hacer clic en el botón de página principal.</translation>
 <translation id="4330585738697551178">Este módulo provoca un conflicto con Chromium.</translation>
 <translation id="3190315855212034486">¡Vaya! Se ha producido un bloqueo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
@@ -90,12 +90,12 @@
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="9191268552238695869">Un administrador instaló Chromium en este sistema, y ​​está disponible para todos los usuarios. Ahora Chromium en el nivel del sistema reemplaza tu instalación en el nivel de usuario.</translation>
 <translation id="3509308970982693815">Cierra todas las ventanas de Chromium e inténtalo de nuevo.</translation>
-<translation id="3192211604788138894">Reiniciando Chromium en el modo Windows 8</translation>
+<translation id="3192211604788138894">Reiniciar Chromium en el modo Windows 8</translation>
 <translation id="8851136666856101339">ppal</translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y el vuelve a iniciarlo para que este cambio se aplique.</translation>
 <translation id="6475912303565314141">También controla qué página se muestra al iniciar Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME"/> puede dañar tu experiencia de navegación, por eso Chromium lo bloqueó.</translation>
-<translation id="208174207680926830">Reiniciando Chromium en el escritorio</translation>
+<translation id="208174207680926830">Reiniciar Chromium en el escritorio</translation>
 <translation id="750717762378961310">Chromium bloqueó este archivo porque es malicioso.</translation>
 <translation id="6944967875980567883">Módulos cargados en Chromium</translation>
 <translation id="6899795326977034905">En las computadoras Mac, las contraseñas se guardan en las llaves, y otros usuarios de Chromium que comparten esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>

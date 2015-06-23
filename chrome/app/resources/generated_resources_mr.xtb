@@ -260,6 +260,7 @@
 <translation id="42981349822642051">विस्तृत करा</translation>
 <translation id="7774497835322490043">GDB डीबग स्टब सक्षम करा. हे प्रारंभ करताना मूळ क्लायंट अनुप्रयोग थांबवेल आणि त्यावर संलग्न करण्यासाठी nacl-gdb (NaCl SDK मधून) प्रतीक्षा करेल.</translation>
 <translation id="2686444421126615064">खाते पहा</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; जोडले</translation>
 <translation id="7693221960936265065">कालावधीच्या सुरूवातीस</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">या पृष्ठावर आपले स्थान ट्रॅक करण्यापासून खालील साइट अवरोधित केल्या गेल्या आहेत:</translation>
@@ -1018,7 +1019,6 @@
 <translation id="7986039047000333986"><ph name="PRODUCT_NAME"/> साठीचे विशिष्‍ट सुरक्षा अद्यतन नुकतेच लागू करण्‍यात आले; ते प्रभावी होण्‍यासाठी आपण पुन्हा एकदा सुरू करायला हवे (आम्ही आपले सर्व टॅब पुनर्संचयित करु).</translation>
 <translation id="2787591391657537328">संदर्भ मेनू आयटम पुन्हा सुरू करणे वापरून, सुरू ठेवण्यासाठी किंवा रीस्टार्ट करण्‍यासाठी व्यत्यय आणला गेलेल्या डाउनलोडना अनुमती द्या.</translation>
 <translation id="3926862159284741883">WebGL मसुदा विस्तार सक्षम करा</translation>
-<translation id="8347255769289079987">वाचक मोड बटण कधीही दर्शवू नका</translation>
 <translation id="9152722471788855605">सुरक्षित ब्राउझिंग झिप फाईल विश्लेषक</translation>
 <translation id="2537271621194795300">प्रारंभ</translation>
 <translation id="3636096452488277381">कसे आहात, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1683,6 +1683,7 @@
 <translation id="7256069811654036843">मला परत न्या!</translation>
 <translation id="4811502511369621968">अवैध ईमेल पत्ता. कृपया तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
+<translation id="8602851771975208551">आपल्या संगणकावरील दुसऱ्या प्रोग्रामने Chrome च्या कार्य करण्याचा मार्ग बदलू शकणारा अ‍ॅप जोडला.</translation>
 <translation id="2655386581175833247">वापरकर्ता प्रमाणपत्र:</translation>
 <translation id="5039804452771397117">परवानगी द्या</translation>
 <translation id="5435964418642993308">परत जाण्यासाठी enter, इतिहास पाहण्यासाठी संदर्भ मेनू की दाबा</translation>
@@ -1855,7 +1856,6 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> मध्ये साइन इन करा...</translation>
 <translation id="5529098031581368697">वर्तमान वॉलपेपर '<ph name="APP_NAME"/>' द्वारे सेट केला आहे</translation>
 <translation id="5074318175948309511">नवीन सेटिंग्ज प्रभावी होण्यापूर्वी या पृष्ठास रीलोड करण्याची आवश्यकता असू शकते.</translation>
-<translation id="3740150184898623344">सर्व पृष्‍ठांवर वाचक मोड बटण दर्शवा</translation>
 <translation id="3947376313153737208">निवड नाही</translation>
 <translation id="6405640832764359650">चेकबॉक्स जतन करून Google Payments कार्ड सक्षम करा</translation>
 <translation id="1346104802985271895">व्हिएतनामी इनपुट पद्धत (टेलेक्स)</translation>
@@ -4800,6 +4800,7 @@
 <translation id="634208815998129842">कार्य व्यवस्थापक</translation>
 <translation id="2735698359135166290">रोमेनियन मानक कीबोर्ड</translation>
 <translation id="1701062906490865540">या व्यक्तीस काढा</translation>
+<translation id="8475313423285172237">आपल्या संगणकावरील दुसऱ्या प्रोग्रामने Chrome च्या कार्य करण्याचा मार्ग बदलू शकणारा विस्तार जोडला.</translation>
 <translation id="4850458635498951714">एक डिव्हाइस जोडा</translation>
 <translation id="3140353188828248647">अ‍ॅड्रेस बारवर फोकस करा</translation>
 <translation id="1371806038977523515">या सेटिंग्‍ज याद्वारे नियंत्रित केल्‍या जातात:</translation>
@@ -4812,7 +4813,6 @@
 <translation id="5868927042224783176">पुनर्प्रतिज्ञेसाठी अनुमती रद्द करा</translation>
 <translation id="3355936511340229503">कनेक्शन त्रुटी</translation>
 <translation id="736108944194701898">माउस वेग:</translation>
-<translation id="745374297349407796">दीर्घ फॉर्म सामग्री असण्‍यासाठी दिसणार्‍या पृष्‍ठांवर वाचक मोड बटण दर्शवा</translation>
 <translation id="8371937549687734176">डेस्कटॉप किंवा विंडो यावर कास्ट करा...</translation>
 <translation id="4350711002179453268">सर्व्हरसह एक रक्षित कनेक्शन बनविण्यात अक्षम. ही सर्व्हरसह एक समस्या असू शकते किंवा यास क्लायंट प्रमाणीकरण प्रमाणपत्र आवश्यक आहे जे आपल्‍याकडे नाही.</translation>
 <translation id="4731422630970790516">शेल्‍फ आयटम 3</translation>
@@ -5032,7 +5032,6 @@
 <translation id="6929555043669117778">पॉप-अप अवरोधित करणे सुरू ठेवा </translation>
 <translation id="3508920295779105875">अन्य फोल्डर निवडा...</translation>
 <translation id="7903925330883316394">उयुक्तता: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">लेख रचना केलेल्‍या मार्कअप असलेल्या पृष्‍ठांवर वाचक मोड बटण दर्शवा</translation>
 <translation id="5549518587357384553">JavaScript मधील document.body.scrollTop/scrollLeft दस्तऐवज मानक अंतःप्रचालनीय वर्तन (सक्षम) किंवा पारंपारिक WebKit वर्तन (अक्षम) प्रभाव करते किंवा नाही हे नियंत्रित करा.
         सक्षम असताना, document.scrollingElement हे document.documentElement असते, अक्षम असताना ते document.body (कठोर-मोड पृष्ठांसाठी) असते.</translation>
 <translation id="904451693890288097">कृपया यासाठी पासकी प्रविष्‍ट करा &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5868,6 +5867,7 @@
 <translation id="6059652578941944813">प्रमाणपत्र पदानुक्रम</translation>
 <translation id="3153094071447713741">प्रायोगिक इनपुट दृश्य वैशिष्ट्ये.</translation>
 <translation id="5729712731028706266">&amp;दृश्य</translation>
+<translation id="9170884462774788842">आपल्या संगणकावरील दुसऱ्या प्रोग्रामने Chrome च्या कार्य करण्याचा मार्ग बदलू शकणारी थीम जोडली.</translation>
 <translation id="8571108619753148184">सर्व्हर 4</translation>
 <translation id="4508765956121923607">स्त्रो&amp;त पाहा</translation>
 <translation id="5975083100439434680">झूम कमी करा</translation>

@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Expandir</translation>
 <translation id="7774497835322490043">Ativa stub de depuração GDB. Isso interromperá um aplicativo do Cliente nativo na inicialização e aguardará que NaCl-gdb (de NaCl SDK) se anexe a ele.</translation>
 <translation id="2686444421126615064">Visualizar conta</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; adicionada</translation>
 <translation id="7693221960936265065">o começo</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Os seguintes sites foram impedidos de rastrear o seu local nesta página:</translation>
@@ -1005,7 +1006,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="7986039047000333986">Uma atualização especial de segurança para <ph name="PRODUCT_NAME"/> foi aplicada. Para que ela tenha efeito, é necessário reiniciar agora (suas guias serão restauradas).</translation>
 <translation id="2787591391657537328">Permitir que os downloads interrompidos sejam retomados ou reiniciados, usando o item do menu de contexto &quot;Retomar&quot;.</translation>
 <translation id="3926862159284741883">Ativar extensões de rascunho do WebGL</translation>
-<translation id="8347255769289079987">Nunca mostrar o botão do modo leitor</translation>
 <translation id="9152722471788855605">Analisador de arquivo zip para navegação segura</translation>
 <translation id="2537271621194795300">Inicializações</translation>
 <translation id="3636096452488277381">Olá, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1669,6 +1669,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="7256069811654036843">Leve-me de volta!</translation>
 <translation id="4811502511369621968">Endereço de e-mail inválido. Verifique e tente novamente.</translation>
 <translation id="175196451752279553">R&amp;eabrir guia fechada</translation>
+<translation id="8602851771975208551">Outro programa em seu computador adicionou um aplicativo que pode mudar a forma como o Google Chrome funciona.</translation>
 <translation id="2655386581175833247">Certificado do usuário:</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5435964418642993308">Pressione Enter para voltar e a tecla do menu de contexto para ver o histórico</translation>
@@ -1841,7 +1842,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="1901377140875308934">Fazer login em <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">O papel de parede atual está definido por '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Esta página pode precisar ser recarregada para que as novas configurações tenham efeito.</translation>
-<translation id="3740150184898623344">Mostrar o botão do modo leitor em todas as páginas</translation>
 <translation id="3947376313153737208">Nenhuma seleção</translation>
 <translation id="6405640832764359650">Ativar caixa de seleção para salvar cartão do Google Payments</translation>
 <translation id="1346104802985271895">Método de entrada vietnamita (TELEX)</translation>
@@ -2014,7 +2014,7 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="2942290791863759244">Teclado alemão NEO 2</translation>
 <translation id="3426704822745136852">Especificar o número de threads de varredura.</translation>
 <translation id="2129904043921227933">Erro de sincronização: atualize a senha de sincronização...</translation>
-<translation id="1476949146811612304">Defina o mecanismo de pesquisa usado na pesquisa da <ph name="BEGIN_LINK"/>omnibox<ph name="END_LINK"/> .</translation>
+<translation id="1476949146811612304">Defina o mecanismo de pesquisa usado na pesquisa da <ph name="BEGIN_LINK"/>omnibox<ph name="END_LINK"/>.</translation>
 <translation id="4114360727879906392">Janela anterior</translation>
 <translation id="3378572629723696641">Esta extensão pode ter sido corrompida.</translation>
 <translation id="7558050486864662801">Perguntar quando um site exige o acesso ao seu microfone (recomendado)</translation>
@@ -4773,6 +4773,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="634208815998129842">Gerenciador de tarefas</translation>
 <translation id="2735698359135166290">Teclado romeno padrão</translation>
 <translation id="1701062906490865540">Remover esta pessoa</translation>
+<translation id="8475313423285172237">Outro programa em seu computador adicionou uma extensão que pode mudar a forma como o Google Chrome funciona.</translation>
 <translation id="4850458635498951714">Adicionar um dispositivo</translation>
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="1371806038977523515">Estas configurações são controladas por:</translation>
@@ -4785,7 +4786,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="5868927042224783176">Proibir reautenticação</translation>
 <translation id="3355936511340229503">Erro de conexão</translation>
 <translation id="736108944194701898">Velocidade do mouse:</translation>
-<translation id="745374297349407796">Mostrar o botão do modo leitor nas páginas que parecem ser conteúdo de formulário longo</translation>
 <translation id="8371937549687734176">Transmitir área de trabalho ou janela para...</translation>
 <translation id="4350711002179453268">Não foi possível estabelecer uma conexão segura com o servidor. Pode ser um problema com o servidor ou pode ser necessário um certificado de autenticação de cliente que você não tem.</translation>
 <translation id="4731422630970790516">Item 3 da estante</translation>
@@ -5005,7 +5005,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6929555043669117778">Continuar bloqueando pop-ups</translation>
 <translation id="3508920295779105875">Escolher outra pasta...</translation>
 <translation id="7903925330883316394">Utilitário: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Mostrar o botão do modo leitor nas páginas com marcação estruturada como artigo</translation>
 <translation id="5549518587357384553">Controlar se document.body.scrollTop/scrollLeft no JavaScript reflete o comportamento padrão interoperável (ativado) ou o comportamento legado WebKit (desativado).
         Quando ativado, document.scrollingElement é document.documentElement, quando desativado é document.body (em páginas de modo estrito).</translation>
 <translation id="904451693890288097">Insira a chave de acesso para &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5840,6 +5839,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="3153094071447713741">Elementos experimentais de visualização de entrada</translation>
 <translation id="5729712731028706266">&amp;Visualizar</translation>
+<translation id="9170884462774788842">Outro programa em seu computador adicionou um tema que pode mudar a forma como o Google Chrome funciona.</translation>
 <translation id="8571108619753148184">Servidor 4</translation>
 <translation id="4508765956121923607">Exibir &amp;código fonte</translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>

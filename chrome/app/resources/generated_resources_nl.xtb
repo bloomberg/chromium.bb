@@ -260,6 +260,7 @@
 <translation id="42981349822642051">Uitvouwen</translation>
 <translation id="7774497835322490043">Schakel stub voor GDB-foutopsporing in. Een Native Client-app wordt bij het opstarten gestopt en wacht op nacl-gdb (van de NaCl-SDK) om hieraan te koppelen.</translation>
 <translation id="2686444421126615064">Account weergeven</translation>
+<translation id="9215293857209265904">'<ph name="EXTENSION_NAME"/>' toegevoegd</translation>
 <translation id="7693221960936265065">het eerste gebruik</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">De volgende sites kunnen je locatie op deze pagina niet bijhouden:</translation>
@@ -1020,7 +1021,6 @@ Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="7986039047000333986">Er is net een speciale beveiligingsupdate voor <ph name="PRODUCT_NAME"/> toegepast; je moet de browser opnieuw starten voordat de update kan worden toegepast (we zullen je tabbladen herstellen).</translation>
 <translation id="2787591391657537328">Toestaan dat downloads die zijn onderbroken, worden hervat of opnieuw gestart met het contextmenu-item 'Hervatten'.</translation>
 <translation id="3926862159284741883">WebGL Draft-extensies inschakelen</translation>
-<translation id="8347255769289079987">De knop 'Lezermodus' nooit weergeven</translation>
 <translation id="9152722471788855605">Safe Browsing Zip File Analyzer</translation>
 <translation id="2537271621194795300">Opstarten</translation>
 <translation id="3636096452488277381">Hallo, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1686,6 +1686,7 @@ Resterende tijd berekenen</translation>
 <translation id="7256069811654036843">Teruggaan.</translation>
 <translation id="4811502511369621968">Ongeldig e-mailadres. Controleer het adres en probeer het opnieuw.</translation>
 <translation id="175196451752279553">Gesloten tabblad opni&amp;euw openen</translation>
+<translation id="8602851771975208551">Een ander programma op je computer heeft een app toegevoegd die de manier waarop Chrome werkt kan wijzigen.</translation>
 <translation id="2655386581175833247">Gebruikerscertificaat:</translation>
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5435964418642993308">Druk op Enter om terug te gaan. Druk op de knop van het contextmenu om de geschiedenis te bekijken</translation>
@@ -1859,7 +1860,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="1901377140875308934">Inloggen op <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Huidige achtergrond is ingesteld door '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Deze pagina moet eventueel opnieuw worden geladen voordat de nieuwe instellingen van kracht zijn.</translation>
-<translation id="3740150184898623344">De knop 'Lezermodus' weergeven op alle pagina's</translation>
 <translation id="3947376313153737208">Geen selectie</translation>
 <translation id="6405640832764359650">Selectievakje voor het opslaan van Google Payments-kaarten inschakelen</translation>
 <translation id="1346104802985271895">Vietnamese invoermethode (TELEX)</translation>
@@ -4803,6 +4803,7 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="634208815998129842">Taakbeheer</translation>
 <translation id="2735698359135166290">Standaardtoetsenbord voor Roemeens</translation>
 <translation id="1701062906490865540">Deze persoon verwijderen</translation>
+<translation id="8475313423285172237">Een ander programma op je computer heeft een extensie toegevoegd die de manier waarop Chrome werkt kan wijzigen.</translation>
 <translation id="4850458635498951714">Een apparaat toevoegen</translation>
 <translation id="3140353188828248647">Adresbalk activeren</translation>
 <translation id="1371806038977523515">Deze instellingen worden beheerd door:</translation>
@@ -4815,7 +4816,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="5868927042224783176">Niet toestaan voor opnieuw autoriseren</translation>
 <translation id="3355936511340229503">Verbindingsfout</translation>
 <translation id="736108944194701898">Snelheid muis:</translation>
-<translation id="745374297349407796">De knop 'Lezermodus' weergeven op pagina's die de lange versie van inhoud bevatten</translation>
 <translation id="8371937549687734176">Bureaublad of venster casten naar...</translation>
 <translation id="4350711002179453268">Kan geen veilige verbinding maken met de server. Dit kan worden veroorzaakt door een probleem met de server, of er wordt een certificaat voor clientverificatie vereist waarover je niet beschikt.</translation>
 <translation id="4731422630970790516">Plankartikel 3</translation>
@@ -5034,7 +5034,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="6929555043669117778">Pop-ups blijven blokkeren</translation>
 <translation id="3508920295779105875">Een andere map kiezen...</translation>
 <translation id="7903925330883316394">Hulpprogramma: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">De knop 'Lezermodus' weergeven op pagina's met gestructureerde artikelopmaak</translation>
 <translation id="5549518587357384553">Bepalen of document.body.scrollTop/scrollLeft in JavaScript het standaard compatibele gedrag (ingeschakeld) of verouderd WebKit-gedrag (uitgeschakeld) reflecteert.
         Indien ingeschakeld, is document.scrollingElement, document.documentElement. Indien uitgeschakeld, is dit document.body (voor pagina's met strikte modus).</translation>
 <translation id="904451693890288097">Voer de toegangscode voor '<ph name="DEVICE_NAME"/>' in:</translation>
@@ -5874,6 +5873,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="6059652578941944813">Certificaathiërarchie</translation>
 <translation id="3153094071447713741">Experimentele invoerweergavefuncties.</translation>
 <translation id="5729712731028706266">&amp;Weergave</translation>
+<translation id="9170884462774788842">Een ander programma op je computer heeft een thema toegevoegd dat de manier waarop Chrome werkt kan wijzigen.</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="4508765956121923607">Br&amp;on weergeven</translation>
 <translation id="5975083100439434680">Uitzoomen</translation>

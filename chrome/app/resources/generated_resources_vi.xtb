@@ -16,7 +16,7 @@
 <translation id="8996941253935762404">Trang web sắp truy cập chứa chương trình độc hại</translation>
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="8098352321677019742">Thông báo của <ph name="PRODUCT_NAME"/></translation>
-<translation id="5186650237607254032">Cập nhật khóa màn hình của điện thoại để khóa này tắt khi bạn đang ở gần. Bạn sẽ mở khóa điện thoại nhanh hơn và có trải nghiệm tuyệt vời hơn với Khóa thông minh trên <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="5186650237607254032">Cập nhật khóa màn hình của điện thoại để khóa này tắt khi bạn đang ở gần. Bạn sẽ mở khóa điện thoại nhanh hơn và có trải nghiệm tuyệt vời hơn với Smart Lock trên <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="3566021033012934673">Kết nối của bạn không phải là kết nối riêng tư</translation>
 <translation id="3751522270321808809">Trang web này có thể tìm cách đánh lừa bạn để lấy cắp thông tin của bạn (ví dụ: mật khẩu, tin nhắn hoặc thẻ tín dụng).</translation>
 <translation id="3228679360002431295">Đang kết nối và xác minh<ph name="ANIMATED_ELLIPSIS"/></translation>
@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Mở rộng</translation>
 <translation id="7774497835322490043">Bật nhánh gỡ lỗi GDB. Thao tác này sẽ ngừng ứng dụng Native Client khi khởi động và chờ nacl-gdb (từ NaCl SDK) để đính kèm vào ứng dụng.</translation>
 <translation id="2686444421126615064">Xem tài khoản</translation>
+<translation id="9215293857209265904">Đã thêm &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7693221960936265065">mọi thứ</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Các trang web sau đã bị chặn theo dõi vị trí của bạn trên trang này:</translation>
@@ -588,7 +589,7 @@
 <translation id="715487527529576698">Chế độ tiếng Trung ban đầu là tiếng Trung Giản thể</translation>
 <translation id="6522350652862471760">Bật tên và biểu tượng hồ sơ trên Google</translation>
 <translation id="2164862903024139959">Bàn phím tiếng Việt (TCVN)</translation>
-<translation id="8885197664446363138">Khóa thông minh không khả dụng</translation>
+<translation id="8885197664446363138">Smart Lock không khả dụng</translation>
 <translation id="1697532407822776718">Bạn đã hoàn tất!</translation>
 <translation id="8373553483208508744">Tắt tiếng tab</translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN"/> không được mã hóa.</translation>
@@ -871,7 +872,7 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="1274997165432133392">Cookie và các dữ liệu trang web khác</translation>
 <translation id="4299729908419173967">Tiếng Braxin</translation>
 <translation id="375841316537350618">Đang tải xuống tập lệnh proxy...</translation>
-<translation id="7988930390477596403">Tính năng này sẽ được kích hoạt khi bạn mở khóa <ph name="DEVICE_TYPE"/> này vào lần sau. Với Khóa thông minh, điện thoại của bạn sẽ mở khóa thiết bị này mà không cần mật khẩu. Bluetooth sẽ được bật để hỗ trợ Khóa thông minh.</translation>
+<translation id="7988930390477596403">Tính năng này sẽ được kích hoạt khi bạn mở khóa <ph name="DEVICE_TYPE"/> này vào lần sau. Với Smart Lock, điện thoại của bạn sẽ mở khóa thiết bị này mà không cần mật khẩu. Bluetooth sẽ được bật để hỗ trợ Smart Lock.</translation>
 <translation id="45400070127195133">Bật tùy chọn này cho phép ứng dụng web truy cập các tiện ích WebGL vẫn đang ở trạng thái thử nghiệm.</translation>
 <translation id="9169664750068251925">Luôn chặn trên trang web này</translation>
 <translation id="6406303162637086258">Mô phỏng khởi động lại trình duyệt</translation>
@@ -1016,7 +1017,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="7986039047000333986">Cập nhật bảo mật đặc biệt cho <ph name="PRODUCT_NAME"/> vừa được áp dụng; bạn phải khởi động lại ngay bây giờ để cập nhật có hiệu lực (chúng tôi sẽ khôi phục các tab của bạn).</translation>
 <translation id="2787591391657537328">Cho phép tài nguyên đã tải xuống bị gián đoạn được tiếp tục hoặc khởi động lại bằng mục menu ngữ cảnh Tiếp tục.</translation>
 <translation id="3926862159284741883">Bật tiện ích WebGL thử nghiệm</translation>
-<translation id="8347255769289079987">Không bao giờ hiển thị nút Chế độ đọc</translation>
 <translation id="9152722471788855605">Trình phân tích tệp nén cho duyệt web an toàn</translation>
 <translation id="2537271621194795300">Thời gian khởi động</translation>
 <translation id="3636096452488277381">Xin chào <ph name="USER_GIVEN_NAME"/>!</translation>
@@ -1681,6 +1681,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="7256069811654036843">Hãy đưa tôi quay lại!</translation>
 <translation id="4811502511369621968">Địa chỉ email không hợp lệ. Vui lòng kiểm tra và thử lại.</translation>
 <translation id="175196451752279553">&amp;Mở lại tab đã đóng</translation>
+<translation id="8602851771975208551">Một chương trình khác trên máy tính của bạn đã thêm một ứng dụng có thể thay đổi cách Chrome hoạt động.</translation>
 <translation id="2655386581175833247">Chứng chỉ người dùng:</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5435964418642993308">Nhấn enter để quay trở lại, phím menu ngữ cảnh để xem lịch sử</translation>
@@ -1854,7 +1855,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1901377140875308934">Đăng nhập vào <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Hình nền hiện tại do '<ph name="APP_NAME"/>' đặt</translation>
 <translation id="5074318175948309511">Có thể cần phải tải lại trang này trước khi cài đặt mới có hiệu lực.</translation>
-<translation id="3740150184898623344">Hiển thị nút Chế độ đọc trên tất cả các trang</translation>
 <translation id="3947376313153737208">Không có lựa chọn nào</translation>
 <translation id="6405640832764359650">Bật hộp kiểm lưu thẻ Google Payments</translation>
 <translation id="1346104802985271895">Phương pháp nhập tiếng Việt (TELEX)</translation>
@@ -2628,7 +2628,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="7314244761674113881">Máy chủ SOCKS</translation>
 <translation id="4630590996962964935">Ký tự không hợp lệ: $1</translation>
 <translation id="7709980197120276510">Bằng cách nhấp vào Tiếp tục, bạn đồng ý với <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/> và <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
-<translation id="8556377764941071135">Bật tính năng phát hiện trạng thái lân cận cho Khóa thông minh.</translation>
+<translation id="8556377764941071135">Bật tính năng phát hiện trạng thái lân cận cho Smart Lock.</translation>
 <translation id="7533451546919522717">Xóa cookie cùng dữ liệu plugin và trang web khác khi bạn đăng xuất</translation>
 <translation id="8382645631174981738"><ph name="EXTENSION_NAME"/> được cài đặt từ xa</translation>
 <translation id="542872847390508405">Bạn đang duyệt với tư cách khách</translation>
@@ -2922,12 +2922,12 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1122960773616686544">Tên dấu trang</translation>
 <translation id="5966707198760109579">Tuần</translation>
 <translation id="7854323427075506422">Tắt luồng trình giải nén ZIP mới, dựa trên API nhà cung cấp hệ thống tệp.</translation>
-<translation id="4635114802498986446">Bật cài đặt Khóa thông minh giới hạn tính năng mở khóa thành chỉ hoạt động khi điện thoại của bạn rất gần với (trong phạm vi khoảng chừng một cánh tay) thiết bị Chrome.</translation>
+<translation id="4635114802498986446">Bật cài đặt Smart Lock giới hạn tính năng mở khóa thành chỉ hoạt động khi điện thoại của bạn rất gần với (trong phạm vi khoảng chừng một cánh tay) thiết bị Chrome.</translation>
 <translation id="7371490661692457119">Chiều rộng hình xếp mặc định</translation>
 <translation id="5148652308299789060">Vô hiệu hóa trình tạo ảnh điểm trên phần mềm 3D</translation>
 <translation id="9205143043463108573">Định vị trình chạy ứng dụng ở chính giữa màn hình theo chiều ngang.</translation>
 <translation id="7996005831155352675">Bật tự động điền bằng một cú nhấp chuột</translation>
-<translation id="870112442358620996">Đề xuất lưu mật khẩu với Google Smart Lock cho mật khẩu.</translation>
+<translation id="870112442358620996">Đề xuất lưu mật khẩu với Google Smart Lock cho Mật khẩu.</translation>
 <translation id="1414648216875402825">Bạn đang cập nhật lên phiên bản không chính thức <ph name="PRODUCT_NAME"/> chứa các tính năng hiện trong quá trình thử nghiệm. Các sự cố và lỗi không mong muốn sẽ xảy ra. Hãy thận trọng khi tiếp tục.</translation>
 <translation id="8382913212082956454">Sao chép địa chỉ &amp;email</translation>
 <translation id="7887192723714330082">Phải hồi &quot;Ok Google&quot; khi màn hình được bật và mở khóa</translation>
@@ -3619,7 +3619,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="4756388243121344051">&amp;Lịch sử</translation>
 <translation id="7614030880636783720">Dữ liệu di động và Wi-Fi không khả dụng. Trang có thể được tải sau khi thiết bị kết nối với mạng.</translation>
 <translation id="1146673768181266552">ID sự cố <ph name="CRASH_ID"/> (<ph name="CRASH_LOCAL_ID"/>)</translation>
-<translation id="3544347428588533940">Khóa thông minh gần như đã sẵn sàng</translation>
+<translation id="3544347428588533940">Smart Lock gần như đã sẵn sàng</translation>
 <translation id="8044899503464538266">Chậm</translation>
 <translation id="3789841737615482174">Cài đặt</translation>
 <translation id="4782449893814226250">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không.</translation>
@@ -3661,7 +3661,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1464258312790801189">Tài khoản của bạn</translation>
 <translation id="163309982320328737">Độ rộng ký tự ban đầu là Đầy đủ</translation>
 <translation id="6596092346130528198">Đây có phải là Trang tab mới bạn muốn không?</translation>
-<translation id="3926002189479431949">Đã thay đổi điện thoại Khóa thông minh</translation>
+<translation id="3926002189479431949">Đã thay đổi điện thoại Smart Lock</translation>
 <translation id="6965648386495488594">Cổng</translation>
 <translation id="7631887513477658702">&amp;Luôn Mở Loại Tệp Này</translation>
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
@@ -4032,7 +4032,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="1859234291848436338">Hướng Ghi</translation>
 <translation id="5038625366300922036">Xem thêm...</translation>
 <translation id="8437209419043462667">Hoa Kỳ</translation>
-<translation id="3172213052701798825">Google Smart Lock cho mật khẩu</translation>
+<translation id="3172213052701798825">Google Smart Lock cho Mật khẩu</translation>
 <translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="6397592254427394018">Mở tất cả dấu trang trong &amp;cửa sổ ẩn danh</translation>
 <translation id="8155481074575809396">Nếu được bật, văn bản hiển thị với các trường khoảng cách được đánh dấu thay vì các mặt nạ bitmap alpha.</translation>
@@ -4181,7 +4181,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="5469954281417596308">Trình quản lý dấu trang</translation>
 <translation id="106153153543631784">Vui lòng nhập lại mật khẩu để cập nhật hồ sơ Chromebook của bạn.</translation>
 <translation id="3064388234319122767">Chuyển ngữ (zdravo → здраво)</translation>
-<translation id="5425722269016440406">Bạn phải trực tuyến để tắt Khóa thông minh vì cài đặt này được đồng bộ hóa với điện thoại và các thiết bị khác của bạn. Trước tiên, vui lòng kết nối mạng.</translation>
+<translation id="5425722269016440406">Bạn phải trực tuyến để tắt Smart Lock vì cài đặt này được đồng bộ hóa với điện thoại và các thiết bị khác của bạn. Trước tiên, vui lòng kết nối mạng.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="7730494089396812859">Hiển thị chi tiết sao lưu Đám mây</translation>
 <translation id="1143142264369994168">Người ký Chứng chỉ</translation>
@@ -4798,6 +4798,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="634208815998129842">Trình quản lý tác vụ</translation>
 <translation id="2735698359135166290">Bàn phím chuẩn tiếng Rumani</translation>
 <translation id="1701062906490865540">Xóa người này</translation>
+<translation id="8475313423285172237">Một chương trình khác trên máy tính của bạn đã thêm một tiện ích có thể thay đổi cách Chrome hoạt động.</translation>
 <translation id="4850458635498951714">Thêm thiết bị</translation>
 <translation id="3140353188828248647">Thanh địa chỉ chính</translation>
 <translation id="1371806038977523515">Các cài đặt này được kiểm soát bởi:</translation>
@@ -4810,7 +4811,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="5868927042224783176">Không cho phép cấp quyền lại</translation>
 <translation id="3355936511340229503">Lỗi kết nối</translation>
 <translation id="736108944194701898">Tốc độ chuột:</translation>
-<translation id="745374297349407796">Hiển thị nút Chế độ đọc trên các trang dường như có nội dung dài</translation>
 <translation id="8371937549687734176">Truyền màn hình hoặc cửa sổ đến...</translation>
 <translation id="4350711002179453268">Không thể tạo kết nối an toàn với máy chủ. Đây có thể là sự cố với máy chủ hoặc có thể máy chủ yêu cầu chứng chỉ xác thực ứng dụng khách mà bạn không có.</translation>
 <translation id="4731422630970790516">Mục giá 3</translation>
@@ -5031,7 +5031,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="6929555043669117778">Tiếp tục chặn cửa sổ bật lên</translation>
 <translation id="3508920295779105875">Chọn Thư mục Khác...</translation>
 <translation id="7903925330883316394">Tiện ích: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Hiển thị nút Chế độ đọc trên các trang có đánh dấu cấu trúc bài viết</translation>
 <translation id="5549518587357384553">Kiểm soát việc document.body.scrollTop/scrollLeft trong JavaScript có phản ánh hành vi có thể tương tác tiêu chuẩn (được bật) hoặc hành vi WebKit cũ (bị tắt) hay không.
         Khi được bật, document.scrollingElement là document.documentElement, khi bị tắt, đó là document.body (đối với trang ở chế độ nghiêm ngặt).</translation>
 <translation id="904451693890288097">Vui lòng nhập mã cho &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5338,7 +5337,7 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="7592362899630581445">Chứng chỉ của máy chủ vi phạm hạn chế tên.</translation>
 <translation id="9003647077635673607">Cho phép trên tất cả các trang web</translation>
 <translation id="8689341121182997459">Hết hạn:</translation>
-<translation id="236128817791440714">Khuyến nghị: Thiết lập Khóa thông minh dành cho Android</translation>
+<translation id="236128817791440714">Khuyến nghị: Thiết lập Smart Lock dành cho Android</translation>
 <translation id="899403249577094719">URL Cơ sở Chứng chỉ Netscape</translation>
 <translation id="2737363922397526254">Thu gọn...</translation>
 <translation id="8605428685123651449">Bộ nhớ SQLite</translation>
@@ -5866,10 +5865,11 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="7685049629764448582">Bộ nhớ cho Javascript</translation>
 <translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
 <translation id="4641635164232599739"><ph name="FILE_NAME"/> thường không được tải xuống và có thể nguy hiểm.</translation>
-<translation id="7974067550340408553">Nhận thông báo trên điện thoại của bạn mỗi lần Khóa thông minh mở khóa <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="7974067550340408553">Nhận thông báo trên điện thoại của bạn mỗi lần Smart Lock mở khóa <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="6059652578941944813">Hệ thống cấp bậc của Chứng chỉ</translation>
 <translation id="3153094071447713741">Tính năng màn hình nhập liệu thử nghiệm.</translation>
 <translation id="5729712731028706266">&amp;Xem</translation>
+<translation id="9170884462774788842">Một chương trình khác trên máy tính của bạn đã thêm một chủ đề có thể thay đổi cách Chrome hoạt động.</translation>
 <translation id="8571108619753148184">Máy chủ 4</translation>
 <translation id="4508765956121923607">Xem &amp;Nguồn</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>

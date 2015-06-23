@@ -49,7 +49,7 @@
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="4761374747761474835">请选择帐户，以便获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="4803910478683254032">导入失败</translation>
-<translation id="3485544713029068372">Smart Lock（密码版）</translation>
+<translation id="3485544713029068372">Smart Lock（密码专用）</translation>
 <translation id="6999892069268112724">确认 Google 帐户</translation>
 <translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
@@ -190,7 +190,6 @@
 <translation id="7029809446516969842">密码</translation>
 <translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
-<translation id="2750015191954606595">输入备注</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2487368562788861256">Google 可<ph name="BEGIN_LINK"/>优化您访问的网页<ph name="END_LINK"/>，从而减少您的数据流量消耗。</translation>
@@ -411,7 +410,7 @@
 <translation id="1416550906796893042">应用版本</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7363354739009474003">正在加载“<ph name="VIDEO_TITLE"/>”</translation>
-<translation id="5712189971979076230">将发生崩溃时正在运行的文件、应用和服务的相关信息发送给 Google，协助我们确定应优先开展哪些功能和改进方面的工作。
+<translation id="5712189971979076230">将发生崩溃时正在运行的文件、应用和服务的相关信息发送给 Google，协助我们确定应优先推出和改进哪些功能。
 
 使用情况统计信息包含偏好设置、按钮点击次数和内存使用情况之类的信息，但不包含网页网址或任何个人信息。崩溃报告包含发生崩溃时的系统信息，并可能包含网页网址或个人信息，具体取决于发生崩溃时的情况。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
@@ -441,7 +440,6 @@
 <translation id="9065203028668620118">修改</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="6512448926095770873">离开此页</translation>
-<translation id="6605823718624717484">修改书签</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="5626134646977739690">名字：</translation>
@@ -487,7 +485,7 @@
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
-<translation id="7961015016161918242">永不保存</translation>
+<translation id="7961015016161918242">一律不</translation>
 <translation id="7607002721634913082">已暂停</translation>
 <translation id="6550675742724504774">选项</translation>
 <translation id="5040262127954254034">隐私设置</translation>

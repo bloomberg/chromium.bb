@@ -49,7 +49,7 @@
 <translation id="1644574205037202324">Historia</translation>
 <translation id="4761374747761474835">Wybierz konto, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="4803910478683254032">Importowanie się nie udało</translation>
-<translation id="3485544713029068372">Smart Lock do haseł</translation>
+<translation id="3485544713029068372">Smart Lock na hasła</translation>
 <translation id="6999892069268112724">Potwierdź konto Google</translation>
 <translation id="1446450296470737166">Pełne sterowanie urządzeniami MIDI</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>
@@ -190,7 +190,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="5487729733663684359">Aktualizacje Chrome nie są już dostępne w tej wersji Androida.</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
-<translation id="2750015191954606595">Wpisz notatkę</translation>
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="2487368562788861256">Zmniejsz koszty przesyłania danych, korzystając z funkcji Google <ph name="BEGIN_LINK"/>optymalizującej strony, które przeglądasz<ph name="END_LINK"/>.</translation>
@@ -441,7 +440,6 @@ Statystyki użytkowania obejmują np. dane o ustawieniach, kliknięciach przycis
 <translation id="9065203028668620118">Edycja</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="6512448926095770873">Opuść tę stronę</translation>
-<translation id="6605823718624717484">Edytuj zakładki</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
 <translation id="945632385593298557">Dostęp do mikrofonu</translation>
 <translation id="5626134646977739690">Nazwa:</translation>

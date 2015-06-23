@@ -254,6 +254,7 @@
 <translation id="42981349822642051">Expandir</translation>
 <translation id="7774497835322490043">Ativa o stub de depuração de GDB. Isto irá parar uma aplicação Native Client no arranque e esperar pela anexação de nacl-gdb (a partir de NaCl SDK).</translation>
 <translation id="2686444421126615064">Ver conta</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; adicionada</translation>
 <translation id="7693221960936265065">desde sempre</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Os sites seguintes foram bloqueados de monitorizar a sua localização nesta página:</translation>
@@ -1012,7 +1013,6 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="7986039047000333986">Acabou de ser instalada uma atualização de segurança especial para o <ph name="PRODUCT_NAME"/>. Deve reiniciar agora para que tenha efeito (restauraremos os seus separadores).</translation>
 <translation id="2787591391657537328">Permitir que as transferências que foram interrompidas sejam resumidas ou reiniciadas, utilizando o item Retomar do menu de contexto.</translation>
 <translation id="3926862159284741883">Ativar Extensões de Rascunho WebGL</translation>
-<translation id="8347255769289079987">Nunca mostrar o botão Modo de leitor</translation>
 <translation id="9152722471788855605">Analisador de ficheiros ZIP da Navegação segura</translation>
 <translation id="2537271621194795300">Arranques</translation>
 <translation id="3636096452488277381">Olá <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1676,6 +1676,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7256069811654036843">Voltar atrás!</translation>
 <translation id="4811502511369621968">Endereço de email inválido. Verifique e tente novamente.</translation>
 <translation id="175196451752279553">Voltar a abrir o s&amp;eparador fechado</translation>
+<translation id="8602851771975208551">Outro programa do computador adicionou uma aplicação que pode alterar o funcionamento do Chrome</translation>
 <translation id="2655386581175833247">Certificado de utilizador:</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5435964418642993308">Prima Enter para regressar e a tecla de menu de contexto para ver o histórico</translation>
@@ -1848,7 +1849,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="1901377140875308934">Iniciar sessão no <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">A imagem de fundo atual é definida por &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Poderá ser necessário voltar a atualizar esta página antes de aplicar as novas definições.</translation>
-<translation id="3740150184898623344">Mostrar o botão Modo de leitor em todas as páginas</translation>
 <translation id="3947376313153737208">Sem selecção</translation>
 <translation id="6405640832764359650">Ativar a caixa de verificação para guardar o cartão do Google Payments</translation>
 <translation id="1346104802985271895">Método de introdução vietnamita (TELEX)</translation>
@@ -4779,6 +4779,7 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="634208815998129842">Gestor de tarefas</translation>
 <translation id="2735698359135166290">Teclado padrão romeno</translation>
 <translation id="1701062906490865540">Remover esta pessoa</translation>
+<translation id="8475313423285172237">Outro programa do computador adicionou uma extensão que pode alterar o funcionamento do Chrome.</translation>
 <translation id="4850458635498951714">Adicionar um aparelho</translation>
 <translation id="3140353188828248647">Focar barra de endereço</translation>
 <translation id="1371806038977523515">Estas definições são controladas por:</translation>
@@ -4791,7 +4792,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="5868927042224783176">Não permitir reautenticação</translation>
 <translation id="3355936511340229503">Erro de ligação</translation>
 <translation id="736108944194701898">Velocidade do rato:</translation>
-<translation id="745374297349407796">Mostrar o botão Modo de leitor em páginas que parecem ter conteúdo em formato longo</translation>
 <translation id="8371937549687734176">Transmitir o ambiente de trabalho ou a janela para...</translation>
 <translation id="4350711002179453268">Não foi possível estabelecer uma ligação segura ao servidor. Isto poderá dever-se a um problema com o servidor ou poderá ser necessário um certificado de autenticação de cliente que não tenha.</translation>
 <translation id="4731422630970790516">Artigo de prateleira 3</translation>
@@ -5011,7 +5011,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="6929555043669117778">Continuar a bloquear pop-ups</translation>
 <translation id="3508920295779105875">Escolher outra pasta...</translation>
 <translation id="7903925330883316394">Utilitário: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Mostrar o botão Modo de leitor em páginas com marcação estruturada por artigos</translation>
 <translation id="5549518587357384553">Controle se document.body.scrollTop/scrollLeft no JavaScript reflete o comportamento interoperável padrão (ativado) ou o comportamento do WebKit antigo (desativado).
         Quando está ativado, document.scrollingElement é document.documentElement e quando está desativado é document.body (para páginas no modo estrito).</translation>
 <translation id="904451693890288097">Introduza a chave de acesso para &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5848,6 +5847,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="3153094071447713741">Funcionalidades de vista de introdução experimentais.</translation>
 <translation id="5729712731028706266">&amp;Ver</translation>
+<translation id="9170884462774788842">Outro programa do computador adicionou um tema que pode alterar o funcionamento do Chrome.</translation>
 <translation id="8571108619753148184">Servidor 4</translation>
 <translation id="4508765956121923607">Ver &amp;Origem</translation>
 <translation id="5975083100439434680">Reduzir</translation>

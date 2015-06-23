@@ -15,7 +15,7 @@
 <translation id="8996941253935762404">Tovuti iliyo mbele ina programu zinazodhuru</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
 <translation id="8098352321677019742">Arifa za <ph name="PRODUCT_NAME"/></translation>
-<translation id="5186650237607254032">Sasisha kufunga skrini ya simu yako ili ijizime ukiwa karibu. Utaifungua simu haraka zaidi, na kufurahia hali bora ya utumiaji wa Smart Lock kwenye <ph name="DEVICE_TYPE"/> chako.</translation>
+<translation id="5186650237607254032">Sasisha kipengele cha kufunga skrini ya simu yako ili ijizime ukiwa karibu. Utaifungua simu haraka zaidi na ufurahie hali bora ya matumizi ya Smart Lock kwenye <ph name="DEVICE_TYPE"/> yako.</translation>
 <translation id="3566021033012934673">Muunganisho wako si wa faragha</translation>
 <translation id="3751522270321808809">Huenda tovuti hii ikajaribu kukulaghai ili iibe maelezo yako (kwa mfano: manenosiri, ujumbe, au kadi za malipo).</translation>
 <translation id="3228679360002431295">Inaunganisha na kuthibitisha<ph name="ANIMATED_ELLIPSIS"/></translation>
@@ -257,6 +257,7 @@
 <translation id="42981349822642051">Refusha</translation>
 <translation id="7774497835322490043">Wezesha lugha nyingine ya kutatua GDB. Hii itakomesha programu ya Mteja wa Asili kuanza na kusubiri nacl-gdb (kutoka SDK NaCl) kuambatisha kwayo.</translation>
 <translation id="2686444421126615064">Ona akaunti</translation>
+<translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; limeongezwa</translation>
 <translation id="7693221960936265065">kuanzia mwanzo</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Tovuti zifuatazo zimezuiwa zisifuatilie mahali ulipo kwenye ukurasa huu:</translation>
@@ -588,7 +589,7 @@
 <translation id="715487527529576698">Modi ya Kwanza ya Kichina ni Kichina Kilichorahisishwa</translation>
 <translation id="6522350652862471760">Washa jina na ikoni ya wasifu wa Google</translation>
 <translation id="2164862903024139959">Kibodi ya Kivietnamu (TCVN)</translation>
-<translation id="8885197664446363138">Kufuli Mahiri halipatikani</translation>
+<translation id="8885197664446363138">Smart Lock haipatikani</translation>
 <translation id="1697532407822776718">Mko tayari nyote!</translation>
 <translation id="8373553483208508744">Zima vichupo</translation>
 <translation id="8703575177326907206">Muunganisho wako kwa <ph name="DOMAIN"/> haujasimbwa.</translation>
@@ -1013,7 +1014,6 @@
 <translation id="7986039047000333986">Usasishaji maalum wa usalama kwa <ph name="PRODUCT_NAME"/> umetekelezwa hivi karibuni; unastahili kuanzisha upya sasa ili uanze kufanya kazi (tutarejesha upya vichupo vyako).</translation>
 <translation id="2787591391657537328">Ruhusu vipakuliwa ambavyo vimekatizwa kuendelea au kuanzishwa tena, kwa kutumia kipengee cha menyu ya maudhui cha Endelea.</translation>
 <translation id="3926862159284741883">Washa Viendelezi vya Rasimu ya WebGL</translation>
-<translation id="8347255769289079987">Usiwahi kuonyesha kitufe cha Hali ya Kusoma</translation>
 <translation id="9152722471788855605">Kichanganuzi cha Faili za Zip kwa Kuvinjari Salama</translation>
 <translation id="2537271621194795300">Vianzishi</translation>
 <translation id="3636096452488277381">Hujambo, <ph name="USER_GIVEN_NAME"/> .</translation>
@@ -1673,6 +1673,7 @@ Inakokotoa muda unaosalia</translation>
 <translation id="7256069811654036843">Nirejeshe!</translation>
 <translation id="4811502511369621968">Anwani ya barua pepe batili. Tafadhali angalia na ujaribu tena.</translation>
 <translation id="175196451752279553">&amp;Fungua tena kichupo kilichofungwa</translation>
+<translation id="8602851771975208551">Programu nyingine kwenye kompyuta yako iliongeza programu ambayo inaweza kubadilisha jinsi Chrome inavyofanya kazi.</translation>
 <translation id="2655386581175833247">Cheti cha mtumiaji:</translation>
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="5435964418642993308">Bonyeza ingiza ili kurudi nyuma, kitufe cha menyu ya muktadha ili kuona historia</translation>
@@ -1846,7 +1847,6 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="1901377140875308934">Ingia katika <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Mandhari ya sasa yamewekwa na '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Huenda ukurasa huu ukahitaji kupakiwa tena kabla mipangilio mipya ianze kutumika.</translation>
-<translation id="3740150184898623344">Onyesha kitufe cha Hali ya Kusoma kwenye kurasa zote</translation>
 <translation id="3947376313153737208">Hakuna uteuzi</translation>
 <translation id="6405640832764359650">Washa kisanduku cha kuteua cha kuhifadhi kadi ya Google Payments</translation>
 <translation id="1346104802985271895">Mbinu ingizo ya Kivietnamu (TELEKSI)</translation>
@@ -2074,7 +2074,7 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="158917669717260118">Haiwezi kupakia ukurasa wa wavuti kwa sababu kompyuta yako iliingia katika hali tulivu. wakati hii inafanyika, miunganisho ya mtandao inazimwa na maombi mapya ya mtandao yanashindikana. Kupakia upya ukurasa kutatatua suala hili.</translation>
 <translation id="6316671927443834085">Imeshindwa kukata muunganisho kutoka &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="1962233722219655970">Ukurasa huu unatumia programu ya Mteja Halisi isiyofanya kazi kwenye kompyuta yako.</translation>
-<translation id="5458733660263868683">Usitumie Smart Lock, inayokuruhusu kufungua Chromebook yako ikiwa karibu na simu yako. Ikiwa wewe ni mmiliki wa kifaa, pia hii inazima Smart Lock kwenye skrini ya kuingia katika akaunti.</translation>
+<translation id="5458733660263868683">Usitumie Smart Lock, inayokuruhusu kufungua Chromebook yako wakati iko karibu na simu yako. Ikiwa ni wewe mwenye kifaa, pia hii huzima Smart Lock kwenye skrini ya kuingia katika akaunti.</translation>
 <translation id="1108685299869803282">Zaidi ya 80% ya watu wanaoona onyo hili hurudi kwenye usalama badala kujihatarisha kwa programu hasidi. Hata hivyo, ikiwa unaelewa kiwango cha hatari kinachoweza kutokea, unaweza <ph name="BEGIN_LINK"/>kutembelea tovuti isiyo salama<ph name="END_LINK"/> kabla programu hatari hazijaondolewa.</translation>
 <translation id="219008588003277019">Sehemu Asili ya Seva-teja: <ph name="NEXE_NAME"/></translation>
 <translation id="8228447825257396644">Zima kibodi ya mwonekano wa uingizaji katika usanifu bora.</translation>
@@ -2906,7 +2906,7 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="1122960773616686544">Jina la alamisho</translation>
 <translation id="5966707198760109579">Juma</translation>
 <translation id="7854323427075506422">Zima mtiririko mpya wa ZIP unpacker, kulingana na API ya Mtoa Huduma wa Mfumo wa Faili.</translation>
-<translation id="4635114802498986446">Huwasha mipangilio ya Smart Lock inayozuia kufungua kufanya kazi tu simu yako ikiwa karibu sana na (kwa kukisia, ndani ya urefu wa mkono wa) kifaa cha Chrome.</translation>
+<translation id="4635114802498986446">Huwasha mipangilio ya Smart Lock inayozuia simu yako isifunguliwe ila tu wakati iko karibu sana na kifaa cha Chrome.</translation>
 <translation id="7371490661692457119">Upana chaguo-msingi wa kigae</translation>
 <translation id="5148652308299789060">Inalemaza rasterizer ya programu ya 3D</translation>
 <translation id="9205143043463108573">Inaweka Kifungua Programu katikati ya skrini na kukipanua.</translation>
@@ -3602,7 +3602,7 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="4756388243121344051">&amp;Historia</translation>
 <translation id="7614030880636783720">Data ya Wi-Fi na kifaa cha mkononi hazipatikani. Ukurasa unaweza kupakiwa pindi tu kifaa kinapounganishwa kwenye mtandao.</translation>
 <translation id="1146673768181266552">Kitambulisho cha kuacha kufanya kazi <ph name="CRASH_ID"/> ( <ph name="CRASH_LOCAL_ID"/> )</translation>
-<translation id="3544347428588533940">Smart Lock inakaribia kuwa tayari</translation>
+<translation id="3544347428588533940">Smart Lock iko karibu kuwa tayari</translation>
 <translation id="8044899503464538266">Polepole</translation>
 <translation id="3789841737615482174">Sakinisha</translation>
 <translation id="4782449893814226250">Uliwauliza wazazi wako ikiwa ni sawa kuutembelea ukurasa huu.</translation>
@@ -4160,7 +4160,7 @@ Imebakisha <ph name="HOUR"/>:<ph name="MINUTE"/> ijae</translation>
 <translation id="5469954281417596308">Meneja alamisho</translation>
 <translation id="106153153543631784">Tafadhali weka nenosiri lako tena ili usasishe wasifu wako kwenye Chromebook.</translation>
 <translation id="3064388234319122767">Unukuzi wa mfumo wa kuandika (zdravo → здраво)</translation>
-<translation id="5425722269016440406">Lazima uwe mtandaoni ili kuzima Kufuli Mahiri kwa sababu mipangilio hii imesawazishwa kwenye simu na vifaa vyako vingine. Tafadhali unganisha kwenye mtandao kwanza.</translation>
+<translation id="5425722269016440406">Lazima uwe mtandaoni ili uzima mfumo wa Smart Lock kwa sababu mipangilio hii imesawazishwa kwenye simu na vifaa vyako vingine. Tafadhali unganisha kwenye mtandao kwanza.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="7730494089396812859">Onyesha maelezo ya hifadhi rudufu ya Wingu</translation>
 <translation id="1143142264369994168">Mtia Sahihi kwenye Cheti</translation>
@@ -4228,7 +4228,7 @@ Imebakisha <ph name="HOUR"/>:<ph name="MINUTE"/> ijae</translation>
 <translation id="6151417162996330722">Cheti cha seva kina muda sahihi ambao ni mrefu sana.</translation>
 <translation id="952992212772159698">Haijaamilishwa</translation>
 <translation id="443464694732789311">Endelea</translation>
-<translation id="140250605646987970">Imepata simu yako. Lakini Smart Lock inafanya kazi kwenye vifaa vyenye Android 5.0 na zaidi pekee. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
+<translation id="140250605646987970">Simu yako imepatikana. Lakini Smart Lock inafanya kazi kwenye vifaa vyenye Android 5.0 na matoleo mapya zaidi pekee. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="8299269255470343364">Kijapani</translation>
 <translation id="9088659014978240063">Metriki zinazohusiana na athari za <ph name="SHORT_PRODUCT_NAME"/> kwenye CPU ya mfumo</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
@@ -4684,7 +4684,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7179921470347911571">Zindua upya Sasa</translation>
 <translation id="9065203028668620118">Badilisha</translation>
 <translation id="6978611942794658017">Faili hii imeundwa kwa ajili ya PC inayotumia programu ya Windows. Hii haioani na kifaa chako kinachoendeshwa na Chrome OS. Tafadhali tafuta katika Duka la Wavuti la Chrome upate programu mwafaka ya kubadilisha.</translation>
-<translation id="3002017044809397427">Imepata simu yako ya <ph name="PHONE_TYPE"/>. Lakini Smart Lock inafanya kazi kwenye vifaa vyenye Android 5.0 na zaidi pekee. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
+<translation id="3002017044809397427">Simu yako ya <ph name="PHONE_TYPE"/> imepatikana. Lakini Smart Lock inafanya kazi kwenye vifaa vyenye Android 5.0 na matoleo mapya zaidi pekee. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
 <translation id="2251218783371366160">Fungua kwa kitazamaji cha mfumo</translation>
 <translation id="1177863135347784049">Maalum</translation>
 <translation id="4881695831933465202">Fungua</translation>
@@ -4780,6 +4780,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="634208815998129842">Kidhibiti cha shughuli</translation>
 <translation id="2735698359135166290">Kibodi wastani ya Kiromania</translation>
 <translation id="1701062906490865540">Ondoa mtu huyu</translation>
+<translation id="8475313423285172237">Programu nyingine kwenye kompyuta yako iliongeza kiendelezi ambacho kinaweza kubadilisha jinsi Chrome inavyofanya kazi.</translation>
 <translation id="4850458635498951714">Ongeza kifaa</translation>
 <translation id="3140353188828248647">Lenga upau anwani</translation>
 <translation id="1371806038977523515">Mipangilio hii inadhibitiwa na:</translation>
@@ -4792,7 +4793,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="5868927042224783176">Usiruhusu uidhinishaji upya</translation>
 <translation id="3355936511340229503">Hitilafu ya muunganisho</translation>
 <translation id="736108944194701898">Kasi ya kipanya:</translation>
-<translation id="745374297349407796">Onyesha kitufe cha Hali ya Kusoma kwenye kurasa zinazoonekana kuwa za maudhui marefu</translation>
 <translation id="8371937549687734176">Tuma eneo-kazi au dirisha kwenye...</translation>
 <translation id="4350711002179453268">Haikuweza kuunganisha kwa seva kwa njia salama. Hili laweza kuwa tatizo la seva, au inaweza kuwa inahitaji cheti cha uthibitishaji wa teja ambacho huna.</translation>
 <translation id="4731422630970790516">Kipengee cha kabati cha 3</translation>
@@ -5012,7 +5012,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="6929555043669117778">Endelea kuzuia programu jalizi</translation>
 <translation id="3508920295779105875">Chagua Folda Lingine...</translation>
 <translation id="7903925330883316394">Kitumizi: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Onyesha kitufe cha Hali ya Kusoma kwenye kurasa zenye maelezo ya makala yenye muundo</translation>
 <translation id="5549518587357384553">Dhibiti ikiwa document.body.scrollTop/scrollLeft katika JavaScript inaakisi tabia ya ushirikiano wastani (imewasha) au tabia ya WebKit iliyopitwa na wakati (imezimwa).
         Inapowashwa, document.scrollingElement ni document.documentElement, inapozimwa ni document.body (kwa kurasa za zana ya wasanidi programu).</translation>
 <translation id="904451693890288097">Tafadhali weka nenosiri la &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5133,7 +5132,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="8677914765885474883">Onyo: Data haikusanywi! Hii inaweza kusababisha ukurasa kuwa pole pole!</translation>
 <translation id="169515659049020177">Hama</translation>
 <translation id="3551117997325569860">Ili kubadilisha proksi, wezesha mpangilio wa &quot;<ph name="USE_SHARED_PROXIES"/>&quot;.</translation>
-<translation id="2810731435681289055">Wakati ujao utakapofungua <ph name="DEVICE_TYPE"/> hii, Smart Lock itasasisha ili uweze tu kubofya picha yako ili kuingia.</translation>
+<translation id="2810731435681289055">Wakati ujao utakapofungua <ph name="DEVICE_TYPE"/> hii, Smart Lock itasasisha ili uweze tu kubofya picha yako ili uingie.</translation>
 <translation id="6110413515502722199">Ikiwekwa, kuingia katika akaunti kutatekelezwa kwa kutumia mtiririko wa zamani wa GAIA badala ya WebView mpya.</translation>
 <translation id="6268747994388690914">Ingiza alamisho kutoka faili ya HTML...</translation>
 <translation id="6096047740730590436">Fungua iliyoongezwa</translation>
@@ -5319,7 +5318,7 @@ Inakokotoa muda wa kujaa</translation>
 <translation id="7592362899630581445">Cheti cha seva kinakiuka vikwazo vya jina.</translation>
 <translation id="9003647077635673607">Ruhusu kwenye tovuti zote</translation>
 <translation id="8689341121182997459">Inak</translation>
-<translation id="236128817791440714">Inapendekezwa: Sanidi Smart Lock ya Android</translation>
+<translation id="236128817791440714">Inapendekezwa: Weka Smart Lock ya Android</translation>
 <translation id="899403249577094719">URL ya Msingi wa Vyeti wa Netscape</translation>
 <translation id="2737363922397526254">Kunja...</translation>
 <translation id="8605428685123651449">Kumbukumbu ya SQLite</translation>
@@ -5791,7 +5790,7 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="9111742992492686570">Pakua Usasishaji Muhimu wa Usalama</translation>
 <translation id="1979280758666859181">Unabadilisha hadi kituo chenye toleo zee la <ph name="PRODUCT_NAME"/>. Mabadiliko ya kituo yatatumika wakati toleo la kituo linalingana na toleo lililosanidiwa kwenye kifaa chako.</translation>
 <translation id="304009983491258911">Badilisha PIN ya SIM kadi</translation>
-<translation id="7556033326131260574">Smart Lock haikuthibitisha akaunti yako. Charaza nenosiri lako ili kuingia.</translation>
+<translation id="7556033326131260574">Smart Lock haikuweza kuthibitisha akaunti yako. Charaza nenosiri lako ili uingie.</translation>
 <translation id="8600929685092827187">Amsha Kwenye Pakiti</translation>
 <translation id="2045969484888636535">Endelea kuzuia vidakuzi</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
@@ -5850,6 +5849,7 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="6059652578941944813">Hadhi ya Vyeti:</translation>
 <translation id="3153094071447713741">Vipengele vya mwonekano wa uingizaji wa majaribio.</translation>
 <translation id="5729712731028706266">&amp;Ona</translation>
+<translation id="9170884462774788842">Programu nyingine kwenye kompyuta yako iliongeza mandhari ambayo yanaweza kubadilisha jinsi Chrome inavyofanya kazi.</translation>
 <translation id="8571108619753148184">Seva 4</translation>
 <translation id="4508765956121923607">Tazama &amp;Asili</translation>
 <translation id="5975083100439434680">Fifiza</translation>

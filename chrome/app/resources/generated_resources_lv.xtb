@@ -255,6 +255,7 @@
 <translation id="42981349822642051">Izvērst</translation>
 <translation id="7774497835322490043">Iespējo GDB atkļūdošanas pasakni. Tas startēšanas brīdī apturēs lietojumprogrammu Native Client un gaidīs nacl-gdb (no NaCl SDK) pievienošanu tam.</translation>
 <translation id="2686444421126615064">Skatīt kontu</translation>
+<translation id="9215293857209265904">Ir pievienots paplašinājums <ph name="EXTENSION_NAME"/></translation>
 <translation id="7693221960936265065">paša sākuma</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Šīs vietnes ir bloķētas un nevar izsekot jūsu atrašanās vietu šajā lapā:</translation>
@@ -1013,7 +1014,6 @@ Atlicis: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="7986039047000333986">Pakalpojuma <ph name="PRODUCT_NAME"/> īpašs drošības atjauninājums tikko tika piemērots. Lai tas sāktu darboties, restartējiet tūlīt (mēs atjaunosim cilnes).</translation>
 <translation id="2787591391657537328">Atļaut pārtrauktu lejupielāžu turpināšanu vai restartēšanu, izmantojot kontekstizvēlnes vienumu Atsākt.</translation>
 <translation id="3926862159284741883">Iespējot WebGL melnraksta paplašinājumus</translation>
-<translation id="8347255769289079987">Nekad nerādīt lasītāja režīma pogu</translation>
 <translation id="9152722471788855605">Drošas pārlūkošanas ZIP failu analizētājs</translation>
 <translation id="2537271621194795300">Startēšana</translation>
 <translation id="3636096452488277381">Sveicināti, <ph name="USER_GIVEN_NAME"/>!</translation>
@@ -1677,6 +1677,7 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="7256069811654036843">Novirzīt mani atpakaļ!</translation>
 <translation id="4811502511369621968">E-pasta adrese nav derīga. Lūdzu, pārbaudiet to un mēģiniet vēlreiz.</translation>
 <translation id="175196451752279553">Vēlr&amp;eiz atvērt aizvērto cilni</translation>
+<translation id="8602851771975208551">Cita datorā instalēta programma ir izraisījusi tādas lietotnes pievienošanu, kas var ietekmēt pārlūkprogrammas Chrome darbību.</translation>
 <translation id="2655386581175833247">Lietotāja sertifikāts:</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5435964418642993308">Nospiediet taustiņu Enter, lai atgrieztos. Nospiediet kontekstizvēlnes taustiņu, lai redzētu vēsturi</translation>
@@ -1747,7 +1748,7 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="3759461132968374835">Pēdējā laikā neesat ziņojis par avārijām. Šeit nebūs redzamas avārijas, kas radās laikā, kad avāriju pārskatu izveide bija atspējota.</translation>
 <translation id="189210018541388520">Atvērt pilnekrāna režīmu</translation>
 <translation id="8795668016723474529">Pievienot kredītkarti</translation>
-<translation id="5860033963881614850">Izslēgts</translation>
+<translation id="5860033963881614850">Izsl.</translation>
 <translation id="7483734554143933755">Turpināt bloķēt spraudņus</translation>
 <translation id="6575251558004911012">Vaicāt, ja vietne pieprasa piekļuvi manai kamerai (ieteicams)</translation>
 <translation id="4116663294526079822">Vienmēr atļaut šajā vietnē</translation>
@@ -1849,7 +1850,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="1901377140875308934">Pierakstīties pakalpojumā <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Pašreizējo fona tapeti iestatīja <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Lai jaunie iestatījumi tiktu piemēroti, iespējams, šī lapa būs jāielādē atkārtoti.</translation>
-<translation id="3740150184898623344">Rādīt lasītāja režīma pogu visās lapās</translation>
 <translation id="3947376313153737208">Nav atlasīts</translation>
 <translation id="6405640832764359650">Iespējot Google Payments kartes saglabāšanas izvēles rūtiņu</translation>
 <translation id="1346104802985271895">Vjetnamiešu valodas ievades metode (TELEX)</translation>
@@ -2439,7 +2439,7 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
 <translation id="1567993339577891801">JavaScript konsole</translation>
 <translation id="4641539339823703554">Chrome nevarēja iestatīt sistēmas laiku. Ludzu, pārbaudiet tālāk norādīto laiku un labojiet to, ja nepieciešams.</translation>
-<translation id="7463006580194749499">Personas pievienošana</translation>
+<translation id="7463006580194749499">Pievienot personu</translation>
 <translation id="895944840846194039">JavaScript atmiņa</translation>
 <translation id="6462080265650314920">Instalētajām lietotnēm ir jābūt ar šāda veida saturu: <ph name="CONTENT_TYPE"/>.</translation>
 <translation id="7857949311770343000">Vai šī ir jaunas cilnes lapa, ko gaidījāt?</translation>
@@ -4783,6 +4783,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation
 <translation id="634208815998129842">Uzdevumu pārvaldnieks</translation>
 <translation id="2735698359135166290">Rumāņu standarta tastatūra</translation>
 <translation id="1701062906490865540">Noņemt šo lietotāju</translation>
+<translation id="8475313423285172237">Cita datorā instalēta programma ir izraisījusi tāda paplašinājuma pievienošanu, kas var ietekmēt pārlūkprogrammas Chrome darbību.</translation>
 <translation id="4850458635498951714">Pievienot ierīci</translation>
 <translation id="3140353188828248647">Iezīmēt adreses joslu</translation>
 <translation id="1371806038977523515">Šos iestatījumus kontrolē šis paplašinājums:</translation>
@@ -4795,7 +4796,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation
 <translation id="5868927042224783176">Neatļaut atkārtotu autentifikāciju</translation>
 <translation id="3355936511340229503">Savienojuma kļūda</translation>
 <translation id="736108944194701898">Peles ātrums:</translation>
-<translation id="745374297349407796">Rādīt lasītāja režīma pogu lapās, kurās šķietami ietverts garš veidlapu saturs</translation>
 <translation id="8371937549687734176">Darbvirsmas vai loga apraide ierīcē...</translation>
 <translation id="4350711002179453268">Nespēj izveidot drošu savienojumu ar serveri. Tā var būt servera problēma, vai arī, iespējams, serveris prasa klienta autentifikācijas sertifikātu, kura jums nav.</translation>
 <translation id="4731422630970790516">3. plaukta vienums</translation>
@@ -5016,7 +5016,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation
 <translation id="6929555043669117778">Turpināt bloķēt uznirstošos logus</translation>
 <translation id="3508920295779105875">Izvēlēties citu mapi...</translation>
 <translation id="7903925330883316394">Utilīta: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Rādīt lasītāja režīma pogu lapās ar strukturētu rakstu iezīmēšanu</translation>
 <translation id="5549518587357384553">Nosaka, vai document.body.scrollTop/scrollLeft valodā JavaScript atspoguļo standarta savstarpējās izmantojamības rīcību (iespējota) vai mantoto WebKit rīcību (atspējota).
         Ja šī opcija ir iespējota, document.scrollingElement ir document.documentElement. Ja šī opcija ir atspējota, tas ir document.body (stingrā režīma lapām).</translation>
 <translation id="904451693890288097">Ievadiet ierīces <ph name="DEVICE_NAME"/> piekļuves atslēgu:</translation>
@@ -5856,6 +5855,7 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="6059652578941944813">Sertifikātu hierarhija</translation>
 <translation id="3153094071447713741">Eksperimentālās ievades skatīšanas funkcijas.</translation>
 <translation id="5729712731028706266">&amp;Skatīt</translation>
+<translation id="9170884462774788842">Cita datorā instalēta programma ir izraisījusi tāda motīva pievienošanu, kas var ietekmēt pārlūkprogrammas Chrome darbību.</translation>
 <translation id="8571108619753148184">4. serveris</translation>
 <translation id="4508765956121923607">Skatīt av&amp;otu</translation>
 <translation id="5975083100439434680">Tālināt</translation>

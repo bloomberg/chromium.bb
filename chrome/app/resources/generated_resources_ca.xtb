@@ -11,7 +11,7 @@
 <translation id="166179487779922818">La contrasenya és massa curta.</translation>
 <translation id="2345460471437425338">Certificat incorrecte per a l'amfitrió.</translation>
 <translation id="3688507211863392146">Escriure en fitxers i carpetes que s'obrin a l'aplicació</translation>
-<translation id="226269835214688456">Si desactiveu Smart Lock per a Chromebook, no podreu desbloquejar els dispositius Chrome amb el telèfon, sinó que haureu d'escriure la contrasenya.</translation>
+<translation id="226269835214688456">Si desactiveu Smart Lock per a Chromebook, no podreu desbloquejar els dispositius Chrome amb el vostre telèfon, sinó que haureu d'escriure la contrasenya.</translation>
 <translation id="8996941253935762404">El lloc al qual accediu conté programes perjudicials</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
 <translation id="8098352321677019742">Notificacions de <ph name="PRODUCT_NAME"/></translation>
@@ -253,6 +253,7 @@
 <translation id="42981349822642051">Amplia</translation>
 <translation id="7774497835322490043">Activeu el resguard de la depuració basada en GDB. Això aturarà qualsevol aplicació Native Client en iniciar i esperarà fins que nacl-gdb (de NaCl SDK) s'hi adjunti.</translation>
 <translation id="2686444421126615064">Visualitzeu el compte</translation>
+<translation id="9215293857209265904">S'ha afegit &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7693221960936265065">tot</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Els llocs següents han bloquejat el seguiment de la vostra ubicació en aquesta pàgina:</translation>
@@ -855,7 +856,7 @@ Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="1274997165432133392">Galetes i altres dades dels llocs</translation>
 <translation id="4299729908419173967">Brasiler</translation>
 <translation id="375841316537350618">S'està baixant l'script de servidor intermediari...</translation>
-<translation id="7988930390477596403">S'activarà la propera vegada que desbloquegeu aquest <ph name="DEVICE_TYPE"/>. Amb Smart Lock, podreu desbloquejar aquest dispositiu sense contrasenya mitjançant el telèfon. El Bluetooth es connectarà per activar Smart Lock.</translation>
+<translation id="7988930390477596403">S'activarà la propera vegada que desbloquegeu aquest <ph name="DEVICE_TYPE"/>. Amb Smart Lock, el vostre telèfon desbloquejarà aquest dispositiu sense necessitat de contrasenya. El Bluetooth es connectarà per activar Smart Lock.</translation>
 <translation id="45400070127195133">L'activació d'aquesta opció permet que les aplicacions web accedeixin a les extensions WebGL que encara es troben en l'estat d'esborrany.</translation>
 <translation id="9169664750068251925">Bloqueja sempre en aquest lloc</translation>
 <translation id="6406303162637086258">Simula el reinici del navegador</translation>
@@ -994,13 +995,12 @@ Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="9153341767479566106">Altres extensions que no s'han pogut carregar:</translation>
 <translation id="1864111464094315414">Inicia la sessió</translation>
 <translation id="3451859089869683931">El número de telèfon no és vàlid. Comproveu-lo i torneu-ho a provar.</translation>
-<translation id="7130666834200497454">Per garantir la seguretat del dispositiu <ph name="DEVICE_TYPE"/>, Smart Lock per a Chromebook necessita un bloqueig de pantalla al telèfon per tal de desbloquejar-lo. Ja heu augmentat la seguretat del telèfon? Feu clic a Torna-ho a comprovar per verificar-ho i per continuar amb la configuració.</translation>
+<translation id="7130666834200497454">Per garantir la seguretat del dispositiu <ph name="DEVICE_TYPE"/>, Smart Lock per a Chromebook necessita que el telèfon tingui configurat un bloqueig de pantalla per tal de desbloquejar-lo. Ja heu protegit el telèfon? Feu clic a Torna-ho a comprovar per verificar-ho i per continuar amb la configuració.</translation>
 <translation id="5414882716132603766">Esborrar les credencials de sincronització del gestor de contrasenyes</translation>
 <translation id="6353618411602605519">Teclat croat</translation>
 <translation id="7986039047000333986">S'ha aplicat una actualització de seguretat especial per a <ph name="PRODUCT_NAME"/>; reinicieu ara perquè es faci efectiva (restaurarem les pestanyes).</translation>
 <translation id="2787591391657537328">Permet reactivar o reiniciar les baixades interrompudes mitjançant l'element Reactiva del menú contextual.</translation>
 <translation id="3926862159284741883">Activa les extensions d'esborrany WebGL</translation>
-<translation id="8347255769289079987">No mostris mai el botó del mode de lector</translation>
 <translation id="9152722471788855605">Analitzador de fitxers zip per a la navegació segura</translation>
 <translation id="2537271621194795300">Inicis</translation>
 <translation id="3636096452488277381">Hola, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1028,7 +1028,7 @@ Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="3825863595139017598">Teclat mongol</translation>
 <translation id="8184538546369750125">Utilitza l'opció predeterminada global (Permet)</translation>
 <translation id="1506687042165942984">Mostra una còpia desada (és a dir, no actualitzada) d'aquesta pàgina.</translation>
-<translation id="4594109696316595112">Activació única: escriviu la contrasenya per activar Smart Lock a <ph name="DEVICE_TYPE"/>. Amb Smart Lock, el telèfon desbloqueja el dispositiu sense cap contrasenya. Per canviar o desactivar la funció, accediu a la configuració del dispositiu <ph name="DEVICE_TYPE"/>.</translation>
+<translation id="4594109696316595112">Activació única: escriviu la contrasenya per activar Smart Lock en aquest <ph name="DEVICE_TYPE"/>. El vostre telèfon utilitzarà Smart Lock per desbloquejar el dispositiu sense necessitat de contrasenya. Per canviar o desactivar aquesta funció, accediu a la configuració del vostre dispositiu <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="2018352199541442911">El vostre dispositiu d'emmagatzematge extern no és compatible en aquests moments.</translation>
 <translation id="2678063897982469759">Torna a activar</translation>
 <translation id="1779766957982586368">Tanca la finestra</translation>
@@ -1664,6 +1664,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7256069811654036843">Enrere</translation>
 <translation id="4811502511369621968">L'adreça electrònica no és vàlida. Comproveu-la i torneu-ho a provar.</translation>
 <translation id="175196451752279553">T&amp;orna a obrir la pestanya tancada</translation>
+<translation id="8602851771975208551">Un altre programa de l'ordinador ha afegit una aplicació que pot canviar el funcionament de Chrome.</translation>
 <translation id="2655386581175833247">Certificat d'usuari:</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5435964418642993308">Premeu Retorn per retrocedir i menú contextual per veure l'historial</translation>
@@ -1837,7 +1838,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="1901377140875308934">Inicia la sessió a <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697"><ph name="APP_NAME"/> ha definit el fons de pantalla actual.</translation>
 <translation id="5074318175948309511">És possible que hàgiu de tornar a carregar aquesta pàgina perquè s'apliqui la configuració nova.</translation>
-<translation id="3740150184898623344">Mostra el botó del mode de lector a totes les pàgines</translation>
 <translation id="3947376313153737208">Cap selecció</translation>
 <translation id="6405640832764359650">Activa la casella de selecció per desar la targeta de Google Payments</translation>
 <translation id="1346104802985271895">Mètode d'entrada de vietnamita (TELEX)</translation>
@@ -2046,7 +2046,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="1864676585353837027">Canvieu la manera de compartir aquests fitxers.</translation>
 <translation id="2386255080630008482">El certificat del servidor s'ha revocat.</translation>
 <translation id="4749157430980974800">Teclat georgià</translation>
-<translation id="6365411474437319296">Afegir familiars i amics</translation>
+<translation id="6365411474437319296">Afegiu familiars i amics</translation>
 <translation id="2135787500304447609">&amp;Reprèn</translation>
 <translation id="3326821416087822643">S'està comprimint <ph name="FILE_NAME"/>...</translation>
 <translation id="3081104028562135154">Incrementa</translation>
@@ -2058,7 +2058,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="158917669717260118">No es pot carregar la pàgina web perquè l'equip ha entrat en mode de repòs o d'hibernació. Quan això passa, les connexions de xarxa es tanquen i es produeixen errors en les sol·licituds de xarxa noves. Per resoldre-ho, torneu a carregar la pàgina.</translation>
 <translation id="6316671927443834085">No s'ha pogut desconnectar de: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="1962233722219655970">Aquesta pàgina fa servir una aplicació de Native Client que no funciona al vostre ordinador.</translation>
-<translation id="5458733660263868683">No utilitzeu Smart Lock, que us permet desbloquejar el dispositiu Chromebook quan sou a prop del telèfon. Si sou propietari del dispositiu, també es desactiva Smart Lock a la pantalla d'inici de sessió.</translation>
+<translation id="5458733660263868683">No utilitzeu Smart Lock, funció que us permet desbloquejar el dispositiu Chromebook, quan sou a prop del telèfon. Si sou el propietari del dispositiu, aquesta opció també desactiva Smart Lock a la pantalla d'inici de sessió.</translation>
 <translation id="1108685299869803282">Més del 80% d'usuaris que veuen aquest advertiment prefereixen tornar a la pàgina segura en lloc d'assumir el risc del programari maliciós. De totes maneres, si enteneu el risc que suposa per a la vostra seguretat, podeu <ph name="BEGIN_LINK"/>visitar aquest lloc no segur<ph name="END_LINK"/> abans que no s'hagin suprimit els programes perillosos.</translation>
 <translation id="219008588003277019">Mòdul de client nadiu: <ph name="NEXE_NAME"/></translation>
 <translation id="8228447825257396644">Desactiva el teclat de visualització d'entrades a material design.</translation>
@@ -2242,7 +2242,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="2485056306054380289">Certificat de CA del servidor:</translation>
 <translation id="5631861698741076898">No s'ha pogut iniciar la sessió. L'inici de sessió ha fallat perquè s'ha configurat per utilitzar un URL no segur (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Teclat grec</translation>
-<translation id="9191610850443814852">Activa l'opció de configuració de Smart Lock que permet que Chromebook detecti telèfons mitjançant BLE per desbloquejar-se quan el telèfon estigui a prop seu.</translation>
+<translation id="9191610850443814852">Activa l'opció de configuració de Smart Lock que permet que Chromebook detecti telèfons mitjançant Bluetooth de baix consum. Aquest sistema permet desbloquejar el vostre Chromebook quan el telèfon estigui a prop seu.</translation>
 <translation id="2727712005121231835">Mida real</translation>
 <translation id="1377600615067678409">Omet per ara</translation>
 <translation id="5581211282705227543">No hi ha cap connector instal·lat</translation>
@@ -2326,7 +2326,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="2861941300086904918">Administrador de seguretat de Native Client</translation>
 <translation id="5650203097176527467">S'estan carregant els detalls del pagament</translation>
 <translation id="5581700288664681403">S'està carregant <ph name="CLOUD_PRINT_NAME"/></translation>
-<translation id="389589731200570180">Compartir amb els convidats</translation>
+<translation id="389589731200570180">Compartiu amb els convidats</translation>
 <translation id="1510200760579344855">L'administrador del domini <ph name="SAML_DOMAIN"/> ha bloquejat aquest dispositiu.</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="4731351517694976331">Permet que els serveis de Google accedeixin a la teva ubicació</translation>
@@ -2594,7 +2594,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="7314244761674113881">Amfitrió SOCKS</translation>
 <translation id="4630590996962964935">Caràcter no vàlid: $1</translation>
 <translation id="7709980197120276510">En fer clic a Continua, accepteu les <ph name="LEGAL_DOC_LINK_TEXT_1"/>, les <ph name="LEGAL_DOC_LINK_TEXT_2"/>, les <ph name="LEGAL_DOC_LINK_TEXT_3"/>, les <ph name="LEGAL_DOC_LINK_TEXT_4"/> i la <ph name="LEGAL_DOC_LINK_TEXT_5"/>.</translation>
-<translation id="8556377764941071135">Activar la detecció de proximitat de Smart Lock</translation>
+<translation id="8556377764941071135">Activeu la detecció de proximitat de Smart Lock</translation>
 <translation id="7533451546919522717">Esborra les galetes i altres dades dels llocs i dels connectors quan tanqui la sessió</translation>
 <translation id="8382645631174981738"><ph name="EXTENSION_NAME"/> s'ha instal·lat remotament</translation>
 <translation id="542872847390508405">Esteu navegant com a convidat.</translation>
@@ -2880,18 +2880,18 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="346431825526753">Aquest és un compte infantil gestionat per <ph name="CUSTODIAN_EMAIL"/>.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1541724327541608484">Comprova l'ortografia dels camps de text</translation>
-<translation id="2784556410206159845">Per mantenir la seguretat a <ph name="DEVICE_TYPE"/>, Smart Lock per a Chromebook requereix activar un bloqueig de pantalla al telèfon.</translation>
+<translation id="2784556410206159845">Per mantenir protegit el vostre <ph name="DEVICE_TYPE"/>, Smart Lock per a Chromebook requereix que el telèfon tingui configurat un bloqueig de pantalla .</translation>
 <translation id="8637688295594795546">Actualització del sistema disponible. S'està preparant la baixada…</translation>
 <translation id="560715638468638043">Versió anterior</translation>
 <translation id="1122960773616686544">Nom de l'adreça d'interès</translation>
 <translation id="5966707198760109579">Setmana</translation>
 <translation id="7854323427075506422">Desactiva el flux del descompressor ZIP nou en funció de l'API del proveïdor de sistemes de fitxers.</translation>
-<translation id="4635114802498986446">Activa una configuració de Smart Lock que restringeix el desbloqueig només als moments en què el telèfon és molt a prop del dispositiu Chrome (aproximadament a l'abast de la mà).</translation>
+<translation id="4635114802498986446">Activa una configuració de Smart Lock que restringeix el desbloqueig només als moments en què el telèfon és molt a prop del dispositiu Chrome (aproximadament a una distància equivalent a la longitud d'un braç).</translation>
 <translation id="7371490661692457119">Amplada predeterminada del mosaic</translation>
 <translation id="5148652308299789060">Desactiva el renderitzador de programari 3D</translation>
 <translation id="9205143043463108573">Col·loca el Menú d'aplicacions al centre de la pantalla en posició horitzontal.</translation>
 <translation id="7996005831155352675">Activar l'emplenament automàtic amb un sol clic</translation>
-<translation id="870112442358620996">Demana'm si vull desar les contrasenyes mitjançant Google Smart Lock per a contrasenyes.</translation>
+<translation id="870112442358620996">Demana'm si vull desar les contrasenyes amb Google Smart Lock per a contrasenyes.</translation>
 <translation id="1414648216875402825">Esteu a punt de passar a una versió inestable de <ph name="PRODUCT_NAME"/> que conté funcions en curs. Es produiran bloqueigs i errors inesperats. Continueu amb precaució.</translation>
 <translation id="8382913212082956454">Copia l'&amp;adreça electrònica</translation>
 <translation id="7887192723714330082">Responeu a &quot;Ok Google&quot; quan la pantalla estigui encesa i desbloquejada</translation>
@@ -3585,7 +3585,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="7614030880636783720">La Wi-Fi i les dades mòbils no estan disponibles. La pàgina es podrà carregar un cop el dispositiu es connecti a una xarxa.</translation>
 <translation id="1146673768181266552">Identificador d'error <ph name="CRASH_ID"/> (<ph name="CRASH_LOCAL_ID"/>)</translation>
-<translation id="3544347428588533940">Smart Lock està quasi a punt</translation>
+<translation id="3544347428588533940">Smart Lock està quasi llest</translation>
 <translation id="8044899503464538266">Lent</translation>
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="4782449893814226250">S'ha enviat una sol·licitud als pares per visitar aquesta pàgina.</translation>
@@ -3678,7 +3678,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="8232829399891359332">Restauracions de la sessió</translation>
 <translation id="3308116878371095290">S'ha impedit que aquesta pàgina estableixi galetes.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="1545786162090505744">URL</translation>
+<translation id="1545786162090505744">URL amb %s en el lloc de la consulta</translation>
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION"/>.</translation>
 <translation id="4436456292809448986">Afegeix a l'escriptori...</translation>
 <translation id="7006634003215061422">Marge inferior</translation>
@@ -4133,7 +4133,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="249113932447298600">El dispositiu <ph name="DEVICE_LABEL"/> no és compatible en aquests moments.</translation>
 <translation id="6401445054534215853">Objecte de prestatge 1</translation>
 <translation id="6113134669445407638">Desactiva Delay Agnostic AEC a WebRTC. Utilitzeu aquesta opció si els retards del sistema detectats són de molta confiança o si altres persones reben eco de la vostra màquina.</translation>
-<translation id="2365626167708453863">Triar un compte de Google Smart Lock</translation>
+<translation id="2365626167708453863">Trieu un compte del vostre Google Smart Lock</translation>
 <translation id="232562464593865424">Entrenar Chromebook</translation>
 <translation id="2351520734632194850"><ph name="MHZ"/> MHz</translation>
 <translation id="2799223571221894425">Reinicia</translation>
@@ -4762,6 +4762,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="634208815998129842">Gestor de tasques</translation>
 <translation id="2735698359135166290">Teclat estàndard romanès</translation>
 <translation id="1701062906490865540">Suprimeix aquesta persona</translation>
+<translation id="8475313423285172237">Un altre programa de l'ordinador ha afegit una extensió que pot canviar el funcionament de Chrome.</translation>
 <translation id="4850458635498951714">Afegeix un dispositiu</translation>
 <translation id="3140353188828248647">Passa la barra d'adreces a primer pla</translation>
 <translation id="1371806038977523515">L'extensió següent controla aquesta configuració:</translation>
@@ -4774,7 +4775,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="5868927042224783176">Desactiva per a una nova autenticació</translation>
 <translation id="3355936511340229503">Error de connexió</translation>
 <translation id="736108944194701898">Velocitat del ratolí:</translation>
-<translation id="745374297349407796">Mostra el botó del mode de lector a les pàgines que sembli que tinguin contingut d'extensió llarga</translation>
 <translation id="8371937549687734176">Emeteu el contingut de l'escriptori o de la finestra a...</translation>
 <translation id="4350711002179453268">No es pot establir una connexió segura amb el servidor. Pot tractar-se d'un problema del servidor o és possible que es necessiti un certificat d'autenticació de client que no teniu.</translation>
 <translation id="4731422630970790516">Objecte de prestatge 3</translation>
@@ -4957,7 +4957,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="3581912141526548234">Executa (prova d'obtenir els coixinets i els executa si té èxit)</translation>
 <translation id="1974371662733320303">Estratègia per descartar la memòria que s'ha de fer servir</translation>
 <translation id="3991936620356087075">Heu introduït una clau de desbloqueig del PIN (PUK) incorrecta massa vegades. La vostra targeta SIM s'ha desactivat de manera permanent.</translation>
-<translation id="9217413363143870800">Activeu el descobriment de dispositius BLE de Smart Lock</translation>
+<translation id="9217413363143870800">Activeu la detecció de Smart Lock mitjançant Bluetooth de baix consum</translation>
 <translation id="5367091008316207019">S'està llegint el fitxer...</translation>
 <translation id="936801553271523408">Dades de diagnòstic del sistema</translation>
 <translation id="7951415247503192394">(32 bits)</translation>
@@ -4994,7 +4994,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="6929555043669117778">Continua bloquejant les finestres emergents</translation>
 <translation id="3508920295779105875">Trieu una altra carpeta...</translation>
 <translation id="7903925330883316394">Utilitat: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Mostra el botó del mode de lector a les pàgines que tinguin marcatge amb estructura d'article</translation>
 <translation id="5549518587357384553">Controla si l'element de JavaScript document.body.scrollTop/scrollLeft mostra un comportament interoperable estàndard (activat) o un comportament de WebKit heretat (desactivat).
         Si s'activa, l'element document.scrollingElement és document.documentElement. Si es desactiva, és document.body (per a pàgines en mode estricte).</translation>
 <translation id="904451693890288097">Introduïu la contrasenya per a &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5828,6 +5827,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="6059652578941944813">Jerarquia del certificat</translation>
 <translation id="3153094071447713741">Funcions experimentals de visualització del mètode d'introducció</translation>
 <translation id="5729712731028706266">&amp;Lector</translation>
+<translation id="9170884462774788842">Un altre programa de l'ordinador ha afegit un tema que pot canviar el funcionament de Chrome.</translation>
 <translation id="8571108619753148184">Servidor 4</translation>
 <translation id="4508765956121923607">Visualitza l'&amp;origen</translation>
 <translation id="5975083100439434680">Redueix</translation>

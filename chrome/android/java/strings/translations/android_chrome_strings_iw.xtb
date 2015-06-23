@@ -49,7 +49,7 @@
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="4761374747761474835">בחר חשבון כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="4803910478683254032">הייבוא נכשל</translation>
-<translation id="3485544713029068372">Smart Lock for Passwords</translation>
+<translation id="3485544713029068372">‏Smart Lock לסיסמאות</translation>
 <translation id="6999892069268112724">‏אישור חשבון Google</translation>
 <translation id="1446450296470737166">‏התר שליטה מלאה על מכשירי MIDI</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
@@ -190,7 +190,6 @@
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="5487729733663684359">‏עדכוני Chrome אינם נתמכים עוד בגרסה הזו של Android.</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
-<translation id="2750015191954606595">הזן הערה</translation>
 <translation id="1201402288615127009">הבא</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2487368562788861256">‏חסוך בהוצאות על נתונים על ידי שימוש ב-Google <ph name="BEGIN_LINK"/>לביצוע אופטימיזציה של דפים שבהם אתה מבקר<ph name="END_LINK"/>.</translation>
@@ -441,7 +440,6 @@
 <translation id="9065203028668620118">ערוך</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
-<translation id="6605823718624717484">ערוך סימניות</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="945632385593298557">גישה למיקרופון שלך</translation>
 <translation id="5626134646977739690">שם:</translation>

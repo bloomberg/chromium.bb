@@ -259,6 +259,7 @@
 <translation id="42981349822642051">Expandera</translation>
 <translation id="7774497835322490043">Aktivera GDB-baserad felsökning. Detta avslutar en Native Client-app vid start och väntar på nacl-gdb (från NaCl SDK) för att ansluta.</translation>
 <translation id="2686444421126615064">Visa konto</translation>
+<translation id="9215293857209265904"><ph name="EXTENSION_NAME"/> har lagts till</translation>
 <translation id="7693221960936265065">tidens början</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Följande webbplatser har förhindrats att spåra din plats på sidan:</translation>
@@ -1017,7 +1018,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="7986039047000333986">En särskild säkerhetsuppdatering för <ph name="PRODUCT_NAME"/> installerades precis. Tillämpa uppdateringen genom att starta om (vi återställer dina flikar).</translation>
 <translation id="2787591391657537328">Tillåt att avbrutna nedladdningar fortsätter eller startas om med alternativet Återuppta på snabbmenyn.</translation>
 <translation id="3926862159284741883">Aktivera utkasttillägg till WebGL</translation>
-<translation id="8347255769289079987">Visa aldrig knappen för läsläget</translation>
 <translation id="9152722471788855605">Zip-filsanalysator för Säker webbsökning</translation>
 <translation id="2537271621194795300">Starttillfällen</translation>
 <translation id="3636096452488277381">Hejsan <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1681,6 +1681,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="7256069811654036843">Återvänd</translation>
 <translation id="4811502511369621968">Ogiltig e-postadress. Kontrollera den och försök igen.</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
+<translation id="8602851771975208551">Ett annat program i datorn har lagt till en app som kan ändra hur Chrome fungerar.</translation>
 <translation id="2655386581175833247">Användarcertifikat:</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5435964418642993308">Tryck på Retur om du vill gå bakåt och på snabbmenyn om du vill visa historiken</translation>
@@ -1853,7 +1854,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="1901377140875308934">Logga in i <ph name="SHORT_PRODUCT_NAME"/> ...</translation>
 <translation id="5529098031581368697">Den aktuella bakgrunden har angetts av <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Den här sidan kan behöva läsas in igen innan den nya inställningen börjar gälla.</translation>
-<translation id="3740150184898623344">Visa knappen för läsläget på alla sidor</translation>
 <translation id="3947376313153737208">Inget val</translation>
 <translation id="6405640832764359650">Aktivera kryssrutan för att spara kort i Google Payments</translation>
 <translation id="1346104802985271895">Vietnamesisk inmatningsmetod (TELEX)</translation>
@@ -4789,6 +4789,7 @@ hanteraren
 <translation id="634208815998129842">Aktivitetshanteraren</translation>
 <translation id="2735698359135166290">Rumänskt standardtangentbord</translation>
 <translation id="1701062906490865540">Ta bort personen</translation>
+<translation id="8475313423285172237">Ett annat program i datorn har lagt till ett tillägg som kan ändra hur Chrome fungerar.</translation>
 <translation id="4850458635498951714">Lägg till en enhet</translation>
 <translation id="3140353188828248647">Fokusera på adressfältet</translation>
 <translation id="1371806038977523515">De här inställningarna kontrolleras av:</translation>
@@ -4801,7 +4802,6 @@ hanteraren
 <translation id="5868927042224783176">Tillåt inte för återautentisering</translation>
 <translation id="3355936511340229503">Anslutningsfel</translation>
 <translation id="736108944194701898">Mushastighet:</translation>
-<translation id="745374297349407796">Visa knappen för läsläget på sidor som verkar ha mycket innehåll</translation>
 <translation id="8371937549687734176">Casta skrivbord eller fönster till ...</translation>
 <translation id="4350711002179453268">Det går inte att upprätta en säker anslutning till servern. Det kan bero på ett problem med servern eller så kan det behövas ett klientautentiseringscertifikat som du inte har.</translation>
 <translation id="4731422630970790516">Hyllobjekt 3</translation>
@@ -5022,7 +5022,6 @@ hanteraren
 <translation id="6929555043669117778">Fortsätt att blockera popup-program</translation>
 <translation id="3508920295779105875">Välj en annan mapp...</translation>
 <translation id="7903925330883316394">Verktyg: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Visa knappen för läsläget på sidor med artiklar med strukturerad märkning</translation>
 <translation id="5549518587357384553">Kontrollera om document.body.scrollTop/scrollLeft i JavaScript återspeglar det kompatibla standardbeteendet (aktiverat) eller det äldre WebKit-beteendet (inaktiverat).
         När det är aktiverat motsvaras document.scrollingElement av document.documentElement. När det är inaktiverat är det document.body (för sidor i strikt läge).</translation>
 <translation id="904451693890288097">Ange lösenordet för <ph name="DEVICE_NAME"/>:</translation>
@@ -5861,6 +5860,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="6059652578941944813">Certifikathierarki</translation>
 <translation id="3153094071447713741">Experimentella visningsfunktioner för inmatningar.</translation>
 <translation id="5729712731028706266">&amp;Visa</translation>
+<translation id="9170884462774788842">Ett annat program i datorn har lagt till ett tema som kan ändra hur Chrome fungerar.</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="4508765956121923607">Visa &amp;källa</translation>
 <translation id="5975083100439434680">Zooma ut</translation>

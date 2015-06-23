@@ -254,6 +254,7 @@
 <translation id="42981349822642051">Proširi</translation>
 <translation id="7774497835322490043">Omogućavanje elementa GDB-a za uklanjanje bugova. Time će se zaustaviti aplikacija lokalnog klijenta prilikom pokretanja te će se pričekati priključivanje alata za uklanjanje bugova u lokalnom klijentu (iz kompleta za razvoj softvera lokalnog klijenta).</translation>
 <translation id="2686444421126615064">Prikaz računa</translation>
+<translation id="9215293857209265904">Dodano je proširenje &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7693221960936265065">početka</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Sljedeće web-lokacije blokirane su u praćenju vaše lokacije na ovoj web-stranici:</translation>
@@ -578,7 +579,7 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="715487527529576698">Početni kineski način je pojednostavljeni kineski</translation>
 <translation id="6522350652862471760">Omogući ime i ikonu Google profila</translation>
 <translation id="2164862903024139959">vijetnamska tipkovnica (TCVN)</translation>
-<translation id="8885197664446363138">Pametno zaključavanje nije dostupno</translation>
+<translation id="8885197664446363138">Smart Lock nije dostupan</translation>
 <translation id="1697532407822776718">Potpuno ste spremni!</translation>
 <translation id="8373553483208508744">Isključi zvuk na karticama</translation>
 <translation id="8703575177326907206">Vaša veza s <ph name="DOMAIN"/> nije šifrirana.</translation>
@@ -1000,7 +1001,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="7986039047000333986">Posebno sigurnosno ažuriranje za uslugu <ph name="PRODUCT_NAME"/> upravo je primijenjeno, sada biste trebali ponovo pokrenuti sustav da bi počelo djelovati (vratit ćemo vaše kartice).</translation>
 <translation id="2787591391657537328">Dopusti nastavljanje ili ponovno pokretanje prekinutih preuzimanja pomoću stavke &quot;Nastavi&quot; na kontekstnom izborniku.</translation>
 <translation id="3926862159284741883">Omogući skice proširenja WebGL-a</translation>
-<translation id="8347255769289079987">Nikad ne prikazuj gumb načina čitača</translation>
 <translation id="9152722471788855605">Analiziranje zip datoteka Sigurnog pregledavanja</translation>
 <translation id="2537271621194795300">Pokretanja</translation>
 <translation id="3636096452488277381">Pozdrav, <ph name="USER_GIVEN_NAME"/>.</translation>
@@ -1663,6 +1663,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="7256069811654036843">Vrati me natrag!</translation>
 <translation id="4811502511369621968">E-adresa nije važeća. Provjerite i pokušajte ponovo.</translation>
 <translation id="175196451752279553">P&amp;onovo otvori zatvorenu karticu</translation>
+<translation id="8602851771975208551">Drugi program na vašem računalu dodao je aplikaciju koja može promijeniti način na koji radi Chrome.</translation>
 <translation id="2655386581175833247">Korisnički certifikat:</translation>
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="5435964418642993308">Pritisnite tipku Enter za povratak ili tipku kontekstnog izbornika da biste vidjeli povijest</translation>
@@ -1835,7 +1836,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="1901377140875308934">Prijava na uslugu <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Trenutačnu pozadinsku sliku postavila je aplikacija &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Ovu stranicu možda će biti potrebno ponovo učitati kako bi nove postavke stupile na snagu.</translation>
-<translation id="3740150184898623344">Prikaži gumb načina čitača na svim stranicama</translation>
 <translation id="3947376313153737208">Bez odabira</translation>
 <translation id="6405640832764359650">Omogući potvrdni okvir za spremanje kartice Google Paymentsa</translation>
 <translation id="1346104802985271895">Vijetnamski način unosa (TELEX)</translation>
@@ -4142,7 +4142,7 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="5469954281417596308">Upravitelj oznaka</translation>
 <translation id="106153153543631784">Ponovo unesite zaporku da biste ažurirali svoj profil na Chromebooku.</translation>
 <translation id="3064388234319122767">transliteracija (zdravo → здраво)</translation>
-<translation id="5425722269016440406">Morate biti online da biste isključili Pametno zaključavanje jer se ta postavka sinkronizira s vašim telefonom i drugim uređajima. Prvo se povežite s mrežom.</translation>
+<translation id="5425722269016440406">Morate biti online da biste isključili Smart Lock jer se ta postavka sinkronizira s vašim telefonom i drugim uređajima. Prvo se povežite s mrežom.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
 <translation id="7730494089396812859">Prikaz pojedinosti sigurnosnog kopiranja u oblaku</translation>
 <translation id="1143142264369994168">Potpisnik certifikata</translation>
@@ -4759,6 +4759,7 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="634208815998129842">Upravitelj zadataka</translation>
 <translation id="2735698359135166290">Rumunjska standardna tipkovnica</translation>
 <translation id="1701062906490865540">Ukloni ovu osobu</translation>
+<translation id="8475313423285172237">Drugi program na vašem računalu dodao je proširenje koje može promijeniti način na koji radi Chrome.</translation>
 <translation id="4850458635498951714">Dodavanje uređaja</translation>
 <translation id="3140353188828248647">Fokusiraj adresnu traku</translation>
 <translation id="1371806038977523515">Tim postavkama upravlja:</translation>
@@ -4771,7 +4772,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="5868927042224783176">Ne dopusti za ponovnu autorizaciju</translation>
 <translation id="3355936511340229503">Pogreška veze</translation>
 <translation id="736108944194701898">Brzina miša:</translation>
-<translation id="745374297349407796">Prikaži gumb načina čitača na stranicama za koje se čini da imaju dugačak sadržaj</translation>
 <translation id="8371937549687734176">Emitiraj radnu površinu ili prozor na...</translation>
 <translation id="4350711002179453268">Nije moguće uspostaviti sigurnu vezu s poslužiteljem. To je možda problem na poslužitelju ili je potreban certifikat za provjeru autentičnosti koji nemate.</translation>
 <translation id="4731422630970790516">Stavka police 3</translation>
@@ -4992,7 +4992,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="6929555043669117778">Nastavi blokirati skočne prozore</translation>
 <translation id="3508920295779105875">Odaberi drugu mapu...</translation>
 <translation id="7903925330883316394">Uslužni proces: <ph name="UTILITY_TYPE"/></translation>
-<translation id="2653482164301165739">Prikaži gumb načina čitača na stranicama s oznakama strukturiranim kao članak</translation>
 <translation id="5549518587357384553">Kontrolira odražava li document.body.scrollTop/scrollLeft u JavaScriptu standardno interoperabilno ponašanje (omogućeno) ili naslijeđeno ponašanje WebKita (onemogućeno).
         Kada je omogućeno, document.scrollingElement je document.documentElement, a kada je onemogućeno, onda je document.body (za stranice u strogom načinu).</translation>
 <translation id="904451693890288097">Unesite pristupni ključ za uređaj &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
@@ -5828,6 +5827,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="6059652578941944813">Hijerarhija certifikata</translation>
 <translation id="3153094071447713741">Eksperimentalne značajke prikaza unosa.</translation>
 <translation id="5729712731028706266">&amp;Prikaži</translation>
+<translation id="9170884462774788842">Drugi program na vašem računalu dodao je temu koja može promijeniti način na koji radi Chrome.</translation>
 <translation id="8571108619753148184">4. poslužitelj</translation>
 <translation id="4508765956121923607">Pogledaj i&amp;zvor</translation>
 <translation id="5975083100439434680">Smanji</translation>

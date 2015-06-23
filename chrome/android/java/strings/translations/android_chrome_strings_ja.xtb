@@ -190,7 +190,6 @@
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="5487729733663684359">このバージョンの Android では Chrome の更新はサポートされなくなりました。</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
-<translation id="2750015191954606595">メモを入力</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="2414886740292270097">暗</translation>
 <translation id="2487368562788861256"><ph name="BEGIN_LINK"/>アクセスするページの最適化<ph name="END_LINK"/>に Google を使用してデータ費用を抑えます。</translation>
@@ -228,9 +227,9 @@
 <translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="2593272815202181319">等幅</translation>
 <translation id="4807098396393229769">名義人名</translation>
-<translation id="6036158371062192100">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
+<translation id="6036158371062192100">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがリクエストに応じるかどうか、およびリクエストがどう解釈されるかによって異なります。
 
-たとえば、このリクエストに対応して、ユーザーが過去にアクセスしたウェブサイトとは関係のない広告を表示するウェブサイトもあります。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。セキュリティの強化や、ウェブサイトでのコンテンツ、広告、おすすめ情報の提供、レポート統計情報の作成などにこうしたデータが利用されます。</translation>
+たとえば、一部のウェブサイトでは、その閲覧者のウェブサイト アクセス履歴を基にした広告表示を行わない、という対応をしています。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、コンテンツ、サービス、広告、ウェブサイトのおすすめ情報の提供、レポート統計情報の作成などにこれらのデータが利用されます。</translation>
 <translation id="2268044343513325586">絞り込み</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="7346909386216857016">OK</translation>
@@ -441,7 +440,6 @@
 <translation id="9065203028668620118">編集</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="6512448926095770873">このページを離れる</translation>
-<translation id="6605823718624717484">ブックマークを編集</translation>
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="5626134646977739690">名前:</translation>
@@ -530,7 +528,7 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
 <translation id="4440256989292146959">データ使用量を抑えながら快適にブラウジング</translation>
-<translation id="4023950129927433024">パスフレーズをお忘れの場合は、<ph name="BEGIN_LINK"/>Google ダッシュボード<ph name="END_LINK"/>から同期を停止してリセットしてください。</translation>
+<translation id="4023950129927433024">パスフレーズをお忘れの場合は、<ph name="BEGIN_LINK"/>Google ダッシュボード<ph name="END_LINK"/>から同期の停止とリセットを行ってください。</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="5127805178023152808">同期は無効です</translation>

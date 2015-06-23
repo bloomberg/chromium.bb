@@ -105,7 +105,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="666981079809192359">Privacybeleid van Chrome</translation>
 <translation id="983192555821071799">Alle tabbladen sluiten</translation>
 <translation id="1966710179511230534">Update je inloggegevens.</translation>
-<translation id="9099292894781394535">Besparing van gegevens</translation>
+<translation id="9099292894781394535">Gegevensbesparing</translation>
 <translation id="3410346880900521918">Als je deze melding vaker ziet, probeer je deze <ph name="BEGIN_LINK"/>suggesties<ph name="END_LINK"/>.</translation>
 <translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
 <translation id="7375125077091615385">Type:</translation>
@@ -190,7 +190,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="7029809446516969842">Wachtwoorden</translation>
 <translation id="5487729733663684359">Updates van Chrome worden niet meer ondersteund voor deze versie van Android.</translation>
 <translation id="5100237604440890931">Samengevouwen; klik om uit te vouwen.</translation>
-<translation id="2750015191954606595">Geef een notitie op</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="2414886740292270097">Donker</translation>
 <translation id="2487368562788861256">Geef minder uit aan dataverkeer door Google te gebruiken <ph name="BEGIN_LINK"/>om de door jou bezochte pagina's te optimaliseren<ph name="END_LINK"/>.</translation>
@@ -441,7 +440,6 @@ Gebruiksstatistieken omvatten informatie zoals voorkeuren, klikken op knoppen en
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="4881695831933465202">Openen</translation>
 <translation id="6512448926095770873">Deze pagina verlaten</translation>
-<translation id="6605823718624717484">Bladwijzers bewerken</translation>
 <translation id="3414952576877147120">Grootte:</translation>
 <translation id="945632385593298557">Toegang tot je microfoon</translation>
 <translation id="5626134646977739690">Naam:</translation>
