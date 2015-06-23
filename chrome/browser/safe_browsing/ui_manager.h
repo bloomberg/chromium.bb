@@ -142,6 +142,7 @@ class SafeBrowsingUIManager
 
  private:
   friend class base::RefCountedThreadSafe<SafeBrowsingUIManager>;
+  friend class SafeBrowsingUIManagerTest;
 
   // Used for whitelisting a render view when the user ignores our warning.
   struct WhiteListedEntry;

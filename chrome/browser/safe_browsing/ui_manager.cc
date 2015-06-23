@@ -295,20 +295,7 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   for (size_t i = 0; i < white_listed_entries_.size(); ++i) {
     const WhiteListedEntry& entry = white_listed_entries_[i];
     if (entry.render_process_host_id == resource.render_process_host_id &&
-        entry.render_view_id == resource.render_view_id &&
-        // Threat type must be the same or they can either be client-side
-        // phishing/malware URL or a SafeBrowsing phishing/malware URL.
-        // If we show one type of phishing/malware warning we don't want to show
-        // a second phishing/malware warning.
-        (entry.threat_type == resource.threat_type ||
-         (entry.threat_type == SB_THREAT_TYPE_URL_PHISHING &&
-          resource.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL) ||
-         (entry.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL &&
-          resource.threat_type == SB_THREAT_TYPE_URL_PHISHING) ||
-         (entry.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
-          resource.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) ||
-         (entry.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL &&
-          resource.threat_type == SB_THREAT_TYPE_URL_MALWARE))) {
+        entry.render_view_id == resource.render_view_id) {
       return entry.domain ==
           net::registry_controlled_domains::GetDomainAndRegistry(
               resource.url,

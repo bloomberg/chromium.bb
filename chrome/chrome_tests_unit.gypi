@@ -1041,6 +1041,7 @@
       'browser/safe_browsing/test_database_manager.cc',
       'browser/safe_browsing/test_database_manager.h',
       'browser/safe_browsing/two_phase_uploader_unittest.cc',
+      'browser/safe_browsing/ui_manager_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_win_unittest.cc',
       'common/safe_browsing/ipc_protobuf_message_test_messages.h',
