@@ -378,7 +378,7 @@ function extractText(element)
     var text = element.textContent;
     if (text)
         return text;
-    var anchor = element.querySelector("[data-uncopyable]");
+    var anchor = element.hasAttribute("data-uncopyable") ? element : element.querySelector("[data-uncopyable]");
     if (!anchor)
         return "";
     var anchorText = anchor.getAttribute("data-uncopyable");
