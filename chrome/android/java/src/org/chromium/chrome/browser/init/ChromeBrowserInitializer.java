@@ -22,6 +22,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.FileProviderHelper;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
@@ -82,10 +83,25 @@ public class ChromeBrowserInitializer {
     public void handlePreNativeStartup(final BrowserParts parts) {
         preInflationStartup();
         parts.preInflationStartup();
+        preInflationStatupDone();
         parts.setContentViewAndLoadLibrary();
         postInflationStartup();
         parts.postInflationStartup();
     }
+
+    /**
+     * This is needed for device class manager which depends on commandline args that are
+     * initialized in preInflationStartup()
+     */
+    private void preInflationStatupDone() {
+        // Domain reliability uses significant enough memory that we should disable it on low memory
+        // devices for now.
+        // TODO(zbowling): remove this after domain reliability is refactored. (crbug.com/495342)
+        if (DeviceClassManager.disableDomainReliability()) {
+            CommandLine.getInstance().appendSwitch(ChromeSwitches.DISABLE_DOMAIN_RELIABILITY);
+        }
+    }
+
 
     private void preInflationStartup() {
         ThreadUtils.assertOnUiThread();

@@ -31,6 +31,8 @@ public class DeviceClassManager {
     private boolean mEnableToolbarSwipe;
     private boolean mEnableToolbarSwipeInDocumentMode;
     private boolean mEnableUndo;
+    private boolean mDisableDomainReliability;
+
     private final boolean mEnableFullscreen;
 
     private static DeviceClassManager getInstance() {
@@ -54,6 +56,7 @@ public class DeviceClassManager {
             mEnablePrerendering = false;
             mEnableToolbarSwipe = false;
             mEnableInstantSearchClicks = false;
+            mDisableDomainReliability = true;
         } else {
             mEnableSnapshots = true;
             mEnableLayerDecorationCache = true;
@@ -62,6 +65,7 @@ public class DeviceClassManager {
             mEnablePrerendering = true;
             mEnableToolbarSwipe = true;
             mEnableInstantSearchClicks = true;
+            mDisableDomainReliability = false;
         }
 
         if (DeviceFormFactor.isTablet(ApplicationStatus.getApplicationContext())) {
@@ -152,6 +156,13 @@ public class DeviceClassManager {
      */
     public static boolean enableUndo(Context context) {
         return getInstance().mEnableUndo || isAccessibilityModeEnabled(context);
+    }
+
+    /**
+     * @return Whether or not to disable domain reliability.
+     */
+    public static boolean disableDomainReliability() {
+        return getInstance().mDisableDomainReliability;
     }
 
     public static boolean isAccessibilityModeEnabled(Context context) {

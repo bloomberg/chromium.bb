@@ -156,6 +156,12 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_READER_MODE_BUTTON = "enable-reader-mode-toolbar-icon";
 
+    /**
+     * Disable domain reliability
+     * Native switch - switches::kDisableDomainReliability
+     */
+    public static final String DISABLE_DOMAIN_RELIABILITY = "disable-domain-reliability";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
