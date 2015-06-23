@@ -205,6 +205,7 @@ TEST_F(AudioBusTest, Zero) {
   // Fill the bus with dummy data.
   for (int i = 0; i < bus->channels(); ++i)
     std::fill(bus->channel(i), bus->channel(i) + bus->frames(), i + 1);
+  EXPECT_FALSE(bus->AreFramesZero());
 
   // Zero first half the frames of each channel.
   bus->ZeroFrames(kFrameCount / 2);
@@ -214,6 +215,7 @@ TEST_F(AudioBusTest, Zero) {
     VerifyValue(bus->channel(i) + kFrameCount / 2,
                 kFrameCount - kFrameCount / 2, i + 1);
   }
+  EXPECT_FALSE(bus->AreFramesZero());
 
   // Fill the bus with dummy data.
   for (int i = 0; i < bus->channels(); ++i)
@@ -227,6 +229,7 @@ TEST_F(AudioBusTest, Zero) {
                 kFrameCount - kFrameCount / 2, 0);
     VerifyValue(bus->channel(i), kFrameCount / 2, i + 1);
   }
+  EXPECT_FALSE(bus->AreFramesZero());
 
   // Fill the bus with dummy data.
   for (int i = 0; i < bus->channels(); ++i)
@@ -238,6 +241,7 @@ TEST_F(AudioBusTest, Zero) {
     SCOPED_TRACE("All Zero");
     VerifyValue(bus->channel(i), bus->frames(), 0);
   }
+  EXPECT_TRUE(bus->AreFramesZero());
 }
 
 // Each test vector represents two channels of data in the following arbitrary

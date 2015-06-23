@@ -218,6 +218,16 @@ void AudioBus::Zero() {
   ZeroFrames(frames_);
 }
 
+bool AudioBus::AreFramesZero() const {
+  for (size_t i = 0; i < channel_data_.size(); ++i) {
+    for (int j = 0; j < frames_; ++j) {
+      if (channel_data_[i][j])
+        return false;
+    }
+  }
+  return true;
+}
+
 int AudioBus::CalculateMemorySize(const AudioParameters& params) {
   return CalculateMemorySizeInternal(
       params.channels(), params.frames_per_buffer(), NULL);

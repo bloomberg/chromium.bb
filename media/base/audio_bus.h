@@ -101,6 +101,9 @@ class MEDIA_EXPORT AudioBus {
   void ZeroFrames(int frames);
   void ZeroFramesPartial(int start_frame, int frames);
 
+  // Checks if all frames are zero.
+  bool AreFramesZero() const;
+
   // Scale internal channel values by |volume| >= 0.  If an invalid value
   // is provided, no adjustment is done.
   void Scale(float volume);

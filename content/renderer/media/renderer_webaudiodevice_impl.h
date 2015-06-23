@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_RENDERER_WEBAUDIODEVICE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_RENDERER_WEBAUDIODEVICE_IMPL_H_
 
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_parameters.h"
@@ -12,8 +13,13 @@
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace media {
 class AudioOutputDevice;
+class NullAudioSink;
 }
 
 namespace content {
@@ -52,6 +58,30 @@ class RendererWebAudioDeviceImpl
 
   // ID to allow browser to select the correct input device for unified IO.
   int session_id_;
+
+  // Timeticks when the silence starts.
+  base::TimeTicks first_silence_time_ ;
+
+  // TaskRunner to post callbacks to the render thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // A fake audio sink object that consumes data when long period of silence
+  // audio is detected. This object lives on the render thread.
+  scoped_refptr<media::NullAudioSink> null_audio_sink_;
+
+  // Whether audio output is directed to |null_audio_sink_|.
+  bool is_using_null_audio_sink_;
+
+  // First audio buffer after silence finishes. We store this buffer so that
+  // it can be sent to the |output_device_| later after switching from
+  // |null_audio_sink_|.
+  scoped_ptr<media::AudioBus> first_buffer_after_silence_;
+
+  bool is_first_buffer_after_silence_;
+
+  // A cancelable task that is posted to start the |null_audio_sink_| after a
+  // period of silence. We do this on android to save battery consumption.
+  base::CancelableClosure start_null_audio_sink_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebAudioDeviceImpl);
 };
