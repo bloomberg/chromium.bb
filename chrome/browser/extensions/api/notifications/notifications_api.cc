@@ -298,8 +298,8 @@ bool NotificationsApiFunction::CreateNotification(
         NotificationConversionHelper::NotificationBitmapToGfxImage(
             image_scale, bitmap_sizes.button_icon_size, *icon_bitmap_ptr,
             &info.icon);
-        optional_fields.buttons.push_back(info);
       }
+      optional_fields.buttons.push_back(info);
     }
   }
 
@@ -434,8 +434,8 @@ bool NotificationsApiFunction::UpdateNotification(
         NotificationConversionHelper::NotificationBitmapToGfxImage(
             image_scale, bitmap_sizes.button_icon_size, *icon_bitmap_ptr,
             &button.icon);
-        buttons.push_back(button);
       }
+      buttons.push_back(button);
     }
     notification->set_buttons(buttons);
   }

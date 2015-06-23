@@ -124,17 +124,19 @@ function testPartialUpdate() {
 
   // Create a notification.
   create("testId", basicNotificationOptions)
-    // Then update a few items
-    .then(function () {
-      return update("testId", {
-        title: "Changed!",
-        message: "Too late! The show ended yesterday"
-      });
-    })
-    // Then update a few more items
-    .then(function () { return update("testId", {priority:2, buttons: []}); })
-    // The test will continue in C++, checking that all the updates "took"
-    .then(chrome.test.succeed, chrome.test.fail);
+      // Then update a few items
+      .then(function() {
+        return update("testId", {
+          title: "Changed!",
+          message: "Too late! The show ended yesterday"
+        });
+      })
+      // Then update a few more items
+      .then(function() {
+        return update("testId", {priority: 2, buttons: [{title: "NewButton"}]});
+      })
+      // The test will continue in C++, checking that all the updates "took"
+      .then(chrome.test.succeed, chrome.test.fail);
 };
 
 

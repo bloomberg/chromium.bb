@@ -164,6 +164,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
   const char kNewTitle[] = "Changed!";
   const char kNewMessage[] = "Too late! The show ended yesterday";
   int kNewPriority = 2;
+  const char kButtonTitle[] = "NewButton";
 
   const message_center::NotificationList::Notifications& notifications =
       g_browser_process->message_center()->GetVisibleNotifications();
@@ -174,7 +175,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
   EXPECT_EQ(base::ASCIIToUTF16(kNewTitle), notification->title());
   EXPECT_EQ(base::ASCIIToUTF16(kNewMessage), notification->message());
   EXPECT_EQ(kNewPriority, notification->priority());
-  EXPECT_EQ(0u, notification->buttons().size());
+  EXPECT_EQ(1u, notification->buttons().size());
+  EXPECT_EQ(base::ASCIIToUTF16(kButtonTitle), notification->buttons()[0].title);
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestGetPermissionLevel) {
