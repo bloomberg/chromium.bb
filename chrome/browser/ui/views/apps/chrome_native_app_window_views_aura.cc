@@ -241,8 +241,10 @@ ui::WindowShowState ChromeNativeAppWindowViewsAura::GetRestoredState() const {
       }
       return ui::SHOW_STATE_FULLSCREEN;
     }
-    if (widget()->GetNativeWindow()->GetProperty(aura::client::kShowStateKey) ==
-        ui::SHOW_STATE_DOCKED) {
+    if (widget()->GetNativeWindow()->GetProperty(
+            aura::client::kShowStateKey) == ui::SHOW_STATE_DOCKED ||
+        widget()->GetNativeWindow()->GetProperty(
+            aura::client::kRestoreShowStateKey) == ui::SHOW_STATE_DOCKED) {
       return ui::SHOW_STATE_DOCKED;
     }
   }

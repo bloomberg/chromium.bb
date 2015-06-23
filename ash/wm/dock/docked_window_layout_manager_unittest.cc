@@ -725,9 +725,15 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsMinimize) {
             w3->GetBoundsInScreen().right());
   EXPECT_EQ(kShellWindowId_DockedContainer, w3->parent()->id());
 
-  // The first window should get minimized but parented by the dock container.
+  // The first window should get hidden but parented by the dock container.
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsDocked());
+  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_EQ(ui::SHOW_STATE_MINIMIZED,
+            w1->GetProperty(aura::client::kShowStateKey));
+  EXPECT_EQ(ui::SHOW_STATE_DOCKED,
+            w1->GetProperty(aura::client::kRestoreShowStateKey));
+  // The other two windows should be still docked.
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(w2.get())->IsDocked());
   EXPECT_FALSE(wm::GetWindowState(w3.get())->IsMinimized());
