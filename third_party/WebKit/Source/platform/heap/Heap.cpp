@@ -445,6 +445,9 @@ Address BaseHeap::lazySweep(size_t allocationSize, size_t gcInfoIndex)
 
     if (threadState()->isMainThread())
         ScriptForbiddenScope::exit();
+
+    Heap::reportMemoryUsageForTracing();
+
     return result;
 }
 
@@ -481,11 +484,13 @@ bool BaseHeap::lazySweepWithDeadline(double deadlineSeconds)
         if (pageCount % deadlineCheckInterval == 0) {
             if (deadlineSeconds <= Platform::current()->monotonicallyIncreasingTime()) {
                 // Deadline has come.
+                Heap::reportMemoryUsageForTracing();
                 return !m_firstUnsweptPage;
             }
         }
         pageCount++;
     }
+    Heap::reportMemoryUsageForTracing();
     return true;
 }
 
@@ -498,6 +503,8 @@ void BaseHeap::completeSweep()
     while (m_firstUnsweptPage) {
         sweepUnsweptPage();
     }
+
+    Heap::reportMemoryUsageForTracing();
 }
 
 NormalPageHeap::NormalPageHeap(ThreadState* state, int index)
@@ -2189,6 +2196,18 @@ void Heap::reportMemoryUsageHistogram()
         observedMaxSizeInMB = sizeInMB;
     }
 }
+
+#if ENABLE(GC_PROFILING)
+void Heap::reportMemoryUsageForTracing()
+{
+    // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
+    // They are capped to INT_MAX just in case.
+    TRACE_COUNTER1("blink_gc", "Heap::estimatedLiveObjectSizeKB", std::min(Heap::estimatedLiveObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
+}
+#endif
 
 size_t Heap::objectPayloadSizeForTesting()
 {

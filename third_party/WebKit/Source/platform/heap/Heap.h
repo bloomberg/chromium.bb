@@ -1037,6 +1037,12 @@ public:
     static double estimatedMarkingTime();
     static void reportMemoryUsageHistogram();
 
+#if ENABLE(GC_PROFILING)
+    static void reportMemoryUsageForTracing();
+#else
+    static void reportMemoryUsageForTracing() { }
+#endif
+
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
     // by base addresses.
