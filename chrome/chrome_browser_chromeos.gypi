@@ -302,6 +302,8 @@
         'browser/chromeos/file_system_provider/operations/create_file.h',
         'browser/chromeos/file_system_provider/operations/delete_entry.cc',
         'browser/chromeos/file_system_provider/operations/delete_entry.h',
+        'browser/chromeos/file_system_provider/operations/get_actions.cc',
+        'browser/chromeos/file_system_provider/operations/get_actions.h',
         'browser/chromeos/file_system_provider/operations/get_metadata.cc',
         'browser/chromeos/file_system_provider/operations/get_metadata.h',
         'browser/chromeos/file_system_provider/operations/move_entry.cc',

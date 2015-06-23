@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/create_directory.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/create_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/delete_entry.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/get_actions.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/move_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
@@ -193,6 +194,22 @@ AbortCallback ProvidedFileSystem::GetMetadata(
 
   return base::Bind(
       &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
+}
+
+AbortCallback ProvidedFileSystem::GetActions(
+    const base::FilePath& entry_path,
+    const GetActionsCallback& callback) {
+  const int request_id = request_manager_->CreateRequest(
+      GET_ACTIONS,
+      scoped_ptr<RequestManager::HandlerInterface>(new operations::GetActions(
+          event_router_, file_system_info_, entry_path, callback)));
+  if (!request_id) {
+    callback.Run(Actions(), base::File::FILE_ERROR_SECURITY);
+    return AbortCallback();
+  }
+
+  return base::Bind(&ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(),
+                    request_id);
 }
 
 AbortCallback ProvidedFileSystem::ReadDirectory(

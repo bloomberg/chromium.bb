@@ -28,6 +28,7 @@ namespace file_system_provider {
 enum RequestType {
   REQUEST_UNMOUNT,
   GET_METADATA,
+  GET_ACTIONS,
   READ_DIRECTORY,
   OPEN_FILE,
   CLOSE_FILE,

@@ -145,6 +145,28 @@ eventBindings.registerArgumentMassager(
     });
 
 eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onGetActionsRequested',
+    function(args, dispatch) {
+      var executionStart = Date.now();
+      var options = args[0];
+      var onSuccessCallback = function(actions) {
+        fileSystemProviderInternal.getActionsRequestedSuccess(
+            options.fileSystemId,
+            options.requestId,
+            actions,
+            Date.now() - executionStart);
+      };
+
+      var onErrorCallback = function(error) {
+        fileSystemProviderInternal.operationRequestedError(
+            options.fileSystemId, options.requestId, error,
+            Date.now() - executionStart);
+      }
+
+      dispatch([options, onSuccessCallback, onErrorCallback]);
+    });
+
+eventBindings.registerArgumentMassager(
     'fileSystemProvider.onReadDirectoryRequested',
     function(args, dispatch) {
       var executionStart = Date.now();

@@ -109,6 +109,14 @@ AbortCallback FakeProvidedFileSystem::GetMetadata(
       base::Bind(callback, base::Passed(&metadata), base::File::FILE_OK));
 }
 
+AbortCallback FakeProvidedFileSystem::GetActions(
+    const base::FilePath& entry_path,
+    const ProvidedFileSystemInterface::GetActionsCallback& callback) {
+  // TODO(mtomasz): Implement it once needed.
+  const std::vector<Action> actions;
+  return PostAbortableTask(base::Bind(callback, actions, base::File::FILE_OK));
+}
+
 AbortCallback FakeProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {

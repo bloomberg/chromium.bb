@@ -22,6 +22,14 @@ namespace fileSystemProviderInternal {
         fileSystemProvider.EntryMetadata metadata,
         long executionTime);
 
+    // Internal. Success callback of the <code>onGetActionsRequested</code>
+    // event. Must be called if actions are available.
+    static void getActionsRequestedSuccess(
+        DOMString fileSystemId,
+        long requestId,
+        fileSystemProvider.Action[] actions,
+        long executionTime);
+
     // Internal. Success callback of the <code>onReadDirectoryRequested</code>
     // event. Can be called multiple times per request.
     static void readDirectoryRequestedSuccess(

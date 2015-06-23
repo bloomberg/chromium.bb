@@ -298,6 +298,16 @@ FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunWhenValid() {
       false /* has_more */);
 }
 
+bool FileSystemProviderInternalGetActionsRequestedSuccessFunction::
+    RunWhenValid() {
+  using api::file_system_provider_internal::GetActionsRequestedSuccess::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  return FulfillRequest(RequestValue::CreateForGetActionsSuccess(params.Pass()),
+                        false /* has_more */);
+}
+
 bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
     RunWhenValid() {
   using api::file_system_provider_internal::ReadDirectoryRequestedSuccess::

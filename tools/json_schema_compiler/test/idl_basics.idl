@@ -31,6 +31,11 @@
     DOMString x;
   };
 
+  dictionary UnionType {
+    (EnumType or DOMString)? x;
+    (DOMString or EnumType) y;
+  };
+
   callback Callback1 = void();
   callback Callback2 = void(long x);
   callback Callback3 = void(MyType1 arg);

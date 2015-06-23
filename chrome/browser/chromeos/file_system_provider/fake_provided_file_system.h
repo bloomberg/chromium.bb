@@ -86,6 +86,8 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       ProvidedFileSystemInterface::MetadataFieldMask fields,
       const ProvidedFileSystemInterface::GetMetadataCallback& callback)
       override;
+  AbortCallback GetActions(const base::FilePath& entry_path,
+                           const GetActionsCallback& callback) override;
   AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
       const storage::AsyncFileUtil::ReadDirectoryCallback& callback) override;

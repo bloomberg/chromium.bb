@@ -8,7 +8,7 @@
 namespace fileSystemProvider {
   // Error codes used by providing extensions in response to requests as well
   // as in case of errors when calling methods of the API. For success,
-  // <code>OK</code> must be used.
+  // <code>"OK"</code> must be used.
   enum ProviderError {
     OK,
     FAILED,
@@ -39,6 +39,17 @@ namespace fileSystemProvider {
   enum ChangeType {
     CHANGED,
     DELETED
+  };
+
+  // List of common actions. <code>"SHARE"</code> is for sharing files with
+  // others. <code>"SAVE_FOR_OFFLINE"</code> for pinning (saving for offline
+  // access). <code>"OFFLINE_NOT_NECESSARY"</code> for notifying that the file
+  // doesn't need to be stored for offline access anymore.
+  // Used by $(ref:onGetActionsRequested) and $(ref:onExecuteActionRequested).
+  enum CommonActionId {
+    SAVE_FOR_OFFLINE,
+    OFFLINE_NOT_NECESSARY,
+    SHARE
   };
 
   // Represents metadata of a file or a directory.
@@ -167,6 +178,18 @@ namespace fileSystemProvider {
 
     // Set to <code>true</code> if the thumbnail is requested.
     boolean thumbnail;
+  };
+
+  // Options for the $(ref:onGetActionsRequested) event.
+  dictionary GetActionsRequestedOptions {
+    // The identifier of the file system related to this operation.
+    DOMString fileSystemId;
+
+    // The unique identifier of this request.
+    long requestId;
+
+    // The path of the entry to return the list of actions for.
+    DOMString entryPath;
   };
 
   // Options for the $(ref:onReadDirectoryRequested) event.
@@ -375,6 +398,31 @@ namespace fileSystemProvider {
     boolean recursive;
   };
 
+  // Information about an action for an entry.
+  dictionary Action {
+    // The identifier of the action. Any string or $(ref:CommonActionId) for
+    // common actions.
+    DOMString id;
+
+    // The title of the action. It may be ignored for common actions.
+    DOMString? title;
+  };
+
+  // Options for the $(ref:onExecuteActionRequested) event.
+  dictionary ExecuteActionRequestedOptions {
+    // The identifier of the file system related to this operation.
+    DOMString fileSystemId;
+
+    // The unique identifier of this request.
+    long requestId;
+
+    // The path of the entry to be used for the action.
+    DOMString entryPath;
+
+    // The identifier of the action to be executed.
+    DOMString actionId;
+  };
+
   // Information about a change happened to an entry within the observed
   // directory (including the entry itself).
   dictionary Change {
@@ -434,8 +482,10 @@ namespace fileSystemProvider {
   [nocompile] callback ProviderErrorCallback = void(ProviderError error);
 
   // Success callback for the $(ref:onGetMetadataRequested) event.
-  [nocompile] callback MetadataCallback = void(
-      EntryMetadata metadata);
+  [nocompile] callback MetadataCallback = void(EntryMetadata metadata);
+
+  // Success callback for the $(ref:onGetActionsRequested) event.
+  [nocompile, nodoc] callback ActionsCallback = void(Action[] actions);
 
   // Success callback for the $(ref:onReadDirectoryRequested) event. If more
   // entries will be returned, then <code>hasMore</code> must be true, and it
@@ -535,6 +585,15 @@ namespace fileSystemProvider {
     [maxListeners=1] static void onGetMetadataRequested(
         GetMetadataRequestedOptions options,
         MetadataCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when list of actions for of a file or a directory at
+    // <code>entryPath</code>s requested. The actions must be returned with the
+    // <code>successCallback</code> call. In case of an error,
+    // <code>errorCallback</code> must be called.
+    [maxListeners=1, nodoc] static void onGetActionsRequested(
+        GetActionsRequestedOptions options,
+        ActionsCallback successCallback,
         ProviderErrorCallback errorCallback);
 
     // Raised when contents of a directory at <code>directoryPath</code> are
@@ -665,6 +724,14 @@ namespace fileSystemProvider {
     // <code>errorCallback</code> must be called.
     [maxListeners=1] static void onRemoveWatcherRequested(
       RemoveWatcherRequestedOptions options,
+      ProviderSuccessCallback successCallback,
+      ProviderErrorCallback errorCallback);
+
+    // Raised when executing an action for a file or a directory is requested.
+    // After the action is completed, <code>successCallback</code> must be
+    // called. On error, <code>errorCallback</code> must be called.
+    [maxListeners=1, nodoc] static void onExecuteActionRequested(
+      ExecuteActionRequestedOptions options,
       ProviderSuccessCallback successCallback,
       ProviderErrorCallback errorCallback);
   };

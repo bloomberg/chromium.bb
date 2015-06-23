@@ -420,13 +420,16 @@ class _Generator(object):
     c.Append('scoped_ptr<base::Value> result;')
     for choice in type_.choices:
       choice_var = 'as_%s' % choice.unix_name
+      # Enums cannot be wrapped with scoped_ptr, but the XXX_NONE enum value
+      # is equal to 0.
       (c.Sblock('if (%s) {' % choice_var)
           .Append('DCHECK(!result) << "Cannot set multiple choices for %s";' %
                       type_.unix_name)
           .Cblock(self._CreateValueFromType('result.reset(%s);',
                                             choice.name,
                                             choice,
-                                            '*%s' % choice_var))
+                                            choice_var,
+                                            True))
         .Eblock('}')
       )
     (c.Append('DCHECK(result) << "Must set at least one choice for %s";' %

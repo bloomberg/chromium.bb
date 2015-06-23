@@ -68,7 +68,7 @@ class FileSystemProviderInternalUnmountRequestedSuccessFunction
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileSystemProviderInternal.unmountRequestedSuccess",
-      FILESYSTEMPROVIDERINTERNAL_GETMETADATAREQUESTEDSUCCESS)
+      FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS)
 
  protected:
   ~FileSystemProviderInternalUnmountRequestedSuccessFunction() override {}
@@ -84,6 +84,18 @@ class FileSystemProviderInternalGetMetadataRequestedSuccessFunction
 
  protected:
   ~FileSystemProviderInternalGetMetadataRequestedSuccessFunction() override {}
+  bool RunWhenValid() override;
+};
+
+class FileSystemProviderInternalGetActionsRequestedSuccessFunction
+    : public FileSystemProviderInternalFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.getActionsRequestedSuccess",
+      FILESYSTEMPROVIDERINTERNAL_GETACTIONSREQUESTEDSUCCESS)
+
+ protected:
+  ~FileSystemProviderInternalGetActionsRequestedSuccessFunction() override {}
   bool RunWhenValid() override;
 };
 

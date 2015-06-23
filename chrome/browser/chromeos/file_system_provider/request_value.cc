@@ -29,6 +29,14 @@ scoped_ptr<RequestValue> RequestValue::CreateForGetMetadataSuccess(
   return result.Pass();
 }
 
+scoped_ptr<RequestValue> RequestValue::CreateForGetActionsSuccess(
+    scoped_ptr<extensions::api::file_system_provider_internal::
+                   GetActionsRequestedSuccess::Params> params) {
+  scoped_ptr<RequestValue> result(new RequestValue);
+  result->get_actions_success_params_ = params.Pass();
+  return result.Pass();
+}
+
 scoped_ptr<RequestValue> RequestValue::CreateForReadDirectorySuccess(
     scoped_ptr<extensions::api::file_system_provider_internal::
                    ReadDirectoryRequestedSuccess::Params> params) {

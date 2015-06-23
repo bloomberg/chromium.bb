@@ -51,6 +51,14 @@ struct EntryMetadata {
   DISALLOW_COPY_AND_ASSIGN(EntryMetadata);
 };
 
+// Represents actions for either a file or a directory.
+struct Action {
+  std::string id;
+  std::string title;
+};
+
+typedef std::vector<Action> Actions;
+
 // Mode of opening a file. Used by OpenFile().
 enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
 
@@ -91,6 +99,9 @@ class ProvidedFileSystemInterface {
   typedef base::Callback<void(scoped_ptr<EntryMetadata> entry_metadata,
                               base::File::Error result)> GetMetadataCallback;
 
+  typedef base::Callback<void(const Actions& actions, base::File::Error result)>
+      GetActionsCallback;
+
   // Mask of fields requested from the GetMetadata() call.
   typedef int MetadataFieldMask;
 
@@ -107,6 +118,11 @@ class ProvidedFileSystemInterface {
   virtual AbortCallback GetMetadata(const base::FilePath& entry_path,
                                     MetadataFieldMask fields,
                                     const GetMetadataCallback& callback) = 0;
+
+  // Requests list of actions for the passed |entry_path|. It can be either a
+  // file or a directory.
+  virtual AbortCallback GetActions(const base::FilePath& entry_path,
+                                   const GetActionsCallback& callback) = 0;
 
   // Requests enumerating entries from the passed |directory_path|. The callback
   // can be called multiple times until |has_more| is set to false.

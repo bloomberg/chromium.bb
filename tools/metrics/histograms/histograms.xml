@@ -54823,6 +54823,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1055" label="EXTENSIONVIEWINTERNAL_LOADSRC"/>
   <int value="1056" label="EXTENSIONVIEWINTERNAL_PARSESRC"/>
   <int value="1057" label="HID_GETUSERSELECTEDDEVICES"/>
+  <int value="1058"
+      label="FILESYSTEMPROVIDERINTERNAL_GETACTIONSREQUESTEDSUCCESS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

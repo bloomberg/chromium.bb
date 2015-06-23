@@ -1225,6 +1225,7 @@
       'browser/chromeos/file_system_provider/operations/create_directory_unittest.cc',
       'browser/chromeos/file_system_provider/operations/create_file_unittest.cc',
       'browser/chromeos/file_system_provider/operations/delete_entry_unittest.cc',
+      'browser/chromeos/file_system_provider/operations/get_actions_unittest.cc',
       'browser/chromeos/file_system_provider/operations/get_metadata_unittest.cc',
       'browser/chromeos/file_system_provider/operations/move_entry_unittest.cc',
       'browser/chromeos/file_system_provider/operations/open_file_unittest.cc',

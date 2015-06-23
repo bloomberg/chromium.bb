@@ -30,6 +30,8 @@ std::string RequestTypeToString(RequestType type) {
       return "REQUEST_UNMOUNT";
     case GET_METADATA:
       return "GET_METADATA";
+    case GET_ACTIONS:
+      return "GET_ACTIONS";
     case READ_DIRECTORY:
       return "READ_DIRECTORY";
     case OPEN_FILE:

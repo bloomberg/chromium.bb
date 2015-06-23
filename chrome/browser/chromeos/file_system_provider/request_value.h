@@ -32,6 +32,10 @@ class RequestValue {
       scoped_ptr<extensions::api::file_system_provider_internal::
                      GetMetadataRequestedSuccess::Params> params);
 
+  static scoped_ptr<RequestValue> CreateForGetActionsSuccess(
+      scoped_ptr<extensions::api::file_system_provider_internal::
+                     GetActionsRequestedSuccess::Params> params);
+
   static scoped_ptr<RequestValue> CreateForReadDirectorySuccess(
       scoped_ptr<extensions::api::file_system_provider_internal::
                      ReadDirectoryRequestedSuccess::Params> params);
@@ -60,6 +64,12 @@ class RequestValue {
       GetMetadataRequestedSuccess::Params*
       get_metadata_success_params() const {
     return get_metadata_success_params_.get();
+  }
+
+  const extensions::api::file_system_provider_internal::
+      GetActionsRequestedSuccess::Params*
+      get_actions_success_params() const {
+    return get_actions_success_params_.get();
   }
 
   const extensions::api::file_system_provider_internal::
@@ -94,6 +104,9 @@ class RequestValue {
   scoped_ptr<extensions::api::file_system_provider_internal::
                  GetMetadataRequestedSuccess::Params>
       get_metadata_success_params_;
+  scoped_ptr<extensions::api::file_system_provider_internal::
+                 GetActionsRequestedSuccess::Params>
+      get_actions_success_params_;
   scoped_ptr<extensions::api::file_system_provider_internal::
                  ReadDirectoryRequestedSuccess::Params>
       read_directory_success_params_;
