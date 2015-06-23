@@ -278,7 +278,8 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
         }
     }
 
-    VisiblePosition visiblePos(innerNode->layoutObject()->positionForPoint(event.localPoint()));
+    PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
+    VisiblePosition visiblePos(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
     if (visiblePos.isNull())
         visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode), DOWNSTREAM);
     PositionType pos = Strategy::toPositionType(visiblePos.deepEquivalent());
@@ -388,7 +389,8 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
     if (!target)
         return;
 
-    VisiblePosition targetPosition = m_frame->selection().selection().visiblePositionRespectingEditingBoundary(hitTestResult.localPoint(), target);
+    PositionWithAffinity rawTargetPosition = m_frame->selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
+    VisiblePosition targetPosition = VisiblePosition(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;
