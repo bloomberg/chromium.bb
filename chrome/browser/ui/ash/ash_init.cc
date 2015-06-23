@@ -67,7 +67,8 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
       content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
+          ->GetSequencedTaskRunnerWithShutdownBehavior(
+              content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   shell->accelerator_controller()->SetImeControlDelegate(
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
