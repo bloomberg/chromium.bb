@@ -45,6 +45,8 @@ public:
     virtual ~SVGFEImageElement();
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
+    // Promptly remove as a ImageResource client.
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
