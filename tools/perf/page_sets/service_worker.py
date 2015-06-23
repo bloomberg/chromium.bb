@@ -30,3 +30,13 @@ class ServiceWorkerPageSet(page_set.PageSet):
     self.AddUserStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
         name='third_load', make_javascript_deterministic=False))
+
+    # Why: another caching strategy: cache.addAll in oninstall handler
+    # 1st time: registration and caching
+    self.AddUserStory(page.Page(
+        'https://jakearchibald.github.io/svgomg/', self,
+        name='svgomg_first_load', make_javascript_deterministic=False))
+    # 2st time: onfetch from cache
+    self.AddUserStory(page.Page(
+        'https://jakearchibald.github.io/svgomg/', self,
+        name='svgomg_second_load', make_javascript_deterministic=False))
