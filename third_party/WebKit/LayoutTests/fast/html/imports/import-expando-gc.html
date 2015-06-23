@@ -8,8 +8,11 @@
 <script>
 description('Properties in imported dom nodes should be retained.');
 
+var importedDocument;
+
 function getNodeInImport() {
-    var importedDocument = document.querySelector('link').import;
+    if (!importedDocument)
+        importedDocument = document.querySelector('link').import;
     return importedDocument.querySelector('h1');
 }
 
