@@ -29,6 +29,7 @@ struct InputDeviceSettingsEvdev {
   int touchpad_sensitivity = kDefaultSensitivity;
   int mouse_sensitivity = kDefaultSensitivity;
 
+  bool enable_devices = true;  // If false, all input is disabled.
   bool enable_internal_touchpad = true;
   bool enable_internal_keyboard_filter = false;
   std::vector<DomCode> internal_keyboard_allowed_keys;

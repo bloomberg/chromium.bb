@@ -14,6 +14,7 @@
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_event_observer.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
 namespace ui {
@@ -30,7 +31,8 @@ class DrmDisplayHostManager : public DeviceEventObserver,
                               public GpuPlatformSupportHost {
  public:
   DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
-                        DeviceManager* device_manager);
+                        DeviceManager* device_manager,
+                        InputControllerEvdev* input_controller);
   ~DrmDisplayHostManager() override;
 
   DrmDisplayHost* GetDisplay(int64_t display_id);
@@ -90,6 +92,7 @@ class DrmDisplayHostManager : public DeviceEventObserver,
 
   DrmGpuPlatformSupportHost* proxy_;  // Not owned.
   DeviceManager* device_manager_;     // Not owned.
+  InputControllerEvdev* input_controller_;  // Not owned.
 
   DrmNativeDisplayDelegate* delegate_ = nullptr;  // Not owned.
 

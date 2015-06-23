@@ -34,6 +34,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void set_has_mouse(bool has_mouse);
   void set_has_touchpad(bool has_touchpad);
 
+  void SetInputDevicesEnabled(bool enabled);
+
   // InputController:
   bool HasMouse() override;
   bool HasTouchpad() override;

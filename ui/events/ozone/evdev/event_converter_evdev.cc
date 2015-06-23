@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/devices/input_device.h"
 
 namespace ui {
@@ -46,10 +47,15 @@ void EventConverterEvdev::Stop() {
 void EventConverterEvdev::SetEnabled(bool enabled) {
   if (enabled == enabled_)
     return;
-  if (enabled)
+  if (enabled) {
+    TRACE_EVENT1("evdev", "EventConverterEvdev::OnEnabled", "path",
+                 path_.value());
     OnEnabled();
-  else
+  } else {
+    TRACE_EVENT1("evdev", "EventConverterEvdev::OnDisabled", "path",
+                 path_.value());
     OnDisabled();
+  }
   enabled_ = enabled;
 }
 

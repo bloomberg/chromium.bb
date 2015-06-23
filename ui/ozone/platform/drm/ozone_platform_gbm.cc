@@ -153,13 +153,6 @@ class OzonePlatformGbm : public OzonePlatform {
     device_manager_ = CreateDeviceManager();
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
-    gpu_platform_support_host_.reset(
-        new DrmGpuPlatformSupportHost(cursor_.get()));
-    display_manager_.reset(new DrmDisplayHostManager(
-        gpu_platform_support_host_.get(), device_manager_.get()));
-    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    overlay_manager_.reset(new DrmOverlayManager(
-        use_surfaceless_, gpu_platform_support_host_.get()));
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
         new XkbKeyboardLayoutEngine(xkb_evdev_code_converter_)));
@@ -170,6 +163,14 @@ class OzonePlatformGbm : public OzonePlatform {
     event_factory_ozone_.reset(new EventFactoryEvdev(
         cursor_.get(), device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
+    gpu_platform_support_host_.reset(
+        new DrmGpuPlatformSupportHost(cursor_.get()));
+    display_manager_.reset(new DrmDisplayHostManager(
+        gpu_platform_support_host_.get(), device_manager_.get(),
+        event_factory_ozone_->input_controller()));
+    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
+    overlay_manager_.reset(new DrmOverlayManager(
+        use_surfaceless_, gpu_platform_support_host_.get()));
   }
 
   void InitializeGPU() override {

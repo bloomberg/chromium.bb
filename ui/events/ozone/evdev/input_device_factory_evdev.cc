@@ -317,6 +317,8 @@ base::WeakPtr<InputDeviceFactoryEvdev> InputDeviceFactoryEvdev::GetWeakPtr() {
 }
 
 void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
+  TRACE_EVENT0("evdev", "ApplyInputDeviceSettings");
+
   SetIntPropertyForOneType(DT_TOUCHPAD, "Pointer Sensitivity",
                            input_device_settings_.touchpad_sensitivity);
   SetIntPropertyForOneType(DT_TOUCHPAD, "Scroll Sensitivity",
@@ -367,7 +369,7 @@ bool InputDeviceFactoryEvdev::IsDeviceEnabled(
       converter->HasTouchpad())
     return false;
 
-  return true;
+  return input_device_settings_.enable_devices;
 }
 
 void InputDeviceFactoryEvdev::UpdateDirtyFlags(

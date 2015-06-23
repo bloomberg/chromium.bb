@@ -38,6 +38,11 @@ void InputControllerEvdev::set_has_touchpad(bool has_touchpad) {
   has_touchpad_ = has_touchpad;
 }
 
+void InputControllerEvdev::SetInputDevicesEnabled(bool enabled) {
+  input_device_settings_.enable_devices = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
 bool InputControllerEvdev::HasMouse() {
   return has_mouse_;
 }

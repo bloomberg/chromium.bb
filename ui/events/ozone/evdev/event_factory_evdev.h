@@ -60,7 +60,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   scoped_ptr<SystemInputInjector> CreateSystemInputInjector();
 
-  InputController* input_controller() { return &input_controller_; }
+  InputControllerEvdev* input_controller() { return &input_controller_; }
 
   // User input events.
   void DispatchKeyEvent(const KeyEventParams& params);

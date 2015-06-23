@@ -108,10 +108,13 @@ class FindDrmDisplayHostById {
 
 }  // namespace
 
-DrmDisplayHostManager::DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
-                                             DeviceManager* device_manager)
+DrmDisplayHostManager::DrmDisplayHostManager(
+    DrmGpuPlatformSupportHost* proxy,
+    DeviceManager* device_manager,
+    InputControllerEvdev* input_controller)
     : proxy_(proxy),
       device_manager_(device_manager),
+      input_controller_(input_controller),
       primary_graphics_card_path_(GetPrimaryDisplayCardPath()),
       weak_ptr_factory_(this) {
   {
@@ -432,8 +435,10 @@ void DrmDisplayHostManager::OnTakeDisplayControl(bool status) {
   DCHECK(display_externally_controlled_);
   DCHECK(display_control_change_pending_);
 
-  if (status)
+  if (status) {
+    input_controller_->SetInputDevicesEnabled(true);
     display_externally_controlled_ = false;
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(take_display_control_callback_, status));
@@ -450,8 +455,10 @@ void DrmDisplayHostManager::OnRelinquishDisplayControl(bool status) {
   DCHECK(!display_externally_controlled_);
   DCHECK(display_control_change_pending_);
 
-  if (status)
+  if (status) {
+    input_controller_->SetInputDevicesEnabled(false);
     display_externally_controlled_ = true;
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(relinquish_display_control_callback_, status));
