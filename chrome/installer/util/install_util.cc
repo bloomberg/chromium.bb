@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -366,18 +367,31 @@ void InstallUtil::UpdateInstallerStage(bool system_install,
 }
 
 bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
-  const int kProgramFilesKey =
-#if defined(_WIN64)
-      // TODO(wfh): Revise this when Chrome is/can be installed in the 64-bit
-      // program files directory.
-      base::DIR_PROGRAM_FILESX86;
-#else
-      base::DIR_PROGRAM_FILES;
-#endif
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+
+  static const char kEnvProgramFilesPath[] = "CHROME_PROBED_PROGRAM_FILES_PATH";
+  std::string env_program_files_path;
+  // Check environment variable to find program files path.
   base::FilePath program_files_path;
-  if (!PathService::Get(kProgramFilesKey, &program_files_path)) {
-    NOTREACHED();
-    return true;
+  if (env->GetVar(kEnvProgramFilesPath, &env_program_files_path) &&
+      !env_program_files_path.empty()) {
+    program_files_path =
+        base::FilePath(base::UTF8ToWide(env_program_files_path));
+  } else {
+    const int kProgramFilesKey =
+#if defined(_WIN64)
+        // TODO(wfh): Revise this when Chrome is/can be installed in the 64-bit
+        // program files directory.
+        base::DIR_PROGRAM_FILESX86;
+#else
+        base::DIR_PROGRAM_FILES;
+#endif
+    if (!PathService::Get(kProgramFilesKey, &program_files_path)) {
+      NOTREACHED();
+      return true;
+    }
+    env->SetVar(kEnvProgramFilesPath,
+                base::WideToUTF8(program_files_path.value()));
   }
   return !base::StartsWith(exe_path.value(), program_files_path.value(), false);
 }
