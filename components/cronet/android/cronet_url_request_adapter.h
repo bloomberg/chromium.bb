@@ -73,6 +73,8 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   // Starts the request.
   void Start(JNIEnv* env, jobject jcaller);
 
+  void GetStatus(JNIEnv* env, jobject jcaller, jobject jstatus_listener) const;
+
   // Follows redirect.
   void FollowDeferredRedirect(JNIEnv* env, jobject jcaller);
 
@@ -124,6 +126,9 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   class IOBufferWithByteBuffer;
 
   void StartOnNetworkThread();
+  void GetStatusOnNetworkThread(
+      const base::android::ScopedJavaGlobalRef<jobject>& jstatus_listener_ref)
+      const;
   void FollowDeferredRedirectOnNetworkThread();
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,

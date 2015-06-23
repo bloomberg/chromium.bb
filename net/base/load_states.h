@@ -13,7 +13,7 @@ namespace net {
 // may be blocked and unable to make progress.
 enum LoadState {
 
-#define LOAD_STATE(label) LOAD_STATE_ ## label,
+#define LOAD_STATE(label, value) LOAD_STATE_##label,
 #include "net/base/load_states_list.h"
 #undef LOAD_STATE
 

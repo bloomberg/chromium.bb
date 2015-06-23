@@ -67,7 +67,7 @@ const StringToConstant kLoadFlags[] = {
 };
 
 const StringToConstant kLoadStateTable[] = {
-#define LOAD_STATE(label)        \
+#define LOAD_STATE(label, value) \
   { #label, LOAD_STATE_##label } \
   ,
 #include "net/base/load_states_list.h"

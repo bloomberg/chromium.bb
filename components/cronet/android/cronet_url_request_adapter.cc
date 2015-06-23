@@ -150,6 +150,17 @@ void CronetURLRequestAdapter::Start(JNIEnv* env, jobject jcaller) {
                             base::Unretained(this)));
 }
 
+void CronetURLRequestAdapter::GetStatus(JNIEnv* env,
+                                        jobject jcaller,
+                                        jobject jstatus_listener) const {
+  DCHECK(!context_->IsOnNetworkThread());
+  base::android::ScopedJavaGlobalRef<jobject> status_listener_ref;
+  status_listener_ref.Reset(env, jstatus_listener);
+  context_->PostTaskToNetworkThread(
+      FROM_HERE, base::Bind(&CronetURLRequestAdapter::GetStatusOnNetworkThread,
+                            base::Unretained(this), status_listener_ref));
+}
+
 void CronetURLRequestAdapter::FollowDeferredRedirect(JNIEnv* env,
                                                      jobject jcaller) {
   DCHECK(!context_->IsOnNetworkThread());
@@ -303,6 +314,16 @@ void CronetURLRequestAdapter::StartOnNetworkThread() {
   if (upload_)
     url_request_->set_upload(upload_.Pass());
   url_request_->Start();
+}
+
+void CronetURLRequestAdapter::GetStatusOnNetworkThread(
+    const base::android::ScopedJavaGlobalRef<jobject>& status_listener_ref)
+    const {
+  DCHECK(context_->IsOnNetworkThread());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  cronet::Java_CronetUrlRequest_onStatus(env, owner_.obj(),
+                                         status_listener_ref.obj(),
+                                         url_request_->GetLoadState().state);
 }
 
 void CronetURLRequestAdapter::FollowDeferredRedirectOnNetworkThread() {

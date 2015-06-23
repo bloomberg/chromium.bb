@@ -122,6 +122,13 @@ public interface UrlRequest {
     public void disableCache();
 
     /**
+     * Queries the status of the request.
+     * @param listener a {@link StatusListener} that will be used to notify
+     *     the caller when result is ready.
+     */
+    public void getStatus(final StatusListener listener);
+
+    /**
      * Note:  There are deliberately no accessors for the results of the request
      * here.  Having none removes any ambiguity over when they are populated,
      * particularly in the redirect case.

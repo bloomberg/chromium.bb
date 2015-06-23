@@ -53,6 +53,18 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
+          'target_name': 'load_states_list',
+          'type': 'none',
+          'sources': [
+            'cronet/android/java/src/org/chromium/net/LoadState.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/cronet',
+            'template_deps': ['../net/base/load_states_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
           'target_name': 'cronet_version',
           'type': 'none',
           'variables': {
@@ -194,6 +206,7 @@
           'dependencies': [
             'cronet_url_request_context_config_list',
             'cronet_version',
+            'load_states_list',
           ],
           'variables': {
             'java_in_dir': 'cronet/android/java',
@@ -203,8 +216,11 @@
               '**/HistogramManager.java',
               '**/HttpUrlConnection*.java',
               '**/HttpUrlRequest*.java',
+              '**/LoadState.java',
+              '**/RequestStatus.java',
               '**/ResponseInfo.java',
               '**/ResponseTooLargeException.java',
+              '**/StatusListener.java',
               '**/UploadDataProvider.java',
               '**/UploadDataSink.java',
               '**/UrlRequest.java',

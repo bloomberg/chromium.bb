@@ -389,6 +389,23 @@ final class CronetUrlRequest implements UrlRequest {
         mDisableCache = true;
     }
 
+    @Override
+    public void getStatus(final StatusListener listener) {
+        synchronized (mUrlRequestAdapterLock) {
+            if (mUrlRequestAdapter != 0) {
+                nativeGetStatus(mUrlRequestAdapter, listener);
+                return;
+            }
+        }
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                listener.onStatus(RequestStatus.INVALID);
+            }
+        };
+        postTaskToExecutor(task);
+    }
+
     @VisibleForTesting
     public void setOnDestroyedCallbackForTests(Runnable onDestroyedCallbackForTests) {
         mOnDestroyedCallbackForTests = onDestroyedCallbackForTests;
@@ -693,6 +710,22 @@ final class CronetUrlRequest implements UrlRequest {
         headersList.add(Pair.create(name, value));
     }
 
+    /**
+     * Called by the native code when request status is fetched from the
+     * native stack.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onStatus(final StatusListener listener, final int loadState) {
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                listener.onStatus(RequestStatus.convertLoadState(loadState));
+            }
+        };
+        postTaskToExecutor(task);
+    }
+
     // Native methods are implemented in cronet_url_request.cc.
 
     private native long nativeCreateRequestAdapter(
@@ -731,6 +764,9 @@ final class CronetUrlRequest implements UrlRequest {
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native String nativeGetProxyServer(long nativePtr);
+
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native void nativeGetStatus(long nativePtr, StatusListener listener);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeGetWasCached(long nativePtr);
