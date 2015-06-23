@@ -328,6 +328,60 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
     }
 
+    @SmallTest
+    @Feature({"IntentHandling"})
+    public void testNavigationFromReload() {
+        TabRedirectHandler handler = new TabRedirectHandler(mContext);
+        handler.updateIntent(sYtIntent);
+        assertFalse(handler.isOnNavigation());
+        assertFalse(handler.shouldStayInChrome());
+
+        handler.updateNewUrlLoading(
+                PageTransition.RELOAD, false, false, SystemClock.elapsedRealtime(), 0);
+        assertTrue(handler.shouldStayInChrome());
+        handler.updateNewUrlLoading(
+                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        assertTrue(handler.shouldStayInChrome());
+
+        assertTrue(handler.isOnNavigation());
+        assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
+
+        SystemClock.sleep(1);
+        handler.updateNewUrlLoading(
+                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
+        assertFalse(handler.shouldStayInChrome());
+
+        assertTrue(handler.isOnNavigation());
+        assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
+    }
+
+    @SmallTest
+    @Feature({"IntentHandling"})
+    public void testNavigationWithForwardBack() {
+        TabRedirectHandler handler = new TabRedirectHandler(mContext);
+        handler.updateIntent(sYtIntent);
+        assertFalse(handler.isOnNavigation());
+        assertFalse(handler.shouldStayInChrome());
+
+        handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT | PageTransition.FORWARD_BACK,
+                false, true, SystemClock.elapsedRealtime(), 0);
+        assertTrue(handler.shouldStayInChrome());
+        handler.updateNewUrlLoading(
+                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        assertTrue(handler.shouldStayInChrome());
+
+        assertTrue(handler.isOnNavigation());
+        assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
+
+        SystemClock.sleep(1);
+        handler.updateNewUrlLoading(
+                PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
+        assertFalse(handler.shouldStayInChrome());
+
+        assertTrue(handler.isOnNavigation());
+        assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
+    }
+
     private static class TestPackageManager extends MockPackageManager {
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {

@@ -925,6 +925,89 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 IntentHandler.EXTRA_REFERRER_ID, 0));
     }
 
+    @SmallTest
+    public void testNavigationFromReload() {
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.RELOAD, false, false, 1, 0);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, false, 1, 0);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 1);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+    }
+
+    @SmallTest
+    public void testNavigationWithForwardBack() {
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+
+        redirectHandler.updateNewUrlLoading(
+                PageTransition.FORM_SUBMIT | PageTransition.FORWARD_BACK, false, false, 1, 0);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, false, 1, 0);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 1);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+    }
+
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
         private Context mContext;
 
