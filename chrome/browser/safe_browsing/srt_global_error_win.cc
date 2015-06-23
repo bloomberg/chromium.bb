@@ -123,11 +123,12 @@ base::string16 SRTGlobalError::GetBubbleViewAcceptButtonLabel() {
 }
 
 bool SRTGlobalError::ShouldAddElevationIconToAcceptButton() {
-  return !downloaded_path_.empty();
+  return !downloaded_path_.empty() &&
+         safe_browsing::SRTPromptNeedsElevationIcon();
 }
 
 base::string16 SRTGlobalError::GetBubbleViewCancelButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_NO_THANKS);
+  return l10n_util::GetStringUTF16(IDS_SRT_BUBBLE_DISMISS);
 }
 
 void SRTGlobalError::OnBubbleViewDidClose(Browser* browser) {

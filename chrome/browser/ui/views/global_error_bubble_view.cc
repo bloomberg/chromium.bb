@@ -17,6 +17,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -89,11 +90,12 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   }
 
   base::string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
-  scoped_ptr<views::LabelButton> accept_button(
-      new views::LabelButton(this, accept_string));
+  scoped_ptr<views::BlueButton> accept_button(
+      new views::BlueButton(this, accept_string));
   accept_button->SetStyle(views::Button::STYLE_BUTTON);
   accept_button->SetIsDefault(true);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
+
   if (error_->ShouldAddElevationIconToAcceptButton())
     elevation_icon_setter_.reset(
         new ElevationIconSetter(

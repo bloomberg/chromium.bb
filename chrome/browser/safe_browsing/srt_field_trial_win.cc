@@ -11,10 +11,13 @@
 namespace {
 
 // Field trial strings.
-const char kSRTCanaryGroupName[] = "SRTCanary";
-const char kSRTPromptTrialName[] = "SRTPromptFieldTrial";
+const char kSRTPromptTrial[] = "SRTPromptFieldTrial";
+const char kSRTCanaryGroup[] = "SRTCanary";
 const char kSRTPromptOffGroup[] = "Off";
-const char kSRTPromptSeedParamName[] = "Seed";
+const char kSRTPromptSeedParam[] = "Seed";
+
+const char kSRTElevationTrial[] = "SRTElevation";
+const char kSRTElevationAsNeededGroup[] = "AsNeeded";
 
 // The download links of the Software Removal Tool.
 const char kMainSRTDownloadURL[] =
@@ -29,20 +32,24 @@ const char kCanarySRTDownloadURL[] =
 namespace safe_browsing {
 
 bool IsInSRTPromptFieldTrialGroups() {
-  return base::FieldTrialList::FindFullName(kSRTPromptTrialName) !=
+  return base::FieldTrialList::FindFullName(kSRTPromptTrial) !=
          kSRTPromptOffGroup;
 }
 
+bool SRTPromptNeedsElevationIcon() {
+  return base::FieldTrialList::FindFullName(kSRTElevationTrial) !=
+         kSRTElevationAsNeededGroup;
+}
+
 const char* GetSRTDownloadURL() {
-  if (base::FieldTrialList::FindFullName(kSRTPromptTrialName) ==
-      kSRTCanaryGroupName)
+  if (base::FieldTrialList::FindFullName(kSRTPromptTrial) == kSRTCanaryGroup)
     return kCanarySRTDownloadURL;
   return kMainSRTDownloadURL;
 }
 
 std::string GetIncomingSRTSeed() {
-  return variations::GetVariationParamValue(kSRTPromptTrialName,
-                                            kSRTPromptSeedParamName);
+  return variations::GetVariationParamValue(kSRTPromptTrial,
+                                            kSRTPromptSeedParam);
 }
 
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value) {
