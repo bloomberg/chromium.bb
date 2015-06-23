@@ -415,8 +415,7 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
  * @param {number} requirements The requirements mask for forms, e.g.
  *      autocomplete attribute state.
  * @return {string} A JSON encoded object with object['forms'] containing the
- *     forms data and object['has_more_forms'] indicating if there are more
- *     forms to extract.
+ *     forms data.
  */
 __gCrWeb.autofill['extractForms'] = function(requiredFields, requirements) {
   var forms = [];
@@ -431,10 +430,6 @@ __gCrWeb.autofill['extractForms'] = function(requiredFields, requirements) {
       requirements,
       forms);
   var results = new __gCrWeb.common.JSONSafeObject;
-  // TODO(thestig): This is no longer used, but removing it will require changes
-  // internal to iOS, where some unit tests check this value and expects it to
-  // be false. Once those are removed, this can be removed.
-  results['has_more_forms'] = false;
   results['forms'] = forms;
   return __gCrWeb.stringify(results);
 };
@@ -1471,26 +1466,20 @@ __gCrWeb.autofill.value = function(element) {
 /**
  * Returns the auto-fillable form control elements in |formElement|.
  *
- * It is based on the logic in
- *     std::vector<blink::WebFormControlElement> ExtractAutofillableElements(
- *         const blink::WebFormElement& form_element,
- *         RequirementsMask requirements,
- *         std::vector<blink::WebFormControlElement>* autofillable_elements);
+ * It is based on the logic in:
+ *     std::vector<blink::WebFormControlElement>
+ *     ExtractAutofillableElementsFromSet(
+ *         const WebVector<WebFormControlElement>& control_elements,
+ *         RequirementsMask requirements);
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.h.
  *
- * TODO(thestig): This should match ExtractAutofillableElementsFromSet() from
- *                r306470 once all internal callers have switched over to
- *                extractAutofillableElementsInForm().
- *
- * @param {HTMLFormElement} formElement A form element to be processed.
+ * @param {Array<FormControlElement>} controlElements Set of control elements.
  * @param {number} requirementsMask A mask on the requirement.
- * @param {Array<FormControlElement>} autofillableElements The array of
- *     autofillable elements.
+ * @return {Array<FormControlElement>} The array of autofillable elements.
  */
-__gCrWeb.autofill.extractAutofillableElements = function(
-    formElement, requirementsMask, autofillableElements) {
-  var controlElements = __gCrWeb.common.getFormControlElements(formElement);
-
+__gCrWeb.autofill.extractAutofillableElementsFromSet = function(
+    controlElements, requirementsMask) {
+  var autofillableElements = [];
   for (var i = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
     if (!__gCrWeb.autofill.isAutofillableElement(element)) {
@@ -1511,6 +1500,7 @@ __gCrWeb.autofill.extractAutofillableElements = function(
     }
     autofillableElements.push(element);
   }
+  return autofillableElements;
 };
 
 /**
@@ -1528,11 +1518,9 @@ __gCrWeb.autofill.extractAutofillableElements = function(
  */
 __gCrWeb.autofill.extractAutofillableElementsInForm = function(
     formElement, requirementsMask) {
-  var autofillableElements = [];
-
-  __gCrWeb.autofill.extractAutofillableElements(
-      formElement, requirementsMask, autofillableElements);
-  return autofillableElements;
+  var controlElements = __gCrWeb.common.getFormControlElements(formElement);
+  return __gCrWeb.autofill.extractAutofillableElementsFromSet(
+      controlElements, requirementsMask);
 };
 
 /**
