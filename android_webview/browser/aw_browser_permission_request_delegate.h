@@ -31,6 +31,12 @@ class AwBrowserPermissionRequestDelegate {
 
   virtual void CancelGeolocationPermissionRequests(const GURL& origin) = 0;
 
+  virtual void RequestMIDISysexPermission(
+      const GURL& origin,
+      const base::Callback<void(bool)>& callback) = 0;
+
+  virtual void CancelMIDISysexPermissionRequests(const GURL& origin) = 0;
+
  protected:
   AwBrowserPermissionRequestDelegate() {}
 };

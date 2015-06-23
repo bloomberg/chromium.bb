@@ -21,13 +21,14 @@ class AwPermissionRequestDelegate;
 // This object is owned by the java peer.
 class AwPermissionRequest {
  public:
-  // The definition must synced with Android's
-  // android.webkit.PermissionRequest.
+  // The definition must synced with
+  // com.android.webview.chromium.WebViewContentsClientAdapter.
   enum Resource {
     Geolocation = 1 << 0,
     VideoCapture = 1 << 1,
     AudioCapture = 1 << 2,
     ProtectedMediaId = 1 << 3,
+    MIDISysex = 1 << 4,
   };
 
   // Take the ownership of |delegate|. Returns the native pointer in

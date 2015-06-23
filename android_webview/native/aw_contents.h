@@ -169,6 +169,10 @@ class AwContents : public FindHelper::Listener,
       const GURL& origin,
       const base::Callback<void(bool)>& callback) override;
   void CancelGeolocationPermissionRequests(const GURL& origin) override;
+  void RequestMIDISysexPermission(
+      const GURL& origin,
+      const base::Callback<void(bool)>& callback) override;
+  void CancelMIDISysexPermissionRequests(const GURL& origin) override;
 
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);

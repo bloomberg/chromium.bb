@@ -52,8 +52,11 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     private static final Pattern WEBVIEW_VERSION_PATTERN =
             Pattern.compile("(Chrome/)([\\d\\.]+)\\s");
 
+    // TODO(michaelbai) : Replace "android.webkit.resoruce.MIDI_SYSEX" with
+    // PermissionRequest.RESOURCE_MIDI_SYSEX once Android M SDK is used.
     private static final String[] AUTOMATICALLY_GRANT =
-            { PermissionRequest.RESOURCE_VIDEO_CAPTURE, PermissionRequest.RESOURCE_AUDIO_CAPTURE };
+            { PermissionRequest.RESOURCE_VIDEO_CAPTURE, PermissionRequest.RESOURCE_AUDIO_CAPTURE,
+              "android.webkit.resource.MIDI_SYSEX" };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -203,6 +203,11 @@ void AwPermissionManager::RequestPermission(
                              origin, embedding_origin));
       break;
     case PermissionType::MIDI_SYSEX:
+      delegate->RequestMIDISysexPermission(
+          origin, base::Bind(&CallbackPermisisonStatusWrapper,
+                             result_cache_->GetWeakPtr(), callback, permission,
+                             origin, embedding_origin));
+      break;
     case PermissionType::NOTIFICATIONS:
     case PermissionType::PUSH_MESSAGING:
       NOTIMPLEMENTED() << "RequestPermission is not implemented for "
@@ -245,6 +250,8 @@ void AwPermissionManager::CancelPermissionRequest(
       delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
       break;
     case PermissionType::MIDI_SYSEX:
+      delegate->CancelMIDISysexPermissionRequests(origin);
+      break;
     case PermissionType::NOTIFICATIONS:
     case PermissionType::PUSH_MESSAGING:
       NOTIMPLEMENTED() << "CancelPermission not implemented for "
