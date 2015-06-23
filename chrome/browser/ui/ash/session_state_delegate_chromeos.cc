@@ -57,7 +57,7 @@ content::BrowserContext* SessionStateDelegateChromeos::GetBrowserContextByIndex(
   user_manager::User* user =
       user_manager::UserManager::Get()->GetLRULoggedInUsers()[index];
   CHECK(user);
-  return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
+  return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 }
 
 content::BrowserContext*
@@ -126,10 +126,11 @@ bool SessionStateDelegateChromeos::ShouldLockScreenBeforeSuspending() const {
        it != logged_in_users.end();
        ++it) {
     user_manager::User* user = (*it);
-    Profile* profile =
-        chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-    if (profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock))
+    Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    if (profile &&
+        profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock)) {
       return true;
+    }
   }
   return false;
 }

@@ -281,11 +281,11 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
   if (user->is_profile_created()) {
     profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
   } else {
-    LOG(WARNING) << "ProfileHelper::GetProfileByUserUnsafe is called when "
-                    "|user|'s profile is not created. It probably means that "
-                    "something is wrong with a calling code. Please report in "
-                    "http://crbug.com/361528 if you see this message. user_id: "
-                 << user->email();
+    LOG(ERROR) << "ProfileHelper::GetProfileByUserUnsafe is called when "
+                  "|user|'s profile is not created. It probably means that "
+                  "something is wrong with a calling code. Please report in "
+                  "http://crbug.com/361528 if you see this message. user_id: "
+               << user->email();
     profile = ProfileManager::GetActiveUserProfile();
   }
 

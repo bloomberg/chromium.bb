@@ -68,22 +68,12 @@ namespace ui {
 class BaseWindow;
 }
 
+#if defined(OS_CHROMEOS)
+class ChromeLauncherControllerUserSwitchObserver;
+#endif
+
 // A list of the elements which makes up a simple menu description.
 typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
-
-// A class which needs to be overwritten dependent on the used OS to moitor
-// user switching.
-// TODO(oshima): move this to .cc
-class ChromeLauncherControllerUserSwitchObserver {
- public:
-  ChromeLauncherControllerUserSwitchObserver() {}
-  virtual ~ChromeLauncherControllerUserSwitchObserver() {}
-
-  virtual void OnUserProfileReadyToSwitch(Profile* profile) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerUserSwitchObserver);
-};
 
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.
@@ -607,8 +597,10 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // The owned browser status monitor.
   scoped_ptr<BrowserStatusMonitor> browser_status_monitor_;
 
+#if defined(OS_CHROMEOS)
   // A special observer class to detect user switches.
   scoped_ptr<ChromeLauncherControllerUserSwitchObserver> user_switch_observer_;
+#endif
 
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;
