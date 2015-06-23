@@ -541,6 +541,12 @@ template<> void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(cons
     }
 }
 
+template<> void unpack<WebGLImageConversion::DataFormatRGBA2_10_10_10, uint32_t, uint16_t>(const uint32_t* source, uint16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
 //----------------------------------------------------------------------
 // Pixel packing routines.
 //
@@ -670,12 +676,6 @@ template<> void pack<WebGLImageConversion::DataFormatRGB8, WebGLImageConversion:
         source += 4;
         destination += 3;
     }
-}
-
-
-template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
-{
-    memcpy(destination, source, pixelsPerRow * 4);
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA8, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
@@ -889,12 +889,6 @@ template<> void pack<WebGLImageConversion::DataFormatRGB32F, WebGLImageConversio
         source += 4;
         destination += 3;
     }
-}
-
-// Used only during RGBA8 or BGRA8 -> floating-point uploads.
-template<> void pack<WebGLImageConversion::DataFormatRGBA32F, WebGLImageConversion::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
-{
-    memcpy(destination, source, pixelsPerRow * 4 * sizeof(float));
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA32F, WebGLImageConversion::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
@@ -1134,6 +1128,160 @@ template<> void pack<WebGLImageConversion::DataFormatA16F, WebGLImageConversion:
         source += 4;
         destination += 1;
     }
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGBA8_S, WebGLImageConversion::AlphaDoPremultiply, int8_t, int8_t>(const int8_t* source, int8_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRGBA8_S, WebGLImageConversion::AlphaDoUnmultiply, int8_t, int8_t>(const int8_t* source, int8_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGBA16, WebGLImageConversion::AlphaDoPremultiply, uint16_t, uint16_t>(const uint16_t* source, uint16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRGBA16, WebGLImageConversion::AlphaDoUnmultiply, uint16_t, uint16_t>(const uint16_t* source, uint16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGBA16_S, WebGLImageConversion::AlphaDoPremultiply, int16_t, int16_t>(const int16_t* source, int16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRGBA16_S, WebGLImageConversion::AlphaDoUnmultiply, int16_t, int16_t>(const int16_t* source, int16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGBA32, WebGLImageConversion::AlphaDoPremultiply, uint32_t, uint32_t>(const uint32_t* source, uint32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRGBA32, WebGLImageConversion::AlphaDoUnmultiply, uint32_t, uint32_t>(const uint32_t* source, uint32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGBA32_S, WebGLImageConversion::AlphaDoPremultiply, int32_t, int32_t>(const int32_t* source, int32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRGBA32_S, WebGLImageConversion::AlphaDoUnmultiply, int32_t, int32_t>(const int32_t* source, int32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGBA2_10_10_10, WebGLImageConversion::AlphaDoPremultiply, uint16_t, uint32_t>(const uint16_t* source, uint32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRGBA2_10_10_10, WebGLImageConversion::AlphaDoUnmultiply, uint16_t, uint32_t>(const uint16_t* source, uint32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGB10F11F11F, WebGLImageConversion::AlphaDoNothing, float, uint32_t>(const float* source, uint32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRGB10F11F11F, WebGLImageConversion::AlphaDoPremultiply, float, uint32_t>(const float* source, uint32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRGB10F11F11F, WebGLImageConversion::AlphaDoUnmultiply, float, uint32_t>(const float* source, uint32_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRG8, WebGLImageConversion::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRG8, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRG8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRG16F, WebGLImageConversion::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRG16F, WebGLImageConversion::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRG16F, WebGLImageConversion::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRG32F, WebGLImageConversion::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+template<> void pack<WebGLImageConversion::DataFormatRG32F, WebGLImageConversion::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
+}
+
+// FIXME: this routine is lossy and must be removed.
+template<> void pack<WebGLImageConversion::DataFormatRG32F, WebGLImageConversion::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
+{
+    // FIXME: Implement this.
+    ASSERT_NOT_REACHED();
 }
 
 bool HasAlpha(int format)
@@ -1515,6 +1663,7 @@ void FormatConverter::convert(WebGLImageConversion::DataFormat srcFormat, WebGLI
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA5551)
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA4444)
             FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA32F)
+            FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA2_10_10_10)
         default:
             ASSERT_NOT_REACHED();
         }
@@ -1547,6 +1696,16 @@ void FormatConverter::convert(WebGLImageConversion::DataFormat dstFormat, WebGLI
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA4444)
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA16F)
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32F)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA8_S)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA16)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA16_S)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32_S)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA2_10_10_10)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGB10F11F11F)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG8)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG16F)
+            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG32F)
         default:
             ASSERT_NOT_REACHED();
         }
@@ -1608,7 +1767,7 @@ void FormatConverter::convert()
     const ptrdiff_t srcStrideInElements = m_srcStride / sizeof(SrcType);
     const ptrdiff_t dstStrideInElements = m_dstStride / sizeof(DstType);
     const bool trivialUnpack = SrcFormat == IntermFormat;
-    const bool trivialPack = DstFormat == IntermFormat && alphaOp == WebGLImageConversion::AlphaDoNothing && m_dstStride > 0;
+    const bool trivialPack = DstFormat == IntermFormat && alphaOp == WebGLImageConversion::AlphaDoNothing;
     ASSERT(!trivialUnpack || !trivialPack);
 
     const SrcType *srcRowStart = static_cast<const SrcType*>(m_srcStart);
@@ -2010,7 +2169,7 @@ bool WebGLImageConversion::packPixels(
     DataFormat dstDataFormat = getDataFormat(destinationFormat, destinationType);
     int dstStride = width * TexelBytesForFormat(dstDataFormat);
     if (flipY) {
-        destinationData = static_cast<uint8_t*>(destinationData) + dstStride*(height - 1);
+        destinationData = static_cast<uint8_t*>(destinationData) + dstStride * (height - 1);
         dstStride = -dstStride;
     }
     if (!HasAlpha(sourceDataFormat) || !HasColor(sourceDataFormat) || !HasColor(dstDataFormat))
