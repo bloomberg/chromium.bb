@@ -214,21 +214,33 @@ enum AccessibilityState {
     AXVisitedState
 };
 
-struct AccessibilityText {
-    String text;
-    AccessibilityTextSource textSource;
-    RefPtr<AXObject> textElement;
+class AccessibilityText final : public NoBaseWillBeGarbageCollectedFinalized<AccessibilityText> {
+public:
+    static PassOwnPtrWillBeRawPtr<AccessibilityText> create(const String& text, const AccessibilityTextSource& source)
+    {
+        return adoptPtrWillBeNoop(new AccessibilityText(text, source, nullptr));
+    }
+    static PassOwnPtrWillBeRawPtr<AccessibilityText> create(const String& text, const AccessibilityTextSource& source, const RefPtr<AXObject> element)
+    {
+        return adoptPtrWillBeNoop(new AccessibilityText(text, source, nullptr));
+    }
 
-    AccessibilityText(const String& t, const AccessibilityTextSource& s)
-    : text(t)
-    , textSource(s)
+    String text() const { return m_text; }
+    AccessibilityTextSource textSource() const { return m_textSource; }
+    AXObject* textElement() const { return m_textElement.get(); }
+
+    DEFINE_INLINE_TRACE() { }
+
+private:
+    AccessibilityText(const String& text, const AccessibilityTextSource& source, const PassRefPtr<AXObject> element)
+    : m_text(text)
+    , m_textSource(source)
+    , m_textElement(element)
     { }
 
-    AccessibilityText(const String& t, const AccessibilityTextSource& s, const RefPtr<AXObject> element)
-    : text(t)
-    , textSource(s)
-    , textElement(element)
-    { }
+    String m_text;
+    AccessibilityTextSource m_textSource;
+    RefPtr<AXObject> m_textElement;
 };
 
 enum AccessibilityOrientation {

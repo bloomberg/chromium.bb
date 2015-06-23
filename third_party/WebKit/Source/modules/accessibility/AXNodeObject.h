@@ -212,8 +212,8 @@ private:
     Node* m_node;
 
     String alternativeTextForWebArea() const;
-    void alternativeText(Vector<AccessibilityText>&) const;
-    void ariaLabeledByText(Vector<AccessibilityText>&) const;
+    void alternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
+    void ariaLabeledByText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;

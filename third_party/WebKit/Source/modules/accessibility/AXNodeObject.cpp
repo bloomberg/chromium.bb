@@ -1562,10 +1562,10 @@ String AXNodeObject::deprecatedTextUnderElement(TextUnderElementMode mode) const
             continue;
 
         if (child->isAXNodeObject()) {
-            Vector<AccessibilityText> textOrder;
+            WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>> textOrder;
             toAXNodeObject(child)->alternativeText(textOrder);
             if (textOrder.size() > 0) {
-                builder.append(textOrder[0].text);
+                builder.append(textOrder[0]->text());
                 if (mode == TextUnderElementAny)
                     break;
                 continue;
@@ -2324,12 +2324,12 @@ String AXNodeObject::alternativeTextForWebArea() const
     return String();
 }
 
-void AXNodeObject::alternativeText(Vector<AccessibilityText>& textOrder) const
+void AXNodeObject::alternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>& textOrder) const
 {
     if (isWebArea()) {
         String webAreaText = alternativeTextForWebArea();
         if (!webAreaText.isEmpty())
-            textOrder.append(AccessibilityText(webAreaText, AlternativeText));
+            textOrder.append(AccessibilityText::create(webAreaText, AlternativeText));
         return;
     }
 
@@ -2337,18 +2337,18 @@ void AXNodeObject::alternativeText(Vector<AccessibilityText>& textOrder) const
 
     const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
     if (!ariaLabel.isEmpty())
-        textOrder.append(AccessibilityText(ariaLabel, AlternativeText));
+        textOrder.append(AccessibilityText::create(ariaLabel, AlternativeText));
 
     if (isImage() || isInputImage() || isNativeImage() || isCanvas()) {
         // Images should use alt as long as the attribute is present, even if empty.
         // Otherwise, it should fallback to other methods, like the title attribute.
         const AtomicString& alt = getAttribute(altAttr);
         if (!alt.isNull())
-            textOrder.append(AccessibilityText(alt, AlternativeText));
+            textOrder.append(AccessibilityText::create(alt, AlternativeText));
     }
 }
 
-void AXNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textOrder) const
+void AXNodeObject::ariaLabeledByText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>& textOrder) const
 {
     String ariaLabeledBy = ariaLabeledByAttribute();
     if (!ariaLabeledBy.isEmpty()) {
@@ -2357,7 +2357,7 @@ void AXNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textOrder) const
 
         for (const auto& element : elements) {
             RefPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
-            textOrder.append(AccessibilityText(ariaLabeledBy, AlternativeText, axElement));
+            textOrder.append(AccessibilityText::create(ariaLabeledBy, AlternativeText, axElement));
         }
     }
 }
