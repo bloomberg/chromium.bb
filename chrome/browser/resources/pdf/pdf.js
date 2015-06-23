@@ -166,15 +166,14 @@ function PDFViewer(browserApi) {
 
   if (this.isMaterial_) {
     this.zoomToolbar_ = $('zoom-toolbar');
-    this.zoomToolbar_.zoomMin = Viewport.ZOOM_FACTOR_RANGE.min * 100;
-    this.zoomToolbar_.zoomMax = Viewport.ZOOM_FACTOR_RANGE.max * 100;
-    this.zoomToolbar_.addEventListener('zoom', function(e) {
-      this.viewport_.setZoom(e.detail.zoom);
-    }.bind(this));
     this.zoomToolbar_.addEventListener('fit-to-width',
         this.viewport_.fitToWidth.bind(this.viewport_));
     this.zoomToolbar_.addEventListener('fit-to-page',
         this.viewport_.fitToPage.bind(this.viewport_));
+    this.zoomToolbar_.addEventListener('zoom-in',
+        this.viewport_.zoomIn.bind(this.viewport_));
+    this.zoomToolbar_.addEventListener('zoom-out',
+        this.viewport_.zoomOut.bind(this.viewport_));
 
     this.materialToolbar_ = $('material-toolbar');
     this.materialToolbar_.docTitle = document.title;

@@ -37,11 +37,21 @@ Polymer({
     this.fire('fit-to-width');
   },
 
+  zoomIn: function() {
+    this.fire('zoom-in');
+  },
+
+  zoomOut: function() {
+    this.fire('zoom-out');
+  },
+
   show: function() {
     if (!this.visible) {
       this.visible_ = true;
       this.$['fit-to-width-button'].show();
       this.$['fit-to-page-button'].show();
+      this.$['zoom-in-button'].show();
+      this.$['zoom-out-button'].show();
     }
   },
 
@@ -50,6 +60,8 @@ Polymer({
       this.visible_ = false;
       this.$['fit-to-page-button'].hide();
       this.$['fit-to-width-button'].hide();
+      this.$['zoom-in-button'].hide();
+      this.$['zoom-out-button'].hide();
     }
   },
 });

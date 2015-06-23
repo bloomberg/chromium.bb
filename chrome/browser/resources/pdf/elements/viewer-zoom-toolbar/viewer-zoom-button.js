@@ -35,7 +35,7 @@ Polymer({
           duration: 250,
           delay: delay
         },
-        transformFrom: 'translateX(150%)'
+        transformFrom: 'translateX(100%)'
       },
       'exit': {
         name: 'transform-animation',
@@ -45,7 +45,7 @@ Polymer({
           duration: 250,
           delay: delay
         },
-        transformTo: 'translateX(150%)'
+        transformTo: 'translateX(100%)'
       }
     };
   },

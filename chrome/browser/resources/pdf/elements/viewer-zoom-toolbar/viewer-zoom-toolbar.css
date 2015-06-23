@@ -4,26 +4,24 @@
 
 :host {
   bottom: 0;
-  padding: 24px;
+  padding: 48px 0;
   position: fixed;
   right: 0;
   z-index: 3;
 }
 
-#zoom-buttons {
-  display: inline-block;
+viewer-zoom-button {
+  display: block;
 }
 
-#fit-to-width-button {
-  display: block;
-  margin: auto;
+/* A small gap between the fit to page/fit to width buttons and the zoom in/zoom
+ * out buttons. */
+#fit-to-page-button,
+#zoom-out-button {
   margin-top: 1em;
-  overflow: visible;
 }
 
-#fit-to-page-button {
-  display: block;
-  margin: auto;
-  overflow: visible;
+/* A larger gap between the top two and bottom two buttons. */
+#zoom-in-button {
+  margin-top: 2em;
 }
-
