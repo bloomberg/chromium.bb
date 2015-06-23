@@ -28,7 +28,7 @@ void SuspendableScriptExecutor::contextDestroyed()
     // and context remained suspend (method resume has never called)
     SuspendableTimer::contextDestroyed();
     m_callback->completed(Vector<v8::Local<v8::Value>>());
-    deref();
+    dispose();
 }
 
 SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
@@ -81,6 +81,15 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
         results.append(scriptValue);
     }
     m_callback->completed(results);
+    dispose();
+}
+
+void SuspendableScriptExecutor::dispose()
+{
+#if ENABLE(OILPAN)
+    // Remove object as a ContextLifecycleObserver.
+    ActiveDOMObject::clearContext();
+#endif
     deref();
 }
 

@@ -24,6 +24,9 @@ public:
 
     virtual void contextDestroyed() override;
 
+    // Eager finalization is needed to promptly stop this timer object.
+    // (see DOMTimer comment for more.)
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -33,6 +36,7 @@ private:
 
     void run();
     void executeAndDestroySelf();
+    void dispose();
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     int m_worldID;
