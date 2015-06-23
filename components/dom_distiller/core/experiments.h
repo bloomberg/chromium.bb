@@ -14,6 +14,7 @@ namespace dom_distiller {
   };
 
   DistillerHeuristicsType GetDistillerHeuristicsType();
+  bool ShouldShowFeedbackForm();
 }
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_EXPERIMENTS_H_

@@ -13,12 +13,19 @@ namespace switches {
 // Switch to enable specific heuristics for detecting if a page is distillable
 // or not.
 extern const char kReaderModeHeuristics[];
+// Switch to control the display of the distiller feedback form.
+extern const char kReaderModeFeedback[];
 
 namespace reader_mode_heuristics {
 extern const char kAdaBoost[];
 extern const char kOGArticle[];
 extern const char kAlwaysTrue[];
 extern const char kNone[];
+};
+
+namespace reader_mode_feedback {
+extern const char kOn[];
+extern const char kOff[];
 };
 
 }  // namespace switches

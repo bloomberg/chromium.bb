@@ -7,12 +7,18 @@
 namespace switches {
 
 const char kReaderModeHeuristics[] = "reader-mode-heuristics";
+const char kReaderModeFeedback[] = "reader-mode-feedback";
 
 namespace reader_mode_heuristics {
 const char kAdaBoost[] = "adaboost";
 const char kOGArticle[] = "opengraph";
 const char kAlwaysTrue[] = "alwaystrue";
 const char kNone[] = "none";
+};
+
+namespace reader_mode_feedback {
+const char kOn[] = "on";
+const char kOff[] = "off";
 };
 
 }  // namespace switches

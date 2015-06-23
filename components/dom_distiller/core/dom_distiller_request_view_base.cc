@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/viewer.h"
@@ -56,7 +57,9 @@ void DomDistillerRequestViewBase::OnArticleReady(
     SendJavaScript(viewer::GetSetTextDirectionJs(text_direction));
     SendJavaScript(viewer::GetUnsafeArticleContentJs(article_proto));
     // If any content was loaded, show the feedback form.
-    SendJavaScript(viewer::GetShowFeedbackFormJs());
+    if (ShouldShowFeedbackForm()) {
+      SendJavaScript(viewer::GetShowFeedbackFormJs());
+    }
   } else {
     // It's possible that we didn't get some incremental updates from the
     // distiller. Ensure all remaining pages are flushed to the viewer.
@@ -89,7 +92,9 @@ void DomDistillerRequestViewBase::OnArticleUpdated(
       SendJavaScript(viewer::GetSetTitleJs(page.title()));
       SendJavaScript(viewer::GetSetTextDirectionJs(page.text_direction()));
       // If any content was loaded, show the feedback form.
-      SendJavaScript(viewer::GetShowFeedbackFormJs());
+      if (ShouldShowFeedbackForm()) {
+        SendJavaScript(viewer::GetShowFeedbackFormJs());
+      }
     }
   }
 }

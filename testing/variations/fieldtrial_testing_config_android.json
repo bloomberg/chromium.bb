@@ -33,5 +33,13 @@
         {
             "group_name": "Enabled"
         }
+    ],
+    "ReaderModeUIFeedback": [
+        {
+            "group_name": "Show"
+        },
+        {
+            "group_name": "DoNotShow"
+        }
     ]
 }

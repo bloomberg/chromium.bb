@@ -40,4 +40,29 @@ DistillerHeuristicsType GetDistillerHeuristicsType() {
   }
   return DistillerHeuristicsType::NONE;
 }
+
+bool ShouldShowFeedbackForm() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("ReaderModeUIFeedback");
+  const std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kReaderModeFeedback);
+  if (switch_value != "") {
+    if (switch_value == switches::reader_mode_feedback::kOn) {
+      return true;
+    }
+    if (switch_value == switches::reader_mode_feedback::kOff) {
+      return false;
+    }
+    NOTREACHED() << "Invalid value for " << switches::kReaderModeFeedback;
+  } else {
+    if (group_name == "DoNotShow") {
+      return false;
+    }
+    if (group_name == "Show") {
+      return true;
+    }
+  }
+  return false;
+}
 }
