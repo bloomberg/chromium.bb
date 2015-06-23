@@ -127,6 +127,16 @@ Response EmulationHandler::CanEmulate(bool* result) {
 Response EmulationHandler::SetDeviceMetricsOverride(
     int width, int height, double device_scale_factor, bool mobile,
     bool fit_window, const double* optional_scale,
+    const double* optional_offset_x, const double* optional_offset_y,
+    const int* screen_width, const int* screen_height,
+    const int* position_x, const int* position_y) {
+  return SetDeviceMetricsOverride(width, height, device_scale_factor, mobile,
+      fit_window, optional_scale, optional_offset_x, optional_offset_y);
+}
+
+Response EmulationHandler::SetDeviceMetricsOverride(
+    int width, int height, double device_scale_factor, bool mobile,
+    bool fit_window, const double* optional_scale,
     const double* optional_offset_x, const double* optional_offset_y) {
   const static int max_size = 10000000;
   const static double max_scale = 10;
