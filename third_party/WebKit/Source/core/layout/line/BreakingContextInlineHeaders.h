@@ -644,6 +644,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 additionalTempWidth = textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds);
 
             wordMeasurement.width = additionalTempWidth + wordSpacingForWordMeasurement;
+            wordMeasurement.glyphBounds.move(wordSpacingForWordMeasurement, 0);
             additionalTempWidth += lastSpaceWordSpacing;
             m_width.addUncommittedWidth(additionalTempWidth);
 
@@ -801,10 +802,14 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     wordMeasurement.layoutText = layoutText;
 
     // IMPORTANT: current.m_pos is > length here!
-    float additionalTempWidth = m_ignoringSpaces ? 0 : textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds);
+    float additionalTempWidth = 0;
     wordMeasurement.startOffset = lastSpace;
     wordMeasurement.endOffset = m_current.offset();
-    wordMeasurement.width = m_ignoringSpaces ? 0 : additionalTempWidth + wordSpacingForWordMeasurement;
+    if (!m_ignoringSpaces) {
+        additionalTempWidth = textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, &wordMeasurement.glyphBounds);
+        wordMeasurement.width = additionalTempWidth + wordSpacingForWordMeasurement;
+        wordMeasurement.glyphBounds.move(wordSpacingForWordMeasurement, 0);
+    }
     additionalTempWidth += lastSpaceWordSpacing;
 
     LayoutUnit inlineLogicalTempWidth = inlineLogicalWidth(m_current.object(), !m_appliedStartWidth, m_includeEndWidth);
