@@ -288,6 +288,7 @@ v8.log
 /third_party/crashpad/crashpad
 /third_party/cros
 /third_party/cros_system_api
+/third_party/custom_tabs_client/src
 /third_party/cygwin
 /third_party/directxsdk
 /third_party/dom_distiller_js/dist
