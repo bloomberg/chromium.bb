@@ -182,7 +182,7 @@ public:
 
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
         FetchRequest::ResourceWidth resourceWidth;
-        if (m_sourceSizeSet && m_srcsetImageCandidate.resourceWidth() != UninitializedDescriptor) {
+        if (m_sourceSizeSet) {
             resourceWidth.width = m_sourceSize;
             resourceWidth.isSet = true;
         } else {
