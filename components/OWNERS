@@ -106,6 +106,10 @@ per-file gcm*=zea@chromium.org
 per-file google*=isherman@chromium.org
 per-file google*=pkasting@chromium.org
 
+per-file guest_view.gypi=fsamuel@chromium.org
+per-file guest_view.gypi=lazyboy@chromium.org
+per-file guest_view.gypi=hanxi@chromium.org
+
 per-file handoff.gypi=erikchen@chromium.org
 
 per-file history.gypi=sdefresne@chromium.org
