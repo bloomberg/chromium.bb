@@ -130,6 +130,13 @@ void TouchFactory::UpdateDeviceList(Display* display) {
           // Only care direct touch device (such as touch screen) right now
           if (tci->mode == XIDirectTouch)
             CacheTouchscreenIds(devinfo.deviceid);
+            if (devinfo.use == XISlavePointer) {
+              device_master_id_list_[devinfo.deviceid] = devinfo.attachment;
+              // If the slave device is direct touch device, we also set its
+              // master device to be touch device.
+              touch_device_lookup_[devinfo.attachment] = true;
+              touch_device_list_[devinfo.attachment] = true;
+            }
         }
       }
     }
@@ -219,11 +226,16 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
 void TouchFactory::SetTouchDeviceList(const std::vector<int>& devices) {
   touch_device_lookup_.reset();
   touch_device_list_.clear();
-  for (std::vector<int>::const_iterator iter = devices.begin();
-       iter != devices.end(); ++iter) {
-    DCHECK(IsValidDevice(*iter));
-    touch_device_lookup_[*iter] = true;
-    touch_device_list_[*iter] = false;
+  for (int deviceid : devices) {
+    DCHECK(IsValidDevice(deviceid));
+    touch_device_lookup_[deviceid] = true;
+    touch_device_list_[deviceid] = false;
+    if (device_master_id_list_.find(deviceid) != device_master_id_list_.end()) {
+      // When we set the device through the "--touch-devices" flag to slave
+      // touch device, we also set its master device to be touch device.
+      touch_device_lookup_[device_master_id_list_[deviceid]] = true;
+      touch_device_list_[device_master_id_list_[deviceid]] = false;
+    }
   }
 }
 

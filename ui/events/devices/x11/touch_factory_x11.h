@@ -134,6 +134,9 @@ class EVENTS_DEVICES_EXPORT TouchFactory {
 
   SequentialIDGenerator id_generator_;
 
+  // Associate each device ID with its master device ID.
+  std::map<int, int> device_master_id_list_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchFactory);
 };
 
