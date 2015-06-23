@@ -25,9 +25,6 @@ class RangeF;
 
 namespace internal {
 
-// Applies std::round to the start and end values of the given RangeF.
-GFX_EXPORT Range RoundRangeF(const RangeF& range_f);
-
 struct GFX_EXPORT TextRunHarfBuzz {
   TextRunHarfBuzz();
   ~TextRunHarfBuzz();

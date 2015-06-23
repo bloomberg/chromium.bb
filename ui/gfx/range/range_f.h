@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/range/range.h"
 
 namespace gfx {
 
@@ -67,6 +68,12 @@ class GFX_EXPORT RangeF {
   // If they don't intersect, it returns an InvalidRange().
   // The returned range is always empty or forward (never reversed).
   RangeF Intersect(const RangeF& range) const;
+  RangeF Intersect(const Range& range) const;
+
+  // Floor/Ceil/Round the start and end values of the given RangeF.
+  Range Floor() const;
+  Range Ceil() const;
+  Range Round() const;
 
   std::string ToString() const;
 

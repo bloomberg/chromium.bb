@@ -2723,7 +2723,7 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
       EXPECT_EQ(cases[i].bounds[j],
-                internal::RoundRangeF(run.GetGraphemeBounds(iter.get(), j)));
+                run.GetGraphemeBounds(iter.get(), j).Round());
     }
   }
 }
@@ -2846,8 +2846,7 @@ TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
   run.range = Range(3, 8);
   run.glyph_count = 0;
   EXPECT_EQ(Range(0, 0), run.CharRangeToGlyphRange(Range(4, 5)));
-  EXPECT_EQ(Range(0, 0),
-            internal::RoundRangeF(run.GetGraphemeBounds(iter.get(), 4)));
+  EXPECT_EQ(Range(0, 0), run.GetGraphemeBounds(iter.get(), 4).Round());
   Range chars;
   Range glyphs;
   run.GetClusterAt(4, &chars, &glyphs);

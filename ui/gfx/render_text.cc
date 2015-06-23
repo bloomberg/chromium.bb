@@ -394,7 +394,7 @@ void StyleIterator::UpdatePosition(size_t position) {
     style_[i] = styles_[i].GetBreak(position);
 }
 
-LineSegment::LineSegment() : width(0), run(0) {}
+LineSegment::LineSegment() : run(0) {}
 
 LineSegment::~LineSegment() {}
 
@@ -1126,7 +1126,7 @@ std::vector<Rect> RenderText::TextBoundsToViewBounds(const Range& x) {
     const Vector2d offset = GetLineOffset(line);
     for (size_t i = 0; i < lines_[line].segments.size(); ++i) {
       const internal::LineSegment* segment = &lines_[line].segments[i];
-      const Range intersection = segment->x_range.Intersect(x);
+      const Range intersection = segment->x_range.Intersect(x).Ceil();
       if (!intersection.is_empty()) {
         Rect rect(line_x + intersection.start() - segment->x_range.start(),
                   0, intersection.length(), lines_[line].size.height());

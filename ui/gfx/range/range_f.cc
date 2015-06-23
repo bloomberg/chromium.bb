@@ -5,6 +5,7 @@
 #include "ui/gfx/range/range_f.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
 #include "base/format_macros.h"
@@ -74,6 +75,30 @@ RangeF RangeF::Intersect(const RangeF& range) const {
     return InvalidRange();
 
   return RangeF(min, max);
+}
+
+RangeF RangeF::Intersect(const Range& range) const {
+  RangeF range_f(range.start(), range.end());
+  return Intersect(range_f);
+}
+
+Range RangeF::Floor() const {
+  size_t start = start_ > 0.0f ? static_cast<size_t>(std::floor(start_)) : 0;
+  size_t end = end_ > 0.0f ? static_cast<size_t>(std::floor(end_)) : 0;
+  return Range(start, end);
+}
+
+Range RangeF::Ceil() const {
+  size_t start = start_ > 0.0f ? static_cast<size_t>(std::ceil(start_)) : 0;
+  size_t end = end_ > 0.0f ? static_cast<size_t>(std::ceil(end_)) : 0;
+  return Range(start, end);
+}
+
+Range RangeF::Round() const {
+  size_t start =
+      start_ > 0.0f ? static_cast<size_t>(std::floor(start_ + 0.5f)) : 0;
+  size_t end = end_ > 0.0f ? static_cast<size_t>(std::floor(end_ + 0.5f)) : 0;
+  return Range(start, end);
 }
 
 std::string RangeF::ToString() const {

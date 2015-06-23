@@ -222,3 +222,33 @@ TYPED_TEST(RangeTest, ContainAndIntersect) {
   EXPECT_FALSE(r1.Contains(invalid));
   EXPECT_FALSE(r1.Intersects(invalid));
 }
+
+TEST(RangeTest, RangeFConverterTest) {
+  gfx::RangeF range_f(1.2f, 3.9f);
+  gfx::Range range = range_f.Floor();
+  EXPECT_EQ(1U, range.start());
+  EXPECT_EQ(3U, range.end());
+
+  range = range_f.Ceil();
+  EXPECT_EQ(2U, range.start());
+  EXPECT_EQ(4U, range.end());
+
+  range = range_f.Round();
+  EXPECT_EQ(1U, range.start());
+  EXPECT_EQ(4U, range.end());
+
+  // Test for negative values.
+  range_f.set_start(-1.2f);
+  range_f.set_end(-3.8f);
+  range = range_f.Floor();
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(0U, range.end());
+
+  range = range_f.Ceil();
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(0U, range.end());
+
+  range = range_f.Round();
+  EXPECT_EQ(0U, range.start());
+  EXPECT_EQ(0U, range.end());
+}

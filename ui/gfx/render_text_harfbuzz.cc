@@ -32,8 +32,6 @@
 #include "ui/gfx/font_fallback_win.h"
 #endif
 
-using gfx::internal::RoundRangeF;
-
 namespace gfx {
 
 namespace {
@@ -248,9 +246,8 @@ class HarfBuzzLineBreaker {
       internal::LineSegment segment;
       segment.run = i;
       segment.char_range = run.range;
-      segment.x_range = Range(SkScalarCeilToInt(text_x_),
-                              SkScalarCeilToInt(text_x_ + run.width));
-      segment.width = run.width;
+      segment.x_range = RangeF(SkScalarToFloat(text_x_),
+                               SkScalarToFloat(text_x_) + run.width);
       AddLineSegment(segment);
     }
   }
@@ -270,7 +267,7 @@ class HarfBuzzLineBreaker {
       if (!word_segments.empty() &&
           text_[word_segments.back().char_range.start()] == '\n') {
         new_line = true;
-        word_width -= word_segments.back().width;
+        word_width -= word_segments.back().width();
         word_segments.pop_back();
       }
 
@@ -337,7 +334,7 @@ class HarfBuzzLineBreaker {
     for (const internal::LineSegment& segment : word_segments) {
       if (has_truncated)
         break;
-      if (segment.width <= available_width_ ||
+      if (segment.width() <= available_width_ ||
           word_wrap_behavior_ == IGNORE_LONG_WORDS) {
         AddLineSegment(segment);
       } else {
@@ -356,14 +353,12 @@ class HarfBuzzLineBreaker {
             cut_segment.run = remaining_segment.run;
             cut_segment.char_range =
                 Range(remaining_segment.char_range.start(), cutoff_pos);
-            cut_segment.width = width;
-            cut_segment.x_range = Range(remaining_segment.x_range.start(),
-                                        SkScalarCeilToInt(text_x_ + width));
+            cut_segment.x_range = RangeF(SkScalarToFloat(text_x_),
+                                         SkScalarToFloat(text_x_ + width));
             AddLineSegment(cut_segment);
             // Updates old segment range.
             remaining_segment.char_range.set_start(cutoff_pos);
-            remaining_segment.x_range.set_start(SkScalarCeilToInt(text_x_));
-            remaining_segment.width -= width;
+            remaining_segment.x_range.set_start(SkScalarToFloat(text_x_));
           }
           if (has_truncated)
             break;
@@ -388,14 +383,13 @@ class HarfBuzzLineBreaker {
         DCHECK_EQ(last_segment.char_range.end(), segment.char_range.start());
         DCHECK_EQ(last_segment.x_range.end(), segment.x_range.start());
         last_segment.char_range.set_end(segment.char_range.end());
-        last_segment.width += segment.width;
-        last_segment.x_range.set_end(
-            SkScalarCeilToInt(text_x_ + segment.width));
+        last_segment.x_range.set_end(SkScalarToFloat(text_x_) +
+                                     segment.width());
         if (run.is_rtl && last_segment.char_range.end() == run.range.end())
           UpdateRTLSegmentRanges();
-        line->size.set_width(line->size.width() + segment.width);
-        text_x_ += segment.width;
-        available_width_ -= segment.width;
+        line->size.set_width(line->size.width() + segment.width());
+        text_x_ += segment.width();
+        available_width_ -= segment.width();
         return;
       }
     }
@@ -408,7 +402,7 @@ class HarfBuzzLineBreaker {
     SkPaint::FontMetrics metrics;
     paint.getFontMetrics(&metrics);
 
-    line->size.set_width(line->size.width() + segment.width);
+    line->size.set_width(line->size.width() + segment.width());
     // TODO(dschuyler): Account for stylized baselines in string sizing.
     max_descent_ = std::max(max_descent_, metrics.fDescent);
     // fAscent is always negative.
@@ -422,8 +416,8 @@ class HarfBuzzLineBreaker {
       if (segment.char_range.end() == run.range.end())
         UpdateRTLSegmentRanges();
     }
-    text_x_ += segment.width;
-    available_width_ -= segment.width;
+    text_x_ += segment.width();
+    available_width_ -= segment.width();
   }
 
   // Finds the end position |end_pos| in |segment| where the preceding width is
@@ -479,9 +473,8 @@ class HarfBuzzLineBreaker {
       internal::LineSegment segment;
       segment.run = i;
       segment.char_range = char_range;
-      segment.width = char_width;
-      segment.x_range = Range(SkScalarCeilToInt(text_x_ + width - char_width),
-                              SkScalarCeilToInt(text_x_ + width));
+      segment.x_range = RangeF(SkScalarToFloat(text_x_ + width - char_width),
+                               SkScalarToFloat(text_x_ + width));
       segments->push_back(segment);
     }
     return width;
@@ -497,8 +490,8 @@ class HarfBuzzLineBreaker {
     float x = SegmentFromHandle(rtl_segments_[0])->x_range.start();
     for (size_t i = rtl_segments_.size(); i > 0; --i) {
       internal::LineSegment* segment = SegmentFromHandle(rtl_segments_[i - 1]);
-      const float segment_width = segment->width;
-      segment->x_range = Range(x, x + segment_width);
+      const float segment_width = segment->width();
+      segment->x_range = RangeF(x, x + segment_width);
       x += segment_width;
     }
     rtl_segments_.clear();
@@ -542,11 +535,6 @@ struct CaseInsensitiveCompare {
 }  // namespace
 
 namespace internal {
-
-Range RoundRangeF(const RangeF& range_f) {
-  return Range(std::floor(range_f.start() + 0.5f),
-               std::floor(range_f.end() + 0.5f));
-}
 
 TextRunHarfBuzz::TextRunHarfBuzz()
     : width(0.0f),
@@ -831,8 +819,8 @@ Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
   if (cursor_enabled() && run_index == run_list->size() - 1 &&
       index == (run->is_rtl ? run->range.start() : run->range.end() - 1))
     bounds.set_end(std::ceil(bounds.end()));
-  return RoundRangeF(run->is_rtl ?
-      RangeF(bounds.end(), bounds.start()) : bounds);
+  return run->is_rtl ? RangeF(bounds.end(), bounds.start()).Round()
+                     : bounds.Round();
 }
 
 int RenderTextHarfBuzz::GetDisplayTextBaseline() {
@@ -971,12 +959,14 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
     if (!intersection.IsValid())
       continue;
     DCHECK(!intersection.is_reversed());
-    const Range leftmost_character_x = RoundRangeF(run->GetGraphemeBounds(
-        GetGraphemeIterator(),
-        run->is_rtl ? intersection.end() - 1 : intersection.start()));
-    const Range rightmost_character_x = RoundRangeF(run->GetGraphemeBounds(
-        GetGraphemeIterator(),
-        run->is_rtl ? intersection.start() : intersection.end() - 1));
+    const size_t left_index =
+        run->is_rtl ? intersection.end() - 1 : intersection.start();
+    const Range leftmost_character_x =
+        run->GetGraphemeBounds(GetGraphemeIterator(), left_index).Round();
+    const size_t right_index =
+        run->is_rtl ? intersection.start() : intersection.end() - 1;
+    const Range rightmost_character_x =
+        run->GetGraphemeBounds(GetGraphemeIterator(), right_index).Round();
     Range range_x(leftmost_character_x.start(), rightmost_character_x.end());
     DCHECK(!range_x.is_reversed());
     if (range_x.is_empty())
@@ -1143,14 +1133,14 @@ void RenderTextHarfBuzz::DrawVisualTextInternal(
             positions[colored_glyphs.start() - glyphs_range.start()].x());
         int end_x = SkScalarRoundToInt(
             (colored_glyphs.end() == glyphs_range.end())
-                ? (SkFloatToScalar(segment.width) + preceding_segment_widths +
+                ? (SkFloatToScalar(segment.width()) + preceding_segment_widths +
                    SkIntToScalar(origin.x()))
                 : positions[colored_glyphs.end() - glyphs_range.start()].x());
         renderer->DrawDecorations(start_x, origin.y(), end_x - start_x,
                                   run.underline, run.strike,
                                   run.diagonal_strike);
       }
-      preceding_segment_widths += SkFloatToScalar(segment.width);
+      preceding_segment_widths += SkFloatToScalar(segment.width());
     }
   }
 
