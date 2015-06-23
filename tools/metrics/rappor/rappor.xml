@@ -318,6 +318,14 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.OriginUrl.EME.Insecure" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that uses Encrypted Media Extensions
+    (EME) from an insecure origin.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Media.OriginUrl.MSE" type="ETLD_PLUS_ONE">
   <owner>xhwang@chromium.org</owner>
   <summary>

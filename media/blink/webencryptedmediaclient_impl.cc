@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/platform/WebEncryptedMediaRequest.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 namespace media {
 
@@ -97,8 +98,15 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   GetReporter(request.keySystem())->ReportRequested();
 
   if (GetMediaClient()) {
-    GetMediaClient()->RecordRapporURL(
-        "Media.OriginUrl.EME", GURL(request.securityOrigin().toString()));
+    GURL security_origin(request.securityOrigin().toString());
+
+    GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME", security_origin);
+
+    blink::WebString error_message;
+    if (!request.securityOrigin().isPotentiallyTrustworthy(error_message)) {
+      GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME.Insecure",
+                                        security_origin);
+    }
   }
 
   key_system_config_selector_.SelectConfig(
