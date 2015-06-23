@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/cdm_context.h"
+#include "media/base/cdm_initialized_promise.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/mojo_type_trait.h"
@@ -22,16 +24,22 @@ namespace media {
 // A MediaKeys that proxies to a mojo::ContentDecryptionModule. That
 // mojo::ContentDecryptionModule proxies back to the MojoCdm via the
 // mojo::ContentDecryptionModuleClient interface.
-class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
+class MojoCdm : public MediaKeys,
+                public CdmContext,
+                public mojo::ContentDecryptionModuleClient {
  public:
-  // |media_renderer_provider| is a ServiceProvider from a connected
-  //     Application that is hosting a mojo::MediaRenderer.
-  MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
-          const SessionMessageCB& session_message_cb,
-          const SessionClosedCB& session_closed_cb,
-          const LegacySessionErrorCB& legacy_session_error_cb,
-          const SessionKeysChangeCB& session_keys_change_cb,
-          const SessionExpirationUpdateCB& session_expiration_update_cb);
+  static void Create(
+      const std::string& key_system,
+      const GURL& security_origin,
+      const media::CdmConfig& cdm_config,
+      mojo::ContentDecryptionModulePtr remote_cdm,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::LegacySessionErrorCB& legacy_session_error_cb,
+      const media::SessionKeysChangeCB& session_keys_change_cb,
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      const media::CdmCreatedCB& cdm_created_cb);
+
   ~MojoCdm() final;
 
   // MediaKeys implementation.
@@ -54,7 +62,23 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
                      scoped_ptr<SimpleCdmPromise> promise) final;
   CdmContext* GetCdmContext() final;
 
+  // CdmContext implementation.
+  media::Decryptor* GetDecryptor() final;
+  int GetCdmId() const final;
+
  private:
+  MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
+          const SessionMessageCB& session_message_cb,
+          const SessionClosedCB& session_closed_cb,
+          const LegacySessionErrorCB& legacy_session_error_cb,
+          const SessionKeysChangeCB& session_keys_change_cb,
+          const SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  void InitializeCdm(const std::string& key_system,
+                     const GURL& security_origin,
+                     const media::CdmConfig& cdm_config,
+                     scoped_ptr<CdmInitializedPromise> promise);
+
   // mojo::ContentDecryptionModuleClient implementation.
   void OnSessionMessage(const mojo::String& session_id,
                         mojo::CdmMessageType message_type,
@@ -86,8 +110,11 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
       RejectPromise(promise.Pass(), result.Pass());
   }
 
+  static int next_cdm_id_;
+
   mojo::ContentDecryptionModulePtr remote_cdm_;
   mojo::Binding<ContentDecryptionModuleClient> binding_;
+  int cdm_id_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;

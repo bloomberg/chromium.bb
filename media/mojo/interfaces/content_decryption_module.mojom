@@ -38,7 +38,7 @@ struct CdmPromiseResult {
   bool success;
   CdmException exception;
   uint32 system_code;
-  string error_message;
+  string? error_message;
 };
 
 // Transport layer of media::CdmKeyInformation (see
@@ -78,6 +78,12 @@ interface ContentDecryptionModule {
   // Sets ContentDecryptionModuleClient. Must be called before any other calls.
   SetClient(ContentDecryptionModuleClient client);
 
+  // Initializes the CDM. |cdm_id| will later be used to locate the CDM at the
+  // remote side. If initialization failed (e.g. |key_system| is not supported),
+  // |result.success| will be false.
+  Initialize(string key_system, string security_origin, int32 cdm_id)
+      => (CdmPromiseResult result);
+
   // Provides a server certificate to be used to encrypt messages to the
   // license server.
   SetServerCertificate(array<uint8> certificate_data)
@@ -111,18 +117,8 @@ interface ContentDecryptionModule {
   // |session_id|.
   RemoveSession(string session_id) => (CdmPromiseResult result);
 
-  // Assigns the |cdm_id| to the CDM, and retrieves the |decryptor| associated
-  // with this CDM instance.
-  // A CDM implementation must choose to support either an explicit or implicit
-  // decryptor:
-  // - Explicit (non-null) decryptor: The client (e.g. media pipeline) will use
-  //   the |decryptor| directly to decrypt (and decode) encrypted buffers.
-  // - Implicit (null) decryptor: The client (e.g. media pipeline) will use the
-  //   |cdm_id| to locate a decryptor and associate it with the client.
-  // Note: In Chromium GetCdmContext() is a sync call. But we don't have an easy
-  // way to support sync calls on a mojo interface. Instead the client should
-  // generate a client side ID and pass it to the service.
-  GetCdmContext(int32 cdm_id, Decryptor&? decryptor);
+  // Retrieves the |decryptor| associated with this CDM instance.
+  GetDecryptor(Decryptor&? decryptor);
 };
 
 // Session callbacks. See media/base/media_keys.h for details.

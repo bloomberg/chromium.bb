@@ -5,6 +5,8 @@
 #include "media/mojo/services/mojo_media_application.h"
 
 #include "base/logging.h"
+#include "media/mojo/services/mojo_cdm_service.h"
+#include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
@@ -38,8 +40,16 @@ void MojoMediaApplication::Initialize(mojo::ApplicationImpl* app) {
 
 bool MojoMediaApplication::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  connection->AddService(this);
+  connection->AddService<mojo::ContentDecryptionModule>(this);
+  connection->AddService<mojo::MediaRenderer>(this);
   return true;
+}
+
+void MojoMediaApplication::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mojo::ContentDecryptionModule> request) {
+  // The created object is owned by the pipe.
+  new MojoCdmService(&cdm_service_context_, request.Pass());
 }
 
 void MojoMediaApplication::Create(

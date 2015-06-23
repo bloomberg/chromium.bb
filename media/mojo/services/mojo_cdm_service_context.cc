@@ -15,39 +15,26 @@ MojoCdmServiceContext::MojoCdmServiceContext() {
 MojoCdmServiceContext::~MojoCdmServiceContext() {
 }
 
-void MojoCdmServiceContext::CreateCdmService(
-    const mojo::String& key_system,
-    const mojo::String& security_origin,
-    int32_t cdm_id,
-    mojo::InterfaceRequest<mojo::ContentDecryptionModule> request) {
-  DVLOG(1) << __FUNCTION__ << ": " << key_system;
+void MojoCdmServiceContext::RegisterCdm(int cdm_id,
+                                        MojoCdmService* cdm_service) {
+  DCHECK(!cdm_services_.count(cdm_id));
+  DCHECK(cdm_service);
+  cdm_services_[cdm_id] = cdm_service;
+}
 
-  // TODO(xhwang): pass |security_origin| down because CdmFactory needs it.
-  scoped_ptr<MojoCdmService> cdm_service =
-      MojoCdmService::Create(key_system, this, request.Pass());
-  if (cdm_service)
-    services_.add(cdm_id, cdm_service.Pass());
+void MojoCdmServiceContext::UnregisterCdm(int cdm_id) {
+  DCHECK(cdm_services_.count(cdm_id));
+  cdm_services_.erase(cdm_id);
 }
 
 CdmContext* MojoCdmServiceContext::GetCdmContext(int32_t cdm_id) {
-  MojoCdmService* service = services_.get(cdm_id);
-  if (!service) {
+  auto cdm_service = cdm_services_.find(cdm_id);
+  if (cdm_service == cdm_services_.end()) {
     LOG(ERROR) << "CDM context not found: " << cdm_id;
     return nullptr;
   }
 
-  return service->GetCdmContext();
-}
-
-void MojoCdmServiceContext::ServiceHadConnectionError(MojoCdmService* service) {
-  for (auto it = services_.begin(); it != services_.end(); ++it) {
-    if (it->second == service) {
-      services_.erase(it);  // This destroys the |service|.
-      return;
-    }
-  }
-
-  NOTREACHED() << "Service " << service << " not found.";
+  return cdm_service->second->GetCdmContext();
 }
 
 }  // namespace media

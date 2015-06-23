@@ -19,14 +19,11 @@ class MEDIA_EXPORT MojoCdmServiceContext : public CdmContextProvider {
   MojoCdmServiceContext();
   ~MojoCdmServiceContext() override;
 
-  // Creates a MojoCdmService for |key_system| and weakly binds it to |request|.
-  // The created MojoCdmService is owned by |this|. The request will be dropped
-  // if no MojoCdmService can be created, resulting in a connection error.
-  void CreateCdmService(
-      const mojo::String& key_system,
-      const mojo::String& security_origin,
-      int32_t cdm_id,
-      mojo::InterfaceRequest<mojo::ContentDecryptionModule> request);
+  // Registers The |cdm_service| with |cdm_id|.
+  void RegisterCdm(int cdm_id, MojoCdmService* cdm_service);
+
+  // Unregisters the CDM. Must be called before the CDM is destroyed.
+  void UnregisterCdm(int cdm_id);
 
   // CdmContextProvider implementation.
   // The returned CdmContext can be destroyed at any time if the pipe is
@@ -35,12 +32,9 @@ class MEDIA_EXPORT MojoCdmServiceContext : public CdmContextProvider {
   // garbage. For example, use media::PlayerTracker.
   CdmContext* GetCdmContext(int32_t cdm_id) override;
 
-  // Called when there is a connection error with |service|.
-  void ServiceHadConnectionError(MojoCdmService* service);
-
  private:
-  // A map between CDM ID and MojoCdmService. Owns all MojoCdmService created.
-  base::ScopedPtrHashMap<int32_t, scoped_ptr<MojoCdmService>> services_;
+  // A map between CDM ID and MojoCdmService.
+  std::map<int, MojoCdmService*> cdm_services_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmServiceContext);
 };

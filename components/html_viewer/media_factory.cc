@@ -22,6 +22,7 @@
 #include "media/cdm/default_cdm_factory.h"
 #include "media/filters/default_media_permission.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/services/mojo_cdm_factory.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -133,8 +134,13 @@ media::MediaPermission* MediaFactory::GetMediaPermission() {
 }
 
 media::CdmFactory* MediaFactory::GetCdmFactory() {
-  if (!cdm_factory_)
-    cdm_factory_.reset(new media::DefaultCdmFactory());
+  if (!cdm_factory_) {
+    if (enable_mojo_media_renderer_)
+      cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceProvider()));
+    else
+      cdm_factory_.reset(new media::DefaultCdmFactory());
+  }
+
   return cdm_factory_.get();
 }
 
