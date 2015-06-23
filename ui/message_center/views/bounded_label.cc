@@ -44,7 +44,7 @@ class InnerBoundedLabel : public views::Label {
   std::vector<base::string16> GetWrappedText(int width, int lines);
 
   // Overridden from views::Label.
-  void SetText(const base::string16& text) override;
+  void SetText(const base::string16& new_text) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  protected:
@@ -187,8 +187,10 @@ void InnerBoundedLabel::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-void InnerBoundedLabel::SetText(const base::string16& text) {
-  views::Label::SetText(text);
+void InnerBoundedLabel::SetText(const base::string16& new_text) {
+  if (text() == new_text)
+    return;
+  views::Label::SetText(new_text);
   ClearCaches();
 }
 
