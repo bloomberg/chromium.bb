@@ -73,7 +73,7 @@ bool SVGGeometryElement::isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff>
     return toLayoutSVGShape(layoutObject())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
-void SVGGeometryElement::toClipPath(Path& path)
+void SVGGeometryElement::toClipPath(Path& path) const
 {
     path = asPath();
     path.transform(calculateAnimatedLocalTransform());

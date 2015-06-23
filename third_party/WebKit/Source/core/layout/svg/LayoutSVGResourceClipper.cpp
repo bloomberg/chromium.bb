@@ -32,6 +32,7 @@
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
+#include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
@@ -86,7 +87,7 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
             return false;
         if (!childElement->isSVGGraphicsElement())
             continue;
-        SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
+
         const ComputedStyle* style = childLayoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
@@ -97,7 +98,10 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
 
         // First clip shape.
         if (clipPath.isEmpty()) {
-            styled->toClipPath(clipPath);
+            if (isSVGGeometryElement(childElement))
+                toSVGGeometryElement(childElement)->toClipPath(clipPath);
+            else if (isSVGUseElement(childElement))
+                toSVGUseElement(childElement)->toClipPath(clipPath);
 
             continue;
         }
@@ -113,7 +117,11 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
         }
 
         Path subPath;
-        styled->toClipPath(subPath);
+        if (isSVGGeometryElement(childElement))
+            toSVGGeometryElement(childElement)->toClipPath(subPath);
+        else if (isSVGUseElement(childElement))
+            toSVGUseElement(childElement)->toClipPath(subPath);
+
         clipPathBuilder.add(subPath.skPath(), kUnion_SkPathOp);
     }
 
@@ -179,7 +187,11 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
 
         bool isUseElement = isSVGUseElement(*childElement);
         if (isUseElement) {
-            layoutObject = toSVGUseElement(*childElement).layoutObjectClipChild();
+            const SVGGraphicsElement* clippingElement = toSVGUseElement(*childElement).targetGraphicsElementForClipping();
+            if (!clippingElement)
+                continue;
+
+            layoutObject = clippingElement->layoutObject();
             if (!layoutObject)
                 continue;
         }

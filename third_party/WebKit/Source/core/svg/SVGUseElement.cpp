@@ -440,37 +440,46 @@ static bool isDirectReference(const SVGElement& element)
         || isSVGTextElement(element);
 }
 
-void SVGUseElement::toClipPath(Path& path)
+void SVGUseElement::toClipPath(Path& path) const
 {
     ASSERT(path.isEmpty());
 
-    Node* n = userAgentShadowRoot()->firstChild();
-    if (!n || !n->isSVGElement())
-        return;
-    SVGElement& element = toSVGElement(*n);
+    const SVGGraphicsElement* element = targetGraphicsElementForClipping();
 
-    if (element.isSVGGraphicsElement()) {
-        if (!isDirectReference(element)) {
-            // Spec: Indirect references are an error (14.3.5)
-            document().accessSVGExtensions().reportError("Not allowed to use indirect reference in <clip-path>");
-        } else {
-            toSVGGraphicsElement(element).toClipPath(path);
-            // FIXME: Avoid manual resolution of x/y here. Its potentially harmful.
-            SVGLengthContext lengthContext(this);
-            path.translate(FloatSize(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext)));
-            path.transform(calculateAnimatedLocalTransform());
-        }
+    if (!element)
+        return;
+
+    if (element->isSVGGeometryElement()) {
+        toSVGGeometryElement(*element).toClipPath(path);
+        // FIXME: Avoid manual resolution of x/y here. Its potentially harmful.
+        SVGLengthContext lengthContext(this);
+        path.translate(FloatSize(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext)));
+        path.transform(calculateAnimatedLocalTransform());
     }
 }
 
-LayoutObject* SVGUseElement::layoutObjectClipChild() const
+SVGGraphicsElement* SVGUseElement::targetGraphicsElementForClipping() const
 {
-    if (Node* n = userAgentShadowRoot()->firstChild()) {
-        if (n->isSVGElement() && isDirectReference(toSVGElement(*n)))
-            return n->layoutObject();
+    Node* n = userAgentShadowRoot()->firstChild();
+    if (!n || !n->isSVGElement())
+        return nullptr;
+
+    SVGElement& element = toSVGElement(*n);
+
+    if (!element.isSVGGraphicsElement())
+        return nullptr;
+
+    // Spec: "If a <use> element is a child of a clipPath element, it must directly
+    // reference <path>, <text> or basic shapes elements. Indirect references are an
+    // error and the clipPath element must be ignored."
+    // http://dev.w3.org/fxtf/css-masking-1/#the-clip-path
+    if (!isDirectReference(element)) {
+        // Spec: Indirect references are an error (14.3.5)
+        document().accessSVGExtensions().reportError("Not allowed to use indirect reference in <clip-path>");
+        return nullptr;
     }
 
-    return nullptr;
+    return &toSVGGraphicsElement(element);
 }
 
 bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse)

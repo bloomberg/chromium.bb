@@ -44,7 +44,7 @@ public:
     bool isPointInFill(PassRefPtrWillBeRawPtr<SVGPointTearOff>) const;
     bool isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff>) const;
 
-    void toClipPath(Path&) override;
+    void toClipPath(Path&) const;
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
 

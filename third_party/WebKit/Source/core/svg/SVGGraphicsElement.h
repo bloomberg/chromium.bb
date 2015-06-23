@@ -60,9 +60,6 @@ public:
     virtual FloatRect getBBox();
     PassRefPtrWillBeRawPtr<SVGRectTearOff> getBBoxFromJavascript();
 
-    // FIXME: This should only be defined on SVGGeometryElement.
-    virtual void toClipPath(Path&) { }
-
     virtual bool isValid() const override final { return SVGTests::isValid(document()); }
 
     SVGAnimatedTransformList* transform() { return m_transform.get(); }

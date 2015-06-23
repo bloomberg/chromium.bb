@@ -24,6 +24,7 @@
 #include "core/events/EventSender.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/svg/SVGAnimatedLength.h"
+#include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/heap/Handle.h"
@@ -43,7 +44,9 @@ public:
 
     void invalidateShadowTree();
 
-    LayoutObject* layoutObjectClipChild() const;
+    // Return the element that should be used for clipping,
+    // or null if a valid clip element is not directly referenced.
+    SVGGraphicsElement* targetGraphicsElementForClipping() const;
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
@@ -53,6 +56,7 @@ public:
     virtual void buildPendingResource() override;
 
     void dispatchPendingEvent(SVGUseEventSender*);
+    void toClipPath(Path&) const;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -71,7 +75,6 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual void toClipPath(Path&) override;
 
     void clearResourceReferences();
     void buildShadowAndInstanceTree(SVGElement* target);
