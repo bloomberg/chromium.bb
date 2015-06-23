@@ -18,56 +18,35 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(OS_MACOSX)
-#include "ui/gfx/image/image_skia_util_mac.h"
-#endif  // defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-#include "chrome/browser/app_icon_win.h"
-#include "ui/gfx/icon_util.h"
-#endif  // defined(OS_WIN)
-
 namespace task_manager {
 
-gfx::ImageSkia* BrowserProcessResource::default_icon_ = NULL;
+namespace {
+
+gfx::ImageSkia* g_default_icon = nullptr;
+
+gfx::ImageSkia* GetDefaultIcon() {
+  if (!g_default_icon && ResourceBundle::HasSharedInstance()) {
+    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 POSIX icon construction"));
+
+      g_default_icon = ResourceBundle::GetSharedInstance().
+          GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
+
+    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 MakeThreadSafe()"));
+    if (g_default_icon)
+      g_default_icon->MakeThreadSafe();
+  }
+
+  return g_default_icon;
+}
+
+}  // namespace
 
 BrowserProcessResource::BrowserProcessResource()
     : title_() {
-#if defined(OS_WIN)
-  if (!default_icon_) {
-    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 GetAppIcon()"));
-
-    HICON icon = GetAppIcon();
-    if (icon) {
-      // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile2(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 CreateSkBitmapFromHICON()"));
-
-      scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(icon));
-      default_icon_ = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
-    }
-  }
-#elif defined(OS_POSIX)
-  if (!default_icon_) {
-    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 POSIX icon construction"));
-
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
-  }
-#else
-  // TODO(port): Port icon code.
-  NOTIMPLEMENTED();
-#endif  // defined(OS_WIN)
-
-  // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 MakeThreadSafe()"));
-  default_icon_->MakeThreadSafe();
 }
 
 BrowserProcessResource::~BrowserProcessResource() {
@@ -86,7 +65,8 @@ base::string16 BrowserProcessResource::GetProfileName() const {
 }
 
 gfx::ImageSkia BrowserProcessResource::GetIcon() const {
-  return *default_icon_;
+  gfx::ImageSkia* image = GetDefaultIcon();
+  return image? *image : gfx::ImageSkia();
 }
 
 size_t BrowserProcessResource::SqliteMemoryUsedBytes() const {

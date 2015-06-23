@@ -13,15 +13,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_MACOSX)
-#include "ui/gfx/image/image_skia_util_mac.h"
-#endif  // defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-#include "chrome/browser/app_icon_win.h"
-#include "ui/gfx/icon_util.h"
-#endif  // defined(OS_WIN)
-
 namespace task_management {
 
 namespace {
@@ -29,22 +20,9 @@ namespace {
 gfx::ImageSkia* g_default_icon = nullptr;
 
 gfx::ImageSkia* GetDefaultIcon() {
-  if (!g_default_icon) {
-#if defined(OS_WIN)
-    HICON icon = GetAppIcon();
-    if (icon) {
-      scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(icon));
-      g_default_icon = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
-    }
-#elif defined(OS_POSIX)
-    if (ResourceBundle::HasSharedInstance()) {
+  if (!g_default_icon && ResourceBundle::HasSharedInstance()) {
       g_default_icon = ResourceBundle::GetSharedInstance().
           GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
-    }
-#else
-    // TODO(port): Port icon code.
-    NOTIMPLEMENTED();
-#endif  // defined(OS_WIN)
     if (g_default_icon)
       g_default_icon->MakeThreadSafe();
   }
