@@ -5,7 +5,7 @@ handler: #document (0, 0, 800, 600)
 
 EVENT(webkitfullscreenchange)
 Should report another rect which is not on the document
-handler: DIV (42, 3, 671, 24)
+handler: DIV (42, 3, 637, 24)
 
 END OF TEST
 

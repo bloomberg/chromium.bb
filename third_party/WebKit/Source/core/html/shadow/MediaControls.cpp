@@ -184,7 +184,13 @@ void MediaControls::reset()
 
     refreshClosedCaptionsButtonVisibility();
 
-    if (mediaElement().hasVideo() && fullscreenIsSupported(document()))
+    // Unconditionally allow the user to exit fullscreen if we are in it
+    // now.  Especially on android, when we might not yet know if
+    // fullscreen is supported, we sometimes guess incorrectly and show
+    // the button earlier, and we don't want to remove it here if the
+    // user chose to enter fullscreen.  crbug.com/500732 .
+    if ((mediaElement().hasVideo() && fullscreenIsSupported(document()))
+        || mediaElement().isFullscreen())
         m_fullScreenButton->show();
     else
         m_fullScreenButton->hide();
