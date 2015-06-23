@@ -2494,6 +2494,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Whether hiding top controls is enabled or not.
      */
     protected boolean isHidingTopControlsEnabled() {
+        WebContents webContents = getWebContents();
+        if (webContents == null || webContents.isDestroyed()) return false;
+
         String url = getUrl();
         boolean enableHidingTopControls = url != null && !url.startsWith(UrlConstants.CHROME_SCHEME)
                 && !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
@@ -2506,7 +2509,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());
         enableHidingTopControls &= !mIsImeShowing;
         enableHidingTopControls &= !mIsShowingErrorPage;
-        enableHidingTopControls &= !getWebContents().isShowingInterstitialPage();
+        enableHidingTopControls &= !webContents.isShowingInterstitialPage();
 
         return enableHidingTopControls;
     }
