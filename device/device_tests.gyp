@@ -22,6 +22,7 @@
         'battery/battery.gyp:device_battery_mojo_bindings',
         'bluetooth/bluetooth.gyp:device_bluetooth',
         'bluetooth/bluetooth.gyp:device_bluetooth_mocks',
+        'core/core.gyp:device_core',
         'devices_app/devices_app.gyp:devices_app_lib',
         'nfc/nfc.gyp:device_nfc',
         'usb/usb.gyp:device_usb',
