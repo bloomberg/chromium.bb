@@ -310,6 +310,12 @@ TracingController::CreateFileSink(const base::FilePath& file_path,
 }
 
 scoped_refptr<TracingController::TraceDataEndpoint>
+TracingController::CreateCallbackEndpoint(
+    const base::Callback<void(base::RefCountedString*)>& callback) {
+  return new StringTraceDataEndpoint(callback);
+}
+
+scoped_refptr<TracingController::TraceDataEndpoint>
 TracingController::CreateFileEndpoint(const base::FilePath& file_path,
                                       const base::Closure& callback) {
   return new FileTraceDataEndpoint(file_path, callback);

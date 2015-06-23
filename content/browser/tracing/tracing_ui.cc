@@ -196,6 +196,14 @@ void TracingCallbackWrapper(const WebUIDataSource::GotDataCallback& callback,
   callback.Run(data);
 }
 
+void TracingCallbackWrapperBase64(
+    const WebUIDataSource::GotDataCallback& callback,
+    base::RefCountedString* data) {
+  base::RefCountedString* data_base64 = new base::RefCountedString();
+  base::Base64Encode(data->data(), &data_base64->data());
+  callback.Run(data_base64);
+}
+
 bool OnBeginJSONRequest(const std::string& path,
                         const WebUIDataSource::GotDataCallback& callback) {
   if (path == "json/categories") {
@@ -218,8 +226,14 @@ bool OnBeginJSONRequest(const std::string& path,
   }
   if (path == "json/end_recording") {
     return TracingController::GetInstance()->DisableRecording(
-        TracingControllerImpl::CreateStringSink(
+        TracingController::CreateStringSink(
             base::Bind(TracingCallbackWrapper, callback)));
+  }
+  if (path == "json/end_recording_compressed") {
+    return TracingController::GetInstance()->DisableRecording(
+        TracingController::CreateCompressedStringSink(
+            TracingController::CreateCallbackEndpoint(
+                base::Bind(TracingCallbackWrapperBase64, callback))));
   }
 
   const char* enableMonitoringPath = "json/begin_monitoring?";
@@ -233,8 +247,15 @@ bool OnBeginJSONRequest(const std::string& path,
   }
   if (path == "json/capture_monitoring") {
     TracingController::GetInstance()->CaptureMonitoringSnapshot(
-        TracingControllerImpl::CreateStringSink(
+        TracingController::CreateStringSink(
             base::Bind(TracingCallbackWrapper, callback)));
+    return true;
+  }
+  if (path == "json/capture_monitoring_compressed") {
+    TracingController::GetInstance()->CaptureMonitoringSnapshot(
+        TracingController::CreateCompressedStringSink(
+            TracingController::CreateCallbackEndpoint(
+                base::Bind(TracingCallbackWrapperBase64, callback))));
     return true;
   }
   if (path == "json/get_monitoring_status") {
@@ -272,8 +293,11 @@ TracingUI::TracingUI(WebUI* web_ui)
       delegate_(GetContentClient()->browser()->GetTracingDelegate()),
       weak_factory_(this) {
   web_ui->RegisterMessageCallback(
-        "doUpload",
-        base::Bind(&TracingUI::DoUpload, base::Unretained(this)));
+      "doUpload",
+      base::Bind(&TracingUI::DoUpload, base::Unretained(this)));
+  web_ui->RegisterMessageCallback(
+      "doUploadBase64",
+      base::Bind(&TracingUI::DoUploadBase64Encoded, base::Unretained(this)));
 
   // Set up the chrome://tracing/ source.
   BrowserContext* browser_context =
@@ -297,6 +321,20 @@ void TracingUI::OnMonitoringStateChanged(bool is_monitoring) {
       "onMonitoringStateChanged", base::FundamentalValue(is_monitoring));
 }
 
+void TracingUI::DoUploadBase64Encoded(const base::ListValue* args) {
+  std::string file_contents_base64;
+  if (!args || args->empty() || !args->GetString(0, &file_contents_base64)) {
+    web_ui()->CallJavascriptFunction("onUploadError",
+                                     base::StringValue("Missing data"));
+    return;
+  }
+
+  std::string file_contents;
+  base::Base64Decode(file_contents_base64, &file_contents);
+
+  DoUploadInternal(file_contents);
+}
+
 void TracingUI::DoUpload(const base::ListValue* args) {
   std::string file_contents;
   if (!args || args->empty() || !args->GetString(0, &file_contents)) {
@@ -305,6 +343,10 @@ void TracingUI::DoUpload(const base::ListValue* args) {
     return;
   }
 
+  DoUploadInternal(file_contents);
+}
+
+void TracingUI::DoUploadInternal(const std::string& file_contents) {
   if (!delegate_) {
     web_ui()->CallJavascriptFunction("onUploadError",
                                      base::StringValue("Not implemented"));

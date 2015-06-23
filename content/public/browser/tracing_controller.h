@@ -76,6 +76,11 @@ class TracingController {
       const base::Closure& callback);
 
   // Create an endpoint that may be supplied to any TraceDataSink to
+  // dump the trace data to a callback.
+  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
+      const base::Callback<void(base::RefCountedString*)>& callback);
+
+  // Create an endpoint that may be supplied to any TraceDataSink to
   // dump the trace data to a file.
   CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
       const base::FilePath& file_path,
