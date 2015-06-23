@@ -51,6 +51,7 @@ struct CORE_EXPORT CachedDocumentParameters {
         return adoptPtr(new CachedDocumentParameters(document, mediaValues));
     }
 
+    bool doHtmlPreloadScanning;
     RefPtr<MediaValues> mediaValues;
     Length defaultViewportMinWidth;
     bool viewportMetaZeroValuesQuirk;

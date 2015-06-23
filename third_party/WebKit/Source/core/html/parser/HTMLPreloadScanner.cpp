@@ -478,6 +478,9 @@ static void handleMetaViewport(const String& attributeValue, CachedDocumentParam
 template<typename Token>
 void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& source, PreloadRequestStream& requests)
 {
+    if (!m_documentParameters->doHtmlPreloadScanning)
+        return;
+
     // Disable preload for documents with AppCache.
     if (m_isAppCacheEnabled)
         return;
@@ -627,6 +630,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPt
 {
     ASSERT(isMainThread());
     ASSERT(document);
+    doHtmlPreloadScanning = !document->settings() || document->settings()->doHtmlPreloadScanning();
     if (givenMediaValues)
         mediaValues = givenMediaValues;
     else

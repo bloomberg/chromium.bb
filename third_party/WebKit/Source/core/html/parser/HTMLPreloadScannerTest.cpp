@@ -17,31 +17,35 @@
 
 namespace blink {
 
-typedef struct {
+struct TestCase {
     const char* baseURL;
     const char* inputHTML;
-    const char* preloadedURL;
+    const char* preloadedURL; // Or nullptr if no preload is expected.
     const char* outputBaseURL;
     Resource::Type type;
     int resourceWidth;
     ClientHintsPreferences preferences;
-} TestCase;
+};
 
-typedef struct {
+struct PreconnectTestCase {
     const char* baseURL;
     const char* inputHTML;
     const char* preconnectedHost;
     CrossOriginAttributeValue crossOrigin;
-} PreconnectTestCase;
+};
 
 class MockHTMLResourcePreloader : public ResourcePreloader {
 public:
-    void preloadRequestVerification(Resource::Type type, const String& url, const String& baseURL, int width, const ClientHintsPreferences& preferences)
+    void preloadRequestVerification(Resource::Type type, const char* url, const char* baseURL, int width, const ClientHintsPreferences& preferences)
     {
+        if (!url) {
+            EXPECT_FALSE(m_preloadRequest);
+            return;
+        }
         EXPECT_FALSE(m_preloadRequest->isPreconnect());
         EXPECT_EQ(type, m_preloadRequest->resourceType());
-        EXPECT_STREQ(url.ascii().data(), m_preloadRequest->resourceURL().ascii().data());
-        EXPECT_STREQ(baseURL.ascii().data(), m_preloadRequest->baseURL().string().ascii().data());
+        EXPECT_STREQ(url, m_preloadRequest->resourceURL().ascii().data());
+        EXPECT_STREQ(baseURL, m_preloadRequest->baseURL().string().ascii().data());
         EXPECT_EQ(width, m_preloadRequest->resourceWidth());
         EXPECT_EQ(preferences.shouldSendDPR(), m_preloadRequest->preferences().shouldSendDPR());
         EXPECT_EQ(preferences.shouldSendResourceWidth(), m_preloadRequest->preferences().shouldSendResourceWidth());
@@ -70,6 +74,16 @@ private:
 
 class HTMLPreloadScannerTest : public testing::Test {
 protected:
+    enum ViewportState {
+        ViewportEnabled,
+        ViewportDisabled,
+    };
+
+    enum PreloadState {
+        PreloadEnabled,
+        PreloadDisabled,
+    };
+
     HTMLPreloadScannerTest()
         : m_dummyPageHolder(DummyPageHolder::create())
     {
@@ -94,18 +108,19 @@ protected:
         return MediaValuesCached::create(data);
     }
 
-    void runSetUp(bool viewportEnabled)
+    void runSetUp(ViewportState viewportState, PreloadState preloadState = PreloadEnabled)
     {
         HTMLParserOptions options(&m_dummyPageHolder->document());
         KURL documentURL(ParsedURLString, "http://whatever.test/");
-        m_dummyPageHolder->document().settings()->setViewportEnabled(viewportEnabled);
-        m_dummyPageHolder->document().settings()->setViewportMetaEnabled(viewportEnabled);
+        m_dummyPageHolder->document().settings()->setViewportEnabled(viewportState == ViewportEnabled);
+        m_dummyPageHolder->document().settings()->setViewportMetaEnabled(viewportState == ViewportEnabled);
+        m_dummyPageHolder->document().settings()->setDoHtmlPreloadScanning(preloadState == PreloadEnabled);
         m_scanner = HTMLPreloadScanner::create(options, documentURL, CachedDocumentParameters::create(&m_dummyPageHolder->document(), createMediaValues()));
     }
 
     void SetUp() override
     {
-        runSetUp(true);
+        runSetUp(ViewportEnabled);
     }
 
     void test(TestCase testCase)
@@ -188,7 +203,7 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewport)
 
 TEST_F(HTMLPreloadScannerTest, testImagesWithViewportDisabled)
 {
-    runSetUp(false);
+    runSetUp(ViewportDisabled);
     TestCase testCases[] = {
         {"http://example.test", "<meta name=viewport content='width=160'><img src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
@@ -246,7 +261,7 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH)
     };
 
     for (const auto& testCase : testCases) {
-        runSetUp(false);
+        runSetUp(ViewportDisabled);
         test(testCase);
     }
 }
@@ -259,6 +274,18 @@ TEST_F(HTMLPreloadScannerTest, testPreconnect)
         {"http://example.test", "<link rel=preconnect href=http://example2.test crossorigin='use-credentials'>", "http://example2.test", CrossOriginAttributeUseCredentials},
         {"http://example.test", "<link rel=preconnected href=http://example2.test crossorigin='use-credentials'>", nullptr, CrossOriginAttributeNotSet},
         {"http://example.test", "<link rel=preconnect href=ws://example2.test crossorigin='use-credentials'>", nullptr, CrossOriginAttributeNotSet},
+    };
+
+    for (const auto& testCase : testCases)
+        test(testCase);
+}
+
+TEST_F(HTMLPreloadScannerTest, testDisables)
+{
+    runSetUp(ViewportEnabled, PreloadDisabled);
+
+    TestCase testCases[] = {
+        {"http://example.test", "<img src='bla.gif'>"},
     };
 
     for (const auto& testCase : testCases)

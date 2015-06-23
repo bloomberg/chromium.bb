@@ -256,6 +256,11 @@ imageAnimationPolicy type=ImageAnimationPolicy, initial=ImageAnimationPolicyAllo
 backgroundHtmlParserOutstandingTokenLimit type=unsigned, initial=0
 backgroundHtmlParserPendingTokenLimit type=unsigned, initial=0
 
+# Html preload scanning is a fast, early scan of HTML documents to find loadable
+# resources before the parser advances to them. If it is disabled, resources will
+# be loaded later.
+doHtmlPreloadScanning initial=true
+
 javaEnabled initial=false
 pluginsEnabled initial=false
 
