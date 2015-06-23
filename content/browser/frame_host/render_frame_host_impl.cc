@@ -810,15 +810,13 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // If we're waiting for a cross-site beforeunload ack from this renderer and
   // we receive a Navigate message from the main frame, then the renderer was
   // navigating already and sent it before hearing the FrameMsg_Stop message.
-  // We do not want to cancel the pending navigation in this case, since the
-  // old page will soon be stopped.  Instead, treat this as a beforeunload ack
-  // to allow the pending navigation to continue.
+  // Treat this as an implicit beforeunload ack to allow the pending navigation
+  // to continue.
   if (is_waiting_for_beforeunload_ack_ &&
       unload_ack_is_for_navigation_ &&
       !GetParent()) {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
     OnBeforeUnloadACK(true, approx_renderer_start_time, base::TimeTicks::Now());
-    return;
   }
 
   // If we're waiting for an unload ack from this renderer and we receive a

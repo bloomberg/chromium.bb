@@ -1213,6 +1213,12 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 }
 
+namespace {
+void SetAsNonUserGesture(FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  params->gesture = NavigationGestureAuto;
+}
+}
+
 // Test that a cross-site navigation is not preempted if the previous
 // renderer sends a FrameNavigate message just before being told to stop.
 // We should only preempt the cross-site navigation if the previous renderer
@@ -1234,20 +1240,26 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_NE(orig_rfh, pending_rfh);
 
   // Suppose the first navigation tries to commit now, with a
   // FrameMsg_Stop in flight.  This should not cancel the pending navigation,
   // but it should act as if the beforeunload ack arrived.
-  orig_rfh->SendNavigate(1, entry1_id, true, GURL("chrome://gpu"));
+  orig_rfh->SendNavigateWithModificationCallback(
+      1, entry1_id, true, url, base::Bind(SetAsNonUserGesture));
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
   EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  // It should commit.
+  ASSERT_EQ(1, controller().GetEntryCount());
+  EXPECT_EQ(url, controller().GetLastCommittedEntry()->GetURL());
 
   // The pending navigation should be able to commit successfully.
   contents()->TestDidNavigate(pending_rfh, 1, entry2_id, true, url2,
                               ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(pending_rfh, contents()->GetMainFrame());
+  EXPECT_EQ(2, controller().GetEntryCount());
 }
 
 // Test that NavigationEntries have the correct page state after going
@@ -2992,11 +3004,15 @@ TEST_F(WebContentsImplTest, NoEarlyStop) {
   // Simulate the commit and DidStopLoading from the renderer-initiated
   // navigation in the current RenderFrameHost. There should still be a pending
   // RenderFrameHost and the WebContents should still be loading.
-  current_rfh->SendNavigate(1, 0, true, kUrl3);
+  current_rfh->SendNavigateWithModificationCallback(
+      1, 0, true, kUrl3, base::Bind(SetAsNonUserGesture));
   current_rfh->OnMessageReceived(
       FrameHostMsg_DidStopLoading(current_rfh->GetRoutingID()));
   EXPECT_EQ(contents()->GetPendingMainFrame(), pending_rfh);
   EXPECT_TRUE(contents()->IsLoading());
+  // It should commit.
+  ASSERT_EQ(2, controller().GetEntryCount());
+  EXPECT_EQ(kUrl3, controller().GetLastCommittedEntry()->GetURL());
 
   // Commit the navigation. The formerly pending RenderFrameHost should now be
   // the current RenderFrameHost and the WebContents should still be loading.
@@ -3006,6 +3022,7 @@ TEST_F(WebContentsImplTest, NoEarlyStop) {
   TestRenderFrameHost* new_current_rfh = contents()->GetMainFrame();
   EXPECT_EQ(new_current_rfh, pending_rfh);
   EXPECT_TRUE(contents()->IsLoading());
+  EXPECT_EQ(3, controller().GetEntryCount());
 
   // Simulate the new current RenderFrameHost DidStopLoading. The WebContents
   // should now have stopped loading.
