@@ -434,6 +434,7 @@ public class DocumentMigrationHelper {
                 DocumentTabModelSelector.createDocumentDataString(tabId, currentUrl));
         intent.setClassName(activity, ChromeLauncherActivity.getDocumentClassName(false));
         intent.putExtra(IntentHandler.EXTRA_PRESERVE_TASK, true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         ActivityManager am =
                 (ActivityManager) activity.getSystemService(Activity.ACTIVITY_SERVICE);
 
