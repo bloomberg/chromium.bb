@@ -1,0 +1,46 @@
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{
+  'conditions': [
+    ['OS=="linux"', {
+      'variables': {
+        'command': [
+          'media_router_tests.py',
+          '--extension',
+          '<(PRODUCT_DIR)/mr_extension/',
+          '--prod_dir',
+          '<(PRODUCT_DIR)',
+        ],
+        'files': [
+          'media_router_tests.py',
+          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
+          '<(PRODUCT_DIR)/chrome_200_percent.pak',
+          '<(PRODUCT_DIR)/libosmesa.so',
+          '<(PRODUCT_DIR)/locales/en-US.pak',
+          '<(PRODUCT_DIR)/mr_extension/',
+          '<(PRODUCT_DIR)/nacl_helper',
+          '<(PRODUCT_DIR)/nacl_helper_bootstrap',
+          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+          '<(PRODUCT_DIR)/natives_blob.bin',
+          '<(PRODUCT_DIR)/pnacl/',
+          '<(PRODUCT_DIR)/resources.pak',
+          '<(PRODUCT_DIR)/snapshot_blob.bin',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    ['OS=="linux" and component=="shared_library"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/lib/',
+          '<(PRODUCT_DIR)/lib64/',
+        ],
+      },
+    }],
+  ],
+  'includes': [
+    '../../../base/base.isolate',
+  ],
+}
