@@ -13,7 +13,7 @@
     <div id="log"></div>
     <script>
         test(function(){
-            assert_own_property(window, "internals");
+            assert_true(window.internals instanceof Object);
         }, "Check that window.internals is present. Required to call viewportAsText.");
 
         var actualWidth;

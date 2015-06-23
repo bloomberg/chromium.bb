@@ -10,7 +10,7 @@ test(function() {
                 'the constructor should not be callable');
 }, 'BluetoothDevice IDL test');
 
-test(function(t) { assert_exists(window, "testRunner"); t.done(); },
+test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
      "window.testRunner is required for the following tests.");
 
 sequential_promise_test(function() {

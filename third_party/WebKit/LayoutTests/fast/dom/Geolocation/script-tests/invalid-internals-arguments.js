@@ -14,10 +14,13 @@ shouldThrow("internals.numberOfPendingGeolocationPermissionRequests(null)");
 
 var ifr = document.getElementById("ifr");
 var iframe = ifr.contentWindow;
+// Must access it first so it exists, we cannot get internals from a detached frame window.
+var iframeInternals = iframe.internals;
 ifr.remove();
+
 // Verify that detached documents do not crash.
-shouldBeUndefined("iframe.internals.setGeolocationClientMock(iframe.document)");
-shouldBeUndefined("iframe.internals.setGeolocationPosition(iframe.document, 1, 2, 3)");
-shouldBeUndefined("iframe.internals.setGeolocationPermission(iframe.document, true)");
-shouldBeUndefined("iframe.internals.setGeolocationPositionUnavailableError(iframe.document, 'not available')");
-shouldBe("iframe.internals.numberOfPendingGeolocationPermissionRequests(iframe.document)", "-1");
+shouldBeUndefined("iframeInternals.setGeolocationClientMock(iframe.document)");
+shouldBeUndefined("iframeInternals.setGeolocationPosition(iframe.document, 1, 2, 3)");
+shouldBeUndefined("iframeInternals.setGeolocationPermission(iframe.document, true)");
+shouldBeUndefined("iframeInternals.setGeolocationPositionUnavailableError(iframe.document, 'not available')");
+shouldBe("iframeInternals.numberOfPendingGeolocationPermissionRequests(iframe.document)", "-1");

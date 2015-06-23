@@ -23,7 +23,7 @@ function wait_for_reply(test, port) {
 }
 
 test(function(test) {
-    assert_exists(window, 'internals');
+    assert_true(window.internals instanceof Object);
     test.done();
   }, 'internals.terminateServiceWorker is required for the following tests.');
 

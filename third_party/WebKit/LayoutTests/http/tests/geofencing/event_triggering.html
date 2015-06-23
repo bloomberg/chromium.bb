@@ -9,7 +9,7 @@ var sw_url = 'resources/worker-passes-events-back.js';
 var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
 
 test(function(test) {
-    assert_exists(window, 'testRunner');
+    assert_true(window.testRunner instanceof Object);
     test.done();
   }, 'window.testRunner is required for the following tests.');
 

@@ -17,8 +17,8 @@
     <p id="log"></p>
     <script>
         test(function(){
-            assert_own_property(window, "testRunner");
-            assert_own_property(window, "internals");
+            assert_true(window.testRunner instanceof Object);
+            assert_true(window.internals instanceof Object);
         }, "Test needs testRunner framework.");
 
         test(function(){
