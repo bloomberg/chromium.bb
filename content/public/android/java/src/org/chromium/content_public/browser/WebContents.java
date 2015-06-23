@@ -103,7 +103,7 @@ public interface WebContents extends Parcelable {
      * Shows an interstitial page driven by the passed in delegate.
      *
      * @param url The URL being blocked by the interstitial.
-     * @param delegate The delegate handling the interstitial.
+     * @param interstitialPageDelegateAndroid The delegate handling the interstitial.
      */
     @VisibleForTesting
     void showInterstitialPage(
@@ -190,6 +190,7 @@ public interface WebContents extends Parcelable {
      *                 will be made on the main thread.
      *                 If no result is required, pass null.
      */
+    @VisibleForTesting
     void evaluateJavaScript(String script, JavaScriptCallback callback);
 
     /**
@@ -209,7 +210,7 @@ public interface WebContents extends Parcelable {
     /**
      * This returns the theme color as set by the theme-color meta tag after getting rid of the
      * alpha.
-     * @param The default color to be returned if the cached color is not valid.
+     * @param defaultColor The default color to be returned if the cached color is not valid.
      * @return The theme color for the content as set by the theme-color meta tag.
      */
     int getThemeColor(int defaultColor);

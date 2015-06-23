@@ -68,10 +68,8 @@ class ContextualSearchDelegate
                                     content::ContentViewCore* content_view_core,
                                     bool may_send_base_page_url);
 
-  // Continues making a Search Term Resolution request based on the context
-  // set up through calling |GatherAndSaveSurroundingText|.
-  // When the response is available the callback specified in the constructor
-  // is run.
+  // Continues making a Search Term Resolution request, once the surrounding
+  // text has been gathered.
   void ContinueSearchTermResolutionRequest();
 
   // For testing.

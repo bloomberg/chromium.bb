@@ -258,6 +258,7 @@ import java.util.UUID;
     }
 
     @Override
+    @VisibleForTesting
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
     }

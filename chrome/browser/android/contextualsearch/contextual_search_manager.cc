@@ -14,7 +14,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/contextual_search_promo_source_android.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "components/history/core/browser/history_service.h"
@@ -29,11 +28,6 @@
 using content::ContentViewCore;
 
 namespace {
-
-// Field trial related constants.
-const char kContextualSearchFieldTrialName[] = "ContextualSearch";
-const char kContextualSearchHidePromoHeaderParam[] = "hide_promo_header";
-const char kContextualSearchEnabledValue[] = "enabled";
 
 const int kHistoryDeletionWindowSeconds = 2;
 
@@ -61,8 +55,6 @@ ContextualSearchManager::ContextualSearchManager(JNIEnv* env, jobject obj) {
                  base::Unretained(this)),
       base::Bind(&ContextualSearchManager::OnIcingSelectionAvailable,
                  base::Unretained(this))));
-  content::URLDataSource::Add(ProfileManager::GetActiveUserProfile(),
-                              new ContextualSearchPromoSourceAndroid());
 }
 
 ContextualSearchManager::~ContextualSearchManager() {
@@ -109,11 +101,6 @@ void ContextualSearchManager::GatherSurroundingText(
   delegate_->GatherAndSaveSurroundingText(selection, use_resolved_search_term,
                                           base_content_view_core,
                                           may_send_base_page_url);
-}
-
-void ContextualSearchManager::ContinueSearchTermResolutionRequest(JNIEnv* env,
-                                                                  jobject obj) {
-  delegate_->ContinueSearchTermResolutionRequest();
 }
 
 void ContextualSearchManager::OnSearchTermResolutionResponse(
@@ -253,14 +240,6 @@ void ContextualSearchManager::DestroyWebContentsFromContentViewCore(
   DCHECK(content_view_core->GetWebContents());
 
   delete content_view_core->GetWebContents();
-}
-
-bool ContextualSearchManager::ShouldHidePromoHeader(JNIEnv* env,
-                                                    jobject jobj) {
-  return variations::GetVariationParamValue(
-      kContextualSearchFieldTrialName,
-      kContextualSearchHidePromoHeaderParam) ==
-          kContextualSearchEnabledValue;
 }
 
 void ContextualSearchManager::SetInterceptNavigationDelegate(

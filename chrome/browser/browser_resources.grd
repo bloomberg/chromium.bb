@@ -24,10 +24,6 @@
         <structure name="IDR_APP_LIST_START_PAGE_HTML" file="resources\app_list\start_page.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_START_PAGE_JS" file="resources\app_list\start_page.js" flattenhtml="true" type="chrome_html" />
       </if>
-      <if expr="is_android">
-        <structure name="IDR_CONTEXTUAL_SEARCH_PROMO_CSS" file="resources\contextual_search\promo.css" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CONTEXTUAL_SEARCH_PROMO_HTML" file="resources\contextual_search\promo.html" flattenhtml="true" type="chrome_html" />
-      </if>
       <if expr="not is_android">
         <structure name="IDR_DOWNLOADS_CSS" file="resources\downloads\downloads.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_DOWNLOADS_HTML" file="resources\downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
@@ -109,10 +105,6 @@
       </if>
       <if expr="enable_app_list">
         <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
-      </if>
-      <if expr="is_android">
-        <include name="IDR_CONTEXTUAL_SEARCH_PROMO_JS" file="resources\contextual_search\promo.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_CONTEXTUAL_SEARCH_PROMO_HEADER_SVG" file="resources\contextual_search\header.svg" type="BINDATA" />
       </if>
       <if expr="not is_android and not is_ios">
         <include name="IDR_COPRESENCE_CSS" file="resources\copresence.css" type="BINDATA" />

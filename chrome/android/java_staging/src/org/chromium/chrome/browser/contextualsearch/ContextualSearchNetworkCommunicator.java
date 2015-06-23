@@ -22,14 +22,6 @@ public interface ContextualSearchNetworkCommunicator {
     void startSearchTermResolutionRequest(String selection);
 
     /**
-     * Continues a Search Term Resolution request using an existing context.
-     * The context for the request must be previously set up through an implementation of this
-     * interface (not covered here).
-     * When the response comes back {@link #handleSearchTermResolutionResponse} will be called.
-     */
-    void continueSearchTermResolutionRequest();
-
-    /**
      * Handles a Search Term Resolution response.
      * @param isNetworkUnavailable whether the network is available.
      * @param responseCode the server's HTTP response code.

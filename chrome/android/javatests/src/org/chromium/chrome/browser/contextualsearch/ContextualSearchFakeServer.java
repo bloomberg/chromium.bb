@@ -43,11 +43,6 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator 
     }
 
     @Override
-    public void continueSearchTermResolutionRequest() {
-        mLoadedUrl = null;
-    }
-
-    @Override
     public void loadUrl(String url) {
         mLoadedUrl = url;
         mLoadedUrlCount++;

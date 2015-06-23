@@ -54,12 +54,6 @@ class ContextualSearchManager {
                              jobject j_base_content_view_core,
                              jboolean j_may_send_base_page_url);
 
-  // Continues making a Search Term Resolution request based on the context
-  // set up through calling |GatherSurroundingText|.
-  // When the server responds with the search term, the Java object is notified
-  // by calling OnSearchTermResolutionResponse().
-  void ContinueSearchTermResolutionRequest(JNIEnv* env, jobject obj);
-
   // Removes a search URL from history. |search_start_time_ms| represents the
   // time at which |search_url| was committed.
   void RemoveLastSearchVisit(JNIEnv* env,
@@ -82,9 +76,6 @@ class ContextualSearchManager {
   void DestroyWebContentsFromContentViewCore(JNIEnv* env,
                                              jobject jobj,
                                              jobject jcontent_view_core);
-
-  // Whether the Promo Header should be hidden based on a Finch param.
-  bool ShouldHidePromoHeader(JNIEnv* env, jobject jobj);
 
   // Sets the delegate used to convert navigations to intents.
   void SetInterceptNavigationDelegate(JNIEnv* env,

@@ -116,13 +116,6 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether the promo is configured for Opt-out.
-     */
-    static boolean isPromoOptOut() {
-        return true;
-    }
-
-    /**
      * Gets whether the promo should be triggered on longpress only.
      * @return {@code true} iff Finch says we should trigger the promo only on touch-and-hold.
      */

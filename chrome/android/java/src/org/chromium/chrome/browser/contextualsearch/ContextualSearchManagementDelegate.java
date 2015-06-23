@@ -23,7 +23,7 @@ public interface ContextualSearchManagementDelegate {
     /**
      * @return Whether the Opt-out promo is available to be be shown in the panel.
      */
-    boolean isOptOutPromoAvailable();
+    boolean isPromoAvailable();
 
     /**
      * Called when the promo Panel gets closed, to log the outcome.

@@ -120,7 +120,7 @@ class ContextualSearchPolicy {
             return false;
         }
 
-        if (isOptOutPromoAvailable()) {
+        if (isPromoAvailable()) {
             return isBasePageHTTP(url);
         }
 
@@ -135,7 +135,7 @@ class ContextualSearchPolicy {
     boolean canSendSurroundings(@Nullable URL baseContentViewUrl) {
         if (isUserUndecided()) return false;
 
-        if (isOptOutPromoAvailable()) {
+        if (isPromoAvailable()) {
             return isBasePageHTTP(baseContentViewUrl);
         }
 
@@ -145,22 +145,15 @@ class ContextualSearchPolicy {
     /**
      * @return Whether the Opt-out promo is available to be shown in any panel.
      */
-    boolean isOptOutPromoAvailable() {
-        return ContextualSearchFieldTrial.isPromoOptOut() && isUserUndecided();
-    }
-
-    /**
-     * @return Whether the classic opt-in promo is available.
-     */
-    protected boolean isOptInPromoAvailable() {
-        return false;
+    boolean isPromoAvailable() {
+        return isUserUndecided();
     }
 
     /**
      * Registers that a tap has taken place by incrementing tap-tracking counters.
      */
     void registerTap() {
-        if (isOptOutPromoAvailable()) {
+        if (isPromoAvailable()) {
             DisableablePromoTapCounter promoTapCounter = getPromoTapCounter();
             // Bump the counter only when it is still enabled.
             if (promoTapCounter.isEnabled()) {
@@ -186,7 +179,7 @@ class ContextualSearchPolicy {
 
         // Disable the "promo tap" counter, but only if we're using the Opt-out onboarding.
         // For Opt-in, we never disable the promo tap counter.
-        if (isOptOutPromoAvailable()) {
+        if (isPromoAvailable()) {
             getPromoTapCounter().disable();
 
             // Bump the total-promo-opens counter.
@@ -346,9 +339,6 @@ class ContextualSearchPolicy {
      * @return Whether the given content view is for an HTTP page.
      */
     private boolean isBasePageHTTP(@Nullable URL url) {
-        // We shouldn't be checking HTTP unless we're in the opt-out promo which
-        // treats HTTP differently.
-        assert ContextualSearchFieldTrial.isPromoOptOut();
         return url != null && "http".equals(url.getProtocol());
     }
 
