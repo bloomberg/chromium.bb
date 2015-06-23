@@ -59,6 +59,10 @@ namespace networkingPrivate {
     All, Cellular, Ethernet, VPN, Wireless, WiFi, WiMAX
   };
 
+  enum ProxySettingsType {
+    Direct, Manual, PAC, WPAD
+  };
+
   dictionary APNProperties {
     DOMString? AccessPointName;
     DOMString? Language;
@@ -115,6 +119,25 @@ namespace networkingPrivate {
     DOMString AuthenticationType;
   };
 
+  dictionary ProxyLocation {
+    DOMString Host;
+    DOMString Port;
+  };
+
+  dictionary ManualProxySettings {
+    ProxyLocation? HTTPProxy;
+    ProxyLocation? SecureHTTPProxy;
+    ProxyLocation? FTPProxy;
+    ProxyLocation? SOCKS;
+  };
+
+  dictionary ProxySettings {
+    ProxySettingsType Type;
+    ManualProxySettings? Manual;
+    DOMString[]? ExcludeDomains;
+    DOMString? PAC;
+  };
+
   dictionary ThirdPartyVPNProperties {
     DOMString ExtensionID;
   };
@@ -161,6 +184,7 @@ namespace networkingPrivate {
     DOMString? Name;
     IPConfigType? NameServersConfigType;
     long? Priority;
+    ProxySettings? ProxySettings;
     IPConfigProperties? StaticIPConfig;
     NetworkType? Type;
     VPNConfigProperties? VPN;
