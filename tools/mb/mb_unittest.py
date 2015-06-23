@@ -16,6 +16,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     super(FakeMBW, self).__init__()
     self.files = {}
     self.calls = []
+    self.cmds = []
     self.out = ''
     self.err = ''
     self.platform = 'linux2'
@@ -28,6 +29,9 @@ class FakeMBW(mb.MetaBuildWrapper):
   def Exists(self, path):
     return self.files.get(path) is not None
 
+  def MaybeMakeDirectory(self, path):
+    pass
+
   def ReadFile(self, path):
     return self.files[path]
 
@@ -36,6 +40,8 @@ class FakeMBW(mb.MetaBuildWrapper):
 
   def Call(self, cmd):
     self.calls.append(cmd)
+    if self.cmds:
+      return self.cmds.pop(0)
     return 0, '', ''
 
   def Print(self, *args, **kwargs):
@@ -47,7 +53,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     else:
       self.out += sep.join(args) + end
 
-  def TempFile(self):
+  def TempFile(self, mode='w'):
     return FakeFile(self.files)
 
   def RemoveFile(self, path):
@@ -185,7 +191,6 @@ class UnitTest(unittest.TestCase):
         (1, 'The input matches no targets, configs, or files\n', ''),
         (1, 'The input matches no targets, configs, or files\n', ''),
     ]
-    mbw.Call = lambda cmd: mbw.cmds.pop(0)
 
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)

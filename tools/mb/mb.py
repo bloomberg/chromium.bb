@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import argparse
 import ast
+import errno
 import json
 import os
 import pipes
@@ -339,6 +340,10 @@ class MetaBuildWrapper(object):
         gn_labels.append(ninja_targets_to_labels[target])
 
       gn_runtime_deps_path = self.ToAbsPath(path, 'runtime_deps')
+
+      # Since GN hasn't run yet, the build directory may not even exist.
+      self.MaybeMakeDirectory(self.ToAbsPath(path))
+
       self.WriteFile(gn_runtime_deps_path, '\n'.join(gn_labels) + '\n')
       cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
 
@@ -737,6 +742,13 @@ class MetaBuildWrapper(object):
   def Exists(self, path):
     # This function largely exists so it can be overridden for testing.
     return os.path.exists(path)
+
+  def MaybeMakeDirectory(self, path):
+    try:
+      os.makedirs(path)
+    except OSError, e:
+      if e.errno != errno.EEXIST:
+        raise
 
   def ReadFile(self, path):
     # This function largely exists so it can be overriden for testing.
