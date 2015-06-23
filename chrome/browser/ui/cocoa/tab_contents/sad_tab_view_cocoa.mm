@@ -181,7 +181,7 @@ static const CGFloat kMaxTopMargin = 130;
            withFont:helpFont
        messageColor:[message_ textColor]];
   [help_ addLinkRange:NSMakeRange(linkOffset, helpLink.length())
-             withName:@""
+             withName:@(chrome::kCrashReasonURL)
             linkColor:[message_ textColor]];
   [help_ setAlignment:NSLeftTextAlignment];
   [help_ sizeToFit];
