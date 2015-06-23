@@ -25,6 +25,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -154,10 +155,15 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
                              IDS_HISTORY_REMOVE_SELECTED_ITEMS);
   source->AddLocalizedString("clearAllHistory",
                              IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
-  source->AddString(
-      "deleteWarning",
+
+  auto availability = IncognitoModePrefs::GetAvailability(profile->GetPrefs());
+  base::string16 delete_warning = availability == IncognitoModePrefs::ENABLED ?
       l10n_util::GetStringFUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
-                                 base::UTF8ToUTF16(kIncognitoModeShortcut)));
+                                 base::UTF8ToUTF16(kIncognitoModeShortcut)) :
+      l10n_util::GetStringUTF16(
+          IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING_NO_INCOGNITO);
+  source->AddString("deleteWarning", delete_warning);
+
   source->AddLocalizedString("removeBookmark", IDS_HISTORY_REMOVE_BOOKMARK);
   source->AddLocalizedString("actionMenuDescription",
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);

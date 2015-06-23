@@ -10,10 +10,13 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -22,6 +25,7 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace {
 const char kClearBrowsingDataLearnMoreUrl[] =
@@ -63,17 +67,26 @@ void ClearBrowserDataHandler::InitializePage() {
 }
 
 void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
+  base::string16 text;
+
   Profile* profile = Profile::FromWebUI(web_ui());
-  base::Time lastClearBrowsingDataTime = base::Time::FromInternalValue(
-      profile->GetPrefs()->GetInt64(prefs::kLastClearBrowsingDataTime));
+  auto availability = IncognitoModePrefs::GetAvailability(profile->GetPrefs());
+  if (availability == IncognitoModePrefs::ENABLED) {
+    base::Time last_clear_time = base::Time::FromInternalValue(
+        profile->GetPrefs()->GetInt64(prefs::kLastClearBrowsingDataTime));
 
-  bool visible = (base::Time::Now() - lastClearBrowsingDataTime) <=
-      base::TimeDelta::FromHours(base::Time::kHoursPerDay);
+    const base::TimeDelta since_clear = base::Time::Now() - last_clear_time;
+    if (since_clear < base::TimeDelta::FromHours(base::Time::kHoursPerDay)) {
+      ui::Accelerator acc = chrome::GetPrimaryChromeAcceleratorForCommandId(
+          IDC_NEW_INCOGNITO_WINDOW);
+      DCHECK_NE(ui::VKEY_UNKNOWN, acc.key_code());
+      text = l10n_util::GetStringFUTF16(IDS_CLEAR_BROWSING_DATA_INFO_BAR_TEXT,
+                                        acc.GetShortcutText());
+    }
+  }
 
-  base::ListValue args;
-  args.AppendBoolean(visible);
-  web_ui()->CallJavascriptFunction(
-      "ClearBrowserDataOverlay.setBannerVisibility", args);
+  web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.setBannerText",
+                                   base::StringValue(text));
 }
 
 void ClearBrowserDataHandler::GetLocalizedValues(
@@ -103,13 +116,6 @@ void ClearBrowserDataHandler::GetLocalizedValues(
                 IDS_CLEAR_BROWSING_DATA_TITLE);
   localized_strings->SetString("clearBrowsingDataLearnMoreUrl",
                                kClearBrowsingDataLearnMoreUrl);
-
-  ui::Accelerator acc(ui::VKEY_N, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
-  localized_strings->SetString(
-      "clearBrowserDataInfoBar",
-      l10n_util::GetStringFUTF16(
-          IDS_CLEAR_BROWSING_DATA_INFO_BAR_TEXT,
-          acc.GetShortcutText()));
 
   base::ListValue* time_list = new base::ListValue;
   for (int i = 0; i < 5; i++) {

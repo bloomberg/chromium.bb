@@ -238,9 +238,8 @@ cr.define('options', function() {
     ClearBrowserDataOverlay.getInstance().markInitializationComplete_();
   };
 
-  ClearBrowserDataOverlay.setBannerVisibility = function(args) {
-    var visible = args[0];
-    $('clear-browser-data-info-banner').hidden = !visible;
+  ClearBrowserDataOverlay.setBannerText = function(text) {
+    $('clear-browser-data-info-banner').innerText = text;
   };
 
   ClearBrowserDataOverlay.doneClearing = function() {
