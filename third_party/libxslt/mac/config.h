@@ -1,10 +1,5 @@
+/* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.in by autoheader.  */
-/* #undef HAVE_ISINF */
-/* #undef HAVE_ISNAN */
-/* #undef HAVE_POW */
-/* #undef HAVE_FLOOR */
-/* #undef HAVE_FABS */
-#define WITH_DEBUGGER 1
 
 /* Define to 1 if you have the <ansidecl.h> header file. */
 /* #undef HAVE_ANSIDECL_H */
@@ -12,11 +7,20 @@
 /* Define to 1 if you have the `asctime' function. */
 #define HAVE_ASCTIME 1
 
+/* Define to 1 if you have the `clock_gettime' function. */
+/* #undef HAVE_CLOCK_GETTIME */
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 
+/* Define if fabs is there */
+/* #undef HAVE_FABS */
+
 /* Define to 1 if you have the <float.h> header file. */
 #define HAVE_FLOAT_H 1
+
+/* Define if floor is there */
+/* #undef HAVE_FLOOR */
 
 /* Define to 1 if you have the `fprintf' function. */
 #define HAVE_FPRINTF 1
@@ -33,6 +37,9 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
 
+/* Define to 1 if you have the `gmtime' function. */
+#define HAVE_GMTIME 1
+
 /* Define to 1 if you have the `gmtime_r' function. */
 #define HAVE_GMTIME_R 1
 
@@ -41,6 +48,12 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
+
+/* Define if pthread library is there (-lpthread) */
+#define HAVE_LIBPTHREAD /**/
+
+/* Define to 1 if you have the <locale.h> header file. */
+#define HAVE_LOCALE_H 1
 
 /* Define to 1 if you have the `localtime' function. */
 #define HAVE_LOCALTIME 1
@@ -60,8 +73,14 @@
 /* Define to 1 if you have the <nan.h> header file. */
 /* #undef HAVE_NAN_H */
 
+/* Define if pow is there */
+/* #undef HAVE_POW */
+
 /* Define to 1 if you have the `printf' function. */
 #define HAVE_PRINTF 1
+
+/* Define if <pthread.h> is there */
+#define HAVE_PTHREAD_H /**/
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1
@@ -123,8 +142,15 @@
 /* Define to 1 if you have the `vsprintf' function. */
 #define HAVE_VSPRINTF 1
 
+/* Define to 1 if you have the <xlocale.h> header file. */
+#define HAVE_XLOCALE_H 1
+
 /* Define to 1 if you have the `_stat' function. */
 /* #undef HAVE__STAT */
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#define LT_OBJDIR ".libs/"
 
 /* Name of package */
 #define PACKAGE "libxslt"
@@ -141,14 +167,52 @@
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME ""
 
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
+
 /* Define to the version of this package. */
 #define PACKAGE_VERSION ""
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# define _ALL_SOURCE 1
+#endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 1
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# define _POSIX_PTHREAD_SEMANTICS 1
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# define _TANDEM_SOURCE 1
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# define __EXTENSIONS__ 1
+#endif
+
+
 /* Version number of package */
-#define VERSION "1.1.26"
+#define VERSION "1.1.28"
+
+/* Define if debugging support is enabled */
+/* #undef WITH_DEBUGGER */
+
+/* Define to 1 if on MINIX. */
+/* #undef _MINIX */
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+/* #undef _POSIX_1_SOURCE */
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+/* #undef _POSIX_SOURCE */
 
 /* Using the Win32 Socket implementation */
 /* #undef _WINSOCKAPI_ */

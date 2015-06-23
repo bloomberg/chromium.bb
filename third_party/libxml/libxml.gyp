@@ -132,6 +132,8 @@
             'src/include/win32config.h',
             'src/include/wsockcompat.h',
             'src/acconfig.h',
+            'src/buf.c',
+            'src/buf.h',
             'src/c14n.c',
             'src/catalog.c',
             'src/chvalid.c',

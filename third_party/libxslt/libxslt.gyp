@@ -106,6 +106,10 @@
               '.',
             ],
           },
+          'msvs_disabled_warnings': [
+            # size_t to int conversion.
+            4267,
+          ],
           'variables': {
             'clang_warning_flags': [
               # libxslt stores a char[3] in a `const unsigned char*`.

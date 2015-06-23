@@ -180,10 +180,36 @@ exsltSaxonEvaluateFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 }
 
 /**
+ * exsltSaxonSystemIdFunction:
+ * @ctxt:  an XPath parser context
+ * @nargs: number of arguments
+ *
+ * Implements the SAXON systemId() function
+ *     string saxon:systemId ()
+ * This function returns the system ID of the document being styled.
+ */
+static void
+exsltSaxonSystemIdFunction(xmlXPathParserContextPtr ctxt, int nargs)
+{
+    if (ctxt == NULL)
+        return;
+    if (nargs != 0) {
+        xmlXPathSetArityError(ctxt);
+        return;
+    }
+
+    if ((ctxt->context) && (ctxt->context->doc) &&
+        (ctxt->context->doc->URL))
+	valuePush(ctxt, xmlXPathNewString(ctxt->context->doc->URL));
+    else
+	valuePush(ctxt, xmlXPathNewString(BAD_CAST ""));
+}
+
+/**
  * exsltSaxonLineNumberFunction:
  * @ctxt:  an XPath parser context
  * @nargs: number of arguments
- * 
+ *
  * Implements the SAXON line-number() function
  *     integer saxon:line-number()
  *
@@ -264,4 +290,7 @@ exsltSaxonRegister (void) {
     xsltRegisterExtModuleFunction ((const xmlChar *) "line-number",
 				   SAXON_NAMESPACE,
 				   exsltSaxonLineNumberFunction);
+    xsltRegisterExtModuleFunction ((const xmlChar *) "systemId",
+				   SAXON_NAMESPACE,
+				   exsltSaxonSystemIdFunction);
 }

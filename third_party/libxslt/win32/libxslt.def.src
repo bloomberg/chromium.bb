@@ -12,6 +12,7 @@ xsltGenericErrorContext DATA
 xsltLibxmlVersion DATA
 xsltLibxsltVersion DATA
 xsltMaxDepth DATA
+xsltMaxVars DATA
 xsltXSLTAttrMarker DATA
 xslAddCall
 xslDropCall
@@ -98,6 +99,7 @@ xsltFreeExts
 xsltFreeGlobalVariables
 xsltFreeKeys
 xsltFreeLocale
+xsltFreeLocales
 xsltFreeNamespaceAliasHashes
 xsltFreeRVTs
 xsltFreeSecurityPrefs
@@ -240,8 +242,6 @@ xsltTemplateProcess
 xsltTestCompMatchList
 xsltText
 xsltTimestamp
-xsltTransStorageAdd
-xsltTransStorageRemove
 xsltTransformError
 xsltUninit
 xsltUnparsedEntityURIFunction
@@ -252,6 +252,7 @@ xsltUnregisterExtModuleTopLevel
 xsltValueOf
 xsltVariableLookup
 xsltXPathCompile
+xsltXPathCompileFlags
 xsltXPathFunctionLookup
 xsltXPathGetTransformContext
 xsltXPathVariableLookup

@@ -461,13 +461,7 @@ var fso = new ActiveXObject("Scripting.FileSystemObject");
 var makefile = ".\\Makefile.msvc";
 if (compiler == "mingw")
 	makefile = ".\\Makefile.mingw";
-var new_makefile = ".\\Makefile";
-var f = fso.FileExists(new_makefile);
-if (f) {
-       var t = fso.GetFile(new_makefile);
-       t.Attributes =0;
-}
-fso.CopyFile(makefile, new_makefile, true);
+fso.CopyFile(makefile, ".\\Makefile", true);
 WScript.Echo("Created Makefile.");
 // Create the config.h.
 var confighsrc = "..\\libxslt\\win32config.h";

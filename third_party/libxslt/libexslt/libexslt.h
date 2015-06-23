@@ -22,7 +22,7 @@
 #if (defined (__CYGWIN__) || defined _MSC_VER) && !defined IN_LIBEXSLT && !defined LIBEXSLT_STATIC
 #define LIBEXSLT_PUBLIC __declspec(dllimport)
 #else
-#define LIBEXSLT_PUBLIC 
+#define LIBEXSLT_PUBLIC
 #endif
 #endif
 

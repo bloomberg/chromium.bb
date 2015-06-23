@@ -8,5 +8,5 @@ Name: libxslt
 Version: @VERSION@
 Description: XSLT library version 2.
 Requires: libxml-2.0
-Libs: @XSLT_LIBDIR@ @XSLT_LIBS@
+Libs: @XSLT_LIBDIR@ @XSLT_LIBS@ @EXTRA_LIBS@
 Cflags: @XSLT_INCLUDEDIR@

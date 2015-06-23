@@ -137,7 +137,7 @@ QUnit.test('use <starttls> handshake', function() {
 
   loginHandler.onDataReceived(base.encodeUtf8(
       '<stream:stream from="google.com" id="78A87C70559EF28A" version="1.0" ' +
-          'xmlns:stream="http://etherx.jabber.org/streams"' +
+          'xmlns:stream="http://etherx.jabber.org/streams" ' +
           'xmlns="jabber:client">' +
         '<stream:features>' +
           '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls">' +

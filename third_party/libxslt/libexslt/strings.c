@@ -27,7 +27,7 @@
  * @nargs: the number of arguments
  *
  * Splits up a string on the characters of the delimiter string and returns a
- * node set of token elements, each containing one token from the string. 
+ * node set of token elements, each containing one token from the string.
  */
 static void
 exsltStrTokenizeFunction(xmlXPathParserContextPtr ctxt, int nargs)
@@ -106,7 +106,7 @@ exsltStrTokenizeFunction(xmlXPathParserContextPtr ctxt, int nargs)
                 }
             }
             if (token != cur) {
-	    	node = xmlNewDocRawNode(container, NULL,
+		node = xmlNewDocRawNode(container, NULL,
 				    (const xmlChar *) "token", token);
                 xmlAddChild((xmlNodePtr) container, node);
 	        xmlXPathNodeSetAddUnique(ret->nodesetval, node);
@@ -136,7 +136,7 @@ fail:
  * @nargs: the number of arguments
  *
  * Splits up a string on a delimiting string and returns a node set of token
- * elements, each containing one token from the string. 
+ * elements, each containing one token from the string.
  */
 static void
 exsltStrSplitFunction(xmlXPathParserContextPtr ctxt, int nargs) {
@@ -335,7 +335,7 @@ exsltStrDecodeUriFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	xmlFree(ret);
 	return;
     }
-    
+
     xmlXPathReturnString(ctxt, ret);
 
     if (str != NULL)
@@ -505,139 +505,271 @@ exsltStrConcatFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 }
 
 /**
- * exsltStrReplaceInternal:
- * @str: string to modify
- * @searchStr: string to find
- * @replaceStr: string to replace occurrences of searchStr
+ * exsltStrReturnString:
+ * @ctxt: an XPath parser context
+ * @str: a string
+ * @len: length of string
  *
- * Search and replace string function used by exsltStrReplaceFunction
+ * Returns a string as a node set.
  */
-static xmlChar*
-exsltStrReplaceInternal(const xmlChar* str, const xmlChar* searchStr, 
-                        const xmlChar* replaceStr)
+static int
+exsltStrReturnString(xmlXPathParserContextPtr ctxt, const xmlChar *str,
+                     int len)
 {
-    const xmlChar *curr, *next;
-    xmlChar *ret = NULL;
-    int searchStrSize;
+    xsltTransformContextPtr tctxt = xsltXPathGetTransformContext(ctxt);
+    xmlDocPtr container;
+    xmlNodePtr text_node;
+    xmlXPathObjectPtr ret;
 
-    curr = str;
-    searchStrSize = xmlStrlen(searchStr);
+    container = xsltCreateRVT(tctxt);
+    if (container == NULL) {
+        xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+        return(-1);
+    }
+    xsltRegisterLocalRVT(tctxt, container);
 
-    do {
-      next = xmlStrstr(curr, searchStr);
-      if (next == NULL) {
-        ret = xmlStrcat (ret, curr);
-        break;
-      }
+    text_node = xmlNewTextLen(str, len);
+    if (text_node == NULL) {
+        xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+        return(-1);
+    }
+    xmlAddChild((xmlNodePtr) container, text_node);
 
-      ret = xmlStrncat (ret, curr, next - curr);
-      ret = xmlStrcat (ret, replaceStr);
-      curr = next + searchStrSize;
-    } while (*curr != 0);
+    ret = xmlXPathNewNodeSet(text_node);
+    if (ret == NULL) {
+        xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+        return(-1);
+    }
 
-    return ret;
+    xsltExtensionInstructionResultRegister(tctxt, ret);
+    valuePush(ctxt, ret);
+
+    return(0);
 }
+
 /**
  * exsltStrReplaceFunction:
  * @ctxt: an XPath parser context
  * @nargs: the number of arguments
  *
- * Takes a string, and two node sets and returns the string with all strings in 
+ * Takes a string, and two node sets and returns the string with all strings in
  * the first node set replaced by all strings in the second node set.
  */
 static void
 exsltStrReplaceFunction (xmlXPathParserContextPtr ctxt, int nargs) {
-    xmlChar *str = NULL, *searchStr = NULL, *replaceStr = NULL;
-    xmlNodeSetPtr replaceSet = NULL, searchSet = NULL;
-    xmlChar *ret = NULL, *retSwap = NULL;
-    int i;
+    int i, i_empty, n, slen0, rlen0, *slen, *rlen;
+    void *mem = NULL;
+    const xmlChar *src, *start;
+    xmlChar *string, *search_str = NULL, *replace_str = NULL;
+    xmlChar **search, **replace;
+    xmlNodeSetPtr search_set = NULL, replace_set = NULL;
+    xmlBufferPtr buf;
 
     if (nargs  != 3) {
-      xmlXPathSetArityError(ctxt);
-      return;
+        xmlXPathSetArityError(ctxt);
+        return;
     }
 
-    /* pull out replace argument */
+    /* get replace argument */
+
+    if (!xmlXPathStackIsNodeSet(ctxt))
+        replace_str = xmlXPathPopString(ctxt);
+    else
+        replace_set = xmlXPathPopNodeSet(ctxt);
+
+    if (xmlXPathCheckError(ctxt))
+        goto fail_replace;
+
+    /* get search argument */
+
     if (!xmlXPathStackIsNodeSet(ctxt)) {
-      replaceStr = xmlXPathPopString(ctxt);
+        search_str = xmlXPathPopString(ctxt);
+        n = 1;
     }
-		else {
-      replaceSet = xmlXPathPopNodeSet(ctxt);
-      if (xmlXPathCheckError(ctxt)) {
-        xmlXPathSetTypeError(ctxt);
-        goto fail;
-      }
+    else {
+        search_set = xmlXPathPopNodeSet(ctxt);
+        n = search_set != NULL ? search_set->nodeNr : 0;
     }
 
-    /* behavior driven by search argument from here on */
-    if (!xmlXPathStackIsNodeSet(ctxt)) {
-      searchStr = xmlXPathPopString(ctxt);
-      str = xmlXPathPopString(ctxt);
+    if (xmlXPathCheckError(ctxt))
+        goto fail_search;
 
-      if (replaceStr == NULL) {
-        xmlXPathSetTypeError(ctxt);
-        goto fail;
-      }
+    /* get string argument */
 
-      ret = exsltStrReplaceInternal(str, searchStr, replaceStr);
+    string = xmlXPathPopString(ctxt);
+    if (xmlXPathCheckError(ctxt))
+        goto fail_string;
+
+    /* check for empty search node list */
+
+    if (n <= 0) {
+        exsltStrReturnString(ctxt, string, xmlStrlen(string));
+        goto done_empty_search;
     }
-		else {
-      searchSet = xmlXPathPopNodeSet(ctxt);
-      if (searchSet == NULL || xmlXPathCheckError(ctxt)) {
-        xmlXPathSetTypeError(ctxt);
-        goto fail;
-      }
 
-      str = xmlXPathPopString(ctxt);
-      ret = xmlStrdup(str);
+    /* allocate memory for string pointer and length arrays */
 
-      for (i = 0; i < searchSet->nodeNr; i++) {
-	searchStr = xmlXPathCastNodeToString(searchSet->nodeTab[i]);
+    if (n == 1) {
+        search = &search_str;
+        replace = &replace_str;
+        slen = &slen0;
+        rlen = &rlen0;
+    }
+    else {
+        mem = xmlMalloc(2 * n * (sizeof(const xmlChar *) + sizeof(int)));
+        if (mem == NULL) {
+            xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+            goto fail_malloc;
+        }
+        search = (xmlChar **) mem;
+        replace = search + n;
+        slen = (int *) (replace + n);
+        rlen = slen + n;
+    }
 
-        if (replaceSet != NULL) {
-          replaceStr = NULL;
-          if (i < replaceSet->nodeNr) {
-            replaceStr = xmlXPathCastNodeToString(replaceSet->nodeTab[i]);
-          }
+    /* process arguments */
 
-          retSwap = exsltStrReplaceInternal(ret, searchStr, replaceStr);
-          
-          if (replaceStr != NULL) {
-            xmlFree(replaceStr);
-            replaceStr = NULL;
-          }
+    i_empty = -1;
+
+    for (i=0; i<n; ++i) {
+        if (search_set != NULL) {
+            search[i] = xmlXPathCastNodeToString(search_set->nodeTab[i]);
+            if (search[i] == NULL) {
+                n = i;
+                goto fail_process_args;
+            }
+        }
+
+        slen[i] = xmlStrlen(search[i]);
+        if (i_empty < 0 && slen[i] == 0)
+            i_empty = i;
+
+        if (replace_set != NULL) {
+            if (i < replace_set->nodeNr) {
+                replace[i] = xmlXPathCastNodeToString(replace_set->nodeTab[i]);
+                if (replace[i] == NULL) {
+                    n = i + 1;
+                    goto fail_process_args;
+                }
+            }
+            else
+                replace[i] = NULL;
         }
         else {
-          retSwap = exsltStrReplaceInternal(ret, searchStr, replaceStr);
+            if (i == 0)
+                replace[i] = replace_str;
+            else
+                replace[i] = NULL;
         }
 
-				xmlFree(ret);
-        if (searchStr != NULL) {
-          xmlFree(searchStr);
-          searchStr = NULL;
+        if (replace[i] == NULL)
+            rlen[i] = 0;
+        else
+            rlen[i] = xmlStrlen(replace[i]);
+    }
+
+    if (i_empty >= 0 && rlen[i_empty] == 0)
+        i_empty = -1;
+
+    /* replace operation */
+
+    buf = xmlBufferCreate();
+    if (buf == NULL) {
+        xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+        goto fail_buffer;
+    }
+    src = string;
+    start = string;
+
+    while (*src != 0) {
+        int max_len = 0, i_match = 0;
+
+        for (i=0; i<n; ++i) {
+            if (*src == search[i][0] &&
+                slen[i] > max_len &&
+                xmlStrncmp(src, search[i], slen[i]) == 0)
+            {
+                i_match = i;
+                max_len = slen[i];
+            }
         }
 
-				ret = retSwap;
-			}
+        if (max_len == 0) {
+            if (i_empty >= 0 && start < src) {
+                if (xmlBufferAdd(buf, start, src - start) ||
+                    xmlBufferAdd(buf, replace[i_empty], rlen[i_empty]))
+                {
+                    xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+                    goto fail_buffer_add;
+                }
+                start = src;
+            }
 
-      if (replaceSet != NULL)
-        xmlXPathFreeNodeSet(replaceSet);
+            src += xmlUTF8Size(src);
+        }
+        else {
+            if ((start < src &&
+                 xmlBufferAdd(buf, start, src - start)) ||
+                (rlen[i_match] &&
+                 xmlBufferAdd(buf, replace[i_match], rlen[i_match])))
+            {
+                xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+                goto fail_buffer_add;
+            }
 
-      if (searchSet != NULL)
-        xmlXPathFreeNodeSet(searchSet);
-		}
+            src += slen[i_match];
+            start = src;
+        }
+    }
 
-    xmlXPathReturnString(ctxt, ret);
+    if (start < src && xmlBufferAdd(buf, start, src - start)) {
+        xmlXPathSetError(ctxt, XPATH_MEMORY_ERROR);
+        goto fail_buffer_add;
+    }
 
- fail:
-    if (replaceStr != NULL)
-      xmlFree(replaceStr);
+    /* create result node set */
 
-    if (searchStr != NULL)
-      xmlFree(searchStr);
+    exsltStrReturnString(ctxt, xmlBufferContent(buf), xmlBufferLength(buf));
 
-    if (str != NULL)
-      xmlFree(str);
+    /* clean up */
+
+fail_buffer_add:
+    xmlBufferFree(buf);
+
+fail_buffer:
+fail_process_args:
+    if (search_set != NULL) {
+        for (i=0; i<n; ++i)
+            xmlFree(search[i]);
+    }
+    if (replace_set != NULL) {
+        for (i=0; i<n; ++i) {
+            if (replace[i] != NULL)
+                xmlFree(replace[i]);
+        }
+    }
+
+    if (mem != NULL)
+        xmlFree(mem);
+
+fail_malloc:
+done_empty_search:
+    xmlFree(string);
+
+fail_string:
+    if (search_set != NULL)
+        xmlXPathFreeNodeSet(search_set);
+    else
+        xmlFree(search_str);
+
+fail_search:
+    if (replace_set != NULL)
+        xmlXPathFreeNodeSet(replace_set);
+    else
+        xmlFree(replace_str);
+
+fail_replace:
+    return;
 }
 
 /**

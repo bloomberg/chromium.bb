@@ -27,7 +27,7 @@
 #define MD5_DIGEST_LENGTH 16
 #define SHA1_DIGEST_LENGTH 20
 
-/* gcrypt rc4 can do 256 bit keys, but cryptoapi limit 
+/* gcrypt rc4 can do 256 bit keys, but cryptoapi limit
    seems to be 128 for the default provider */
 #define RC4_KEY_LENGTH 128
 
@@ -48,7 +48,7 @@
  * @hex: buffer to store hex version of blob
  * @hexlen: length of buffer to store hex version of blob
  *
- * Helper function which encodes a binary blob as hex. 
+ * Helper function which encodes a binary blob as hex.
  */
 static void
 exsltCryptoBin2Hex (const unsigned char *bin, int binlen,
@@ -357,7 +357,7 @@ exsltCryptoGcryptInit (void) {
  * @msglen: length of text to be hashed
  * @dest: buffer to place hash result
  *
- * Helper function which hashes a message using MD4, MD5, or SHA1. 
+ * Helper function which hashes a message using MD4, MD5, or SHA1.
  * using gcrypt
  */
 static void
@@ -752,7 +752,7 @@ exsltCryptoRc4DecryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     ret_len = exsltCryptoHex2Bin (str, str_len, bin, bin_len);
 
 /* decrypt the binary blob */
-    ret = xmlMallocAtomic (ret_len);
+    ret = xmlMallocAtomic (ret_len + 1);
     if (ret == NULL) {
 	xsltTransformError(tctxt, NULL, tctxt->inst,
 	    "exsltCryptoRc4EncryptFunction: Failed to allocate result\n");
@@ -761,6 +761,7 @@ exsltCryptoRc4DecryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	goto done;
     }
     PLATFORM_RC4_DECRYPT (ctxt, padkey, bin, ret_len, ret, ret_len);
+    ret[ret_len] = 0;
 
     xmlXPathReturnString (ctxt, ret);
 

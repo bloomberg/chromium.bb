@@ -1,70 +1,40 @@
 Name: libxslt
 URL: http://xmlsoft.org/XSLT
-Version: 1.1.26
+Version: 1.1.28
 Security Critical: yes
 License: MIT
 License File: Copyright
 
 Description:
-This directory contains a partial snapshot of the libxslt library
-with the following modification:
 
-1) Modified win32/configure.js to be able to clobber a read-only Makefile
-This consists of:
-replace ---
-fso.CopyFile(makefile, ".\\Makefile", true);
-with ---
-var new_makefile = ".\\Makefile";
-var f = fso.FileExists(new_makefile);
-if (f) {
-       var t = fso.GetFile(new_makefile);
-       t.Attributes =0;
-}
-fso.CopyFile(makefile, new_makefile, true);
-done ---
+libxslt from libxml.org.
 
-2) Modified libxslt/security.c to use GetFileAttributesA instead of GetFileAttributes. 
+Modifications:
 
-3) Modified configure to not generate Makefiles.
-This consists of:
-replace ---
-ac_config_files="$ac_config_files Makefile....
-with ---
-ac_config_files="$ac_config_files libxslt/xsltconfig.h libxslt/xsltwin32config.h libexslt/exsltconfig.h xslt-config"
-done ---
+- GetFileAttributes -> GetFileAttributesA in libxslt\security.c
 
-4) Modified xsltconfig.h options:
-- Change LIBXSLT_VERSION_EXTRA define to ""
-- Change the DEBUG_MEMORY define to #if 0
-- Change the WITH_MODULES define to #if 0
-- Change the "Locale support" section to #if 0
-- For good measure, change the LIBXSLT_DEFAULT_PLUGINS_PATH() define to "NULL"
 
-Current version: 1.1.26, plus the following patches:
-- A fix to get more compact generated IDs (http://git.gnome.org/browse/libxslt/commit/?id=ecb6bcb8d1b7e44842edde3929f412d46b40c89f)
-- Import pattern parsing fix for commit: http://git.gnome.org/browse/libxslt/commit/?id=fe5a4fa33eb85bce3253ed3742b1ea6c4b59b41b
-- A fix for XSLT node checking (from upstream, commit pending).
-- A fix for dictionary string usage.
+To import a new version:
 
-5) Converted to utf-8 with: vim +"argdo write ++enc=utf-8" *.c
+On Linux, get the latest tar via libxml.org.
 
-6) A change to pattern.c to better handle an error condition parsing a broken
-expression.
+Extract and replace libxslt/ with libxslt-X.Y.Z/
 
-To import a new snapshot of libxslt:
+mkdir linux && cd linux
+../configure --without-debug --without-mem-debug --without-debugger --without-plugins --with-libxml-src=../../libxml/linux/ 
+Patch to not define HAVE_CLOCK_GETTIME.
 
-- Visit http://xmlsoft.org/XSLT/downloads.html and download the latest source
-  distribution.
-- Copy the files into this directory, omitting files which have been omitted
-  here.
-- Run build/generate-win32-headers.bat to re-generate the configuration
-  headers.
-- On Linux, 'cd linux && sh ../configure --with-libxml-src=../../libxml/linux/'
-  to re-generate configuration headers.
-- On Mac, 'cd mac && sh ../configure --with-libxml-src=../../libxml/mac/'
-  to re-generate configuration headers.
-- Perform the modification above.
-- Update this README to reflect the new version number.
-- When creating your CL, make sure to "svn add" any new source files, but
-don't ever add in the files not needed for the Chromium build. (e.g.
-Changelog, configure, etc) -- these are just bloat.
+Do the same on Mac and copy the mac/config.h to Linux.
+
+On Windows:
+
+In win32\ run
+cscript //E:jscript configure.js compiler=msvc iconv=no xslt_debug=no mem_debug=no debugger=no modules=no
+and copy config.h to Linux in win32/
+
+Remove:
+  doc/
+  examples/
+  python/
+  tests/
+  vms/

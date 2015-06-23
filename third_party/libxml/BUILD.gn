@@ -39,6 +39,8 @@ static_library("libxml") {
     "src/SAX.c",
     "src/SAX2.c",
     "src/acconfig.h",
+    "src/buf.c",
+    "src/buf.h",
     "src/c14n.c",
     "src/catalog.c",
     "src/chvalid.c",
