@@ -393,8 +393,9 @@ class BisectPerfRegressionTest(unittest.TestCase):
       bisect_class.RunPerformanceTestAndParseResults = original_run_tests
 
     # If the job was aborted, there should be a warning about it.
-    assert [w for w in dry_run_results.warnings
-            if 'could not reproduce the regression' in w]
+    self.assertTrue(
+        any('did not clearly reproduce a regression' in w
+            for w in dry_run_results.warnings))
     return True
 
   def testBisectAbortedOnClearNonRegression(self):

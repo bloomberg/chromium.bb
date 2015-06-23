@@ -98,11 +98,11 @@ new file mode 100644
 +%(deps_sha)s
 """
 
-REGRESSION_CONFIDENCE_ERROR_TEMPLATE = """
-We could not reproduce the regression with this test/metric/platform combination
-with enough confidence.
+REGRESSION_NOT_REPRODUCED_MESSAGE_TEMPLATE = """
+Bisect did not clearly reproduce a regression between the given "good"
+and "bad" revisions.
 
-Here are the results for the given "good" and "bad" revisions:
+Results:
 "Good" revision: {good_rev}
 \tMean: {good_mean}
 \tStandard error: {good_std_err}
@@ -113,8 +113,8 @@ Here are the results for the given "good" and "bad" revisions:
 \tStandard error: {bad_std_err}
 \tSample size: {bad_sample_size}
 
-NOTE: There's still a chance that this is actually a regression, but you may
-      need to bisect a different platform."""
+You may want to try bisecting on a different platform or metric.
+"""
 
 # Git branch name used to run bisect try jobs.
 BISECT_TRYJOB_BRANCH = 'bisect-tryjob'
@@ -475,47 +475,42 @@ def _GenerateProfileIfNecessary(command_args):
   return True
 
 
-def _CheckRegressionConfidenceError(
-    good_revision,
-    bad_revision,
-    known_good_value,
-    known_bad_value):
-  """Checks whether we can be confident beyond a certain degree that the given
-  metrics represent a regression.
+def _IsRegressionReproduced(known_good_result, known_bad_result):
+  """Checks whether the regression was reproduced based on the initial values.
 
   Args:
-    good_revision: string representing the commit considered 'good'
-    bad_revision: Same as above for 'bad'.
-    known_good_value: A dict with at least: 'values', 'mean' and 'std_err'
-    known_bad_value: Same as above.
+    known_good_result: A dict with the keys "values", "mean" and "std_err".
+    known_bad_result: Same as above.
 
   Returns:
-    False if there is no error (i.e. we can be confident there's a regression),
-    a string containing the details of the lack of confidence otherwise.
+    True if there is a clear change between the result values for the given
+    good and bad revisions, False otherwise.
   """
-  error = False
-  # Adding good and bad values to a parameter list.
-  confidence_params = []
-  for l in [known_bad_value['values'], known_good_value['values']]:
-    # Flatten if needed, by averaging the values in each nested list
-    if isinstance(l, list) and all([isinstance(x, list) for x in l]):
-      averages = map(math_utils.Mean, l)
-      confidence_params.append(averages)
-    else:
-      confidence_params.append(l)
-  regression_confidence = BisectResults.ConfidenceScore(
-      *confidence_params, accept_single_bad_or_good=True)
-  if regression_confidence < REGRESSION_CONFIDENCE:
-    error = REGRESSION_CONFIDENCE_ERROR_TEMPLATE.format(
-        good_rev=good_revision,
-        good_mean=known_good_value['mean'],
-        good_std_err=known_good_value['std_err'],
-        good_sample_size=len(known_good_value['values']),
-        bad_rev=bad_revision,
-        bad_mean=known_bad_value['mean'],
-        bad_std_err=known_bad_value['std_err'],
-        bad_sample_size=len(known_bad_value['values']))
-  return error
+  def PossiblyFlatten(values):
+    """Flattens if needed, by averaging the values in each nested list."""
+    if isinstance(values, list) and all(isinstance(x, list) for x in values):
+      return map(math_utils.Mean, values)
+    return values
+
+  p_value = BisectResults.ConfidenceScore(
+      PossiblyFlatten(known_bad_result['values']),
+      PossiblyFlatten(known_good_result['values']),
+      accept_single_bad_or_good=True)
+
+  return p_value > REGRESSION_CONFIDENCE
+
+
+def _RegressionNotReproducedWarningMessage(
+    good_revision, bad_revision, known_good_value, known_bad_value):
+  return REGRESSION_NOT_REPRODUCED_MESSAGE_TEMPLATE.format(
+      good_rev=good_revision,
+      good_mean=known_good_value['mean'],
+      good_std_err=known_good_value['std_err'],
+      good_sample_size=len(known_good_value['values']),
+      bad_rev=bad_revision,
+      bad_mean=known_bad_value['mean'],
+      bad_std_err=known_bad_value['std_err'],
+      bad_sample_size=len(known_bad_value['values']))
 
 
 class DepotDirectoryRegistry(object):
@@ -2366,19 +2361,15 @@ class BisectPerformanceMetrics(object):
 
       # Check how likely it is that the good and bad results are different
       # beyond chance-induced variation.
-      confidence_error = False
       if not (self.opts.debug_ignore_regression_confidence or
-         self._IsBisectModeReturnCode()):
-        confidence_error = _CheckRegressionConfidenceError(good_revision,
-                                                           bad_revision,
-                                                           known_good_value,
-                                                           known_bad_value)
-        if confidence_error:
+              self._IsBisectModeReturnCode()):
+        if not _IsRegressionReproduced(known_good_value, known_bad_value):
           # If there is no significant difference between "good" and "bad"
           # revision results, then the "bad revision" is considered "good".
           # TODO(qyearsley): Remove this if it is not necessary.
           bad_revision_state.passed = True
-          self.warnings.append(confidence_error)
+          self.warnings.append(_RegressionNotReproducedWarningMessage(
+              good_revision, bad_revision, known_good_value, known_bad_value))
           return BisectResults(bisect_state, self.depot_registry, self.opts,
                                self.warnings)
 
