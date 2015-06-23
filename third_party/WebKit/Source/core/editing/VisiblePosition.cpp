@@ -637,6 +637,11 @@ Position canonicalPositionOf(const Position& position)
     return canonicalPosition(position);
 }
 
+PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& position)
+{
+    return canonicalPosition(position);
+}
+
 template<typename PositionType>
 void VisiblePosition::init(const PositionType& position, EAffinity affinity)
 {

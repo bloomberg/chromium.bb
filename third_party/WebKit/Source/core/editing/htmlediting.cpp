@@ -196,6 +196,11 @@ Element* editableRootForPosition(const Position& p, EditableType editableType)
     return node->rootEditableElement(editableType);
 }
 
+Element* editableRootForPosition(const PositionInComposedTree& p, EditableType editableType)
+{
+    return editableRootForPosition(toPositionInDOMTree(p), editableType);
+}
+
 // Finds the enclosing element until which the tree can be split.
 // When a user hits ENTER, he/she won't expect this element to be split into two.
 // You may pass it as the second argument of splitTreeToNode.
@@ -228,6 +233,11 @@ Position nextCandidate(const Position& position)
     return nextCandidateAlgorithm<EditingStrategy>(position);
 }
 
+PositionInComposedTree nextCandidate(const PositionInComposedTree& position)
+{
+    return nextCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
+}
+
 Position nextVisuallyDistinctCandidate(const Position& position)
 {
     Position p = position;
@@ -256,6 +266,11 @@ typename Strategy::PositionType previousCandidateAlgorithm(const typename Strate
 Position previousCandidate(const Position& position)
 {
     return previousCandidateAlgorithm<EditingStrategy>(position);
+}
+
+PositionInComposedTree previousCandidate(const PositionInComposedTree& position)
+{
+    return previousCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 template <typename PositionType>

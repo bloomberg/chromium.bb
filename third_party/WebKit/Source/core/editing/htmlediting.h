@@ -128,7 +128,9 @@ TextDirection directionOfEnclosingBlock(const Position&);
 // Functions returning Position
 
 Position nextCandidate(const Position&);
+PositionInComposedTree nextCandidate(const PositionInComposedTree&);
 Position previousCandidate(const Position&);
+PositionInComposedTree previousCandidate(const PositionInComposedTree&);
 
 Position nextVisuallyDistinctCandidate(const Position&);
 Position previousVisuallyDistinctCandidate(const Position&);
@@ -218,6 +220,7 @@ PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&, const St
 PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document&);
 
 Element* editableRootForPosition(const Position&, EditableType = ContentIsEditable);
+Element* editableRootForPosition(const PositionInComposedTree&, EditableType = ContentIsEditable);
 Element* unsplittableElementForPosition(const Position&);
 
 // Boolean functions on Element

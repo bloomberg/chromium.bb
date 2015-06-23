@@ -3881,6 +3881,7 @@
             'editing/iterators/TextIteratorTest.cpp',
             'editing/StyledMarkupSerializerTest.cpp',
             'editing/SurroundingTextTest.cpp',
+            'editing/VisiblePositionTest.cpp',
             'editing/VisibleSelectionTest.cpp',
             'events/EventPathTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',

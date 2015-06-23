@@ -141,6 +141,7 @@ VisiblePosition startVisiblePosition(const Range*, EAffinity);
 Element* enclosingBlockFlowElement(const VisiblePosition&);
 
 Position canonicalPositionOf(const Position&);
+PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 
 bool isFirstVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
