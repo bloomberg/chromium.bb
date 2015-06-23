@@ -684,12 +684,11 @@ void RenderThreadImpl::Init() {
     compositor_raster_threads_.push_back(raster_thread.Pass());
   }
 
-  // In single process, browser main loop set up the discardable memory
-  // allocator.
-  if (!command_line.HasSwitch(switches::kSingleProcess)) {
-    base::DiscardableMemoryAllocator::SetInstance(
-        ChildThreadImpl::discardable_shared_memory_manager());
-  }
+  // TODO(boliu): In single process, browser main loop should set up the
+  // discardable memory manager, and should skip this if kSingleProcess.
+  // See crbug.com/503724.
+  base::DiscardableMemoryAllocator::SetInstance(
+      ChildThreadImpl::discardable_shared_memory_manager());
 
   service_registry()->AddService<RenderFrameSetup>(
       base::Bind(CreateRenderFrameSetup));
