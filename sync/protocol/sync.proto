@@ -665,10 +665,10 @@ message AuthenticateMessage {
   required string auth_token = 1;
 };
 
-message ClearUserDataMessage {
+message DeprecatedMessage1 {
 };
 
-message ClearUserDataResponse {
+message DeprecatedMessage2 {
 };
 
 // The client must preserve, store, and resend the chip bag with
@@ -720,7 +720,7 @@ message ClientToServerMessage {
     COMMIT = 1;
     GET_UPDATES = 2;
     AUTHENTICATE = 3;
-    CLEAR_DATA = 4;
+    DEPRECATED_4 = 4;
   }
 
   required Contents message_contents = 3;
@@ -728,8 +728,7 @@ message ClientToServerMessage {
   optional GetUpdatesMessage get_updates = 5;
   optional AuthenticateMessage authenticate = 6;
 
-  // Request to clear all Chromium data from the server.
-  optional ClearUserDataMessage clear_user_data = 9;
+  optional DeprecatedMessage1 deprecated_field_9 = 9 [deprecated = true];
 
   optional string store_birthday = 7; // Opaque store ID; if it changes, duck!
   // The client sets this if it detects a sync issue. The server will tell it
@@ -951,7 +950,7 @@ message ClientToServerResponse {
 
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
-  optional ClearUserDataResponse clear_user_data = 9;
+  optional DeprecatedMessage2 deprecated_field_9 = 9 [deprecated = true];
   optional GetUpdatesMetadataResponse stream_metadata = 10;
   // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
   // none of the other fields (error_code and etc) will be set.
