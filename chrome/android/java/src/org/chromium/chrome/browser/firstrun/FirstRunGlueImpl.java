@@ -52,6 +52,12 @@ public class FirstRunGlueImpl implements FirstRunGlue {
     }
 
     @Override
+    public int numberOfAccounts(Context appContext) {
+        List<String> accountNames = AccountManagerHelper.get(appContext).getGoogleAccountNames();
+        return accountNames == null ? 0 : accountNames.size();
+    }
+
+    @Override
     public void openAccountAdder(Fragment fragment) {
         AccountAdder.getInstance().addAccount(fragment, AccountAdder.ADD_ACCOUNT_RESULT);
     }

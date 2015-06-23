@@ -70495,6 +70495,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Media.VideoCaptureManager"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="MobileFreSignInChoiceEntryType" separator=".">
+  <suffix name="MainIntent" label="Icon click"/>
+  <suffix name="ViewIntent" label="VIEW intent"/>
+  <affected-histogram name="MobileFre.SignInChoice"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MobileFreSignInChoiceNumberOfAccounts" separator=".">
+  <suffix name="ZeroAccounts" label="Zero accounts"/>
+  <suffix name="OneAccount" label="One account"/>
+  <suffix name="ManyAccounts" label="Two or more accounts"/>
+  <affected-histogram name="MobileFre.SignInChoice.MainIntent"/>
+  <affected-histogram name="MobileFre.SignInChoice.ViewIntent"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="ModuleIntegrityVerificationType" separator=".">
   <suffix name="WithoutByteSet"
       label="The version of the Module Integrity Verifier that doesn't use a

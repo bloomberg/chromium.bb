@@ -44,6 +44,12 @@ public interface FirstRunGlue {
     boolean isDefaultAccountName(Context appContext, String accountName);
 
     /**
+     * @return Number of available accounts on the device.
+     * @param appContext An application context.
+     */
+    int numberOfAccounts(Context appContext);
+
+    /**
      * Opens the Android account adder UI.
      * @param fragment A fragment that requested the service.
      */
