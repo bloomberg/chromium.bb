@@ -854,14 +854,6 @@
     ],
     'chrome_browser_tests_media_router_sources': [
       'browser/ui/webui/media_router/media_router_dialog_controller_browsertest.cc',
-      'test/media_router/media_router_base_browsertest.cc',
-      'test/media_router/media_router_base_browsertest.h',
-      'test/media_router/media_router_e2e_browsertest.cc',
-      'test/media_router/media_router_e2e_browsertest.h',
-      'test/media_router/media_router_integration_browsertest.cc',
-      'test/media_router/media_router_integration_browsertest.h',
-      'test/media_router/test_media_sinks_observer.cc',
-      'test/media_router/test_media_sinks_observer.h',
     ],
     # Javascript sources. These are combined with the .cc files in the GYP build
     # and are handled by a rule, but in the GN build they're in a separate
@@ -2447,10 +2439,7 @@
         }],
         ['enable_media_router==1', {
           'sources': [ '<@(chrome_browser_tests_media_router_sources)' ],
-          'dependencies': [
-            'browser/media/router/media_router.gyp:media_router_test_support',
-            'test/media_router/media_router_tests.gypi:media_router_integration_test_files'
-          ],
+          'dependencies': [ 'browser/media/router/media_router.gyp:media_router_test_support' ],
           'conditions': [
             ['toolkit_views==0', {
               'sources!': [ 'browser/ui/views/media_router/media_router_ui_browsertest.cc' ],
