@@ -46,20 +46,8 @@ def OverrideConfigForTrybot(build_config, options):
     if my_config['build_type'] != constants.PAYLOADS_TYPE:
       my_config['paygen'] = False
 
-    if options.hwtest:
-      if not my_config['hw_tests']:
-        my_config['hw_tests'] = HWTestList.DefaultList(
-            num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
-            file_bugs=False)
-      else:
-        for hw_config in my_config['hw_tests']:
-          hw_config.num = constants.HWTEST_TRYBOT_NUM
-          hw_config.pool = constants.HWTEST_TRYBOT_POOL
-          hw_config.file_bugs = False
-          hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
-      # TODO: Fix full_release_test.py/AUTest on trybots, crbug.com/390828.
-      my_config['hw_tests'] = [hw_config for hw_config in my_config['hw_tests']
-                               if hw_config.suite != constants.HWTEST_AU_SUITE]
+    if options.hwtest and my_config['hw_tests_override'] is not None:
+      my_config['hw_tests'] = my_config['hw_tests_override']
 
     # Default to starting with a fresh chroot on remote trybot runs.
     if options.remote_trybot:
@@ -677,6 +665,12 @@ _waterfall_config_map = {
 def GetConfig():
   site_config = config_lib.SiteConfig()
 
+  default_hw_tests_override = config_lib.BuildConfig(
+      hw_tests_override=HWTestList.DefaultList(
+          num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False),
+  )
+
   # Arch-specific mixins.
 
   # Config parameters for builders that do not run tests on the builder.
@@ -687,6 +681,11 @@ def GetConfig():
   no_vmtest_builder = config_lib.BuildConfig(
       vm_tests=[],
       vm_tests_override=None,
+  )
+
+  no_hwtest_builder = config_lib.BuildConfig(
+      hw_tests=[],
+      hw_tests_override=[],
   )
 
   # Builder-specific mixins
@@ -701,6 +700,7 @@ def GetConfig():
 
   full = site_config.AddTemplate(
       'full',
+      default_hw_tests_override,
       # Full builds are test builds to show that we can build from scratch,
       # so use settings to build from scratch, and archive the results.
       usepkg_build_packages=False,
@@ -738,6 +738,7 @@ def GetConfig():
 
   paladin = site_config.AddTemplate(
       'paladin',
+      default_hw_tests_override,
       chroot_replace=False,
       important=True,
       build_type=constants.PALADIN_TYPE,
@@ -761,6 +762,7 @@ def GetConfig():
   # For that reason, they don't uprev.
   incremental = site_config.AddTemplate(
       'incremental',
+      default_hw_tests_override,
       build_type=constants.INCREMENTAL_TYPE,
       chroot_replace=False,
       uprev=False,
@@ -807,6 +809,7 @@ def GetConfig():
   _cros_sdk = site_config.AddConfigWithoutTemplate(
       'chromiumos-sdk',
       full_prebuilts,
+      no_hwtest_builder,
       # The amd64-host has to be last as that is when the toolchains
       # are bundled up for inclusion in the sdk.
       boards=[
@@ -823,6 +826,7 @@ def GetConfig():
 
   asan = site_config.AddTemplate(
       'asan',
+      default_hw_tests_override,
       profile='asan',
       disk_layout='2gb-rootfs',
       # TODO(deymo): ASan builders generate bigger files, in particular a bigger
@@ -837,12 +841,14 @@ def GetConfig():
 
   llvm = site_config.AddTemplate(
       'llvm',
+      default_hw_tests_override,
       profile='llvm',
       description='Build with LLVM',
   )
 
   telemetry = site_config.AddTemplate(
       'telemetry',
+      default_hw_tests_override,
       build_type=constants.INCREMENTAL_TYPE,
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -852,6 +858,7 @@ def GetConfig():
 
   chromium_pfq = site_config.AddTemplate(
       'chromium-pfq',
+      default_hw_tests_override,
       build_type=constants.CHROME_PFQ_TYPE,
       important=True,
       uprev=False,
@@ -1205,6 +1212,8 @@ def GetConfig():
 
   site_config.AddConfigWithoutTemplate(
       'refresh-packages',
+      no_vmtest_builder,
+      no_hwtest_builder,
       boards=['x86-generic', 'arm-generic'],
       builder_class_name='misc_builders.RefreshPackagesBuilder',
       description='Check upstream Gentoo for package updates',
@@ -1389,6 +1398,8 @@ def GetConfig():
   site_config.AddConfigWithoutTemplate(
       constants.BRANCH_UTIL_CONFIG,
       internal_paladin,
+      no_vmtest_builder,
+      no_hwtest_builder,
       boards=[],
       # Disable postsync_patch to prevent conflicting patches from being applied
       # - e.g., patches from 'master' branch being applied to a branch.
@@ -1426,6 +1437,7 @@ def GetConfig():
   _test_ap = site_config.AddTemplate(
       'test-ap',
       internal,
+      default_hw_tests_override,
       description='WiFi AP images used in testing',
       profile='testbed-ap',
       vm_tests=[],
@@ -1771,6 +1783,8 @@ def GetConfig():
   site_config.AddConfigWithoutTemplate(
       'pre-cq-launcher',
       internal_paladin,
+      no_vmtest_builder,
+      no_hwtest_builder,
       boards=[],
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
       description='Launcher for Pre-CQ builders',
@@ -1817,6 +1831,7 @@ def GetConfig():
       full,
       official,
       internal,
+      default_hw_tests_override,
       build_type=constants.CANARY_TYPE,
       useflags=append_useflags(['-cros-debug']),
       build_tests=True,
@@ -2704,6 +2719,7 @@ def GetConfig():
       internal,
       no_vmtest_builder,
       no_unittest_builder,
+      no_hwtest_builder,
       build_type=constants.PAYLOADS_TYPE,
       builder_class_name='release_builders.GeneratePayloadsBuilder',
       description='Regenerate release payloads.',
@@ -2765,5 +2781,44 @@ def GetConfig():
         site_config[name]['active_waterfall'] = waterfall
 
   _SetupWaterfalls()
+
+
+  def _InsertHwTestsOverrideDefaults(build):
+    """Insert default hw_tests values for a given build.
+
+    Also updates child builds.
+
+    Args:
+      build: BuildConfig instance to modify in place.
+    """
+    for child in build['child_configs']:
+      _InsertHwTestsOverrideDefaults(child)
+
+    if build['hw_tests_override'] is not None:
+      # Explicitly set, no need to insert defaults.
+      return
+
+    if not build['hw_tests']:
+      build['hw_tests_override'] = HWTestList.DefaultList(
+          num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False)
+    else:
+      # Copy over base tests.
+      build['hw_tests_override'] = [copy.copy(x) for x in build['hw_tests']]
+
+      # Adjust for manual test environment.
+      for hw_config in build['hw_tests_override']:
+        hw_config.num = constants.HWTEST_TRYBOT_NUM
+        hw_config.pool = constants.HWTEST_TRYBOT_POOL
+        hw_config.file_bugs = False
+        hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
+
+    # TODO: Fix full_release_test.py/AUTest on trybots, crbug.com/390828.
+    build['hw_tests_override'] = [
+        hw_config for hw_config in build['hw_tests_override']
+        if hw_config.suite != constants.HWTEST_AU_SUITE]
+
+  for build in site_config.itervalues():
+    _InsertHwTestsOverrideDefaults(build)
 
   return site_config

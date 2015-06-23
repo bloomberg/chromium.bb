@@ -158,6 +158,11 @@ class BuildConfig(dict):
     if new_config.get('hw_tests'):
       new_config['hw_tests'] = [copy.copy(x) for x in new_config['hw_tests']]
 
+    if new_config.get('hw_tests_override'):
+      new_config['hw_tests_override'] = [
+          copy.copy(x) for x in new_config['hw_tests_override']
+      ]
+
     return new_config
 
   def derive(self, *args, **kwargs):
@@ -468,6 +473,10 @@ def DefaultSettings():
 
       # A list of HWTestConfig objects to run.
       hw_tests=[],
+
+      # A list of all HW Tests to use if HW Tests are forced on (--hwtest
+      # command line or trybot). None means no override.
+      hw_tests_override=None,
 
       # If true, uploads artifacts for hw testing. Upload payloads for test
       # image if the image is built. If not, dev image is used and then base
@@ -1077,6 +1086,12 @@ def _CreateBuildConfig(default, build_dict, templates):
   hwtests = result.pop('hw_tests', None)
   if hwtests is not None:
     result['hw_tests'] = [_CreateHwTestConfig(hwtest) for hwtest in hwtests]
+
+  hwtests = result.pop('hw_tests_override', None)
+  if hwtests is not None:
+    result['hw_tests_override'] = [
+        _CreateHwTestConfig(hwtest) for hwtest in hwtests
+    ]
 
   if child_configs is not None:
     result['child_configs'] = [_CreateBuildConfig(default, child, templates)
