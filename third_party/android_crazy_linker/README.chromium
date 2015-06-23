@@ -80,3 +80,5 @@ Local Modifications:
 
 - Convert packed relocation code to handle Android packed relocations.
 
+- Implement a stub __cxa_demangle to avoid linking to LLVM's implementation.
+

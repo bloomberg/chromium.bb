@@ -38,6 +38,24 @@ namespace crazy {
 
 namespace {
 
+// LLVM's demangler is large, and we have no need of it.  Overriding it with
+// our own stub version here stops a lot of code being pulled in from libc++.
+// This reduces the on-disk footprint of the crazy linker library by more than
+// 70%, down from over 290kb to under 85kb on ARM.
+//
+// For details, see:
+//   https://code.google.com/p/chromium/issues/detail?id=502299
+//   https://llvm.org/svn/llvm-project/libcxxabi/trunk/src/cxa_demangle.cpp
+extern "C" char* __cxa_demangle(const char* mangled_name,
+                                char* buf,
+                                size_t* n,
+                                int* status) {
+  static const int kMemoryAllocFailure = -1;  // LLVM's memory_alloc_failure.
+  if (status)
+    *status = kMemoryAllocFailure;
+  return NULL;
+}
+
 #ifdef __arm__
 extern "C" int __cxa_atexit(void (*)(void*), void*, void*);
 
