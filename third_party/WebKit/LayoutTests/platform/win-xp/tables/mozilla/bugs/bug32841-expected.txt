@@ -19,4 +19,4 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (333,24) size 155x24 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 4x19
                 text run at (2,2) width 4: " "
-      LayoutBlockFlow {HR} at (0,58) size 490x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,58) size 492x2 [border: (1px inset #EEEEEE)]

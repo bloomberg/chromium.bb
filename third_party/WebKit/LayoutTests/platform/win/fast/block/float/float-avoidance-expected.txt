@@ -250,9 +250,9 @@ layer at (0,0) size 785x2372 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow (floating) {HR} at (112,30) size 80x2 [border: (1px inset #EEEEEE)]
+        LayoutBlockFlow (floating) {HR} at (112,30) size 82x2 [border: (1px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (194,28) size 0x17
+        LayoutBR {BR} at (196,28) size 0x17
       LayoutBlockFlow (anonymous) at (0,2066) size 769x36
         LayoutText {#text} at (0,0) size 768x35
           text run at (0,0) width 768: "The floating hr below should still be even with the select and shrinks to use its intrinsic width (which is basically like 1-"
@@ -282,7 +282,7 @@ layer at (0,0) size 785x2372 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {HR} at (10,48) size 200x2 [border: (1px inset #EEEEEE)]
+        LayoutBlockFlow {HR} at (10,48) size 202x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow (anonymous) at (10,58) size 200x18
           LayoutBR {BR} at (0,0) size 0x17
       LayoutBlockFlow (anonymous) at (0,2264) size 769x18

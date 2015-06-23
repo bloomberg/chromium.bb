@@ -4,7 +4,7 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {FORM} at (0,0) size 784x195
-        LayoutBlockFlow {HR} at (0,0) size 600x2 [border: (1px inset #EEEEEE)]
+        LayoutBlockFlow {HR} at (0,0) size 602x2 [border: (1px inset #EEEEEE)]
         LayoutTable {TABLE} at (0,10) size 600x185
           LayoutTableSection {TBODY} at (0,0) size 600x185
             LayoutTableRow {TR} at (0,2) size 600x44

@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (80,48) size 700x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 12x17
                 text run at (2,2) width 12: "X"
-      LayoutBlockFlow {HR} at (0,129) size 75x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,129) size 77x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,139) size 784x153 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x151
           LayoutTableRow {TR} at (0,2) size 782x147
@@ -37,7 +37,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (28,64) size 752x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 12x17
                 text run at (2,2) width 12: "X"
-      LayoutBlockFlow {HR} at (0,300) size 75x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,300) size 77x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,310) size 784x49 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x47
           LayoutTableRow {TR} at (0,2) size 782x43
@@ -50,7 +50,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (221,12) size 559x22 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 12x17
                 text run at (2,2) width 12: "X"
-      LayoutBlockFlow {HR} at (0,367) size 75x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,367) size 77x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,377) size 784x31 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x29
           LayoutTableRow {TR} at (0,2) size 782x25

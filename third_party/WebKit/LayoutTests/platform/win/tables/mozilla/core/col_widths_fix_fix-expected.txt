@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 98: "foo foo foo foo"
       LayoutBlockFlow (anonymous) at (0,74) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
-      LayoutBlockFlow {HR} at (0,100) size 400x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,100) size 402x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,110) size 784x18
         LayoutText {#text} at (0,0) size 374x17
           text run at (0,0) width 374: "fixed table - fixed cells are increased based on fixed width"

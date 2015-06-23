@@ -32,7 +32,7 @@ layer at (0,0) size 785x1432 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow (floating) {DIV} at (569,0) size 200x200 [bgcolor=#FF0000]
       LayoutBlockFlow {DIV} at (0,1016) size 769x200
         LayoutBlockFlow (floating) {DIV} at (569,0) size 200x200 [bgcolor=#FF0000]
-        LayoutBlockFlow {HR} at (184.50,0) size 384.50x2 [border: (1px inset #EEEEEE)]
+        LayoutBlockFlow {HR} at (182.50,0) size 386.50x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,1216) size 769x200
         LayoutBlockFlow (floating) {DIV} at (569,0) size 200x200 [bgcolor=#FF0000]
         LayoutImage {IMG} at (184.50,0) size 384.50x50 [bgcolor=#008000]

@@ -15,7 +15,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (343,3) size 34x30 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 22x17
                 text run at (6,6) width 22: "foo"
-      LayoutBlockFlow {HR} at (0,82) size 400x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,82) size 402x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,92) size 769x36
         LayoutBR {BR} at (0,0) size 0x17
         LayoutText {#text} at (0,18) size 353x17

@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
                 text run at (2,2) width 56: "auto auto"
       LayoutBlockFlow (anonymous) at (0,70) size 784x20
         LayoutBR {BR} at (0,0) size 0x19
-      LayoutBlockFlow {HR} at (0,98) size 100x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,98) size 102x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,108) size 784x20
         LayoutText {#text} at (0,0) size 303x19
           text run at (0,0) width 303: "table fixed at 600, 1st 2 cells fixed at 100, 2nd not"

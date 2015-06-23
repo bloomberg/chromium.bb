@@ -16,7 +16,7 @@ layer at (0,0) size 785x941 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (0,0) size 576x48
           LayoutTableRow {TR} at (0,2) size 576x20
             LayoutTableCell {TD} at (2,2) size 572x20 [r=0 c=0 rs=1 cs=3]
-              LayoutBlockFlow {HR} at (1,9) size 570x2 [bgcolor=#808080] [border: (1px solid #808080)]
+              LayoutBlockFlow {HR} at (1,9) size 572x2 [bgcolor=#808080] [border: (1px solid #808080)]
           LayoutTableRow {TR} at (0,24) size 576x22
             LayoutTableCell {TD} at (2,24) size 142x22 [r=1 c=0 rs=1 cs=1]
               LayoutInline {A} at (0,0) size 85x19 [color=#0000EE]
@@ -139,7 +139,7 @@ layer at (0,0) size 785x941 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (0,0) size 576x48
           LayoutTableRow {TR} at (0,2) size 576x20
             LayoutTableCell {TD} at (2,2) size 572x20 [r=0 c=0 rs=1 cs=3]
-              LayoutBlockFlow {HR} at (1,9) size 570x2 [bgcolor=#808080] [border: (1px solid #808080)]
+              LayoutBlockFlow {HR} at (1,9) size 572x2 [bgcolor=#808080] [border: (1px solid #808080)]
           LayoutTableRow {TR} at (0,24) size 576x22
             LayoutTableCell {TD} at (2,24) size 142x22 [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 85x19

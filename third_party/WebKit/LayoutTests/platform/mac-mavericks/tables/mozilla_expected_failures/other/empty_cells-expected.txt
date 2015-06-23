@@ -240,7 +240,7 @@ layer at (0,0) size 785x2496 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,528) size 769x18
         LayoutText {#text} at (0,0) size 493x18
           text run at (0,0) width 493: "this table should be about 122 pixels wide (nested, width=10 without border)"
-      LayoutBlockFlow {HR} at (0,562) size 122x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,562) size 124x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,572) size 124x4 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 122x2
           LayoutTableRow {TR} at (0,0) size 122x2

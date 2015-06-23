@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
                 text run at (1,19) width 112: "game of the year "
                 text run at (112,19) width 54: "at Game"
                 text run at (1,37) width 65: "Rankings."
-      LayoutBlockFlow {HR} at (0,125.27) size 202x2 [border: (1px inset #EEEEEE)]
-      LayoutBlockFlow {HR} at (0,135.27) size 383x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,125.27) size 204x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,135.27) size 385x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,145.27) size 784x18
         LayoutText {#text} at (0,0) size 517x17
           text run at (0,0) width 517: "200*150 =3000twips 100*150=1500twips 180*150=1200twips sum: 5700 twips"

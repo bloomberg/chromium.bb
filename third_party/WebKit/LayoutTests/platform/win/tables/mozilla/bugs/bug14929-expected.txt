@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (131,66) size 505x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 48x17
                   text run at (2,2) width 48: "SLmail"
-      LayoutBlockFlow {HR} at (0,142) size 128x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,142) size 130x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,152) size 784x18
         LayoutText {#text} at (0,0) size 417x17
           text run at (0,0) width 417: "The simplified original testcase with image size reduced to190px"
@@ -36,7 +36,7 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (131,26) size 505x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 48x17
                   text run at (2,2) width 48: "SLmail"
-      LayoutBlockFlow {HR} at (0,254) size 128x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,254) size 130x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,264) size 784x18
         LayoutText {#text} at (0,0) size 152x17
           text run at (0,0) width 152: "Testcase without image"
@@ -55,4 +55,4 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (131,44) size 505x22 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 48x17
                   text run at (2,2) width 48: "SLmail"
-      LayoutBlockFlow {HR} at (0,384) size 128x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {HR} at (0,384) size 130x2 [border: (1px inset #EEEEEE)]
