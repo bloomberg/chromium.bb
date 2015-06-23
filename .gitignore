@@ -63,6 +63,7 @@ v8.log
 /buildtools
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
 /c
+/cdm
 /ceee/internal/
 /chrome/angle_unittests_run.xml
 /chrome/content_gl_tests_run.xml
