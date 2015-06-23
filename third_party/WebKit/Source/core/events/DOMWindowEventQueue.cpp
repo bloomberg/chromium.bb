@@ -40,7 +40,13 @@ class DOMWindowEventQueueTimer final : public NoBaseWillBeGarbageCollectedFinali
 public:
     DOMWindowEventQueueTimer(DOMWindowEventQueue* eventQueue, ExecutionContext* context)
         : SuspendableTimer(context)
-        , m_eventQueue(eventQueue) { }
+        , m_eventQueue(eventQueue)
+    {
+    }
+
+    // Eager finalization is needed to promptly stop this timer object.
+    // (see DOMTimer comment for more.)
+    EAGERLY_FINALIZE();
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_eventQueue);

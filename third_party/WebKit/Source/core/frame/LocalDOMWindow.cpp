@@ -137,6 +137,9 @@ public:
         }
     }
 
+    // Eager finalization is needed to promptly stop this timer object.
+    // (see DOMTimer comment for more.)
+    EAGERLY_FINALIZE();
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_event);
