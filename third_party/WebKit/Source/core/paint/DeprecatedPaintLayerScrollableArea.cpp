@@ -424,8 +424,12 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
 
     // Just schedule a full paint invalidation of our object.
     // FIXME: This invalidation will be unnecessary in slimming paint phase 2.
-    if (requiresPaintInvalidation)
-        box().setShouldDoFullPaintInvalidation();
+    if (requiresPaintInvalidation) {
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            box().setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+        else
+            box().setShouldDoFullPaintInvalidation();
+    }
 
     // Schedule the scroll DOM event.
     if (box().node())
