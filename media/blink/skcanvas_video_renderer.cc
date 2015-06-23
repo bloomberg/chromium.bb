@@ -644,7 +644,8 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   // "flip_y == false" means to keep the intrinsic orientation.
   gl->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
   gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_texture, texture,
-                          internal_format, type);
+                          internal_format, type,
+                          flip_y, premultiply_alpha, false);
   gl->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   gl->PixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, false);
 

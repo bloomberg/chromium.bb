@@ -1127,21 +1127,29 @@ void GLES2InterfaceStub::TexImageIOSurface2DCHROMIUM(GLenum /* target */,
                                                      GLuint /* ioSurfaceId */,
                                                      GLuint /* plane */) {
 }
-void GLES2InterfaceStub::CopyTextureCHROMIUM(GLenum /* target */,
-                                             GLenum /* source_id */,
-                                             GLenum /* dest_id */,
-                                             GLint /* internalformat */,
-                                             GLenum /* dest_type */) {
+void GLES2InterfaceStub::CopyTextureCHROMIUM(
+    GLenum /* target */,
+    GLenum /* source_id */,
+    GLenum /* dest_id */,
+    GLint /* internalformat */,
+    GLenum /* dest_type */,
+    GLboolean /* unpack_flip_y */,
+    GLboolean /* unpack_premultiply_alpha */,
+    GLboolean /* unpack_unmultiply_alpha */) {
 }
-void GLES2InterfaceStub::CopySubTextureCHROMIUM(GLenum /* target */,
-                                                GLenum /* source_id */,
-                                                GLenum /* dest_id */,
-                                                GLint /* xoffset */,
-                                                GLint /* yoffset */,
-                                                GLint /* x */,
-                                                GLint /* y */,
-                                                GLsizei /* width */,
-                                                GLsizei /* height */) {
+void GLES2InterfaceStub::CopySubTextureCHROMIUM(
+    GLenum /* target */,
+    GLenum /* source_id */,
+    GLenum /* dest_id */,
+    GLint /* xoffset */,
+    GLint /* yoffset */,
+    GLint /* x */,
+    GLint /* y */,
+    GLsizei /* width */,
+    GLsizei /* height */,
+    GLboolean /* unpack_flip_y */,
+    GLboolean /* unpack_premultiply_alpha */,
+    GLboolean /* unpack_unmultiply_alpha */) {
 }
 void GLES2InterfaceStub::CompressedCopyTextureCHROMIUM(GLenum /* target */,
                                                        GLenum /* source_id */,

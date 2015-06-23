@@ -686,7 +686,10 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                            GLenum source_id,
                            GLenum dest_id,
                            GLint internalformat,
-                           GLenum dest_type) override;
+                           GLenum dest_type,
+                           GLboolean unpack_flip_y,
+                           GLboolean unpack_premultiply_alpha,
+                           GLboolean unpack_unmultiply_alpha) override;
   void CopySubTextureCHROMIUM(GLenum target,
                               GLenum source_id,
                               GLenum dest_id,
@@ -695,7 +698,10 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                               GLint x,
                               GLint y,
                               GLsizei width,
-                              GLsizei height) override;
+                              GLsizei height,
+                              GLboolean unpack_flip_y,
+                              GLboolean unpack_premultiply_alpha,
+                              GLboolean unpack_unmultiply_alpha) override;
   void CompressedCopyTextureCHROMIUM(GLenum target,
                                      GLenum source_id,
                                      GLenum dest_id) override;

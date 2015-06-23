@@ -681,7 +681,10 @@ virtual void CopyTextureCHROMIUM(GLenum target,
                                  GLenum source_id,
                                  GLenum dest_id,
                                  GLint internalformat,
-                                 GLenum dest_type) = 0;
+                                 GLenum dest_type,
+                                 GLboolean unpack_flip_y,
+                                 GLboolean unpack_premultiply_alpha,
+                                 GLboolean unpack_unmultiply_alpha) = 0;
 virtual void CopySubTextureCHROMIUM(GLenum target,
                                     GLenum source_id,
                                     GLenum dest_id,
@@ -690,7 +693,10 @@ virtual void CopySubTextureCHROMIUM(GLenum target,
                                     GLint x,
                                     GLint y,
                                     GLsizei width,
-                                    GLsizei height) = 0;
+                                    GLsizei height,
+                                    GLboolean unpack_flip_y,
+                                    GLboolean unpack_premultiply_alpha,
+                                    GLboolean unpack_unmultiply_alpha) = 0;
 virtual void CompressedCopyTextureCHROMIUM(GLenum target,
                                            GLenum source_id,
                                            GLenum dest_id) = 0;

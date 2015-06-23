@@ -3149,39 +3149,54 @@ void GLES2Implementation::TexImageIOSurface2DCHROMIUM(GLenum target,
   CheckGLError();
 }
 
-void GLES2Implementation::CopyTextureCHROMIUM(GLenum target,
-                                              GLenum source_id,
-                                              GLenum dest_id,
-                                              GLint internalformat,
-                                              GLenum dest_type) {
+void GLES2Implementation::CopyTextureCHROMIUM(
+    GLenum target,
+    GLenum source_id,
+    GLenum dest_id,
+    GLint internalformat,
+    GLenum dest_type,
+    GLboolean unpack_flip_y,
+    GLboolean unpack_premultiply_alpha,
+    GLboolean unpack_unmultiply_alpha) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopyTextureCHROMIUM("
-                     << GLES2Util::GetStringEnum(target) << ", "
-                     << GLES2Util::GetStringEnum(source_id) << ", "
-                     << GLES2Util::GetStringEnum(dest_id) << ", "
-                     << internalformat << ", "
-                     << GLES2Util::GetStringPixelType(dest_type) << ")");
-  helper_->CopyTextureCHROMIUM(target, source_id, dest_id, internalformat,
-                               dest_type);
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glCopyTextureCHROMIUM("
+          << GLES2Util::GetStringEnum(target) << ", "
+          << GLES2Util::GetStringEnum(source_id) << ", "
+          << GLES2Util::GetStringEnum(dest_id) << ", " << internalformat << ", "
+          << GLES2Util::GetStringPixelType(dest_type) << ", "
+          << GLES2Util::GetStringBool(unpack_flip_y) << ", "
+          << GLES2Util::GetStringBool(unpack_premultiply_alpha) << ", "
+          << GLES2Util::GetStringBool(unpack_unmultiply_alpha) << ")");
+  helper_->CopyTextureCHROMIUM(
+      target, source_id, dest_id, internalformat, dest_type, unpack_flip_y,
+      unpack_premultiply_alpha, unpack_unmultiply_alpha);
   CheckGLError();
 }
 
-void GLES2Implementation::CopySubTextureCHROMIUM(GLenum target,
-                                                 GLenum source_id,
-                                                 GLenum dest_id,
-                                                 GLint xoffset,
-                                                 GLint yoffset,
-                                                 GLint x,
-                                                 GLint y,
-                                                 GLsizei width,
-                                                 GLsizei height) {
+void GLES2Implementation::CopySubTextureCHROMIUM(
+    GLenum target,
+    GLenum source_id,
+    GLenum dest_id,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean unpack_flip_y,
+    GLboolean unpack_premultiply_alpha,
+    GLboolean unpack_unmultiply_alpha) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopySubTextureCHROMIUM("
-                     << GLES2Util::GetStringEnum(target) << ", "
-                     << GLES2Util::GetStringEnum(source_id) << ", "
-                     << GLES2Util::GetStringEnum(dest_id) << ", " << xoffset
-                     << ", " << yoffset << ", " << x << ", " << y << ", "
-                     << width << ", " << height << ")");
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glCopySubTextureCHROMIUM("
+          << GLES2Util::GetStringEnum(target) << ", "
+          << GLES2Util::GetStringEnum(source_id) << ", "
+          << GLES2Util::GetStringEnum(dest_id) << ", " << xoffset << ", "
+          << yoffset << ", " << x << ", " << y << ", " << width << ", "
+          << height << ", " << GLES2Util::GetStringBool(unpack_flip_y) << ", "
+          << GLES2Util::GetStringBool(unpack_premultiply_alpha) << ", "
+          << GLES2Util::GetStringBool(unpack_unmultiply_alpha) << ")");
   if (width < 0) {
     SetGLError(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM", "width < 0");
     return;
@@ -3190,8 +3205,9 @@ void GLES2Implementation::CopySubTextureCHROMIUM(GLenum target,
     SetGLError(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM", "height < 0");
     return;
   }
-  helper_->CopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset,
-                                  x, y, width, height);
+  helper_->CopySubTextureCHROMIUM(
+      target, source_id, dest_id, xoffset, yoffset, x, y, width, height,
+      unpack_flip_y, unpack_premultiply_alpha, unpack_unmultiply_alpha);
   CheckGLError();
 }
 

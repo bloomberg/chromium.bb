@@ -71,6 +71,30 @@ void WebGraphicsContext3DErrorMessageCallback::OnErrorMessage(
   graphics_context_->OnErrorMessage(msg, id);
 }
 
+void WebGraphicsContext3DImpl::copyTextureCHROMIUM(
+      blink::WGC3Denum target,
+      blink::WebGLId source_id,
+      blink::WebGLId dest_id,
+      blink::WGC3Denum internal_format,
+      blink::WGC3Denum dest_type) {
+  copyTextureCHROMIUM(target, source_id, dest_id, internal_format, dest_type,
+                      false, false, false);
+}
+
+void WebGraphicsContext3DImpl::copySubTextureCHROMIUM(
+      blink::WGC3Denum target,
+      blink::WebGLId source_id,
+      blink::WebGLId dest_id,
+      blink::WGC3Dint xoffset,
+      blink::WGC3Dint yoffset,
+      blink::WGC3Dint x,
+      blink::WGC3Dint y,
+      blink::WGC3Dsizei width,
+      blink::WGC3Dsizei height) {
+  copySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset,
+                         x, y, width, height, false, false, false);
+}
+
 // Helper macros to reduce the amount of code.
 
 #define DELEGATE_TO_GL(name, glname)                                    \
@@ -179,6 +203,14 @@ void WebGraphicsContext3DImpl::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5,  \
                                     t6 a6, t7 a7, t8 a8, t9 a9, t10 a10,\
                                     t11 a11) {                          \
   gl_->glname(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);            \
+}
+
+#define DELEGATE_TO_GL_12(name, glname, t1, t2, t3, t4, t5, t6, t7, t8, \
+                          t9, t10, t11, t12)                            \
+void WebGraphicsContext3DImpl::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5,  \
+                                    t6 a6, t7 a7, t8 a8, t9 a9, t10 a10,\
+                                    t11 a11, t12 a12) {                 \
+  gl_->glname(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);       \
 }
 
 WebGraphicsContext3DImpl::WebGraphicsContext3DImpl()
@@ -818,25 +850,31 @@ DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivEXT, WGC3Denum, WGC3Denum, WGC3Dint*)
 DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
-DELEGATE_TO_GL_5(copyTextureCHROMIUM,
+DELEGATE_TO_GL_8(copyTextureCHROMIUM,
                  CopyTextureCHROMIUM,
                  WGC3Denum,
                  WebGLId,
                  WebGLId,
                  WGC3Denum,
-                 WGC3Denum);
-
-DELEGATE_TO_GL_9(copySubTextureCHROMIUM,
-                 CopySubTextureCHROMIUM,
                  WGC3Denum,
-                 WebGLId,
-                 WebGLId,
-                 WGC3Dint,
-                 WGC3Dint,
-                 WGC3Dint,
-                 WGC3Dint,
-                 WGC3Dsizei,
-                 WGC3Dsizei);
+                 WGC3Dboolean,
+                 WGC3Dboolean,
+                 WGC3Dboolean);
+
+DELEGATE_TO_GL_12(copySubTextureCHROMIUM,
+                  CopySubTextureCHROMIUM,
+                  WGC3Denum,
+                  WebGLId,
+                  WebGLId,
+                  WGC3Dint,
+                  WGC3Dint,
+                  WGC3Dint,
+                  WGC3Dint,
+                  WGC3Dsizei,
+                  WGC3Dsizei,
+                  WGC3Dboolean,
+                  WGC3Dboolean,
+                  WGC3Dboolean);
 
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)

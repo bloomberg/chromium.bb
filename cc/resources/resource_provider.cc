@@ -1879,7 +1879,8 @@ void ResourceProvider::CopyResource(ResourceId source_id,
   dest_resource->allocated = true;
   gl->CopySubTextureCHROMIUM(dest_resource->target, source_resource->gl_id,
                              dest_resource->gl_id, rect.x(), rect.y(), rect.x(),
-                             rect.y(), rect.width(), rect.height());
+                             rect.y(), rect.width(), rect.height(),
+                             false, false, false);
   if (source_resource->gl_read_lock_query_id) {
     // End query and create a read lock fence that will prevent access to
 // source resource until CopySubTextureCHROMIUM command has completed.

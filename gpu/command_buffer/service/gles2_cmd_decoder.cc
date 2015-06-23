@@ -1035,7 +1035,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
                              GLuint source_id,
                              GLuint dest_id,
                              GLenum internal_format,
-                             GLenum dest_type);
+                             GLenum dest_type,
+                             GLboolean unpack_flip_y,
+                             GLboolean unpack_premultiply_alpha,
+                             GLboolean unpack_unmultiply_alpha);
 
   void DoCopySubTextureCHROMIUM(GLenum target,
                                 GLuint source_id,
@@ -1045,7 +1048,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                 GLint x,
                                 GLint y,
                                 GLsizei width,
-                                GLsizei height);
+                                GLsizei height,
+                                GLboolean unpack_flip_y,
+                                GLboolean unpack_premultiply_alpha,
+                                GLboolean unpack_unmultiply_alpha);
 
   void DoCompressedCopyTextureCHROMIUM(GLenum target,
                                        GLuint source_id,
@@ -12016,12 +12022,22 @@ bool GLES2DecoderImpl::ValidateCompressedCopyTextureCHROMIUM(
   return true;
 }
 
-void GLES2DecoderImpl::DoCopyTextureCHROMIUM(GLenum target,
-                                             GLuint source_id,
-                                             GLuint dest_id,
-                                             GLenum internal_format,
-                                             GLenum dest_type) {
+void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
+    GLenum target,
+    GLuint source_id,
+    GLuint dest_id,
+    GLenum internal_format,
+    GLenum dest_type,
+    GLboolean unpack_flip_y,
+    GLboolean unpack_premultiply_alpha,
+    GLboolean unpack_unmultiply_alpha) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCopyTextureCHROMIUM");
+
+  // TODO(zmo): Get rid of the following three lines when we begin to pass
+  // in meaningful data to these three arguments in blink.
+  unpack_flip_y = unpack_flip_y_;
+  unpack_premultiply_alpha = unpack_premultiply_alpha_;
+  unpack_unmultiply_alpha = unpack_unpremultiply_alpha_;
 
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
@@ -12136,8 +12152,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(GLenum target,
 
   // Try using GLImage::CopyTexSubImage when possible.
   bool unpack_premultiply_alpha_change =
-      unpack_premultiply_alpha_ ^ unpack_unpremultiply_alpha_;
-  if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change) {
+      (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
+  if (image && !unpack_flip_y && !unpack_premultiply_alpha_change) {
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
     if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(0, 0),
                                gfx::Rect(0, 0, source_width, source_height))) {
@@ -12154,30 +12170,44 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(GLenum target,
     // instead of using kIdentityMatrix crbug.com/226218.
     copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
         this, source_texture->target(), source_texture->service_id(),
-        dest_texture->service_id(), source_width, source_height, unpack_flip_y_,
-        unpack_premultiply_alpha_, unpack_unpremultiply_alpha_,
+        dest_texture->service_id(), source_width, source_height,
+        unpack_flip_y == GL_TRUE,
+        unpack_premultiply_alpha == GL_TRUE,
+        unpack_unmultiply_alpha == GL_TRUE,
         kIdentityMatrix);
   } else {
     copy_texture_CHROMIUM_->DoCopyTexture(
         this, source_texture->target(), source_texture->service_id(),
         source_internal_format, dest_texture->service_id(), internal_format,
-        source_width, source_height, unpack_flip_y_, unpack_premultiply_alpha_,
-        unpack_unpremultiply_alpha_);
+        source_width, source_height,
+        unpack_flip_y == GL_TRUE,
+        unpack_premultiply_alpha == GL_TRUE,
+        unpack_unmultiply_alpha == GL_TRUE);
   }
 
   DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
 }
 
-void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
-                                                GLuint source_id,
-                                                GLuint dest_id,
-                                                GLint xoffset,
-                                                GLint yoffset,
-                                                GLint x,
-                                                GLint y,
-                                                GLsizei width,
-                                                GLsizei height) {
+void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
+    GLenum target,
+    GLuint source_id,
+    GLuint dest_id,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean unpack_flip_y,
+    GLboolean unpack_premultiply_alpha,
+    GLboolean unpack_unmultiply_alpha) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCopySubTextureCHROMIUM");
+
+  // TODO(zmo): Get rid of the following three lines when we begin to pass
+  // in meaningful data to these three arguments in blink.
+  unpack_flip_y = unpack_flip_y_;
+  unpack_premultiply_alpha = unpack_premultiply_alpha_;
+  unpack_unmultiply_alpha = unpack_unpremultiply_alpha_;
 
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
@@ -12298,8 +12328,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
 
   // Try using GLImage::CopyTexSubImage when possible.
   bool unpack_premultiply_alpha_change =
-      unpack_premultiply_alpha_ ^ unpack_unpremultiply_alpha_;
-  if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change) {
+      (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
+  if (image && !unpack_flip_y && !unpack_premultiply_alpha_change) {
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
     if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(xoffset, yoffset),
                                gfx::Rect(x, y, width, height))) {
@@ -12315,8 +12345,10 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
       this, source_texture->target(), source_texture->service_id(),
       source_internal_format, dest_texture->service_id(), dest_internal_format,
       xoffset, yoffset, x, y, width, height, dest_width, dest_height,
-      source_width, source_height, unpack_flip_y_, unpack_premultiply_alpha_,
-      unpack_unpremultiply_alpha_);
+      source_width, source_height,
+      unpack_flip_y == GL_TRUE,
+      unpack_premultiply_alpha == GL_TRUE,
+      unpack_unmultiply_alpha == GL_TRUE);
 
   DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
 }
@@ -12372,14 +12404,6 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLenum target,
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
                        "glCompressedCopyTextureCHROMIUM",
                        "texture is immutable");
-    return;
-  }
-
-  bool unpack_premultiply_alpha_change =
-      unpack_premultiply_alpha_ ^ unpack_unpremultiply_alpha_;
-  if (unpack_flip_y_ || unpack_premultiply_alpha_change) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCompressedCopyTextureCHROMIUM",
-                       "pixel-storage multipliers are not supported");
     return;
   }
 
@@ -12494,14 +12518,12 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLenum target,
     copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
         this, source_texture->target(), source_texture->service_id(),
         dest_texture->service_id(), source_width, source_height,
-        unpack_flip_y_, unpack_premultiply_alpha_,
-        unpack_unpremultiply_alpha_, kIdentityMatrix);
+        false, false, false, kIdentityMatrix);
   } else {
     copy_texture_CHROMIUM_->DoCopyTexture(
         this, source_texture->target(), source_texture->service_id(),
         source_internal_format, dest_texture->service_id(), GL_RGBA,
-        source_width, source_height, unpack_flip_y_,
-        unpack_premultiply_alpha_, unpack_unpremultiply_alpha_);
+        source_width, source_height, false, false, false);
   }
 
   DoDidUseTexImageIfNeeded(source_texture, source_texture->target());

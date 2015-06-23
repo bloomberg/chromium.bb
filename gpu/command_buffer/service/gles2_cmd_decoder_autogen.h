@@ -4454,6 +4454,11 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
   GLint internalformat = static_cast<GLint>(c.internalformat);
   GLenum dest_type = static_cast<GLenum>(c.dest_type);
+  GLboolean unpack_flip_y = static_cast<GLboolean>(c.unpack_flip_y);
+  GLboolean unpack_premultiply_alpha =
+      static_cast<GLboolean>(c.unpack_premultiply_alpha);
+  GLboolean unpack_unmultiply_alpha =
+      static_cast<GLboolean>(c.unpack_unmultiply_alpha);
   if (!validators_->texture_internal_format.IsValid(internalformat)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopyTextureCHROMIUM",
                        "internalformat GL_INVALID_VALUE");
@@ -4464,7 +4469,9 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
                                     "dest_type");
     return error::kNoError;
   }
-  DoCopyTextureCHROMIUM(target, source_id, dest_id, internalformat, dest_type);
+  DoCopyTextureCHROMIUM(target, source_id, dest_id, internalformat, dest_type,
+                        unpack_flip_y, unpack_premultiply_alpha,
+                        unpack_unmultiply_alpha);
   return error::kNoError;
 }
 
@@ -4483,6 +4490,11 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
   GLint y = static_cast<GLint>(c.y);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
+  GLboolean unpack_flip_y = static_cast<GLboolean>(c.unpack_flip_y);
+  GLboolean unpack_premultiply_alpha =
+      static_cast<GLboolean>(c.unpack_premultiply_alpha);
+  GLboolean unpack_unmultiply_alpha =
+      static_cast<GLboolean>(c.unpack_unmultiply_alpha);
   if (width < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
                        "width < 0");
@@ -4494,7 +4506,8 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
     return error::kNoError;
   }
   DoCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset, x, y,
-                           width, height);
+                           width, height, unpack_flip_y,
+                           unpack_premultiply_alpha, unpack_unmultiply_alpha);
   return error::kNoError;
 }
 

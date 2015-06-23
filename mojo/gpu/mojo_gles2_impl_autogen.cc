@@ -1450,9 +1450,14 @@ void MojoGLES2Impl::CopyTextureCHROMIUM(GLenum target,
                                         GLenum source_id,
                                         GLenum dest_id,
                                         GLint internalformat,
-                                        GLenum dest_type) {
+                                        GLenum dest_type,
+                                        GLboolean unpack_flip_y,
+                                        GLboolean unpack_premultiply_alpha,
+                                        GLboolean unpack_unmultiply_alpha) {
   MojoGLES2MakeCurrent(context_);
-  glCopyTextureCHROMIUM(target, source_id, dest_id, internalformat, dest_type);
+  glCopyTextureCHROMIUM(target, source_id, dest_id, internalformat, dest_type,
+                        unpack_flip_y, unpack_premultiply_alpha,
+                        unpack_unmultiply_alpha);
 }
 void MojoGLES2Impl::CopySubTextureCHROMIUM(GLenum target,
                                            GLenum source_id,
@@ -1462,10 +1467,14 @@ void MojoGLES2Impl::CopySubTextureCHROMIUM(GLenum target,
                                            GLint x,
                                            GLint y,
                                            GLsizei width,
-                                           GLsizei height) {
+                                           GLsizei height,
+                                           GLboolean unpack_flip_y,
+                                           GLboolean unpack_premultiply_alpha,
+                                           GLboolean unpack_unmultiply_alpha) {
   MojoGLES2MakeCurrent(context_);
   glCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset, x, y,
-                           width, height);
+                           width, height, unpack_flip_y,
+                           unpack_premultiply_alpha, unpack_unmultiply_alpha);
 }
 void MojoGLES2Impl::CompressedCopyTextureCHROMIUM(GLenum target,
                                                   GLenum source_id,

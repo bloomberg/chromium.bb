@@ -29,6 +29,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -650,6 +651,12 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   if (needs_external_surface_)
     return false;
 
+  // TODO(zmo): Remove the casting once Copy{Sub}TextureCHROMIUM API
+  // signatures are switched over in blink.
+  gpu_blink::WebGraphicsContext3DImpl* web_graphics_context_impl =
+      reinterpret_cast<gpu_blink::WebGraphicsContext3DImpl*>(
+          web_graphics_context);
+
   scoped_refptr<VideoFrame> video_frame;
   {
     base::AutoLock auto_lock(current_frame_lock_);
@@ -664,31 +671,33 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
           mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES) ||
          (is_remote_ && mailbox_holder.texture_target == GL_TEXTURE_2D));
 
-  web_graphics_context->waitSyncPoint(mailbox_holder.sync_point);
+  web_graphics_context_impl->waitSyncPoint(mailbox_holder.sync_point);
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
-  uint32 src_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
-      mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+  uint32 src_texture =
+      web_graphics_context_impl->createAndConsumeTextureCHROMIUM(
+          mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
   // The video is stored in an unmultiplied format, so premultiply if
   // necessary.
-  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-                                    premultiply_alpha);
+  web_graphics_context_impl->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+                                         premultiply_alpha);
 
   // Application itself needs to take care of setting the right flip_y
   // value down to get the expected result.
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
-  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-  web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D, src_texture, texture,
-                                            internal_format, type);
-  web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
-  web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-                                    false);
+  web_graphics_context_impl->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
+  web_graphics_context_impl->copyTextureCHROMIUM(
+      GL_TEXTURE_2D, src_texture, texture, internal_format, type,
+      flip_y, premultiply_alpha, false);
+  web_graphics_context_impl->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
+  web_graphics_context_impl->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+                                         false);
 
-  web_graphics_context->deleteTexture(src_texture);
-  web_graphics_context->flush();
+  web_graphics_context_impl->deleteTexture(src_texture);
+  web_graphics_context_impl->flush();
 
   SyncPointClientImpl client(web_graphics_context);
   video_frame->UpdateReleaseSyncPoint(&client);
