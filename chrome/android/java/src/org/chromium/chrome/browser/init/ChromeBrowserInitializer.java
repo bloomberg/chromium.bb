@@ -83,7 +83,7 @@ public class ChromeBrowserInitializer {
     public void handlePreNativeStartup(final BrowserParts parts) {
         preInflationStartup();
         parts.preInflationStartup();
-        preInflationStatupDone();
+        preInflationStartupDone();
         parts.setContentViewAndLoadLibrary();
         postInflationStartup();
         parts.postInflationStartup();
@@ -93,7 +93,7 @@ public class ChromeBrowserInitializer {
      * This is needed for device class manager which depends on commandline args that are
      * initialized in preInflationStartup()
      */
-    private void preInflationStatupDone() {
+    private void preInflationStartupDone() {
         // Domain reliability uses significant enough memory that we should disable it on low memory
         // devices for now.
         // TODO(zbowling): remove this after domain reliability is refactored. (crbug.com/495342)
