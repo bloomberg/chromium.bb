@@ -650,9 +650,9 @@ void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSele
         client->didMatchCSS(m_webFrame, WebVector<WebString>(addedSelectors), WebVector<WebString>(removedSelectors));
 }
 
-PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+PassRefPtrWillBeRawPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
-    RefPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(frame, request, data);
+    RefPtrWillBeRawPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(frame, request, data);
     if (m_webFrame->client())
         m_webFrame->client()->didCreateDataSource(m_webFrame, ds.get());
     return ds.release();

@@ -179,6 +179,9 @@ DEFINE_TRACE(FrameLoader)
 {
     visitor->trace(m_frame);
     visitor->trace(m_progressTracker);
+    visitor->trace(m_documentLoader);
+    visitor->trace(m_provisionalDocumentLoader);
+    visitor->trace(m_policyDocumentLoader);
     visitor->trace(m_currentItem);
     visitor->trace(m_provisionalItem);
     visitor->trace(m_deferredHistoryLoad);
@@ -315,7 +318,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
 
     // DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL can cause the DocumentLoader to get deref'ed and possible destroyed,
     // so protect it with a RefPtr.
-    RefPtr<DocumentLoader> documentLoader(m_frame->document()->loader());
+    RefPtrWillBeRawPtr<DocumentLoader> documentLoader(m_frame->document()->loader());
 
     UseCounter::count(*m_frame->document(), UseCounter::ReplaceDocumentViaJavaScriptURL);
 
@@ -644,6 +647,15 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         client()->didStopLoading();
 }
 
+void FrameLoader::detachDocumentLoader(RefPtrWillBeMember<DocumentLoader>& loader)
+{
+    if (!loader)
+        return;
+
+    loader->detachFromFrame();
+    loader = nullptr;
+}
+
 void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType type, ClientRedirectPolicy clientRedirect)
 {
     // If we have a state object, we cannot also be a new navigation.
@@ -652,9 +664,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
     if (m_provisionalDocumentLoader) {
         m_provisionalDocumentLoader->stopLoading();
-        if (m_provisionalDocumentLoader)
-            m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = nullptr;
+        detachDocumentLoader(m_provisionalDocumentLoader);
         if (!m_frame->host())
             return;
     }
@@ -967,9 +977,8 @@ void FrameLoader::stopAllLoaders()
     if (m_documentLoader)
         m_documentLoader->stopLoading();
 
-    if (m_provisionalDocumentLoader)
-        m_provisionalDocumentLoader->detachFromFrame();
-    m_provisionalDocumentLoader = nullptr;
+    detachDocumentLoader(m_provisionalDocumentLoader);
+    detachDocumentLoader(m_policyDocumentLoader);
 
     m_checkTimer.stop();
     m_frame->navigationScheduler().cancel();
@@ -1009,7 +1018,7 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
 bool FrameLoader::prepareForCommit()
 {
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
-    RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
+    RefPtrWillBeRawPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
 
     if (m_documentLoader) {
         client()->dispatchWillClose();
@@ -1024,7 +1033,7 @@ bool FrameLoader::prepareForCommit()
         return false;
     if (m_documentLoader) {
         FrameNavigationDisabler navigationDisabler(m_frame);
-        m_documentLoader->detachFromFrame();
+        detachDocumentLoader(m_documentLoader);
     }
     // detachFromFrame() will abort XHRs that haven't completed, which can
     // trigger event listeners for 'abort'. These event listeners might detach
@@ -1143,9 +1152,9 @@ void FrameLoader::detach()
     // The caller must protect a reference to m_frame.
     ASSERT(m_frame->refCount() > 1);
 #endif
-    if (m_documentLoader)
-        m_documentLoader->detachFromFrame();
-    m_documentLoader = nullptr;
+    detachDocumentLoader(m_documentLoader);
+    detachDocumentLoader(m_provisionalDocumentLoader);
+    detachDocumentLoader(m_policyDocumentLoader);
 
     Frame* parent = m_frame->tree().parent();
     if (parent && parent->isLocalFrame())
@@ -1177,8 +1186,7 @@ void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const Resour
         client()->dispatchDidFailProvisionalLoad(error, historyCommitType);
         if (loader != m_provisionalDocumentLoader)
             return;
-        m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = nullptr;
+        detachDocumentLoader(m_provisionalDocumentLoader);
         m_progressTracker->progressCompleted();
     } else {
         ASSERT(loader == m_documentLoader);
@@ -1283,8 +1291,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     // stopAllLoaders can detach the LocalFrame, so protect it.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationPolicy) || !shouldClose()) && m_policyDocumentLoader) {
-        m_policyDocumentLoader->detachFromFrame();
-        m_policyDocumentLoader = nullptr;
+        detachDocumentLoader(m_policyDocumentLoader);
         return;
     }
 
@@ -1298,9 +1305,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
 
     if (m_provisionalDocumentLoader) {
         m_provisionalDocumentLoader->stopLoading();
-        if (m_provisionalDocumentLoader)
-            m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = nullptr;
+        detachDocumentLoader(m_provisionalDocumentLoader);
     }
     m_checkTimer.stop();
 

@@ -109,7 +109,7 @@ void EmptyFrameLoaderClient::dispatchWillSubmitForm(HTMLFormElement*)
 {
 }
 
-PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& substituteData)
+PassRefPtrWillBeRawPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& substituteData)
 {
     return DocumentLoader::create(frame, request, substituteData);
 }

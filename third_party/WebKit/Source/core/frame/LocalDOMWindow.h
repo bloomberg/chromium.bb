@@ -269,7 +269,7 @@ private:
     String m_status;
     String m_defaultStatus;
 
-    mutable RefPtrWillBeMember<ApplicationCache> m_applicationCache;
+    mutable PersistentWillBeMember<ApplicationCache> m_applicationCache;
 
     RefPtrWillBeMember<DOMWindowEventQueue> m_eventQueue;
     RefPtr<SerializedScriptValue> m_pendingStateObject;

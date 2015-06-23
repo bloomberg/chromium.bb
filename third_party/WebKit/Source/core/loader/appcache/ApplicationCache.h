@@ -39,14 +39,14 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 
-class ApplicationCache final : public EventTargetWithInlineData, public RefCountedWillBeNoBase<ApplicationCache>, public DOMWindowProperty {
+class ApplicationCache final : public RefCountedGarbageCollectedEventTargetWithInlineData<ApplicationCache>, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(ApplicationCache);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ApplicationCache);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 public:
-    static PassRefPtrWillBeRawPtr<ApplicationCache> create(LocalFrame* frame)
+    static ApplicationCache* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new ApplicationCache(frame));
+        return new ApplicationCache(frame);
     }
     virtual ~ApplicationCache()
     {

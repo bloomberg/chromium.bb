@@ -43,16 +43,16 @@ namespace blink {
     class ResourceRequest;
     class ResourceResponse;
 
-    class ApplicationCacheHost final : public NoBaseWillBeGarbageCollectedFinalized<ApplicationCacheHost>, public WebApplicationCacheHostClient {
+    class ApplicationCacheHost final : public GarbageCollectedFinalized<ApplicationCacheHost>, public WebApplicationCacheHostClient {
         WTF_MAKE_NONCOPYABLE(ApplicationCacheHost);
     public:
-        static PassOwnPtrWillBeRawPtr<ApplicationCacheHost> create(DocumentLoader* loader)
+        static ApplicationCacheHost* create(DocumentLoader* loader)
         {
-            return adoptPtrWillBeNoop(new ApplicationCacheHost(loader));
+            return new ApplicationCacheHost(loader);
         }
-        virtual ~ApplicationCacheHost();
 
-        void dispose();
+        virtual ~ApplicationCacheHost();
+        void detachFromDocumentLoader();
 
         // The Status numeric values are specified in the HTML5 spec.
         enum Status {
@@ -165,8 +165,8 @@ namespace blink {
             }
         };
 
-        RawPtrWillBeWeakMember<ApplicationCache> m_domApplicationCache;
-        DocumentLoader* m_documentLoader;
+        WeakMember<ApplicationCache> m_domApplicationCache;
+        RawPtrWillBeMember<DocumentLoader> m_documentLoader;
         bool m_defersEvents; // Events are deferred until after document onload.
         Vector<DeferredEvent> m_deferredEvents;
 
