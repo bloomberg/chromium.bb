@@ -11,7 +11,6 @@
     # Refers to enum CastProductType in components/metrics/proto/cast_logs.proto
     'cast_product_type%': 0,  # CAST_PRODUCT_TYPE_UNKNOWN
     'chromium_code': 1,
-    'never_lint': 1,
     'chromecast_branding%': 'Chromium',
     'disable_display%': 0,
     'enable_default_cast_graphics%': 1,
@@ -490,6 +489,7 @@
             '../base/base.gyp:base_java',
           ],
           'variables': {
+            'android_manifest_path': 'android/AndroidManifest.xml',
             'java_in_dir': 'base/java',
           },
           'includes': ['../build/java.gypi'],
@@ -500,6 +500,7 @@
           'dependencies': [
             '<(android_support_v13_target)',
             'cast_base_java',
+            'cast_shell_manifest',
             '../base/base.gyp:base_java',
             '../components/components.gyp:external_video_surface_java',
             '../content/content.gyp:content_java',
@@ -508,6 +509,7 @@
             '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {
+            'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/cast_shell_manifest/AndroidManifest.xml',
             'has_java_resources': 1,
             'java_in_dir': 'browser/android/apk',
             'resource_dir': 'browser/android/apk/res',
