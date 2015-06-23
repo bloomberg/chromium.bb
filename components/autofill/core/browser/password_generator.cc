@@ -94,7 +94,7 @@ std::string PasswordGenerator::Generate() const {
     gen_pron_pass(password, unused_hypenated_password,
                   password_length_, password_length_, mode);
     if (VerifyPassword(password))
-      break;
+      return std::string(password);
   }
 
   // If the password still isn't conforming after a few iterations, force it
