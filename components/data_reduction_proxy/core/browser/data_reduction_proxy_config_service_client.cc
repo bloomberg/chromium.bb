@@ -102,11 +102,12 @@ base::TimeDelta CalculateNextConfigRefreshTime(
 }
 
 GURL AddApiKeyToUrl(const GURL& url) {
+  GURL new_url = url;
   std::string api_key = google_apis::GetAPIKey();
-  if (api_key.empty())
-    return url;
+  if (google_apis::HasKeysConfigured() && !api_key.empty()) {
+    new_url = net::AppendOrReplaceQueryParameter(url, kApiKeyName, api_key);
+  }
 
-  GURL new_url = net::AppendOrReplaceQueryParameter(url, kApiKeyName, api_key);
   return net::AppendOrReplaceQueryParameter(new_url, "alt", "proto");
 }
 
