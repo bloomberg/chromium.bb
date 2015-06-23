@@ -27,6 +27,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gl/gl_surface.h"
 
 namespace android_webview {
 
@@ -102,6 +103,8 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
 
   media::SetMediaClientAndroid(
       new AwMediaClientAndroid(AwResource::GetConfigKeySystemUuidMapping()));
+
+  gfx::GLSurface::InitializeOneOff();
 
   // This is needed for WebView Classic backwards compatibility
   // See crbug.com/298495

@@ -683,19 +683,7 @@ int BrowserMainLoop::PreCreateThreads() {
   // It's unsafe to append the gpu command line switches to the global
   // CommandLine::ForCurrentProcess object after threads are created.
   if (UsingInProcessGpu()) {
-    bool initialize_gpu_data_manager = true;
-#if defined(OS_ANDROID)
-    if (!gfx::GLSurface::InitializeOneOff()) {
-      // Single-process Android WebView supports no gpu.
-      LOG(ERROR) << "GLSurface::InitializeOneOff failed";
-      initialize_gpu_data_manager = false;
-    }
-#endif
-
-    // Initialize the GpuDataManager before we set up the MessageLoops because
-    // otherwise we'll trigger the assertion about doing IO on the UI thread.
-    if (initialize_gpu_data_manager)
-      GpuDataManagerImpl::GetInstance()->Initialize();
+    GpuDataManagerImpl::GetInstance()->Initialize();
   }
 
 #if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
@@ -1113,29 +1101,15 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
 
-
-  // GpuDataManager for in-process initialized in PreCreateThreads.
-  bool initialize_gpu_data_manager = !UsingInProcessGpu();
 #if defined(OS_ANDROID)
   // Up the priority of the UI thread.
   base::PlatformThread::SetThreadPriority(base::PlatformThread::CurrentHandle(),
                                           base::ThreadPriority::DISPLAY);
-
-  // On Android, GLSurface::InitializeOneOff() must be called before
-  // initalizing the GpuDataManagerImpl as it uses the GL bindings.
-  // TODO(sievers): Shouldn't need to init full bindings to determine GL
-  // version/vendor strings. crbug.com/326295
-  if (initialize_gpu_data_manager) {
-    // Note InitializeOneOff is not safe either for in-process gpu after
-    // creating threads, since it may race with the gpu thread.
-    if (!gfx::GLSurface::InitializeOneOff()) {
-      LOG(FATAL) << "GLSurface::InitializeOneOff failed";
-    }
-  }
 #endif
 
-  if (initialize_gpu_data_manager)
+  if (!UsingInProcessGpu()) {
     GpuDataManagerImpl::GetInstance()->Initialize();
+  }
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;

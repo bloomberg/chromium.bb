@@ -4881,19 +4881,21 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
     WebMediaPlayerClient* client,
     media::MediaPermission* media_permission,
     blink::WebContentDecryptionModule* initial_cdm) {
-  GpuChannelHost* gpu_channel_host =
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-  if (!gpu_channel_host) {
-    LOG(ERROR) << "Failed to establish GPU channel for media player";
-    return NULL;
-  }
 
   scoped_refptr<StreamTextureFactory> stream_texture_factory;
   if (SynchronousCompositorFactory* factory =
           SynchronousCompositorFactory::GetInstance()) {
     stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
+    GpuChannelHost* gpu_channel_host =
+        RenderThreadImpl::current()->EstablishGpuChannelSync(
+            CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
+
+    if (!gpu_channel_host) {
+      LOG(ERROR) << "Failed to establish GPU channel for media player";
+      return NULL;
+    }
+
     scoped_refptr<cc_blink::ContextProviderWebContext> context_provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider();
 
