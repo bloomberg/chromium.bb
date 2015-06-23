@@ -31,7 +31,7 @@ _EXTERNS_TEMPLATE = """
 _TARGET_TEMPLATE = """
     {
       'target_name': '%s',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     }"""
 
 

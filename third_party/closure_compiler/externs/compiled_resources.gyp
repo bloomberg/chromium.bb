@@ -10,59 +10,59 @@
   'targets': [
     {
       'target_name': 'autofill_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'bookmark_manager_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'chrome_extensions',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'chrome_send',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'command_line_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'developer_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'file_manager_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'media_player_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'metrics_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'passwords_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'search_engines_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'settings_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'system_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
     {
       'target_name': 'users_private',
-      'includes': '../externs.gyp',
+      'includes': ['../externs_js.gypi'],
     },
   ],
 }
