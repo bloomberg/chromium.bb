@@ -314,6 +314,7 @@ by a child template that "extends" this file.
             android:theme="@style/MainTheme"
             android:label="@string/webapp_activity_title"
             android:documentLaunchMode="intoExisting"
+            android:windowSoftInputMode="adjustResize"
             android:persistableMode="persistNever"
             android:hardwareAccelerated="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc">
