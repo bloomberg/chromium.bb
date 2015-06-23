@@ -68,8 +68,9 @@
     [RaisesException] Element? elementFromPoint(Document document, double x, double y, boolean ignoreClipping, boolean allowChildFrameContent);
     [RaisesException] void clearHitTestCache(Document document);
 
-    // CSS Animation and Transition testing.
+    // Animation testing.
     [RaisesException] void pauseAnimations(double pauseTime);
+    bool isCompositedAnimation(Animation animation);
 
     // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame time
     // for testing whether animated images work properly.

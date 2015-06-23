@@ -109,8 +109,9 @@ public:
     size_t countElementShadow(const Node*, ExceptionState&) const;
     const AtomicString& shadowPseudoId(Element*);
 
-    // CSS Animation / Transition testing.
+    // Animation testing.
     void pauseAnimations(double pauseTime, ExceptionState&);
+    bool isCompositedAnimation(Animation*);
 
     // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame time
     // for testing whether animated images work properly.

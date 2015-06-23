@@ -7,25 +7,20 @@ div {
 }
 
 #expectation {
-    font-size: 50px;
     background: red;
-    transform: translate(1em, 1em);
-}
-
-#target {
-    font-size: 1px;
-    background: green;
+    transform: translate(50px, 50px);
 }
 </style>
 <div id="expectation"></div>
-<div id="target"></div>
 <script>
-target.style.fontSize = "50px";
+var target = document.createElement('div');
+target.style.background = 'green';
 target.animate([
-  {transform: "translate(1em, 1em)"},
-  {transform: "translate(1em, 1em)"},
+  {transform: "translate(50px, 50px)"},
+  {transform: "translate(50px, 50px)"},
 ], {
   duration: 1000,
   iterations: Infinity,
 });
+document.body.appendChild(target);
 </script>

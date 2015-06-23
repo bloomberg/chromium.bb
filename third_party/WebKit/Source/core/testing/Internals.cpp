@@ -472,6 +472,11 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
     frame()->document()->timeline().pauseAnimationsForTesting(pauseTime);
 }
 
+bool Internals::isCompositedAnimation(Animation* animation)
+{
+    return animation->hasActiveAnimationsOnCompositor();
+}
+
 void Internals::advanceTimeForImage(Element* image, double deltaTimeInSeconds, ExceptionState& exceptionState)
 {
     ASSERT(image);

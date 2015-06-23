@@ -199,9 +199,8 @@ PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const
         return nullptr;
 
     // TODO(alancutter): Remove this once composited animations no longer depend on AnimatableValues.
-    if (!element->inActiveDocument())
-        return nullptr;
-    element->document().updateLayoutTreeForNodeIfNeeded(element);
+    if (element->inActiveDocument())
+        element->document().updateLayoutTreeForNodeIfNeeded(element);
 
     StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
     StringKeyframeVector keyframes;

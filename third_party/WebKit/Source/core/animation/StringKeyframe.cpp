@@ -117,7 +117,7 @@ StringKeyframe::CSSPropertySpecificKeyframe::CSSPropertySpecificKeyframe(double 
 
 void StringKeyframe::CSSPropertySpecificKeyframe::populateAnimatableValue(CSSPropertyID property, Element& element, const ComputedStyle* baseStyle) const
 {
-    if (!m_animatableValueCache && (baseStyle || !m_value->isInheritedValue()))
+    if (!m_animatableValueCache && (baseStyle || !DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(*m_value)))
         m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, property, m_value.get());
 }
 
