@@ -348,8 +348,7 @@ class RendererSandboxedProcessLauncherDelegate
   void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
     AddBaseHandleClosePolicy(policy);
 
-    if (base::win::GetVersion() == base::win::VERSION_WIN8 ||
-        base::win::GetVersion() == base::win::VERSION_WIN8_1) {
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
       const base::CommandLine& command_line =
           *base::CommandLine::ForCurrentProcess();
       if (!command_line.HasSwitch(switches::kDisableAppContainer)) {
