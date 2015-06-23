@@ -81,6 +81,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
       size_t bytes);
   virtual size_t maxDecodedImageBytes();
+  virtual uint32_t getUniqueIdForProcess();
   virtual blink::WebURLLoader* createURLLoader();
   virtual blink::WebSocketHandle* createWebSocketHandle();
   virtual blink::WebString userAgent();

@@ -54,6 +54,7 @@ class BlinkPlatformImpl : public blink::Platform {
                                              size_t length);
   virtual bool isThreadedCompositingEnabled();
   virtual blink::WebCompositorSupport* compositorSupport();
+  uint32_t getUniqueIdForProcess() override;
   void createMessageChannel(blink::WebMessagePortChannel** channel1,
                             blink::WebMessagePortChannel** channel2) override;
   virtual blink::WebURLLoader* createURLLoader();

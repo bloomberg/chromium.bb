@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/html_viewer/blink_resource_constants.h"
 #include "components/html_viewer/web_clipboard_impl.h"
 #include "components/html_viewer/web_cookie_jar_impl.h"
@@ -131,6 +132,12 @@ bool BlinkPlatformImpl::isThreadedCompositingEnabled() {
 
 blink::WebCompositorSupport* BlinkPlatformImpl::compositorSupport() {
   return &compositor_support_;
+}
+
+uint32_t BlinkPlatformImpl::getUniqueIdForProcess() {
+  // TODO(rickyz): Replace this with base::GetUniqueIdForProcess when that's
+  // ready.
+  return base::trace_event::TraceLog::GetInstance()->process_id();
 }
 
 void BlinkPlatformImpl::createMessageChannel(

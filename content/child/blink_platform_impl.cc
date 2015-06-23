@@ -30,6 +30,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/trace_event.h"
 #include "blink/public/resources/grit/blink_image_resources.h"
 #include "blink/public/resources/grit/blink_resources.h"
 #include "components/mime_util/mime_util.h"
@@ -1302,6 +1303,12 @@ size_t BlinkPlatformImpl::maxDecodedImageBytes() {
 #else
   return noDecodedImageByteLimit;
 #endif
+}
+
+uint32_t BlinkPlatformImpl::getUniqueIdForProcess() {
+  // TODO(rickyz): Replace this with base::GetUniqueIdForProcess when that's
+  // ready.
+  return base::trace_event::TraceLog::GetInstance()->process_id();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
