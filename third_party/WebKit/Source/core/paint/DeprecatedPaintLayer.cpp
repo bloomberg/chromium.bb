@@ -1266,11 +1266,6 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
     const LayoutBoxModelObject* layoutObject = layer->layoutObject();
     EPosition position = layoutObject->style()->position();
 
-    // FIXME: Positioning of out-of-flow(fixed, absolute) elements collected in a LayoutFlowThread
-    // may need to be revisited in a future patch.
-    // If the fixed layoutObject is inside a LayoutFlowThread, we should not compute location using localToAbsolute,
-    // since localToAbsolute maps the coordinates from flow thread to column set coordinates and column sets can be
-    // positioned in a completely different place in the viewport (LayoutView).
     if (position == FixedPosition && (!ancestorLayer || ancestorLayer == layoutObject->view()->layer())) {
         // If the fixed layer's container is the root, just add in the offset of the view. We can obtain this by calling
         // localToAbsolute() on the LayoutView.
@@ -1279,9 +1274,6 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
         return ancestorLayer;
     }
 
-    // For the fixed positioned elements inside a layout flow thread, we should also skip the code path below
-    // Otherwise, for the case of ancestorLayer == rootLayer and fixed positioned element child of a transformed
-    // element in layout flow thread, we will hit the fixed positioned container before hitting the ancestor layer.
     if (position == FixedPosition) {
         // For a fixed layers, we need to walk up to the root to see if there's a fixed position container
         // (e.g. a transformed layer). It's an error to call convertToLayerCoords() across a layer with a transform,
@@ -1332,9 +1324,6 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
         parentLayer = layer->parent();
         bool foundAncestorFirst = false;
         while (parentLayer) {
-            // LayoutFlowThread is a positioned container, child of LayoutView, positioned at (0,0).
-            // This implies that, for out-of-flow positioned elements inside a LayoutFlowThread,
-            // we are bailing out before reaching root layer.
             if (parentLayer->isPositionedContainer())
                 break;
 
@@ -1345,10 +1334,6 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
 
             parentLayer = parentLayer->parent();
         }
-
-        // We should not reach LayoutView layer past the LayoutFlowThread layer for any
-        // children of the LayoutFlowThread.
-        ASSERT(!layoutObject->flowThreadContainingBlock() || parentLayer != layoutObject->view()->layer());
 
         if (foundAncestorFirst) {
             // Found ancestorLayer before the abs. positioned container, so compute offset of both relative
