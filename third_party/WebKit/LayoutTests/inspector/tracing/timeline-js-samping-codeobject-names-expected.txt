@@ -1,0 +1,14 @@
+ => ,,456,0,0
+Script: => ,,456,0,0
+Script:http://example.com/alina? => ,http://example.com/alina?,456,0,0
+Script:http://example.com/:1 => ,http://example.com/,456,0,0
+Script:http://example.com/:1:2 => ,http://example.com/,456,0,1
+Script:http://example.com/:1:2:3 => ,http://example.com/:1,456,1,2
+Script:http://example.com/:1:2:3x:4 => ,http://example.com/:1:2:3x,456,3,0
+Builtin:~foo1 http://url.com/foo.js => foo1,http://url.com/foo.js,456,0,0
+Builtin:~foo2 http://url.com/foo.js:11 => foo2,http://url.com/foo.js,456,10,0
+Builtin:*foo3 http://url.com/foo.js:11:22 => foo3,http://url.com/foo.js,456,10,21
+Builtin:foo4 http://url.com/foo.js:11:22:33 => foo4,http://url.com/foo.js:11,456,21,32
+Builtin:~ http://url.com/anonymous.js:123 => ,http://url.com/anonymous.js,456,122,0
+Builtin:~function name with spaces http://url.com/anonymous.js:123 => function name with spaces,http://url.com/anonymous.js,456,122,0
+
