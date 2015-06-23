@@ -518,7 +518,7 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
     // latter causes non-profile taskbar shortcuts to be removed since it
     // doesn't consider the command-line of the shortcuts it deletes.
     // TODO(huangs): Refactor with ShellUtil::RemoveShortcuts().
-    base::win::TaskbarUnpinShortcutLink(shortcuts[i].value().c_str());
+    base::win::TaskbarUnpinShortcutLink(shortcuts[i]);
     base::DeleteFile(shortcuts[i], false);
     // Notify the shell that the shortcut was deleted to ensure desktop refresh.
     SHChangeNotify(SHCNE_DELETE, SHCNF_PATH, shortcuts[i].value().c_str(),

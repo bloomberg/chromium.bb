@@ -1398,7 +1398,7 @@ typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/)>
 
 bool ShortcutOpUnpin(const base::FilePath& shortcut_path) {
   VLOG(1) << "Trying to unpin " << shortcut_path.value();
-  if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
+  if (!base::win::TaskbarUnpinShortcutLink(shortcut_path)) {
     VLOG(1) << shortcut_path.value() << " wasn't pinned (or the unpin failed).";
     // No error, since shortcut might not be pinned.
   }
@@ -1768,10 +1768,8 @@ bool ShellUtil::CreateOrUpdateShortcut(
   if (ret && shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
       properties.pin_to_taskbar &&
       base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    ret = base::win::TaskbarPinShortcutLink(chosen_path->value().c_str());
-    if (!ret) {
-      LOG(ERROR) << "Failed to pin " << chosen_path->value();
-    }
+    ret = base::win::TaskbarPinShortcutLink(*chosen_path);
+    LOG_IF(ERROR, !ret) << "Failed to pin " << chosen_path->value();
   }
 
   return ret;

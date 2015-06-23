@@ -329,7 +329,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
          j != shortcut_files.end(); ++j) {
       // Any shortcut could have been pinned, either by chrome or the user, so
       // they are all unpinned.
-      base::win::TaskbarUnpinShortcutLink(j->value().c_str());
+      base::win::TaskbarUnpinShortcutLink(*j);
       base::DeleteFile(*j, false);
     }
   }
@@ -617,7 +617,7 @@ bool CreatePlatformShortcuts(
     // in the application name.
     base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
         AddExtension(installer::kLnkExt);
-    if (!base::win::TaskbarPinShortcutLink(shortcut_to_pin.value().c_str()))
+    if (!base::win::TaskbarPinShortcutLink(shortcut_to_pin))
       return false;
   }
 
@@ -662,7 +662,7 @@ void UpdatePlatformShortcuts(
       // numbers in the application name.
       base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
           AddExtension(installer::kLnkExt);
-      base::win::TaskbarPinShortcutLink(shortcut_to_pin.value().c_str());
+      base::win::TaskbarPinShortcutLink(shortcut_to_pin);
     }
   }
 
