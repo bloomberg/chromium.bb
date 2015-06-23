@@ -27,6 +27,10 @@ class MediaInitializer {
     InitializeCPUSpecificYUVConversions();
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
+    // Initialize CPU flags outside of the sandbox as this may query /proc for
+    // details on the current CPU for NEON, VFP, etc optimizations.
+    av_get_cpu_flags();
+
     // Disable logging as it interferes with layout tests.
     av_log_set_level(AV_LOG_QUIET);
 
