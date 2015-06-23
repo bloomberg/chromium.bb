@@ -777,6 +777,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     const base::string16& field_contents,
     bool field_is_autofilled,
     const std::vector<ServerFieldType>& other_field_types) {
+  if (IsInAutofillSuggestionsDisabledExperiment())
+    return std::vector<Suggestion>();
+
   base::string16 field_contents_canon =
       AutofillProfile::CanonicalizeProfileString(field_contents);
 
@@ -847,6 +850,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
 std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     const AutofillType& type,
     const base::string16& field_contents) {
+  if (IsInAutofillSuggestionsDisabledExperiment())
+    return std::vector<Suggestion>();
+
   std::list<const CreditCard*> cards_to_suggest;
   for (const CreditCard* credit_card : GetCreditCards()) {
     // The value of the stored data for this field type in the |credit_card|.

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -95,7 +96,8 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
   query_id_ = query_id;
   autofill_suggestions_ = suggestions;
   if (!autofill_client_->IsAutocompleteEnabled() ||
-      form_control_type == "textarea") {
+      form_control_type == "textarea" ||
+      IsInAutofillSuggestionsDisabledExperiment()) {
     SendSuggestions(NULL);
     return;
   }

@@ -50006,7 +50006,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Submitted fillable form, autofilled all"/>
   <int value="2" label="Submitted fillable form, autofilled some"/>
   <int value="3" label="Submitted fillable form, autofilled none"/>
-  <int value="4" label="Submitted non-fillable form"/>
+  <int value="4" label="Submitted non-fillable form or new data"/>
   <int value="5" label="User did type"/>
   <int value="6" label="Suggestions shown"/>
   <int value="7" label="Suggestions shown (once)"/>

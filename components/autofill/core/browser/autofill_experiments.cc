@@ -13,13 +13,13 @@
 namespace autofill {
 
 bool IsAutofillEnabled(const PrefService* pref_service) {
+  return pref_service->GetBoolean(prefs::kAutofillEnabled);
+}
+
+bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
-  if (group_name == "Disabled")  // Assume enabled when no experiment.
-    return false;
-
-  // When experiment enables autofill, fall back on the user pref.
-  return pref_service->GetBoolean(prefs::kAutofillEnabled);
+  return group_name == "Disabled";
 }
 
 bool OfferStoreUnmaskedCards() {

@@ -225,7 +225,9 @@ class AutofillMetrics {
     SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME,
     // Submitted a fillable form and no fields were autofilled.
     SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE,
-    // Submitted a non-fillable form.
+    // Submitted a non-fillable form. This also counts entering new data into
+    // a form with identified fields. Because we didn't have the data the user
+    // wanted, from the user's perspective, the form was not autofillable.
     SUBMITTED_NON_FILLABLE_FORM,
 
     // User manually filled one of the form fields.
