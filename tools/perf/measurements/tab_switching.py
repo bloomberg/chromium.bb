@@ -81,8 +81,7 @@ class TabSwitching(page_test.PageTest):
         histogram_type, histogram_name, tab)
     prev_histogram = first_histogram
 
-    for i in xrange(len(tab.browser.tabs)):
-      t = tab.browser.tabs[i]
+    for t in tab.browser.tabs:
       t.Activate()
       def _IsDone():
         cur_histogram = histogram_util.GetHistogram(
