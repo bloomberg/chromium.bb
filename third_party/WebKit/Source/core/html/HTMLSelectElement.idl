@@ -29,8 +29,7 @@ interface HTMLSelectElement : HTMLElement {
     attribute boolean multiple;
     [Reflect] attribute DOMString name;
     [Reflect] attribute boolean required;
-    // TODO(philipj): size should be unsigned long.
-    attribute long size;
+    attribute unsigned long size;
 
     readonly attribute DOMString type;
 

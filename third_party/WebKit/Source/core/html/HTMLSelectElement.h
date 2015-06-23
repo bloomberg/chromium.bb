@@ -62,7 +62,7 @@ public:
 
     unsigned length() const;
 
-    int size() const { return m_size; }
+    unsigned size() const { return m_size; }
     bool multiple() const { return m_multiple; }
 
     bool usesMenuList() const;
@@ -93,7 +93,7 @@ public:
 
     void setMultiple(bool);
 
-    void setSize(int);
+    void setSize(unsigned);
 
     void setOption(unsigned index, HTMLOptionElement*, ExceptionState&);
     void setLength(unsigned, ExceptionState&);
@@ -223,7 +223,7 @@ private:
     Vector<bool> m_lastOnChangeSelection;
     Vector<bool> m_cachedStateForActiveSelection;
     TypeAhead m_typeAhead;
-    int m_size;
+    unsigned m_size;
     int m_lastOnChangeIndex;
     int m_activeSelectionAnchorIndex;
     int m_activeSelectionEndIndex;

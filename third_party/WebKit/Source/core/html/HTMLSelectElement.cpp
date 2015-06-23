@@ -329,17 +329,17 @@ bool HTMLSelectElement::isPresentationAttribute(const QualifiedName& name) const
 void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == sizeAttr) {
-        int oldSize = m_size;
+        unsigned oldSize = m_size;
         // Set the attribute value to a number.
         // This is important since the style rules for this attribute can determine the appearance property.
-        int size = value.toInt();
+        unsigned size = value.string().toUInt();
         AtomicString attrSize = AtomicString::number(size);
         if (attrSize != value) {
             // FIXME: This is horribly factored.
             if (Attribute* sizeAttribute = ensureUniqueElementData().attributes().find(sizeAttr))
                 sizeAttribute->setValue(attrSize);
         }
-        size = std::max(size, 0);
+        size = std::max(size, 0u);
 
         // Ensure that we've determined selectedness of the items at least once prior to changing the size.
         if (oldSize != size)
@@ -444,9 +444,9 @@ void HTMLSelectElement::setMultiple(bool multiple)
         setSelectedIndex(oldSelectedIndex);
 }
 
-void HTMLSelectElement::setSize(int size)
+void HTMLSelectElement::setSize(unsigned size)
 {
-    setIntegralAttribute(sizeAttr, size);
+    setUnsignedIntegralAttribute(sizeAttr, size);
 }
 
 Element* HTMLSelectElement::namedItem(const AtomicString& name)

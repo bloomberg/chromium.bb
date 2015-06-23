@@ -42,7 +42,7 @@ public:
     explicit LayoutListBox(Element*);
     virtual ~LayoutListBox();
 
-    int size() const;
+    unsigned size() const;
 
     // Unlike scrollRectToVisible this will not scroll parent boxes.
     void scrollToRect(const LayoutRect&);

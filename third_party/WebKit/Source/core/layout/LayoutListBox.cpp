@@ -86,9 +86,9 @@ inline HTMLSelectElement* LayoutListBox::selectElement() const
     return toHTMLSelectElement(node());
 }
 
-int LayoutListBox::size() const
+unsigned LayoutListBox::size() const
 {
-    int specifiedSize = selectElement()->size();
+    unsigned specifiedSize = selectElement()->size();
     if (specifiedSize >= 1)
         return specifiedSize;
 
