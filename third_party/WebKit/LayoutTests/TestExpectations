@@ -1607,6 +1607,21 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailur
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
 
+crbug.com/497950 [ XP ] tables/mozilla/bugs/bug33137.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/bugs/bug727.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/bugs/bug42187.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/bugs/bug1067-2.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla_expected_failures/core/conflicts.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/core/col_widths_fix_fix.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/bugs/bug14929.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/core/misc.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/bugs/bug1188.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/core/col_widths_fix_autoFix.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/core/table_widths.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla/bugs/bug625.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla_expected_failures/bugs/97619.html [ NeedsRebaseline ]
+crbug.com/497950 [ XP ] tables/mozilla_expected_failures/bugs/bug1647.html [ NeedsRebaseline ]
+
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 
