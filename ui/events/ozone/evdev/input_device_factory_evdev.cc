@@ -262,6 +262,9 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   converters_.erase(path);
 
   if (converter) {
+    // Disable the device (to release keys/buttons/etc).
+    converter->SetEnabled(false);
+
     // Cancel libevent notifications from this converter. This part must be
     // on UI since the polling happens on UI.
     converter->Stop();
@@ -275,7 +278,6 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
         base::Bind(&CloseInputDevice, path, base::Passed(&converter)), true);
   }
 }
-
 
 void InputDeviceFactoryEvdev::SetCapsLockLed(bool enabled) {
   caps_lock_led_enabled_ = enabled;
@@ -340,7 +342,7 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
   for (const auto& it : converters_) {
     EventConverterEvdev* converter = it.second;
-    converter->set_ignore_events(!IsDeviceEnabled(converter));
+    converter->SetEnabled(IsDeviceEnabled(converter));
 
     if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
         converter->HasKeyboard()) {

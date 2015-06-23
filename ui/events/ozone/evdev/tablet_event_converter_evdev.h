@@ -70,6 +70,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   // Whether we need to move the cursor
   bool abs_value_dirty_ = false;
 
+  // Set if we drop events in kernel (SYN_DROPPED) or in process.
+  bool dropped_events_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TabletEventConverterEvdev);
 };
 

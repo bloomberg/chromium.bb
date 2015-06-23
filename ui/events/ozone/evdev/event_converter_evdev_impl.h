@@ -44,7 +44,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   bool HasCapsLockLed() const override;
   void SetKeyFilter(bool enable_filter,
                     std::vector<DomCode> allowed_keys) override;
-  void OnStopped() override;
+  void OnDisabled() override;
 
   void ProcessEvents(const struct input_event* inputs, int count);
 

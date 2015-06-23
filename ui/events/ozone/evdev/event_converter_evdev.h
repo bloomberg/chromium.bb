@@ -40,16 +40,24 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   const InputDevice& input_device() const { return input_device_; }
 
-  void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
-
   // Start reading events.
   void Start();
 
   // Stop reading events.
   void Stop();
 
+  // Enable or disable this device. A disabled device still polls for
+  // input and can update state but must not dispatch any events to UI.
+  void SetEnabled(bool enabled);
+
   // Cleanup after we stop reading events (release buttons, etc).
   virtual void OnStopped();
+
+  // Prepare for disable (e.g. should release keys/buttons/touches).
+  virtual void OnDisabled();
+
+  // Start or restart (e.g. should reapply keys/buttons/touches).
+  virtual void OnEnabled();
 
   // Returns true if the converter is used for a keyboard device.
   virtual bool HasKeyboard() const;
@@ -99,8 +107,11 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // event converter) and type.
   InputDevice input_device_;
 
-  // Whether events from the device should be ignored.
-  bool ignore_events_ = false;
+  // Whether we're polling for input on the device.
+  bool watching_ = false;
+
+  // Whether events should be dispatched to UI.
+  bool enabled_ = false;
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

@@ -38,8 +38,6 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
 }
 
 TabletEventConverterEvdev::~TabletEventConverterEvdev() {
-  Stop();
-  close(fd_);
 }
 
 void TabletEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
@@ -58,7 +56,7 @@ void TabletEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  if (ignore_events_)
+  if (!enabled_)
     return;
 
   DCHECK_EQ(read_size % sizeof(*inputs), 0u);

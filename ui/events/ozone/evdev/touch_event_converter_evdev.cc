@@ -104,8 +104,6 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
-  Stop();
-  close(fd_);
 }
 
 void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
@@ -188,13 +186,16 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   }
 }
 
-bool TouchEventConverterEvdev::Reinitialize() {
+void TouchEventConverterEvdev::Reinitialize() {
   EventDeviceInfo info;
-  if (info.Initialize(fd_)) {
-    Initialize(info);
-    return true;
+  if (!info.Initialize(fd_)) {
+    LOG(ERROR) << "Failed to synchronize state for touch device: "
+               << path_.value();
+    Stop();
+    return;
   }
-  return false;
+
+  Initialize(info);
 }
 
 bool TouchEventConverterEvdev::HasTouchscreen() const {
@@ -209,7 +210,11 @@ int TouchEventConverterEvdev::GetTouchPoints() const {
   return touch_points_;
 }
 
-void TouchEventConverterEvdev::OnStopped() {
+void TouchEventConverterEvdev::OnEnabled() {
+  ReportEvents(EventTimeForNow());
+}
+
+void TouchEventConverterEvdev::OnDisabled() {
   ReleaseTouches();
 }
 
@@ -229,8 +234,10 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  if (ignore_events_)
+  if (!enabled_) {
+    dropped_events_ = true;
     return;
+  }
 
   for (unsigned i = 0; i < read_size / sizeof(*inputs); i++) {
     if (!has_mt_) {
@@ -247,7 +254,7 @@ void TouchEventConverterEvdev::ProcessMultitouchEvent(
     const input_event& input) {
   if (input.type == EV_SYN) {
     ProcessSyn(input);
-  } else if (syn_dropped_) {
+  } else if (dropped_events_) {
     // Do nothing. This branch indicates we have lost sync with the driver.
   } else if (input.type == EV_ABS) {
     if (events_.size() <= current_slot_) {
@@ -337,21 +344,12 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
 void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
   switch (input.code) {
     case SYN_REPORT:
-      if (syn_dropped_) {
-        // Have to re-initialize.
-        if (Reinitialize()) {
-          syn_dropped_ = false;
-        } else {
-          LOG(ERROR) << "failed to re-initialize device info";
-        }
-      } else {
-        ReportEvents(EventConverterEvdev::TimeDeltaFromInputEvent(input));
-      }
+      ReportEvents(EventConverterEvdev::TimeDeltaFromInputEvent(input));
       break;
     case SYN_DROPPED:
       // Some buffer has overrun. We ignore all events up to and
       // including the next SYN_REPORT.
-      syn_dropped_ = true;
+      dropped_events_ = true;
       break;
     default:
       NOTIMPLEMENTED() << "invalid code for EV_SYN: " << input.code;
@@ -384,6 +382,11 @@ void TouchEventConverterEvdev::ReportEvent(const InProgressTouchEvdev& event,
 }
 
 void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
+  if (dropped_events_) {
+    Reinitialize();
+    dropped_events_ = false;
+  }
+
   if (touch_noise_finder_)
     touch_noise_finder_->HandleTouches(events_, delta);
 

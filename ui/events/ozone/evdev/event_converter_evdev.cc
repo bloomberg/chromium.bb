@@ -26,21 +26,40 @@ EventConverterEvdev::EventConverterEvdev(int fd,
 }
 
 EventConverterEvdev::~EventConverterEvdev() {
-  Stop();
+  DCHECK(!enabled_);
+  DCHECK(!watching_);
+  if (fd_ >= 0)
+    close(fd_);
 }
 
 void EventConverterEvdev::Start() {
   base::MessageLoopForUI::current()->WatchFileDescriptor(
       fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
+  watching_ = true;
 }
 
 void EventConverterEvdev::Stop() {
   controller_.StopWatchingFileDescriptor();
+  watching_ = false;
+}
 
-  OnStopped();
+void EventConverterEvdev::SetEnabled(bool enabled) {
+  if (enabled == enabled_)
+    return;
+  if (enabled)
+    OnEnabled();
+  else
+    OnDisabled();
+  enabled_ = enabled;
 }
 
 void EventConverterEvdev::OnStopped() {
+}
+
+void EventConverterEvdev::OnEnabled() {
+}
+
+void EventConverterEvdev::OnDisabled() {
 }
 
 void EventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {

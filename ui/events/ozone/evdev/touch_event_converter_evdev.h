@@ -38,7 +38,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   bool HasTouchscreen() const override;
   gfx::Size GetTouchscreenSize() const override;
   int GetTouchPoints() const override;
-  void OnStopped() override;
+  void OnEnabled() override;
+  void OnDisabled() override;
 
   // Unsafe part of initialization.
   virtual void Initialize(const EventDeviceInfo& info);
@@ -49,7 +50,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Overidden from base::MessagePumpLibevent::Watcher.
   void OnFileCanReadWithoutBlocking(int fd) override;
 
-  virtual bool Reinitialize();
+  virtual void Reinitialize();
 
   void ProcessMultitouchEvent(const input_event& input);
   void EmulateMultitouchEvent(const input_event& input);
@@ -77,8 +78,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Dispatcher for events.
   DeviceEventDispatcherEvdev* dispatcher_;
 
-  // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
-  bool syn_dropped_ = false;
+  // Set if we drop events in kernel (SYN_DROPPED) or in process.
+  bool dropped_events_ = false;
 
   // Device has multitouch capability.
   bool has_mt_ = false;

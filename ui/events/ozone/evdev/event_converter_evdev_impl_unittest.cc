@@ -36,9 +36,9 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                                 EventDeviceInfo(),
                                 cursor,
                                 dispatcher) {
-    Start();
+    SetEnabled(true);
   }
-  ~MockEventConverterEvdevImpl() override {}
+  ~MockEventConverterEvdevImpl() override { SetEnabled(false); }
 
   // EventConverterEvdevImpl:
   bool HasKeyboard() const override { return true; }
@@ -540,6 +540,30 @@ TEST_F(EventConverterEvdevImplTest, ShouldReleaseKeysOnSynDropped) {
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_A, event->key_code());
 }
+
+TEST_F(EventConverterEvdevImplTest, ShouldReleaseKeysOnDisable) {
+  ui::MockEventConverterEvdevImpl* dev = device();
+
+  struct input_event mock_kernel_queue[] = {
+      {{0, 0}, EV_KEY, KEY_A, 1},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+  EXPECT_EQ(1u, size());
+
+  dev->SetEnabled(false);
+  EXPECT_EQ(2u, size());
+
+  ui::KeyEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
+  EXPECT_EQ(ui::VKEY_A, event->key_code());
+}
+
 
 // Test that SetAllowedKeys() causes events for non-allowed keys to be dropped.
 TEST_F(EventConverterEvdevImplTest, SetAllowedKeys) {

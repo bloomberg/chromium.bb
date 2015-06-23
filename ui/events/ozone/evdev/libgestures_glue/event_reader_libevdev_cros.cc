@@ -64,8 +64,9 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
 }
 
 EventReaderLibevdevCros::~EventReaderLibevdevCros() {
-  Stop();
+  DCHECK(!watching_);
   EvdevClose(&evdev_);
+  fd_ = -1;
 }
 
 EventReaderLibevdevCros::Delegate::~Delegate() {}
@@ -100,7 +101,7 @@ bool EventReaderLibevdevCros::HasCapsLockLed() const {
   return has_caps_lock_led_;
 }
 
-void EventReaderLibevdevCros::OnStopped() {
+void EventReaderLibevdevCros::OnDisabled() {
   delegate_->OnLibEvdevCrosStopped(&evdev_, &evstate_);
 }
 
@@ -109,7 +110,7 @@ void EventReaderLibevdevCros::OnSynReport(void* data,
                                           EventStateRec* evstate,
                                           struct timeval* tv) {
   EventReaderLibevdevCros* reader = static_cast<EventReaderLibevdevCros*>(data);
-  if (reader->ignore_events_)
+  if (!reader->enabled_)
     return;
 
   reader->delegate_->OnLibEvdevCrosEvent(&reader->evdev_, evstate, *tv);

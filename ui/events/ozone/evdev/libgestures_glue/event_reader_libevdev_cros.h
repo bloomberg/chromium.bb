@@ -53,7 +53,7 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
   bool HasMouse() const override;
   bool HasTouchpad() const override;
   bool HasCapsLockLed() const override;
-  void OnStopped() override;
+  void OnDisabled() override;
 
  private:
   static void OnSynReport(void* data,

@@ -47,7 +47,7 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
 }
 
 EventConverterEvdevImpl::~EventConverterEvdevImpl() {
-  Stop();
+  DCHECK(!enabled_);
   close(fd_);
 }
 
@@ -66,9 +66,7 @@ void EventConverterEvdevImpl::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  // TODO(spang): Re-implement this by releasing buttons & temporarily closing
-  // the device.
-  if (ignore_events_)
+  if (!enabled_)
     return;
 
   DCHECK_EQ(read_size % sizeof(*inputs), 0u);
@@ -109,7 +107,7 @@ void EventConverterEvdevImpl::SetKeyFilter(bool enable_filter,
   }
 }
 
-void EventConverterEvdevImpl::OnStopped() {
+void EventConverterEvdevImpl::OnDisabled() {
   ReleaseKeys();
   ReleaseMouseButtons();
 }

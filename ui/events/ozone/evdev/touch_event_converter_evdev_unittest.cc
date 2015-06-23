@@ -61,7 +61,7 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
                                base::FilePath path,
                                const EventDeviceInfo& devinfo,
                                DeviceEventDispatcherEvdev* dispatcher);
-  ~MockTouchEventConverterEvdev() override {}
+  ~MockTouchEventConverterEvdev() override;
 
   void ConfigureReadMock(struct input_event* queue,
                          long read_this_many,
@@ -73,7 +73,11 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
     base::RunLoop().RunUntilIdle();
   }
 
-  bool Reinitialize() override { return true; }
+  void SimulateReinitialize(const EventDeviceInfo& devinfo) {
+    Initialize(devinfo);
+  }
+
+  void Reinitialize() override {}
 
   TouchNoiseFinder* touch_noise_finder() { return touch_noise_finder_.get(); }
 
@@ -141,6 +145,12 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(
   events_.resize(ui::kNumTouchEvdevSlots);
   for (size_t i = 0; i < events_.size(); ++i)
     events_[i].slot = i;
+
+  SetEnabled(true);
+}
+
+MockTouchEventConverterEvdev::~MockTouchEventConverterEvdev() {
+  SetEnabled(false);
 }
 
 void MockTouchEventConverterEvdev::ConfigureReadMock(struct input_event* queue,
@@ -546,6 +556,69 @@ TEST_F(TouchEventConverterEvdevTest, ShouldReleaseContactsOnStop) {
   ui::TouchEventParams ev2 = dispatched_event(1);
   EXPECT_EQ(ET_TOUCH_RELEASED, ev2.type);
   EXPECT_EQ(0, ev2.slot);
+}
+
+TEST_F(TouchEventConverterEvdevTest, ShouldRemoveContactsWhenDisabled) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  EventDeviceInfo devinfo;
+  EXPECT_TRUE(CapabilitiesToDeviceInfo(kLinkTouchscreen, &devinfo));
+
+  // Captured from Chromebook Pixel (Link).
+  timeval time;
+  time = {1429651083, 686882};
+  struct input_event mock_kernel_queue_press[] = {
+      {time, EV_ABS, ABS_MT_TRACKING_ID, 0},
+      {time, EV_ABS, ABS_MT_POSITION_X, 1003},
+      {time, EV_ABS, ABS_MT_POSITION_Y, 749},
+      {time, EV_ABS, ABS_MT_PRESSURE, 50},
+      {time, EV_ABS, ABS_MT_TOUCH_MAJOR, 116},
+      {time, EV_KEY, BTN_TOUCH, 1},
+      {time, EV_ABS, ABS_X, 1003},
+      {time, EV_ABS, ABS_Y, 749},
+      {time, EV_ABS, ABS_PRESSURE, 50},
+      {time, EV_SYN, SYN_REPORT, 0},
+  };
+
+  // Initialize the device.
+  dev->Initialize(devinfo);
+
+  dev->ConfigureReadMock(mock_kernel_queue_press,
+                         arraysize(mock_kernel_queue_press), 0);
+  dev->ReadNow();
+  EXPECT_EQ(1u, size());
+
+  ui::TouchEventParams ev1 = dispatched_event(0);
+  EXPECT_EQ(ET_TOUCH_PRESSED, ev1.type);
+  EXPECT_EQ(0, ev1.slot);
+  EXPECT_EQ(1003, ev1.location.x());
+  EXPECT_EQ(749, ev1.location.y());
+
+  // Disable the device (should release the contact).
+  dev->SetEnabled(false);
+  EXPECT_EQ(2u, size());
+
+  ui::TouchEventParams ev2 = dispatched_event(1);
+  EXPECT_EQ(ET_TOUCH_RELEASED, ev2.type);
+  EXPECT_EQ(0, ev2.slot);
+
+  // Set up the previous contact in slot 0.
+  devinfo.SetAbsMtSlot(ABS_MT_TRACKING_ID, 0, 0);
+  devinfo.SetAbsMtSlot(ABS_MT_TOUCH_MAJOR, 0, 116);
+  devinfo.SetAbsMtSlot(ABS_MT_POSITION_X, 0, 1003);
+  devinfo.SetAbsMtSlot(ABS_MT_POSITION_Y, 0, 749);
+  devinfo.SetAbsMtSlot(ABS_MT_PRESSURE, 0, 50);
+
+  // Re-enable the device (should re-apply the contact).
+  dev->SimulateReinitialize(devinfo);
+  dev->SetEnabled(true);
+  EXPECT_EQ(3u, size());
+
+  ui::TouchEventParams ev3 = dispatched_event(2);
+  EXPECT_EQ(ET_TOUCH_PRESSED, ev3.type);
+  EXPECT_EQ(0, ev3.slot);
+  EXPECT_EQ(1003, ev3.location.x());
+  EXPECT_EQ(749, ev3.location.y());
 }
 
 // crbug.com/477695
