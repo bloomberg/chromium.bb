@@ -3,20 +3,12 @@
 # found in the LICENSE file.
 
 from common.chrome_proxy_benchmark import ChromeProxyBenchmark
-from integration_tests import chrome_proxy_pagesets as pagesets
 from integration_tests import chrome_proxy_measurements as measurements
+from integration_tests import chrome_proxy_pagesets as pagesets
 from telemetry import benchmark
-from telemetry.core.backends.chrome import android_browser_finder
-from telemetry.core.backends.chrome import cros_browser_finder
-from telemetry.core.backends.chrome import desktop_browser_finder
 
-
-ANDROID_CHROME_BROWSERS = [
-  browser for browser in android_browser_finder.CHROME_PACKAGE_NAMES
-    if 'webview' not in browser]
-
-DESKTOP_CHROME_BROWSERS = (desktop_browser_finder.FindAllBrowserTypes(None) +
-  cros_browser_finder.FindAllBrowserTypes(None))
+NON_SAFE_BROWSING_BROWSERS = ['desktop', 'android-webview',
+                              'android-webview-shell']
 
 class ChromeProxyClientVersion(ChromeProxyBenchmark):
   tag = 'client_version'
@@ -98,7 +90,7 @@ class ChromeProxyBlockOnce(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.block_once.block_once'
 
 
-@benchmark.Enabled(*ANDROID_CHROME_BROWSERS)
+@benchmark.Disabled(*NON_SAFE_BROWSING_BROWSERS)
 # Safebrowsing is enabled for Android and iOS.
 class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
   tag = 'safebrowsing_on'
@@ -115,7 +107,7 @@ class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.safebrowsing_on.safebrowsing'
 
 
-@benchmark.Disabled(*ANDROID_CHROME_BROWSERS)
+@benchmark.Enabled(*NON_SAFE_BROWSING_BROWSERS)
 # Safebrowsing is switched off for Android Webview and all desktop platforms.
 class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
   tag = 'safebrowsing_off'
@@ -188,7 +180,7 @@ class ChromeProxyClientConfig(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.client_config.synthetic'
 
 
-@benchmark.Enabled(*DESKTOP_CHROME_BROWSERS)
+@benchmark.Enabled(desktop)
 class ChromeProxyVideoDirect(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
@@ -199,7 +191,7 @@ class ChromeProxyVideoDirect(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.video.direct'
 
 
-@benchmark.Enabled(*DESKTOP_CHROME_BROWSERS)
+@benchmark.Enabled(desktop)
 class ChromeProxyVideoProxied(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
@@ -210,7 +202,7 @@ class ChromeProxyVideoProxied(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.video.proxied'
 
 
-@benchmark.Enabled(*DESKTOP_CHROME_BROWSERS)
+@benchmark.Enabled(desktop)
 class ChromeProxyVideoCompare(benchmark.Benchmark):
   """Comparison of direct and proxied video fetches.
 

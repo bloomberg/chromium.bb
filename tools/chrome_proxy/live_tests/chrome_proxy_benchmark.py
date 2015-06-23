@@ -5,7 +5,6 @@
 from live_tests import chrome_proxy_measurements as measurements
 from live_tests import pagesets
 from telemetry import benchmark
-from telemetry.core.backends.chrome import android_browser_finder
 
 
 class ChromeProxyLatency(benchmark.Benchmark):

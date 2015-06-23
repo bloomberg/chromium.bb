@@ -54,7 +54,7 @@ from telemetry import benchmark
 from telemetry import benchmark_runner
 from telemetry import story
 from telemetry.core import forwarders
-from telemetry.core.backends import adb_commands
+from telemetry.internal.backends import adb_commands
 from telemetry.core.forwarders import android_forwarder
 from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement
