@@ -48,22 +48,6 @@ except ImportError:
   # on bare VM that doesn't have a full depot_tools.
   pass
 
-if sys.platform != 'cygwin':
-  import ctypes.wintypes
-  GetFileAttributes = ctypes.windll.kernel32.GetFileAttributesW
-  GetFileAttributes.argtypes = (ctypes.wintypes.LPWSTR,)
-  GetFileAttributes.restype = ctypes.wintypes.DWORD
-  FILE_ATTRIBUTE_HIDDEN = 0x2
-  FILE_ATTRIBUTE_SYSTEM = 0x4
-
-
-def IsHidden(file_path):
-  """Returns whether the given |file_path| has the 'system' or 'hidden'
-  attribute set."""
-  p = GetFileAttributes(file_path)
-  assert p != 0xffffffff
-  return bool(p & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))
-
 
 def GetFileList(root):
   """Gets a normalized list of files under |root|."""
@@ -72,7 +56,7 @@ def GetFileList(root):
   file_list = []
   for base, _, files in os.walk(root):
     paths = [os.path.join(base, f) for f in files]
-    file_list.extend(x.lower() for x in paths if not IsHidden(x))
+    file_list.extend(x.lower() for x in paths)
   return sorted(file_list)
 
 
