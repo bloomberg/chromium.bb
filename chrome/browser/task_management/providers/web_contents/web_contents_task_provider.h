@@ -29,7 +29,10 @@ class WebContentsTaskProvider : public TaskProvider {
 
   // This will be called every time we're notified that a new |WebContentsTag|
   // has been created.
-  void OnWebContentsTagCreated(WebContentsTag* tag);
+  void OnWebContentsTagCreated(const WebContentsTag* tag);
+
+  // Manually remove |tag|'s corresponding Task.
+  void OnWebContentsTagRemoved(const WebContentsTag* tag);
 
   // task_management::TaskProvider:
   Task* GetTaskOfUrlRequest(int origin_pid,

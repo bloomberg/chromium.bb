@@ -35,6 +35,10 @@ class WebContentsEntry : public content::WebContentsObserver {
   // entry's WebContents.
   void CreateAllTasks();
 
+  // Clears all the tasks in this entry. The provider's observer will be
+  // notified if |notify_observer| is true.
+  void ClearAllTasks(bool notify_observer);
+
   // Returns the |RendererTask| that corresponds to the given
   // |render_frame_host| or |nullptr| if the given frame is not tracked by this
   // entry.
@@ -60,10 +64,6 @@ class WebContentsEntry : public content::WebContentsObserver {
   // Clears the task that corresponds to the given |render_frame_host| and
   // notifies the provider's observer of the tasks removal.
   void ClearTaskForFrame(RenderFrameHost* render_frame_host);
-
-  // Clears all the tasks in this entry. The provider's observer will be
-  // notified if |notify_observer| is true.
-  void ClearAllTasks(bool notify_observer);
 
   // The provider that owns this entry.
   WebContentsTaskProvider* provider_;
@@ -104,6 +104,21 @@ void WebContentsEntry::CreateAllTasks() {
   DCHECK(web_contents()->GetMainFrame());
   web_contents()->ForEachFrame(base::Bind(&WebContentsEntry::CreateTaskForFrame,
                                           base::Unretained(this)));
+}
+
+void WebContentsEntry::ClearAllTasks(bool notify_observer) {
+  for (auto& pair : frames_by_site_instance_) {
+    FramesList& frames_list = pair.second;
+    DCHECK(!frames_list.empty());
+    RendererTask* task = tasks_by_frames_[frames_list[0]];
+    if (notify_observer)
+      provider_->NotifyObserverTaskRemoved(task);
+    delete task;
+  }
+
+  frames_by_site_instance_.clear();
+  tasks_by_frames_.clear();
+  main_frame_site_instance_ = nullptr;
 }
 
 RendererTask* WebContentsEntry::GetTaskForFrame(
@@ -238,21 +253,6 @@ void WebContentsEntry::ClearTaskForFrame(RenderFrameHost* render_frame_host) {
   }
 }
 
-void WebContentsEntry::ClearAllTasks(bool notify_observer) {
-  for (auto& pair : frames_by_site_instance_) {
-    FramesList& frames_list = pair.second;
-    DCHECK(!frames_list.empty());
-    RendererTask* task = tasks_by_frames_[frames_list[0]];
-    if (notify_observer)
-      provider_->NotifyObserverTaskRemoved(task);
-    delete task;
-  }
-
-  frames_by_site_instance_.clear();
-  tasks_by_frames_.clear();
-  main_frame_site_instance_ = nullptr;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 WebContentsTaskProvider::WebContentsTaskProvider() : entries_map_() {
@@ -262,7 +262,8 @@ WebContentsTaskProvider::~WebContentsTaskProvider() {
   STLDeleteValues(&entries_map_);
 }
 
-void WebContentsTaskProvider::OnWebContentsTagCreated(WebContentsTag* tag) {
+void WebContentsTaskProvider::OnWebContentsTagCreated(
+    const WebContentsTag* tag) {
   DCHECK(tag);
   content::WebContents* web_contents = tag->web_contents();
   DCHECK(web_contents);
@@ -280,6 +281,22 @@ void WebContentsTaskProvider::OnWebContentsTagCreated(WebContentsTag* tag) {
   WebContentsEntry* entry = new WebContentsEntry(web_contents, this);
   entries_map_[web_contents] = entry;
   entry->CreateAllTasks();
+}
+
+void WebContentsTaskProvider::OnWebContentsTagRemoved(
+    const WebContentsTag* tag) {
+  DCHECK(tag);
+  content::WebContents* web_contents = tag->web_contents();
+  DCHECK(web_contents);
+
+  auto itr = entries_map_.find(web_contents);
+  DCHECK(itr != entries_map_.end());
+  WebContentsEntry* entry = itr->second;
+
+  // Must manually clear the tasks and notify the observer.
+  entry->ClearAllTasks(true);
+  entries_map_.erase(itr);
+  delete entry;
 }
 
 Task* WebContentsTaskProvider::GetTaskOfUrlRequest(int origin_pid,

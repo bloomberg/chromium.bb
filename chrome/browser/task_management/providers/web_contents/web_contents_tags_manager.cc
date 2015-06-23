@@ -47,6 +47,11 @@ void WebContentsTagsManager::ClearProvider() {
   provider_ = nullptr;
 }
 
+void WebContentsTagsManager::ClearFromProvider(const WebContentsTag* tag) {
+  if (provider_)
+    provider_->OnWebContentsTagRemoved(tag);
+}
+
 WebContentsTagsManager::WebContentsTagsManager()
     : provider_(nullptr) {
 }

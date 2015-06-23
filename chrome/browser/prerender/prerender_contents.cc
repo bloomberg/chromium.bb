@@ -19,6 +19,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_management/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
@@ -278,6 +279,11 @@ void PrerenderContents::StartPrerendering(
   prerender_contents_.reset(CreateWebContents(session_storage_namespace));
   TabHelpers::AttachTabHelpers(prerender_contents_.get());
   content::WebContentsObserver::Observe(prerender_contents_.get());
+
+  // Tag the prerender contents with the task manager specific prerender tag, so
+  // that it shows up in the task manager.
+  task_management::WebContentsTags::CreateForPrerenderContents(
+      prerender_contents_.get());
 
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));
   prerender_contents_.get()->SetDelegate(web_contents_delegate_.get());
@@ -671,6 +677,11 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
 WebContents* PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->SetDelegate(NULL);
   content::WebContentsObserver::Observe(NULL);
+
+  // Clear the task manager tag we added earlier to our
+  // WebContents since it's no longer a prerender contents.
+  task_management::WebContentsTags::ClearTag(prerender_contents_.get());
+
   return prerender_contents_.release();
 }
 

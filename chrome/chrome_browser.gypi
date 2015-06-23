@@ -788,6 +788,8 @@
       'browser/tab_contents/retargeting_details.h',
       'browser/tab_contents/tab_util.cc',
       'browser/tab_contents/tab_util.h',
+      'browser/task_management/web_contents_tags.cc',
+      'browser/task_management/web_contents_tags.h',
       'browser/task_profiler/task_profiler_data_serializer.cc',
       'browser/task_profiler/task_profiler_data_serializer.h',
       'browser/thumbnails/content_analysis.cc',
@@ -3013,6 +3015,10 @@
       'browser/task_management/providers/web_contents/devtools_tag.h',
       'browser/task_management/providers/web_contents/devtools_task.cc',
       'browser/task_management/providers/web_contents/devtools_task.h',
+      'browser/task_management/providers/web_contents/prerender_tag.cc',
+      'browser/task_management/providers/web_contents/prerender_tag.h',
+      'browser/task_management/providers/web_contents/prerender_task.cc',
+      'browser/task_management/providers/web_contents/prerender_task.h',
       'browser/task_management/providers/web_contents/renderer_task.cc',
       'browser/task_management/providers/web_contents/renderer_task.h',
       'browser/task_management/providers/web_contents/subframe_task.cc',
@@ -3023,8 +3029,6 @@
       'browser/task_management/providers/web_contents/web_contents_tags_manager.h',
       'browser/task_management/providers/web_contents/web_contents_task_provider.cc',
       'browser/task_management/providers/web_contents/web_contents_task_provider.h',
-      'browser/task_management/web_contents_tags.cc',
-      'browser/task_management/web_contents_tags.h',
 
       # Old Task Manager Sources:
       'browser/task_manager/background_information.cc',

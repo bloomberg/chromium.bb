@@ -33,6 +33,12 @@ class WebContentsTagsManager {
   void SetProvider(WebContentsTaskProvider* provider);
   void ClearProvider();
 
+  // This is called by WebContentsTags::ClearTag(). This is needed for Tags
+  // whose destruction does not correspond to the destruction of their
+  // WebContents. In this case the provider (if any) must be manually cleared,
+  // or else the corresponding task for the |tag| will continue to exist.
+  void ClearFromProvider(const WebContentsTag* tag);
+
   const std::set<WebContentsTag*>& tracked_tags() const {
     return tracked_tags_;
   }
