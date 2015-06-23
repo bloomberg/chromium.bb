@@ -19,7 +19,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -35,42 +34,33 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
      * An abstraction for the common functionalities for {@link EnhancedBookmarkFolder} and
      * {@link EnhancedBookmarkItem}
      */
-    public interface BookmarkGrid extends OnClickListener, Checkable {
+    interface BookmarkGrid extends OnClickListener, Checkable {
         /**
          * Sets the bookmarkId the object is holding. Corresponding UI changes might occur.
          */
-        public void setBookmarkId(BookmarkId id);
+        void setBookmarkId(BookmarkId id);
 
         /**
          * @return The bookmark that the object is holding.
          */
-        public BookmarkId getBookmarkId();
+        BookmarkId getBookmarkId();
     }
 
-    public static final int PROMO_HEADER_GRID = 0;
-    public static final int FOLDER_VIEW_GRID = 1;
-    public static final int PADDING_VIEW = 2;
-    public static final int BOOKMARK_VIEW_GRID = 3;
-
-    // Have different view types for list and grid modes, in order to force the recycler not reuse
-    // the same tiles across the two modes.
-    public static final int PROMO_HEADER_LIST = 4;
-    public static final int FOLDER_VIEW_LIST = 5;
-    public static final int DIVIDER_LIST = 6;
-    public static final int BOOKMARK_VIEW_LIST = 7;
+    private static final int PROMO_HEADER_VIEW = 0;
+    private static final int FOLDER_VIEW = 1;
+    private static final int DIVIDER_VIEW = 2;
+    private static final int BOOKMARK_VIEW = 3;
 
     private EnhancedBookmarkDelegate mDelegate;
     private Context mContext;
     private EnhancedBookmarkPromoHeader mPromoHeaderManager;
-    private ItemFactory mItemFactory;
-    private List<BookmarkId> mFolders = new ArrayList<BookmarkId>();
-    private List<BookmarkId> mBookmarks = new ArrayList<BookmarkId>();
 
-    // These are used to track placeholder invisible view between folder items and bookmark items,
-    // to align the beginning of the bookmark items to be the first column.
-    // In list mode, this variable represents the presence of the divider, either 1 or 0.
-    private int mEmptyViewCount;
-    private int mColumnCount = 1;
+    private List<List<? extends Object>> mSections;
+    private List<Object> mPromoHeaderSection = new ArrayList<>();
+    private List<Object> mFolderDividerSection = new ArrayList<>();
+    private List<BookmarkId> mFolderSection = new ArrayList<>();
+    private List<Object> mBookmarkDividerSection = new ArrayList<>();
+    private List<BookmarkId> mBookmarkSection = new ArrayList<>();
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -100,74 +90,43 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     EnhancedBookmarkItemsAdapter(Context context) {
         mContext = context;
+
+        mSections = new ArrayList<>();
+        mSections.add(mPromoHeaderSection);
+        mSections.add(mFolderDividerSection);
+        mSections.add(mFolderSection);
+        mSections.add(mBookmarkDividerSection);
+        mSections.add(mBookmarkSection);
     }
 
-    /**
-     * @return Whether the first item is header.
-     */
-    boolean isHeader(int position) {
-        int type = getItemViewType(position);
-        return type == PROMO_HEADER_GRID || type == PROMO_HEADER_LIST;
+    BookmarkId getItem(int position) {
+        return (BookmarkId) getSection(position).get(toSectionPosition(position));
     }
 
-    /**
-     * Set folders and bookmarks to show.
-     * @param folders This can be null if there is no folders to show.
-     */
-    void setBookmarks(List<BookmarkId> folders, List<BookmarkId> bookmarks) {
-        if (folders == null) folders = new ArrayList<BookmarkId>();
-        mFolders = folders;
-        mBookmarks = bookmarks;
-
-        // TODO(kkimlabs): Animation is disabled due to a performance issue on bookmark undo.
-        //                 http://crbug.com/484174
-        updateDataset();
-    }
-
-    /**
-     * Set number of columns. This information will be used to align the starting position of
-     * bookmarks to be the beginning of the row.
-     *
-     * This is a hacky responsibility violation, since adapter shouldn't care about the way items
-     * are presented in the UI. However, there is no other easy way to do this correctly with
-     * GridView.
-     */
-    void setNumColumns(int columnNumber) {
-        if (mColumnCount == columnNumber) return;
-        mColumnCount = columnNumber;
-        updateDataset();
-    }
-
-    /**
-     * If called, recycler view will be brutally reset and no animation will be shown.
-     */
-    void updateDataset() {
-        updateEmptyViewCount();
-        notifyDataSetChanged();
-    }
-
-    private void updateEmptyViewCount() {
-        if (mDelegate.isListModeEnabled()) mEmptyViewCount = mFolders.size() > 0 ? 1 : 0;
-        else mEmptyViewCount = MathUtils.positiveModulo(-mFolders.size(), mColumnCount);
-    }
-
-    private int getHeaderItemsCount() {
-        // In listview a promo header carries a divider below it.
-        if (mPromoHeaderManager.isShowing()) {
-            return mDelegate.isListModeEnabled() ? 2 : 1;
+    private int toSectionPosition(int globalPosition) {
+        int sectionPosition = globalPosition;
+        for (List section : mSections) {
+            if (sectionPosition < section.size()) break;
+            sectionPosition -= section.size();
         }
-        return 0;
+        return sectionPosition;
     }
 
-    @Override
-    public int getItemCount() {
-        return getHeaderItemsCount() + mFolders.size() + mEmptyViewCount + mBookmarks.size();
+    private List<Object> getSection(int position) {
+        int i = position;
+        for (List section : mSections) {
+            if (i < section.size()) {
+                return section;
+            }
+            i -= section.size();
+        }
+        return null;
     }
 
     /**
      * @return The position of the given bookmark in adapter. Will return -1 if not found.
      */
-    int getPositionForBookmark(BookmarkId bookmark) {
+    private int getPositionForBookmark(BookmarkId bookmark) {
         assert bookmark != null;
         int position = -1;
         for (int i = 0; i < getItemCount(); i++) {
@@ -179,83 +138,68 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         return position;
     }
 
-    BookmarkId getItem(int position) {
-        switch(getItemViewType(position)) {
-            case PROMO_HEADER_GRID:
-            case PROMO_HEADER_LIST:
-                return null;
-            case FOLDER_VIEW_GRID:
-            case FOLDER_VIEW_LIST:
-                return mFolders.get(position - getHeaderItemsCount());
-            case PADDING_VIEW:
-            case DIVIDER_LIST:
-                return null;
-            case BOOKMARK_VIEW_GRID:
-            case BOOKMARK_VIEW_LIST:
-                return mBookmarks.get(
-                        position - getHeaderItemsCount() - mFolders.size() - mEmptyViewCount);
-            default:
-                assert false;
-                return null;
+    /**
+     * Set folders and bookmarks to show.
+     * @param folders This can be null if there is no folders to show.
+     */
+    private void setBookmarks(List<BookmarkId> folders, List<BookmarkId> bookmarks) {
+        if (folders == null) folders = new ArrayList<BookmarkId>();
+
+        mFolderSection.clear();
+        mFolderSection.addAll(folders);
+        mBookmarkSection.clear();
+        mBookmarkSection.addAll(bookmarks);
+
+        updateDividerSections();
+
+        // TODO(kkimlabs): Animation is disabled due to a performance issue on bookmark undo.
+        //                 http://crbug.com/484174
+        notifyDataSetChanged();
+    }
+
+    private void updateDividerSections() {
+        mFolderDividerSection.clear();
+        mBookmarkDividerSection.clear();
+        if (!mPromoHeaderSection.isEmpty() && !mFolderSection.isEmpty()) {
+            mFolderDividerSection.add(null);
+        }
+        if ((!mPromoHeaderSection.isEmpty() || !mFolderSection.isEmpty())
+                && !mBookmarkSection.isEmpty()) {
+            mBookmarkDividerSection.add(null);
         }
     }
 
-    void removeItem(int position) {
-        switch(getItemViewType(position)) {
-            case PROMO_HEADER_GRID:
-            case PROMO_HEADER_LIST:
-                assert false : "Promo header remove should be handled in PromoHeaderManager.";
-                break;
-            case FOLDER_VIEW_GRID:
-            case FOLDER_VIEW_LIST:
-                mFolders.remove(position - getHeaderItemsCount());
-                notifyItemRemoved(position);
-                break;
-            case PADDING_VIEW:
-            case DIVIDER_LIST:
-                assert false : "Cannot remove a padding view or a divider";
-                break;
-            case BOOKMARK_VIEW_GRID:
-            case BOOKMARK_VIEW_LIST:
-                mBookmarks.remove(
-                        position
-                        - getHeaderItemsCount()
-                        - mFolders.size()
-                        - mEmptyViewCount);
-                notifyItemRemoved(position);
-                break;
-            default:
-                assert false;
+    private void removeItem(int position) {
+        List section = getSection(position);
+        assert section == mFolderSection || section == mBookmarkSection;
+        section.remove(toSectionPosition(position));
+        notifyItemRemoved(position);
+    }
+
+    // RecyclerView.Adapter implementation.
+
+    @Override
+    public int getItemCount() {
+        int count = 0;
+        for (List section : mSections) {
+            count += section.size();
         }
+        return count;
     }
 
     @Override
     public int getItemViewType(int position) {
-        int i = position;
+        List section = getSection(position);
 
-        if (mPromoHeaderManager.isShowing()) {
-            if (mDelegate.isListModeEnabled()) {
-                if (i == 0) return PROMO_HEADER_LIST;
-                if (i == 1) return DIVIDER_LIST;
-            } else {
-                if (i == 0) return PROMO_HEADER_GRID;
-            }
-        }
-        i -= getHeaderItemsCount();
-
-        if (i < mFolders.size()) {
-            return mDelegate.isListModeEnabled() ? FOLDER_VIEW_LIST : FOLDER_VIEW_GRID;
-        }
-        i -= mFolders.size();
-
-        if (i < mEmptyViewCount) {
-            if (mDelegate.isListModeEnabled()) return DIVIDER_LIST;
-            else return PADDING_VIEW;
-        }
-        i -= mEmptyViewCount;
-
-        if (i < mBookmarks.size()) {
-            return mDelegate.isListModeEnabled() ? BOOKMARK_VIEW_LIST : BOOKMARK_VIEW_GRID;
+        if (section == mPromoHeaderSection) {
+            return PROMO_HEADER_VIEW;
+        } else if (section == mFolderDividerSection
+                || section == mBookmarkDividerSection) {
+            return DIVIDER_VIEW;
+        } else if (section == mFolderSection) {
+            return FOLDER_VIEW;
+        } else if (section == mBookmarkSection) {
+            return BOOKMARK_VIEW;
         }
 
         assert false : "Invalid position requested";
@@ -265,23 +209,19 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
-            case PROMO_HEADER_GRID:
-            case PROMO_HEADER_LIST:
-                return mPromoHeaderManager.createHolder(parent, mDelegate.isListModeEnabled());
-            case FOLDER_VIEW_GRID:
-            case FOLDER_VIEW_LIST:
-                EnhancedBookmarkFolder folder = mItemFactory.createBookmarkFolder(parent);
+            case PROMO_HEADER_VIEW:
+                return mPromoHeaderManager.createHolder(parent);
+            case FOLDER_VIEW:
+                EnhancedBookmarkFolder folder = (EnhancedBookmarkFolder) LayoutInflater.from(
+                        parent.getContext()).inflate(R.layout.eb_folder, parent, false);
                 folder.setDelegate(mDelegate);
                 return new ItemViewHolder(folder, mDelegate);
-            case PADDING_VIEW:
-                // Padding views are empty place holders that will be set invisible.
-                return new ViewHolder(new View(parent.getContext())) {};
-            case DIVIDER_LIST:
+            case DIVIDER_VIEW:
                 return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.eb_list_divider, parent, false)) {};
-            case BOOKMARK_VIEW_GRID:
-            case BOOKMARK_VIEW_LIST:
-                EnhancedBookmarkItem item = mItemFactory.createBookmarkItem(parent);
+                        R.layout.eb_divider, parent, false)) {};
+            case BOOKMARK_VIEW:
+                EnhancedBookmarkItem item = (EnhancedBookmarkItem) LayoutInflater.from(
+                        parent.getContext()).inflate(R.layout.eb_item, parent, false);
                 item.onEnhancedBookmarkDelegateInitialized(mDelegate);
                 return new ItemViewHolder(item, mDelegate);
             default:
@@ -295,18 +235,14 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public void onBindViewHolder(ViewHolder holder, int position) {
         BookmarkId id = getItem(position);
         switch (getItemViewType(position)) {
-            case PROMO_HEADER_GRID:
-            case PROMO_HEADER_LIST:
+            case PROMO_HEADER_VIEW:
                 break;
-            case FOLDER_VIEW_GRID:
-            case FOLDER_VIEW_LIST:
+            case FOLDER_VIEW:
                 ((ItemViewHolder) holder).setBookmarkId(id);
                 break;
-            case PADDING_VIEW:
-            case DIVIDER_LIST:
+            case DIVIDER_VIEW:
                 break;
-            case BOOKMARK_VIEW_GRID:
-            case BOOKMARK_VIEW_LIST:
+            case BOOKMARK_VIEW:
                 ((ItemViewHolder) holder).setBookmarkId(id);
                 break;
             default:
@@ -318,13 +254,11 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onPromoHeaderShowingChanged(boolean isShowing) {
-        if (isShowing) {
-            notifyItemInserted(0);
-        } else {
-            // TODO(kkimlabs): Ideally we want to animate by |notifyItemRemoved| but the default
-            // animation looks broken for this promo header for some reason.
-            notifyDataSetChanged();
-        }
+        mPromoHeaderSection.clear();
+        if (isShowing) mPromoHeaderSection.add(null);
+
+        updateDividerSections();
+        notifyDataSetChanged();
     }
 
     // EnhancedBookmarkUIObserver implementations.
@@ -334,18 +268,16 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addModelObserver(mBookmarkModelObserver);
-
-        mItemFactory = mDelegate.isListModeEnabled()
-                ? new ListItemFactory() : new GridItemFactory();
-
         mPromoHeaderManager = new EnhancedBookmarkPromoHeader(mContext, this);
+        if (mPromoHeaderManager.isShowing()) mPromoHeaderSection.add(null);
+
+        updateDividerSections();
     }
 
     @Override
     public void onDestroy() {
         mDelegate.removeUIObserver(this);
         mDelegate.getModel().removeModelObserver(mBookmarkModelObserver);
-
         mPromoHeaderManager.destroy();
     }
 
@@ -362,17 +294,6 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {}
-
-    @Override
-    public void onListModeChange(boolean isListModeEnabled) {
-        if (isListModeEnabled) {
-            setNumColumns(1);
-            mItemFactory = new EnhancedBookmarkItemsAdapter.ListItemFactory();
-        } else {
-            mItemFactory = new EnhancedBookmarkItemsAdapter.GridItemFactory();
-        }
-        updateDataset();
-    }
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder implements OnClickListener,
             OnLongClickListener {
@@ -405,39 +326,4 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
     }
 
-    /**
-     * Factory interface to get the correct views to show.
-     */
-    private interface ItemFactory {
-        EnhancedBookmarkItem createBookmarkItem(ViewGroup parent);
-        EnhancedBookmarkFolder createBookmarkFolder(ViewGroup parent);
-    }
-
-    private static class GridItemFactory implements ItemFactory {
-        @Override
-        public EnhancedBookmarkItem createBookmarkItem(ViewGroup parent) {
-            return (EnhancedBookmarkItem) LayoutInflater.from(parent.getContext()).inflate(
-                    R.layout.eb_grid_item, parent, false);
-        }
-
-        @Override
-        public EnhancedBookmarkFolder createBookmarkFolder(ViewGroup parent) {
-            return (EnhancedBookmarkFolder) LayoutInflater.from(
-                    parent.getContext()).inflate(R.layout.eb_grid_folder, parent, false);
-        }
-    }
-
-    private static class ListItemFactory implements ItemFactory {
-        @Override
-        public EnhancedBookmarkItem createBookmarkItem(ViewGroup parent) {
-            return (EnhancedBookmarkItem) LayoutInflater.from(parent.getContext()).inflate(
-                    R.layout.eb_list_item, parent, false);
-        }
-
-        @Override
-        public EnhancedBookmarkFolder createBookmarkFolder(ViewGroup parent) {
-            return (EnhancedBookmarkFolder) LayoutInflater.from(
-                    parent.getContext()).inflate(R.layout.eb_list_folder, parent, false);
-        }
-    }
 }

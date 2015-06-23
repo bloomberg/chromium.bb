@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 #include "components/variations/variations_associated_data.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -17,9 +16,11 @@
 
 namespace {
 
+const char kFieldTrialName[] = "EnhancedBookmarks";
+
 bool GetBookmarksExperimentExtensionID(std::string* extension_id) {
   *extension_id = variations::GetVariationParamValue(
-      enhanced_bookmarks::kFieldTrialName, "id");
+      kFieldTrialName, "id");
   if (extension_id->empty())
     return false;
 
@@ -46,7 +47,7 @@ bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs) {
   // experience is not a big list of flat colors. However as a precautionary
   // measure it is possible to disable this collection of images from finch.
   std::string disable_fetching = variations::GetVariationParamValue(
-      enhanced_bookmarks::kFieldTrialName, "DisableImagesFetching");
+      kFieldTrialName, "DisableImagesFetching");
   return disable_fetching.empty();
 }
 #endif  // defined(OS_ANDROID)
@@ -83,7 +84,7 @@ bool IsEnableDomDistillerSet() {
           switches::kEnableDomDistiller)) {
     return true;
   }
-  if (variations::GetVariationParamValue(enhanced_bookmarks::kFieldTrialName,
+  if (variations::GetVariationParamValue(kFieldTrialName,
                                          "enable-dom-distiller") == "1")
     return true;
 
@@ -95,7 +96,7 @@ bool IsEnableSyncArticlesSet() {
           switches::kEnableSyncArticles)) {
     return true;
   }
-  if (variations::GetVariationParamValue(enhanced_bookmarks::kFieldTrialName,
+  if (variations::GetVariationParamValue(kFieldTrialName,
                                          "enable-sync-articles") == "1")
     return true;
 

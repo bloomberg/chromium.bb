@@ -4,11 +4,8 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.View;
@@ -25,9 +22,6 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItemsAdapter.BookmarkGrid;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSalientImageView.SalientImageDrawableFactory;
-import org.chromium.chrome.browser.widget.CustomShapeDrawable.CircularDrawable;
-import org.chromium.chrome.browser.widget.CustomShapeDrawable.TopRoundedCornerDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -37,49 +31,8 @@ import java.util.List;
 /**
  * A view that shows a bookmark's title, screenshot, URL, etc, shown in the enhanced bookmarks UI.
  */
-abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmarkUIObserver,
-        SalientImageDrawableFactory, BookmarkGrid {
-    /**
-     * The item to show in list view mode.
-     */
-    @SuppressLint("Instantiatable")
-    static class EnhancedBookmarkListItem extends EnhancedBookmarkItem {
-        public EnhancedBookmarkListItem(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        public Drawable getSalientDrawable(int color) {
-            return new CircularDrawable(color);
-        }
-
-        @Override
-        public Drawable getSalientDrawable(Bitmap bitmap) {
-            return new CircularDrawable(bitmap);
-        }
-    }
-
-    /**
-     * The item to show in grid mode.
-     */
-    @SuppressLint("Instantiatable")
-    static class EnhancedBookmarkGridItem extends EnhancedBookmarkItem {
-        public EnhancedBookmarkGridItem(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        public Drawable getSalientDrawable(int color) {
-            return new TopRoundedCornerDrawable(color, getResources().getDimensionPixelSize(
-                    R.dimen.enhanced_bookmark_item_corner_radius));
-        }
-
-        @Override
-        public Drawable getSalientDrawable(Bitmap bitmap) {
-            return new TopRoundedCornerDrawable(bitmap, getResources().getDimensionPixelSize(
-                    R.dimen.enhanced_bookmark_item_corner_radius));
-        }
-    }
+public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmarkUIObserver,
+        BookmarkGrid {
 
     private EnhancedBookmarkSalientImageView mSalientImageView;
     private TintedImageButton mMoreIcon;
@@ -234,7 +187,7 @@ abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookm
         }
 
         mSalientImageView.load(mDelegate.getModel(), bookmarkItem.getUrl(),
-                EnhancedBookmarkUtils.generateBackgroundColor(bookmarkItem), this);
+                EnhancedBookmarkUtils.generateBackgroundColor(bookmarkItem));
     }
 
     @Override
@@ -319,7 +272,4 @@ abstract class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookm
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         updateSelectionState();
     }
-
-    @Override
-    public void onListModeChange(boolean isListModeEnabled) {}
 }

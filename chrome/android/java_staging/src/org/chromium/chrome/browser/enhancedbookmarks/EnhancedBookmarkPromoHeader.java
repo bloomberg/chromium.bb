@@ -83,14 +83,12 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
     }
 
     /**
-     * @param isListMode Whether listview is showing.
      * @return Signin promo header {@link ViewHolder} instance that can be used with
      *         {@link RecyclerView}.
      */
-    ViewHolder createHolder(ViewGroup parent, boolean isListMode) {
+    ViewHolder createHolder(ViewGroup parent) {
         ViewGroup promoHeader = (ViewGroup) LayoutInflater.from(mContext)
                 .inflate(R.layout.eb_promo_header, parent, false);
-        if (isListMode) promoHeader.setBackground(null);
 
         promoHeader.findViewById(R.id.no_thanks).setOnClickListener(new OnClickListener() {
             @Override

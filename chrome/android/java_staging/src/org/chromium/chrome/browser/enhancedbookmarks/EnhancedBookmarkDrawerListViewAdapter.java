@@ -280,7 +280,7 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
                         R.layout.eb_drawer_item, parent, false);
             } else if (itemViewType == VIEW_TYPE_DIVIDER) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(
-                        R.layout.eb_list_divider, parent, false);
+                        R.layout.eb_divider, parent, false);
             } else if (itemViewType == VIEW_TYPE_TITLE) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(
                         R.layout.eb_drawer_title, parent, false);

@@ -69,17 +69,6 @@ interface EnhancedBookmarkDelegate {
     List<BookmarkId> getSelectedBookmarks();
 
     /**
-     * Sets list mode. If the mode is toggles,
-     * {@link EnhancedBookmarkUIObserver#onListModeChange(boolean)} will be called.
-     */
-    void setListModeEnabled(boolean isListModeEnabled);
-
-    /**
-     * @return True is list mode is enabled. False otherwise.
-     */
-    boolean isListModeEnabled();
-
-    /**
      * Notifies the current mode set event to the given observer. For example, if the current mode
      * is MODE_ALL_BOOKMARKS, it calls onAllBookmarksModeSet.
      */

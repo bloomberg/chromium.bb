@@ -64,7 +64,6 @@ if (is_android) {
     ]
     outputs = [
       "org/chromium/chrome/browser/enhanced_bookmarks/LaunchLocation.java",
-      "org/chromium/chrome/browser/enhanced_bookmarks/ViewMode.java",
     ]
   }
 }

@@ -16,8 +16,6 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 
-import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSalientImageView.BaseSalientDrawable;
-
 /**
  * Base class for drawables that are to control what shape they take.
  */
@@ -50,41 +48,6 @@ public abstract class CustomShapeDrawable extends Drawable {
         @Override
         public void draw(Canvas canvas) {
             canvas.drawCircle(mRect.centerX(), mRect.centerY(), mRect.height() * 0.5f, mPaint);
-        }
-    }
-
-    /**
-     * Drawable that has rounded top corners, with image or pure color as content.
-     */
-    public static class TopRoundedCornerDrawable extends BaseSalientDrawable {
-        private final float mRadius;
-
-        /**
-         * Create a drawable based on bitmap of salient image as well as radius.
-         */
-        public TopRoundedCornerDrawable(Bitmap bitmap, float radius) {
-            super(bitmap);
-            mRadius = radius;
-        }
-
-        /**
-         * Create a drawable based on the pure color as well as radius.
-         */
-        public TopRoundedCornerDrawable(int color, float radius) {
-            super(color);
-            mRadius = radius;
-        }
-
-        @Override
-        protected void onBoundsChange(Rect bounds) {
-            // We avoid drawing bottom corners just by making it taller by the radius.
-            mRect.set(0, 0, bounds.width(), bounds.height() + mRadius);
-            super.onBoundsChange(bounds);
-        }
-
-        @Override
-        public void draw(Canvas canvas) {
-            canvas.drawRoundRect(mRect, mRadius, mRadius, mPaint);
         }
     }
 

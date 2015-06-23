@@ -13,7 +13,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -23,6 +22,7 @@ import android.widget.ImageView;
 
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.SalientImageCallback;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
+import org.chromium.chrome.browser.widget.CustomShapeDrawable.CircularDrawable;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -36,26 +36,9 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 public class EnhancedBookmarkSalientImageView extends FrameLayout {
 
     /**
-     * Factory for getting drawable for Salient Image View, because in various scenarios, shapes of
-     * images might vary. This factory should be responsible for providing drawables for both color
-     * place holder as well as salient bitmap image.
-     */
-    public interface SalientImageDrawableFactory {
-        /**
-         * @return The drawable containing pure color.
-         */
-        Drawable getSalientDrawable(int color);
-        /**
-         * @return The drawable containing bitmap as background.
-         */
-        Drawable getSalientDrawable(Bitmap bitmap);
-    }
-
-    /**
      * Base class for different kinds of drawables to be used to define shapes of salient images.
      */
     public abstract static class BaseSalientDrawable extends Drawable {
-        protected RectF mRect = new RectF();
         protected Paint mPaint = new Paint();
         private int mBitmapWidth;
         private int mBitmapHeight;
@@ -147,10 +130,8 @@ public class EnhancedBookmarkSalientImageView extends FrameLayout {
      * @param model Enhanced bookmark model from which to get image.
      * @param url Url for representing bookmark.
      * @param color Color of place holder.
-     * @param drawableFactory Factory providing drawables that defines shape of the ImageView.
      */
-    public void load(EnhancedBookmarksModel model, String url, int color,
-            final SalientImageDrawableFactory drawableFactory) {
+    public void load(EnhancedBookmarksModel model, String url, int color) {
         // Reset conditions.
         clearAnimation();
         mSolidColorImage.setImageDrawable(null);
@@ -178,12 +159,12 @@ public class EnhancedBookmarkSalientImageView extends FrameLayout {
                                     mSolidColorImage.setAlpha(1.0f);
                                 }
                             });
-                    mSalientImage.setImageDrawable(drawableFactory.getSalientDrawable(image));
+                    mSalientImage.setImageDrawable(new CircularDrawable(image));
                     mSalientImage.setAlpha(0.0f);
                     mSalientImage.animate().alpha(1.0f).setDuration(SALIENT_IMAGE_ANIMATION_MS)
                             .setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
                 } else {
-                    mSalientImage.setImageDrawable(drawableFactory.getSalientDrawable(image));
+                    mSalientImage.setImageDrawable(new CircularDrawable(image));
                     mSolidColorImage.setVisibility(View.INVISIBLE);
                 }
             }
@@ -193,7 +174,7 @@ public class EnhancedBookmarkSalientImageView extends FrameLayout {
 
         // If there is no image or the image is still loading asynchronously, show pure color.
         if (!isSalientImageLoaded) {
-            mSolidColorImage.setImageDrawable(drawableFactory.getSalientDrawable(color));
+            mSolidColorImage.setImageDrawable(new CircularDrawable(color));
         }
     }
 }

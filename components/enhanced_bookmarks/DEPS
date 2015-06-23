@@ -4,7 +4,6 @@ include_rules = [
   "+components/pref_registry",
   "+components/signin",
   "+components/sync_driver",
-  "+components/variations",
   "+google_apis/gaia",
   "+jni",
   "+net",

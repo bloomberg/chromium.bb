@@ -18,10 +18,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
-import org.chromium.chrome.browser.enhanced_bookmarks.ViewMode;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -43,7 +41,6 @@ import java.util.Stack;
  */
 public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private static final String PREF_LAST_USED_URL = "enhanced_bookmark_last_used_url";
-    static final String PREF_WAS_IN_LIST_MODE = "enhanced_bookmark_list_mode_choice";
 
     private Activity mActivity;
     private ViewGroup mMainView;
@@ -52,7 +49,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private final ObserverList<EnhancedBookmarkUIObserver> mUIObservers =
             new ObserverList<EnhancedBookmarkUIObserver>();
     private Set<BookmarkId> mSelectedBookmarks = new HashSet<>();
-    private boolean mListModeEnabled;
     private EnhancedBookmarkStateChangeListener mUrlChangeListener;
     private EnhancedBookmarkContentView mContentView;
     private DrawerLayout mDrawer;
@@ -222,8 +218,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
                 String url = mStateStack.pop().mUrl;
                 setState(UIState.createStateFromUrl(url, mEnhancedBookmarksModel));
             }
-            // Restore the previous view mode selection saved in preference.
-            initListModeOptionTo(getListModePreference());
         } else {
             mContentView.showLoadingUi();
             mDrawerListView.showLoadingUi();
@@ -256,34 +250,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private String getUrlFromPreference() {
         return PreferenceManager.getDefaultSharedPreferences(mActivity).getString(
                 PREF_LAST_USED_URL, UrlConstants.BOOKMARKS_URL);
-    }
-
-    private void saveListModePreference() {
-        PreferenceManager.getDefaultSharedPreferences(mActivity).edit()
-                .putInt(PREF_WAS_IN_LIST_MODE, mListModeEnabled ? ViewMode.LIST : ViewMode.GRID)
-                .apply();
-    }
-
-    private boolean getListModePreference() {
-        int mode = PreferenceManager.getDefaultSharedPreferences(mActivity).getInt(
-                PREF_WAS_IN_LIST_MODE, ViewMode.DEFAULT);
-
-        if (mode == ViewMode.DEFAULT) mode = EnhancedBookmarksBridge.getDefaultViewMode();
-
-        return mode == ViewMode.LIST ? true : false;
-    }
-
-    private void initListModeOptionTo(boolean isListModeEnabled) {
-        mListModeEnabled = isListModeEnabled;
-        for (EnhancedBookmarkUIObserver observer: mUIObservers) {
-            observer.onListModeChange(isListModeEnabled);
-        }
-        // Every time the enhanced bookmark manager launches or the user clicks the list-mode
-        // toggle, we record the list view state.
-        int listViewstate = PreferenceManager.getDefaultSharedPreferences(getView().getContext())
-                .getInt(EnhancedBookmarkManager.PREF_WAS_IN_LIST_MODE,
-                        ViewMode.DEFAULT);
-        RecordHistogram.recordEnumeratedHistogram("EnhancedBookmarks.ViewMode", listViewstate, 3);
     }
 
     /**
@@ -370,17 +336,6 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     @Override
     public List<BookmarkId> getSelectedBookmarks() {
         return new ArrayList<BookmarkId>(mSelectedBookmarks);
-    }
-
-    @Override
-    public void setListModeEnabled(boolean isListModeEnabled) {
-        initListModeOptionTo(isListModeEnabled);
-        saveListModePreference();
-    }
-
-    @Override
-    public boolean isListModeEnabled() {
-        return mListModeEnabled;
     }
 
     @Override

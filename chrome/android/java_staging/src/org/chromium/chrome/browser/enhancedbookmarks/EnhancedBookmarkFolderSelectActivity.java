@@ -298,7 +298,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             if (convertView == null) {
                 if (entry.mType == FolderListEntry.TYPE_DIVIDER) {
                     return LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.eb_list_divider, parent, false);
+                            R.layout.eb_divider, parent, false);
                 } else {
                     convertView = LayoutInflater.from(parent.getContext()).inflate(
                             R.layout.eb_folder_select_item, parent, false);

@@ -111,10 +111,10 @@ public class EnhancedBookmarkTest extends ChromeActivityTestCaseBase<ChromeActiv
             @Override
             public Boolean call() throws Exception {
                 for (int i = 0; i < mItemsContainer.getAdapter().getItemCount(); i++) {
-                    if (mItemsContainer.getAdapter().isHeader(i)) continue;
+                    BookmarkId item = mItemsContainer.getAdapter().getItem(i);
+                    if (item == null) continue;
 
-                    String actualTitle = mBookmarkModel.getBookmarkTitle(
-                            mItemsContainer.getAdapter().getItem(i));
+                    String actualTitle = mBookmarkModel.getBookmarkTitle(item);
                     if (TextUtils.equals(actualTitle, expectedTitle)) {
                         return true;
                     }

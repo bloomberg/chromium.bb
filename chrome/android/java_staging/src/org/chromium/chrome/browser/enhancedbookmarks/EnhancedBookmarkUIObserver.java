@@ -38,9 +38,4 @@ interface EnhancedBookmarkUIObserver {
      * {@link EnhancedBookmarkDelegate#getSelectedBookmarks()}
      */
     void onSelectionStateChange(List<BookmarkId> selectedBookmarks);
-
-    /**
-     * @see EnhancedBookmarkDelegate#setListModeEnabled(boolean)
-     */
-    void onListModeChange(boolean isListModeEnabled);
 }

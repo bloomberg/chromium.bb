@@ -14,11 +14,6 @@
             android:visible="false"
             chrome:showAsAction="ifRoom"/>
         <item
-            android:id="@+id/list_toggle_menu_id"
-            android:icon="@drawable/eb_list_toggle"
-            android:title="@string/enhanced_bookmark_action_bar_list_toggle"
-            chrome:showAsAction="ifRoom"/>
-        <item
             android:id="@+id/close_menu_id"
             android:icon="@drawable/btn_close"
             android:title="@string/enhanced_bookmark_action_bar_close"

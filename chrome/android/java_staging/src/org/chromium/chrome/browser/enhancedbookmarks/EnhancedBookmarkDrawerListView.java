@@ -100,7 +100,4 @@ class EnhancedBookmarkDrawerListView extends ListView implements EnhancedBookmar
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
     }
-
-    @Override
-    public void onListModeChange(boolean isListModeEnabled) {}
 }

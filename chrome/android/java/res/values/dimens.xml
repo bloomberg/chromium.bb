@@ -270,10 +270,8 @@
     <dimen name="reader_mode_text_size">14sp</dimen>
 
     <!-- Enhanced bookmarks dimensions -->
-    <dimen name="enhanced_bookmark_min_grid_width">135dp</dimen>
     <dimen name="enhanced_bookmark_item_corner_radius">3dp</dimen>
     <dimen name="enhanced_bookmark_item_popup_width">140dp</dimen>
-    <dimen name="enhanced_bookmark_item_half_space">4dp</dimen>
     <dimen name="enhanced_bookmark_folder_item_left">16dp</dimen>
     <dimen name="enhanced_bookmark_folder_item_icon_size">40dp</dimen>
     <dimen name="enhanced_bookmark_detail_image_height">232dp</dimen>

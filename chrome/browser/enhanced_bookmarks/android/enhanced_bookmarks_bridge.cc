@@ -16,7 +16,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
-#include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/EnhancedBookmarksBridge_jni.h"
@@ -174,10 +173,6 @@ bool EnhancedBookmarksBridge::IsEditable(const BookmarkNode* node) const {
   }
   return profile_->GetPrefs()->GetBoolean(
         bookmarks::prefs::kEditBookmarksEnabled);
-}
-
-static jint GetDefaultViewMode(JNIEnv* env, jclass jcaller) {
-  return enhanced_bookmarks::GetDefaultViewMode();
 }
 
 static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {

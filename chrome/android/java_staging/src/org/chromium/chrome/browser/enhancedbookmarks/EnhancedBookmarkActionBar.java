@@ -83,9 +83,6 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         if (menuItem.getItemId() == R.id.edit_menu_id) {
             EnhancedBookmarkAddEditFolderActivity.startEditFolderActivity(getContext(),
                     mCurrentFolder.getId());
-        } else if (menuItem.getItemId() == R.id.list_toggle_menu_id) {
-            mDelegate.setListModeEnabled(!mDelegate.isListModeEnabled());
-            return true;
         } else if (menuItem.getItemId() == R.id.close_menu_id) {
             mDelegate.finishActivityOnPhone();
             return true;
@@ -185,7 +182,6 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         setTitle(null);
         setNavigationButton(NAVIGATION_BUTTON_NONE);
         getMenu().findItem(R.id.edit_menu_id).setVisible(false);
-        getMenu().findItem(R.id.list_toggle_menu_id).setVisible(false);
     }
 
     // EnhancedBookmarkUIObserver implementations.
@@ -195,7 +191,6 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         delegate.getModel().addModelObserver(mBookmarkModelObserver);
-        getMenu().findItem(R.id.list_toggle_menu_id).setVisible(true);
     }
 
     @Override
@@ -271,11 +266,5 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
 
             mDelegate.notifyStateChange(this);
         }
-    }
-
-    @Override
-    public void onListModeChange(boolean isListModeEnabled) {
-        MenuItem menuItem = getMenu().findItem(R.id.list_toggle_menu_id);
-        menuItem.getIcon().setLevel(isListModeEnabled ? 1 : 0);
     }
 }

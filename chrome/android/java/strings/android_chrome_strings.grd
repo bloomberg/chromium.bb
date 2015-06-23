@@ -1785,9 +1785,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_EDIT_FOLDER" desc="Button text for editing current folder action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
         Edit folder
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_LIST_TOGGLE" desc="Button text for switching between list mode and grid mode [CHAR-LIMIT=32]">
-        Toggle between list and grid mode
-      </message>
       <message name="IDS_ENHANCED_BOOKMARK_ACTION_BAR_MOVE" desc="Button text for bookmark move action on the enhanced bookmark action bar [CHAR-LIMIT=32]">
         Move bookmarks
       </message>

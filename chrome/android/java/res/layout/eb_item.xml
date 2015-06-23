@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<view class="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItem$EnhancedBookmarkListItem"
+<view class="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItem"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"

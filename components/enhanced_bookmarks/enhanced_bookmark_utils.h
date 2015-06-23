@@ -16,8 +16,6 @@ class BookmarkNode;
 
 namespace enhanced_bookmarks {
 
-extern const char kFieldTrialName[];
-
 // Possible locations where a bookmark can be opened from.
 // Please sync with the corresponding histograms.xml.
 //
@@ -31,16 +29,6 @@ enum LaunchLocation {
   SEARCH = 4,
   BOOKMARK_EDITOR = 5,
   COUNT = 6,
-};
-
-// View modes of enhanced bookmarks' main items UI.
-//
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.enhanced_bookmarks
-enum ViewMode {
-  DEFAULT = 0,
-  LIST = 1,
-  GRID = 2,
 };
 
 // Returns the permanent nodes whose url children are considered uncategorized
@@ -65,11 +53,6 @@ bool IsPrimaryPermanentNode(const bookmarks::BookmarkNode* node,
 const bookmarks::BookmarkNode* RootLevelFolderForNode(
     const bookmarks::BookmarkNode* node,
     bookmarks::BookmarkModel* model);
-
-// Returns the default view mode for main items UI.
-// The default is controlled by a finch experiment. If finch is not available or
-// has an invalid value, it returns a hard coded default view mode.
-ViewMode GetDefaultViewMode();
 
 }  // namespace enhanced_bookmarks
 
