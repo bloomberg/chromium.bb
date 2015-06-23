@@ -34,7 +34,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/screen.h"
 
 namespace content {
@@ -651,6 +653,17 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   WebContents* web_contents() const { return web_contents_.get(); }
   media::VideoCaptureDevice* device() { return device_.get(); }
 
+  // Returns the device scale factor of the capture target's native view.  This
+  // is necessary because, architecturally, the FakeScreen implementation is
+  // ignored on Mac platforms (when determining the device scale factor for a
+  // particular window).
+  float GetDeviceScaleFactor() const {
+    RenderWidgetHostView* const view =
+        web_contents_->GetRenderViewHost()->GetView();
+    CHECK(view);
+    return ui::GetScaleFactorForNativeView(view->GetNativeView());
+  }
+
   void SimulateDrawEvent() {
     if (source()->CanUseFrameSubscriber()) {
       // Print
@@ -729,9 +742,10 @@ TEST_F(WebContentsVideoCaptureDeviceTest, InvalidInitialWebContentsError) {
 }
 
 TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
+  const float device_scale_factor = GetDeviceScaleFactor();
   const gfx::Size capture_preferred_size(
-      static_cast<int>(kTestWidth / kTestDeviceScaleFactor),
-      static_cast<int>(kTestHeight / kTestDeviceScaleFactor));
+      static_cast<int>(kTestWidth / device_scale_factor),
+      static_cast<int>(kTestHeight / device_scale_factor));
   ASSERT_NE(capture_preferred_size, web_contents()->GetPreferredSize());
 
   // We'll simulate the tab being closed after the capture pipeline is up and
@@ -952,63 +966,45 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
 
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
 
-  for (int i = 0; i < 6; i++) {
-    const char* name = NULL;
-    switch (i % 3) {
-      case 0:
-        source()->SetCanCopyToVideoFrame(true);
-        source()->SetUseFrameSubscriber(false);
-        name = "VideoFrame";
-        break;
-      case 1:
-        source()->SetCanCopyToVideoFrame(false);
-        source()->SetUseFrameSubscriber(true);
-        name = "Subscriber";
-        break;
-      case 2:
-        source()->SetCanCopyToVideoFrame(false);
-        source()->SetUseFrameSubscriber(false);
-        name = "SkBitmap";
-        break;
-      default:
-        FAIL();
-    }
+  source()->SetUseFrameSubscriber(true);
 
-    SCOPED_TRACE(base::StringPrintf("Using %s path, iteration #%d", name, i));
+  // Source size equals maximum size.  Expect delivered frames to be
+  // kTestWidth by kTestHeight.
+  source()->SetSolidColor(SK_ColorRED);
+  const float device_scale_factor = GetDeviceScaleFactor();
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(
+      device_scale_factor, gfx::Size(kTestWidth, kTestHeight)));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorRED, gfx::Size(kTestWidth, kTestHeight)));
 
-    // Source size equals maximum size.  Expect delivered frames to be
-    // kTestWidth by kTestHeight.
-    source()->SetSolidColor(SK_ColorRED);
-    SimulateSourceSizeChange(gfx::Size(kTestWidth, kTestHeight));
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorRED, gfx::Size(kTestWidth, kTestHeight)));
+  // Source size is half in both dimensions.  Expect delivered frames to be of
+  // the same aspect ratio as kTestWidth by kTestHeight, but larger than the
+  // half size because the minimum height is 180 lines.
+  source()->SetSolidColor(SK_ColorGREEN);
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(
+      device_scale_factor, gfx::Size(kTestWidth / 2, kTestHeight / 2)));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorGREEN, gfx::Size(180 * kTestWidth / kTestHeight, 180)));
 
-    // Source size is half in both dimensions.  Expect delivered frames to be of
-    // the same aspect ratio as kTestWidth by kTestHeight, but larger than the
-    // half size because the minimum height is 180 lines.
-    source()->SetSolidColor(SK_ColorGREEN);
-    SimulateSourceSizeChange(gfx::Size(kTestWidth / 2, kTestHeight / 2));
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorGREEN, gfx::Size(180 * kTestWidth / kTestHeight, 180)));
+  // Source size changes aspect ratio.  Expect delivered frames to be padded
+  // in the horizontal dimension to preserve aspect ratio.
+  source()->SetSolidColor(SK_ColorBLUE);
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(
+      device_scale_factor, gfx::Size(kTestWidth / 2, kTestHeight)));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorBLUE, gfx::Size(kTestWidth, kTestHeight)));
 
-    // Source size changes aspect ratio.  Expect delivered frames to be padded
-    // in the horizontal dimension to preserve aspect ratio.
-    source()->SetSolidColor(SK_ColorBLUE);
-    SimulateSourceSizeChange(gfx::Size(kTestWidth / 2, kTestHeight));
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorBLUE, gfx::Size(kTestWidth, kTestHeight)));
-
-    // Source size changes aspect ratio again.  Expect delivered frames to be
-    // padded in the vertical dimension to preserve aspect ratio.
-    source()->SetSolidColor(SK_ColorBLACK);
-    SimulateSourceSizeChange(gfx::Size(kTestWidth, kTestHeight / 2));
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorBLACK, gfx::Size(kTestWidth, kTestHeight)));
-  }
+  // Source size changes aspect ratio again.  Expect delivered frames to be
+  // padded in the vertical dimension to preserve aspect ratio.
+  source()->SetSolidColor(SK_ColorBLACK);
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(
+      device_scale_factor, gfx::Size(kTestWidth, kTestHeight / 2)));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorBLACK, gfx::Size(kTestWidth, kTestHeight)));
 
   device()->StopAndDeAllocate();
 }
@@ -1026,68 +1022,50 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_AnyWithinLimits) {
 
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
 
-  for (int i = 0; i < 6; i++) {
-    const char* name = NULL;
-    switch (i % 3) {
-      case 0:
-        source()->SetCanCopyToVideoFrame(true);
-        source()->SetUseFrameSubscriber(false);
-        name = "VideoFrame";
-        break;
-      case 1:
-        source()->SetCanCopyToVideoFrame(false);
-        source()->SetUseFrameSubscriber(true);
-        name = "Subscriber";
-        break;
-      case 2:
-        source()->SetCanCopyToVideoFrame(false);
-        source()->SetUseFrameSubscriber(false);
-        name = "SkBitmap";
-        break;
-      default:
-        FAIL();
-    }
+  source()->SetUseFrameSubscriber(true);
 
-    SCOPED_TRACE(base::StringPrintf("Using %s path, iteration #%d", name, i));
+  // Source size equals maximum size.  Expect delivered frames to be
+  // kTestWidth by kTestHeight.
+  source()->SetSolidColor(SK_ColorRED);
+  const float device_scale_factor = GetDeviceScaleFactor();
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(
+      device_scale_factor, gfx::Size(kTestWidth, kTestHeight)));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorRED, gfx::Size(kTestWidth, kTestHeight)));
 
-    // Source size equals maximum size.  Expect delivered frames to be
-    // kTestWidth by kTestHeight.
-    source()->SetSolidColor(SK_ColorRED);
-    SimulateSourceSizeChange(gfx::Size(kTestWidth, kTestHeight));
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorRED, gfx::Size(kTestWidth, kTestHeight)));
+  // Source size is half in both dimensions.  Expect delivered frames to also
+  // be half in both dimensions.
+  source()->SetSolidColor(SK_ColorGREEN);
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(
+      device_scale_factor, gfx::Size(kTestWidth / 2, kTestHeight / 2)));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorGREEN, gfx::Size(kTestWidth / 2, kTestHeight / 2)));
 
-    // Source size is half in both dimensions.  Expect delivered frames to also
-    // be half in both dimensions.
-    source()->SetSolidColor(SK_ColorGREEN);
-    SimulateSourceSizeChange(gfx::Size(kTestWidth / 2, kTestHeight / 2));
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorGREEN, gfx::Size(kTestWidth / 2, kTestHeight / 2)));
+  // Source size changes to something arbitrary.  Since the source size is
+  // less than the maximum size, expect delivered frames to be the same size
+  // as the source size.
+  source()->SetSolidColor(SK_ColorBLUE);
+  gfx::Size arbitrary_source_size(kTestWidth / 2 + 42, kTestHeight - 10);
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(device_scale_factor,
+                                                 arbitrary_source_size));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorBLUE, arbitrary_source_size));
 
-    // Source size changes to something arbitrary.  Since the source size is
-    // less than the maximum size, expect delivered frames to be the same size
-    // as the source size.
-    source()->SetSolidColor(SK_ColorBLUE);
-    gfx::Size arbitrary_source_size(kTestWidth / 2 + 42, kTestHeight - 10);
-    SimulateSourceSizeChange(arbitrary_source_size);
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorBLUE, arbitrary_source_size));
-
-    // Source size changes to something arbitrary that exceeds the maximum frame
-    // size.  Since the source size exceeds the maximum size, expect delivered
-    // frames to be downscaled.
-    source()->SetSolidColor(SK_ColorBLACK);
-    arbitrary_source_size = gfx::Size(kTestWidth * 2 + 99, kTestHeight / 2);
-    SimulateSourceSizeChange(arbitrary_source_size);
-    SimulateDrawEvent();
-    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
-        SK_ColorBLACK, gfx::Size(kTestWidth,
-                                 kTestWidth * arbitrary_source_size.height() /
-                                     arbitrary_source_size.width())));
-  }
+  // Source size changes to something arbitrary that exceeds the maximum frame
+  // size.  Since the source size exceeds the maximum size, expect delivered
+  // frames to be downscaled.
+  source()->SetSolidColor(SK_ColorBLACK);
+  arbitrary_source_size = gfx::Size(kTestWidth * 2, kTestHeight / 2);
+  SimulateSourceSizeChange(gfx::ConvertSizeToDIP(device_scale_factor,
+                                                 arbitrary_source_size));
+  SimulateDrawEvent();
+  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColorAndFrameSize(
+      SK_ColorBLACK, gfx::Size(kTestWidth,
+                               kTestWidth * arbitrary_source_size.height() /
+                                   arbitrary_source_size.width())));
 
   device()->StopAndDeAllocate();
 }

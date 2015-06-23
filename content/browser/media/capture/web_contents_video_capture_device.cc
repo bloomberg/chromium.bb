@@ -80,9 +80,9 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/display.h"
+#include "ui/base/layout.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/screen.h"
 
 namespace content {
 
@@ -228,7 +228,7 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   bool IsStarted() const;
 
   // Computes the preferred size of the target RenderWidget for optimal capture.
-  gfx::Size ComputeOptimalTargetSize() const;
+  gfx::Size ComputeOptimalViewSize() const;
 
   // Response callback for RenderWidgetHost::CopyFromBackingStore().
   void DidCopyFromBackingStore(
@@ -617,7 +617,7 @@ void WebContentsCaptureMachine::Capture(
   }
 }
 
-gfx::Size WebContentsCaptureMachine::ComputeOptimalTargetSize() const {
+gfx::Size WebContentsCaptureMachine::ComputeOptimalViewSize() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(miu): Propagate capture frame size changes as new "preferred size"
@@ -634,9 +634,7 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalTargetSize() const {
   RenderWidgetHostView* const rwhv = rwh ? rwh->GetView() : NULL;
   if (rwhv) {
     const gfx::NativeView view = rwhv->GetNativeView();
-    gfx::Screen* const screen = gfx::Screen::GetScreenFor(view);
-    const gfx::Display display = screen->GetDisplayNearestWindow(view);
-    const float scale = display.device_scale_factor();
+    const float scale = ui::GetScaleFactorForNativeView(view);
     if (scale > 1.0f) {
       const gfx::Size shrunk_size(
           gfx::ToFlooredSize(gfx::ScaleSize(optimal_size, 1.0f / scale)));
@@ -715,10 +713,8 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
     return;
   }
 
-  if (!had_subscription && tracker_->web_contents()) {
-    tracker_->web_contents()->IncrementCapturerCount(
-        ComputeOptimalTargetSize());
-  }
+  if (!had_subscription && tracker_->web_contents())
+    tracker_->web_contents()->IncrementCapturerCount(ComputeOptimalViewSize());
 
   subscription_.reset(new ContentCaptureSubscription(*rwh, oracle_proxy_,
       base::Bind(&WebContentsCaptureMachine::Capture,
@@ -734,7 +730,18 @@ void WebContentsCaptureMachine::UpdateCaptureSize() {
   RenderWidgetHostView* const view = rwh ? rwh->GetView() : nullptr;
   if (!view)
     return;
-  oracle_proxy_->UpdateCaptureSize(view->GetViewBounds().size());
+
+  // Convert the view's size from the DIP coordinate space to the pixel
+  // coordinate space.  When the view is being rendered on a high-DPI display,
+  // this allows the high-resolution image detail to propagate through to the
+  // captured video.
+  const gfx::Size view_size = view->GetViewBounds().size();
+  const gfx::Size physical_size = gfx::ConvertSizeToPixel(
+      ui::GetScaleFactorForNativeView(view->GetNativeView()), view_size);
+  VLOG(1) << "Computed physical capture size (" << physical_size.ToString()
+          << ") from view size (" << view_size.ToString() << ").";
+
+  oracle_proxy_->UpdateCaptureSize(physical_size);
 }
 
 }  // namespace

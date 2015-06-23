@@ -7,6 +7,8 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 
@@ -269,6 +271,16 @@ void RotatePlaneByPixels(
   }
 }
 
+// Helper function to return |a| divided by |b|, rounded to the nearest integer.
+static int RoundedDivision(int64 a, int b) {
+  DCHECK_GE(a, 0);
+  DCHECK_GT(b, 0);
+  base::CheckedNumeric<uint64> result(a);
+  result += b / 2;
+  result /= b;
+  return base::checked_cast<int>(result.ValueOrDie());
+}
+
 // Common logic for the letterboxing and scale-within/scale-encompassing
 // functions.  Scales |size| to either fit within or encompass |target|,
 // depending on whether |fit_within_target| is true.
@@ -282,8 +294,8 @@ static gfx::Size ScaleSizeToTarget(const gfx::Size& size,
   const int64 y = static_cast<int64>(size.height()) * target.width();
   const bool use_target_width = fit_within_target ? (y < x) : (x < y);
   return use_target_width ?
-      gfx::Size(target.width(), static_cast<int>(y / size.width())) :
-      gfx::Size(static_cast<int>(x / size.height()), target.height());
+      gfx::Size(target.width(), RoundedDivision(y, size.width())) :
+      gfx::Size(RoundedDivision(x, size.height()), target.height());
 }
 
 gfx::Rect ComputeLetterboxRegion(const gfx::Rect& bounds,
@@ -316,8 +328,8 @@ gfx::Size PadToMatchAspectRatio(const gfx::Size& size,
   const int64 x = static_cast<int64>(size.width()) * target.height();
   const int64 y = static_cast<int64>(size.height()) * target.width();
   if (x < y)
-    return gfx::Size(static_cast<int>(y / target.height()), size.height());
-  return gfx::Size(size.width(), static_cast<int>(x / target.width()));
+    return gfx::Size(RoundedDivision(y, target.height()), size.height());
+  return gfx::Size(size.width(), RoundedDivision(x, target.width()));
 }
 
 void CopyRGBToVideoFrame(const uint8* source,
