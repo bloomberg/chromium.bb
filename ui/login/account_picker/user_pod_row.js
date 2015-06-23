@@ -2937,6 +2937,8 @@ cr.define('login', function() {
 
       // Return focus back to single pod.
       if (this.alwaysFocusSinglePod && !pod) {
+        if ($('login-header-bar').contains(e.target))
+          return;
         this.focusPod(this.focusedPod_, true /* force */);
         this.focusedPod_.userTypeBubbleElement.classList.remove('bubble-shown');
         this.focusedPod_.isActionBoxMenuHovered = false;
