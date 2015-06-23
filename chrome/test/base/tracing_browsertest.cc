@@ -139,9 +139,7 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
   // Expect the basic memory dumps to be present in the trace.
   EXPECT_NE(std::string::npos, json_events.find("process_totals"));
 
-  EXPECT_NE(std::string::npos, json_events.find("malloc"));
   EXPECT_NE(std::string::npos, json_events.find("v8"));
   EXPECT_NE(std::string::npos, json_events.find("blink_gc"));
-  EXPECT_NE(std::string::npos, json_events.find("gpumemorybuffer"));
 }
 }  // namespace
