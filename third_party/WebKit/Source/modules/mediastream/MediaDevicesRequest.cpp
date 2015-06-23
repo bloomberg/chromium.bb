@@ -65,13 +65,10 @@ Document* MediaDevicesRequest::ownerDocument()
 
 ScriptPromise MediaDevicesRequest::start()
 {
-    if (m_controller) {
-        m_resolver->keepAliveWhilePending();
-        m_controller->requestMediaDevices(this);
-        return m_resolver->promise();
-    }
-
-    return ScriptPromise::rejectWithDOMException(m_resolver->scriptState(), DOMException::create(NotSupportedError, "No media device controller available"));
+    ASSERT(m_controller);
+    m_resolver->keepAliveWhilePending();
+    m_controller->requestMediaDevices(this);
+    return m_resolver->promise();
 }
 
 void MediaDevicesRequest::succeed(const MediaDeviceInfoVector& mediaDevices)
