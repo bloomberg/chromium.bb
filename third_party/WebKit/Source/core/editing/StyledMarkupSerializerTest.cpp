@@ -205,4 +205,12 @@ TEST_F(StyledMarkupSerializerTest, StyleDisplayNone)
     EXPECT_EQ(expectedResult, serialize<EditingInComposedTreeStrategy>());
 }
 
+TEST_F(StyledMarkupSerializerTest, StyleDisplayNoneAndNewLines)
+{
+    const char* bodyContent = "<div style='display:none'>11</div>\n\n";
+    setBodyContent(bodyContent);
+    EXPECT_EQ("", serialize<EditingStrategy>());
+    EXPECT_EQ("", serialize<EditingInComposedTreeStrategy>());
+}
+
 } // namespace blink

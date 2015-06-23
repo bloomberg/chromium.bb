@@ -273,7 +273,8 @@ StyledMarkupTraverser<Strategy>::StyledMarkupTraverser(StyledMarkupAccumulator* 
         ASSERT(!m_lastClosed);
         return;
     }
-    ASSERT(m_lastClosed);
+    if (!m_lastClosed)
+        return;
     ContainerNode* parent = Strategy::parent(*m_lastClosed);
     if (!parent)
         return;
