@@ -163,8 +163,10 @@ public abstract class ChromiumApplication extends ContentApplication {
             throws ProcessInitException {
         ThreadUtils.assertOnUiThread();
         initCommandLine();
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(this, true);
         final Context context = getApplicationContext();
+        LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
+        libraryLoader.ensureInitialized(context, true);
+        libraryLoader.asyncPrefetchLibrariesToMemory();
         // Kick off checking for a child account with an empty callback.
         ChildAccountService.getInstance(context).checkHasChildAccount(
                 new ChildAccountService.HasChildAccountCallback() {

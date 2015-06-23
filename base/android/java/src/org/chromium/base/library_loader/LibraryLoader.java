@@ -21,6 +21,8 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.annotation.Nullable;
 
 /**
@@ -82,6 +84,10 @@ public class LibraryLoader {
     // final (like now) or be protected in some way (volatile of synchronized).
     private final int mLibraryProcessType;
 
+    // One-way switch that becomes true once
+    // {@link asyncPrefetchLibrariesToMemory} has been called.
+    private final AtomicBoolean mPrefetchLibraryHasBeenCalled;
+
     /**
      * @param libraryProcessType the process the shared library is loaded in. refer to
      *                           LibraryProcessType for possible values.
@@ -101,6 +107,7 @@ public class LibraryLoader {
 
     private LibraryLoader(int libraryProcessType) {
         mLibraryProcessType = libraryProcessType;
+        mPrefetchLibraryHasBeenCalled = new AtomicBoolean();
     }
 
     /**
@@ -193,10 +200,9 @@ public class LibraryLoader {
      *
      * This is done this way, as testing shows that fadvise(FADV_WILLNEED) is
      * detrimental to the startup time.
-     *
-     * @param context the application context.
      */
-    public void asyncPrefetchLibrariesToMemory(final Context context) {
+    public void asyncPrefetchLibrariesToMemory() {
+        if (!mPrefetchLibraryHasBeenCalled.compareAndSet(false, true)) return;
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
