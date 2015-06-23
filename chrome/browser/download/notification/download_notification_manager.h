@@ -9,7 +9,7 @@
 
 #include "chrome/browser/download/download_ui_controller.h"
 #include "chrome/browser/download/notification/download_group_notification.h"
-#include "chrome/browser/download/notification/download_notification_item.h"
+#include "chrome/browser/download/notification/download_item_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 
@@ -27,7 +27,7 @@ class DownloadNotificationManager : public DownloadUIController::Delegate {
   DownloadNotificationManagerForProfile* GetForProfile(Profile* profile) const;
 
  private:
-  friend class test::DownloadNotificationItemTest;
+  friend class test::DownloadItemNotificationTest;
 
   Profile* main_profile_ = nullptr;
   std::map<Profile*, DownloadNotificationManagerForProfile*>
@@ -55,15 +55,15 @@ class DownloadNotificationManagerForProfile
   DownloadGroupNotification* GetGroupNotification() const;
 
  private:
-  friend class test::DownloadNotificationItemTest;
+  friend class test::DownloadItemNotificationTest;
 
   Profile* profile_ = nullptr;
   DownloadNotificationManager* parent_manager_;  // weak
   std::set<content::DownloadItem*> downloading_items_;
-  std::map<content::DownloadItem*, DownloadNotificationItem*> items_;
+  std::map<content::DownloadItem*, DownloadItemNotification*> items_;
   scoped_ptr<DownloadGroupNotification> group_notification_;
 
-  STLValueDeleter<std::map<content::DownloadItem*, DownloadNotificationItem*>>
+  STLValueDeleter<std::map<content::DownloadItem*, DownloadItemNotification*>>
       items_deleter_;
 };
 

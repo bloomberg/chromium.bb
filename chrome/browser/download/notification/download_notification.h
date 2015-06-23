@@ -16,7 +16,7 @@
 #include "ui/message_center/message_center_observer.h"
 
 namespace test {
-class DownloadNotificationItemTest;
+class DownloadItemNotificationTest;
 }
 
 class DownloadNotificationManagerForProfile;

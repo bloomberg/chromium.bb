@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/notification/download_notification_item.h"
+#include "chrome/browser/download/notification/download_item_notification.h"
 
 #include "base/files/file_util.h"
 #include "chrome/browser/browser_process.h"
@@ -55,7 +55,7 @@ std::string ReadNotificationImage(const base::FilePath& file_path) {
 
 }  // anonymous namespace
 
-DownloadNotificationItem::DownloadNotificationItem(
+DownloadItemNotification::DownloadItemNotification(
     content::DownloadItem* item,
     DownloadNotificationManagerForProfile* manager)
     : item_(item),
@@ -81,12 +81,12 @@ DownloadNotificationItem::DownloadNotificationItem(
   notification_->set_never_timeout(false);
 }
 
-DownloadNotificationItem::~DownloadNotificationItem() {
+DownloadItemNotification::~DownloadItemNotification() {
   if (image_decode_status_ == IN_PROGRESS)
     ImageDecoder::Cancel(this);
 }
 
-void DownloadNotificationItem::OnNotificationClose() {
+void DownloadItemNotification::OnNotificationClose() {
   visible_ = false;
 
   if (image_decode_status_ == IN_PROGRESS) {
@@ -95,7 +95,7 @@ void DownloadNotificationItem::OnNotificationClose() {
   }
 }
 
-void DownloadNotificationItem::OnNotificationClick() {
+void DownloadItemNotification::OnNotificationClick() {
   if (item_->IsDangerous()) {
 #if defined(FULL_SAFE_BROWSING)
     DownloadCommands(item_).ExecuteCommand(
@@ -127,7 +127,7 @@ void DownloadNotificationItem::OnNotificationClick() {
   }
 }
 
-void DownloadNotificationItem::OnNotificationButtonClick(int button_index) {
+void DownloadItemNotification::OnNotificationButtonClick(int button_index) {
   if (button_index < 0 ||
       static_cast<size_t>(button_index) >= button_actions_->size()) {
     // Out of boundary.
@@ -151,17 +151,17 @@ void DownloadNotificationItem::OnNotificationButtonClick(int button_index) {
 }
 
 // DownloadItem::Observer methods
-void DownloadNotificationItem::OnDownloadUpdated(content::DownloadItem* item) {
+void DownloadItemNotification::OnDownloadUpdated(content::DownloadItem* item) {
   DCHECK_EQ(item, item_);
 
   Update();
 }
 
-std::string DownloadNotificationItem::GetNotificationId() const {
+std::string DownloadItemNotification::GetNotificationId() const {
   return base::UintToString(item_->GetId());
 }
 
-void DownloadNotificationItem::CloseNotificationByNonUser() {
+void DownloadItemNotification::CloseNotificationByNonUser() {
   const std::string& notification_id = watcher()->id();
   const ProfileID profile_id = NotificationUIManager::GetProfileID(profile());
 
@@ -169,7 +169,7 @@ void DownloadNotificationItem::CloseNotificationByNonUser() {
       CancelById(notification_id, profile_id);
 }
 
-void DownloadNotificationItem::CloseNotificationByUser() {
+void DownloadItemNotification::CloseNotificationByUser() {
   const std::string& notification_id = watcher()->id();
   const ProfileID profile_id = NotificationUIManager::GetProfileID(profile());
   const std::string notification_id_in_message_center =
@@ -190,7 +190,7 @@ void DownloadNotificationItem::CloseNotificationByUser() {
       notification_id_in_message_center, true /* by_user */);
 }
 
-void DownloadNotificationItem::Update() {
+void DownloadItemNotification::Update() {
   auto download_state = item_->GetState();
 
   // When the download is just completed (or interrupted), close the
@@ -214,7 +214,7 @@ void DownloadNotificationItem::Update() {
   previous_download_state_ = item_->GetState();
 }
 
-void DownloadNotificationItem::UpdateNotificationData(
+void DownloadItemNotification::UpdateNotificationData(
     NotificationUpdateType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -358,13 +358,13 @@ void DownloadNotificationItem::UpdateNotificationData(
       base::PostTaskAndReplyWithResult(
           content::BrowserThread::GetBlockingPool(), FROM_HERE,
           base::Bind(&ReadNotificationImage, file_path),
-          base::Bind(&DownloadNotificationItem::OnImageLoaded,
+          base::Bind(&DownloadItemNotification::OnImageLoaded,
                      weak_factory_.GetWeakPtr()));
     }
   }
 }
 
-void DownloadNotificationItem::OnDownloadRemoved(content::DownloadItem* item) {
+void DownloadItemNotification::OnDownloadRemoved(content::DownloadItem* item) {
   // The given |item| may be already free'd.
   DCHECK_EQ(item, item_);
 
@@ -377,7 +377,7 @@ void DownloadNotificationItem::OnDownloadRemoved(content::DownloadItem* item) {
   item_ = nullptr;
 }
 
-void DownloadNotificationItem::SetNotificationIcon(int resource_id) {
+void DownloadItemNotification::SetNotificationIcon(int resource_id) {
   if (image_resource_id_ == resource_id)
     return;
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -385,7 +385,7 @@ void DownloadNotificationItem::SetNotificationIcon(int resource_id) {
   notification_->set_icon(bundle.GetImageNamed(image_resource_id_));
 }
 
-void DownloadNotificationItem::OnImageLoaded(const std::string& image_data) {
+void DownloadItemNotification::OnImageLoaded(const std::string& image_data) {
   if (image_data.empty())
     return;
 
@@ -393,14 +393,14 @@ void DownloadNotificationItem::OnImageLoaded(const std::string& image_data) {
   ImageDecoder::Start(this, image_data);
 }
 
-void DownloadNotificationItem::OnImageDecoded(const SkBitmap& decoded_image) {
+void DownloadItemNotification::OnImageDecoded(const SkBitmap& decoded_image) {
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(decoded_image);
   notification_->set_image(image);
   image_decode_status_ = DONE;
   UpdateNotificationData(UPDATE);
 }
 
-void DownloadNotificationItem::OnDecodeImageFailed() {
+void DownloadItemNotification::OnDecodeImageFailed() {
   DCHECK(notification_->image().IsEmpty());
 
   image_decode_status_ = FAILED;
@@ -408,7 +408,7 @@ void DownloadNotificationItem::OnDecodeImageFailed() {
 }
 
 scoped_ptr<std::vector<DownloadCommands::Command>>
-DownloadNotificationItem::GetExtraActions() const {
+DownloadItemNotification::GetExtraActions() const {
   scoped_ptr<std::vector<DownloadCommands::Command>> actions(
       new std::vector<DownloadCommands::Command>());
 
@@ -440,7 +440,7 @@ DownloadNotificationItem::GetExtraActions() const {
   return actions.Pass();
 }
 
-base::string16 DownloadNotificationItem::GetTitle() const {
+base::string16 DownloadItemNotification::GetTitle() const {
   base::string16 title_text;
   base::string16 file_name =
       item_->GetFileNameToReportUser().LossyDisplayName();
@@ -467,7 +467,7 @@ base::string16 DownloadNotificationItem::GetTitle() const {
   return title_text;
 }
 
-base::string16 DownloadNotificationItem::GetCommandLabel(
+base::string16 DownloadItemNotification::GetCommandLabel(
     DownloadCommands::Command command) const {
   int id = -1;
   switch (command) {
@@ -509,7 +509,7 @@ base::string16 DownloadNotificationItem::GetCommandLabel(
   return l10n_util::GetStringUTF16(id);
 }
 
-base::string16 DownloadNotificationItem::GetWarningText() const {
+base::string16 DownloadItemNotification::GetWarningText() const {
   // Should only be called if IsDangerous().
   DCHECK(item_->IsDangerous());
   base::string16 elided_filename =
@@ -551,13 +551,13 @@ base::string16 DownloadNotificationItem::GetWarningText() const {
   return base::string16();
 }
 
-Browser* DownloadNotificationItem::GetBrowser() const {
+Browser* DownloadItemNotification::GetBrowser() const {
   chrome::ScopedTabbedBrowserDisplayer browser_displayer(
       profile(), chrome::GetActiveDesktop());
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
 }
 
-Profile* DownloadNotificationItem::profile() const {
+Profile* DownloadItemNotification::profile() const {
   return Profile::FromBrowserContext(item_->GetBrowserContext());
 }

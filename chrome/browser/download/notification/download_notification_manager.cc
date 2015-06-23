@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/notification/download_group_notification.h"
-#include "chrome/browser/download/notification/download_notification_item.h"
+#include "chrome/browser/download/notification/download_item_notification.h"
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/download_item.h"
 #include "grit/theme_resources.h"
@@ -94,7 +94,7 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
     content::DownloadItem* download) {
   DCHECK(items_.find(download) != items_.end());
 
-  DownloadNotificationItem* item = items_[download];
+  DownloadItemNotification* item = items_[download];
   items_.erase(download);
 
   download->RemoveObserver(this);
@@ -112,7 +112,7 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
 void DownloadNotificationManagerForProfile::OnDownloadDestroyed(
     content::DownloadItem* download) {
   // Do nothing. Cleanup is done in OnDownloadRemoved().
-  DownloadNotificationItem* item = items_[download];
+  DownloadItemNotification* item = items_[download];
   items_.erase(download);
 
   item->OnDownloadRemoved(download);
@@ -133,7 +133,7 @@ void DownloadNotificationManagerForProfile::OnNewDownloadReady(
 
   // |item| object will be inserted to |items_| by |OnCreated()| called in the
   // constructor.
-  DownloadNotificationItem* item = new DownloadNotificationItem(download, this);
+  DownloadItemNotification* item = new DownloadItemNotification(download, this);
   items_.insert(std::make_pair(download, item));
 
   group_notification_->OnDownloadAdded(download);

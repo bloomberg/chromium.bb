@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_ITEM_H_
-#define CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_ITEM_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_ITEM_NOTIFICATION_H_
+#define CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_ITEM_NOTIFICATION_H_
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
@@ -19,16 +19,16 @@
 #include "ui/message_center/message_center_observer.h"
 
 namespace test {
-class DownloadNotificationItemTest;
+class DownloadItemNotificationTest;
 }
 
-class DownloadNotificationItem : public DownloadNotification,
+class DownloadItemNotification : public DownloadNotification,
                                  public ImageDecoder::ImageRequest {
  public:
-  DownloadNotificationItem(content::DownloadItem* item,
+  DownloadItemNotification(content::DownloadItem* item,
                            DownloadNotificationManagerForProfile* manager);
 
-  ~DownloadNotificationItem() override;
+  ~DownloadItemNotification() override;
 
   // Methods called from NotificationWatcher.
   void OnDownloadUpdated(content::DownloadItem* item) override;
@@ -39,7 +39,7 @@ class DownloadNotificationItem : public DownloadNotification,
   std::string GetNotificationId() const override;
 
  private:
-  friend class test::DownloadNotificationItemTest;
+  friend class test::DownloadItemNotificationTest;
 
   enum ImageDecodeStatus { NOT_STARTED, IN_PROGRESS, DONE, FAILED, NOT_IMAGE };
 
@@ -96,9 +96,9 @@ class DownloadNotificationItem : public DownloadNotification,
   // Status of the preview image decode.
   ImageDecodeStatus image_decode_status_ = NOT_STARTED;
 
-  base::WeakPtrFactory<DownloadNotificationItem> weak_factory_;
+  base::WeakPtrFactory<DownloadItemNotification> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationItem);
+  DISALLOW_COPY_AND_ASSIGN(DownloadItemNotification);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_ITEM_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_ITEM_NOTIFICATION_H_

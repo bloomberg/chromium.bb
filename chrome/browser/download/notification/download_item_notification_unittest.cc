@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/notification/download_notification_item.h"
+#include "chrome/browser/download/notification/download_item_notification.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -35,9 +35,9 @@ const base::FilePath::CharType kDownloadItemTargetPathString[] =
 
 namespace test {
 
-class DownloadNotificationItemTest : public testing::Test {
+class DownloadItemNotificationTest : public testing::Test {
  public:
-  DownloadNotificationItemTest()
+  DownloadItemNotificationTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         profile_(nullptr) {}
 
@@ -75,7 +75,7 @@ class DownloadNotificationItemTest : public testing::Test {
   }
 
   void TearDown() override {
-    download_notification_item_ = nullptr;  // will be free'd in the manager.
+    download_item_notification_ = nullptr;  // will be free'd in the manager.
     download_notification_manager_.reset();
     profile_manager_.reset();
     message_center::MessageCenter::Shutdown();
@@ -92,12 +92,12 @@ class DownloadNotificationItemTest : public testing::Test {
   }
 
   std::string notification_id() const {
-    return download_notification_item_->notification_->id();
+    return download_item_notification_->notification_->id();
   }
 
   const Notification* notification() const {
     return ui_manager()->FindById(
-        download_notification_item_->watcher()->id(),
+        download_item_notification_->watcher()->id(),
         NotificationUIManager::GetProfileID(profile_));
   }
 
@@ -105,33 +105,33 @@ class DownloadNotificationItemTest : public testing::Test {
     return ui_manager()
         ->GetAllIdsByProfileAndSourceOrigin(
               NotificationUIManager::GetProfileID(profile_),
-              GURL(DownloadNotificationItem::kDownloadNotificationOrigin))
+              GURL(DownloadItemNotification::kDownloadNotificationOrigin))
         .size();
   }
 
   void RemoveNotification() {
-    ui_manager()->CancelById(download_notification_item_->watcher()->id(),
+    ui_manager()->CancelById(download_item_notification_->watcher()->id(),
                              NotificationUIManager::GetProfileID(profile_));
 
     // Waits, since removing a notification may cause an async job.
     base::RunLoop().RunUntilIdle();
   }
 
-  // Trampoline methods to access a private method in DownloadNotificationItem.
+  // Trampoline methods to access a private method in DownloadItemNotification.
   void NotificationItemClick() {
-    return download_notification_item_->OnNotificationClick();
+    return download_item_notification_->OnNotificationClick();
   }
   void NotificationItemButtonClick(int index) {
-    return download_notification_item_->OnNotificationButtonClick(index);
+    return download_item_notification_->OnNotificationButtonClick(index);
   }
 
   bool ShownAsPopUp() {
-    return !download_notification_item_->notification_->shown_as_popup();
+    return !download_item_notification_->notification_->shown_as_popup();
   }
 
-  void CreateDownloadNotificationItem() {
+  void CreateDownloadItemNotification() {
     download_notification_manager_->OnNewDownloadReady(download_item_.get());
-    download_notification_item_ =
+    download_item_notification_ =
         download_notification_manager_->items_[download_item_.get()];
   }
 
@@ -144,14 +144,14 @@ class DownloadNotificationItemTest : public testing::Test {
   scoped_ptr<NiceMock<content::MockDownloadItem>> download_item_;
   scoped_ptr<DownloadNotificationManagerForProfile>
       download_notification_manager_;
-  DownloadNotificationItem* download_notification_item_;
+  DownloadItemNotification* download_item_notification_;
 };
 
-TEST_F(DownloadNotificationItemTest, ShowAndCloseNotification) {
+TEST_F(DownloadItemNotificationTest, ShowAndCloseNotification) {
   EXPECT_EQ(0u, NotificationCount());
 
   // Shows a notification
-  CreateDownloadNotificationItem();
+  CreateDownloadItemNotification();
   download_item_->NotifyObserversDownloadOpened();
 
   // Confirms that the notification is shown as a popup.
@@ -170,9 +170,9 @@ TEST_F(DownloadNotificationItemTest, ShowAndCloseNotification) {
   EXPECT_CALL(*download_item_, Cancel(_)).Times(0);
 }
 
-TEST_F(DownloadNotificationItemTest, PauseAndResumeNotification) {
+TEST_F(DownloadItemNotificationTest, PauseAndResumeNotification) {
   // Shows a notification
-  CreateDownloadNotificationItem();
+  CreateDownloadItemNotification();
   download_item_->NotifyObserversDownloadOpened();
 
   // Confirms that the notification is shown as a popup.
@@ -191,13 +191,13 @@ TEST_F(DownloadNotificationItemTest, PauseAndResumeNotification) {
   download_item_->NotifyObserversDownloadUpdated();
 }
 
-TEST_F(DownloadNotificationItemTest, OpenDownload) {
+TEST_F(DownloadItemNotificationTest, OpenDownload) {
   EXPECT_CALL(*download_item_, GetState())
       .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
   EXPECT_CALL(*download_item_, IsDone()).WillRepeatedly(Return(true));
 
   // Shows a notification.
-  CreateDownloadNotificationItem();
+  CreateDownloadItemNotification();
   download_item_->NotifyObserversDownloadOpened();
   download_item_->NotifyObserversDownloadUpdated();
 
@@ -207,9 +207,9 @@ TEST_F(DownloadNotificationItemTest, OpenDownload) {
   NotificationItemClick();
 }
 
-TEST_F(DownloadNotificationItemTest, OpenWhenComplete) {
+TEST_F(DownloadItemNotificationTest, OpenWhenComplete) {
   // Shows a notification
-  CreateDownloadNotificationItem();
+  CreateDownloadItemNotification();
   download_item_->NotifyObserversDownloadOpened();
 
   EXPECT_CALL(*download_item_, OpenDownload()).Times(0);
