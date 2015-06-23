@@ -356,22 +356,6 @@ crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-transform.html 
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 
-crbug.com/501798 fast/repaint/horizontal-bt-overflow-child.html [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/overflow-auto-in-overflow-auto-scrolled.html [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/overflow-hidden-in-overflow-hidden-scrolled.html [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/overflow-scroll-in-overflow-scroll-scrolled.html [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-absolute-layer-with-reflection.html   [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-fixed-layer-with-reflection.html  [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-fixed-layer-with-transformed-parent-layer.html  [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-in-clipped-layer.html [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-in-fixed-layer.html   [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-inside-table-cell.html  [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-relative-table-inside-table-cell.html [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/scroll-with-transformed-parent-layer.html  [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/table-overflow-auto-in-overflow-auto-scrolled.html   [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/table-overflow-scroll-in-overflow-scroll-scrolled.html   [ NeedsRebaseline ]
-crbug.com/501798 fast/repaint/vertical-overflow-child.html [ NeedsRebaseline ]
-
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ ImageOnlyFailure ]

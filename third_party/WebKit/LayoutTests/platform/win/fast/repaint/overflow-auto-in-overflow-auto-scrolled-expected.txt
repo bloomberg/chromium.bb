@@ -8,6 +8,7 @@
       "repaintRects": [
         [762, 8, 15, 300],
         [8, 8, 769, 300],
+        [8, 8, 300, 300],
         [8, 8, 300, 300]
       ],
       "paintInvalidationClients": [
