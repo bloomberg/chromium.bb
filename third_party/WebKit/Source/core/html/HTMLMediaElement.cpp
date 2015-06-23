@@ -357,10 +357,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_processingPreferenceChange(false)
     , m_remoteRoutesAvailable(false)
     , m_playingRemotely(false)
-#if ENABLE(OILPAN)
     , m_isFinalizing(false)
-    , m_closeMediaSourceWhenFinalizing(false)
-#endif
     , m_initialPlayWithoutUserGestures(false)
     , m_autoplayMediaCounted(false)
     , m_audioTracks(AudioTrackList::create(*this))
@@ -387,24 +384,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 HTMLMediaElement::~HTMLMediaElement()
 {
     WTF_LOG(Media, "HTMLMediaElement::~HTMLMediaElement(%p)", this);
-
-#if ENABLE(OILPAN)
-    if (m_closeMediaSourceWhenFinalizing)
-        closeMediaSource();
-
-    // Oilpan: the player must be released, but the player object
-    // cannot safely access this player client any longer as parts of
-    // it may have been finalized already (like the media element's
-    // supplementable table.)  Handled for now by entering an
-    // is-finalizing state, which is explicitly checked for if the
-    // player tries to access the media element during shutdown.
-    //
-    // FIXME: Oilpan: move the media player to the heap instead and
-    // avoid having to finalize it from here; this whole #if block
-    // could then be removed (along with the state bit it depends on.)
-    // crbug.com/378229
-    m_isFinalizing = true;
-#else
+#if !ENABLE(OILPAN)
     // HTMLMediaElement and m_asyncEventQueue always become unreachable
     // together. So HTMLMediaElement and m_asyncEventQueue are destructed in
     // the same GC. We don't need to close it explicitly in Oilpan.
@@ -424,19 +404,14 @@ HTMLMediaElement::~HTMLMediaElement()
     closeMediaSource();
 
     removeElementFromDocumentMap(this, &document());
-#endif
 
     // Destroying the player may cause a resource load to be canceled,
     // which could result in userCancelledLoad() being called back.
-    // Setting m_completelyLoaded ensures that such a call will not cause
+    // Setting m_isFinalizing ensures that such a call will not cause
     // us to dispatch an abort event, which would result in a crash.
     // See http://crbug.com/233654 for more details.
-    m_completelyLoaded = true;
+    m_isFinalizing = true;
 
-    // With Oilpan load events on the Document are always delayed during
-    // sweeping so we don't need to explicitly increment and decrement
-    // load event delay counts.
-#if !ENABLE(OILPAN)
     // Destroying the player may cause a resource load to be canceled,
     // which could result in Document::dispatchWindowLoadEvent() being
     // called via ResourceFetch::didLoadResource() then
@@ -444,19 +419,18 @@ HTMLMediaElement::~HTMLMediaElement()
     // object destruction, we use Document::incrementLoadEventDelayCount().
     // See http://crbug.com/275223 for more details.
     document().incrementLoadEventDelayCount();
+
+    clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
+
+    document().decrementLoadEventDelayCount();
 #endif
 
+#if ENABLE(WEB_AUDIO)
     // m_audioSourceNode is explicitly cleared by AudioNode::dispose().
     // Since AudioNode::dispose() is guaranteed to be always called before
     // the AudioNode is destructed, m_audioSourceNode is explicitly cleared
     // even if the AudioNode and the HTMLMediaElement die together.
-#if ENABLE(WEB_AUDIO)
     ASSERT(!m_audioSourceNode);
-#endif
-    clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
-
-#if !ENABLE(OILPAN)
-    document().decrementLoadEventDelayCount();
 #endif
 }
 
@@ -479,12 +453,26 @@ void HTMLMediaElement::dispose()
     // same GC, we do update the delayed load count from the prefinalizer.
     if (ActiveDOMObject::executionContext())
         setShouldDelayLoadEvent(false);
-}
 
-void HTMLMediaElement::setCloseMediaSourceWhenFinalizing()
-{
-    ASSERT(!m_closeMediaSourceWhenFinalizing);
-    m_closeMediaSourceWhenFinalizing = true;
+    // If the MediaSource object survived, notify that the media element
+    // didn't.
+    if (Heap::isHeapObjectAlive(m_mediaSource))
+        closeMediaSource();
+
+    // Oilpan: the player must be released, but the player object
+    // cannot safely access this player client any longer as parts of
+    // it may have been finalized already (like the media element's
+    // supplementable table.)  Handled for now by entering an
+    // is-finalizing state, which is explicitly checked for if the
+    // player tries to access the media element during shutdown.
+    //
+    // FIXME: Oilpan: move the media player to the heap instead and
+    // avoid having to finalize it from here; this whole #if block
+    // could then be removed (along with the state bit it depends on.)
+    // crbug.com/378229
+    m_isFinalizing = true;
+
+    clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
 }
 #endif
 
@@ -2996,7 +2984,7 @@ void HTMLMediaElement::userCancelledLoad()
     // 1 - The user agent should cancel the fetching process.
     clearMediaPlayer(-1);
 
-    if (m_networkState == NETWORK_EMPTY || m_completelyLoaded)
+    if (m_networkState == NETWORK_EMPTY || m_completelyLoaded || m_isFinalizing)
         return;
 
     // 2 - Set the error attribute to a new MediaError object whose code attribute is set to MEDIA_ERR_ABORTED.

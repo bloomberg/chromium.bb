@@ -107,7 +107,6 @@ public:
     void removedFromRegistry();
 
     DECLARE_VIRTUAL_TRACE();
-    void clearWeakMembers(Visitor*);
 
 private:
     explicit MediaSource(ExecutionContext*);

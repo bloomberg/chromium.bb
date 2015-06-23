@@ -263,27 +263,14 @@ ExecutionContext* MediaSource::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-void MediaSource::clearWeakMembers(Visitor* visitor)
-{
-#if ENABLE(OILPAN)
-    // Oilpan: If the MediaSource survived, but its attached media
-    // element did not, signal the element that it can safely
-    // notify its MediaSource during finalization by calling close().
-    if (m_attachedElement && !Heap::isHeapObjectAlive(m_attachedElement)) {
-        m_attachedElement->setCloseMediaSourceWhenFinalizing();
-        m_attachedElement.clear();
-    }
-#endif
-}
-
 DEFINE_TRACE(MediaSource)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_asyncEventQueue);
 #endif
+    visitor->trace(m_attachedElement);
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);
-    visitor->template registerWeakMembers<MediaSource, &MediaSource::clearWeakMembers>(this);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaSource>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

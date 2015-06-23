@@ -271,17 +271,6 @@ public:
     // Returns the "effective media volume" value as specified in the HTML5 spec.
     double effectiveMediaVolume() const;
 
-#if ENABLE(OILPAN)
-    // Oilpan: finalization of the media element is observable from its
-    // attached MediaSource; it entering a closed state.
-    //
-    // Express that by having the MediaSource keep a weak reference
-    // to the media element and signal that it wants to be notified
-    // of destruction if it survives a GC, but the media element
-    // doesn't.
-    void setCloseMediaSourceWhenFinalizing();
-#endif
-
     // Predicates also used when dispatching wrapper creation (cf. [SpecialWrapFor] IDL attribute usage.)
     virtual bool isHTMLAudioElement() const { return false; }
     virtual bool isHTMLVideoElement() const { return false; }
@@ -557,10 +546,7 @@ private:
     bool m_processingPreferenceChange : 1;
     bool m_remoteRoutesAvailable : 1;
     bool m_playingRemotely : 1;
-#if ENABLE(OILPAN)
     bool m_isFinalizing : 1;
-    bool m_closeMediaSourceWhenFinalizing : 1;
-#endif
     bool m_initialPlayWithoutUserGestures : 1;
     bool m_autoplayMediaCounted : 1;
 
