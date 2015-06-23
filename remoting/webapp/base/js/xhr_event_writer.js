@@ -28,6 +28,8 @@ remoting.XhrEventWriter = function(url, storage, storageKey) {
   this.storageKey_ = storageKey;
   /** @private */
   this.pendingRequests_ = new Map();
+  /** @private {base.Deferred} */
+  this.pendingFlush_ = null;
 };
 
 /**
@@ -60,14 +62,48 @@ remoting.XhrEventWriter.prototype.write = function(event) {
  * @return {Promise} A promise that resolves on success.
  */
 remoting.XhrEventWriter.prototype.flush = function() {
-  var promises = /** @type {!Array<!Promise>} */ ([]);
-  var that = this;
+  if (!this.pendingFlush_) {
+    var that = this;
+    this.pendingFlush_ = new base.Deferred();
+
+    var onFailure = function(/** * */e) {
+      that.pendingFlush_.reject(e);
+      that.pendingFlush_ = null;
+    };
+
+    var flushAll = function() {
+      if (that.pendingRequests_.size > 0) {
+        that.doFlush_().then(flushAll, onFailure);
+      } else {
+        that.pendingFlush_.resolve();
+        that.pendingFlush_ = null;
+      }
+    };
+
+    // Ensures that |this.pendingFlush_| won't be set to null
+    // in the same stack frame.
+    Promise.resolve().then(flushAll);
+  }
+
+  return this.pendingFlush_.promise();
+};
+
+/**
+ * @return {Promise} A promise that resolves on success.
+ * @private
+ */
+remoting.XhrEventWriter.prototype.doFlush_ = function() {
+  var payLoad = [];
+  var requestIds = [];
+
   // Map.forEach enumerates the entires of the map in insertion order.
   this.pendingRequests_.forEach(
     function(/** Object */ event, /** string */ requestId) {
-      promises.push(that.doXhr_(requestId, event));
+      requestIds.push(requestId);
+      payLoad.push(event);
     });
-  return Promise.all(promises);
+
+  return this.doXhr_(requestIds, {'event': payLoad});
 };
 
 /**
@@ -89,12 +125,12 @@ remoting.XhrEventWriter.prototype.writeToStorage = function() {
 };
 
 /**
- * @param {string} requestId
+ * @param {Array<string>} requestIds
  * @param {Object} event
  * @return {Promise}
  * @private
  */
-remoting.XhrEventWriter.prototype.doXhr_ = function(requestId, event) {
+remoting.XhrEventWriter.prototype.doXhr_ = function(requestIds, event) {
   var that = this;
   var XHR_RETRY_ATTEMPTS = 20;
   var xhr = new remoting.AutoRetryXhr(
@@ -104,7 +140,9 @@ remoting.XhrEventWriter.prototype.doXhr_ = function(requestId, event) {
     // Only store requests that are failed with NETWORK_FAILURE, so that
     // malformed requests won't be stuck in the client forever.
     if (!error.hasTag(remoting.Error.Tag.NETWORK_FAILURE)) {
-      that.pendingRequests_.delete(requestId);
+      requestIds.forEach(function(/** string */ requestId) {
+        that.pendingRequests_.delete(requestId);
+      });
     }
     if (!error.isNone()) {
       throw error;
