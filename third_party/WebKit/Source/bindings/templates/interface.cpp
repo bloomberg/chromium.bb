@@ -797,24 +797,10 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 {##############################################################################}
 {% block install_conditional_attributes %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
-{% if has_conditional_attributes %}
+{% if has_conditional_attributes_on_instance %}
 void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> instanceObject, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
-    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-
-    {% for attribute in attributes if attribute.exposed_test %}
-    {% filter exposed(attribute.exposed_test) %}
-#error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-// TODO(yukishiino): Implement the feature again if there is a client.
-    {% endfilter %}
-    {% endfor %}
-    {% for method in methods if method.exposed_test %}
-    {% filter exposed(method.exposed_test) %}
-#error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-// TODO(yukishiino): Implement the feature again if there is a client.
-    {% endfilter %}
-    {% endfor %}
+#error TODO(yukishiino): Rename this function to prepareInstanceObject (c.f. preparePrototypeObject) and implement this function if necessary.  http://crbug.com/503508
 }
 
 {% endif %}
@@ -824,11 +810,14 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
 {##############################################################################}
 {% block prepare_prototype_object %}
 {% from 'methods.cpp' import install_conditionally_enabled_methods with context %}
-{% if unscopeables or conditionally_enabled_methods %}
-void {{v8_class}}::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject)
+{% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %}
+void {{v8_class}}::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
 {% if unscopeables %}
     {{install_unscopeables() | indent}}
+{% endif %}
+{% if has_conditional_attributes_on_prototype %}
+    {{install_conditionally_enabled_attributes_on_prototype() | indent}}
 {% endif %}
 {% if conditionally_enabled_methods %}
     {{install_conditionally_enabled_methods() | indent}}
@@ -854,6 +843,20 @@ unscopeables->CreateDataProperty(v8Context, v8AtomicString(isolate, "{{name}}"),
 {% endfilter %}
 {% endfor %}
 prototypeObject->CreateDataProperty(v8Context, unscopablesSymbol, unscopeables).FromJust();
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro install_conditionally_enabled_attributes_on_prototype() %}
+{% from 'attributes.cpp' import attribute_configuration with context %}
+ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
+v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+{% for attribute in attributes if attribute.exposed_test and attribute.on_prototype %}
+{% filter exposed(attribute.exposed_test) %}
+static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
+V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, v8::Local<v8::Function>(), signature, accessorConfiguration);
+{% endfilter %}
+{% endfor %}
 {% endmacro %}
 
 

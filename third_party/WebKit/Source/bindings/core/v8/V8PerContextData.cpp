@@ -93,7 +93,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
 
     v8::Local<v8::Context> currentContext = context();
     v8::Context::Scope scope(currentContext);
-    // We shouldn't reach this point for the types that are implemented in v8 suche as typed arrays and
+    // We shouldn't reach this point for the types that are implemented in v8 such as typed arrays and
     // hence don't have domTemplateFunction.
     ASSERT(type->domTemplateFunction);
     v8::Local<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate);
@@ -114,7 +114,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
     if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount
         && type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
         prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-    type->preparePrototypeObject(m_isolate, prototypeObject);
+    type->preparePrototypeObject(m_isolate, prototypeObject, functionTemplate);
     if (type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeExceptionPrototype) {
         if (!v8CallBoolean(prototypeObject->SetPrototype(currentContext, m_errorPrototype.newLocal(m_isolate))))
             return v8::Local<v8::Function>();

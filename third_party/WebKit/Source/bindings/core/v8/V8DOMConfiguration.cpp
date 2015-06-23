@@ -62,7 +62,11 @@ void installAttributeInternal(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate
         ASSERT_NOT_REACHED();
 }
 
-v8::Local<v8::FunctionTemplate> createAccessorFunctionTemplate(v8::Isolate* isolate, v8::FunctionCallback callback, v8::Local<v8::Value> data, v8::Local<v8::Signature> signature, int length)
+template<class FunctionOrTemplate>
+v8::Local<FunctionOrTemplate> createAccessorFunctionOrTemplate(v8::Isolate*, v8::FunctionCallback, v8::Local<v8::Value> data, v8::Local<v8::Signature>, int length);
+
+template<>
+v8::Local<v8::FunctionTemplate> createAccessorFunctionOrTemplate<v8::FunctionTemplate>(v8::Isolate* isolate, v8::FunctionCallback callback, v8::Local<v8::Value> data, v8::Local<v8::Signature> signature, int length)
 {
     v8::Local<v8::FunctionTemplate> functionTemplate;
     if (callback) {
@@ -75,7 +79,25 @@ v8::Local<v8::FunctionTemplate> createAccessorFunctionTemplate(v8::Isolate* isol
     return functionTemplate;
 }
 
-void installAccessorInternal(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::Signature> signature, const V8DOMConfiguration::AccessorConfiguration& accessor, const DOMWrapperWorld& world)
+template<>
+v8::Local<v8::Function> createAccessorFunctionOrTemplate<v8::Function>(v8::Isolate* isolate, v8::FunctionCallback callback, v8::Local<v8::Value> data, v8::Local<v8::Signature> signature, int length)
+{
+    if (!callback)
+        return v8::Local<v8::Function>();
+
+    v8::Local<v8::FunctionTemplate> functionTemplate = createAccessorFunctionOrTemplate<v8::FunctionTemplate>(isolate, callback, data, signature, length);
+    if (functionTemplate.IsEmpty())
+        return v8::Local<v8::Function>();
+
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Function> function;
+    if (!functionTemplate->GetFunction(context).ToLocal(&function))
+        return v8::Local<v8::Function>();
+    return function;
+}
+
+template<class ObjectOrTemplate, class FunctionOrTemplate>
+void installAccessorInternal(v8::Isolate* isolate, v8::Local<ObjectOrTemplate> instanceOrTemplate, v8::Local<ObjectOrTemplate> prototypeOrTemplate, v8::Local<FunctionOrTemplate> interfaceOrTemplate, v8::Local<v8::Signature> signature, const V8DOMConfiguration::AccessorConfiguration& accessor, const DOMWrapperWorld& world)
 {
     if (accessor.exposeConfiguration == V8DOMConfiguration::OnlyExposedToPrivateScript
         && !world.isPrivateScriptIsolatedWorld())
@@ -96,16 +118,22 @@ void installAccessorInternal(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate>
     if (accessor.holderCheckConfiguration == V8DOMConfiguration::DoNotCheckHolder)
         signature = v8::Local<v8::Signature>();
     v8::Local<v8::Value> data = v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessor.data));
-    v8::Local<v8::FunctionTemplate> getter = createAccessorFunctionTemplate(isolate, getterCallback, data, signature, 0);
-    v8::Local<v8::FunctionTemplate> setter = createAccessorFunctionTemplate(isolate, setterCallback, data, signature, 1);
 
     ASSERT(accessor.propertyLocationConfiguration);
-    if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
-        instanceTemplate->SetAccessorProperty(name, getter, setter, accessor.attribute, accessor.settings);
-    if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
-        prototypeTemplate->SetAccessorProperty(name, getter, setter, accessor.attribute, accessor.settings);
-    if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnInterface)
-        interfaceTemplate->SetAccessorProperty(name, getter, setter, accessor.attribute, accessor.settings);
+    if (accessor.propertyLocationConfiguration &
+        (V8DOMConfiguration::OnInstance | V8DOMConfiguration::OnPrototype)) {
+        v8::Local<FunctionOrTemplate> getter = createAccessorFunctionOrTemplate<FunctionOrTemplate>(isolate, getterCallback, data, signature, 0);
+        v8::Local<FunctionOrTemplate> setter = createAccessorFunctionOrTemplate<FunctionOrTemplate>(isolate, setterCallback, data, signature, 1);
+        if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
+            instanceOrTemplate->SetAccessorProperty(name, getter, setter, accessor.attribute, accessor.settings);
+        if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
+            prototypeOrTemplate->SetAccessorProperty(name, getter, setter, accessor.attribute, accessor.settings);
+    }
+    if (accessor.propertyLocationConfiguration & V8DOMConfiguration::OnInterface) {
+        v8::Local<FunctionOrTemplate> getter = createAccessorFunctionOrTemplate<FunctionOrTemplate>(isolate, getterCallback, data, v8::Local<v8::Signature>(), 0);
+        v8::Local<FunctionOrTemplate> setter = createAccessorFunctionOrTemplate<FunctionOrTemplate>(isolate, setterCallback, data, v8::Local<v8::Signature>(), 1);
+        interfaceOrTemplate->SetAccessorProperty(name, getter, setter, accessor.attribute, accessor.settings);
+    }
 }
 
 void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const V8DOMConfiguration::ConstantConfiguration& constant)
@@ -185,6 +213,12 @@ void V8DOMConfiguration::installAccessor(v8::Isolate* isolate, v8::Local<v8::Obj
 {
     const DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
     installAccessorInternal(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessor, world);
+}
+
+void V8DOMConfiguration::installAccessor(v8::Isolate* isolate, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface, v8::Local<v8::Signature> signature, const AccessorConfiguration& accessor)
+{
+    const DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
+    installAccessorInternal(isolate, instance, prototype, interface, signature, accessor, world);
 }
 
 void V8DOMConfiguration::installConstants(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration* constants, size_t constantCount)

@@ -324,9 +324,9 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
 }
 
-void V8TestInterfacePartial::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject)
+void V8TestInterfacePartial::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
-    V8TestInterface::preparePrototypeObject(isolate, prototypeObject);
+    V8TestInterface::preparePrototypeObject(isolate, prototypeObject, interfaceTemplate);
     v8::Local<v8::Context> v8Context(prototypeObject->CreationContext());
     v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
     v8::Local<v8::Object> unscopeables;

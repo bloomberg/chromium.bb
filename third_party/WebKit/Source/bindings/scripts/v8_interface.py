@@ -298,7 +298,6 @@ def interface_context(interface):
                   attribute['runtime_enabled_function'])
              and attribute['should_be_exposed_to_script']
              for attribute in attributes),
-        'has_conditional_attributes': has_conditional_attributes,
         'has_constructor_attributes': any(attribute['constructor_type'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
     })
@@ -558,6 +557,20 @@ def interface_context(interface):
         'iterator_method': iterator_method,
         'method_configuration_methods': method_configuration_methods,
         'methods': methods,
+    })
+
+    # Conditionally enabled members
+    has_conditional_attributes_on_instance = any(
+        attribute['exposed_test'] and attribute['on_instance']
+        for attribute in attributes)
+    has_conditional_attributes_on_prototype = any(
+        attribute['exposed_test'] and attribute['on_prototype']
+        for attribute in attributes)
+    context.update({
+        'has_conditional_attributes_on_instance':
+            has_conditional_attributes_on_instance,
+        'has_conditional_attributes_on_prototype':
+            has_conditional_attributes_on_prototype,
     })
 
     context.update({

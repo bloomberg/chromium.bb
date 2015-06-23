@@ -101,6 +101,8 @@ public:
 
     static void installAccessor(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::Signature>, const AccessorConfiguration&);
 
+    static void installAccessor(v8::Isolate*, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface, v8::Local<v8::Signature>, const AccessorConfiguration&);
+
     enum ConstantType {
         ConstantTypeShort,
         ConstantTypeLong,

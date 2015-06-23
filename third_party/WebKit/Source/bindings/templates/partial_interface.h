@@ -29,7 +29,7 @@ public:
     {% endif %}
     {% endfor %}
     {# Custom internal fields #}
-    static void preparePrototypeObject(v8::Isolate*, v8::Local<v8::Object>);
+    static void preparePrototypeObject(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::FunctionTemplate>);
 private:
     static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
 };

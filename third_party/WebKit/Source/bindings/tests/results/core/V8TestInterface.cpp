@@ -2476,63 +2476,18 @@ TestInterfaceImplementation* V8TestInterface::toImplWithTypeCheck(v8::Isolate* i
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterface::installConditionallyEnabledProperties(v8::Local<v8::Object> instanceObject, v8::Isolate* isolate)
+void V8TestInterface::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
-    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
     ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-
-if (context && (context->isWorkerGlobalScope())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isWorkerGlobalScope())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isWorkerGlobalScope())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && ((context->isDocument() && RuntimeEnabledFeatures::featureNameEnabled()) || (context->isWorkerGlobalScope() && RuntimeEnabledFeatures::featureName2Enabled()))) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
-    #error No one is actually using per-member [Exposed] extended attribute.  Not supported.  Contact to blink-reviews-bindings@ if you need.
-    // TODO(yukishiino): Implement the feature again if there is a client.
-}
-}
-
-void V8TestInterface::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject)
-{
+    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+    if (context && (context->isWorkerGlobalScope())) {
+        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"workerExposedAttribute", TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+        V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, v8::Local<v8::Function>(), signature, accessorConfiguration);
+    }
+    if (context && (context->isDocument())) {
+        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"windowExposedAttribute", TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+        V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, v8::Local<v8::Function>(), signature, accessorConfiguration);
+    }
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
     ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
     ASSERT(context);

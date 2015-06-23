@@ -54,7 +54,7 @@ typedef void (*DerefObjectFunction)(ScriptWrappable*);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
-typedef void (*PreparePrototypeObjectFunction)(v8::Isolate*, v8::Local<v8::Object>);
+typedef void (*PreparePrototypeObjectFunction)(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::FunctionTemplate>);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Local<v8::Object>, v8::Isolate*);
 
 inline void setObjectGroup(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
@@ -142,16 +142,16 @@ struct WrapperTypeInfo {
         return traceFunction(visitor, scriptWrappable);
     }
 
-    void preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeTemplate) const
+    void preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) const
     {
         if (preparePrototypeObjectFunction)
-            preparePrototypeObjectFunction(isolate, prototypeTemplate);
+            preparePrototypeObjectFunction(isolate, prototypeObject, interfaceTemplate);
     }
 
-    void installConditionallyEnabledProperties(v8::Local<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
+    void installConditionallyEnabledProperties(v8::Local<v8::Object> prototypeObject, v8::Isolate* isolate) const
     {
         if (installConditionallyEnabledPropertiesFunction)
-            installConditionallyEnabledPropertiesFunction(prototypeTemplate, isolate);
+            installConditionallyEnabledPropertiesFunction(prototypeObject, isolate);
     }
 
     ActiveDOMObject* toActiveDOMObject(v8::Local<v8::Object> object) const
@@ -193,7 +193,7 @@ struct WrapperTypeInfo {
 
 static_assert(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct gin::WrapperInfo, embedder), "offset of WrapperTypeInfo.ginEmbedder must be the same as gin::WrapperInfo.embedder");
 
-template <typename T, int offset>
+template<typename T, int offset>
 inline T* getInternalField(const v8::PersistentBase<v8::Object>& persistent)
 {
     ASSERT(offset < v8::Object::InternalFieldCount(persistent));
