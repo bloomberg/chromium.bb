@@ -22,11 +22,9 @@
 #include "media/cdm/default_cdm_factory.h"
 #include "media/filters/default_media_permission.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
-#include "media/mojo/services/media_service_provider.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
-#include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 
 namespace html_viewer {
@@ -37,32 +35,6 @@ namespace {
 // media::Renderer implementation.
 // TODO(xhwang): Move this to media_switches.h.
 const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
-
-// A media::MediaServiceProvider implementation based on mojo::ServiceProvider.
-class MojoMediaServiceProvider : public media::MediaServiceProvider {
- public:
-  explicit MojoMediaServiceProvider(
-      mojo::ServiceProvider* mojo_service_provider)
-      : mojo_service_provider_(mojo_service_provider) {
-    DCHECK(mojo_service_provider_);
-  }
-  ~MojoMediaServiceProvider() final {}
-
-  void ConnectToService(
-      mojo::InterfacePtr<mojo::MediaRenderer>* media_renderer_ptr) final {
-    mojo::ConnectToService(mojo_service_provider_, media_renderer_ptr);
-  }
-
-  void ConnectToService(
-      mojo::InterfacePtr<mojo::ContentDecryptionModule>* cdm_ptr) final {
-    mojo::ConnectToService(mojo_service_provider_, cdm_ptr);
-  }
-
- private:
-  mojo::ServiceProvider* mojo_service_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoMediaServiceProvider);
-};
 
 bool AreSecureCodecsSupported() {
   // Hardware-secure codecs are not currently supported by HTML Viewer on any
@@ -139,17 +111,12 @@ blink::WebEncryptedMediaClient* MediaFactory::GetEncryptedMediaClient() {
   return web_encrypted_media_client_.get();
 }
 
-media::MediaServiceProvider* MediaFactory::GetMediaServiceProvider() {
+mojo::ServiceProvider* MediaFactory::GetMediaServiceProvider() {
   if (!media_service_provider_) {
-    if (!mojo_service_provider_ptr_) {
-      mojo::URLRequestPtr request(mojo::URLRequest::New());
-      request->url = mojo::String::From("mojo:media");
-      shell_->ConnectToApplication(
-          request.Pass(), GetProxy(&mojo_service_provider_ptr_), nullptr);
-    }
-
-    media_service_provider_.reset(
-        new MojoMediaServiceProvider(mojo_service_provider_ptr_.get()));
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:media");
+    shell_->ConnectToApplication(request.Pass(),
+                                 GetProxy(&media_service_provider_), nullptr);
   }
 
   return media_service_provider_.get();

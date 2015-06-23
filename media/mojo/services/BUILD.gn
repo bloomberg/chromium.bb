@@ -40,8 +40,6 @@ source_set("converters") {
 # Implementations of media C++ interfaces using corresponding mojo services.
 source_set("proxy") {
   sources = [
-    "media_service_provider.cc",
-    "media_service_provider.h",
     "mojo_cdm.cc",
     "mojo_cdm.h",
     "mojo_demuxer_stream_impl.cc",
@@ -131,6 +129,23 @@ source_set("renderer_service") {
   ]
 }
 
+source_set("application") {
+  sources = [
+    "mojo_media_application.cc",
+    "mojo_media_application.h",
+  ]
+
+  public_configs = [ ":enable_media_mojo_renderer_config" ]
+
+  deps = [
+    ":cdm_service",
+    ":renderer_service",
+    "//base",
+    "//mojo/application/public/cpp",
+    "//third_party/mojo/src/mojo/public/c/system:for_component",
+  ]
+}
+
 test("media_mojo_unittests") {
   sources = [
     "media_type_converters_unittest.cc",
@@ -152,12 +167,11 @@ test("media_mojo_unittests") {
 if (!is_component_build) {
   mojo_native_application("media") {
     sources = [
-      "mojo_media_application.cc",
+      "main.cc",
     ]
 
     deps = [
-      ":renderer_service",
-      "//mojo/application/public/cpp",
+      ":application",
       "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     ]
   }

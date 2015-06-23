@@ -76,11 +76,6 @@
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
-#include "media/mojo/interfaces/media_renderer.mojom.h"
-#include "media/mojo/services/mojo_renderer_service.h"
-#endif
-
 #if defined(ENABLE_WEBVR)
 #include "content/browser/vr/vr_device_manager.h"
 #endif
@@ -1536,14 +1531,6 @@ void RenderFrameHostImpl::OnHidePopup() {
 }
 #endif
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
-static void CreateMediaRendererService(
-    mojo::InterfaceRequest<mojo::MediaRenderer> request) {
-  // The created object is owned by the pipe.
-  new media::MojoRendererService(request.Pass());
-}
-#endif
-
 void RenderFrameHostImpl::RegisterMojoServices() {
   GeolocationServiceContext* geolocation_service_context =
       delegate_ ? delegate_->GetGeolocationServiceContext() : NULL;
@@ -1568,11 +1555,6 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   GetServiceRegistry()->AddService<presentation::PresentationService>(
       base::Bind(&PresentationServiceImpl::CreateMojoService,
                  base::Unretained(this)));
-
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
-  GetServiceRegistry()->AddService<mojo::MediaRenderer>(
-      base::Bind(&CreateMediaRendererService));
-#endif
 
   if (!frame_mojo_shell_)
     frame_mojo_shell_.reset(new FrameMojoShell(this));

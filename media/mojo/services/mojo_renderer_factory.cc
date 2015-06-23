@@ -5,15 +5,15 @@
 #include "media/mojo/services/mojo_renderer_factory.h"
 
 #include "base/single_thread_task_runner.h"
-#include "media/mojo/services/media_service_provider.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
+#include "mojo/application/public/cpp/connect.h"
 
 namespace media {
 
 MojoRendererFactory::MojoRendererFactory(
-    MediaServiceProvider* media_service_provider)
-    : media_service_provider_(media_service_provider) {
-  DCHECK(media_service_provider_);
+    mojo::ServiceProvider* service_provider)
+    : service_provider_(service_provider) {
+  DCHECK(service_provider_);
 }
 
 MojoRendererFactory::~MojoRendererFactory() {
@@ -23,9 +23,11 @@ scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     AudioRendererSink* /* audio_renderer_sink */,
     VideoRendererSink* /* video_renderer_sink */) {
+  DCHECK(service_provider_);
+
   mojo::MediaRendererPtr mojo_media_renderer;
-  DCHECK(media_service_provider_);
-  media_service_provider_->ConnectToService(&mojo_media_renderer);
+  mojo::ConnectToService(service_provider_, &mojo_media_renderer);
+
   return scoped_ptr<Renderer>(
       new MojoRendererImpl(media_task_runner, mojo_media_renderer.Pass()));
 }

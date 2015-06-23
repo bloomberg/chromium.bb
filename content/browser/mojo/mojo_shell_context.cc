@@ -24,6 +24,10 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#include "media/mojo/services/mojo_media_application.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -137,6 +141,14 @@ MojoShellContext::MojoShellContext()
             new mojo::shell::StaticApplicationLoader(entry.second)),
         entry.first);
   }
+
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+  application_manager_->SetLoaderForURL(
+      scoped_ptr<mojo::shell::ApplicationLoader>(
+          new mojo::shell::StaticApplicationLoader(
+              base::Bind(&media::MojoMediaApplication::CreateApp))),
+      media::MojoMediaApplication::AppUrl());
+#endif
 }
 
 MojoShellContext::~MojoShellContext() {

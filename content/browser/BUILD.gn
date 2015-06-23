@@ -478,7 +478,7 @@ source_set("browser") {
   }
 
   if (enable_media_mojo_renderer) {
-    deps += [ "//media/mojo/services:renderer_service" ]
+    deps += [ "//media/mojo/services:application" ]
   }
 
   if (enable_webvr) {

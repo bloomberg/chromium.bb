@@ -180,8 +180,9 @@
 #endif
 
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
-#include "content/renderer/media/content_media_service_provider.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #else
 #include "media/renderers/default_renderer_factory.h"
 #endif
@@ -636,9 +637,6 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
       media_permission_dispatcher_(NULL),
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
-      content_media_service_provider_(NULL),
-#endif
       midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -4930,12 +4928,23 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 }
 
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
-media::MediaServiceProvider* RenderFrameImpl::GetMediaServiceProvider() {
-  if (!content_media_service_provider_) {
-    content_media_service_provider_ =
-        new ContentMediaServiceProvider(this, GetServiceRegistry());
+mojo::ServiceProvider* RenderFrameImpl::GetMediaServiceProvider() {
+  if (!media_service_provider_) {
+    mojo::InterfacePtr<mojo::Shell> shell_ptr;
+    GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&shell_ptr));
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:media");
+    shell_ptr->ConnectToApplication(
+        request.Pass(), GetProxy(&media_service_provider_), nullptr);
+    media_service_provider_.set_connection_error_handler(
+        base::Bind(&RenderFrameImpl::OnMediaServiceProviderConnectionError,
+                   base::Unretained(this)));
   }
-  return content_media_service_provider_;
+  return media_service_provider_.get();
+}
+
+void RenderFrameImpl::OnMediaServiceProviderConnectionError() {
+  media_service_provider_.reset();
 }
 #endif
 

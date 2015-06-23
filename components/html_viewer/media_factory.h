@@ -31,7 +31,6 @@ class AudioManager;
 class AudioRendererSink;
 class CdmFactory;
 class MediaPermission;
-class MediaServiceProvider;
 class WebEncryptedMediaClientImpl;
 }
 
@@ -62,7 +61,7 @@ class MediaFactory {
   blink::WebEncryptedMediaClient* GetEncryptedMediaClient();
 
  private:
-  media::MediaServiceProvider* GetMediaServiceProvider();
+  mojo::ServiceProvider* GetMediaServiceProvider();
   media::MediaPermission* GetMediaPermission();
   media::CdmFactory* GetCdmFactory();
 
@@ -82,8 +81,7 @@ class MediaFactory {
   mojo::Shell* shell_;
 
   // Lazily initialized objects.
-  mojo::ServiceProviderPtr mojo_service_provider_ptr_;
-  scoped_ptr<media::MediaServiceProvider> media_service_provider_;
+  mojo::ServiceProviderPtr media_service_provider_;
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
   scoped_ptr<media::MediaPermission> media_permission_;
   scoped_ptr<media::CdmFactory> cdm_factory_;

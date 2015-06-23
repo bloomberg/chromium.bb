@@ -70,15 +70,17 @@ class Rect;
 namespace media {
 class CdmFactory;
 class MediaPermission;
-class MediaServiceProvider;
 class WebEncryptedMediaClientImpl;
+}
+
+namespace mojo {
+class ServiceProvider;
 }
 
 namespace content {
 
 class ChildFrameCompositingHelper;
 class CompositorDependencies;
-class ContentMediaServiceProvider;
 class DevToolsAgent;
 class DocumentState;
 class ExternalPopupMenu;
@@ -802,8 +804,16 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   bool AreSecureCodecsSupported();
+
   media::MediaPermission* GetMediaPermission();
-  media::MediaServiceProvider* GetMediaServiceProvider();
+
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+  mojo::ServiceProvider* GetMediaServiceProvider();
+
+  // Called when a connection error happened on |media_service_provider_|.
+  void OnMediaServiceProviderConnectionError();
+#endif
+
   media::CdmFactory* GetCdmFactory();
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
@@ -913,7 +923,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
   // The media service provider attached to this frame, lazily initialized.
-  ContentMediaServiceProvider* content_media_service_provider_;
+  mojo::ServiceProviderPtr media_service_provider_;
 #endif
 
   // MidiClient attached to this frame; lazily initialized.

@@ -194,10 +194,6 @@ source_set("renderer") {
   }
 
   if (enable_media_mojo_renderer) {
-    sources += [
-      "media/content_media_service_provider.cc",
-      "media/content_media_service_provider.h",
-    ]
     deps += [ "//media/mojo/services:proxy" ]
   }
 
