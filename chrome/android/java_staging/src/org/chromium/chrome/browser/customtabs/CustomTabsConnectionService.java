@@ -8,6 +8,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+
 /**
  * Custom tabs connection service, used by the embedded Chrome activities.
  */
@@ -19,6 +21,8 @@ public class CustomTabsConnectionService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        if (!ChromePreferenceManager.getInstance(this).getCustomTabsEnabled()) return null;
+
         return (IBinder) CustomTabsConnection.getInstance(getApplication());
     }
 

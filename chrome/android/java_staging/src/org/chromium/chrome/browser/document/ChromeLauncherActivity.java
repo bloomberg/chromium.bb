@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationUIManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
@@ -266,6 +267,8 @@ public class ChromeLauncherActivity extends Activity
 
         String url = IntentHandler.getUrlFromIntent(getIntent());
         if (url == null) return false;
+
+        if (!ChromePreferenceManager.getInstance(this).getCustomTabsEnabled()) return false;
 
         boolean handled = CustomTabActivity.handleInActiveContentIfNeeded(getIntent());
         if (handled) return true;

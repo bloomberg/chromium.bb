@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -117,6 +118,14 @@ public class DeferredStartupHandler {
         MediaNotificationService.clearMediaNotifications(application);
 
         startModerateBindingManagementIfNeeded(application);
+
+        String customTabsTrialGroupName = FieldTrialList.findFullName("CustomTabs");
+        if (customTabsTrialGroupName.equals("Disabled")) {
+            ChromePreferenceManager.getInstance(application).setCustomTabsEnabled(false);
+        } else if (customTabsTrialGroupName.equals("Enabled")
+                || customTabsTrialGroupName.equals("DisablePrerender")) {
+            ChromePreferenceManager.getInstance(application).setCustomTabsEnabled(true);
+        }
 
         mDeferredStartupComplete = true;
     }

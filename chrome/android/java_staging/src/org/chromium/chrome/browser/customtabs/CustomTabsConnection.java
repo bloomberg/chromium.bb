@@ -28,6 +28,7 @@ import android.util.LongSparseArray;
 import android.util.SparseArray;
 import android.view.WindowManager;
 
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -488,6 +489,7 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
     }
 
     private boolean mayPrerender() {
+        if (FieldTrialList.findFullName("CustomTabs").equals("DisablePrerender")) return false;
         ConnectivityManager cm =
                 (ConnectivityManager) mApplication.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
