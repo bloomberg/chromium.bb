@@ -14,9 +14,9 @@ namespace media {
 
 MediaPipelineDevice::MediaPipelineDevice(
     scoped_ptr<MediaPipelineDeviceFactory> factory)
-    : MediaPipelineDevice(factory->CreateMediaClockDevice(),
-                          factory->CreateAudioPipelineDevice(),
-                          factory->CreateVideoPipelineDevice()) {
+    : media_clock_device_(factory->CreateMediaClockDevice()),
+      audio_pipeline_device_(factory->CreateAudioPipelineDevice()),
+      video_pipeline_device_(factory->CreateVideoPipelineDevice()) {
 }
 
 MediaPipelineDevice::MediaPipelineDevice(
