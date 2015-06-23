@@ -115,7 +115,7 @@ cr.define('media_router', function() {
    * @constructor
    * @struct
    */
-  var Sink = function(id, name, status) {
+  var Sink = function(id, name, status, castModes) {
     /** @type {string} */
     this.id = id;
 
