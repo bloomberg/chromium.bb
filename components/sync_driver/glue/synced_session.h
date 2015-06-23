@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_H_
-#define CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_H_
+#ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNCED_SESSION_H_
+#define COMPONENTS_SYNC_DRIVER_GLUE_SYNCED_SESSION_H_
 
 #include <map>
 #include <string>
@@ -13,11 +13,11 @@
 #include "components/sessions/session_types.h"
 #include "sync/protocol/session_specifics.pb.h"
 
-namespace content {
-class NavigationEntry;
+namespace sessions {
+struct SessionWindow;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 // Defines a synced session for use by session sync. A synced session is a
 // list of windows along with a unique session identifer (tag) and meta-data
@@ -89,15 +89,6 @@ struct SyncedSession {
   DISALLOW_COPY_AND_ASSIGN(SyncedSession);
 };
 
-// Control which foreign tabs we're interested in syncing/displaying. Checks
-// that the tab has navigations and contains at least one valid url.
-// Note: chrome:// and file:// are not considered valid urls (for syncing).
-bool ShouldSyncSessionTab(const sessions::SessionTab& tab);
+}  // namespace sync_driver
 
-// Checks whether the window has tabs to sync. If no tabs to sync, it returns
-// true, false otherwise.
-bool SessionWindowHasNoTabsToSync(const sessions::SessionWindow& window);
-
-}  // namespace browser_sync
-
-#endif  // CHROME_BROWSER_SYNC_GLUE_SYNCED_SESSION_H_
+#endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNCED_SESSION_H_

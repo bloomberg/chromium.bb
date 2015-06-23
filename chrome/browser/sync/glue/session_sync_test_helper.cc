@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sync/glue/synced_session.h"
+#include "components/sync_driver/glue/synced_session.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync_enums.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,10 +48,10 @@ void SessionSyncTestHelper::AddWindowSpecifics(
 // static
 void SessionSyncTestHelper::VerifySyncedSession(
     const std::string& tag,
-    const std::vector<std::vector<SessionID::id_type> >& windows,
-    const SyncedSession& session) {
+    const std::vector<std::vector<SessionID::id_type>>& windows,
+    const sync_driver::SyncedSession& session) {
   ASSERT_EQ(tag, session.session_tag);
-  ASSERT_EQ(SyncedSession::TYPE_LINUX, session.device_type);
+  ASSERT_EQ(sync_driver::SyncedSession::TYPE_LINUX, session.device_type);
   ASSERT_EQ(kClientName, session.session_name);
   ASSERT_EQ(windows.size(), session.windows.size());
 
@@ -61,7 +61,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
            windows.begin();
        win_iter != windows.end(); ++win_iter, ++i) {
     sessions::SessionWindow* win_ptr;
-    SyncedSession::SyncedWindowMap::const_iterator map_iter =
+    sync_driver::SyncedSession::SyncedWindowMap::const_iterator map_iter =
         session.windows.find(i);
     if (map_iter != session.windows.end())
       win_ptr = map_iter->second;

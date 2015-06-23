@@ -28,15 +28,13 @@ syncer::ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
   return syncer::ModelTypeSet();
 }
 
-void FakeSyncService::AddObserver(sync_driver::SyncServiceObserver* observer) {
+void FakeSyncService::AddObserver(SyncServiceObserver* observer) {
 }
 
-void FakeSyncService::RemoveObserver(
-    sync_driver::SyncServiceObserver* observer) {
+void FakeSyncService::RemoveObserver(SyncServiceObserver* observer) {
 }
 
-bool FakeSyncService::HasObserver(
-    const sync_driver::SyncServiceObserver* observer) const {
+bool FakeSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return false;
 }
 
@@ -87,6 +85,10 @@ bool FakeSyncService::HasUnrecoverableError() const {
 
 bool FakeSyncService::backend_initialized() const {
   return false;
+}
+
+OpenTabsUIDelegate* FakeSyncService::GetOpenTabsUIDelegate() {
+  return nullptr;
 }
 
 bool FakeSyncService::IsPassphraseRequiredForDecryption() const {

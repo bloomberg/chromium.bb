@@ -12,10 +12,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/sessions/tab_node_pool.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
+#include "components/sync_driver/glue/synced_session.h"
 
 namespace browser_sync {
 
@@ -36,8 +36,8 @@ class SyncedSessionTracker {
   // the local session object). SyncedSession ownership remains within the
   // SyncedSessionTracker.
   // Returns true if we had foreign sessions to fill it with, false otherwise.
-  bool LookupAllForeignSessions(std::vector<const SyncedSession*>* sessions)
-      const;
+  bool LookupAllForeignSessions(
+      std::vector<const sync_driver::SyncedSession*>* sessions) const;
 
   // Attempts to look up the session windows associatd with the session given
   // by |session_tag|. Ownership Of SessionWindows stays within the
@@ -62,12 +62,12 @@ class SyncedSessionTracker {
 
   // Allows retrieval of existing data for the local session. Unlike GetSession
   // this won't create-if-not-present.
-  bool LookupLocalSession(const SyncedSession** output) const;
+  bool LookupLocalSession(const sync_driver::SyncedSession** output) const;
 
   // Returns a pointer to the SyncedSession object associated with
   // |session_tag|.  If none exists, creates one. Ownership of the
   // SyncedSession remains within the SyncedSessionTracker.
-  SyncedSession* GetSession(const std::string& session_tag);
+  sync_driver::SyncedSession* GetSession(const std::string& session_tag);
 
   // Deletes the session associated with |session_tag| if it exists.
   // Returns true if the session existed and was deleted, false otherwise.
@@ -202,7 +202,7 @@ class SyncedSessionTracker {
       IDToSessionWindowMap;
   typedef std::map<std::string, IDToSessionWindowMap> SyncedWindowMap;
 
-  typedef std::map<std::string, SyncedSession*> SyncedSessionMap;
+  typedef std::map<std::string, sync_driver::SyncedSession*> SyncedSessionMap;
 
   // Helper methods for deleting SessionWindows and SessionTabs without owners.
   bool DeleteOldSessionWindowIfNecessary(SessionWindowWrapper window_wrapper);

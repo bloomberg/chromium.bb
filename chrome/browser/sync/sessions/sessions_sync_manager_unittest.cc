@@ -38,6 +38,7 @@ using sessions::SerializedNavigationEntryTestHelper;
 using sync_driver::DeviceInfo;
 using sync_driver::LocalDeviceInfoProvider;
 using sync_driver::LocalDeviceInfoProviderMock;
+using sync_driver::SyncedSession;
 using syncer::SyncChange;
 using syncer::SyncData;
 

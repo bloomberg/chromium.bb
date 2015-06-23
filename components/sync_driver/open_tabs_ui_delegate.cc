@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/open_tabs_ui_delegate.h"
+#include "components/sync_driver/open_tabs_ui_delegate.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
-OpenTabsUIDelegate::~OpenTabsUIDelegate() {}
+OpenTabsUIDelegate::~OpenTabsUIDelegate() {
+}
 
-}  // namespace browser_sync
+}  // namespace sync_driver

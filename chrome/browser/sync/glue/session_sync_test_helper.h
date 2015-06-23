@@ -10,13 +10,15 @@
 
 #include "components/sessions/session_id.h"
 
+namespace sync_driver {
+struct SyncedSession;
+}
+
 namespace sync_pb {
 class SessionSpecifics;
 }
 
 namespace browser_sync {
-
-struct SyncedSession;
 
 class SessionSyncTestHelper {
  public:
@@ -31,8 +33,8 @@ class SessionSyncTestHelper {
 
   static void VerifySyncedSession(
       const std::string& tag,
-      const std::vector<std::vector<SessionID::id_type> >& windows,
-      const SyncedSession& session);
+      const std::vector<std::vector<SessionID::id_type>>& windows,
+      const sync_driver::SyncedSession& session);
 
   void BuildTabSpecifics(const std::string& tag,
                          int window_id,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_OPEN_TABS_UI_DELEGATE_H_
-#define CHROME_BROWSER_SYNC_OPEN_TABS_UI_DELEGATE_H_
+#ifndef COMPONENTS_SYNC_DRIVER_OPEN_TABS_UI_DELEGATE_H_
+#define COMPONENTS_SYNC_DRIVER_OPEN_TABS_UI_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -11,11 +11,11 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 #include "components/sessions/session_id.h"
 #include "components/sessions/session_types.h"
+#include "components/sync_driver/glue/synced_session.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class OpenTabsUIDelegate {
  public:
@@ -56,6 +56,6 @@ class OpenTabsUIDelegate {
   virtual ~OpenTabsUIDelegate();
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_OPEN_TABS_UI_DELEGATE_H_
+#endif  // COMPONENTS_SYNC_DRIVER_OPEN_TABS_UI_DELEGATE_H_

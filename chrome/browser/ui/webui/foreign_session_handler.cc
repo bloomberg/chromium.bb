@@ -39,20 +39,23 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/webui/web_ui_util.h"
 
-namespace browser_sync {
 
-// Maximum number of sessions we're going to display on the NTP
-static const size_t kMaxSessionsToShow = 10;
 
 namespace {
 
+// Maximum number of sessions we're going to display on the NTP
+const size_t kMaxSessionsToShow = 10;
+
 // Comparator function for use with std::sort that will sort sessions by
 // descending modified_time (i.e., most recent first).
-bool SortSessionsByRecency(const SyncedSession* s1, const SyncedSession* s2) {
+bool SortSessionsByRecency(const sync_driver::SyncedSession* s1,
+                           const sync_driver::SyncedSession* s2) {
   return s1->modified_time > s2->modified_time;
 }
 
-}  // namepace
+}  // namespace
+
+namespace browser_sync {
 
 ForeignSessionHandler::ForeignSessionHandler() {
   load_attempt_time_ = base::TimeTicks::Now();
@@ -71,7 +74,7 @@ void ForeignSessionHandler::OpenForeignSessionTab(
     SessionID::id_type window_num,
     SessionID::id_type tab_id,
     const WindowOpenDisposition& disposition) {
-  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
+  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
   if (!open_tabs)
     return;
 
@@ -95,7 +98,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
     content::WebUI* web_ui,
     const std::string& session_string_value,
     SessionID::id_type window_num) {
-  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
+  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui);
   if (!open_tabs)
     return;
 
@@ -147,7 +150,7 @@ bool ForeignSessionHandler::SessionTabToValue(
 }
 
 // static
-OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
+sync_driver::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
     content::WebUI* web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   ProfileSyncService* service =
@@ -223,8 +226,8 @@ base::string16 ForeignSessionHandler::FormatSessionTime(
 
 void ForeignSessionHandler::HandleGetForeignSessions(
     const base::ListValue* /*args*/) {
-  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
-  std::vector<const SyncedSession*> sessions;
+  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
+  std::vector<const sync_driver::SyncedSession*> sessions;
 
   base::ListValue session_list;
   if (open_tabs && open_tabs->GetAllForeignSessions(&sessions)) {
@@ -249,7 +252,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
 
     // Note: we don't own the SyncedSessions themselves.
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
-      const SyncedSession* session = sessions[i];
+      const sync_driver::SyncedSession* session = sessions[i];
       const std::string& session_tag = session->session_tag;
       scoped_ptr<base::DictionaryValue> session_data(
           new base::DictionaryValue());
@@ -269,8 +272,9 @@ void ForeignSessionHandler::HandleGetForeignSessions(
         current_collapsed_sessions->SetBoolean(session_tag, true);
 
       scoped_ptr<base::ListValue> window_list(new base::ListValue());
-      for (SyncedSession::SyncedWindowMap::const_iterator it =
-           session->windows.begin(); it != session->windows.end(); ++it) {
+      for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator it =
+               session->windows.begin();
+           it != session->windows.end(); ++it) {
         ::sessions::SessionWindow* window = it->second;
         scoped_ptr<base::DictionaryValue> window_data(
             new base::DictionaryValue());
@@ -349,7 +353,7 @@ void ForeignSessionHandler::HandleDeleteForeignSession(
     return;
   }
 
-  OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
+  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
   if (open_tabs)
     open_tabs->DeleteForeignSession(session_tag);
 }

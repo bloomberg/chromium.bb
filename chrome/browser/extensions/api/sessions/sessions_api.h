@@ -18,7 +18,7 @@
 
 class Profile;
 
-namespace browser_sync {
+namespace sync_driver {
 struct SyncedSession;
 }
 
@@ -62,7 +62,7 @@ class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
       const sessions::SessionWindow& window,
       const std::string& session_tag);
   scoped_ptr<api::sessions::Device> CreateDeviceModel(
-      const browser_sync::SyncedSession* session);
+      const sync_driver::SyncedSession* session);
 };
 
 class SessionsRestoreFunction : public ChromeSyncExtensionFunction {

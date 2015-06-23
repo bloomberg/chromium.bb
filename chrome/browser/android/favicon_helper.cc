@@ -16,11 +16,11 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "jni/FaviconHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -192,7 +192,7 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
   DCHECK(sync_service);
 
   scoped_refptr<base::RefCountedMemory> favicon_png;
-  browser_sync::OpenTabsUIDelegate* open_tabs =
+  sync_driver::OpenTabsUIDelegate* open_tabs =
       sync_service->GetOpenTabsUIDelegate();
   DCHECK(open_tabs);
 

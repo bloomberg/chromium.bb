@@ -15,7 +15,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/session_types.h"
+#include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -46,11 +46,10 @@ class TestRecentTabsSubMenuModel : public RecentTabsSubMenuModel {
  public:
   TestRecentTabsSubMenuModel(ui::AcceleratorProvider* provider,
                              Browser* browser,
-                             browser_sync::OpenTabsUIDelegate* delegate)
+                             sync_driver::OpenTabsUIDelegate* delegate)
       : RecentTabsSubMenuModel(provider, browser, delegate),
         execute_count_(0),
-        enable_count_(0) {
-  }
+        enable_count_(0) {}
 
   // Testing overrides to ui::SimpleMenuModel::Delegate:
   bool IsCommandIdEnabled(int command_id) const override {
@@ -147,7 +146,7 @@ class RecentTabsSubMenuModelTest
         Profile::FromBrowserContext(browser_context), NULL));
   }
 
-  browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
+  sync_driver::OpenTabsUIDelegate* GetOpenTabsDelegate() {
     return manager_.get();
   }
 

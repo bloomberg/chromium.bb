@@ -17,8 +17,6 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sync/glue/synced_session.h"
-#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,6 +25,8 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/sync_driver/glue/synced_session.h"
+#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
@@ -71,8 +71,8 @@ const int kMaxLocalEntries = 8;
 
 // Comparator function for use with std::sort that will sort sessions by
 // descending modified_time (i.e., most recent first).
-bool SortSessionsByRecency(const browser_sync::SyncedSession* s1,
-                           const browser_sync::SyncedSession* s2) {
+bool SortSessionsByRecency(const sync_driver::SyncedSession* s1,
+                           const sync_driver::SyncedSession* s2) {
   return s1->modified_time > s2->modified_time;
 }
 
@@ -167,13 +167,14 @@ const int RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId = 1121;
 RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     ui::AcceleratorProvider* accelerator_provider,
     Browser* browser,
-    browser_sync::OpenTabsUIDelegate* open_tabs_delegate)
+    sync_driver::OpenTabsUIDelegate* open_tabs_delegate)
     : ui::SimpleMenuModel(this),
       browser_(browser),
       open_tabs_delegate_(open_tabs_delegate),
       last_local_model_index_(-1),
-      default_favicon_(ui::ResourceBundle::GetSharedInstance().
-                       GetNativeImageNamed(IDR_DEFAULT_FAVICON)),
+      default_favicon_(
+          ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+              IDR_DEFAULT_FAVICON)),
       weak_ptr_factory_(this) {
   // Invoke asynchronous call to load tabs from local last session, which does
   // nothing if the tabs have already been loaded or they shouldn't be loaded.
@@ -287,7 +288,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
                                   browser_->host_desktop_type(), disposition);
       }
     } else {  // Restore tab of session from other devices.
-      browser_sync::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
+      sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
       if (!open_tabs)
         return;
       const sessions::SessionTab* tab;
@@ -438,8 +439,8 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
   // a menu item, because they are always only built once (i.e. invoked from
   // Constructor()) and don't change after that.
 
-  browser_sync::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
-  std::vector<const browser_sync::SyncedSession*> sessions;
+  sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
+  std::vector<const sync_driver::SyncedSession*> sessions;
   if (!open_tabs || !open_tabs->GetAllForeignSessions(&sessions)) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(IDC_RECENT_TABS_NO_DEVICE_TABS,
@@ -454,7 +455,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
   size_t num_sessions_added = 0;
   for (size_t i = 0;
        i < sessions.size() && num_sessions_added < kMaxSessionsToShow; ++i) {
-    const browser_sync::SyncedSession* session = sessions[i];
+    const sync_driver::SyncedSession* session = sessions[i];
     const std::string& session_tag = session->session_tag;
 
     // Get windows of session.
@@ -563,23 +564,23 @@ void RecentTabsSubMenuModel::BuildOtherDevicesTabItem(
 
 void RecentTabsSubMenuModel::AddDeviceFavicon(
     int index_in_menu,
-    browser_sync::SyncedSession::DeviceType device_type) {
+    sync_driver::SyncedSession::DeviceType device_type) {
   int favicon_id = -1;
   switch (device_type) {
-    case browser_sync::SyncedSession::TYPE_PHONE:
+    case sync_driver::SyncedSession::TYPE_PHONE:
       favicon_id = IDR_PHONE_FAVICON;
       break;
 
-    case browser_sync::SyncedSession::TYPE_TABLET:
+    case sync_driver::SyncedSession::TYPE_TABLET:
       favicon_id = IDR_TABLET_FAVICON;
       break;
 
-    case browser_sync::SyncedSession::TYPE_CHROMEOS:
-    case browser_sync::SyncedSession::TYPE_WIN:
-    case browser_sync::SyncedSession::TYPE_MACOSX:
-    case browser_sync::SyncedSession::TYPE_LINUX:
-    case browser_sync::SyncedSession::TYPE_OTHER:
-    case browser_sync::SyncedSession::TYPE_UNSET:
+    case sync_driver::SyncedSession::TYPE_CHROMEOS:
+    case sync_driver::SyncedSession::TYPE_WIN:
+    case sync_driver::SyncedSession::TYPE_MACOSX:
+    case sync_driver::SyncedSession::TYPE_LINUX:
+    case sync_driver::SyncedSession::TYPE_OTHER:
+    case sync_driver::SyncedSession::TYPE_UNSET:
       favicon_id = IDR_LAPTOP_FAVICON;
       break;
   }
@@ -598,7 +599,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     // --sync-tab-favicons switch is on; according to zea@, this flag is now
     // automatically enabled for iOS and android, and they're looking into
     // enabling it for other platforms.
-    browser_sync::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
+    sync_driver::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
     scoped_refptr<base::RefCountedMemory> favicon_png;
     if (open_tabs &&
         open_tabs->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
@@ -669,8 +670,8 @@ void RecentTabsSubMenuModel::ClearLocalEntries() {
   local_window_items_.clear();
 }
 
-browser_sync::OpenTabsUIDelegate*
-    RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
+sync_driver::OpenTabsUIDelegate*
+RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
   if (!open_tabs_delegate_) {
     ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
         GetForProfile(browser_->profile());

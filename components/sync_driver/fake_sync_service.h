@@ -22,10 +22,9 @@ class FakeSyncService : public sync_driver::SyncService {
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
-  void AddObserver(sync_driver::SyncServiceObserver* observer) override;
-  void RemoveObserver(sync_driver::SyncServiceObserver* observer) override;
-  bool HasObserver(
-      const sync_driver::SyncServiceObserver* observer) const override;
+  void AddObserver(SyncServiceObserver* observer) override;
+  void RemoveObserver(SyncServiceObserver* observer) override;
+  bool HasObserver(const SyncServiceObserver* observer) const override;
   bool CanSyncStart() const override;
   void RequestStop(
       sync_driver::SyncService::SyncStopDataFate data_fate) override;
@@ -41,6 +40,7 @@ class FakeSyncService : public sync_driver::SyncService {
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
   bool backend_initialized() const override;
+  OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
@@ -49,7 +49,7 @@ class FakeSyncService : public sync_driver::SyncService {
                                PassphraseType type) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
-  // sync_driver::DataTypeEncryptionHandler:
+  // DataTypeEncryptionHandler:
   bool IsPassphraseRequired() const override;
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
 

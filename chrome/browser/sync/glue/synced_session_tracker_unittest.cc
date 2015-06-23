@@ -20,8 +20,8 @@ typedef testing::Test SyncedSessionTrackerTest;
 
 TEST_F(SyncedSessionTrackerTest, GetSession) {
   SyncedSessionTracker tracker;
-  SyncedSession* session1 = tracker.GetSession("tag");
-  SyncedSession* session2 = tracker.GetSession("tag2");
+  sync_driver::SyncedSession* session1 = tracker.GetSession("tag");
+  sync_driver::SyncedSession* session2 = tracker.GetSession("tag2");
   ASSERT_EQ(session1, tracker.GetSession("tag"));
   ASSERT_NE(session1, session2);
   // Should clean up memory on its own.
@@ -37,7 +37,7 @@ TEST_F(SyncedSessionTrackerTest, GetTabUnmapped) {
 TEST_F(SyncedSessionTrackerTest, PutWindowInSession) {
   SyncedSessionTracker tracker;
   tracker.PutWindowInSession("tag", 0);
-  SyncedSession* session = tracker.GetSession("tag");
+  sync_driver::SyncedSession* session = tracker.GetSession("tag");
   ASSERT_EQ(1U, session->windows.size());
   // Should clean up memory on its own.
 }
@@ -46,7 +46,7 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
   SyncedSessionTracker tracker;
   tracker.PutWindowInSession("tag", 10);
   tracker.PutTabInWindow("tag", 10, 15, 0);  // win id 10, tab id 15, tab ind 0.
-  SyncedSession* session = tracker.GetSession("tag");
+  sync_driver::SyncedSession* session = tracker.GetSession("tag");
   ASSERT_EQ(1U, session->windows.size());
   ASSERT_EQ(1U, session->windows[10]->tabs.size());
   ASSERT_EQ(tracker.GetTab("tag", 15, 1), session->windows[10]->tabs[0]);
@@ -55,7 +55,7 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
 
 TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   SyncedSessionTracker tracker;
-  std::vector<const SyncedSession*> sessions;
+  std::vector<const sync_driver::SyncedSession*> sessions;
   ASSERT_FALSE(tracker.LookupAllForeignSessions(&sessions));
   tracker.GetSession("tag1");
   tracker.GetSession("tag2");
@@ -124,9 +124,9 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   ASSERT_EQ(0U, tracker.num_synced_sessions());
   ASSERT_FALSE(tracker.DeleteSession(tag3));
 
-  SyncedSession* session = tracker.GetSession(tag1);
-  SyncedSession* session2 = tracker.GetSession(tag2);
-  SyncedSession* session3 = tracker.GetSession(tag3);
+  sync_driver::SyncedSession* session = tracker.GetSession(tag1);
+  sync_driver::SyncedSession* session2 = tracker.GetSession(tag2);
+  sync_driver::SyncedSession* session3 = tracker.GetSession(tag3);
   ASSERT_EQ(3U, tracker.num_synced_sessions());
 
   ASSERT_TRUE(session);
@@ -156,7 +156,7 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   ASSERT_EQ(0U, windows.size());
 
   // The sessions don't have valid tabs, lookup should not succeed.
-  std::vector<const SyncedSession*> sessions;
+  std::vector<const sync_driver::SyncedSession*> sessions;
   ASSERT_FALSE(tracker.LookupAllForeignSessions(&sessions));
 
   tracker.Clear();
@@ -245,7 +245,7 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   std::string tag2 = "tag2";
 
   // Create some session information that is stale.
-  SyncedSession* session1= tracker.GetSession(tag1);
+  sync_driver::SyncedSession* session1 = tracker.GetSession(tag1);
   tracker.PutWindowInSession(tag1, 0);
   tracker.PutTabInWindow(tag1, 0, 0, 0);
   tracker.PutTabInWindow(tag1, 0, 1, 1);
@@ -260,7 +260,7 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   ASSERT_EQ(6U, tracker.num_synced_tabs(tag1));
 
   // Create a session that should not be affected.
-  SyncedSession* session2 = tracker.GetSession(tag2);
+  sync_driver::SyncedSession* session2 = tracker.GetSession(tag2);
   tracker.PutWindowInSession(tag2, 2);
   tracker.PutTabInWindow(tag2, 2, 1, 0);
   ASSERT_EQ(1U, session2->windows.size());

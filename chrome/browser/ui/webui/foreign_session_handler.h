@@ -9,7 +9,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sync/open_tabs_ui_delegate.h"
+#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
@@ -55,7 +55,8 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
                                 base::DictionaryValue* dictionary);
 
   // Returns a pointer to the current session model associator or NULL.
-  static OpenTabsUIDelegate* GetOpenTabsUIDelegate(content::WebUI* web_ui);
+  static sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate(
+      content::WebUI* web_ui);
 
  private:
   // Determines how ForeignSessionHandler will interact with the new tab page.

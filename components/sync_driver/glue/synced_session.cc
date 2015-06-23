@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/synced_session.h"
+#include "components/sync_driver/glue/synced_session.h"
 
 #include "base/stl_util.h"
-#include "chrome/common/url_constants.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/common/url_constants.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
-SyncedSession::SyncedSession() : session_tag("invalid"),
-                                 device_type(TYPE_UNSET) {
+SyncedSession::SyncedSession()
+    : session_tag("invalid"), device_type(TYPE_UNSET) {
 }
 
 SyncedSession::~SyncedSession() {
@@ -47,7 +44,7 @@ sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {
       header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_TABLET);
       break;
     case SyncedSession::TYPE_OTHER:
-      // Intentionally fall-through
+    // Intentionally fall-through
     default:
       header.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_OTHER);
       break;
@@ -55,33 +52,4 @@ sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {
   return header;
 }
 
-// Note: if you modify this, make sure you modify
-// browser_sync::sessions_util::ShouldSyncTab to ensure the logic matches.
-bool ShouldSyncSessionTab(const sessions::SessionTab& tab) {
-  if (tab.navigations.empty())
-    return false;
-  bool found_valid_url = false;
-  for (size_t i = 0; i < tab.navigations.size(); ++i) {
-    const GURL& virtual_url = tab.navigations.at(i).virtual_url();
-    if (virtual_url.is_valid() &&
-        !virtual_url.SchemeIs(content::kChromeUIScheme) &&
-        !virtual_url.SchemeIs(chrome::kChromeNativeScheme) &&
-        !virtual_url.SchemeIsFile()) {
-      found_valid_url = true;
-      break;
-    }
-  }
-  return found_valid_url;
-}
-
-bool SessionWindowHasNoTabsToSync(const sessions::SessionWindow& window) {
-  int num_populated = 0;
-  for (auto i = window.tabs.begin(); i != window.tabs.end(); ++i) {
-    const sessions::SessionTab* tab = *i;
-    if (ShouldSyncSessionTab(*tab))
-      num_populated++;
-  }
-  return (num_populated == 0);
-}
-
-}  // namespace browser_sync
+}  // namespace sync_driver

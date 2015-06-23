@@ -452,7 +452,7 @@ bool ProfileSyncService::IsDataTypeControllerRunning(
   return iter->second->state() == DataTypeController::RUNNING;
 }
 
-browser_sync::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
+sync_driver::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
   if (!IsDataTypeControllerRunning(syncer::SESSIONS))
     return NULL;
   return sessions_sync_manager_.get();

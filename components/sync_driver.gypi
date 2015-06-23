@@ -45,6 +45,8 @@
         'sync_driver/generic_change_processor.h',
         'sync_driver/generic_change_processor_factory.cc',
         'sync_driver/generic_change_processor_factory.h',
+        'sync_driver/glue/synced_session.cc',
+        'sync_driver/glue/synced_session.h',
         'sync_driver/local_device_info_provider.h',
         'sync_driver/model_association_manager.cc',
         'sync_driver/model_association_manager.h',
@@ -55,6 +57,8 @@
         'sync_driver/non_blocking_data_type_manager.h',
         'sync_driver/non_ui_data_type_controller.cc',
         'sync_driver/non_ui_data_type_controller.h',
+        'sync_driver/open_tabs_ui_delegate.cc',
+        'sync_driver/open_tabs_ui_delegate.h',
         'sync_driver/pref_names.cc',
         'sync_driver/pref_names.h',
         'sync_driver/proxy_data_type_controller.cc',
@@ -76,6 +80,17 @@
         'sync_driver/ui_data_type_controller.cc',
         'sync_driver/ui_data_type_controller.h',
         'sync_driver/user_selectable_sync_type.h',
+      ],
+      'conditions': [
+        ['OS!="ios"', {
+          'dependencies': [
+            'sessions_content',
+          ],
+        }, {  # OS==ios
+          'dependencies': [
+            'sessions_ios',
+          ],
+        }],
       ],
     },
     {

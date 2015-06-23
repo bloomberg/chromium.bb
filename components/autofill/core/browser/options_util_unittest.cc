@@ -43,6 +43,7 @@ class SyncServiceMock : public sync_driver::SyncService {
   MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
   MOCK_CONST_METHOD0(HasUnrecoverableError, bool());
   MOCK_CONST_METHOD0(backend_initialized, bool());
+  MOCK_METHOD0(GetOpenTabsUIDelegate, sync_driver::OpenTabsUIDelegate*());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
   MOCK_CONST_METHOD0(GetExplicitPassphraseTime, base::Time());
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());

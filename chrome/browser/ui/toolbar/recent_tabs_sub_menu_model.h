@@ -12,14 +12,14 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/sync_driver/glue/synced_session.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
 
-namespace browser_sync {
+namespace sync_driver {
 class OpenTabsUIDelegate;
 }
 
@@ -59,7 +59,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // profile will be used. Testing may require a specific |open_tabs_delegate|.
   RecentTabsSubMenuModel(ui::AcceleratorProvider* accelerator_provider,
                          Browser* browser,
-                         browser_sync::OpenTabsUIDelegate* open_tabs_delegate);
+                         sync_driver::OpenTabsUIDelegate* open_tabs_delegate);
   ~RecentTabsSubMenuModel() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
@@ -109,7 +109,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   // Add the favicon for the device section header.
   void AddDeviceFavicon(int index_in_menu,
-                        browser_sync::SyncedSession::DeviceType device_type);
+                        sync_driver::SyncedSession::DeviceType device_type);
 
   // Add the favicon for a local or other devices' tab asynchronously,
   // OnFaviconDataAvailable() will be invoked when the favicon is ready.
@@ -131,7 +131,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // can always skip going through the function and access the field directly.
   // Consider instead having code just deal with potentially NULL open_tabs_
   // and have it initialized by an event / callback.
-  browser_sync::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
+  sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // Overridden from TabRestoreServiceObserver:
   void TabRestoreServiceChanged(TabRestoreService* service) override;
@@ -139,7 +139,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   Browser* browser_;  // Weak.
 
-  browser_sync::OpenTabsUIDelegate* open_tabs_delegate_;  // Weak.
+  sync_driver::OpenTabsUIDelegate* open_tabs_delegate_;  // Weak.
 
   // Accelerator for reopening last closed tab.
   ui::Accelerator reopen_closed_tab_accelerator_;

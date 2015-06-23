@@ -94,7 +94,7 @@ class WrenchMenuControllerTest
     helper->ExportToSessionsSyncManager(manager_.get());
   }
 
-  browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
+  sync_driver::OpenTabsUIDelegate* GetOpenTabsDelegate() {
     return manager_.get();
   }
 

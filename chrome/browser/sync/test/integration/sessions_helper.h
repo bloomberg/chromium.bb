@@ -9,17 +9,17 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sessions/session_types.h"
+#include "components/sync_driver/glue/synced_session.h"
 #include "sync/syncable/nigori_util.h"
 
 class GURL;
 
 namespace sessions_helper {
 
-typedef std::vector<const browser_sync::SyncedSession*> SyncedSessionVector;
-typedef browser_sync::SyncedSession::SyncedWindowMap SessionWindowMap;
+typedef std::vector<const sync_driver::SyncedSession*> SyncedSessionVector;
+typedef sync_driver::SyncedSession::SyncedWindowMap SessionWindowMap;
 
 // Wrapper around a SyncedWindowMap that will automatically delete the
 // SessionWindow pointers it holds.
@@ -63,8 +63,8 @@ bool GetSessionData(int index, SyncedSessionVector* sessions);
 
 // Compares a foreign session based on the first session window.
 // Returns true based on the comparison of the session windows.
-bool CompareSyncedSessions(const browser_sync::SyncedSession* lhs,
-                           const browser_sync::SyncedSession* rhs);
+bool CompareSyncedSessions(const sync_driver::SyncedSession* lhs,
+                           const sync_driver::SyncedSession* rhs);
 
 // Sort a SyncedSession vector using our custom SyncedSession comparator.
 void SortSyncedSessions(SyncedSessionVector* sessions);
@@ -117,7 +117,7 @@ bool ModelAssociatorHasTabWithUrl(int index, const GURL& url);
 
 // Stores a pointer to the local session for a given profile in |session|.
 // Returns true on success, false on failure.
-bool GetLocalSession(int index, const browser_sync::SyncedSession** session);
+bool GetLocalSession(int index, const sync_driver::SyncedSession** session);
 
 // Deletes the foreign session with tag |session_tag| from the profile specified
 // by |index|. This will affect all synced clients.

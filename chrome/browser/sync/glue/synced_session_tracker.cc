@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/glue/synced_session_tracker.h"
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sync/glue/synced_session_tracker.h"
+#include "chrome/browser/sync/glue/synced_session_util.h"
 
 namespace browser_sync {
 
@@ -22,17 +24,17 @@ void SyncedSessionTracker::SetLocalSessionTag(
 }
 
 bool SyncedSessionTracker::LookupAllForeignSessions(
-    std::vector<const SyncedSession*>* sessions) const {
+    std::vector<const sync_driver::SyncedSession*>* sessions) const {
   DCHECK(sessions);
   sessions->clear();
   // Fill vector of sessions from our synced session map.
   for (SyncedSessionMap::const_iterator i =
     synced_session_map_.begin(); i != synced_session_map_.end(); ++i) {
     // Only include foreign sessions with open tabs.
-    SyncedSession* foreign_session = i->second;
+    sync_driver::SyncedSession* foreign_session = i->second;
     if (i->first != local_session_tag_ && !foreign_session->windows.empty()) {
       bool found_tabs = false;
-      for (SyncedSession::SyncedWindowMap::const_iterator iter =
+      for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator iter =
                foreign_session->windows.begin();
            iter != foreign_session->windows.end(); ++iter) {
         if (!SessionWindowHasNoTabsToSync(*(iter->second))) {
@@ -57,7 +59,7 @@ bool SyncedSessionTracker::LookupSessionWindows(
   if (iter == synced_session_map_.end())
     return false;
   windows->clear();
-  for (SyncedSession::SyncedWindowMap::const_iterator window_iter =
+  for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator window_iter =
            iter->second->windows.begin();
        window_iter != iter->second->windows.end(); window_iter++) {
     windows->push_back(window_iter->second);
@@ -104,8 +106,8 @@ bool SyncedSessionTracker::LookupTabNodeIds(
   return true;
 }
 
-bool SyncedSessionTracker::LookupLocalSession(const SyncedSession** output)
-    const {
+bool SyncedSessionTracker::LookupLocalSession(
+    const sync_driver::SyncedSession** output) const {
   SyncedSessionMap::const_iterator it =
       synced_session_map_.find(local_session_tag_);
   if (it != synced_session_map_.end()) {
@@ -115,14 +117,14 @@ bool SyncedSessionTracker::LookupLocalSession(const SyncedSession** output)
   return false;
 }
 
-SyncedSession* SyncedSessionTracker::GetSession(
+sync_driver::SyncedSession* SyncedSessionTracker::GetSession(
     const std::string& session_tag) {
-  SyncedSession* synced_session = NULL;
+  sync_driver::SyncedSession* synced_session = NULL;
   if (synced_session_map_.find(session_tag) !=
       synced_session_map_.end()) {
     synced_session = synced_session_map_[session_tag];
   } else {
-    synced_session = new SyncedSession;
+    synced_session = new sync_driver::SyncedSession;
     DVLOG(1) << "Creating new session with tag " << session_tag << " at "
              << synced_session;
     synced_session->session_tag = session_tag;
@@ -136,7 +138,7 @@ bool SyncedSessionTracker::DeleteSession(const std::string& session_tag) {
   bool found_session = false;
   SyncedSessionMap::iterator iter = synced_session_map_.find(session_tag);
   if (iter != synced_session_map_.end()) {
-    SyncedSession* session = iter->second;
+    sync_driver::SyncedSession* session = iter->second;
     synced_session_map_.erase(iter);
     delete session;  // Delete the SyncedSession object.
     found_session = true;

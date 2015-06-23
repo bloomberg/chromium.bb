@@ -17,7 +17,9 @@ class GoogleServiceAuthError;
 
 namespace sync_driver {
 
-class SyncService : public sync_driver::DataTypeEncryptionHandler {
+class OpenTabsUIDelegate;
+
+class SyncService : public DataTypeEncryptionHandler {
  public:
   // Used to specify the kind of passphrase with which sync data is encrypted.
   enum PassphraseType {
@@ -138,6 +140,10 @@ class SyncService : public sync_driver::DataTypeEncryptionHandler {
   // changes. This should only be used for sync's internal configuration logic
   // (such as deciding when to prompt for an encryption passphrase).
   virtual bool backend_initialized() const = 0;
+
+  // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
+  // currently syncing, returns nullptr.
+  virtual OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
 
   // Returns true if OnPassphraseRequired has been called for decryption and
   // we have an encrypted data type enabled.

@@ -13,13 +13,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -32,8 +32,8 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
-using browser_sync::OpenTabsUIDelegate;
-using browser_sync::SyncedSession;
+using sync_driver::OpenTabsUIDelegate;
+using sync_driver::SyncedSession;
 
 namespace {
 
@@ -72,7 +72,7 @@ bool ShouldSkipWindow(const sessions::SessionWindow& window) {
   return true;
 }
 
-bool ShouldSkipSession(const browser_sync::SyncedSession& session) {
+bool ShouldSkipSession(const sync_driver::SyncedSession& session) {
   for (SyncedSession::SyncedWindowMap::const_iterator it =
       session.windows.begin(); it != session.windows.end(); ++it) {
     const sessions::SessionWindow  &window = *(it->second);
@@ -210,7 +210,7 @@ jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
   if (!open_tabs)
     return false;
 
-  std::vector<const browser_sync::SyncedSession*> sessions;
+  std::vector<const sync_driver::SyncedSession*> sessions;
   if (!open_tabs->GetAllForeignSessions(&sessions))
     return false;
 
@@ -229,7 +229,7 @@ jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
 
   // Note: we don't own the SyncedSessions themselves.
   for (size_t i = 0; i < sessions.size(); ++i) {
-    const browser_sync::SyncedSession &session = *(sessions[i]);
+    const sync_driver::SyncedSession& session = *(sessions[i]);
     if (ShouldSkipSession(session))
       continue;
 

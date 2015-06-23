@@ -12,9 +12,13 @@
 #include "components/sessions/session_id.h"
 
 namespace browser_sync {
-class OpenTabsUIDelegate;
 class SessionsSyncManager;
 }
+
+namespace sync_driver {
+class OpenTabsUIDelegate;
+}
+
 namespace sync_pb {
 class SessionSpecifics;
 }
@@ -65,7 +69,7 @@ class RecentTabsBuilderTestHelper {
                          int window_index,
                          int tab_index,
                          sync_pb::SessionSpecifics* tab_base);
-  void VerifyExport(browser_sync::OpenTabsUIDelegate* delegate);
+  void VerifyExport(sync_driver::OpenTabsUIDelegate* delegate);
 
   struct TabInfo;
   struct WindowInfo;

@@ -8,8 +8,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
+#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/internal_api/public/attachments/attachment_service_proxy_for_test.h"
 #include "sync/protocol/session_specifics.pb.h"
@@ -219,9 +219,9 @@ void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
 }
 
 void RecentTabsBuilderTestHelper::VerifyExport(
-    browser_sync::OpenTabsUIDelegate* delegate) {
+    sync_driver::OpenTabsUIDelegate* delegate) {
   // Make sure data is populated correctly in SessionModelAssociator.
-  std::vector<const browser_sync::SyncedSession*> sessions;
+  std::vector<const sync_driver::SyncedSession*> sessions;
   ASSERT_TRUE(delegate->GetAllForeignSessions(&sessions));
   ASSERT_EQ(GetSessionCount(), static_cast<int>(sessions.size()));
   for (int s = 0; s < GetSessionCount(); ++s) {

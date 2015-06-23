@@ -16,7 +16,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/sync_driver/open_tabs_ui_delegate.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
@@ -59,7 +59,7 @@ void ScopedWindowMap::Reset(SessionWindowMap* windows) {
   std::swap(*windows, windows_);
 }
 
-bool GetLocalSession(int index, const browser_sync::SyncedSession** session) {
+bool GetLocalSession(int index, const sync_driver::SyncedSession** session) {
   return ProfileSyncServiceFactory::GetInstance()->GetForProfile(
       test()->GetProfile(index))->GetOpenTabsUIDelegate()->
           GetLocalSession(session);
@@ -67,7 +67,7 @@ bool GetLocalSession(int index, const browser_sync::SyncedSession** session) {
 
 bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
   content::RunAllPendingInMessageLoop();
-  const browser_sync::SyncedSession* local_session;
+  const sync_driver::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;
   }
@@ -197,7 +197,7 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
 bool GetLocalWindows(int index, SessionWindowMap* local_windows) {
   // The local session provided by GetLocalSession is owned, and has lifetime
   // controlled, by the model associator, so we must make our own copy.
-  const browser_sync::SyncedSession* local_session;
+  const sync_driver::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;
   }
@@ -238,7 +238,7 @@ bool CheckInitialState(int index) {
 }
 
 int GetNumWindows(int index) {
-  const browser_sync::SyncedSession* local_session;
+  const sync_driver::SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return 0;
   }
@@ -267,8 +267,8 @@ bool GetSessionData(int index, SyncedSessionVector* sessions) {
   return true;
 }
 
-bool CompareSyncedSessions(const browser_sync::SyncedSession* lhs,
-                           const browser_sync::SyncedSession* rhs) {
+bool CompareSyncedSessions(const sync_driver::SyncedSession* lhs,
+                           const sync_driver::SyncedSession* rhs) {
   if (!lhs ||
       !rhs ||
       lhs->windows.size() < 1 ||

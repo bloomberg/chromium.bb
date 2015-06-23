@@ -69,7 +69,6 @@ namespace browser_sync {
 class BackendMigrator;
 class FaviconCache;
 class JsController;
-class OpenTabsUIDelegate;
 
 namespace sessions {
 class SyncSessionSnapshot;
@@ -81,6 +80,7 @@ class ChangeProcessor;
 class DataTypeManager;
 class DeviceInfoSyncService;
 class LocalDeviceInfoProvider;
+class OpenTabsUIDelegate;
 }  // namespace sync_driver
 
 namespace syncer {
@@ -292,6 +292,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
   bool backend_initialized() const override;
+  sync_driver::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
@@ -361,10 +362,6 @@ class ProfileSyncService : public sync_driver::SyncService,
       syncer::ModelType type,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& proxy);
-
-  // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
-  // currently syncing, returns NULL.
-  virtual browser_sync::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // Returns the SyncedWindowDelegatesGetter from the embedded sessions manager.
   virtual browser_sync::SyncedWindowDelegatesGetter*

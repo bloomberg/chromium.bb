@@ -159,7 +159,8 @@ void SessionsSyncManager::AssociateWindows(
   sync_pb::SessionSpecifics specifics;
   specifics.set_session_tag(local_tag);
   sync_pb::SessionHeader* header_s = specifics.mutable_header();
-  SyncedSession* current_session = session_tracker_.GetSession(local_tag);
+  sync_driver::SyncedSession* current_session =
+      session_tracker_.GetSession(local_tag);
   current_session->modified_time = base::Time::Now();
   header_s->set_client_name(current_session_name_);
   // SessionDataTypeController ensures that the local device info
@@ -425,7 +426,7 @@ void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
 syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
     syncer::ModelType type) const {
   syncer::SyncDataList list;
-  const SyncedSession* session = NULL;
+  const sync_driver::SyncedSession* session = NULL;
   if (!session_tracker_.LookupLocalSession(&session))
     return syncer::SyncDataList();
 
@@ -439,7 +440,7 @@ syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
         current_machine_tag(), current_session_name_, header_entity);
   list.push_back(data);
 
-  SyncedSession::SyncedWindowMap::const_iterator win_iter;
+  sync_driver::SyncedSession::SyncedWindowMap::const_iterator win_iter;
   for (win_iter = session->windows.begin();
        win_iter != session->windows.end(); ++win_iter) {
     std::vector<sessions::SessionTab*>::const_iterator tabs_iter;
@@ -466,7 +467,7 @@ syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
 }
 
 bool SessionsSyncManager::GetLocalSession(
-    const SyncedSession* * local_session) {
+    const sync_driver::SyncedSession** local_session) {
   if (current_machine_tag_.empty())
     return false;
   *local_session = session_tracker_.GetSession(current_machine_tag());
@@ -551,7 +552,7 @@ syncer::SyncChange SessionsSyncManager::TombstoneTab(
 }
 
 bool SessionsSyncManager::GetAllForeignSessions(
-    std::vector<const SyncedSession*>* sessions) {
+    std::vector<const sync_driver::SyncedSession*>* sessions) {
   return session_tracker_.LookupAllForeignSessions(sessions);
 }
 
@@ -607,7 +608,7 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
   std::string foreign_session_tag = specifics.session_tag();
   DCHECK_NE(foreign_session_tag, current_machine_tag());
 
-  SyncedSession* foreign_session =
+  sync_driver::SyncedSession* foreign_session =
       session_tracker_.GetSession(foreign_session_tag);
   if (specifics.has_header()) {
     // Read in the header data for this foreign session.
@@ -705,33 +706,33 @@ void SessionsSyncManager::InitializeCurrentMachineTag() {
 void SessionsSyncManager::PopulateSessionHeaderFromSpecifics(
     const sync_pb::SessionHeader& header_specifics,
     base::Time mtime,
-    SyncedSession* session_header) {
+    sync_driver::SyncedSession* session_header) {
   if (header_specifics.has_client_name())
     session_header->session_name = header_specifics.client_name();
   if (header_specifics.has_device_type()) {
     switch (header_specifics.device_type()) {
       case sync_pb::SyncEnums_DeviceType_TYPE_WIN:
-        session_header->device_type = SyncedSession::TYPE_WIN;
+        session_header->device_type = sync_driver::SyncedSession::TYPE_WIN;
         break;
       case sync_pb::SyncEnums_DeviceType_TYPE_MAC:
-        session_header->device_type = SyncedSession::TYPE_MACOSX;
+        session_header->device_type = sync_driver::SyncedSession::TYPE_MACOSX;
         break;
       case sync_pb::SyncEnums_DeviceType_TYPE_LINUX:
-        session_header->device_type = SyncedSession::TYPE_LINUX;
+        session_header->device_type = sync_driver::SyncedSession::TYPE_LINUX;
         break;
       case sync_pb::SyncEnums_DeviceType_TYPE_CROS:
-        session_header->device_type = SyncedSession::TYPE_CHROMEOS;
+        session_header->device_type = sync_driver::SyncedSession::TYPE_CHROMEOS;
         break;
       case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
-        session_header->device_type = SyncedSession::TYPE_PHONE;
+        session_header->device_type = sync_driver::SyncedSession::TYPE_PHONE;
         break;
       case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
-        session_header->device_type = SyncedSession::TYPE_TABLET;
+        session_header->device_type = sync_driver::SyncedSession::TYPE_TABLET;
         break;
       case sync_pb::SyncEnums_DeviceType_TYPE_OTHER:
         // Intentionally fall-through
       default:
-        session_header->device_type = SyncedSession::TYPE_OTHER;
+        session_header->device_type = sync_driver::SyncedSession::TYPE_OTHER;
         break;
     }
   }
@@ -1042,16 +1043,17 @@ SessionsSyncManager::GetSyncedWindowDelegatesGetter() const {
 }
 
 void SessionsSyncManager::DoGarbageCollection() {
-  std::vector<const SyncedSession*> sessions;
+  std::vector<const sync_driver::SyncedSession*> sessions;
   if (!GetAllForeignSessions(&sessions))
     return;  // No foreign sessions.
 
   // Iterate through all the sessions and delete any with age older than
   // |stale_session_threshold_days_|.
   syncer::SyncChangeList changes;
-  for (std::vector<const SyncedSession*>::const_iterator iter =
-           sessions.begin(); iter != sessions.end(); ++iter) {
-    const SyncedSession* session = *iter;
+  for (std::vector<const sync_driver::SyncedSession*>::const_iterator iter =
+           sessions.begin();
+       iter != sessions.end(); ++iter) {
+    const sync_driver::SyncedSession* session = *iter;
     int session_age_in_days =
         (base::Time::Now() - session->modified_time).InDays();
     std::string session_tag = session->session_tag;
