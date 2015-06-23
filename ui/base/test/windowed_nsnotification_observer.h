@@ -27,6 +27,10 @@ class RunLoop;
 // Watch for an NSNotification on the default notification center.
 - (id)initForNotification:(NSString*)name;
 
+// Watch for an NSNotification on the default notification center from a
+// particular object.
+- (id)initForNotification:(NSString*)name object:(id)sender;
+
 // Watch for an NSNotification on the shared workspace notification center for
 // the
 // given application.

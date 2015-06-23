@@ -5,13 +5,21 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_MAC_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_MAC_H_
 
+#import <Foundation/Foundation.h>
+
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
+
+@class StartResizeNotificationObserver;
 
 // Mac-specific parts of ChromeNativeAppWindowViews.
 class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
  public:
   ChromeNativeAppWindowViewsMac();
   ~ChromeNativeAppWindowViewsMac() override;
+
+  // Called by |nswindow_observer_| when the window is about to resize.
+  void OnWindowWillStartLiveResize();
 
  protected:
   // ChromeNativeAppWindowViews implementation.
@@ -23,10 +31,17 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   views::NonClientFrameView* CreateNonStandardAppFrame() override;
 
   // ui::BaseWindow implementation.
+  bool IsMaximized() const override;
+  gfx::Rect GetRestoredBounds() const override;
   void Show() override;
   void ShowInactive() override;
   void Activate() override;
+  void Maximize() override;
+  void Restore() override;
   void FlashFrame(bool flash) override;
+
+  // WidgetObserver implementation.
+  void OnWidgetCreated(views::Widget* widget) override;
 
   // NativeAppWindow implementation.
   void UpdateDraggableRegions(
@@ -40,6 +55,12 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
  private:
   // Unset is_hidden_with_app_ and tell the shim to unhide.
   void UnhideWithoutActivation();
+
+  // Used to notify us about certain NSWindow events.
+  base::scoped_nsobject<StartResizeNotificationObserver> nswindow_observer_;
+
+  // The bounds of the window just before it was last maximized.
+  NSRect bounds_before_maximize_;
 
   // Whether this window last became hidden due to a request to hide the entire
   // app, e.g. via the dock menu or Cmd+H. This is set by Hide/ShowWithApp.
