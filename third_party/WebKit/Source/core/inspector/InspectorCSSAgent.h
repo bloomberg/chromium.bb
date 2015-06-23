@@ -113,10 +113,6 @@ public:
     void disable(ErrorString*) override;
     void reset();
     void mediaQueryResultChanged();
-    void willMutateRules();
-    void didMutateRules(CSSStyleSheet*);
-    void willMutateStyle();
-    void didMutateStyle(CSSStyleDeclaration*, bool);
 
     void activeStyleSheetsUpdated(Document*);
     void documentDetached(Document*);
@@ -179,7 +175,6 @@ private:
     InspectorStyleSheet* assertInspectorStyleSheetForId(ErrorString*, const String&);
     InspectorStyleSheetBase* assertStyleSheetForId(ErrorString*, const String&);
     TypeBuilder::CSS::StyleSheetOrigin::Enum detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
-    bool styleSheetEditInProgress() const { return m_styleSheetsPendingMutation || m_styleDeclarationPendingMutation || m_isSettingStyleSheetText; }
 
     PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > buildArrayForMatchedRuleList(CSSRuleList*, Element*, PseudoId);
@@ -217,8 +212,6 @@ private:
     HashMap<int, String> m_editedStyleElements;
 
     int m_lastStyleSheetId;
-    int m_styleSheetsPendingMutation;
-    bool m_styleDeclarationPendingMutation;
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
 

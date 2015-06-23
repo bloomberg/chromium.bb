@@ -105,18 +105,6 @@ interface InspectorInstrumentation {
     void documentDetached([Keep] Document*);
 
     [CSS, Inline=FastReturn]
-    void willMutateRules(CSSStyleSheet*);
-
-    [CSS, Inline=FastReturn]
-    void didMutateRules([Keep] CSSStyleSheet*);
-
-    [CSS, Inline=FastReturn]
-    void willMutateStyle(CSSStyleDeclaration*);
-
-    [CSS, Inline=FastReturn]
-    void didMutateStyle([Keep] CSSStyleDeclaration*, bool);
-
-    [CSS, Inline=FastReturn]
     void activeStyleSheetsUpdated([Keep] Document*);
 
     [CSS, Inline=FastReturn]

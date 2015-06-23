@@ -440,8 +440,6 @@ InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageA
     , m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
     , m_lastStyleSheetId(1)
-    , m_styleSheetsPendingMutation(0)
-    , m_styleDeclarationPendingMutation(false)
     , m_creatingViaInspectorStyleSheet(false)
     , m_isSettingStyleSheetText(false)
 {
@@ -545,43 +543,9 @@ void InspectorCSSAgent::mediaQueryResultChanged()
     frontend()->mediaQueryResultChanged();
 }
 
-void InspectorCSSAgent::willMutateRules()
-{
-    ++m_styleSheetsPendingMutation;
-}
-
-void InspectorCSSAgent::didMutateRules(CSSStyleSheet* styleSheet)
-{
-    --m_styleSheetsPendingMutation;
-    ASSERT(m_styleSheetsPendingMutation >= 0);
-
-    if (!styleSheetEditInProgress()) {
-        Document* owner = styleSheet->ownerDocument();
-        if (owner)
-            owner->modifiedStyleSheet(styleSheet, FullStyleUpdate);
-    }
-}
-
-void InspectorCSSAgent::willMutateStyle()
-{
-    m_styleDeclarationPendingMutation = true;
-}
-
-void InspectorCSSAgent::didMutateStyle(CSSStyleDeclaration* style, bool isInlineStyle)
-{
-    ASSERT(m_styleDeclarationPendingMutation);
-    m_styleDeclarationPendingMutation = false;
-    if (!styleSheetEditInProgress() && !isInlineStyle) {
-        CSSStyleSheet* parentSheet = style->parentStyleSheet();
-        Document* owner = parentSheet ? parentSheet->ownerDocument() : nullptr;
-        if (owner)
-            owner->modifiedStyleSheet(parentSheet, FullStyleUpdate);
-    }
-}
-
 void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 {
-    if (styleSheetEditInProgress())
+    if (m_isSettingStyleSheetText)
         return;
 
     m_invalidatedDocuments.add(document);

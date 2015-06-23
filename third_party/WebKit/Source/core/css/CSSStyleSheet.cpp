@@ -162,8 +162,6 @@ CSSStyleSheet::~CSSStyleSheet()
 
 void CSSStyleSheet::willMutateRules()
 {
-    InspectorInstrumentation::willMutateRules(this);
-
     // If we are the only client it is safe to mutate.
     if (m_contents->clientSize() <= 1 && !m_contents->isInMemoryCache()) {
         m_contents->clearRuleSet();
@@ -191,7 +189,6 @@ void CSSStyleSheet::didMutateRules()
     ASSERT(m_contents->isMutable());
     ASSERT(m_contents->clientSize() <= 1);
 
-    InspectorInstrumentation::didMutateRules(this);
     didMutate(PartialRuleUpdate);
 }
 
