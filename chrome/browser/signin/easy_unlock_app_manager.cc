@@ -6,11 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
-#include "chrome/common/extensions/api/screenlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/proximity_auth/switches.h"
 #include "extensions/browser/event_router.h"
@@ -173,28 +174,12 @@ bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {
   if (!extension_service)
     return false;
 
-  extensions::EventRouter* event_router =
-      extensions::EventRouter::Get(extension_service->GetBrowserContext());
-  if (!event_router)
-    return false;
-
-  std::string event_name =
-      extensions::api::screenlock_private::OnAuthAttempted::kEventName;
-
-  if (!event_router->HasEventListener(event_name))
-    return false;
-
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->AppendString(extensions::api::screenlock_private::ToString(
-      extensions::api::screenlock_private::AUTH_TYPE_USERCLICK));
-  args->AppendString(std::string());
-
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(event_name, args.Pass()));
-
   // TODO(tbarzic): Restrict this to EasyUnlock app.
-  event_router->BroadcastEvent(event.Pass());
-  return true;
+  extensions::ScreenlockPrivateEventRouter* screenlock_router =
+      extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
+          extension_service->profile());
+  return screenlock_router->OnAuthAttempted(
+      proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK, std::string());
 }
 
 }  // namespace

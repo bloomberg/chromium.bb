@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -72,6 +73,11 @@ class TestProcessManager : public extensions::ProcessManager {
 scoped_ptr<KeyedService> CreateTestProcessManager(
     content::BrowserContext* context) {
   return make_scoped_ptr(new TestProcessManager(context));
+}
+
+scoped_ptr<KeyedService> CreateScreenlockPrivateEventRouter(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new extensions::ScreenlockPrivateEventRouter(context));
 }
 
 // Observes extension registry for unload and load events (in that order) of an
@@ -313,6 +319,8 @@ class EasyUnlockAppManagerTest : public testing::Test {
 
     extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
         &profile_, &CreateTestProcessManager);
+    extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()
+        ->SetTestingFactory(&profile_, &CreateScreenlockPrivateEventRouter);
 
     event_router_ = static_cast<TestEventRouter*>(
         extensions::EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
