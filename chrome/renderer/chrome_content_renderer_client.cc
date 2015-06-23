@@ -1042,49 +1042,51 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 
   bool is_whitelisted_app = is_photo_app || is_hangouts_app;
 
-  bool is_extension_from_webstore = false;
-  bool is_invoked_by_hosted_app = false;
+  bool is_invoked_by_webstore_installed_extension = false;
   bool is_extension_unrestricted = false;
+  bool is_extension_force_installed = false;
 #if defined(ENABLE_EXTENSIONS)
-  is_extension_from_webstore = extension && extension->from_webstore();
+  bool is_extension_from_webstore = extension && extension->from_webstore();
 
-  is_invoked_by_hosted_app = extension &&
+  bool is_invoked_by_extension = app_url.SchemeIs("chrome-extension");
+  bool is_invoked_by_hosted_app = extension &&
       extension->is_hosted_app() &&
       extension->web_extent().MatchesURL(app_url);
 
-  // Allow built-in extensions and extensions under development.
+  is_invoked_by_webstore_installed_extension = is_extension_from_webstore &&
+      (is_invoked_by_extension || is_invoked_by_hosted_app);
+
+  // Allow built-in extensions and developer mode extensions.
   is_extension_unrestricted = extension &&
-      (extension->location() == extensions::Manifest::COMPONENT ||
-       extensions::Manifest::IsUnpackedLocation(extension->location()));
+       (extensions::Manifest::IsUnpackedLocation(extension->location()) ||
+        extensions::Manifest::IsComponentLocation(extension->location()));
+  // Allow extensions force installed by admin policy.
+  is_extension_force_installed = extension &&
+       extensions::Manifest::IsPolicyLocation(extension->location());
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  bool is_invoked_by_extension = app_url.SchemeIs("chrome-extension");
-
-  // The NaCl PDF viewer is always allowed and can use 'Dev' interfaces.
-  bool is_nacl_pdf_viewer =
-      (is_extension_from_webstore &&
-       manifest_url.SchemeIs("chrome-extension") &&
-       manifest_url.host() == "acadkphlmlegjaadjagenfimbpphcgnh");
-
-  // Allow Chrome Web Store extensions, built-in extensions and extensions
-  // under development if the invocation comes from a URL with an extension
-  // scheme. Also allow invocations if they are from whitelisted URLs or
-  // if --enable-nacl is set.
-  bool is_nacl_allowed = is_nacl_unrestricted ||
-                         is_whitelisted_web_ui ||
-                         is_whitelisted_app ||
-                         is_nacl_pdf_viewer ||
-                         is_invoked_by_hosted_app ||
-                         (is_invoked_by_extension &&
-                             (is_extension_from_webstore ||
-                                 is_extension_unrestricted));
+  // Allow NaCl under any of the following circumstances:
+  //  1) An app or URL is explictly whitelisted above.
+  //  2) An extension is loaded unpacked or built-in (component) to Chrome.
+  //  3) An extension is force installed by policy.
+  //  4) An extension is installed from the webstore, and invoked in that
+  //     context (hosted app URL or chrome-extension:// scheme).
+  //  5) --enable-nacl is set.
+  bool is_nacl_allowed_by_location =
+      is_whitelisted_web_ui ||
+      is_whitelisted_app ||
+      is_extension_unrestricted ||
+      is_extension_force_installed ||
+      is_invoked_by_webstore_installed_extension;
+  bool is_nacl_allowed = is_nacl_allowed_by_location || is_nacl_unrestricted;
   if (is_nacl_allowed) {
-    bool app_can_use_dev_interfaces = is_nacl_pdf_viewer;
-    // Make sure that PPAPI 'dev' interfaces aren't available for production
-    // apps unless they're whitelisted.
+    // Make sure that PPAPI 'dev' interfaces are only available for unpacked
+    // and component extensions.  Also allow dev interfaces when --enable-nacl
+    // is set, but do not allow --enable-nacl to provide dev interfaces to
+    // webstore installed and other normally allowed URLs.
     WebString dev_attribute = WebString::fromUTF8("@dev");
-    if ((!is_whitelisted_app && !is_extension_from_webstore) ||
-        app_can_use_dev_interfaces) {
+    if (is_extension_unrestricted ||
+        (is_nacl_unrestricted && !is_nacl_allowed_by_location)) {
       // Add the special '@dev' attribute.
       std::vector<base::string16> param_names;
       std::vector<base::string16> param_values;

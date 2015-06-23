@@ -38,8 +38,6 @@ namespace {
 #if !defined(DISABLE_NACL)
 const bool kNaClRestricted = false;
 const bool kNaClUnrestricted = true;
-const bool kExtensionRestricted = false;
-const bool kExtensionUnrestricted = true;
 const bool kExtensionNotFromWebStore = false;
 const bool kExtensionFromWebStore = true;
 #endif
@@ -104,11 +102,8 @@ typedef testing::Test ChromeContentRendererClientTest;
 
 #if defined(ENABLE_EXTENSIONS)
 scoped_refptr<const extensions::Extension> CreateTestExtension(
-    bool is_unrestricted, bool is_from_webstore, bool is_hosted_app,
-    const std::string& app_url) {
-  extensions::Manifest::Location location = is_unrestricted ?
-      extensions::Manifest::UNPACKED :
-      extensions::Manifest::INTERNAL;
+    extensions::Manifest::Location location, bool is_from_webstore,
+    bool is_hosted_app, const std::string& app_url) {
   int flags = is_from_webstore ?
       extensions::Extension::FROM_WEBSTORE:
       extensions::Extension::NO_FLAGS;
@@ -129,14 +124,23 @@ scoped_refptr<const extensions::Extension> CreateTestExtension(
 }
 
 scoped_refptr<const extensions::Extension> CreateExtension(
-    bool is_unrestricted, bool is_from_webstore) {
+    bool is_from_webstore) {
   return CreateTestExtension(
-      is_unrestricted, is_from_webstore, kNotHostedApp, std::string());
+      extensions::Manifest::INTERNAL, is_from_webstore, kNotHostedApp,
+      std::string());
+}
+
+scoped_refptr<const extensions::Extension> CreateExtensionWithLocation(
+    extensions::Manifest::Location location, bool is_from_webstore) {
+  return CreateTestExtension(
+      location, is_from_webstore, kNotHostedApp, std::string());
 }
 
 scoped_refptr<const extensions::Extension> CreateHostedApp(
-    bool is_unrestricted, bool is_from_webstore, const std::string& app_url) {
-  return CreateTestExtension(is_unrestricted, is_from_webstore, kHostedApp,
+    bool is_from_webstore, const std::string& app_url) {
+  return CreateTestExtension(extensions::Manifest::INTERNAL,
+                             is_from_webstore,
+                             kHostedApp,
                              app_url);
 }
 #endif  // defined(ENABLE_EXTENSIONS)
@@ -165,22 +169,68 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(),
         GURL(),
         kNaClUnrestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        CreateExtension(kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_TRUE(AllowsDevInterfaces(params));
   }
-  // Unrestricted extensions are allowed without --enable-nacl, with 'dev'
-  // interfaces if called from an extension url.
+  // Unpacked extensions are allowed without --enable-nacl, with
+  // 'dev' interfaces.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
-        CreateExtension(kExtensionUnrestricted, kExtensionNotFromWebStore)
-            .get(),
+        CreateExtensionWithLocation(extensions::Manifest::UNPACKED,
+                                    kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_TRUE(AllowsDevInterfaces(params));
+  }
+  // Component extensions are allowed without --enable-nacl, with
+  // 'dev' interfaces.
+  {
+    WebPluginParams params;
+    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClRestricted,
+        CreateExtensionWithLocation(extensions::Manifest::COMPONENT,
+                                    kExtensionNotFromWebStore).get(),
+        &params));
+    EXPECT_TRUE(AllowsDevInterfaces(params));
+  }
+  {
+    WebPluginParams params;
+    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClRestricted,
+        CreateExtensionWithLocation(extensions::Manifest::EXTERNAL_COMPONENT,
+                                    kExtensionNotFromWebStore).get(),
+        &params));
+    EXPECT_TRUE(AllowsDevInterfaces(params));
+  }
+  // Extensions that are force installed by policy are allowed without
+  // --enable-nacl, without 'dev' interfaces.
+  {
+    WebPluginParams params;
+    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClRestricted,
+        CreateExtensionWithLocation(extensions::Manifest::EXTERNAL_POLICY,
+                                    kExtensionNotFromWebStore).get(),
+        &params));
+    EXPECT_FALSE(AllowsDevInterfaces(params));
+    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClRestricted,
+        CreateExtensionWithLocation(
+            extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD,
+            kExtensionNotFromWebStore).get(),
+        &params));
+    EXPECT_FALSE(AllowsDevInterfaces(params));
   }
   // CWS extensions are allowed without --enable-nacl, without 'dev'
   // interfaces if called from an extension url.
@@ -190,7 +240,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
+        CreateExtension(kExtensionFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -201,7 +251,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(),
         GURL(kExtensionUrl),
         kNaClUnrestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
+        CreateExtension(kExtensionFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -214,22 +264,11 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
+        CreateExtension(kExtensionFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
-  // The NaCl PDF extension is allowed without --enable-nacl, with 'dev'
-  // interfaces, from all URLs.
-  {
-    WebPluginParams params;
-    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL("chrome-extension://acadkphlmlegjaadjagenfimbpphcgnh"),
-        GURL(),
-        kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
-        &params));
-    EXPECT_TRUE(AllowsDevInterfaces(params));
-  }
+
   // Whitelisted URLs are allowed without --enable-nacl, without 'dev'
   // interfaces. There is a whitelist for the app URL and the manifest URL.
   {
@@ -239,28 +278,28 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(kPhotosManifestURL1),
         GURL(kPhotosAppURL1),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(kPhotosManifestURL1),
         GURL(kPhotosAppURL2),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(kPhotosManifestURL2),
         GURL(kPhotosAppURL1),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(kPhotosManifestURL2),
         GURL(kPhotosAppURL2),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     // Whitelisted Chat app is allowed.
@@ -268,19 +307,19 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(kChatManifestFS1),
         GURL(kChatAppURL1),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(kChatManifestFS2),
         GURL(kChatAppURL2),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(kChatManifestFS3),
         GURL(kChatAppURL3),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
 
     // Whitelisted manifest URL, bad app URLs, NOT allowed.
@@ -288,38 +327,38 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(kPhotosManifestURL1),
         GURL("http://plus.google.com/foo"),  // http scheme
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(kPhotosManifestURL1),
         GURL("http://plus.sandbox.google.com/foo"),  // http scheme
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(kPhotosManifestURL1),
         GURL("https://plus.google.evil.com/foo"),  // bad host
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     // Whitelisted app URL, bad manifest URL, NOT allowed.
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
         GURL("http://ssl.gstatic.com/s2/oz/nacl/foo"),  // http scheme
         GURL(kPhotosAppURL1),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
         GURL("https://ssl.gstatic.evil.com/s2/oz/nacl/foo"),  // bad host
         GURL(kPhotosAppURL1),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
         GURL("https://ssl.gstatic.com/wrong/s2/oz/nacl/foo"),  // bad path
         GURL(kPhotosAppURL1),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
   }
   // Whitelisted URLs can't get 'dev' interfaces with --enable-nacl.
@@ -329,7 +368,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(kPhotosManifestURL1),
         GURL(kPhotosAppURL1),
         kNaClUnrestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -342,7 +381,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(kPhotosManifestURL1),
         GURL(kPhotosAppURL1),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
+        nullptr,
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -353,45 +392,32 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         GURL(),
         GURL("https://plus.google.com.evil.com/foo1"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
-        &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
-        GURL("https://plus.google.com.evil.com/foo2"),
-        kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
-        &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
-        GURL("https://talkgadget.google.com.evil.com/foo3"),
-        kNaClRestricted,
-        CreateExtension(kExtensionUnrestricted, kExtensionNotFromWebStore)
-            .get(),
-        &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
-        GURL("https://talkgadget.google.com.evil.com/foo4"),
-        kNaClRestricted,
-        CreateExtension(kExtensionUnrestricted, kExtensionFromWebStore).get(),
+        nullptr,
         &params));
   }
-  // Non chrome-extension:// URLs belonging to hosted apps are allowed.
+  // Non chrome-extension:// URLs belonging to hosted apps are allowed for
+  // webstore installed hosted apps.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(),
         GURL("http://example.com/test.html"),
         kNaClRestricted,
-        CreateHostedApp(kExtensionRestricted,
-                        kExtensionNotFromWebStore,
+        CreateHostedApp(kExtensionFromWebStore,
+                        "http://example.com/").get(),
+        &params));
+    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(),
+        GURL("http://example.com/test.html"),
+        kNaClRestricted,
+        CreateHostedApp(kExtensionNotFromWebStore,
                         "http://example.com/").get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(),
         GURL("http://example.evil.com/test.html"),
         kNaClRestricted,
-        CreateHostedApp(kExtensionRestricted,
-                        kExtensionNotFromWebStore,
+        CreateHostedApp(kExtensionNotFromWebStore,
                         "http://example.com/").get(),
         &params));
   }
@@ -420,8 +446,8 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
   client.search_bouncer_.reset(new SearchBouncer);
   client.search_bouncer_->OnSetSearchURLs(
       std::vector<GURL>(), GURL("http://example.com/n"));
-  EXPECT_FALSE(client.ShouldSuppressErrorPage(NULL,
+  EXPECT_FALSE(client.ShouldSuppressErrorPage(nullptr,
                                               GURL("http://example.com")));
-  EXPECT_TRUE(client.ShouldSuppressErrorPage(NULL,
+  EXPECT_TRUE(client.ShouldSuppressErrorPage(nullptr,
                                              GURL("http://example.com/n")));
 }
