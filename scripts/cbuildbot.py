@@ -228,7 +228,7 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
       builder_run.attrs.metadata.UpdateWithDict(metadata_dump_dict)
 
     if builder_run.config.builder_class_name is None:
-      # TODO: This should get relocated to cbuildbot_config.
+      # TODO: This should get relocated to chromeos_config.
       if _IsDistributedBuilder(options, chrome_rev, build_config):
         builder_cls_name = 'simple_builders.DistributedBuilder'
       else:

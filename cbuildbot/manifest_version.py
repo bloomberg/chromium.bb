@@ -425,7 +425,7 @@ class BuildSpecsManager(object):
     Args:
       source_repo: Repository object for the source code.
       manifest_repo: Manifest repository for manifest versions / buildspecs.
-      build_names: Identifiers for the build. Must match cbuildbot_config
+      build_names: Identifiers for the build. Must match SiteConfig
           entries. If multiple identifiers are provided, the first item in the
           list must be an identifier for the group.
       incr_type: How we should increment this version - build|branch|patch
