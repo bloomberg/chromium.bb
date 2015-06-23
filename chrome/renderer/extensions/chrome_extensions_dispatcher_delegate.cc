@@ -200,6 +200,9 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       "cast.streaming.receiverSession",
       IDR_CAST_STREAMING_RECEIVER_SESSION_CUSTOM_BINDINGS_JS);
 #endif
+  source_map->RegisterSource(
+      "webrtcDesktopCapturePrivate",
+      IDR_WEBRTC_DESKTOP_CAPTURE_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
 
   // Custom types sources.

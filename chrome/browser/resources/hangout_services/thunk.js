@@ -41,26 +41,13 @@ chrome.runtime.onMessageExternal.addListener(
           requestInfo['guestProcessId'] = sender.guestProcessId;
         }
 
+        if (sender.guestRenderFrameRoutingId) {
+          requestInfo['guestRenderFrameId'] = sender.guestRenderFrameRoutingId;
+        }
+
         var method = message['method'];
         var origin = getHost(sender.url);
-        if (method == 'chooseDesktopMedia') {
-          // TODO(bemasc): Remove this method once the caller has transitioned
-          // to using the port.
-          var cancelId;
-          function sendResponseWithCancelId(streamId) {
-            var value = {'cancelId': cancelId, 'streamId': streamId};
-            doSendResponse(value);
-          }
-          cancelId = chrome.desktopCapture.chooseDesktopMedia(
-              ['screen', 'window'], sender.tab, sendResponseWithCancelId);
-          return true;
-        } else if (method == 'cancelChooseDesktopMedia') {
-          // TODO(bemasc): Remove this method (see above).
-          var cancelId = message['cancelId'];
-          chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
-          doSendResponse();
-          return false;
-        } else if (method == 'cpu.getInfo') {
+        if (method == 'cpu.getInfo') {
           chrome.system.cpu.getInfo(doSendResponse);
           return true;
         } else if (method == 'logging.setMetadata') {
@@ -193,12 +180,26 @@ function onChooseDesktopMediaPort(port) {
     var method = message['method'];
     if (method == 'chooseDesktopMedia') {
       var sources = message['sources'];
-      var cancelId = chrome.desktopCapture.chooseDesktopMedia(
-          sources, port.sender.tab, sendResponse);
+      var cancelId = null;
+      if (port.sender.tab) {
+        cancelId = chrome.desktopCapture.chooseDesktopMedia(
+            sources, port.sender.tab, sendResponse);
+      } else {
+        var requestInfo = {};
+        requestInfo['guestProcessId'] = port.sender.guestProcessId || 0;
+        requestInfo['guestRenderFrameId'] =
+            port.sender.guestRenderFrameRoutingId || 0;
+        cancelId = chrome.webrtcDesktopCapturePrivate.chooseDesktopMedia(
+            sources, requestInfo, sendResponse);
+      }
       port.onDisconnect.addListener(function() {
         // This method has no effect if called after the user has selected a
         // desktop media source, so it does not need to be conditional.
-        chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
+        if (port.sender.tab) {
+          chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
+        } else {
+          chrome.webrtcDesktopCapturePrivate.cancelChooseDesktopMedia(cancelId);
+        }
       });
     }
   });

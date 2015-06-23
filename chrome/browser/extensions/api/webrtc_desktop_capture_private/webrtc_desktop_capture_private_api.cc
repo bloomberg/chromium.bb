@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/api/webrtc_desktop_capture_private.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/net_util.h"
@@ -23,7 +22,6 @@ namespace extensions {
 
 namespace {
 
-const char kInvalidRequestInfoError[] = "Invalid RequestInfo specified.";
 const char kTargetNotFoundError[] = "The specified target is not found.";
 const char kUrlNotSecure[] =
     "URL scheme for the specified target is not secure.";
@@ -53,21 +51,10 @@ bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
   scoped_ptr<Params> params = Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (!params->request.guest_process_id || !params->request.render_view_id) {
-    error_ = kInvalidRequestInfoError;
-    return false;
-  }
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      params->request.guest_process_id,
+      params->request.guest_render_frame_id);
 
-  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
-      *params->request.guest_process_id.get(),
-      *params->request.render_view_id.get());
-
-  if (!rvh) {
-    error_ = kTargetNotFoundError;
-    return false;
-  }
-
-  content::RenderFrameHost* rfh = rvh->GetMainFrame();
   if (!rfh) {
     error_ = kTargetNotFoundError;
     return false;
@@ -85,7 +72,7 @@ bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
                                       : origin.spec());
 
   content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
+      content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents) {
     error_ = kTargetNotFoundError;
     return false;

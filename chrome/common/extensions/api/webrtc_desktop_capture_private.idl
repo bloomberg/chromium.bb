@@ -7,10 +7,10 @@
 namespace webrtcDesktopCapturePrivate {
   dictionary RequestInfo {
     // The guest process id for the requester.
-    long? guestProcessId;
+    long guestProcessId;
 
-    // The webview render view id for the requester.
-    long? renderViewId;
+    // The webview render frame id for the requester.
+    long guestRenderFrameId;
   };
 
   enum DesktopCaptureSourceType {
