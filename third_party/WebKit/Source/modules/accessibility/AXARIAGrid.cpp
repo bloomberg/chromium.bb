@@ -92,14 +92,18 @@ void AXARIAGrid::addChildren()
     if (!m_layoutObject)
         return;
 
+    Vector<AXObject*> children;
+    for (AXObject* child = firstChild(); child; child = child->nextSibling())
+        children.append(child);
+    computeAriaOwnsChildren(children);
+
     AXObjectCacheImpl& axCache = axObjectCache();
 
     // add only rows that are labeled as aria rows
     HashSet<AXObject*> appendedRows;
     unsigned columnCount = 0;
-    for (RefPtr<AXObject> child = firstChild(); child; child = child->nextSibling()) {
-
-        if (!addTableCellChild(child.get(), appendedRows, columnCount)) {
+    for (const auto& child : children) {
+        if (!addTableCellChild(child, appendedRows, columnCount)) {
 
             // in case the layout tree doesn't match the expected ARIA hierarchy, look at the children
             if (!child->hasChildren())
