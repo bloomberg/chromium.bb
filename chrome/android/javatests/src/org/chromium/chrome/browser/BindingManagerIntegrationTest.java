@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Context;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
@@ -93,6 +94,10 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
 
         @Override
         public void clearConnection(int pid) {}
+
+        @Override
+        public void startModerateBindingManagement(
+                Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {}
     }
 
     private MockBindingManager mBindingManager;

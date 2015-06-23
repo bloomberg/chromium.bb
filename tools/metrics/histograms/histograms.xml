@@ -268,6 +268,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.ModerateBindingCount" units="bindings">
+  <owner>jaekyun@chromium.org</owner>
+  <summary>
+    The number of moderate bindings which were kept while Chrome process is in
+    the foreground. This is logged right before Chrome process goes into the
+    background.
+  </summary>
+</histogram>
+
 <histogram name="Android.SeccompStatus.Prctl" enum="AndroidSeccompStatus">
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -44153,6 +44162,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.RendererCrashStatus" enum="TabRendererCrashStatus">
+  <owner>jaekyun@chromium.org</owner>
+  <summary>
+    The status of a tab and an application when a renderer crashes. This is
+    recorded only for Android when a renderer crashes.
+  </summary>
+</histogram>
+
 <histogram name="Tab.RestoreResult" enum="TabRestoreResult">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -44276,6 +44293,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time elapsed since there was form activity (e.g. fields selected, characters
     typed) in a tab. Recorded only for tabs that are evicted due to memory
     pressure and then selected again.
+  </summary>
+</histogram>
+
+<histogram name="Tab.TotalTabCount.BeforeLeavingApp" units="tabs">
+  <owner>jaekyun@chromium.org</owner>
+  <summary>
+    The total count of tabs which were kept while Chrome process is in the
+    foreground. This is recorded only for Android right before Chrome process
+    goes into the background.
   </summary>
 </histogram>
 
@@ -67521,6 +67547,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Loaded on creation and shown"/>
   <int value="1" label="Loaded on creation and lost"/>
   <int value="2" label="Not loaded on creation"/>
+</enum>
+
+<enum name="TabRendererCrashStatus" type="int">
+  <int value="0" label="Shown in foreground app"/>
+  <int value="1" label="Hidden in foreground app"/>
+  <int value="2" label="Hidden in background app"/>
 </enum>
 
 <enum name="TabRestoreResult" type="int">

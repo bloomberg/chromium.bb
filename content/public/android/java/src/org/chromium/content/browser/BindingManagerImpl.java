@@ -4,18 +4,27 @@
 
 package org.chromium.content.browser;
 
-import android.util.Log;
+import android.annotation.TargetApi;
+import android.content.ComponentCallbacks2;
+import android.content.Context;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.util.LruCache;
 import android.util.SparseArray;
 
+import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
+
+import java.util.Map;
 
 /**
  * Manages oom bindings used to bound child services.
  */
 class BindingManagerImpl implements BindingManager {
-    private static final String TAG = "BindingManager";
+    private static final String TAG = "cr.BindingManager";
 
     // Delay of 1 second used when removing temporary strong binding of a process (only on
     // non-low-memory devices).
@@ -25,6 +34,92 @@ class BindingManagerImpl implements BindingManager {
     // createBindingManagerForTesting().
     private final long mRemoveStrongBindingDelay;
     private final boolean mIsLowMemoryDevice;
+
+    private static class ModerateBindingPool
+            extends LruCache<Integer, ManagedConnection> implements ComponentCallbacks2 {
+        private final float mLowReduceRatio;
+        private final float mHighReduceRatio;
+
+        public ModerateBindingPool(int maxSize, float lowReduceRatio, float highReduceRatio) {
+            super(maxSize);
+
+            mLowReduceRatio = lowReduceRatio;
+            mHighReduceRatio = highReduceRatio;
+        }
+
+        @Override
+        public void onTrimMemory(int level) {
+            Log.i(TAG, "onTrimMemory: level=" + level + ", size=" + size());
+            if (size() > 0) {
+                if (level <= TRIM_MEMORY_RUNNING_MODERATE) {
+                    reduce(mLowReduceRatio);
+                } else if (level <= TRIM_MEMORY_RUNNING_LOW) {
+                    reduce(mHighReduceRatio);
+                } else {
+                    evictAll();
+                }
+            }
+        }
+
+        @Override
+        public void onLowMemory() {
+            Log.i(TAG, "onLowMemory: evict " + size() + " bindings");
+            evictAll();
+        }
+
+        @Override
+        public void onConfigurationChanged(Configuration configuration) {}
+
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+        private void reduce(float reduceRatio) {
+            int oldSize = size();
+            int newSize = (int) (oldSize * (1f - reduceRatio));
+            Log.i(TAG, "Reduce connections from " + oldSize + " to " + newSize);
+            if (newSize == 0) {
+                evictAll();
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                trimToSize(newSize);
+            } else {
+                // Entries will be removed from the front because snapshot() returns ones ordered
+                // from least recently accessed to most recently accessed.
+                int count = 0;
+                for (Map.Entry<Integer, ManagedConnection> entry : snapshot().entrySet()) {
+                    remove(entry.getKey());
+                    ++count;
+                    if (count == oldSize - newSize) break;
+                }
+            }
+        }
+
+        void addConnection(ManagedConnection managedConnection) {
+            ChildProcessConnection connection = managedConnection.mConnection;
+            if (connection != null && connection.isInSandbox()) {
+                managedConnection.addModerateBinding();
+                if (connection.isModerateBindingBound()) {
+                    put(connection.getServiceNumber(), managedConnection);
+                } else {
+                    remove(connection.getServiceNumber());
+                }
+            }
+        }
+
+        void removeConnection(ManagedConnection managedConnection) {
+            ChildProcessConnection connection = managedConnection.mConnection;
+            if (connection != null && connection.isInSandbox()) {
+                remove(connection.getServiceNumber());
+            }
+        }
+
+        @Override
+        protected void entryRemoved(boolean evicted, Integer key, ManagedConnection oldValue,
+                ManagedConnection newValue) {
+            if (oldValue != newValue) {
+                oldValue.removeModerateBinding();
+            }
+        }
+    }
+
+    private ModerateBindingPool mModerateBindingPool;
 
     /**
      * Wraps ChildProcessConnection keeping track of additional information needed to manage the
@@ -59,10 +154,13 @@ class BindingManagerImpl implements BindingManager {
             if (connection == null) return;
 
             connection.addStrongBinding();
+            if (mModerateBindingPool != null) {
+                mModerateBindingPool.removeConnection(this);
+            }
         }
 
         /** Removes a strong service binding. */
-        private void removeStrongBinding() {
+        private void removeStrongBinding(final boolean keepsAsModerate) {
             final ChildProcessConnection connection = mConnection;
             // We have to fail gracefully if the strong binding is not present, as on low-end the
             // binding could have been removed by dropOomBindings() when a new service was started.
@@ -75,6 +173,10 @@ class BindingManagerImpl implements BindingManager {
                 public void run() {
                     if (connection.isStrongBindingBound()) {
                         connection.removeStrongBinding();
+                        if (mModerateBindingPool != null && !connection.isStrongBindingBound()
+                                && keepsAsModerate) {
+                            mModerateBindingPool.addConnection(ManagedConnection.this);
+                        }
                     }
                 }
             };
@@ -84,6 +186,20 @@ class BindingManagerImpl implements BindingManager {
             } else {
                 ThreadUtils.postOnUiThreadDelayed(doUnbind, mRemoveStrongBindingDelay);
             }
+        }
+
+        /** Removes the moderate service binding. */
+        private void removeModerateBinding() {
+            if (mConnection == null || !mConnection.isModerateBindingBound()) return;
+            mConnection.removeModerateBinding();
+        }
+
+        /** Adds the moderate service binding. */
+        private void addModerateBinding() {
+            ChildProcessConnection connection = mConnection;
+            if (connection == null) return;
+
+            connection.addModerateBinding();
         }
 
         /**
@@ -109,7 +225,7 @@ class BindingManagerImpl implements BindingManager {
             if (!mInForeground && nextInForeground) {
                 addStrongBinding();
             } else if (mInForeground && !nextInForeground) {
-                removeStrongBinding();
+                removeStrongBinding(true);
             }
 
             mInForeground = nextInForeground;
@@ -130,7 +246,7 @@ class BindingManagerImpl implements BindingManager {
             if (!mBoundForBackgroundPeriod && nextBound) {
                 addStrongBinding();
             } else if (mBoundForBackgroundPeriod && !nextBound) {
-                removeStrongBinding();
+                removeStrongBinding(false);
             }
 
             mBoundForBackgroundPeriod = nextBound;
@@ -146,6 +262,9 @@ class BindingManagerImpl implements BindingManager {
 
         void clearConnection() {
             mWasOomProtected = mConnection.isOomProtectedOrWasWhenDied();
+            if (mModerateBindingPool != null) {
+                mModerateBindingPool.removeConnection(this);
+            }
             mConnection = null;
         }
 
@@ -173,18 +292,23 @@ class BindingManagerImpl implements BindingManager {
     // The connection bound with additional binding in onSentToBackground().
     private ManagedConnection mBoundForBackgroundPeriod;
 
+    // Whether this instance is used on testing.
+    private final boolean mOnTesting;
+
     /**
      * The constructor is private to hide parameters exposed for testing from the regular consumer.
      * Use factory methods to create an instance.
      */
-    private BindingManagerImpl(boolean isLowMemoryDevice, long removeStrongBindingDelay) {
+    private BindingManagerImpl(
+            boolean isLowMemoryDevice, long removeStrongBindingDelay, boolean onTesting) {
         mIsLowMemoryDevice = isLowMemoryDevice;
         mRemoveStrongBindingDelay = removeStrongBindingDelay;
+        mOnTesting = onTesting;
     }
 
     public static BindingManagerImpl createBindingManager() {
-        return new BindingManagerImpl(SysUtils.isLowEndDevice(),
-                DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS);
+        return new BindingManagerImpl(
+                SysUtils.isLowEndDevice(), DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS, false);
     }
 
     /**
@@ -193,7 +317,7 @@ class BindingManagerImpl implements BindingManager {
      * @param isLowEndDevice true iff the created instance should apply low-end binding policies
      */
     public static BindingManagerImpl createBindingManagerForTesting(boolean isLowEndDevice) {
-        return new BindingManagerImpl(isLowEndDevice, 0);
+        return new BindingManagerImpl(isLowEndDevice, 0, true);
     }
 
     @Override
@@ -256,6 +380,14 @@ class BindingManagerImpl implements BindingManager {
                 mBoundForBackgroundPeriod = mLastInForeground;
             }
         }
+        if (mModerateBindingPool != null) {
+            Log.i(TAG, "Release moderate connections: " + mModerateBindingPool.size());
+            if (!mOnTesting) {
+                RecordHistogram.recordCountHistogram(
+                        "Android.ModerateBindingCount", mModerateBindingPool.size());
+            }
+            mModerateBindingPool.evictAll();
+        }
     }
 
     @Override
@@ -293,5 +425,16 @@ class BindingManagerImpl implements BindingManager {
         synchronized (mManagedConnections) {
             return mManagedConnections.get(pid).isConnectionCleared();
         }
+    }
+
+    @Override
+    public void startModerateBindingManagement(
+            Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {
+        if (mIsLowMemoryDevice || mModerateBindingPool != null) return;
+
+        Log.i(TAG, "Moderate binding enabled: maxSize=" + maxSize + " lowReduceRatio="
+                        + lowReduceRatio + " highReduceRatio=" + highReduceRatio);
+        mModerateBindingPool = new ModerateBindingPool(maxSize, lowReduceRatio, highReduceRatio);
+        if (context != null) context.registerComponentCallbacks(mModerateBindingPool);
     }
 }

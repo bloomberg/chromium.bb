@@ -24,6 +24,7 @@ import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.banners.AppBannerManager;
@@ -60,15 +61,18 @@ import org.chromium.chrome.browser.smartcard.EmptyPKCS11AuthenticationManager;
 import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
 import org.chromium.printing.PrintingController;
 import org.chromium.ui.UiUtils;
 
+import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 /**
@@ -397,6 +401,27 @@ public class ChromeMobileApplication extends ChromiumApplication {
 
         ChildProcessLauncher.onSentToBackground();
         IntentHandler.clearPendingReferrer();
+
+        if (FeatureUtilities.isDocumentMode(this)) {
+            if (sDocumentTabModelSelector != null) {
+                RecordHistogram.recordCountHistogram("Tab.TotalTabCount.BeforeLeavingApp",
+                        sDocumentTabModelSelector.getTotalTabCount());
+            }
+        } else {
+            int totalTabCount = 0;
+            for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
+                Activity activity = reference.get();
+                if (activity instanceof ChromeActivity) {
+                    TabModelSelector tabModelSelector =
+                            ((ChromeActivity) activity).getTabModelSelector();
+                    if (tabModelSelector != null) {
+                        totalTabCount += tabModelSelector.getTotalTabCount();
+                    }
+                }
+            }
+            RecordHistogram.recordCountHistogram(
+                    "Tab.TotalTabCount.BeforeLeavingApp", totalTabCount);
+        }
     }
 
     /**

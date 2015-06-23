@@ -98,7 +98,7 @@ public interface ChildProcessConnection {
     boolean isStrongBindingBound();
 
     /**
-     * Called to remove the strong binding estabilished when the connection was started. It is safe
+     * Called to remove the strong binding established when the connection was started. It is safe
      * to call this multiple times.
      */
     void removeInitialBinding();
@@ -128,4 +128,18 @@ public interface ChildProcessConnection {
      * Called when the service is no longer in active use of the consumer.
      */
     void removeStrongBinding();
+
+    /**
+     * Attaches a moderate binding that will give the service the priority of a visible process, but
+     * keep the priority below a strongly bound process.
+     */
+    void addModerateBinding();
+
+    /**
+     * Called when the service is no longer in moderate use of the consumer.
+     */
+    void removeModerateBinding();
+
+    /** @return true iff the moderate oom binding is currently bound. */
+    boolean isModerateBindingBound();
 }

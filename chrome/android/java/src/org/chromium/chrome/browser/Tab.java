@@ -18,6 +18,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
@@ -111,6 +112,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         View.OnSystemUiVisibilityChangeListener {
     public static final int INVALID_TAB_ID = -1;
     private static final long INVALID_TIMESTAMP = -1;
+
+    // TabRendererCrashStatus defined in tools/metrics/histograms/histograms.xml.
+    private static final int TAB_RENDERER_CRASH_STATUS_SHOWN_IN_FOREGROUND_APP = 0;
+    private static final int TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_FOREGROUND_APP = 1;
+    private static final int TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_BACKGROUND_APP = 2;
+    private static final int TAB_RENDERER_CRASH_STATUS_MAX = 3;
 
     /**
      * The required page load percentage for the page to be considered ready assuming the
@@ -565,6 +572,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             int activityState = ApplicationStatus.getStateForActivity(
                     mWindowAndroid.getActivity().get());
+            int rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_MAX;
             if (!processWasOomProtected
                     || activityState == ActivityState.PAUSED
                     || activityState == ActivityState.STOPPED
@@ -572,10 +580,21 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 // The tab crashed in background or was killed by the OS out-of-memory killer.
                 //setNeedsReload(true);
                 mNeedsReload = true;
+                if (ApplicationStatus.getStateForApplication()
+                        == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+                    rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_FOREGROUND_APP;
+                } else {
+                    rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_HIDDEN_IN_BACKGROUND_APP;
+                }
             } else {
+                rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_SHOWN_IN_FOREGROUND_APP;
                 showSadTab();
+                // TODO(jaekyun): This isn't needed anymore because a histogram
+                // "Tab.RendererCrashStatus" is recorded.
                 UmaSessionStats.logRendererCrash(mWindowAndroid.getActivity().get());
             }
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Tab.RendererCrashStatus", rendererCrashStatus, TAB_RENDERER_CRASH_STATUS_MAX);
 
             mIsLoading = false;
             mIsBeingRestored = false;

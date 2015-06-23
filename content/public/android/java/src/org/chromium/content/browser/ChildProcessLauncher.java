@@ -442,6 +442,15 @@ public class ChildProcessLauncher {
     }
 
     /**
+     * Starts moderate binding management.
+     */
+    public static void startModerateBindingManagement(
+            Context context, float lowReduceRatio, float highReduceRatio) {
+        sBindingManager.startModerateBindingManagement(
+                context, getNumberOfServices(context, true), lowReduceRatio, highReduceRatio);
+    }
+
+    /**
      * Called when the embedding application is brought to foreground.
      */
     public static void onBroughtToForeground() {

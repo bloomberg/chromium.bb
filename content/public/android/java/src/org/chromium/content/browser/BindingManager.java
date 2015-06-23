@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import android.content.Context;
+
 /**
  * Manages oom bindings used to bound child services. "Oom binding" is a binding that raises the
  * process oom priority so that it shouldn't be killed by the OS out-of-memory killer under
@@ -80,4 +82,11 @@ public interface BindingManager {
      * ChildProcessConnection. This can be called on any thread.
      */
     void clearConnection(int pid);
+
+    /**
+     * Starts moderate binding management.
+     * Please see https://goo.gl/tl9MQm for details.
+     */
+    void startModerateBindingManagement(
+            Context context, int maxSize, float lowReduceRatio, float highReduceRatio);
 }

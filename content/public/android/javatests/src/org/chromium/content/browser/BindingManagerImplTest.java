@@ -4,13 +4,21 @@
 
 package org.chromium.content.browser;
 
+import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL;
+import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW;
+import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE;
+
+import android.app.Application;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Pair;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
+
+import java.util.ArrayList;
 
 /**
  * Unit tests for BindingManagerImpl. The tests run agains mock ChildProcessConnection
@@ -23,6 +31,7 @@ import org.chromium.content.common.IChildProcessService;
 public class BindingManagerImplTest extends InstrumentationTestCase {
     private static class MockChildProcessConnection implements ChildProcessConnection {
         boolean mInitialBindingBound;
+        boolean mModerateBindingBound;
         int mStrongBindingCount;
         final int mPid;
 
@@ -86,12 +95,12 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
 
         @Override
         public int getServiceNumber() {
-            throw new UnsupportedOperationException();
+            return mPid;
         }
 
         @Override
         public boolean isInSandbox() {
-            throw new UnsupportedOperationException();
+            return true;
         }
 
         @Override
@@ -109,6 +118,21 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
                 IChildProcessCallback processCallback, ConnectionCallback connectionCallbacks,
                 Bundle sharedRelros) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void addModerateBinding() {
+            mModerateBindingBound = true;
+        }
+
+        @Override
+        public void removeModerateBinding() {
+            mModerateBindingBound = false;
+        }
+
+        @Override
+        public boolean isModerateBindingBound() {
+            return mModerateBindingBound;
         }
     }
 
@@ -134,15 +158,20 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
     // The managers are created in setUp() for convenience.
     BindingManagerImpl mLowEndManager;
     BindingManagerImpl mHighEndManager;
+    BindingManagerImpl mModerateBindingManager;
     ManagerEntry[] mAllManagers;
 
     @Override
     protected void setUp() {
         mLowEndManager = BindingManagerImpl.createBindingManagerForTesting(true);
         mHighEndManager = BindingManagerImpl.createBindingManagerForTesting(false);
+        mModerateBindingManager = BindingManagerImpl.createBindingManagerForTesting(false);
+        mModerateBindingManager.startModerateBindingManagement(
+                getInstrumentation().getTargetContext(), 4, 0.25f, 0.5f);
         mAllManagers = new ManagerEntry[] {
-            new ManagerEntry(mLowEndManager, "low-end"),
-            new ManagerEntry(mHighEndManager, "high-end")};
+                new ManagerEntry(mLowEndManager, "low-end"),
+                new ManagerEntry(mHighEndManager, "high-end"),
+                new ManagerEntry(mModerateBindingManager, "moderate-binding")};
     }
 
     /**
@@ -254,12 +283,56 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
     }
 
     /**
+     * Verifies the strong binding removal policies with moderate binding management, where the
+     * moderate binding should be bound.
+     */
+    @SmallTest
+    @Feature({"ProcessManagement"})
+    public void testStrongBindingRemovalWithModerateBinding() throws Throwable {
+        // This test applies only to the moderate-binding manager.
+        final BindingManagerImpl manager = mModerateBindingManager;
+
+        // Add a connection to the manager.
+        final MockChildProcessConnection connection = new MockChildProcessConnection(1);
+        manager.addNewConnection(connection.getPid(), connection);
+        assertTrue(connection.isInitialBindingBound());
+        assertFalse(connection.isStrongBindingBound());
+        assertFalse(connection.isModerateBindingBound());
+        // This has to happen on the UI thread, so that we can check the binding status right after
+        // the call to remove it, before the any other task is executed on the main thread.
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Add a strong binding, verify that the initial binding is not removed.
+                manager.setInForeground(connection.getPid(), true);
+                assertTrue(connection.isStrongBindingBound());
+                assertTrue(connection.isInitialBindingBound());
+                assertFalse(connection.isModerateBindingBound());
+
+                // Remove the strong binding, verify that the strong binding is not removed
+                // immediately.
+                manager.setInForeground(connection.getPid(), false);
+                assertTrue(connection.isStrongBindingBound());
+                assertTrue(connection.isInitialBindingBound());
+                assertFalse(connection.isModerateBindingBound());
+            }
+        });
+
+        // Wait until the posted unbinding tasks get executed and verify that the strong binding was
+        // removed while the initial binding is not affected, and the moderate binding is bound.
+        getInstrumentation().waitForIdleSync();
+        assertFalse(connection.isStrongBindingBound());
+        assertTrue(connection.isInitialBindingBound());
+        assertTrue(connection.isModerateBindingBound());
+    }
+
+    /**
      * Verifies that the initial binding is removed after determinedVisibility() is called.
      */
     @SmallTest
     @Feature({"ProcessManagement"})
     public void testInitialBindingRemoval() {
-        // This test applies to both low-end and high-end policies.
+        // This test applies to low-end, high-end and moderate-binding policies.
         for (ManagerEntry managerEntry : mAllManagers) {
             BindingManagerImpl manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
@@ -289,7 +362,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"ProcessManagement"})
     public void testIsOomProtected() {
-        // This test applies to both low-end and high-end policies.
+        // This test applies to low-end, high-end and moderate-binding policies.
         for (ManagerEntry managerEntry : mAllManagers) {
             BindingManagerImpl manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
@@ -339,7 +412,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"ProcessManagement"})
     public void testBackgroundPeriodBinding() {
-        // This test applies to both low-end and high-end policies.
+        // This test applies to low-end, high-end and moderate-binding policies.
         for (ManagerEntry managerEntry : mAllManagers) {
             BindingManagerImpl manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
@@ -381,6 +454,122 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
             assertFalse(message, firstConnection.isStrongBindingBound());
             assertFalse(message, secondConnection.isStrongBindingBound());
             assertFalse(message, thirdConnection.isStrongBindingBound());
+        }
+    }
+
+    /**
+     * Verifies that onSentToBackground() drops all the moderate bindings, and
+     * onBroughtToForeground() doesn't recover them.
+     */
+    @SmallTest
+    @Feature({"ProcessManagement"})
+    public void testModerateBindingDropOnBackground() {
+        // This test applies only to the moderate-binding manager.
+        final BindingManagerImpl manager = mModerateBindingManager;
+
+        MockChildProcessConnection[] connections = new MockChildProcessConnection[4];
+        for (int i = 0; i < connections.length; i++) {
+            connections[i] = new MockChildProcessConnection(i + 1);
+            manager.addNewConnection(connections[i].getPid(), connections[i]);
+        }
+
+        // Verify that each connection has a moderate binding after binding and releasing a strong
+        // binding.
+        for (MockChildProcessConnection connection : connections) {
+            manager.setInForeground(connection.getPid(), true);
+            manager.setInForeground(connection.getPid(), false);
+            getInstrumentation().waitForIdleSync();
+            assertTrue(connection.isModerateBindingBound());
+        }
+
+        // Call onSentToBackground() and verify that all the moderate bindings drop.
+        manager.onSentToBackground();
+        for (MockChildProcessConnection connection : connections) {
+            assertFalse(connection.isModerateBindingBound());
+        }
+
+        // Call onBroughtToForeground() and verify that the previous moderate bindings aren't
+        // recovered.
+        manager.onBroughtToForeground();
+        for (MockChildProcessConnection connection : connections) {
+            assertFalse(connection.isModerateBindingBound());
+        }
+    }
+
+    /**
+     * Verifies that onLowMemory() drops all the moderate bindings.
+     */
+    @SmallTest
+    @Feature({"ProcessManagement"})
+    public void testModerateBindingDropOnLowMemory() {
+        final Application app =
+                (Application) getInstrumentation().getTargetContext().getApplicationContext();
+        // This test applies only to the moderate-binding manager.
+        final BindingManagerImpl manager = mModerateBindingManager;
+
+        MockChildProcessConnection[] connections = new MockChildProcessConnection[4];
+        for (int i = 0; i < connections.length; i++) {
+            connections[i] = new MockChildProcessConnection(i + 1);
+            manager.addNewConnection(connections[i].getPid(), connections[i]);
+        }
+
+        // Verify that each connection has a moderate binding after binding and releasing a strong
+        // binding.
+        for (MockChildProcessConnection connection : connections) {
+            manager.setInForeground(connection.getPid(), true);
+            manager.setInForeground(connection.getPid(), false);
+            getInstrumentation().waitForIdleSync();
+            assertTrue(connection.isModerateBindingBound());
+        }
+
+        // Call onLowMemory() and verify that all the moderate bindings drop.
+        app.onLowMemory();
+        for (MockChildProcessConnection connection : connections) {
+            assertFalse(connection.isModerateBindingBound());
+        }
+    }
+
+    /**
+     * Verifies that onTrimMemory() drops moderate bindings properly.
+     */
+    @SmallTest
+    @Feature({"ProcessManagement"})
+    public void testModerateBindingDropOnTrimMemory() {
+        final Application app =
+                (Application) getInstrumentation().getTargetContext().getApplicationContext();
+        // This test applies only to the moderate-binding manager.
+        final BindingManagerImpl manager = mModerateBindingManager;
+
+        ArrayList<Pair<Integer, Integer>> levelAndExpectedVictimCountList =
+                new ArrayList<Pair<Integer, Integer>>();
+        levelAndExpectedVictimCountList.add(
+                new Pair<Integer, Integer>(TRIM_MEMORY_RUNNING_MODERATE, 1));
+        levelAndExpectedVictimCountList.add(new Pair<Integer, Integer>(TRIM_MEMORY_RUNNING_LOW, 2));
+        levelAndExpectedVictimCountList.add(
+                new Pair<Integer, Integer>(TRIM_MEMORY_RUNNING_CRITICAL, 4));
+
+        MockChildProcessConnection[] connections = new MockChildProcessConnection[4];
+        for (int i = 0; i < connections.length; i++) {
+            connections[i] = new MockChildProcessConnection(i + 1);
+            manager.addNewConnection(connections[i].getPid(), connections[i]);
+        }
+
+        for (Pair<Integer, Integer> pair : levelAndExpectedVictimCountList) {
+            String message = "Failed for the level=" + pair.first;
+            // Verify that each connection has a moderate binding after binding and releasing a
+            // strong binding.
+            for (MockChildProcessConnection connection : connections) {
+                manager.setInForeground(connection.getPid(), true);
+                manager.setInForeground(connection.getPid(), false);
+                getInstrumentation().waitForIdleSync();
+                assertTrue(message, connection.isModerateBindingBound());
+            }
+
+            app.onTrimMemory(pair.first);
+            // Verify that some of moderate bindings drop.
+            for (int i = 0; i < connections.length; i++) {
+                assertEquals(message, i >= pair.second, connections[i].isModerateBindingBound());
+            }
         }
     }
 }
