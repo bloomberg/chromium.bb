@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.ui.UiUtils;
 
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
@@ -138,6 +139,12 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
         mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, newTitle);
         mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, newUrl);
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        UiUtils.hideKeyboard(mTitleEditText);
     }
 
     @Override
