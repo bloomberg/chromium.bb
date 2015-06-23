@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 9: Uncaught SyntaxError: Unexpected token )
+CONSOLE ERROR: line 9: Uncaught SyntaxError: Expected () to start arrow function, but got '}' instead of '=>'
 Tests that pause on exception in internal script does not crash.
 
 Script source was shown.
