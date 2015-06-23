@@ -124,6 +124,9 @@
         "test": "net_unittests"
       },
       {
+        "test": "ppapi_unittests"
+      },
+      {
         "test": "sandbox_linux_unittests"
       },
       {

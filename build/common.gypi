@@ -880,7 +880,7 @@
         }],
 
         # Whether PPAPI is enabled.
-        ['OS=="android" or OS=="ios" or embedded==1', {
+        ['OS=="android" or OS=="ios" or (embedded==1 and chromecast==0)', {
           'enable_plugins%': 0,
         }, {
           'enable_plugins%': 1,

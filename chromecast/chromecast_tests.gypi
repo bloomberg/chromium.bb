@@ -130,6 +130,11 @@
             ],
           }
         }],
+        ['enable_plugins==1', {
+          'dependencies': [
+            '../ppapi/ppapi_internal.gyp:ppapi_unittests',
+          ],
+        }],
       ],
       'includes': ['build/tests/test_list.gypi'],
     },
