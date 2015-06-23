@@ -171,7 +171,7 @@ class blinkLayoutUnitPrinter:
         self.val = val
 
     def to_string(self):
-        return "%gpx" % (self.val['m_value'] / 64.0)
+        return "%.14gpx" % (self.val['m_value'] / 64.0)
 
 
 class blinkLayoutSizePrinter:
