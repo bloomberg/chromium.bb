@@ -1770,3 +1770,6 @@ crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
 
 # crbug.com/320477 [ Debug ] inspector/sources/debugger-pause/debugger-pause-in-internal.html [ Pass Crash ]
 crbug.com/502243 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
+
+crbug.com/503456 [ Linux Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Pass Crash ]
+crbug.com/503468 [ Debug ] imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/window-named-properties-003.html [ Pass Crash ]
