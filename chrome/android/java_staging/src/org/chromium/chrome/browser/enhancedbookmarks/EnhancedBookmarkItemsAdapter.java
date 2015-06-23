@@ -112,9 +112,9 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         return sectionPosition;
     }
 
-    private List<Object> getSection(int position) {
+    private List<? extends Object> getSection(int position) {
         int i = position;
-        for (List section : mSections) {
+        for (List<? extends Object> section : mSections) {
             if (i < section.size()) {
                 return section;
             }
