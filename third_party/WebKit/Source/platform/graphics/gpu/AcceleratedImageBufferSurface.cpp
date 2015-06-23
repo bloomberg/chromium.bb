@@ -62,15 +62,11 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     clear();
 }
 
-Platform3DObject AcceleratedImageBufferSurface::getBackingTexture() const
+// This is a duplicate of newImageSnapshot(), but we need different entry points to
+// support Canvas2DLayerBridge's slightly divergent semantics.
+PassRefPtr<SkImage> AcceleratedImageBufferSurface::getBackingTextureImage() const
 {
-    // Before returning the texture, all drawing operations must be completed.
-    m_surface->getCanvas()->flush();
-    GrRenderTarget* renderTarget = m_surface->getCanvas()->getTopDevice()->accessRenderTarget();
-    if (renderTarget) {
-        return renderTarget->asTexture()->getTextureHandle();
-    }
-    return 0;
+    return adoptRef(m_surface->newImageSnapshot());
 }
 
 void AcceleratedImageBufferSurface::didModifyBackingTexture()

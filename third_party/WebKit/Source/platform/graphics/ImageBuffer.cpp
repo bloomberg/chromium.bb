@@ -172,10 +172,20 @@ WebLayer* ImageBuffer::platformLayer() const
 
 bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
-    if (!m_surface->isAccelerated() || !getBackingTexture() || !isSurfaceValid())
+    if (!m_surface->isAccelerated() || !isSurfaceValid())
         return false;
 
     if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
+        return false;
+
+    RefPtr<const SkImage> textureImage = m_surface->getBackingTextureImage();
+    if (!textureImage)
+        return false;
+
+    ASSERT(textureImage->isTextureBacked());
+    // Get the texture ID, flushing pending operations if needed.
+    Platform3DObject textureId = textureImage->getTextureHandle(true);
+    if (!textureId)
         return false;
 
     OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
@@ -189,7 +199,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
     sharedContext->genMailboxCHROMIUM(mailbox->name);
-    sharedContext->produceTextureDirectCHROMIUM(getBackingTexture(), GL_TEXTURE_2D, mailbox->name);
+    sharedContext->produceTextureDirectCHROMIUM(textureId, GL_TEXTURE_2D, mailbox->name);
     sharedContext->flush();
 
     mailbox->syncPoint = sharedContext->insertSyncPoint();
@@ -218,16 +228,6 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     return true;
 }
 
-Platform3DObject ImageBuffer::getBackingTexture()
-{
-    return m_surface->getBackingTexture();
-}
-
-void ImageBuffer::didModifyBackingTexture()
-{
-    m_surface->didModifyBackingTexture();
-}
-
 bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBuffer, SourceDrawingBuffer sourceBuffer)
 {
     if (!drawingBuffer)
@@ -236,12 +236,17 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     if (!provider)
         return false;
     WebGraphicsContext3D* context3D = provider->context3d();
-    Platform3DObject tex = m_surface->getBackingTexture();
-    if (!context3D || !tex)
+    RefPtr<SkImage> textureImage = m_surface->getBackingTextureImage();
+    if (!context3D || !textureImage)
+        return false;
+    ASSERT(textureImage->isTextureBacked());
+    // Get the texture ID, flushing pending operations if needed.
+    Platform3DObject textureId = textureImage->getTextureHandle(true);
+    if (!textureId)
         return false;
 
     m_surface->invalidateCachedBitmap();
-    bool result = drawingBuffer->copyToPlatformTexture(context3D, tex, GL_RGBA,
+    bool result = drawingBuffer->copyToPlatformTexture(context3D, textureId, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false, sourceBuffer);
 
     if (result) {

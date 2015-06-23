@@ -82,11 +82,6 @@ const SkBitmap& ImageBufferSurface::cachedBitmap() const
     return nullBitmap;
 }
 
-PassRefPtr<SkImage> ImageBufferSurface::newImageSnapshot() const
-{
-    return nullptr;
-}
-
 void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
     SkBitmap bmp = bitmap();

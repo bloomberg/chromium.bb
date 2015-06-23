@@ -72,7 +72,7 @@ public:
     bool checkSurfaceValid();
     bool restoreSurface();
     WebLayer* layer() const;
-    Platform3DObject getBackingTexture();
+    PassRefPtr<SkImage> getBackingTextureImage();
     bool isAccelerated() const { return true; }
     void setFilterQuality(SkFilterQuality);
     void setIsHidden(bool);

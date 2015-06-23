@@ -61,9 +61,9 @@ public:
     bool isValid() const override { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }
     bool restore() override { return m_layerBridge->restoreSurface(); }
     WebLayer* layer() const override { return m_layerBridge->layer(); }
-    Platform3DObject getBackingTexture() const override { return m_layerBridge->getBackingTexture(); }
+    PassRefPtr<SkImage> getBackingTextureImage() const override { return m_layerBridge->getBackingTextureImage(); }
     bool isAccelerated() const override { return m_layerBridge->isAccelerated(); }
-    void setFilterQuality(SkFilterQuality filterQuality) override { m_layerBridge->setFilterQuality(filterQuality); };
+    void setFilterQuality(SkFilterQuality filterQuality) override { m_layerBridge->setFilterQuality(filterQuality); }
     void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
     void setImageBuffer(ImageBuffer* imageBuffer) override { m_layerBridge->setImageBuffer(imageBuffer); }
     void didDraw(const FloatRect& rect) override { m_layerBridge->didDraw(); }

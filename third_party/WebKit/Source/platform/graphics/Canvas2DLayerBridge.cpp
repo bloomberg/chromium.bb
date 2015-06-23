@@ -513,18 +513,14 @@ void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
     m_didRecordDrawCommand = true;
 }
 
-Platform3DObject Canvas2DLayerBridge::getBackingTexture()
+PassRefPtr<SkImage> Canvas2DLayerBridge::getBackingTextureImage()
 {
-    ASSERT(!m_destructionInProgress);
     if (!checkSurfaceValid())
-        return 0;
-    m_canvas->flush();
+        return nullptr;
+
     context()->flush();
-    GrRenderTarget* renderTarget = m_canvas->getDevice()->accessRenderTarget();
-    if (renderTarget) {
-        return renderTarget->asTexture()->getTextureHandle();
-    }
-    return 0;
+
+    return adoptRef(m_canvas->newImageSnapshot());
 }
 
 PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()

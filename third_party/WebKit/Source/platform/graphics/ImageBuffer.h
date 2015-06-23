@@ -134,9 +134,6 @@ public:
     // Destroys the TEXTURE_2D binding for the active texture unit of the passed context
     bool copyToPlatformTexture(WebGraphicsContext3D*, Platform3DObject, GLenum, GLenum, GLint, bool, bool);
 
-    Platform3DObject getBackingTexture();
-    void didModifyBackingTexture();
-
     bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*, SourceDrawingBuffer);
 
     void flush();

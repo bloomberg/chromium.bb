@@ -266,11 +266,11 @@ bool RecordingImageBufferSurface::isAccelerated() const
     return ImageBufferSurface::isAccelerated();
 }
 
-Platform3DObject RecordingImageBufferSurface::getBackingTexture() const
+PassRefPtr<SkImage> RecordingImageBufferSurface::getBackingTextureImage() const
 {
     if (m_fallbackSurface)
-        return m_fallbackSurface->getBackingTexture();
-    return ImageBufferSurface::getBackingTexture();
+        return m_fallbackSurface->getBackingTextureImage();
+    return ImageBufferSurface::getBackingTextureImage();
 }
 
 bool RecordingImageBufferSurface::cachedBitmapEnabled() const

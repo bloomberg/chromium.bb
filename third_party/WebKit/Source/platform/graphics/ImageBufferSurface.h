@@ -62,11 +62,10 @@ public:
     virtual void willAccessPixels() { }
     virtual void didDraw(const FloatRect& rect) { }
     virtual bool isValid() const = 0;
-    virtual bool restore() { return false; };
-    virtual WebLayer* layer() const { return 0; };
+    virtual bool restore() { return false; }
+    virtual WebLayer* layer() const { return 0; }
     virtual bool isAccelerated() const { return false; }
     virtual bool isRecording() const { return false; }
-    virtual Platform3DObject getBackingTexture() const { return 0; }
     virtual void didModifyBackingTexture() { }
     virtual bool cachedBitmapEnabled() const { return false; }
     virtual bool isExpensiveToPaint() { return false; }
@@ -80,9 +79,14 @@ public:
     virtual void finalizeFrame(const FloatRect &dirtyRect) { }
     virtual void willDrawVideo() { }
     virtual void willOverwriteCanvas() { }
-    virtual PassRefPtr<SkImage> newImageSnapshot() const;
     virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
+
+    // These methods return an SkImage representing the backing texture. We support both variants
+    // to avoid the snapshot overhead (flushing deferred draws, COW semantics, fallback in
+    // RecordingImageBufferSurface) when not strictly required.
+    virtual PassRefPtr<SkImage> newImageSnapshot() const { return nullptr; }
+    virtual PassRefPtr<SkImage> getBackingTextureImage() const { return nullptr; }
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }
