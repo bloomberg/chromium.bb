@@ -45,7 +45,7 @@ Screen::Screen(LocalFrame* frame)
 {
 }
 
-unsigned Screen::height() const
+int Screen::height() const
 {
     if (!m_frame)
         return 0;
@@ -54,10 +54,10 @@ unsigned Screen::height() const
         return 0;
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
         return lroundf(host->chromeClient().screenInfo().rect.height * host->deviceScaleFactor());
-    return static_cast<unsigned>(host->chromeClient().screenInfo().rect.height);
+    return host->chromeClient().screenInfo().rect.height;
 }
 
-unsigned Screen::width() const
+int Screen::width() const
 {
     if (!m_frame)
         return 0;
@@ -66,7 +66,7 @@ unsigned Screen::width() const
         return 0;
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
         return lroundf(host->chromeClient().screenInfo().rect.width * host->deviceScaleFactor());
-    return static_cast<unsigned>(host->chromeClient().screenInfo().rect.width);
+    return host->chromeClient().screenInfo().rect.width;
 }
 
 unsigned Screen::colorDepth() const
@@ -107,7 +107,7 @@ int Screen::availTop() const
     return static_cast<int>(host->chromeClient().screenInfo().availableRect.y);
 }
 
-unsigned Screen::availHeight() const
+int Screen::availHeight() const
 {
     if (!m_frame)
         return 0;
@@ -116,10 +116,10 @@ unsigned Screen::availHeight() const
         return 0;
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
         return lroundf(host->chromeClient().screenInfo().availableRect.height * host->deviceScaleFactor());
-    return static_cast<unsigned>(host->chromeClient().screenInfo().availableRect.height);
+    return host->chromeClient().screenInfo().availableRect.height;
 }
 
-unsigned Screen::availWidth() const
+int Screen::availWidth() const
 {
     if (!m_frame)
         return 0;
@@ -128,7 +128,7 @@ unsigned Screen::availWidth() const
         return 0;
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
         return lroundf(host->chromeClient().screenInfo().availableRect.width * host->deviceScaleFactor());
-    return static_cast<unsigned>(host->chromeClient().screenInfo().availableRect.width);
+    return host->chromeClient().screenInfo().availableRect.width;
 }
 
 DEFINE_TRACE(Screen)

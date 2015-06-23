@@ -48,14 +48,14 @@ public:
         return new Screen(frame);
     }
 
-    unsigned height() const;
-    unsigned width() const;
+    int height() const;
+    int width() const;
     unsigned colorDepth() const;
     unsigned pixelDepth() const;
     int availLeft() const;
     int availTop() const;
-    unsigned availHeight() const;
-    unsigned availWidth() const;
+    int availHeight() const;
+    int availWidth() const;
 
     DECLARE_VIRTUAL_TRACE();
 

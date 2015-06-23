@@ -31,11 +31,10 @@
 [
     GarbageCollected,
 ] interface Screen {
-    // TODO(philipj): availWidth/availHeight/width/height should not be unsigned.
-    readonly attribute unsigned long availWidth;
-    readonly attribute unsigned long availHeight;
-    readonly attribute unsigned long width;
-    readonly attribute unsigned long height;
+    readonly attribute long availWidth;
+    readonly attribute long availHeight;
+    readonly attribute long width;
+    readonly attribute long height;
     readonly attribute unsigned long colorDepth;
     readonly attribute unsigned long pixelDepth;
 
