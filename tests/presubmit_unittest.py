@@ -7,11 +7,12 @@
 
 # pylint: disable=E1101,E1103
 
+import StringIO
 import functools
 import itertools
 import logging
+import multiprocessing
 import os
-import StringIO
 import sys
 import time
 import unittest
@@ -155,6 +156,10 @@ def GetPreferredTryMasters(project, change):
     self.mox.StubOutWithMock(presubmit.gclient_utils, 'FileWrite')
     self.mox.StubOutWithMock(presubmit.scm.SVN, 'GenerateDiff')
     self.mox.StubOutWithMock(presubmit.scm.GIT, 'GenerateDiff')
+
+    # On some platforms this does all sorts of undesirable system calls, so
+    # just permanently mock it with a lambda that returns 2
+    multiprocessing.cpu_count = lambda: 2
 
 
 class PresubmitUnittest(PresubmitTestsBase):
