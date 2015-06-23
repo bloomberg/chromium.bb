@@ -37,6 +37,13 @@
             # the application embedder is using.
             '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
         }],
+        ['disable_nacl==0 and disable_nacl_untrusted==0', {
+          'dependencies': [
+            '<(DEPTH)/components/nacl.gyp:nacl_helper',
+            '<(DEPTH)/components/nacl_nonsfi.gyp:nacl_helper_nonsfi',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
+          ],
+        }],
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
