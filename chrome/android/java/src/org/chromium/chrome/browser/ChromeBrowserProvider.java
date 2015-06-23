@@ -32,6 +32,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.LongSparseArray;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -1367,18 +1368,17 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     private boolean hasPermission(String permission) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1
-                && !TextUtils.equals("MNC", Build.VERSION.CODENAME)) {
+        if (BuildInfo.isMncOrLater()) {
+            return getContext().checkCallingOrSelfPermission(
+                    getReadWritePermissionNameForBookmarkFolders())
+                    == PackageManager.PERMISSION_GRANTED;
+        } else {
             boolean hasPermission = getContext().checkCallingOrSelfPermission(permission)
                     == PackageManager.PERMISSION_GRANTED;
             boolean isSystemOrGoogleCaller = ExternalAuthUtils.getInstance().isCallerValid(
                     getContext(), ExternalAuthUtils.FLAG_SHOULD_BE_GOOGLE_SIGNED
                             | ExternalAuthUtils.FLAG_SHOULD_BE_SYSTEM);
             return hasPermission || isSystemOrGoogleCaller;
-        } else {
-            return getContext().checkCallingOrSelfPermission(
-                    getReadWritePermissionNameForBookmarkFolders())
-                    == PackageManager.PERMISSION_GRANTED;
         }
     }
 
