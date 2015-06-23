@@ -45,6 +45,7 @@
           'sel_mem.c',
           'sel_qualify.c',
           'sel_validate_image.c',
+          'sys_clock.c',
           'sys_exception.c',
           'sys_fdio.c',
           'sys_filename.c',
@@ -174,14 +175,12 @@
             ['<(os_posix)==1', {
               'sources': [
                 'posix/nacl_signal_stack.c',
-                'posix/nacl_syscall_impl.c',
                 'posix/sel_addrspace_posix.c',
                ],
             }],
             ['OS=="win"', {
               'sources': [
                 'win/nacl_signal_stack.c',
-                'win/nacl_syscall_impl.c',
                 'win/sel_addrspace_win.c',
                 'win/thread_suspension.c',
                 'win/vm_hole.c',

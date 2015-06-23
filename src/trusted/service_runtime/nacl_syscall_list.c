@@ -8,6 +8,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_register.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
+#include "native_client/src/trusted/service_runtime/sys_clock.h"
 #include "native_client/src/trusted/service_runtime/sys_exception.h"
 #include "native_client/src/trusted/service_runtime/sys_fdio.h"
 #include "native_client/src/trusted/service_runtime/sys_filename.h"
