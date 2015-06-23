@@ -104,7 +104,7 @@ async_test(function(t) {
         registrations.forEach(function(registration) {
             assert_equals(registration, registrations[0],
                           'register should resolve to the same registration');
-        });
+          });
         return registrations[0].unregister();
       })
     .then(function() { t.done(); })

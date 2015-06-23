@@ -6,6 +6,20 @@
 <script src="../resources/get-host-info.js"></script>
 <script src="../fetch/resources/fetch-test-helpers.js"></script>
 <script>
+// Purge the existing registrations for the origin.
+// getRegistrations() is used in order to avoid adding additional complexity
+// e.g. adding an internal function.
+sequential_promise_test(function(t) {
+    return navigator.serviceWorker.getRegistrations()
+      .then(function(registrations) {
+          return registrations.reduce(function(sequence, registration) {
+              return sequence.then(function() {
+                  return registration.unregister();
+                });
+            }, Promise.resolve());
+        });
+  }, 'Purge the existing registrations.');
+
 sequential_promise_test(function(t) {
     return navigator.serviceWorker.getRegistrations()
       .then(function(value) {
