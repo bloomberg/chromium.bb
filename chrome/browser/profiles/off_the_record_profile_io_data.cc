@@ -223,9 +223,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
       fraudulent_certificate_reporter());
   main_context->set_proxy_service(proxy_service());
 
-  main_context->set_throttler_manager(
-      io_thread_globals->throttler_manager.get());
-
   main_context->set_cert_transparency_verifier(
       io_thread_globals->cert_transparency_verifier.get());
 
@@ -295,9 +292,6 @@ void OffTheRecordProfileIOData::
   extensions_context->set_transport_security_state(transport_security_state());
 
   extensions_context->set_net_log(io_thread->net_log());
-
-  extensions_context->set_throttler_manager(
-      io_thread_globals->throttler_manager.get());
 
   extensions_context->set_cert_transparency_verifier(
       io_thread_globals->cert_transparency_verifier.get());

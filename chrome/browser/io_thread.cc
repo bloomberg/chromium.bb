@@ -87,7 +87,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_throttler_manager.h"
 #include "url/url_constants.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -261,7 +260,6 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_cookie_store(globals->system_cookie_store.get());
   context->set_channel_id_service(
       globals->system_channel_id_service.get());
-  context->set_throttler_manager(globals->throttler_manager.get());
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
       globals->http_user_agent_settings.get());
@@ -854,11 +852,6 @@ void IOThread::Init() {
           globals_->proxy_script_fetcher_ftp_transaction_factory.get()));
 #endif
   globals_->proxy_script_fetcher_url_request_job_factory = job_factory.Pass();
-
-  globals_->throttler_manager.reset(new net::URLRequestThrottlerManager());
-  globals_->throttler_manager->set_net_log(net_log_);
-  // Always done in production, disabled only for unit tests.
-  globals_->throttler_manager->set_enable_thread_checks(true);
 
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));
