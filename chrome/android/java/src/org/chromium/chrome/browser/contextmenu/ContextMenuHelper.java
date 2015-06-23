@@ -20,6 +20,9 @@ import org.chromium.content.browser.ContentViewCore;
  * A helper class that handles generating context menus for {@link ContentViewCore}s.
  */
 public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuItemClickListener {
+    private static final String DATA_REDUCTION_PROXY_PASSTHROUGH_HEADER =
+            "Chrome-Proxy: pass-through\r\n";
+
     private long mNativeContextMenuHelper;
 
     private ContextMenuPopulator mPopulator;
@@ -75,8 +78,11 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
      * Starts a download based on the current {@link ContextMenuParams}.
      * @param isLink Whether or not the download target is a link.
      */
-    public void startContextMenuDownload(boolean isLink) {
-        if (mNativeContextMenuHelper != 0) nativeOnStartDownload(mNativeContextMenuHelper, isLink);
+    public void startContextMenuDownload(boolean isLink, boolean isDataReductionProxyEnabled) {
+        if (mNativeContextMenuHelper != 0) {
+            nativeOnStartDownload(mNativeContextMenuHelper, isLink,
+                    isDataReductionProxyEnabled ? DATA_REDUCTION_PROXY_PASSTHROUGH_HEADER : null);
+        }
     }
 
     @Override
@@ -108,5 +114,6 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
         return (mPopulator != null && mPopulator.shouldShowContextMenu(params));
     }
 
-    private native void nativeOnStartDownload(long nativeContextMenuHelper, boolean isLink);
+    private native void nativeOnStartDownload(
+            long nativeContextMenuHelper, boolean isLink, String headers);
 }

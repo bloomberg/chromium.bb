@@ -574,6 +574,11 @@ public class ChromeTab extends Tab {
         }
 
         @Override
+        public boolean isDataReductionProxyEnabledForURL(String url) {
+            return isSpdyProxyEnabledForUrl(url);
+        }
+
+        @Override
         public boolean startDownload(String url, boolean isLink) {
             if (isLink) {
                 RecordUserAction.record("MobileContextMenuDownloadLink");

@@ -164,14 +164,18 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(), false);
         } else if (itemId == R.id.contextmenu_copy_link_text) {
             mDelegate.onSaveToClipboard(params.getLinkText(), false);
-        } else if (itemId == R.id.contextmenu_save_image
-                || itemId == R.id.contextmenu_save_video) {
+        } else if (itemId == R.id.contextmenu_save_image) {
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
-                helper.startContextMenuDownload(false);
+                helper.startContextMenuDownload(
+                        false, mDelegate.isDataReductionProxyEnabledForURL(params.getSrcUrl()));
+            }
+        } else if (itemId == R.id.contextmenu_save_video) {
+            if (mDelegate.startDownload(params.getSrcUrl(), false)) {
+                helper.startContextMenuDownload(false, false);
             }
         } else if (itemId == R.id.contextmenu_save_link_as) {
             if (mDelegate.startDownload(params.getUnfilteredLinkUrl(), true)) {
-                helper.startContextMenuDownload(true);
+                helper.startContextMenuDownload(true, false);
             }
         } else if (itemId == R.id.contextmenu_search_by_image) {
             mDelegate.onSearchByImageInNewTab();

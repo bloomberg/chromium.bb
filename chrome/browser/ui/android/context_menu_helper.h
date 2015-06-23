@@ -26,7 +26,8 @@ class ContextMenuHelper
   void SetPopulator(jobject jpopulator);
 
   // Methods called from Java via JNI ------------------------------------------
-  void OnStartDownload(JNIEnv* env, jobject obj, jboolean jis_link);
+  void OnStartDownload(
+      JNIEnv* env, jobject obj, jboolean jis_link, jstring jheaders);
 
  private:
   explicit ContextMenuHelper(content::WebContents* web_contents);

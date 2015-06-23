@@ -14,6 +14,7 @@
 #include "jni/ContextMenuParams_jni.h"
 #include "ui/gfx/geometry/point.h"
 
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
@@ -96,11 +97,14 @@ ContextMenuHelper::CreateJavaContextMenuParams(
 
 void ContextMenuHelper::OnStartDownload(JNIEnv* env,
                                         jobject obj,
-                                        jboolean jis_link) {
+                                        jboolean jis_link,
+                                        jstring jheaders) {
+  std::string headers(ConvertJavaStringToUTF8(env, jheaders));
   content::DownloadControllerAndroid::Get()->StartContextMenuDownload(
       context_menu_params_,
       web_contents_,
-      jis_link);
+      jis_link,
+      headers);
 }
 
 bool RegisterContextMenuHelper(JNIEnv* env) {

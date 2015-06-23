@@ -175,6 +175,11 @@ public class DocumentTab extends ChromeTab {
         }
 
         @Override
+        public boolean isDataReductionProxyEnabledForURL(String url) {
+            return isSpdyProxyEnabledForUrl(url);
+        }
+
+        @Override
         public boolean startDownload(String url, boolean isLink) {
             if (isLink && shouldInterceptContextMenuDownload(url)) {
                 return false;

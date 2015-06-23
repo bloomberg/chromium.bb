@@ -30,6 +30,13 @@ public interface ChromeContextMenuItemDelegate {
     boolean canLoadOriginalImage();
 
     /**
+     * Returns whether or not the Data Reduction Proxy is enabled for input url.
+     * @param url Input url to check for the Data Reduction Proxy setting.
+     * @return true if the Data Reduction Proxy is enabled for the url.
+    */
+    boolean isDataReductionProxyEnabledForURL(String url);
+
+    /**
      * Called when the context menu is trying to start a download.
      * @param url Url of the download item.
      * @param isLink Whether or not the download is a link (as opposed to an image/video).

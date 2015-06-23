@@ -390,7 +390,8 @@ DownloadControllerAndroidImpl::JavaObject*
 }
 
 void DownloadControllerAndroidImpl::StartContextMenuDownload(
-    const ContextMenuParams& params, WebContents* web_contents, bool is_link) {
+    const ContextMenuParams& params, WebContents* web_contents, bool is_link,
+    const std::string& extra_headers) {
   const GURL& url = is_link ? params.link_url : params.src_url;
   const GURL& referring_url = params.frame_url.is_empty() ?
       params.page_url : params.frame_url;
@@ -405,7 +406,11 @@ void DownloadControllerAndroidImpl::StartContextMenuDownload(
   dl_params->set_referrer(referrer);
   if (is_link)
     dl_params->set_referrer_encoding(params.frame_charset);
-  else
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(extra_headers);
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
+    dl_params->add_request_header(it.name(), it.value());
+  if (!is_link && extra_headers.empty())
     dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);
   dlm->DownloadUrl(dl_params.Pass());

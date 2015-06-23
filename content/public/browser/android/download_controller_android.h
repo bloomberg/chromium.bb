@@ -32,7 +32,7 @@ class CONTENT_EXPORT DownloadControllerAndroid {
   // Called when a download is initiated by context menu.
   virtual void StartContextMenuDownload(
       const ContextMenuParams& params, WebContents* web_contents,
-      bool is_link) = 0;
+      bool is_link, const std::string& extra_headers) = 0;
 
   // Called when a dangerous download item is verified or rejected.
   virtual void DangerousDownloadValidated(
