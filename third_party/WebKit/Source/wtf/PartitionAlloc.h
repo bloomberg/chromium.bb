@@ -376,6 +376,11 @@ WTF_EXPORT bool partitionAllocGenericShutdown(PartitionRootGeneric*);
 enum PartitionPurgeFlags {
     // Decommitting the ring list of empty pages is reasonably fast.
     PartitionPurgeDecommitEmptyPages = 1 << 0,
+    // Discarding unused system pages is slower, because it involves walking all
+    // freelists in all active partition pages of all buckets >= system page
+    // size. It often frees a similar amount of memory to decommitting the empty
+    // pages, though.
+    PartitionPurgeDiscardUnusedSystemPages = 1 << 1,
 };
 
 WTF_EXPORT void partitionPurgeMemory(PartitionRoot*, int);
@@ -478,7 +483,7 @@ ALWAYS_INLINE PartitionPage* partitionPointerToPageNoAlignmentCheck(void* ptr)
     return page;
 }
 
-ALWAYS_INLINE void* partitionPageToPointer(PartitionPage* page)
+ALWAYS_INLINE void* partitionPageToPointer(const PartitionPage* page)
 {
     uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(page);
     uintptr_t superPageOffset = (pointerAsUint & kSuperPageOffsetMask);
@@ -525,6 +530,7 @@ ALWAYS_INLINE size_t* partitionPageGetRawSizePtr(PartitionPage* page)
     if (bucket->slotSize <= kMaxSystemPagesPerSlotSpan * kSystemPageSize)
         return nullptr;
 
+    ASSERT((bucket->slotSize % kSystemPageSize) == 0);
     ASSERT(partitionBucketIsDirectMapped(bucket) || partitionBucketSlots(bucket) == 1);
     page++;
     return reinterpret_cast<size_t*>(&page->freelistHead);
