@@ -39,6 +39,7 @@ SKIP = {
 
   # http://crbug.com/480053
   'Linux GN',
+  'Linux GN (dbg)',
   'linux_chromium_gn_rel',
 
   # Unmaintained builders on chromium.fyi

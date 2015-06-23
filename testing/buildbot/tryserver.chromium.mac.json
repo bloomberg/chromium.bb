@@ -30,6 +30,9 @@
     ],
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
       }
     ]
@@ -65,6 +68,9 @@
     ],
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
       }
     ]
