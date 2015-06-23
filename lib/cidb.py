@@ -58,7 +58,11 @@ def _IsRetryableException(e):
   Returns:
     True if the query should be retried, False otherwise.
   """
-  if isinstance(e, sqlalchemy.exc.OperationalError):
+  # Exceptions usually are raised as sqlalchemy.exc.OperationalError, but
+  # occasionally also escape as MySQLdb.OperationalError. Neither of those
+  # exception types inherit from one another, so we fall back to string matching
+  # on the exception name. See crbug.com/483654
+  if 'OperationalError' in str(type(e)):
     error_code = e.orig.args[0]
     if error_code in _RETRYABLE_OPERATIONAL_ERROR_CODES:
       logging.info('Encountered retryable cidb exception %s, retrying....', e)
