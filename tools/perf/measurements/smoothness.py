@@ -32,6 +32,7 @@ class Smoothness(page_test.PageTest):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     options.AppendExtraBrowserArgs('--touch-events=enabled')
     options.AppendExtraBrowserArgs('--running-performance-benchmark')
+    options.AppendExtraBrowserArgs('--js-flags=--expose-gc')
 
   def WillNavigateToPage(self, page, tab):
     tracing_controller = tab.browser.platform.tracing_controller
@@ -54,6 +55,7 @@ class Smoothness(page_test.PageTest):
   def CleanUpAfterPage(self, _, tab):
     tracing_controller = tab.browser.platform.tracing_controller
     self._tbm.DidRunUserStory(tracing_controller)
+    tab.ExecuteJavaScript('window.gc();')
 
 
 class Repaint(Smoothness):
