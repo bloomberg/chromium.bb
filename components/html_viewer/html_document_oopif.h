@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_
-#define COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_
+#ifndef COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_OOPIF_H_
+#define COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_OOPIF_H_
 
+#include <map>
 #include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/html_viewer/ax_provider_impl.h"
+#include "components/html_viewer/frame_tree_manager.h"
 #include "components/html_viewer/touch_handler.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
+#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/lazy_interface_ptr.h"
@@ -48,23 +51,25 @@ class WebLayerTreeViewImpl;
 // HTMLDocument is deleted in one of two ways:
 // . When the View the HTMLDocument is embedded in is destroyed.
 // . Explicitly by way of Destroy().
-class HTMLDocument : public blink::WebViewClient,
-                     public blink::WebFrameClient,
-                     public mojo::ViewManagerDelegate,
-                     public mojo::ViewObserver,
-                     public mojo::InterfaceFactory<mojo::AxProvider> {
+class HTMLDocumentOOPIF
+    : public blink::WebViewClient,
+      public blink::WebFrameClient,
+      public mojo::ViewManagerDelegate,
+      public mojo::ViewObserver,
+      public mojo::InterfaceFactory<mojo::AxProvider>,
+      public mojo::InterfaceFactory<mandoline::FrameTreeClient> {
  public:
-  using DeleteCallback = base::Callback<void(HTMLDocument*)>;
+  using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
 
-  // Load a new HTMLDocument with |response|.
+  // Load a new HTMLDocumentOOPIF with |response|.
   // |html_document_app| is the application this app was created in, and
   // |connection| the specific connection triggering this new instance.
   // |setup| is used to obtain init type state (such as resources).
-  HTMLDocument(mojo::ApplicationImpl* html_document_app,
-               mojo::ApplicationConnection* connection,
-               mojo::URLResponsePtr response,
-               Setup* setup,
-               const DeleteCallback& delete_callback);
+  HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
+                    mojo::ApplicationConnection* connection,
+                    mojo::URLResponsePtr response,
+                    Setup* setup,
+                    const DeleteCallback& delete_callback);
 
   // Deletes this object.
   void Destroy();
@@ -76,7 +81,9 @@ class HTMLDocument : public blink::WebViewClient,
     blink::WebTreeScopeType scope;
   };
 
-  ~HTMLDocument() override;
+  using FrameToViewMap = std::map<blink::WebLocalFrame*, ChildFrameData>;
+
+  ~HTMLDocumentOOPIF() override;
 
   // Updates the size and scale factor of the webview and related classes from
   // |root_|.
@@ -139,6 +146,11 @@ class HTMLDocument : public blink::WebViewClient,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::AxProvider> request) override;
 
+  // mojo::InterfaceFactory<mandoline::FrameTreeClient>
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mandoline::FrameTreeClient> request) override;
+
   void Load(mojo::URLResponsePtr response);
 
   // Converts a WebLocalFrame to a WebRemoteFrame. Used once we know the
@@ -158,7 +170,8 @@ class HTMLDocument : public blink::WebViewClient,
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
 
-  // HTMLDocument owns these pointers; binding requests after document load.
+  // HTMLDocumentOOPIF owns these pointers; binding requests after document
+  // load.
   std::set<mojo::InterfaceRequest<mojo::AxProvider>*> ax_provider_requests_;
   std::set<AxProviderImpl*> ax_providers_;
 
@@ -169,13 +182,18 @@ class HTMLDocument : public blink::WebViewClient,
 
   scoped_ptr<TouchHandler> touch_handler_;
 
+  FrameToViewMap frame_to_view_;
+
+  FrameTreeManager frame_tree_manager_;
+  mojo::Binding<mandoline::FrameTreeClient> frame_tree_manager_binding_;
+
   scoped_ptr<DevToolsAgentImpl> devtools_agent_;
 
   DeleteCallback delete_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
+  DISALLOW_COPY_AND_ASSIGN(HTMLDocumentOOPIF);
 };
 
 }  // namespace html_viewer
 
-#endif  // COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_
+#endif  // COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_OOPIF_H_

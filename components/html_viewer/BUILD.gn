@@ -75,6 +75,8 @@ source_set("lib") {
     "frame_tree_manager.h",
     "html_document.cc",
     "html_document.h",
+    "html_document_oopif.cc",
+    "html_document_oopif.h",
     "media_factory.cc",
     "media_factory.h",
     "mock_web_blob_registry_impl.cc",

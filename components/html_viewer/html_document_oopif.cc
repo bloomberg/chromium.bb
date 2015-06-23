@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/html_viewer/html_document.h"
+#include "components/html_viewer/html_document_oopif.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -125,10 +125,6 @@ mojo::Target WebNavigationPolicyToNavigationTarget(
 
 bool CanNavigateLocally(blink::WebFrame* frame,
                         const blink::WebURLRequest& request) {
-  // For now, we just load child frames locally.
-  if (frame->parent())
-    return true;
-
   // If we have extraData() it means we already have the url response
   // (presumably because we are being called via Navigate()). In that case we
   // can go ahead and navigate locally.
@@ -142,11 +138,11 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 }  // namespace
 
-HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
-                           mojo::ApplicationConnection* connection,
-                           URLResponsePtr response,
-                           Setup* setup,
-                           const DeleteCallback& delete_callback)
+HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
+                                     mojo::ApplicationConnection* connection,
+                                     URLResponsePtr response,
+                                     Setup* setup,
+                                     const DeleteCallback& delete_callback)
     : app_refcount_(
           html_document_app->app_lifetime_helper()->CreateAppRefCount()),
       html_document_app_(html_document_app),
@@ -156,7 +152,10 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
       root_(nullptr),
       view_manager_client_factory_(html_document_app->shell(), this),
       setup_(setup),
+      frame_tree_manager_binding_(&frame_tree_manager_),
       delete_callback_(delete_callback) {
+  connection->AddService(
+      static_cast<mojo::InterfaceFactory<mandoline::FrameTreeClient>*>(this));
   connection->AddService(
       static_cast<InterfaceFactory<mojo::AxProvider>*>(this));
   connection->AddService(&view_manager_client_factory_);
@@ -165,7 +164,7 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
     Load(response_.Pass());
 }
 
-void HTMLDocument::Destroy() {
+void HTMLDocumentOOPIF::Destroy() {
   // See comment in header for a description of lifetime.
   if (root_) {
     // Deleting the ViewManager calls back to OnViewManagerDestroyed() and
@@ -176,7 +175,7 @@ void HTMLDocument::Destroy() {
   }
 }
 
-HTMLDocument::~HTMLDocument() {
+HTMLDocumentOOPIF::~HTMLDocumentOOPIF() {
   delete_callback_.Run(this);
 
   STLDeleteElements(&ax_providers_);
@@ -188,7 +187,7 @@ HTMLDocument::~HTMLDocument() {
     root_->RemoveObserver(this);
 }
 
-void HTMLDocument::OnEmbed(View* root) {
+void HTMLDocumentOOPIF::OnEmbed(View* root) {
   DCHECK(!setup_->is_headless());
   root_ = root;
   root_->AddObserver(this);
@@ -197,24 +196,29 @@ void HTMLDocument::OnEmbed(View* root) {
   InitSetupAndLoadIfNecessary();
 }
 
-void HTMLDocument::OnViewManagerDestroyed(ViewManager* view_manager) {
+void HTMLDocumentOOPIF::OnViewManagerDestroyed(ViewManager* view_manager) {
   delete this;
 }
 
-void HTMLDocument::Create(mojo::ApplicationConnection* connection,
-                          mojo::InterfaceRequest<AxProvider> request) {
+void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
+                               mojo::InterfaceRequest<AxProvider> request) {
   if (!did_finish_load_) {
     // Cache AxProvider interface requests until the document finishes loading.
     auto cached_request = new mojo::InterfaceRequest<AxProvider>();
     *cached_request = request.Pass();
     ax_provider_requests_.insert(cached_request);
   } else {
-    ax_providers_.insert(
-        new AxProviderImpl(web_view_, request.Pass()));
+    ax_providers_.insert(new AxProviderImpl(web_view_, request.Pass()));
   }
 }
 
-void HTMLDocument::Load(URLResponsePtr response) {
+void HTMLDocumentOOPIF::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mandoline::FrameTreeClient> request) {
+  frame_tree_manager_binding_.Bind(request.Pass());
+}
+
+void HTMLDocumentOOPIF::Load(URLResponsePtr response) {
   DCHECK(!web_view_);
   web_view_ = blink::WebView::create(this);
   touch_handler_.reset(new TouchHandler(web_view_));
@@ -248,7 +252,17 @@ void HTMLDocument::Load(URLResponsePtr response) {
   UpdateFocus();
 }
 
-void HTMLDocument::UpdateWebviewSizeFromViewSize() {
+void HTMLDocumentOOPIF::ConvertLocalFrameToRemoteFrame(
+    blink::WebLocalFrame* frame) {
+  mojo::View* view = frame_to_view_[frame].view;
+  // TODO(sky): this leaks. Fix it.
+  blink::WebRemoteFrame* remote_frame = blink::WebRemoteFrame::create(
+      frame_to_view_[frame].scope, new RemoteFrameClientImpl(view));
+  remote_frame->initializeFromFrame(frame);
+  frame->swap(remote_frame);
+}
+
+void HTMLDocumentOOPIF::UpdateWebviewSizeFromViewSize() {
   web_view_->setDeviceScaleFactor(setup_->device_pixel_ratio());
   const gfx::Size size_in_pixels(root_->bounds().width, root_->bounds().height);
   const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
@@ -258,7 +272,7 @@ void HTMLDocument::UpdateWebviewSizeFromViewSize() {
   web_layer_tree_view_impl_->setViewportSize(size_in_pixels);
 }
 
-void HTMLDocument::InitSetupAndLoadIfNecessary() {
+void HTMLDocumentOOPIF::InitSetupAndLoadIfNecessary() {
   DCHECK(root_);
   if (root_->viewport_metrics().device_pixel_ratio == 0.f)
     return;
@@ -274,11 +288,11 @@ void HTMLDocument::InitSetupAndLoadIfNecessary() {
   web_layer_tree_view_impl_->set_view(root_);
 }
 
-blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
+blink::WebStorageNamespace* HTMLDocumentOOPIF::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
 
-void HTMLDocument::initializeLayerTreeView() {
+void HTMLDocumentOOPIF::initializeLayerTreeView() {
   if (setup_->is_headless()) {
     web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
         setup_->compositor_thread(), nullptr, nullptr, nullptr, nullptr));
@@ -301,11 +315,11 @@ void HTMLDocument::initializeLayerTreeView() {
       gpu_service.Pass()));
 }
 
-blink::WebLayerTreeView* HTMLDocument::layerTreeView() {
+blink::WebLayerTreeView* HTMLDocumentOOPIF::layerTreeView() {
   return web_layer_tree_view_impl_.get();
 }
 
-blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
+blink::WebMediaPlayer* HTMLDocumentOOPIF::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
@@ -314,21 +328,31 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
       frame, url, client, initial_cdm, html_document_app_->shell());
 }
 
-blink::WebFrame* HTMLDocument::createChildFrame(
+blink::WebFrame* HTMLDocumentOOPIF::createChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
     const blink::WebString& frameName,
     blink::WebSandboxFlags sandboxFlags) {
   blink::WebLocalFrame* child_frame = blink::WebLocalFrame::create(scope, this);
   parent->appendChild(child_frame);
+  // Create the view that will house the frame now. We embed only once we know
+  // the url.
+  mojo::View* child_frame_view = root_->view_manager()->CreateView();
+  child_frame_view->SetVisible(true);
+  root_->AddChild(child_frame_view);
+
+  ChildFrameData child_frame_data;
+  child_frame_data.view = child_frame_view;
+  child_frame_data.scope = scope;
+  frame_to_view_[child_frame] = child_frame_data;
   return child_frame;
 }
 
-void HTMLDocument::frameDetached(blink::WebFrame* frame) {
+void HTMLDocumentOOPIF::frameDetached(blink::WebFrame* frame) {
   frameDetached(frame, DetachType::Remove);
 }
 
-void HTMLDocument::frameDetached(blink::WebFrame* frame, DetachType type) {
+void HTMLDocumentOOPIF::frameDetached(blink::WebFrame* frame, DetachType type) {
   DCHECK(type == DetachType::Remove);
   if (frame->parent())
     frame->parent()->removeChild(frame);
@@ -340,13 +364,13 @@ void HTMLDocument::frameDetached(blink::WebFrame* frame, DetachType type) {
   frame->close();
 }
 
-blink::WebCookieJar* HTMLDocument::cookieJar(blink::WebLocalFrame* frame) {
+blink::WebCookieJar* HTMLDocumentOOPIF::cookieJar(blink::WebLocalFrame* frame) {
   // TODO(darin): Blink does not fallback to the Platform provided WebCookieJar.
   // Either it should, as it once did, or we should find another solution here.
   return blink::Platform::current()->cookieJar();
 }
 
-blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
+blink::WebNavigationPolicy HTMLDocumentOOPIF::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
   // TODO(yzshen): Remove this check once the browser is able to navigate an
   // existing html_viewer instance and about:blank page support is ready.
@@ -356,6 +380,20 @@ blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
   }
 
   std::string frame_name = info.frame ? info.frame->assignedName().utf8() : "";
+  if (info.frame->parent()) {
+    mojo::View* view = frame_to_view_[info.frame].view;
+    mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
+    view->EmbedAllowingReembed(url_request.Pass());
+    // TODO(sky): I tried swapping the frame types here, but that resulted in
+    // the view never getting sized. Figure out why.
+    // TODO(sky): there are timing conditions here, and we should only do this
+    // once.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&HTMLDocumentOOPIF::ConvertLocalFrameToRemoteFrame,
+                   base::Unretained(this), info.frame));
+    return blink::WebNavigationPolicyIgnore;
+  }
 
   if (CanNavigateLocally(info.frame, info.urlRequest))
     return info.defaultPolicy;
@@ -370,7 +408,7 @@ blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
   return blink::WebNavigationPolicyIgnore;
 }
 
-void HTMLDocument::didAddMessageToConsole(
+void HTMLDocumentOOPIF::didAddMessageToConsole(
     const blink::WebConsoleMessage& message,
     const blink::WebString& source_name,
     unsigned source_line,
@@ -379,7 +417,7 @@ void HTMLDocument::didAddMessageToConsole(
           << message.text.utf8();
 }
 
-void HTMLDocument::didFinishLoad(blink::WebLocalFrame* frame) {
+void HTMLDocumentOOPIF::didFinishLoad(blink::WebLocalFrame* frame) {
   // TODO(msw): Notify AxProvider clients of updates on child frame loads.
   did_finish_load_ = true;
   // Bind any pending AxProviderImpl interface requests.
@@ -388,7 +426,7 @@ void HTMLDocument::didFinishLoad(blink::WebLocalFrame* frame) {
   STLDeleteElements(&ax_provider_requests_);
 }
 
-void HTMLDocument::didNavigateWithinPage(
+void HTMLDocumentOOPIF::didNavigateWithinPage(
     blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type) {
@@ -396,30 +434,31 @@ void HTMLDocument::didNavigateWithinPage(
     navigator_host_->DidNavigateLocally(history_item.urlString().utf8());
 }
 
-blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
+blink::WebEncryptedMediaClient* HTMLDocumentOOPIF::encryptedMediaClient() {
   return setup_->media_factory()->GetEncryptedMediaClient();
 }
 
-void HTMLDocument::OnViewBoundsChanged(View* view,
-                                       const Rect& old_bounds,
-                                       const Rect& new_bounds) {
+void HTMLDocumentOOPIF::OnViewBoundsChanged(View* view,
+                                            const Rect& old_bounds,
+                                            const Rect& new_bounds) {
   DCHECK_EQ(view, root_);
   UpdateWebviewSizeFromViewSize();
 }
 
-void HTMLDocument::OnViewViewportMetricsChanged(
+void HTMLDocumentOOPIF::OnViewViewportMetricsChanged(
     mojo::View* view,
     const mojo::ViewportMetrics& old_metrics,
     const mojo::ViewportMetrics& new_metrics) {
   InitSetupAndLoadIfNecessary();
 }
 
-void HTMLDocument::OnViewDestroyed(View* view) {
+void HTMLDocumentOOPIF::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, root_);
   root_ = nullptr;
 }
 
-void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
+void HTMLDocumentOOPIF::OnViewInputEvent(View* view,
+                                         const mojo::EventPtr& event) {
   if (event->pointer_data) {
     // Blink expects coordintes to be in DIPs.
     event->pointer_data->x /= setup_->device_pixel_ratio();
@@ -442,12 +481,12 @@ void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
     web_view_->handleInputEvent(*web_event);
 }
 
-void HTMLDocument::OnViewFocusChanged(mojo::View* gained_focus,
-                                      mojo::View* lost_focus) {
+void HTMLDocumentOOPIF::OnViewFocusChanged(mojo::View* gained_focus,
+                                           mojo::View* lost_focus) {
   UpdateFocus();
 }
 
-void HTMLDocument::UpdateFocus() {
+void HTMLDocumentOOPIF::UpdateFocus() {
   if (!web_view_)
     return;
   bool is_focused = root_ && root_->HasFocus();
