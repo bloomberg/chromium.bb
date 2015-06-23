@@ -103,6 +103,9 @@ void InstanceIDImpl::GetToken(
     const std::string& scope,
     const std::map<std::string, std::string>& options,
     const GetTokenCallback& callback) {
+  DCHECK(!authorized_entity.empty());
+  DCHECK(!scope.empty());
+
   if (!delayed_task_controller_.CanRunTaskWithoutDelay()) {
     delayed_task_controller_.AddTask(
         base::Bind(&InstanceIDImpl::DoGetToken,
@@ -137,6 +140,9 @@ void InstanceIDImpl::DoGetToken(
 void InstanceIDImpl::DeleteToken(const std::string& authorized_entity,
                                  const std::string& scope,
                                  const DeleteTokenCallback& callback) {
+  DCHECK(!authorized_entity.empty());
+  DCHECK(!scope.empty());
+
   if (!delayed_task_controller_.CanRunTaskWithoutDelay()) {
     delayed_task_controller_.AddTask(
         base::Bind(&InstanceIDImpl::DoDeleteToken,
@@ -156,7 +162,7 @@ void InstanceIDImpl::DoDeleteToken(
     const DeleteTokenCallback& callback) {
   // Nothing to delete if the ID has not been generated.
   if (id_.empty()) {
-    callback.Run(InstanceID::SUCCESS);
+    callback.Run(InstanceID::INVALID_PARAMETER);
     return;
   }
 

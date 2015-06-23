@@ -1423,6 +1423,28 @@ TEST_F(GCMClientInstanceIDTest, GetToken) {
   EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
 }
 
+TEST_F(GCMClientInstanceIDTest, DeleteInvalidToken) {
+  AddInstanceID(kAppId, kInstanceID);
+
+  // Delete an invalid token.
+  DeleteToken(kAppId, "Foo@#$", kScope);
+  PumpLoopUntilIdle();
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(GCMClient::INVALID_PARAMETER, last_result());
+
+  reset_last_event();
+
+  // Delete a non-existing token.
+  DeleteToken(kAppId, kSender, kScope);
+  PumpLoopUntilIdle();
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(GCMClient::INVALID_PARAMETER, last_result());
+}
+
 TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   AddInstanceID(kAppId, kInstanceID);
 
@@ -1437,6 +1459,8 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   EXPECT_EQ(GCMClient::SUCCESS, last_result());
   EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
 
+  reset_last_event();
+
   // Get another token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
   GetToken(kAppId, kSender2, kScope);
@@ -1450,6 +1474,8 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   // The 1st token still exists.
   EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
 
+  reset_last_event();
+
   // Delete the 2nd token.
   DeleteToken(kAppId, kSender2, kScope);
   CompleteDeleteToken();
@@ -1461,6 +1487,8 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
   EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
 
+  reset_last_event();
+
   // Delete the 1st token.
   DeleteToken(kAppId, kSender, kScope);
   CompleteDeleteToken();
@@ -1471,6 +1499,16 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   // Both tokens are gone now.
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+
+  reset_last_event();
+
+  // Trying to delete the token again will get an error.
+  DeleteToken(kAppId, kSender, kScope);
+  PumpLoopUntilIdle();
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(GCMClient::INVALID_PARAMETER, last_result());
 }
 
 TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
@@ -1487,6 +1525,8 @@ TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
   EXPECT_EQ(GCMClient::SUCCESS, last_result());
   EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
 
+  reset_last_event();
+
   // Get another token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
   GetToken(kAppId, kSender2, kScope);
@@ -1499,6 +1539,8 @@ TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
   EXPECT_TRUE(ExistsToken(kAppId, kSender2, kScope));
   // The 1st token still exists.
   EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+
+  reset_last_event();
 
   // Delete all tokens.
   DeleteToken(kAppId, "*", "*");

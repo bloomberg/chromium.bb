@@ -478,4 +478,26 @@ TEST_F(InstaceIDDeleteTokenRequestTest, ResponseHttpStatusNotOK) {
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
+TEST_F(InstaceIDDeleteTokenRequestTest, InvalidParametersError) {
+  CreateRequest(kInstanceId, kDeveloperId, kScope);
+  request_->Start();
+
+  SetResponseStatusAndString(net::HTTP_OK, "Error=INVALID_PARAMETERS");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(UnregistrationRequest::INVALID_PARAMETERS, status_);
+}
+
+TEST_F(InstaceIDDeleteTokenRequestTest, UnkwnownError) {
+  CreateRequest(kInstanceId, kDeveloperId, kScope);
+  request_->Start();
+
+  SetResponseStatusAndString(net::HTTP_OK, "Error=XXX");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(UnregistrationRequest::UNKNOWN_ERROR, status_);
+}
+
 }  // namespace gcm

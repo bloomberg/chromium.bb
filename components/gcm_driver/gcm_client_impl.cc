@@ -977,15 +977,6 @@ void GCMClientImpl::OnRegisterCompleted(
 void GCMClientImpl::Unregister(
     const linked_ptr<RegistrationInfo>& registration_info) {
   DCHECK_EQ(state_, READY);
-  if (pending_unregistration_requests_.count(registration_info) == 1)
-    return;
-
-  // Remove from the cache and persistent store.
-  registrations_.erase(registration_info);
-  gcm_store_->RemoveRegistration(
-      registration_info->GetSerializedKey(),
-      base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
 
   scoped_ptr<UnregistrationRequest::CustomRequestHandler> request_handler;
 
@@ -1006,46 +997,57 @@ void GCMClientImpl::Unregister(
       NOTREACHED();
       return;
     }
-
-    std::string instance_id = instance_id_iter->second.first;
-    std::string app_id = instance_id_token_info->app_id;
-
-    // Removes all tokens associated with the app id when authorized_entity
-    // and scope are set to '*'.
-    if (instance_id_token_info->authorized_entity == "*" &&
-        instance_id_token_info->scope == "*") {
-      bool token_found = false;
-      for (auto iter = registrations_.begin();
-           iter != registrations_.end();) {
-        InstanceIDTokenInfo* cached_instance_id_token_info =
-            InstanceIDTokenInfo::FromRegistrationInfo(iter->first.get());
-        if (cached_instance_id_token_info &&
-            cached_instance_id_token_info->app_id == app_id) {
-          token_found = true;
-          gcm_store_->RemoveRegistration(
-              cached_instance_id_token_info->GetSerializedKey(),
-              base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
-                         weak_ptr_factory_.GetWeakPtr()));
-          registrations_.erase(iter++);
-        } else {
-          ++iter;
-        }
-      }
-
-      // If no token is found for the Instance ID, don't need to unregister
-      // since the Instance ID is not sent to the server yet.
-      if (!token_found) {
-        OnUnregisterCompleted(registration_info,
-                              UnregistrationRequest::SUCCESS);
-        return;
-      }
-    }
-
     request_handler.reset(new InstanceIDDeleteTokenRequestHandler(
-        instance_id,
+        instance_id_iter->second.first,
         instance_id_token_info->authorized_entity,
         instance_id_token_info->scope,
         ConstructGCMVersion(chrome_build_info_.version)));
+  }
+
+  // Remove the registration/token(s) from the cache and the store.
+  // TODO(jianli): Remove it only when the request is successful.
+  if (instance_id_token_info &&
+      instance_id_token_info->authorized_entity == "*" &&
+      instance_id_token_info->scope == "*") {
+    // If authorized_entity and scope are '*', find and remove all associated
+    // tokens.
+    bool token_found = false;
+    for (auto iter = registrations_.begin();
+          iter != registrations_.end();) {
+      InstanceIDTokenInfo* cached_instance_id_token_info =
+          InstanceIDTokenInfo::FromRegistrationInfo(iter->first.get());
+      if (cached_instance_id_token_info &&
+          cached_instance_id_token_info->app_id == registration_info->app_id) {
+        token_found = true;
+        gcm_store_->RemoveRegistration(
+            cached_instance_id_token_info->GetSerializedKey(),
+            base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
+                        weak_ptr_factory_.GetWeakPtr()));
+        registrations_.erase(iter++);
+      } else {
+        ++iter;
+      }
+    }
+
+    // If no token is found for the Instance ID, don't need to unregister
+    // since the Instance ID is not sent to the server yet.
+    if (!token_found) {
+      OnUnregisterCompleted(registration_info,
+                            UnregistrationRequest::SUCCESS);
+      return;
+    }
+  } else {
+    auto iter = registrations_.find(registration_info);
+    if (iter == registrations_.end()) {
+      delegate_->OnUnregisterFinished(registration_info, INVALID_PARAMETER);
+      return;
+    }
+    registrations_.erase(iter);
+
+    gcm_store_->RemoveRegistration(
+      registration_info->GetSerializedKey(),
+      base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
+                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   UnregistrationRequest::RequestInfo request_info(
@@ -1073,9 +1075,21 @@ void GCMClientImpl::OnUnregisterCompleted(
     UnregistrationRequest::Status status) {
   DVLOG(1) << "Unregister completed for app: " << registration_info->app_id
            << " with " << (status ? "success." : "failure.");
-  delegate_->OnUnregisterFinished(
-      registration_info,
-      status == UnregistrationRequest::SUCCESS ? SUCCESS : SERVER_ERROR);
+
+  Result result;
+  switch (status) {
+    case UnregistrationRequest::SUCCESS:
+      result = SUCCESS;
+      break;
+    case UnregistrationRequest::INVALID_PARAMETERS:
+      result = INVALID_PARAMETER;
+      break;
+    default:
+      // All other errors are treated as SERVER_ERROR.
+      result = SERVER_ERROR;
+      break;
+  }
+  delegate_->OnUnregisterFinished(registration_info, result);
 
   PendingUnregistrationRequests::iterator iter =
       pending_unregistration_requests_.find(registration_info);

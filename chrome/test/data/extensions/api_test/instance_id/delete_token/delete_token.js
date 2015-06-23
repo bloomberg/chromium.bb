@@ -90,12 +90,12 @@ function deleteTokenBeforeGetToken() {
     {"authorizedEntity": "1", "scope": "GCM"},
     function() {
       if (chrome.runtime.lastError) {
-        chrome.test.fail(
-            "chrome.runtime.lastError: " + chrome.runtime.lastError.message);
+        chrome.test.succeed();
         return;
       }
 
-      chrome.test.succeed();
+      chrome.test.fail(
+          "deleteToken should fail on deleting a non-existent token.");
     }
   );
 }

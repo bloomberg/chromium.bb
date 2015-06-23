@@ -23,6 +23,8 @@ const char kScopeKey[] = "scope";
 
 // Response constants.
 const char kTokenPrefix[] = "token=";
+const char kErrorPrefix[] = "Error=";
+const char kInvalidParameters[] = "INVALID_PARAMETERS";
 
 }  // namespace
 
@@ -59,6 +61,14 @@ InstanceIDDeleteTokenRequestHandler::ParseResponse(
   if (!source->GetResponseAsString(&response)) {
     DVLOG(1) << "Failed to get response body.";
     return UnregistrationRequest::NO_RESPONSE_BODY;
+  }
+
+  if (response.find(kErrorPrefix) != std::string::npos) {
+    std::string error = response.substr(
+        response.find(kErrorPrefix) + arraysize(kErrorPrefix) - 1);
+    return error == kInvalidParameters ?
+        UnregistrationRequest::INVALID_PARAMETERS :
+        UnregistrationRequest::UNKNOWN_ERROR;
   }
 
   if (response.find(kTokenPrefix) == std::string::npos)
