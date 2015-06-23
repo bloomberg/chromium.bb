@@ -123,6 +123,7 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="200669432486043882">Bestand vervangen</translation>
 <translation id="9086455579313502267">Geen toegang tot het netwerk</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> bladwijzers verwijderd</translation>
 <translation id="8413385045638830869">Eerst vragen (aanbevolen)</translation>
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="5313967007315987356">Site toevoegen</translation>
@@ -170,7 +171,9 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="8583805026567836021">Accountgegevens wissen</translation>
 <translation id="6464825623202322042">Dit apparaat</translation>
+<translation id="7501135638693251872">Alle bladwijzers</translation>
 <translation id="5860033963881614850">Uit</translation>
+<translation id="2678212031093903894">Maak een back-up van je bladwijzers en synchroniseer ze</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="6388207532828177975">Wissen en opnieuw instellen</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> opgeslagen gegevens</translation>
@@ -256,6 +259,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3328801116991980348">Site-informatie</translation>
 <translation id="8497726226069778601">Hier is nog niets te zien</translation>
 <translation id="7987073022710626672">Servicevoorwaarden van Chrome</translation>
+<translation id="3269093882174072735">Afbeelding laden</translation>
 <translation id="588258955323874662">Volledig scherm</translation>
 <translation id="5668404140385795438">Negeer verzoek van website om inzoomen te voorkomen</translation>
 <translation id="8428213095426709021">Instellingen</translation>
@@ -323,6 +327,7 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Browsegeschiedenis</translation>
 <translation id="6108923351542677676">Instellen wordt uitgevoerd...</translation>
+<translation id="7648120236428811856">Log in bij Chrome om op elk apparaat toegang te hebben tot je bladwijzers</translation>
 <translation id="6964496835063002391">Een account toevoegen</translation>
 <translation id="4698413471314543145">Er ontbreekt essentiële functionaliteit voor het uitvoeren van Chrome. Je Chrome-installatie is onvolledig of niet compatibel met deze versie van Android.</translation>
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
@@ -359,6 +364,7 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="3089395242580810162">Openen op incognitotabblad</translation>
 <translation id="5899349522111170522">Nieuw bestand maken</translation>
 <translation id="3158619413803296679">Een bladwijzer kiezen</translation>
+<translation id="6138140242378429169">Pagina geschikt maken voor mobiele apparaten</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> is verwijderd</translation>
 <translation id="7232255641409319872">Afbeeldingen toestaan op websites die jij opgeeft terwijl deze voor de rest van internet worden geblokkeerd</translation>
 <translation id="2360035970720276770">Kan alleen URL's met 'http' of 'https' downloaden</translation>
@@ -504,7 +510,6 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="4084682180776658562">Bladwijzer maken</translation>
 <translation id="2646820313617290661">Je ouders helpen je deze instellingen te beheren.</translation>
 <translation id="2433507940547922241">Vormgeving</translation>
-<translation id="430949144625048957">Wissel tussen lijst-/rastermodus</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6177390657002841081">Databesparing inschakelen</translation>
 <translation id="4056223980640387499">Sepia</translation>

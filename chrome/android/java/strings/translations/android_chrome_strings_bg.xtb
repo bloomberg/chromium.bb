@@ -123,6 +123,7 @@
 <translation id="200669432486043882">Замяна на файла</translation>
 <translation id="9086455579313502267">Няма достъп до мрежата</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
+<translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS"/> отметки</translation>
 <translation id="8413385045638830869">Първо ще се извежда запитване (препоръчително)</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
 <translation id="5313967007315987356">Добавяне на сайт</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="8583805026567836021">Данните от профила се изчистват</translation>
 <translation id="6464825623202322042">Това устройство</translation>
+<translation id="7501135638693251872">Всички отметки</translation>
 <translation id="5860033963881614850">Изключено</translation>
+<translation id="2678212031093903894">Създайте резервно копие на отметките си и ги синхронизирайте</translation>
 <translation id="2960796085439532066">Авторски права <ph name="YEAR"/> Google Inc. Всички права запазени.</translation>
 <translation id="6388207532828177975">Изчистване и нулиране</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT"/></translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
 <translation id="7987073022710626672">Общи условия на Chrome</translation>
+<translation id="3269093882174072735">Зареждане на изображението</translation>
 <translation id="588258955323874662">Цял екран</translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">История на сърфирането</translation>
 <translation id="6108923351542677676">Извършва се настройване…</translation>
+<translation id="7648120236428811856">Влезте в Chrome, за да имате достъп до отметките си от всяко устройство</translation>
 <translation id="6964496835063002391">Добавяне на профил</translation>
 <translation id="4698413471314543145">Липсва необходима критична функционалност, за да се изпълнява Chrome. Инсталацията ви на браузъра не е завършена или не е съвместима с тази версия на Android.</translation>
 <translation id="1943432128510653496">Запазени пароли</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
 <translation id="5899349522111170522">Създаване на нов файл</translation>
 <translation id="3158619413803296679">Избиране на отметка</translation>
+<translation id="6138140242378429169">Направете страницата удобна за мобилни устройства</translation>
 <translation id="5345040418939504969">Изтрихте „<ph name="BOOKMARK_TITLE"/>“</translation>
 <translation id="7232255641409319872">Разрешаване на изображенията за посочени от вас уебсайтове и блокиране за останалата част от мрежата</translation>
 <translation id="2360035970720276770">Могат да се изтеглят само URL адреси, започващи с „http“ или „https“</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">Отметка</translation>
 <translation id="2646820313617290661">Родителите ви помагат за управлението на тези настройки.</translation>
 <translation id="2433507940547922241">Облик</translation>
-<translation id="430949144625048957">Списъчен и табл. режим: Превкл.</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6177390657002841081">Включване на Икономия на данни</translation>
 <translation id="4056223980640387499">Сепия</translation>

@@ -94,6 +94,7 @@
 <translation id="2580889980133367162">Palaging payagan ang <ph name="HOST"/> na mag-download ng maraming file</translation>
 <translation id="8972513834460200407">Pakisuri sa administrator ng iyong network upang matiyak na hindi bina-block ng firewall ang mga pag-download mula sa mga server ng Google.</translation>
 <translation id="1444628761356461360">Ang setting na ito ay pinamamahalaan ng may-ari ng device, <ph name="OWNER_EMAIL"/>.</translation>
+<translation id="2850541429955027218">Magdagdag ng tema</translation>
 <translation id="6562437808764959486">Ini-extract ang larawan ng pagbawi...</translation>
 <translation id="1260240842868558614">Ipakita:</translation>
 <translation id="2226449515541314767">Na-block ang site na ito mula sa pagkakaroon ng buong kontrol sa mga MIDI device.</translation>
@@ -256,6 +257,7 @@
 <translation id="7774497835322490043">Paganahin ang stub na GDB debug. Ihihinto nito ang Native Client na application sa startup at maghihintay para sa nacl-gdb (mula sa NaCl SDK) upang ilakip dito.</translation>
 <translation id="2686444421126615064">Tingnan ang account</translation>
 <translation id="9215293857209265904">Idinagdag ang &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
+<translation id="8089515035584227384">{NUM_DOWNLOADS,plural, =1{Nagda-download ng isang file}one{Nagda-download ng # file}other{Nagda-download ng # na file}}</translation>
 <translation id="7693221960936265065">ang simula ng panahon</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Hinarangan ang sumusunod na mga site mula sa pagsubaybay ng iyong lokasyon sa pahinang ito:</translation>
@@ -447,6 +449,7 @@
 <translation id="4684748086689879921">Iwasan ang Import</translation>
 <translation id="6912686727854004322">Upang magawa ito, kakailanganin mong i-enable ang Aktibidad sa Paggamit ng Boses at Audio at sanayin ang iyong Chromebook gamit ang mga sumusunod na hakbang.</translation>
 <translation id="8191230140820435481">Pamahalaan ang iyong apps, mga extension, at tema</translation>
+<translation id="2163418719022613650">Huwag gamitin ang mga listahan ng display ng slimming paint para sa pagguhit. Tandaan na nauuna ang flag na i-enable ang slimming paint sa flag na ito kung naroon ang pareho.</translation>
 <translation id="8279107132611114222">Ipinadala ang iyong kahilingang i-access ang site na ito kay <ph name="NAME"/>.</translation>
 <translation id="8034955203865359138">Walang nakitang mga entry ng kasaysayan.</translation>
 <translation id="9130015405878219958">Di-wastong mode ang ipinasok.</translation>
@@ -864,6 +867,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="3984413272403535372">Nagka-error habang linalagdaan ang extension.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3298461240075561421">Kahit na nag-download ka ng mga file mula sa website na ito dati, maaaring na-hack ang website na ito. Sa halip ng bawiin ang file na ito, maaari mong muling subukan ang pag-download sa ibang pagkakataon.</translation>
+<translation id="5485102783864353244">Magdagdag ng app</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="672609503628871915">Tingnan kung ano'ng bago</translation>
 <translation id="9208886416788010685">Hindi na Napapanahon ang Adobe Reader</translation>
@@ -1057,6 +1061,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="8559762987265718583">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> dahil mali ang petsa at oras ng iyong device (<ph name="DATE_AND_TIME"/>).</translation>
 <translation id="2915500479781995473">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN"/>; nag-expire na ang certificate ng seguridad nito. Maaaring sanhi ito ng maling configuration o ng panghihimasok ng isang attacker sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_TIME"/>. Mukha bang tama ito? Kung hindi, dapat mong iwasto ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.</translation>
 <translation id="1975841812214822307">Alisin...</translation>
+<translation id="108346963417674655">Hindi makakonekta nang ligtas sa server. Maaaring noong nakaraan ay gumagana ang website na ito, ngunit may problema sa server. Kapag kumonekta sa naturang mga site, humihina ang seguridad para sa lahat ng user at kaya naman na-disable ito.</translation>
 <translation id="8280151743281770066">Armenian Phonetic</translation>
 <translation id="567881659373499783">Bersyon <ph name="PRODUCT_VERSION"/></translation>
 <translation id="8261378640211443080">Hindi nakalista ang extension na ito sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> at maaaring naidagdag nang hindi mo nalalaman.</translation>
@@ -1312,6 +1317,9 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
 <translation id="1849186935225320012">May buong kontrol sa mga MIDI device ang pahinang ito.</translation>
 <translation id="7309416673261215716">Bersyon ng Extension</translation>
+<translation id="760353356052806707">Isa pang program sa iyong computer ang nagdagdag app na maaaring magpabago sa paraan ng paggana ng Chrome.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="2100273922101894616">Awtomatikong Mag-sign in</translation>
 <translation id="3313590242757056087">Upang itakda kung aling mga website ang maaring tingnan ng pinangangasiwaang user, maisasaayos mo ang mga paghihigpit
@@ -1333,6 +1341,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="127353061808977798">Mga font at pag-e-encode 
 </translation>
 <translation id="3122464029669770682">CPU</translation>
+<translation id="4518677423782794009">Ang Chrome ba ay nagka-crash, nagpapakita ng mga hindi karaniwang page sa pagsisimula, toolbar o hindi inaasahang ad na hindi mo maalis, o kung hindi man ay bumabago sa iyong karanasan sa pagba-browse? Maaari mong maaayos ang problema sa pamamagitan ng pagpapatakbo ng Chrome Cleanup Tool.</translation>
 <translation id="6080689532560039067">Tingnan ang iyong oras sa system</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
@@ -1359,6 +1368,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="3778152852029592020">Kinansela ang pag-download.</translation>
 <translation id="8235613855873080297">I-disable ang Mga Naka-encrypt na Media Extension.</translation>
 <translation id="2148227560636747235">I-cast ang tab na ito</translation>
+<translation id="3507421388498836150">Mga Kasalukuyang Pahintulot para sa &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7831368056091621108">upang mailagay ang extension na ito, ang iyong kasaysayan, at iba pang mga setting ng Chrome sa lahat ng iyong device.</translation>
 <translation id="5469868506864199649">Italyano</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -1556,6 +1566,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="3866443872548686097">Handa na ang iyong recovery media. Maaari mo itong alisin sa iyong system.</translation>
 <translation id="5525677322972469346">Gumawa ng bagong pinangangasiwaang user</translation>
 <translation id="6824564591481349393">Kopyahin ang &amp;Email Address</translation>
+<translation id="3843027123789255408">Lo-Fi mode ng Data Saver</translation>
 <translation id="907148966137935206">Huwag hayaan ang anumang site na magpakita ng mga pop-up (inirerekomenda)</translation>
 <translation id="7618337809041914424">I-&amp;print ang frame...</translation>
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
@@ -1595,7 +1606,6 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="6948142510520900350">Na-block ng iyong &lt;strong&gt;system administrator&lt;/strong&gt; ang access sa webpage na ito.</translation>
 <translation id="5702898740348134351">I-&amp;edit ang Mga Search Engine...</translation>
 <translation id="3687701603889589626">Pinapagana ang pagpapatakbo ng mga extension sa mga chrome:// URL, kung saan malinaw na hinihiling ng mga extension ang pagpapahintulot na ito.</translation>
-<translation id="6471055753088234288">I-disable ang pinahusay na pamamahala ng memory pressure sa ChromeOS.</translation>
 <translation id="4899376560703610051">Manu-manong na-lock ang iyong <ph name="DEVICE_TYPE"/>. Kakailanganin mong i-type ang iyong password upang makapasok.</translation>
 <translation id="1756681705074952506">Pamamaraan ng pag-input</translation>
 <translation id="418179967336296930">Russian Phonetic (YaZHert) keyboard</translation>
@@ -1917,6 +1927,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="5900302528761731119">Larawan sa Profile sa Google</translation>
 <translation id="3512810056947640266">URL (opsyonal):</translation>
 <translation id="131364520783682672">Caps Lock</translation>
+<translation id="5483785310822538350">Bawiin ang access sa file at device</translation>
 <translation id="8757742102600829832">Pumili ng Chromebox na kokonektahan</translation>
 <translation id="2335122562899522968">Nagtatakda ang pahinang ito ng cookies.</translation>
 <translation id="4628757576491864469">Mga Device</translation>
@@ -2359,6 +2370,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="389589731200570180">Ibahagi sa mga bisita</translation>
 <translation id="1510200760579344855">Na-lock ang device na ito ng administrator ng <ph name="SAML_DOMAIN"/>.</translation>
 <translation id="7205869271332034173">SSID:</translation>
+<translation id="3335561837873115802">Kunin ang Chrome Cleanup Tool</translation>
 <translation id="4731351517694976331">Pahintulutan ang serbisyo sa Google na i-access ang iyong lokasyon</translation>
 <translation id="5815645614496570556">Address na X.400</translation>
 <translation id="1223853788495130632">Inirerekomenda ng iyong administrator ang isang tukoy na halaga para sa setting na ito.</translation>
@@ -2518,6 +2530,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="4011708746171704399">I-enable ang mga animated na transition sa unang pagtakbo ng tutorial.</translation>
 <translation id="304826556400666995">Mag-alis ng Mga Tab sa Pagkaka-mute</translation>
 <translation id="4314564217497012208">I-cast ang tab na ito sa...</translation>
+<translation id="2674170444375937751">Sigurado ka bang nais mong tanggalin ang mga pahinang ito mula sa iyong history?</translation>
 <translation id="2932883381142163287">I-ulat ang pang-aabuso</translation>
 <translation id="9111102763498581341">I-unlock</translation>
 <translation id="5975792506968920132">Porsyento ng Charge ng Baterya</translation>
@@ -2552,6 +2565,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="409579654357498729">Idagdag sa Cloud Print</translation>
 <translation id="2120316813730635488">Mga paglitaw noong na-install ang isang extension</translation>
 <translation id="8398877366907290961">Magpatuloy</translation>
+<translation id="2797019681257472009">Nakakita ng hindi karaniwang gawi</translation>
 <translation id="5063180925553000800">Bagong PIN:</translation>
 <translation id="4883178195103750615">I-export ang mga bookmark sa file na HTML...</translation>
 <translation id="2496540304887968742">Dapat na may kapasidad na 4GB o higit pa ang device.</translation>
@@ -2595,7 +2609,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2136953289241069843">Transliteration (namaste → नमस्कार)</translation>
 <translation id="1358032944105037487">Hapon na keyboard</translation>
 <translation id="3897224341549769789">Nagpapagana</translation>
-<translation id="7093382443623905433">I-disable ang pamamahala ng memory pressure</translation>
 <translation id="1438632560381091872">Mag-alis ng mga tab sa pagkaka-mute</translation>
 <translation id="4648491805942548247">Hindi sapat na mga pagpapahintulot</translation>
 <translation id="1183083053288481515">Gumagamit ng certificate na ibinigay ng administrator</translation>
@@ -2658,6 +2671,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="3450157232394774192">Porsyento ng Ginagamit sa Estadong Idle</translation>
 <translation id="1110155001042129815">Mag-intay</translation>
 <translation id="2607101320794533334">Impormasyon ng Pampublikong Key ng Paksa</translation>
+<translation id="4048441759170415907">Gamitin ang listahan ng display ng slimming paint para sa lahat ng pagguhit. Nauuna sa flag na i-disable ang slimming paint kung naroon ang pareho.</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="4419409365248380979">Laging payagan ang <ph name="HOST"/> na magset ng cookies</translation>
 <translation id="1717810180141539171">I-enable ang karagdagang feedback sa pagpindot sa mga bahagi ng UI.</translation>
@@ -2763,6 +2777,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="258095186877893873">Matagal</translation>
 <translation id="8248050856337841185">I-&amp;paste</translation>
 <translation id="347785443197175480">Magpatuloy sa pagpayag sa <ph name="HOST"/> na i-access ang iyong camera at mikropono</translation>
+<translation id="3269093882174072735">I-load ang larawan</translation>
 <translation id="6052976518993719690">SSL Certification Authority</translation>
 <translation id="1482124012545051544">Handa nang mag-back up ng <ph name="FILE_COUNT"/> (na) bagong larawan</translation>
 <translation id="1175364870820465910">&amp;I-print...</translation>
@@ -2807,6 +2822,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7654941827281939388">Ginagamit na ang account na ito sa computer na ito.</translation>
 <translation id="204914487372604757">Lumikha ng shortcut sa </translation>
 <translation id="5957613098218939406">Higit Pang Mga Opsyon</translation>
+<translation id="8950446148892140517">Cellular lang</translation>
 <translation id="696036063053180184">3 Set (Walang shift)</translation>
 <translation id="452785312504541111">Full-width na Ingles</translation>
 <translation id="7589461650300748890">Naku. Mag-ingat.</translation>
@@ -2852,6 +2868,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="1091767800771861448">Pindutin ang ESCAPE upang lumaktaw (Mga hindi opisyal na build lamang).</translation>
 <translation id="2965328226365382335">Nakaraang 15 Minuto</translation>
 <translation id="6731320427842222405">Maaari itong tumagal nang ilang minuto</translation>
+<translation id="3640214691812501263">Idagdag ang &quot;<ph name="EXTENSION_NAME"/>&quot; para sa <ph name="USER_NAME"/>?</translation>
 <translation id="7503191893372251637">Uri ng Netscape Certificate</translation>
 <translation id="4135450933899346655">Iyong Mga Certificate</translation>
 <translation id="971774202801778802">URL ng Bookmark</translation>
@@ -3245,6 +3262,9 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="3910699493603749297">Khmer keyboard</translation>
 <translation id="5487982064049856365">Kamakailan mong binago ang password. Mangyaring mag-sign in gamit ang bago.</translation>
 <translation id="2345055320165338418">Kung naka-enable, direktang lalabas ang mga sagot sa mga partikular na uri ng mga query sa listahan ng mungkahi sa Omnibox.</translation>
+<translation id="1585717515139318619">Isa pang program sa iyong computer ang nagdagdag tema na maaaring magpabago sa paraan ng paggana ng Chrome.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="438503109373656455">Petra</translation>
 <translation id="7984180109798553540">Para sa karagdagang seguridad, i-e-encrypt ng <ph name="PRODUCT_NAME"/> ang iyong data.</translation>
 <translation id="5036662165765606524">Huwag payagan ang anumang site na awtomatikong mag-download ng maraming file</translation>
@@ -3934,6 +3954,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="5271247532544265821">I-toggle ang Simplified/Traditional Chinese mode</translation>
 <translation id="2052610617971448509">Hindi ka na-sandbox nang husto.</translation>
 <translation id="6417515091412812850">Hindi nagawang masuri kung nabawi na ang certificate.</translation>
+<translation id="5900623698597156974">Nagawa ng isang TLS 1.0 fallback na mag-handshake sa server, ngunit hindi na kami tumatanggap ng mga TLS 1.0 fallback. Dapat ma-update ang server upang wastong maipatupad ang negosasyon ng bersyon at mas mabuti kung sinusuportahan ang TLS 1.2.</translation>
 <translation id="460028601412914923">I-disable ang Delay Agnostic AEC sa WebRTC.</translation>
 <translation id="2809586584051668049">at <ph name="NUMBER_ADDITIONAL_DISABLED"/> pa</translation>
 <translation id="8373281062075027970">Party Name: <ph name="PARTY_NAME"/></translation>
@@ -4070,6 +4091,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="5264252276333215551">Mangyaring kumonekta sa Internet upang ilunsad ang iyong app sa kiosk mode.</translation>
 <translation id="7180865173735832675">I-customize</translation>
 <translation id="7054808953701320293">Nakuha ko, huwag na ulit ipakita sa akin.</translation>
+<translation id="4903369323166982260">Patakbuhin ang Chrome Cleanup Tool</translation>
 <translation id="144932861331386147">Mangyaring kumonekta sa Internet upang i-update ang iyong Chromebook.</translation>
 <translation id="2938685643439809023">Mongolian</translation>
 <translation id="5368720394188453070">Naka-lock ang iyong telepono. I-unlock ito upang makapasok.</translation>
@@ -4099,6 +4121,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="308903551226753393">Awtomatikong i-configure</translation>
 <translation id="5230516054153933099">Window</translation>
 <translation id="4992458225095111526">Kumpirmahin ang Powerwash</translation>
+<translation id="5027562294707732951">Idagdag ang extension</translation>
 <translation id="951981865514037445">Gustong gamitin ng <ph name="URL"/> ang lokasyon ng iyong device. 
 </translation>
 <translation id="7387339603919136090">Median</translation>
@@ -4272,6 +4295,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7863133010182113457">Kini-clear ang mga na-save nang data na nakuha sa pamamagitan ng proxy sa pagbawas ng data kapag nagsimula ang chrome.</translation>
 <translation id="4235200303672858594">Buong screen</translation>
 <translation id="5951823343679007761">Walang baterya</translation>
+<translation id="806705617346045388">Nakakita ng Hindi Karaniwang Gawi</translation>
 <translation id="2518024842978892609">Gamitin ang iyong mga client certificate</translation>
 <translation id="479555359673800162">I-disable ang Reauthentication Password Manager</translation>
 <translation id="8569682776816196752">Walang nahanap na mga destinasyon</translation>
@@ -4441,6 +4465,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="774465434535803574">Error sa Extension ng Pack</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="5750676294091770309">Na-block ng extension</translation>
+<translation id="5067399438976153555">Palaging naka-on</translation>
 <translation id="523299859570409035">Mga pagbubukod ng notification</translation>
 <translation id="7017480957358237747">pahintulutan o ipagbawal ang mga partikular na website,</translation>
 <translation id="1029595648591494741">Subukan ang &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
@@ -4475,6 +4500,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="3648607100222897006">Maaaring mabago, masira, o mawala anumang oras ang mga pang-eksperimentong tampok na ito. Ganap kaming walang garantiya tungkol sa kung ano ang maaaring mangyari kung bubuksan mo ang isa sa mga eksperimentong ito, at maaari pang biglang masunog ang iyong browser. Walang halong pagbibiro, maaaring tanggalin ng iyong browser ang lahat ng iyong data, o maaaring makompromiso sa mga hindi inaasahang paraan ang iyong seguridad at privacy. Anumang mga eksperimento na iyong papaganahin ay mapapagana para sa lahat ng mga user sa browser na ito. Mangyaring maingat na magpatuloy.</translation>
 <translation id="8148913456785123871">Magpakita ng mga Google Now card sa launcher</translation>
 <translation id="3937640725563832867">Kahaliling Pangalan ng Tagapagbigay ng Certificate</translation>
+<translation id="1926339101652878330">Kinokontrol ng patakaran sa enterprise ang mga setting na ito. Mangyaring makipag-ugnayan sa iyong administrator para sa higit pang impormasyon.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;View frame source</translation>
 <translation id="8770196827482281187">Paraan ng pag-input na Persian (ISIRI 2901 na layout)</translation>
@@ -4695,6 +4721,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
  <ph name="APPLICATION"/></translation>
 <translation id="177336675152937177">Naka-host na data ng app</translation>
 <translation id="6804671422566312077">Buksan ang Lahat ng Bookmark sa &amp;Bagong Window</translation>
+<translation id="3905761538810670789">Ayusin ang app</translation>
 <translation id="4009293373538135798">Mga Hindi Maayos na Paglabas</translation>
 <translation id="7017219178341817193">Magdagdag ng bagong page </translation>
 <translation id="1038168778161626396">Encipher Lamang</translation>
@@ -4746,6 +4773,9 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7763146744708046348">Huwag pagsama-samahin ang data - maaari itong maging mabagal!</translation>
 <translation id="203165784383062719">Mga &amp;opsyon sa spell-checker</translation>
 <translation id="5626134646977739690">Pangalan:</translation>
+<translation id="1070377999570795893">Isa pang program sa iyong computer ang nagdagdag extension na maaaring magpabago sa paraan ng paggana ng Chrome.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="5854409662653665676">Kung nakakaranas ka ng madadalas na problema, maaari mong subukan ang sumusunod upang malutas ang isyu sa mobile na ito:</translation>
 <translation id="3776796446459804932">Lumalabag ang extension na ito sa patakaran ng Chrome Web Store.</translation>
 <translation id="3681007416295224113">Impormasyon sa certificate</translation>
@@ -4978,6 +5008,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7136694880210472378">Gawing default</translation>
 <translation id="3274763671541996799">Nag-full screen ka.</translation>
 <translation id="7681202901521675750">Naka-lock ang SIM card, mangyaring ipasok ang PIN. Mga natitirang pagsubok:<ph name="TRIES_COUNT"/></translation>
+<translation id="2710492340506088372"><ph name="PERCENT"/>% kumpleto, <ph name="TIME_LEFT"/>,</translation>
 <translation id="2489918096470125693">Magdagdag ng &amp;Folder...</translation>
 <translation id="7353651168734309780">Nangangailangan ang <ph name="EXTENSION_NAME"/> ng mga bagong pahintulot</translation>
 <translation id="5582414689677315220">Sa pamamagitan ng pag-click sa Magpatuloy, sumasang-ayon ka sa <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, at <ph name="LEGAL_DOC_LINK_TEXT_3"/>.</translation>
@@ -5106,6 +5137,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT"/> (na) item ang pinili</translation>
 <translation id="4443536555189480885">&amp;Tulong</translation>
 <translation id="5067867186035333991">Itanong kung gustong i-access ng <ph name="HOST"/> ang iyong mikropono</translation>
+<translation id="219985413780390209">Protektahan ang iyong sarili at ang iyong device mula sa mga mapanganib na site</translation>
 <translation id="4074900173531346617">Certificate ng Email Signer</translation>
 <translation id="437184764829821926">Mga advanced na setting ng font</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
@@ -5215,6 +5247,7 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="1384211230590313258">Tagapangasiwa sa Pagtuklas ng Serbisyo</translation>
 <translation id="6656103420185847513">I-edit ang Folder</translation>
 <translation id="1937256809970138538">Sabihin ang &quot;Ok Google&quot; kapag naka-on at naka-unlock ang iyong screen</translation>
+<translation id="8464505512337106916">Magtukoy at magpatakbo ng mahalagang content ng plugin (inirerekomenda)</translation>
 <translation id="1949433054743893124">Hindi itinatago ng pagiging incognito ang iyong pagba-browse mula sa iyong employer, ang iyong internet service provider o ang mga binibisita mong website.</translation>
 <translation id="4193154014135846272">Dokumento ng Google</translation>
 <translation id="4771973620359291008">Isang hindi alam na error ang nangyari.</translation>
@@ -5480,6 +5513,7 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="2176045495080708525">Naka-install na ngayon ang sumusunod na mga extension:</translation>
 <translation id="1984603991036629094">Armenian na Phonetic keyboard</translation>
 <translation id="3046910703532196514">Webpage, Kumpleto</translation>
+<translation id="783140679984912140">I-disable ang slimming paint.</translation>
 <translation id="5062930723426326933">Nabigo ang pag-sign in, mangyaring kumonekta sa internet at subukan ulit.</translation>
 <translation id="3444783709767514481">Oras Kung Kailan Unang Ipinadala</translation>
 <translation id="5316716239522500219">I-mirror ang mga monitor</translation>
@@ -5520,6 +5554,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="3688526734140524629">Lumipat ng channel</translation>
 <translation id="4959447747655704388">Kung nauunawaan mo ang mga peligro sa iyong seguridad, maaari mong <ph name="BEGIN_LINK"/>bisitahin ang site na may malware na ito<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Maaaring nakompromiso ng mga attacker ang site na ito, at maaari nilang tangkain na mag-install ng mga mapanganib na programa sa iyong computer na nagnanakaw o nagde-delete ng iyong impormasyon (mga halimbawa: mga larawan, password, mensahe at credit card).</translation>
+<translation id="6263625581655667292">Pinupuwersa na maging naka-enable palagi ang Lo-Fi mode ng Data Saver, naka-enable o naka-disable lang sa mga koneksyon na cellular. Dapat naka-enable ang Data Saver nang sa gayon ay magamit ang Lo-Fi.</translation>
 <translation id="5941153596444580863">Magdagdag ng tao...</translation>
 <translation id="4503387275462811823">Paglalarawan sa Extension</translation>
 <translation id="2157875535253991059">Full screen na ngayon ang pahinang ito.</translation>
@@ -5533,6 +5568,7 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="8467473010914675605">Paraan ng pag-input na Korean</translation>
 <translation id="8759408218731716181">Hindi maaaring mag-set up ng multiple na pag-sign in</translation>
 <translation id="8102535138653976669">Secure na sini-sync ng <ph name="PRODUCT_NAME"/> ang iyong data sa iyong Google account. Panatilihing naka-sync ang lahat o i-customize ang naka-sync na mga uri ng data at setting ng pag-encrypt.</translation>
+<translation id="5943961789508834869">{NUM_DOWNLOADS,plural, =1{Nag-download ng isang file}one{Nag-download ng # file}other{Nag-download ng # na file}}</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
 <translation id="48607902311828362">Airplane mode</translation>
 <translation id="711840821796638741">Ipakita ang Mga Pinamamahalaang Bookmark</translation>
@@ -5883,6 +5919,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="2491341326828824053">I-disable ang one-copy rasterizer</translation>
 <translation id="7250799832286185545">Taon</translation>
 <translation id="5849869942539715694">Extension ng pack...</translation>
+<translation id="93766956588638423">Ayusin ang extension</translation>
 <translation id="7339785458027436441">Check Spelling While Typing</translation>
 <translation id="5233736638227740678">I-&amp;paste</translation>
 <translation id="1828901632669367785">I-print Gamit ang Dialog ng System...</translation>
@@ -5903,6 +5940,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8610892630019863050">Magtanong kapag gusto ng isang site na magpakita ng mga notification (inirerekomenda)</translation>
 <translation id="1729533290416704613">Kinokontrol din nito kung anong pahina ang ipinapakita kapag naghanap ka mula sa Omnibox.</translation>
 <translation id="2650446666397867134">Tinanggihan ang access sa file</translation>
+<translation id="1026822031284433028">I-load ang larawan</translation>
 <translation id="5832830184511718549">Gumagamit ng pangalawang thread upang magsagawa ng pag-composite sa web page. Nagbibigay-daan ito sa maayos na pag-scroll, kahit na hindi gumagana nang ayos ang pangunahing thread.</translation>
 <translation id="7943385054491506837">US Colemak</translation>
 <translation id="4316693445078347518">Bumubuo ng Google Payments Virtual Card...</translation>

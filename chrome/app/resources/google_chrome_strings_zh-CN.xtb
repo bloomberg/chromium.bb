@@ -229,6 +229,7 @@
 <translation id="7592736734348559088">由于您的帐户登录详细信息已过期，Google Chrome无法同步您的数据。</translation>
 <translation id="3735758079232443276">“<ph name="EXTENSION_NAME"/>”扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="6991142834212251086">将我的 Chrome 数据与此帐户关联</translation>
+<translation id="1350930993895295930">Chrome 检测到异常行为</translation>
 <translation id="3451115285585441894">正在添加到 Chrome 浏览器...</translation>
 <translation id="3047079729301751317">取消与<ph name="USERNAME"/>的关联将会清除您的历史记录、书签、设置以及存储在此设备上的其他Chrome数据。您的Google帐户中存储的数据将不会被清除，并且您可以通过<ph name="GOOGLE_DASHBOARD_LINK"/>Google信息中心<ph name="END_GOOGLE_DASHBOARD_LINK"/>管理这些数据。</translation>
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome。</translation>

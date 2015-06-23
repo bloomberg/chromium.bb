@@ -254,6 +254,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="7592736734348559088">A Google Chrome nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="3735758079232443276">A(z) <ph name="EXTENSION_NAME"/> bővítmény módosította, hogy melyik oldal jelenjen meg a Chrome indításakor.</translation>
 <translation id="6991142834212251086">Chrome-adataim társítása ehhez a fiókhoz</translation>
+<translation id="1350930993895295930">A Chrome szokatlan viselkedést észlelt</translation>
 <translation id="3451115285585441894">Hozzáadás a Chrome-hoz...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/> összekapcsolásának megszüntetésével törli az eszközön tárolt előzményeket, könyvjelzőket, beállításokat és egyéb Chrome-adatokat. A Google-fiókban tárolt adatokat a rendszer nem törli, és azokat Ön a <ph name="GOOGLE_DASHBOARD_LINK"/>Google Irányítópulton<ph name="END_GOOGLE_DASHBOARD_LINK"/> kezelheti.</translation>
 <translation id="1001534784610492198">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>

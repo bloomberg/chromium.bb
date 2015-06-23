@@ -267,6 +267,7 @@
 <translation id="5531349711857992002">このウェブサイトの証明書チェーンには、SHA-1 に基づく古い署名アルゴリズムで署名された証明書が 1 つ以上含まれています。</translation>
 <translation id="918373042641772655"><ph name="USERNAME"/> の接続を解除すると、履歴、ブックマーク、設定、このデバイスに保存されたその他の Chromium データが消去されます。ただし、Google アカウントに保存されたデータは消去されず、引き続き <ph name="GOOGLE_DASHBOARD_LINK"/>Google ダッシュボード<ph name="END_GOOGLE_DASHBOARD_LINK"/>で管理できます。</translation>
 <translation id="6403826409255603130">Chromium は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
+<translation id="3312805357485578561">Chromium で異常な動作が検出されました</translation>
 <translation id="4230135487732243613">Chromium データをこのアカウントにリンクしますか？</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">進化する Chromium</translation>

@@ -123,6 +123,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="200669432486043882">Ersätt fil</translation>
 <translation id="9086455579313502267">Det går inte att ansluta till nätverket</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> bokmärken har raderats</translation>
 <translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="5313967007315987356">Lägg till webbplats</translation>
@@ -170,7 +171,9 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
 <translation id="6464825623202322042">Den här enheten</translation>
+<translation id="7501135638693251872">Alla bokmärken</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="2678212031093903894">Säkerhetskopiera och synkronisera dina bokmärken</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR"/> Google Inc. Med ensamrätt.</translation>
 <translation id="6388207532828177975">Ta bort och återställ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> sparad data</translation>
@@ -256,6 +259,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3328801116991980348">Platsinformation</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
+<translation id="3269093882174072735">Läs in bild</translation>
 <translation id="588258955323874662">Helskärm</translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
 <translation id="8428213095426709021">Inställningar</translation>
@@ -323,6 +327,7 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Webbhistorik</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
+<translation id="7648120236428811856">Logga in i Chrome för att komma åt dina bokmärken från vilken enhet som helst</translation>
 <translation id="6964496835063002391">Lägg till ett konto</translation>
 <translation id="4698413471314543145">Det saknas viktiga funktioner i din version som krävs för att Chrome ska kunna köras. Antingen har installationen av Chrome inte slutförts eller så är Chrome och den här versionen av Android inte kompatibla.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
@@ -359,6 +364,7 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="5899349522111170522">Skapa ny fil</translation>
 <translation id="3158619413803296679">Välj ett bokmärke</translation>
+<translation id="6138140242378429169">Mobilanpassa sidan</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> raderades</translation>
 <translation id="7232255641409319872">Tillåt bilder på webbplatser som du anger och blockera dem för resten av webben</translation>
 <translation id="2360035970720276770">Bara adresser med http eller https kan hämtas</translation>
@@ -504,7 +510,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="2646820313617290661">Dina föräldrar hanterar de här inställningarna åt dig.</translation>
 <translation id="2433507940547922241">Utseende</translation>
-<translation id="430949144625048957">Byt mellan list- och rutnätsläge</translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6177390657002841081">Aktivera Databesparing</translation>
 <translation id="4056223980640387499">Sepia</translation>

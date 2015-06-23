@@ -123,6 +123,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="200669432486043882">Substituir ficheiro</translation>
 <translation id="9086455579313502267">Não é possível aceder à rede</translation>
 <translation id="5595485650161345191">Editar morada</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> marcadores eliminados</translation>
 <translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="5313967007315987356">Adicionar site</translation>
@@ -170,7 +171,9 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="8583805026567836021">A limpar os dados da conta</translation>
 <translation id="6464825623202322042">Este dispositivo</translation>
+<translation id="7501135638693251872">Todos os marcadores</translation>
 <translation id="5860033963881614850">Desativado</translation>
+<translation id="2678212031093903894">Fazer uma cópia de segurança e sincronizar os marcadores</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Todos os direitos reservados.</translation>
 <translation id="6388207532828177975">Limpar e repor</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> de dados armazenados</translation>
@@ -256,6 +259,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="8497726226069778601">Ainda não há nada para ver aqui</translation>
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
+<translation id="3269093882174072735">Carregar imagem</translation>
 <translation id="588258955323874662">Ecrã inteiro</translation>
 <translation id="5668404140385795438">Substituir pedido de um Website para evitar aumentar o zoom</translation>
 <translation id="8428213095426709021">Definições</translation>
@@ -323,6 +327,7 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="4526249700380860531">Ver e gerir as palavras-passe guardadas em <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
+<translation id="7648120236428811856">Inicie sessão no Chrome para aceder aos seus marcadores em qualquer dispositivo</translation>
 <translation id="6964496835063002391">Adicionar uma conta</translation>
 <translation id="4698413471314543145">Uma funcionalidade crítica, necessária para executar o Chrome, está em falta. A instalação do Chrome pode estar incompleta ou não ser compatível com esta versão do Android.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
@@ -359,6 +364,7 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
 <translation id="5899349522111170522">Criar novo ficheiro</translation>
 <translation id="3158619413803296679">Escolher um marcador</translation>
+<translation id="6138140242378429169">Tornar a página compatível com dispositivos móveis</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> eliminado</translation>
 <translation id="7232255641409319872">Permitir imagens em site especificados e bloqueá-las no resto da Web</translation>
 <translation id="2360035970720276770">Só é possível transferir URLs com http ou https</translation>
@@ -504,7 +510,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="4084682180776658562">Marcar</translation>
 <translation id="2646820313617290661">Os teus pais ajudam a gerir estas definições.</translation>
 <translation id="2433507940547922241">Aspeto</translation>
-<translation id="430949144625048957">Alt. entre modo lista e grelha</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6177390657002841081">Ativar a Poupança de dados</translation>
 <translation id="4056223980640387499">Sépia</translation>

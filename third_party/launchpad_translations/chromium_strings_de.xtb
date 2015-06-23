@@ -249,6 +249,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="5531349711857992002">Die Zertifikatskette für diese Website enthält mindestens ein Zertifikat, das einen veralteten Signaturalgorithmus auf Basis von SHA-1 verwendet.</translation>
 <translation id="918373042641772655">Wenn Sie die Verbindung zu <ph name="USERNAME"/> trennen, werden Ihr Verlauf sowie Ihre Lesezeichen, Einstellungen und sonstigen auf diesem Gerät gespeicherten Chromium-Daten gelöscht. In Ihrem Google-Konto gespeicherte Daten bleiben erhalten und können über das <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/> verwaltet werden.</translation>
 <translation id="6403826409255603130">Chromium ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
+<translation id="3312805357485578561">Chromium hat ungewöhnliches Verhalten erkannt.</translation>
 <translation id="4230135487732243613">Ihre Chromium-Daten mit diesem Konto verknüpfen?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium ist jetzt noch besser</translation>

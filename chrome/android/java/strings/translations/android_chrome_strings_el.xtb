@@ -123,6 +123,7 @@
 <translation id="200669432486043882">Αντικατάσταση αρχείου</translation>
 <translation id="9086455579313502267">Δεν είναι δυνατή η πρόσβαση στο δίκτυο</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
+<translation id="4663756553811254707">Διαγράφηκαν <ph name="NUMBER_OF_BOOKMARKS"/> σελιδοδείκτες</translation>
 <translation id="8413385045638830869">Να γίνεται ερώτηση πρώτα (συνιστάται)</translation>
 <translation id="2100273922101894616">Αυτόματη σύνδεση</translation>
 <translation id="5313967007315987356">Προσθήκη ιστότοπου</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">Επιτρέπεται</translation>
 <translation id="8583805026567836021">Διαγραφή δεδομένων λογαριασμού</translation>
 <translation id="6464825623202322042">Αυτή η συσκευή</translation>
+<translation id="7501135638693251872">Όλοι οι σελιδοδείκτες</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
+<translation id="2678212031093903894">Δημιουργία αντιγράφων ασφαλείας και συγχρονισμός των σελιδοδεικτών</translation>
 <translation id="2960796085439532066">Πνευματικά δικαιώματα <ph name="YEAR"/> Google Inc. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="6388207532828177975">Διαγραφή και επαναφορά</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> αποθηκευμένα δεδομένα</translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">Πληροφορίες ιστοτόπου</translation>
 <translation id="8497726226069778601">Δεν υπάρχει τίποτα να δείτε εδώ…ακόμη</translation>
 <translation id="7987073022710626672">Όροι Παροχής Υπηρεσιών Chrome</translation>
+<translation id="3269093882174072735">Φόρτωση εικόνας</translation>
 <translation id="588258955323874662">Πλήρης οθόνη</translation>
 <translation id="5668404140385795438">Παράκαμψη του αιτήματος ενός ιστότοπου για παρεμπόδιση εστίασης</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Ιστορικό περιήγησης</translation>
 <translation id="6108923351542677676">Ρύθμιση σε εξέλιξη…</translation>
+<translation id="7648120236428811856">Συνδεθείτε στο Chrome, για να αποκτήσετε πρόσβαση στους σελιδοδείκτες σας από οποιαδήποτε συσκευή.</translation>
 <translation id="6964496835063002391">Προσθέστε έναν λογαριασμό</translation>
 <translation id="4698413471314543145">Λείπει μια κρίσιμης σημασίας λειτουργία που απαιτείται για την εκτέλεση του Chrome. Είτε η εγκατάσταση του Chrome δεν έχει ολοκληρωθεί είτε δεν είναι συμβατή με αυτήν την έκδοση του Android.</translation>
 <translation id="1943432128510653496">Αποθήκευση κωδικών πρόσβασης</translation>
@@ -360,6 +365,7 @@
 <translation id="3089395242580810162">Άνοιγμα σε καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="5899349522111170522">Δημιουργία νέου αρχείου</translation>
 <translation id="3158619413803296679">Επιλέξτε σελιδοδείκτη</translation>
+<translation id="6138140242378429169">Ρύθμιση σελίδας ώστε να είναι φιλική προς κινητά</translation>
 <translation id="5345040418939504969">Ο σελιδοδείκτης <ph name="BOOKMARK_TITLE"/> διαγράφηκε</translation>
 <translation id="7232255641409319872">Να επιτρέπονται οι εικόνες στους ιστότοπους που προσδιορίζετε και αποκλεισμός για τον υπόλοιπο ιστό</translation>
 <translation id="2360035970720276770">Επιτρέπεται μόνο η λήψη διευθύνσεων URL http ή https</translation>
@@ -505,7 +511,6 @@
 <translation id="4084682180776658562">Σελιδοδείκτης</translation>
 <translation id="2646820313617290661">Οι γονείς σας βοηθούν στη διαχείριση αυτών των ρυθμίσεων.</translation>
 <translation id="2433507940547922241">Εμφάνιση</translation>
-<translation id="430949144625048957">Εναλλαγή λίστας και πλέγματος</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6177390657002841081">Ενεργοποίηση Εξοικονόμησης δεδομένων</translation>
 <translation id="4056223980640387499">Σέπια</translation>

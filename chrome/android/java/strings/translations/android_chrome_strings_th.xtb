@@ -123,6 +123,7 @@
 <translation id="200669432486043882">แทนที่ไฟล์</translation>
 <translation id="9086455579313502267">ไม่สามารถเข้าถึงเครือข่าย</translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
+<translation id="4663756553811254707">ลบบุ๊กมาร์ก <ph name="NUMBER_OF_BOOKMARKS"/> รายการแล้ว</translation>
 <translation id="8413385045638830869">ถามก่อน (แนะนำ)</translation>
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="5313967007315987356">เพิ่มเว็บไซต์</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="8583805026567836021">กำลังล้างข้อมูลบัญชี</translation>
 <translation id="6464825623202322042">อุปกรณ์นี้</translation>
+<translation id="7501135638693251872">บุ๊กมาร์กทั้งหมด</translation>
 <translation id="5860033963881614850">ปิด</translation>
+<translation id="2678212031093903894">สำรองข้อมูลและซิงค์บุ๊กมาร์กของคุณ</translation>
 <translation id="2960796085439532066">ลิขสิทธิ์ <ph name="YEAR"/> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT"/></translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">ข้อมูลไซต์</translation>
 <translation id="8497726226069778601">ที่นี่ยังไม่มีอะไรให้ดู… เลย</translation>
 <translation id="7987073022710626672">ข้อกำหนดในการให้บริการของ Chrome</translation>
+<translation id="3269093882174072735">โหลดภาพ</translation>
 <translation id="588258955323874662">เต็มหน้าจอ</translation>
 <translation id="5668404140385795438">แทนที่คำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">ประวัติการเข้าชมที่เรียกดู</translation>
 <translation id="6108923351542677676">กำลังดำเนินการตั้งค่า…</translation>
+<translation id="7648120236428811856">ลงชื่อเข้าใช้ Chrome เพื่อเข้าถึงบุ๊กมาร์กจากอุปกรณ์ต่างๆ</translation>
 <translation id="6964496835063002391">เพิ่มบัญชี</translation>
 <translation id="4698413471314543145">ฟังก์ชันที่จำเป็นต่อการเรียกใช้ Chrome ขาดหายไป อาจเป็นเพราะการติดตั้ง Chrome ของคุณไม่สมบูรณ์หรือไม่สามารถทำงานร่วมกับ Android เวอร์ชันนี้ได้</translation>
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="5899349522111170522">สร้างไฟล์ใหม่</translation>
 <translation id="3158619413803296679">เลือกบุ๊กมาร์ก</translation>
+<translation id="6138140242378429169">ทำให้หน้าเหมาะกับอุปกรณ์เคลื่อนที่</translation>
 <translation id="5345040418939504969">ลบ <ph name="BOOKMARK_TITLE"/> แล้ว</translation>
 <translation id="7232255641409319872">อนุญาตรูปภาพบนเว็บไซต์ที่คุณระบุขณะที่บล็อกรูปภาพสำหรับเว็บอื่นๆ ที่เหลือ</translation>
 <translation id="2360035970720276770">ดาวน์โหลดได้เฉพาะ URL แบบ HTTP หรือ HTTPS</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">บุ๊กมาร์ก</translation>
 <translation id="2646820313617290661">ผู้ปกครองของคุณช่วยจัดการการตั้งค่าเหล่านี้</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
-<translation id="430949144625048957">สลับโหมดรายการกับโหมดเส้นตาราง</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="4056223980640387499">ซีเปีย</translation>

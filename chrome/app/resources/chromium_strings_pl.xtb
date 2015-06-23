@@ -266,6 +266,7 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="5531349711857992002">Łańcuch certyfikatów tej strony zawiera co najmniej jeden certyfikat podpisany z użyciem przestarzałego algorytmu podpisu opartego na SHA-1.</translation>
 <translation id="918373042641772655">Odłączenie konta <ph name="USERNAME"/> spowoduje wyczyszczenie jego historii, zakładek, ustawień i innych danych Chromium zapisanych na tym urządzeniu. Dane przechowywane na koncie Google nie zostaną usunięte. Możesz nimi zarządzać w <ph name="GOOGLE_DASHBOARD_LINK"/>Panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium to przeglądarka obsługująca strony i aplikacje z szybkością błyskawicy. Jest szybka, stabilna i łatwa w użyciu. Bezpiecznie przeglądaj internet dzięki wbudowanej w Chromium ochronie przed złośliwym oprogramowaniem i phishingiem.</translation>
+<translation id="3312805357485578561">Chromium wykrył nietypowe zachowanie</translation>
 <translation id="4230135487732243613">Połączyć Twoje dane Chromium z tym kontem?</translation>
 <translation id="2572494885440352020">Pomoc Chromium</translation>
 <translation id="7617377681829253106">Przeglądarka Chromium jest jeszcze lepsza</translation>

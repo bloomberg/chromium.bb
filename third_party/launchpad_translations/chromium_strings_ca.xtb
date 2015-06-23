@@ -267,6 +267,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="5531349711857992002">La cadena de certificats d'aquest lloc web conté com a mínim un certificat que s'ha signat utilitzant un algoritme de signatura obsolet basat en SHA-1.</translation>
 <translation id="918373042641772655">Si desconnecteu <ph name="USERNAME"/> s'esborraran l'historial, les adreces d'interès, la configuració i la resta de dades de Chromium que hàgiu desat en aquest dispositiu. Les dades emmagatzemades al compte de Google no s'esborraran, i es poden gestionar des del <ph name="GOOGLE_DASHBOARD_LINK"/>Tauler de Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium és un navegador web que executa les pàgines web i les aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu per Internet amb més seguretat amb protecció inserida a Chromium contra el programari maliciós i contra la pesca (suplantació d'identitat).</translation>
+<translation id="3312805357485578561">Chromium ha detectat un comportament poc habitual</translation>
 <translation id="4230135487732243613">Voleu enllaçar les vostres dades de Chromium amb aquest compte?</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
 <translation id="7617377681829253106">Chromium és millor que mai</translation>

@@ -123,6 +123,7 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="200669432486043882">Datei ersetzen</translation>
 <translation id="9086455579313502267">Kein Zugriff auf das Netzwerk</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> Lesezeichen gelöscht</translation>
 <translation id="8413385045638830869">Zuerst fragen (empfohlen)</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
 <translation id="5313967007315987356">Website hinzufügen</translation>
@@ -170,7 +171,9 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
 <translation id="6464825623202322042">Dieses Gerät</translation>
+<translation id="7501135638693251872">Alle Lesezeichen</translation>
 <translation id="5860033963881614850">Aus</translation>
+<translation id="2678212031093903894">Lesezeichen sichern und synchronisieren</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="6388207532828177975">Löschen &amp; zurücksetzen</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> gespeicherte Daten</translation>
@@ -256,6 +259,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="8497726226069778601">Noch keine Seiten</translation>
 <translation id="7987073022710626672">Chrome-Nutzungsbedingungen</translation>
+<translation id="3269093882174072735">Bild laden</translation>
 <translation id="588258955323874662">Vollbild</translation>
 <translation id="5668404140385795438">Website-Anfrage zum Verhindern des Vergrößerns übergehen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
@@ -323,6 +327,7 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="4526249700380860531">Unter <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> gespeicherte Passwörter aufrufen und verwalten</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
+<translation id="7648120236428811856">Melden Sie sich in Chrome an, um auf allen Ihren Geräten auf Ihre Lesezeichen zuzugreifen.</translation>
 <translation id="6964496835063002391">Konto hinzufügen</translation>
 <translation id="4698413471314543145">Es fehlen wichtige Funktionen zur Ausführung von Chrome. Ihre Chrome-Installation ist entweder unvollständig oder nicht mit dieser Android-Version kompatibel.</translation>
 <translation id="1943432128510653496">Passwörter speichern</translation>
@@ -359,6 +364,7 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="5899349522111170522">Neue Datei erstellen</translation>
 <translation id="3158619413803296679">Lesezeichen auswählen</translation>
+<translation id="6138140242378429169">Für Mobilgeräte optimierte Seite</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> gelöscht</translation>
 <translation id="7232255641409319872">Bilder werden auf von Ihnen angegebenen Websites angezeigt und auf allen anderen Websites blockiert.</translation>
 <translation id="2360035970720276770">Nur Download von URLs mit &quot;http&quot; oder &quot;https&quot; möglich</translation>
@@ -504,7 +510,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="4084682180776658562">Lesezeichen</translation>
 <translation id="2646820313617290661">Deine Eltern verwalten diese Einstellungen.</translation>
 <translation id="2433507940547922241">Darstellung</translation>
-<translation id="430949144625048957">Listen-/Rastermodus umschalten</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="6177390657002841081">Datenkomprimierung aktivieren</translation>
 <translation id="4056223980640387499">Sepia</translation>

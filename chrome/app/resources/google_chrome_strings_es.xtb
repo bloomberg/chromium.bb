@@ -262,6 +262,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="7592736734348559088">Google Chrome no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
 <translation id="3735758079232443276">La extensión <ph name="EXTENSION_NAME"/> ha cambiado la página que se muestra al iniciar Chrome.</translation>
 <translation id="6991142834212251086">Vincular mis datos de Chrome a esta cuenta</translation>
+<translation id="1350930993895295930">Chrome ha detectado un comportamiento inusual</translation>
 <translation id="3451115285585441894">Añadiendo a Chrome...</translation>
 <translation id="3047079729301751317">Si desvinculas a <ph name="USERNAME"/>, se borrarán tu historial, tus marcadores, tu configuración y otros datos de Chrome almacenados en este dispositivo. No obstante, no se borrarán los datos almacenados en tu cuenta de Google y se podrán administrar en el <ph name="GOOGLE_DASHBOARD_LINK"/>Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">El archivo de instalación está dañado o no es válido. Vuelve a descargar Google Chrome.</translation>

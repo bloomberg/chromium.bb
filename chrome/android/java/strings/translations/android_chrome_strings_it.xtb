@@ -123,6 +123,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="200669432486043882">Sostituisci file</translation>
 <translation id="9086455579313502267">Impossibile accedere alla rete</translation>
 <translation id="5595485650161345191">Modifica indirizzo</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> Preferiti eliminati</translation>
 <translation id="8413385045638830869">Chiedi prima (opzione consigliata)</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="5313967007315987356">Aggiungi sito</translation>
@@ -170,7 +171,9 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="8583805026567836021">Cancellazione dati dell'account</translation>
 <translation id="6464825623202322042">Questo dispositivo</translation>
+<translation id="7501135638693251872">Tutti i Preferiti</translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="2678212031093903894">Effettua backup e sincronizzazione dei tuoi Preferiti</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="6388207532828177975">Cancella e reimposta</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> di dati memorizzati</translation>
@@ -256,6 +259,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3328801116991980348">Informazioni sito</translation>
 <translation id="8497726226069778601">Qui non c'è ancora niente</translation>
 <translation id="7987073022710626672">Termini di servizio di Chrome</translation>
+<translation id="3269093882174072735">Carica immagine</translation>
 <translation id="588258955323874662">Schermo intero</translation>
 <translation id="5668404140385795438">Ignora la richiesta di un sito per evitare l'aumento dello zoom</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
@@ -323,6 +327,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Cronologia di navigazione</translation>
 <translation id="6108923351542677676">Configurazione in corso…</translation>
+<translation id="7648120236428811856">Accedi a Chrome per avere a disposizione i tuoi Preferiti su qualsiasi dispositivo</translation>
 <translation id="6964496835063002391">Aggiungi un account</translation>
 <translation id="4698413471314543145">Manca una funzionalità fondamentale per l'esecuzione di Chrome; l'installazione di Chrome è incompleta oppure non è compatibile con la versione di Android installata.</translation>
 <translation id="1943432128510653496">Salva password</translation>
@@ -359,6 +364,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
 <translation id="5899349522111170522">Crea nuovo file</translation>
 <translation id="3158619413803296679">Scegli un Preferito</translation>
+<translation id="6138140242378429169">Ottimizza la pagina per i dispositivi mobili</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> eliminato</translation>
 <translation id="7232255641409319872">Consenti le immagini sui siti web da te specificati e bloccale per tutti gli altri siti web</translation>
 <translation id="2360035970720276770">È possibile scaricare soltanto URL http o https</translation>
@@ -504,7 +510,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="2646820313617290661">I tuoi genitori ti aiutano a gestire queste impostazioni.</translation>
 <translation id="2433507940547922241">Aspetto</translation>
-<translation id="430949144625048957">Alterna modalità elenco/griglia</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6177390657002841081">Attiva Risparmio dati</translation>
 <translation id="4056223980640387499">Seppia</translation>

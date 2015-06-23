@@ -271,6 +271,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5531349711857992002">The certificate chain for this website contains at least one certificate that was signed using a deprecated signature algorithm based on SHA-1.</translation>
 <translation id="918373042641772655">Disconnecting <ph name="USERNAME"/> will clear your history, bookmarks, settings and other Chromium data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium is a web browser that runs webpages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Chromium.</translation>
+<translation id="3312805357485578561">Chromium has detected unusual behaviour</translation>
 <translation id="4230135487732243613">Link my Chromium data to this account</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>

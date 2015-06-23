@@ -94,6 +94,7 @@
 <translation id="2580889980133367162"><ph name="HOST"/> immer das Herunterladen mehrerer Dateien gestatten</translation>
 <translation id="8972513834460200407">Bitten Sie Ihren Netzwerkadministrator, zu überprüfen, ob Downloads von Google-Servern von der Firewall blockiert werden.</translation>
 <translation id="1444628761356461360">Diese Einstellung wird vom Geräteinhaber, <ph name="OWNER_EMAIL"/>, verwaltet.</translation>
+<translation id="2850541429955027218">Design hinzufügen</translation>
 <translation id="6562437808764959486">Wiederherstellungsabbild wird extrahiert...</translation>
 <translation id="1260240842868558614">Anzeigen:</translation>
 <translation id="2226449515541314767">Dieser Website wurde keine vollständige Kontrolle über MIDI-Geräte gewährt.</translation>
@@ -256,6 +257,7 @@
 <translation id="7774497835322490043">Ermöglicht GDB-Debugging mit Stub-Datei. Dadurch wird eine Native Client-App beim Start gestoppt, bis nacl-gdb aus dem NaCl-SDK anhängt wird.</translation>
 <translation id="2686444421126615064">Konto aufrufen</translation>
 <translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; hinzugefügt</translation>
+<translation id="8089515035584227384">{NUM_DOWNLOADS,plural, =1{Datei wird heruntergeladen.}other{# Dateien werden heruntergeladen.}}</translation>
 <translation id="7693221960936265065">Gesamter Zeitraum</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">Die folgenden Websites dürfen Ihren Standort auf dieser Seite nicht verfolgen:</translation>
@@ -447,6 +449,7 @@
 <translation id="4684748086689879921">Import überspringen</translation>
 <translation id="6912686727854004322">Dazu müssen Sie die Sprach- &amp; Audioaktivitäten aktivieren und Ihr Chromebook in den folgenden Schritten trainieren.</translation>
 <translation id="8191230140820435481">Apps, Erweiterungen und Designs verwalten</translation>
+<translation id="2163418719022613650">Die Slimming Paint-Anzeigelisten werden nicht für Zeichnungen verwendet. Hinweis: Die Markierung &quot;Slimming Paint aktivieren&quot; hat Vorrang vor dieser Markierung, falls beide aktiviert sind.</translation>
 <translation id="8279107132611114222">Ihre Anfrage zum Zugriff auf diese Website wurde an <ph name="NAME"/> gesendet.</translation>
 <translation id="8034955203865359138">Keine Verlaufseinträge gefunden</translation>
 <translation id="9130015405878219958">Eingegebener Modus ist ungültig.</translation>
@@ -858,6 +861,7 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="3984413272403535372">Fehler bei der Signatur der Erweiterung</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3298461240075561421">Auch wenn Sie zuvor schon Dateien von dieser Website heruntergeladen haben, wurde die Website möglicherweise gehackt. Sie können den Download zu einem späteren Zeitpunkt wiederholen, statt diese Datei wiederherzustellen.</translation>
+<translation id="5485102783864353244">App hinzufügen</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="672609503628871915">Mehr erfahren</translation>
 <translation id="9208886416788010685">Adobe Reader veraltet</translation>
@@ -1051,6 +1055,7 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="8559762987265718583">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> hergestellt werden, weil Datum und Uhrzeit Ihres Geräts falsch sind (<ph name="DATE_AND_TIME"/>).</translation>
 <translation id="2915500479781995473">Dieser Server konnte nicht nachweisen, dass es sich dabei um <ph name="DOMAIN"/> handelt, da das Sicherheitszertifikat abgelaufen ist. Der Grund hierfür könnte eine fehlerhafte Konfiguration oder ein Angreifer sein, der Ihre Verbindung abfängt. Die Uhr Ihres Computers zeigt derzeit <ph name="CURRENT_TIME"/> an. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie dann diese Seite.</translation>
 <translation id="1975841812214822307">Entfernen...</translation>
+<translation id="108346963417674655">Zum Server konnte keine sichere Verbindung hergestellt werden. Möglicherweise hat diese Website zuvor funktioniert, aber auf dem Server ist ein Problem aufgetreten. Die Verbindung zu solchen Websites stellt ein Sicherheitsrisiko für alle Nutzer dar und wurde deshalb deaktiviert.</translation>
 <translation id="8280151743281770066">Armenisch – phonetisch</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION"/></translation>
 <translation id="8261378640211443080">Diese Erweiterung ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
@@ -1304,6 +1309,9 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="1849186935225320012">Diese Seite hat vollständige Kontrolle über MIDI-Geräte.</translation>
 <translation id="7309416673261215716">Version der Erweiterung</translation>
+<translation id="760353356052806707">Ein anderes Programm auf Ihrem Computer hat eine App hinzugefügt, die sich möglicherweise auf die Funktionsweise von Chrome auswirkt.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
 <translation id="3313590242757056087">Zum Auswählen der Websites, die der betreute Nutzer besuchen kann,
@@ -1324,6 +1332,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
 <translation id="127353061808977798">Schrift und Codierung</translation>
 <translation id="3122464029669770682">CPU</translation>
+<translation id="4518677423782794009">Stürzt Chrome ab, werden ungewohnte Startseiten, Symbolleisten oder Anzeigen eingeblendet, die sich nicht deaktivieren lassen, oder reagiert der Browser anders als gewohnt? Möglicherweise lässt sich das Problem mit dem Chrome Cleanup Tool beheben.</translation>
 <translation id="6080689532560039067">Systemzeit überprüfen</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
@@ -1350,6 +1359,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="3778152852029592020">Der Download wurde abgebrochen.</translation>
 <translation id="8235613855873080297">Verschlüsselte Medienerweiterungen deaktivieren</translation>
 <translation id="2148227560636747235">Tab übertragen</translation>
+<translation id="3507421388498836150">Aktuelle Berechtigungen für &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7831368056091621108">So können Sie diese Erweiterung, Ihren Verlauf und andere Chrome-Einstellungen auf all Ihren Geräten nutzen.</translation>
 <translation id="5469868506864199649">Italienisch</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -1547,6 +1557,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="3866443872548686097">Ihr Datenträger für die Wiederherstellung ist fertig. Sie können ihn von Ihrem Computer entfernen.</translation>
 <translation id="5525677322972469346">Neuen betreuten Nutzer erstellen</translation>
 <translation id="6824564591481349393">E-Mail-Adr&amp;esse kopieren</translation>
+<translation id="3843027123789255408">Lo-Fi-Modus für Datenkomprimierung</translation>
 <translation id="907148966137935206">Anzeige von Pop-ups für keine Website zulassen (empfohlen)</translation>
 <translation id="7618337809041914424">Frame &amp;drucken...</translation>
 <translation id="4406896451731180161">Suchergebnisse</translation>
@@ -1586,7 +1597,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="6948142510520900350">Ihr &lt;strong&gt;Systemadministrator&lt;/strong&gt; hat den Zugriff auf diese Webseite blockiert.</translation>
 <translation id="5702898740348134351">Suchmaschin&amp;en bearbeiten...</translation>
 <translation id="3687701603889589626">Aktiviert die Ausführung von Erweiterungen unter URLs, die mit chrome:// beginnen, sofern Erweiterungen diese Berechtigung explizit anfordern.</translation>
-<translation id="6471055753088234288">Deaktiviert die erweiterte Speicherauslastungsbehandlung unter Chrome OS</translation>
 <translation id="4899376560703610051">Ihr <ph name="DEVICE_TYPE"/> wurde manuell gesperrt. Geben Sie zum Fortfahren Ihr Passwort ein.</translation>
 <translation id="1756681705074952506">Eingabemethode</translation>
 <translation id="418179967336296930">Russische Tastatur (YaZHert)</translation>
@@ -1907,6 +1917,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="5900302528761731119">Google Profile-Foto</translation>
 <translation id="3512810056947640266">URL (optional):</translation>
 <translation id="131364520783682672">Feststelltaste</translation>
+<translation id="5483785310822538350">Datei- und Gerätezugriff aufheben</translation>
 <translation id="8757742102600829832">Wählen Sie eine Chromebox für die Verbindung aus.</translation>
 <translation id="2335122562899522968">Diese Seite hat Cookies gesetzt.</translation>
 <translation id="4628757576491864469">Geräte</translation>
@@ -2339,6 +2350,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="389589731200570180">Mit Gastnutzern teilen</translation>
 <translation id="1510200760579344855">Dieses Gerät wurde durch den Administrator von <ph name="SAML_DOMAIN"/> gesperrt.</translation>
 <translation id="7205869271332034173">SSID:</translation>
+<translation id="3335561837873115802">Chrome Cleanup Tool herunterladen</translation>
 <translation id="4731351517694976331">Google-Diensten Zugriff auf Ihren Standort erlauben</translation>
 <translation id="5815645614496570556">X.400-Adresse</translation>
 <translation id="1223853788495130632">Ihr Administrator empfiehlt einen bestimmten Wert für diese Einstellung.</translation>
@@ -2497,6 +2509,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="4011708746171704399">Animierte Übergänge im Einführungstutorial aktivieren</translation>
 <translation id="304826556400666995">Stummschaltung der Tabs aufheben</translation>
 <translation id="4314564217497012208">Diesen Tab übertragen an...</translation>
+<translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
 <translation id="2932883381142163287">Missbrauch melden</translation>
 <translation id="9111102763498581341">Entsperren</translation>
 <translation id="5975792506968920132">Akkustand in %</translation>
@@ -2530,6 +2543,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="409579654357498729">Zu Cloud Print hinzufügen</translation>
 <translation id="2120316813730635488">Vorkommen, wenn eine Erweiterung installiert wurde</translation>
 <translation id="8398877366907290961">Trotzdem fortfahren</translation>
+<translation id="2797019681257472009">Ungewöhnliches Verhalten erkannt</translation>
 <translation id="5063180925553000800">Neue PIN:</translation>
 <translation id="4883178195103750615">Lesezeichen in HTML-Datei exportieren...</translation>
 <translation id="2496540304887968742">Das Gerät muss eine Mindestkapazität von 4 GB haben.</translation>
@@ -2573,7 +2587,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="2136953289241069843">Transliteration (namaste → नमस्कार)</translation>
 <translation id="1358032944105037487">Japanische Tastatur </translation>
 <translation id="3897224341549769789">Aktivierungen</translation>
-<translation id="7093382443623905433">Speicherauslastungsbehandlung deaktivieren</translation>
 <translation id="1438632560381091872">Stummschaltung der Tabs aufheben</translation>
 <translation id="4648491805942548247">Unzureichende Berechtigungen</translation>
 <translation id="1183083053288481515">Vom Administrator bereitgestelltes Zertifikat verwenden</translation>
@@ -2636,6 +2649,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3450157232394774192">Inaktiver Zustand – Auslastung in Prozent</translation>
 <translation id="1110155001042129815">Warten</translation>
 <translation id="2607101320794533334">Informationen zum öffentlichen Schlüssel des Antragstellers</translation>
+<translation id="4048441759170415907">Die Slimming Paint-Anzeigelisten werden für alle Zeichnungen verwendet. Diese Markierung hat Vorrang vor der Markierung &quot;Slimming Paint deaktivieren&quot;, falls beide aktiviert sind.</translation>
 <translation id="89720367119469899">Esc-Taste</translation>
 <translation id="4419409365248380979"><ph name="HOST"/> darf immer Cookies setzen</translation>
 <translation id="1717810180141539171">Zusätzliches Touch-Feedback für Komponenten der Benutzeroberfläche aktivieren</translation>
@@ -2736,6 +2750,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="258095186877893873">Lang</translation>
 <translation id="8248050856337841185">&amp;Einfügen</translation>
 <translation id="347785443197175480"><ph name="HOST"/> weiterhin Zugriff auf Kamera und Mikrofon gestatten</translation>
+<translation id="3269093882174072735">Bild laden</translation>
 <translation id="6052976518993719690">SSL-Zertifizierungsstelle</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT"/> neue Fotos können jetzt gesichert werden.</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
@@ -2780,6 +2795,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="7654941827281939388">Dieses Konto wird bereits auf dem Computer verwendet.</translation>
 <translation id="204914487372604757">Verknüpfung erstellen</translation>
 <translation id="5957613098218939406">Weitere Optionen</translation>
+<translation id="8950446148892140517">Nur für Mobilfunkverbindungen</translation>
 <translation id="696036063053180184">3 Set (Kein Shift)</translation>
 <translation id="452785312504541111">Englisch in voller Breite</translation>
 <translation id="7589461650300748890">Vorsicht!</translation>
@@ -2825,6 +2841,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="1091767800771861448">Drücken Sie die Esc-Taste, um die Aktualisierung zu überspringen (nur inoffizielle Builds).</translation>
 <translation id="2965328226365382335">Letzte 15 Minuten</translation>
 <translation id="6731320427842222405">Dies kann einige Minuten dauern.</translation>
+<translation id="3640214691812501263">&quot;<ph name="EXTENSION_NAME"/>&quot; für <ph name="USER_NAME"/> hinzufügen?</translation>
 <translation id="7503191893372251637">Netscape-Zertifikatstyp</translation>
 <translation id="4135450933899346655">Ihre Zertifikate</translation>
 <translation id="971774202801778802">URL als Lesezeichen speichern</translation>
@@ -3209,6 +3226,9 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3910699493603749297">Khmer-Tastatur</translation>
 <translation id="5487982064049856365">Sie haben kürzlich das Passwort geändert. Bitte melden Sie sich mit dem neuen Passwort an.</translation>
 <translation id="2345055320165338418">Ist die Funktion aktiviert, werden Antworten auf bestimmte Suchanfragen direkt in der Vorschlagsliste der Omnibox angezeigt.</translation>
+<translation id="1585717515139318619">Ein anderes Programm auf Ihrem Computer hat ein Design hinzugefügt, das sich möglicherweise auf die Funktionsweise von Chrome auswirkt.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="438503109373656455">Brauner</translation>
 <translation id="7984180109798553540"><ph name="PRODUCT_NAME"/> verschlüsselt Ihre Daten zur Erhöhung der Sicherheit.</translation>
 <translation id="5036662165765606524">Keiner Website gestatten, automatisch mehrere Dateien herunterzuladen</translation>
@@ -3891,6 +3911,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="5271247532544265821">Zwischen Modi für vereinfachtes/traditionelles Chinesisch umschalten</translation>
 <translation id="2052610617971448509">Sie haben nicht ausreichend trainiert!</translation>
 <translation id="6417515091412812850">Überprüfung, ob das Zertifikat zurückgerufen wurde, nicht möglich</translation>
+<translation id="5900623698597156974">Ein TLS-1.0-Fallback konnte einen Handshake mit dem Server durchführen, TLS-1.0-Fallbacks werden jedoch nicht mehr akzeptiert. Der Server muss aktualisiert werden, um die Versionsaushandlung korrekt zu implementieren, und vorzugsweise TLS 1.2 unterstützen.</translation>
 <translation id="460028601412914923">Deaktiviert &quot;Delay Agnostic AEC&quot; in WebRTC.</translation>
 <translation id="2809586584051668049">und <ph name="NUMBER_ADDITIONAL_DISABLED"/> weitere</translation>
 <translation id="8373281062075027970">Name der Partei: <ph name="PARTY_NAME"/></translation>
@@ -4027,6 +4048,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="5264252276333215551">Stellen Sie eine Internetverbindung her, um die App im Kioskmodus zu starten.</translation>
 <translation id="7180865173735832675">Anpassen</translation>
 <translation id="7054808953701320293">Ok, nicht mehr anzeigen</translation>
+<translation id="4903369323166982260">Chrome Cleanup Tool ausführen</translation>
 <translation id="144932861331386147">Stellen Sie eine Internetverbindung her, um das Chromebook zu aktualisieren.</translation>
 <translation id="2938685643439809023">Mongolisch</translation>
 <translation id="5368720394188453070">Ihr Telefon ist gesperrt. Entsperren Sie es, um fortzufahren.</translation>
@@ -4056,6 +4078,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="308903551226753393">Automatisch konfigurieren</translation>
 <translation id="5230516054153933099">Fenster</translation>
 <translation id="4992458225095111526">Powerwash bestätigen</translation>
+<translation id="5027562294707732951">Erweiterung hinzufügen</translation>
 <translation id="951981865514037445"><ph name="URL"/> möchte den Standort Ihres Geräts nutzen.</translation>
 <translation id="7387339603919136090">Medianwert</translation>
 <translation id="2750518858905599015"><ph name="SHORT_PRODUCT_NAME"/> wurde aktualisiert.</translation>
@@ -4226,6 +4249,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="7863133010182113457">Deaktiviert die durch die Verwendung des Proxys zur Datenreduzierung entstandenen Einsparungen bei der Datennutzung, wenn Chrome gestartet wird</translation>
 <translation id="4235200303672858594">Gesamter Bildschirm</translation>
 <translation id="5951823343679007761">Kein Akku</translation>
+<translation id="806705617346045388">Ungewöhnliches Verhalten erkannt</translation>
 <translation id="2518024842978892609">Clientzertifikate verwenden</translation>
 <translation id="479555359673800162">Erneute Authentifizierung von Passwortmanager deaktivieren</translation>
 <translation id="8569682776816196752">Keine Ziele gefunden</translation>
@@ -4395,6 +4419,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="774465434535803574">Erweiterung packen: Fehler</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="5750676294091770309">Durch Erweiterung blockiert</translation>
+<translation id="5067399438976153555">Immer aktiviert</translation>
 <translation id="523299859570409035">Ausnahmen für Benachrichtigungen</translation>
 <translation id="7017480957358237747">bestimmte Websites freigeben oder sperren,</translation>
 <translation id="1029595648591494741">&quot;<ph name="EXTENSION_NAME"/>&quot; testen?</translation>
@@ -4429,6 +4454,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3648607100222897006">Diese experimentellen Funktionen können sich jederzeit ändern, abstürzen oder deaktiviert werden. Wir übernehmen keinerlei Gewährleistung für die Folgen der Aktivierung eines dieser Experimente. Es ist sogar möglich, dass Ihr Browser spontan in Flammen aufgeht. Spaß beiseite: Es ist möglich, dass Ihr Browser alle Ihre Daten löscht. Möglicherweise werden auch Ihre Sicherheits- und Datenschutzeinstellungen auf unerwartete Weise manipuliert. Alle von Ihnen aktivierten Experimente werden für alle Nutzer dieses Browsers aktiviert. Seien Sie also vorsichtig, wenn Sie fortfahren.</translation>
 <translation id="8148913456785123871">Google Now-Karten im Launcher anzeigen</translation>
 <translation id="3937640725563832867">Alternativer Name des Zertifikatausstellers</translation>
+<translation id="1926339101652878330">Diese Einstellungen werden von Unternehmensrichtlinien kontrolliert. Wenden Sie sich für weitere Informationen an Ihren Administrator.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="8770196827482281187">Persische Eingabemethode (ISIRI 2901-Layout)</translation>
@@ -4647,6 +4673,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="7015226785571892184">Folgende App wird gestartet, wenn Sie diese Anfrage akzeptieren: <ph name="APPLICATION"/>.</translation>
 <translation id="177336675152937177">Gehostete App-Daten</translation>
 <translation id="6804671422566312077">Alle Lesezeichen in &amp;neuem Fenster öffnen</translation>
+<translation id="3905761538810670789">App reparieren</translation>
 <translation id="4009293373538135798">Erzwungenes Schließen</translation>
 <translation id="7017219178341817193">Neue Seite hinzufügen</translation>
 <translation id="1038168778161626396">Nur verschlüsseln</translation>
@@ -4698,6 +4725,9 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="7763146744708046348">Daten nicht aggregieren – dies könnte langsam sein!</translation>
 <translation id="203165784383062719">&amp;Optionen der Rechtschreibprüfung</translation>
 <translation id="5626134646977739690">Name:</translation>
+<translation id="1070377999570795893">Ein anderes Programm auf Ihrem Computer hat eine Erweiterung hinzugefügt, die sich möglicherweise auf die Funktionsweise von Chrome auswirkt.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="5854409662653665676">Wenn Sie häufig Schwierigkeiten haben, können Sie versuchen, das Problem mit diesem Modul zu beheben:</translation>
 <translation id="3776796446459804932">Diese Erweiterung verletzt die Chrome Web Store-Richtlinien.</translation>
 <translation id="3681007416295224113">Zertifikatinformationen</translation>
@@ -4929,6 +4959,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="7136694880210472378">Als Standard festlegen</translation>
 <translation id="3274763671541996799">Sie befinden sich im Vollbildmodus.</translation>
 <translation id="7681202901521675750">SIM-Karte gesperrt, bitte geben Sie die PIN ein. Verbleibende Versuche: <ph name="TRIES_COUNT"/></translation>
+<translation id="2710492340506088372"><ph name="PERCENT"/> % abgeschlossen, <ph name="TIME_LEFT"/>,</translation>
 <translation id="2489918096470125693">&amp;Ordner hinzufügen...</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME"/> erfordert neue Berechtigungen</translation>
 <translation id="5582414689677315220">Durch Klicken auf &quot;Weiter&quot; stimmen Sie den <ph name="LEGAL_DOC_LINK_TEXT_1"/>, den <ph name="LEGAL_DOC_LINK_TEXT_2"/> und der <ph name="LEGAL_DOC_LINK_TEXT_3"/> zu.</translation>
@@ -5057,6 +5088,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT"/> Elemente ausgewählt</translation>
 <translation id="4443536555189480885">&amp;Hilfe</translation>
 <translation id="5067867186035333991">Nachfragen, wenn <ph name="HOST"/> auf Ihr Mikrofon zugreifen möchte</translation>
+<translation id="219985413780390209">Mich und mein Gerät vor schädlichen Websites schützen</translation>
 <translation id="4074900173531346617">Zertifikat für E-Mail-Signaturen</translation>
 <translation id="437184764829821926">Erweiterte Schriftarteinstellungen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
@@ -5165,6 +5197,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="1384211230590313258">Handler zur Diensterkennung</translation>
 <translation id="6656103420185847513">Ordner bearbeiten</translation>
 <translation id="1937256809970138538">Sagen Sie &quot;Ok Google&quot;, wenn Ihr Display eingeschaltet und entsperrt ist.</translation>
+<translation id="8464505512337106916">Wichtige Plug-in-Inhalte erkennen und ausführen (empfohlen)</translation>
 <translation id="1949433054743893124">Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
 <translation id="4193154014135846272">Google-Dokument</translation>
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
@@ -5424,6 +5457,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="2176045495080708525">Die folgenden Erweiterungen sind nun installiert:</translation>
 <translation id="1984603991036629094">Armenische phonetische Tastatur</translation>
 <translation id="3046910703532196514">Webseite, vollständig</translation>
+<translation id="783140679984912140">Slimming Paint deaktivieren</translation>
 <translation id="5062930723426326933">Fehler bei der Anmeldung. Bitte stellen Sie eine Internetverbindung her und versuchen Sie es erneut.</translation>
 <translation id="3444783709767514481">Erstmalig übertragen</translation>
 <translation id="5316716239522500219">Monitore spiegeln</translation>
@@ -5464,6 +5498,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="3688526734140524629">Version ändern</translation>
 <translation id="4959447747655704388">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK"/>diese infizierte Website aufrufen<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Unbefugte Dritte haben diese Website möglicherweise manipuliert und könnten versuchen, gefährliche Programme auf Ihrem Computer zu installieren, um Ihre Daten zu stehlen oder zu löschen, zum Beispiel Fotos, Passwörter, Nachrichten und Kreditkartendaten.</translation>
+<translation id="6263625581655667292">Legt fest, dass der Lo-Fi-Modus für Datenkomprimierung stets aktiviert, nur für Mobilfunkverbindungen aktiviert oder deaktiviert ist. Die Datenkomprimierung muss für Lo-Fi-Modus aktiviert sein.</translation>
 <translation id="5941153596444580863">Person hinzufügen...</translation>
 <translation id="4503387275462811823">Beschreibung der Erweiterung</translation>
 <translation id="2157875535253991059">Diese Seite wird nun im Vollbildmodus angezeigt.</translation>
@@ -5477,6 +5512,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="8467473010914675605">Koreanische Eingabemethode</translation>
 <translation id="8759408218731716181">Mehrfachanmeldung kann nicht eingerichtet werden</translation>
 <translation id="8102535138653976669"><ph name="PRODUCT_NAME"/> synchronisiert Ihre Daten sicher mit Ihrem Google-Konto. Synchronisieren Sie alle Daten oder passen Sie die zu synchronisierenden Datentypen und Verschlüsselungsoptionen an.</translation>
+<translation id="5943961789508834869">{NUM_DOWNLOADS,plural, =1{Eine Datei heruntergeladen}other{# Dateien heruntergeladen}}</translation>
 <translation id="3819800052061700452">V&amp;ollbildmodus</translation>
 <translation id="48607902311828362">Flugmodus</translation>
 <translation id="711840821796638741">Verwaltete Lesezeichen anzeigen</translation>
@@ -5827,6 +5863,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="2491341326828824053">Rasterung mit 1 Kopie deaktivieren</translation>
 <translation id="7250799832286185545">Jahre</translation>
 <translation id="5849869942539715694">Erweiterung packen...</translation>
+<translation id="93766956588638423">Erweiterung reparieren</translation>
 <translation id="7339785458027436441">Rechtschreibung während der Eingabe prüfen</translation>
 <translation id="5233736638227740678">&amp;Einfügen</translation>
 <translation id="1828901632669367785">Über das Systemdialogfeld drucken...</translation>
@@ -5847,6 +5884,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8610892630019863050">Nachfragen, wenn eine Website Benachrichtigungen anzeigen möchte (empfohlen)</translation>
 <translation id="1729533290416704613">Die Erweiterung legt auch fest, welche Seite bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="2650446666397867134">Der Zugriff auf die Datei wurde verweigert.</translation>
+<translation id="1026822031284433028">Bild laden</translation>
 <translation id="5832830184511718549">Verwendet einen sekundären Thread zum Aufbau von Webseiten. Dies ermöglicht auch dann nahtloses Scrollen, wenn der Haupt-Thread nicht reagiert.</translation>
 <translation id="7943385054491506837">USA – Colemak</translation>
 <translation id="4316693445078347518">Virtuelle Google Payments-Karte wird erstellt...</translation>

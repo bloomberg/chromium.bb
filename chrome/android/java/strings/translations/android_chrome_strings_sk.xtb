@@ -123,6 +123,7 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="200669432486043882">Nahradiť súbor</translation>
 <translation id="9086455579313502267">Nepodarilo sa pristúpiť k sieti</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
+<translation id="4663756553811254707">Počet odstránených záložiek: <ph name="NUMBER_OF_BOOKMARKS"/></translation>
 <translation id="8413385045638830869">Najprv sa opýtať (odporúčané)</translation>
 <translation id="2100273922101894616">Automaticky prihlásiť</translation>
 <translation id="5313967007315987356">Pridať stránky</translation>
@@ -170,7 +171,9 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="8583805026567836021">Prebieha vymazávanie údajov účtu</translation>
 <translation id="6464825623202322042">Toto zariadenie</translation>
+<translation id="7501135638693251872">Všetky záložky</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
+<translation id="2678212031093903894">Zálohujte a synchronizujte svoje záložky</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Všetky práva vyhradené.</translation>
 <translation id="6388207532828177975">Vymazať a obnoviť</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> uložených údajov</translation>
@@ -256,6 +259,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3328801116991980348">Informácie o stránkach</translation>
 <translation id="8497726226069778601">Zatiaľ tu nič nie je…</translation>
 <translation id="7987073022710626672">Zmluvné podmienky prehliadača Chrome</translation>
+<translation id="3269093882174072735">Načítať obrázok</translation>
 <translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5668404140385795438">Ignorovať požiadavku webových stránok na zákaz priblíženia</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
@@ -323,6 +327,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">História prehliadania</translation>
 <translation id="6108923351542677676">Inštaluje sa...</translation>
+<translation id="7648120236428811856">Ak chcete získať prístup k záložkám z ľubovoľného zariadenia, prihláste sa do prehliadača Chrome</translation>
 <translation id="6964496835063002391">Pridať účet</translation>
 <translation id="4698413471314543145">Chýba nevyhnutná funkcia na spustenie aplikácie Chrome. Inštalácia aplikácie Chrome sa nedokončila alebo aplikácia nie je kompatibilná s touto verziou Androidu.</translation>
 <translation id="1943432128510653496">Ukladanie hesiel</translation>
@@ -359,6 +364,7 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
 <translation id="5899349522111170522">Vytvoriť nový súbor</translation>
 <translation id="3158619413803296679">Vybrať záložku</translation>
+<translation id="6138140242378429169">Upravte stránku, aby bola vhodná pre mobilné zariadenia</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE"/> bola odstránená</translation>
 <translation id="7232255641409319872">Povoľte obrázky na vybraných stránkach a zakážte ich na ostatných miestach internetu.</translation>
 <translation id="2360035970720276770">Stiahnuť sa dajú len webové adresy typu http alebo https</translation>
@@ -502,7 +508,6 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="4084682180776658562">Záložka</translation>
 <translation id="2646820313617290661">Vaši rodičia vám pomôžu spravovať tieto nastavenia.</translation>
 <translation id="2433507940547922241">Vzhľad</translation>
-<translation id="430949144625048957">Prepnúť režim zoznamu/mriežky</translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6177390657002841081">Zapnúť Šetrič dát</translation>
 <translation id="4056223980640387499">Sépia</translation>

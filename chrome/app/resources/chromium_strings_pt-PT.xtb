@@ -266,6 +266,7 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="5531349711857992002">A cadeia de certificados para este Website contém pelo menos um certificado que foi assinado através de um algoritmo de assinatura descontinuado baseado em SHA-1.</translation>
 <translation id="918373042641772655">Desligar <ph name="USERNAME"/> limpará o seu histórico, os marcadores, as definições e outros dados do Chromium armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK"/>Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">O Chromium é um navegador de internet que executa páginas Web e aplicações à velocidade da luz. É rápido, estável e fácil de utilizar. Navegue na Web com mais segurança, com proteção contra programas maliciosos e phishing integrada no Chromium.</translation>
+<translation id="3312805357485578561">O Chrome detetou um comportamento pouco habitual</translation>
 <translation id="4230135487732243613">Associar os seus dados do Chromium a esta conta?</translation>
 <translation id="2572494885440352020">Ajuda do Chromium</translation>
 <translation id="7617377681829253106">O Chromium está ainda melhor</translation>

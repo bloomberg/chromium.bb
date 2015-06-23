@@ -123,6 +123,7 @@
 <translation id="200669432486043882">फ़ाइल प्रतिस्‍थापित करें</translation>
 <translation id="9086455579313502267">नेटवर्क तक पहुंचने में असमर्थ</translation>
 <translation id="5595485650161345191">पता संपादित करें</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> बुकमार्क का पता लगा</translation>
 <translation id="8413385045638830869">पहले पूछें (सुझाया गया)</translation>
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="5313967007315987356">साइट जोड़ें</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="8583805026567836021">खाते का डेटा साफ़ हो रहा है</translation>
 <translation id="6464825623202322042">इस डिवाइस पर</translation>
+<translation id="7501135638693251872">सभी बुकमार्क</translation>
 <translation id="5860033963881614850">बंद</translation>
+<translation id="2678212031093903894">अपने बुकमार्क का बैक अप लें और समन्‍वयित करें</translation>
 <translation id="2960796085439532066">कॉपीराइट <ph name="YEAR"/> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="6388207532828177975">साफ़ करें और रीसेट करें</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> संग्रहीत डेटा</translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="8497726226069778601">यहां देखने के लिए…अभी तक कुछ भी नहीं है</translation>
 <translation id="7987073022710626672">Chrome सेवा की शर्तें</translation>
+<translation id="3269093882174072735">चित्र लोड करें</translation>
 <translation id="588258955323874662">पूर्णस्‍क्रीन</translation>
 <translation id="5668404140385795438">किसी वेबसाइट का ज़ूम इन करने का अनुरोध ओवरराइड करें</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">सहेजे गए पासवर्ड <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> पर देखें और प्रबंधित करें</translation>
 <translation id="2496180316473517155">ब्राउज़िंग इतिहास...</translation>
 <translation id="6108923351542677676">सेटअप प्रगति में है…</translation>
+<translation id="7648120236428811856">किसी भी डिवाइस से अपने बुकमार्क ऐक्‍सेस करने के लिए Chrome में प्रवेश करें</translation>
 <translation id="6964496835063002391">कोई खाता जोड़ें</translation>
 <translation id="4698413471314543145">Chrome चलाने के लिए आवश्‍यक जटिल कार्यक्षमता अनुबलब्ध है; या तो आपका Chrome इंस्‍टॉलेशन अपूर्ण है, या वह Android के इस वर्शन के साथ संगत नहीं है.</translation>
 <translation id="1943432128510653496">पासवर्ड सहेजें</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
 <translation id="5899349522111170522">नई फ़ाइल बनाएं</translation>
 <translation id="3158619413803296679">कोई बुकमार्क चुनें</translation>
+<translation id="6138140242378429169">पृष्‍ठ को मोबाइल के अनुकूल बनाएं</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> हटाया गया</translation>
 <translation id="7232255641409319872">चित्रों को शेष वेब पर अवरुद्ध करते हुए उन्‍हें निर्दिष्‍ट वेबसाइटों पर अनुमति दें</translation>
 <translation id="2360035970720276770">केवल http या https URL ही डाउनलोड किए जा सकते हैं</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="2646820313617290661">आपके अभिभावक इन सेटिंग को प्रबंधित करने में आपकी सहायता करते हैं.</translation>
 <translation id="2433507940547922241">प्रकटन</translation>
-<translation id="430949144625048957">सूची और ग्रिड मोड में टॉगल करें</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6177390657002841081">डेटा बचतकर्ता चालू करना</translation>
 <translation id="4056223980640387499">Sepia</translation>

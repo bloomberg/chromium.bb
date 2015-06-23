@@ -268,6 +268,7 @@ Chromium nu poate recupera setările.</translation>
 <translation id="5531349711857992002">Lanțul de certificate pentru acest site conține cel puțin un certificat care a fost semnat folosind un algoritm de semnare bazat pe SHA-1 care nu a mai fost dezvoltat.</translation>
 <translation id="918373042641772655">Dacă deconectați utilizatorul <ph name="USERNAME"/>, vor fi șterse istoricul, marcajele, setările și alte date Chromium salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK"/>Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium este un browser web care rulează pagini web și aplicații cu viteza fulgerului. Este rapid, stabil și ușor de utilizat. Navigați pe web în condiții de mai multă siguranță, beneficiind de o protecție sporită, încorporată în Chromium, împotriva programelor malware și a tentativelor de phishing.</translation>
+<translation id="3312805357485578561">Chromium a detectat un comportament neobișnuit</translation>
 <translation id="4230135487732243613">Vă conectați datele Chromium cu acest cont?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium a devenit și mai bun</translation>

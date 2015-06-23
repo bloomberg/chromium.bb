@@ -94,6 +94,7 @@
 <translation id="2580889980133367162">תמיד אפשר ל-<ph name="HOST"/> להוריד קבצים מרובים</translation>
 <translation id="8972513834460200407">‏פנה אל מנהל המערכת של הרשת שלך כדי לוודא שחומת האש אינה חוסמת הורדות משרתי Google.</translation>
 <translation id="1444628761356461360">ההגדרה הזו מנוהלת על ידי בעל המכשיר, <ph name="OWNER_EMAIL"/>.</translation>
+<translation id="2850541429955027218">התקן את העיצוב</translation>
 <translation id="6562437808764959486">מחלץ תמונת שחזור...</translation>
 <translation id="1260240842868558614">הצג:</translation>
 <translation id="2226449515541314767">‏האפשרות לשלוט שליטה מלאה על מכשירי MIDI נחסמה עבור אתר זה.</translation>
@@ -251,6 +252,7 @@
 <translation id="7774497835322490043">‏אפשר מקטע ניקוי באגים מסוג GDB. דבר זה יגרום לעצירת יישום Native Client בעת האתחול והמתנה ל-nacl-gdb (מה-NaCl SDK) כדי לצרף אליו.</translation>
 <translation id="2686444421126615064">הצג חשבון</translation>
 <translation id="9215293857209265904">&quot;<ph name="EXTENSION_NAME"/>&quot; נוסף</translation>
+<translation id="8089515035584227384">{NUM_DOWNLOADS,plural, =1{מוריד קובץ}two{מוריד # קבצים}many{מוריד # קבצים}other{מוריד # קבצים}}</translation>
 <translation id="7693221960936265065">משחר ההיסטוריה</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">האתרים הבאים נחסמו ממעקב אחר המיקום שלך בדף זה:</translation>
@@ -442,6 +444,7 @@
 <translation id="4684748086689879921">בטל ייבוא</translation>
 <translation id="6912686727854004322">‏לשם כך, עליך להפעיל את 'פעילות קול ואודיו' ולאמן את ה-Chromebook בשלבים הבאים.</translation>
 <translation id="8191230140820435481">לנהל את היישומים, התוספים והעיצובים שלך</translation>
+<translation id="2163418719022613650">‏אל תשתמש ברשימות של תצוגת הצבע המרזה בשביל ציור. שים לב שהסימון enable-slimming-paint מקבל עדיפות על הסימון הזה אם שניהם מופיעים.</translation>
 <translation id="8279107132611114222">בקשתך לגישה אל אתר זה נשלחה אל <ph name="NAME"/>.</translation>
 <translation id="8034955203865359138">לא נמצאו רשומות היסטוריה.</translation>
 <translation id="9130015405878219958">הוזן מצב לא חוקי.</translation>
@@ -858,6 +861,7 @@
 <translation id="3984413272403535372">שגיאה בחתימה על התוסף.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3298461240075561421">גם אם הורדת קבצים מהאתר הזה בעבר, ייתכן שהאתר נפרץ. במקום לשחזר את הקובץ הזה, תוכל לנסות להוריד אותו במועד מאוחר יותר.</translation>
+<translation id="5485102783864353244">הוסף יישום</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="672609503628871915">מה חדש</translation>
 <translation id="9208886416788010685">‏Adobe Reader לא מעודכן</translation>
@@ -1051,6 +1055,7 @@
 <translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME"/>) במכשיר שלך שגויים.</translation>
 <translation id="2915500479781995473">לשרת זה לא הייתה אפשרות להוכיח שהוא <ph name="DOMAIN"/>; פג תוקפו של אישור האבטחה שלו. ייתכן שמצב זה נגרם בשל תצורה שגויה או שתוקף מיירט את החיבור שלך. שעון המחשב שלך מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם השעה נכונה? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן דף זה.</translation>
 <translation id="1975841812214822307">הסר...</translation>
+<translation id="108346963417674655">לא ניתן להתחבר בצורה מאובטחת אל השרת. ייתכן שהאתר הזה פעל בעבר, אך יש בעיה בשרת. התחברות אל אתרים כאלה פוגעת ברמת האבטחה בשביל כל המשתמשים ולכן היא הושבתה.</translation>
 <translation id="8280151743281770066">ארמנית פונטית</translation>
 <translation id="567881659373499783">גרסה <ph name="PRODUCT_VERSION"/></translation>
 <translation id="8261378640211443080">התוסף הזה לא רשום ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> וייתכן שנוסף ללא ידיעתך.</translation>
@@ -1304,6 +1309,9 @@
 <translation id="5595485650161345191">ערוך כתובת</translation>
 <translation id="1849186935225320012">‏לדף זה יש שליטה מלאה על מכשירי MIDI.</translation>
 <translation id="7309416673261215716">גרסת תוסף</translation>
+<translation id="760353356052806707">‏תכנית אחרת במחשב התקינה יישום שעשוי לשנות את אופן הפעולה של Chrome.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="3313590242757056087">כדי להגדיר אילו אתרים המשתמש בפיקוח יכול להציג, ניתן להגדיר הגבלות
@@ -1324,6 +1332,7 @@
 <translation id="813082847718468539">הצג נתוני אתר</translation>
 <translation id="127353061808977798">גופנים וקידוד</translation>
 <translation id="3122464029669770682">CPU</translation>
+<translation id="4518677423782794009">‏האם Chrome קורס, מציג דפי פתיחה חריגים, מודעות לא צפויות או סרגלי כלים שאי אפשר להיפטר מהם או שמשנים באופן כלשהו את חוויית הגלישה? ייתכן שתוכל לפתור את הבעיה בעזרת כלי הניקוי של Chrome.</translation>
 <translation id="6080689532560039067">בדוק את שעת המערכת</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
@@ -1350,6 +1359,7 @@
 <translation id="3778152852029592020">ההורדה בוטלה.</translation>
 <translation id="8235613855873080297">השבת תוספי מדיה מוצפנת.</translation>
 <translation id="2148227560636747235">העבר את הכרטיסייה הזו</translation>
+<translation id="3507421388498836150">הרשאות נוכחיות בשביל &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7831368056091621108">‏כדי שהתוסף הזה, ההיסטוריה שלך והגדרות Chrome אחרות יהיו זמינים בכל המכשירים שלך.</translation>
 <translation id="5469868506864199649">איטלקית</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -1547,6 +1557,7 @@
 <translation id="3866443872548686097">מדיית השחזור שלך מוכנה. ניתן להסיר אותה מהמערכת.</translation>
 <translation id="5525677322972469346">צור משתמש חדש בפיקוח</translation>
 <translation id="6824564591481349393">העתק כתובת &amp;אימייל</translation>
+<translation id="3843027123789255408">‏מצב Lo-Fi של חוסך הנתונים (Data Saver)</translation>
 <translation id="907148966137935206">אל תרשה לאף אתר להציג חלונות קופצים (מומלץ)</translation>
 <translation id="7618337809041914424">&amp;הדפס מסגרת...</translation>
 <translation id="4406896451731180161">תוצאות חיפוש</translation>
@@ -1586,7 +1597,6 @@
 <translation id="6948142510520900350">‏&lt;strong&gt;מנהל המערכת&lt;/strong&gt; חסם את הגישה לדף האינטרנט הזה.</translation>
 <translation id="5702898740348134351">&amp;ערוך מנועי חיפוש...</translation>
 <translation id="3687701603889589626">‏מאפשר הפעלה של תוספים בכתובות אתר המתחילות ב-chrome://, שבהן תוספים מבקשים באופן מפורש את ההרשאה הזו.</translation>
-<translation id="6471055753088234288">‏השבת טיפול משופר של מערכת ההפעלה של Chrome בלחץ על הזיכרון.</translation>
 <translation id="4899376560703610051">מכשיר <ph name="DEVICE_TYPE"/> שלך ננעל באופן ידני. עליך להזין את הסיסמה כדי להיכנס.</translation>
 <translation id="1756681705074952506">שיטת קלט</translation>
 <translation id="418179967336296930">‏מקלדת רוסית פונטית (YaZHert)</translation>
@@ -1899,6 +1909,7 @@
 <translation id="5900302528761731119">‏תמונת פרופיל Google</translation>
 <translation id="3512810056947640266">כתובת אתר (אופציונלי):</translation>
 <translation id="131364520783682672">Caps Lock</translation>
+<translation id="5483785310822538350">בטל גישה לקבצים ולמכשירים</translation>
 <translation id="8757742102600829832">‏מחר Chromebox שאליו ברצונך להתחבר</translation>
 <translation id="2335122562899522968">‏דף זה מגדיר קובצי Cookie.</translation>
 <translation id="4628757576491864469">מכשירים</translation>
@@ -2332,6 +2343,7 @@
 <translation id="389589731200570180">שיתוף עם אורחים</translation>
 <translation id="1510200760579344855">מכשיר זה ננעל על ידי מנהל המערכת של <ph name="SAML_DOMAIN"/>.</translation>
 <translation id="7205869271332034173">SSID:</translation>
+<translation id="3335561837873115802">‏הורד את כלי הניקוי של Chrome</translation>
 <translation id="4731351517694976331">‏אפשר לשירותי Google לגשת למיקום שלך</translation>
 <translation id="5815645614496570556">‏כתובת X.400</translation>
 <translation id="1223853788495130632">מנהל המערכת ממליץ על ערך מסוים עבור הגדרה זו.</translation>
@@ -2490,6 +2502,7 @@
 <translation id="4011708746171704399">הפעל מעברים מונפשים במערך השיעור להפעלה ראשונה.</translation>
 <translation id="304826556400666995">ביטול השתקת כרטיסיות</translation>
 <translation id="4314564217497012208">העברת כרטיסייה זו אל...</translation>
+<translation id="2674170444375937751">האם אתה בטוח שברצונך להסיר דפים אלו מההיסטוריה שלך?</translation>
 <translation id="2932883381142163287">דווח על שימוש לרעה</translation>
 <translation id="9111102763498581341">בטל נעילה</translation>
 <translation id="5975792506968920132">אחוז טעינת הסוללה</translation>
@@ -2523,6 +2536,7 @@
 <translation id="409579654357498729">‏הוסף ל-Google Cloud Print</translation>
 <translation id="2120316813730635488">אירועים של התקנת תוסף</translation>
 <translation id="8398877366907290961">המשך בכל זאת</translation>
+<translation id="2797019681257472009">זוהתה התנהגות חריגה</translation>
 <translation id="5063180925553000800">‏PIN חדש:</translation>
 <translation id="4883178195103750615">‏יצוא סימניות לקובץ HTML...</translation>
 <translation id="2496540304887968742">‏המכשיר חייב להיות בעל קיבולת של ‎4GB ומעלה.</translation>
@@ -2566,7 +2580,6 @@
 <translation id="2136953289241069843">‏תעתוק (namaste → नमस्कार)</translation>
 <translation id="1358032944105037487">מקלדת יפנית</translation>
 <translation id="3897224341549769789">הפעלות</translation>
-<translation id="7093382443623905433">השבת טיפול בלחץ של הזיכרון</translation>
 <translation id="1438632560381091872">ביטול השתקת כרטיסיות</translation>
 <translation id="4648491805942548247">הרשאות לא מספיקות</translation>
 <translation id="1183083053288481515">משתמש באישור שהוענק על ידי מנהל מערכת</translation>
@@ -2629,6 +2642,7 @@
 <translation id="3450157232394774192">אחוז תפוסה במצב לא פעיל</translation>
 <translation id="1110155001042129815">המתן</translation>
 <translation id="2607101320794533334">פרטי מפתח ציבורי של נושא</translation>
+<translation id="4048441759170415907">‏השתמש ברשימות של תצוגת הצבע המרזה בשביל כל הציורים. מקבל עדיפות על הסימון disable-slimming-paint אם שניהם מופיעים.</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="4419409365248380979">‏אפשר תמיד ל-<ph name="HOST"/> להגדיר קובצי Cookie</translation>
 <translation id="1717810180141539171">אפשר משוב מגע נוסף על רכיבי ממשק משתמש.</translation>
@@ -2727,6 +2741,7 @@
 <translation id="258095186877893873">ארוכה</translation>
 <translation id="8248050856337841185">&amp;הדבק</translation>
 <translation id="347785443197175480">המשך לאפשר ל-<ph name="HOST"/> לגשת למצלמה ולמיקרופון</translation>
+<translation id="3269093882174072735">טען תמונה</translation>
 <translation id="6052976518993719690">‏רשות אישורי SSL </translation>
 <translation id="1482124012545051544">מוכן לגבות <ph name="FILE_COUNT"/> תמונות חדשות</translation>
 <translation id="1175364870820465910">הדפס...</translation>
@@ -2771,6 +2786,7 @@
 <translation id="7654941827281939388">חשבון זה כבר נמצא בשימוש במחשב זה.</translation>
 <translation id="204914487372604757">צור קיצור דרך</translation>
 <translation id="5957613098218939406">אפשרויות נוספות</translation>
+<translation id="8950446148892140517">סלולרי בלבד</translation>
 <translation id="696036063053180184">‎3‎ Set (No shift)‎‎</translation>
 <translation id="452785312504541111">אנגלית ברוחב מלא</translation>
 <translation id="7589461650300748890">היי! תיזהר.</translation>
@@ -2816,6 +2832,7 @@
 <translation id="1091767800771861448">‏הקש ESCAPE כדי לדלג (גרסאות לא רשמיות בלבד).</translation>
 <translation id="2965328226365382335">ב-15 הדקות האחרונות</translation>
 <translation id="6731320427842222405">פעולה זו עשויה להימשך מספר דקות</translation>
+<translation id="3640214691812501263">האם להוסיף את &quot;<ph name="EXTENSION_NAME"/>&quot; בשביל <ph name="USER_NAME"/>?</translation>
 <translation id="7503191893372251637">‏סוג אישור Netscape</translation>
 <translation id="4135450933899346655">האישורים שלך</translation>
 <translation id="971774202801778802">כתובת אתר של סימניה</translation>
@@ -3209,6 +3226,9 @@
 <translation id="3910699493603749297">מקלדת חמר</translation>
 <translation id="5487982064049856365">שינית לאחרונה את הסיסמה. היכנס באמצעות הסיסמה החדשה.</translation>
 <translation id="2345055320165338418">כשתכונה זו מופעלת, תגובות לסוגי שאילתות מסוימים יופיעו ישירות ברשימת ההצעות בסרגל הכתובות.</translation>
+<translation id="1585717515139318619">‏תכנית אחרת במחשב התקינה עיצוב שעשוי לשנות את אופן הפעולה של Chrome.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="438503109373656455">אביר</translation>
 <translation id="7984180109798553540">לשיפור האבטחה, <ph name="PRODUCT_NAME"/> יצפין את הנתונים שלך.</translation>
 <translation id="5036662165765606524">אל תאפשר לאף אתר להוריד קבצים מרובים באופן אוטומטי</translation>
@@ -3891,6 +3911,7 @@
 <translation id="5271247532544265821">עבור בין מצבים של סינית פשוטה/מסורתית</translation>
 <translation id="2052610617971448509">אינך נמצא בארגז חול מוגבל כראוי!</translation>
 <translation id="6417515091412812850">לא ניתן לבדוק אם האישור נשלל.</translation>
+<translation id="5900623698597156974">‏גיבוי מסוג TLS 1.0 הצליח לבצע לחיצת יד עם השרת, אך אנו כבר לא מקבלים גיבויי TLS 1.0. יש לעדכן את השרת כך שיטפל כראוי בסתירות בין גרסאות, עם עדיפות לתמיכה ב-TLS 1.2.</translation>
 <translation id="460028601412914923">‏השבת Delay Agnostic AEC ב-WebRTC.</translation>
 <translation id="2809586584051668049">ועוד <ph name="NUMBER_ADDITIONAL_DISABLED"/></translation>
 <translation id="8373281062075027970">שם הגורם: <ph name="PARTY_NAME"/></translation>
@@ -4027,6 +4048,7 @@
 <translation id="5264252276333215551">התחבר לאינטרנט כדי להפעיל את היישום במצב קיוסק.</translation>
 <translation id="7180865173735832675">התאם אישית</translation>
 <translation id="7054808953701320293">הבנתי, אל תציג הודעה זו שוב.</translation>
+<translation id="4903369323166982260">‏הפעל את כלי הניקוי של Chrome</translation>
 <translation id="144932861331386147">‏התחבר לאינטרנט כדי לעדכן את ה-Chromebook שלך.</translation>
 <translation id="2938685643439809023">מונגולית</translation>
 <translation id="5368720394188453070">הטלפון שלך נעול. בטל את הנעילה כדי להיכנס.</translation>
@@ -4056,6 +4078,7 @@
 <translation id="308903551226753393">הגדר באופן אוטומטי</translation>
 <translation id="5230516054153933099">חלון</translation>
 <translation id="4992458225095111526">‏אשר פעולת Powerwash</translation>
+<translation id="5027562294707732951">התקן את התוסף</translation>
 <translation id="951981865514037445"><ph name="URL"/>‏ רוצה להשתמש במיקום המכשיר שלך.</translation>
 <translation id="7387339603919136090">חציון</translation>
 <translation id="2750518858905599015"><ph name="SHORT_PRODUCT_NAME"/> עודכן</translation>
@@ -4226,6 +4249,7 @@
 <translation id="7863133010182113457">‏מנקה חיסכון בנתונים שהושג על ידי שימוש בשרת ה-proxy לצמצום נתונים בעת ההפעלה של Chrome.</translation>
 <translation id="4235200303672858594">כל המסך</translation>
 <translation id="5951823343679007761">אין סוללה</translation>
+<translation id="806705617346045388">זוהתה התנהגות חריגה</translation>
 <translation id="2518024842978892609">שימוש באישורי הלקוח</translation>
 <translation id="479555359673800162">השבת אימות חוזר של מנהל הסיסמאות</translation>
 <translation id="8569682776816196752">לא נמצאו יעדים</translation>
@@ -4395,6 +4419,7 @@
 <translation id="774465434535803574">שגיאת 'ארוז תוסף'</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="5750676294091770309">נחסם על ידי התוסף</translation>
+<translation id="5067399438976153555">תמיד פועל</translation>
 <translation id="523299859570409035">חריגים של התראות</translation>
 <translation id="7017480957358237747">התר או חסום אתרים מסוימים,</translation>
 <translation id="1029595648591494741">רוצה לנסות את &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
@@ -4429,6 +4454,7 @@
 <translation id="3648607100222897006">תכונות ניסיוניות אלה עשויות להשתנות, להפסיק לעבוד או להיעלם בכל עת. איננו מביעים כל אחריות לגבי ההשלכות של הפעלה של אחד מניסויים אלה, וייתכן אף שהדפדפן שלך יתלקח באופן ספונטני. צחוק בצד, הדפדפן עלול למחוק את כל הנתונים שלך, או שהאבטחה והפרטיות שלך ייפגעו בדרכים לא צפויות. כל ניסוי שתאפשר יהפוך לפעיל עבור כל המשתמשים בדפדפן זה. המשך בזהירות.</translation>
 <translation id="8148913456785123871">‏הצג כרטיסים של Google Now במפעיל היישומים</translation>
 <translation id="3937640725563832867">שם חלופי של מנפיק האישור</translation>
+<translation id="1926339101652878330">ההגדרות האלה נשלטות על ידי מדיניות הארגון. צור קשר עם מנהל המערכת שלך לקבלת מידע נוסף.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;צפה במקור המסגרת</translation>
 <translation id="8770196827482281187">‏פריסת מקלדת פרסית (פריסת ISIRI 2901)</translation>
@@ -4649,6 +4675,7 @@
 <translation id="7015226785571892184">היישום הבא יופעל אם תאשר בקשה זו: <ph name="APPLICATION"/></translation>
 <translation id="177336675152937177">נתוני יישומים מתארחים</translation>
 <translation id="6804671422566312077">פתח את כל הסימניות ב&amp;חלון חדש</translation>
+<translation id="3905761538810670789">תקן את היישום</translation>
 <translation id="4009293373538135798">יציאות לא תקינות</translation>
 <translation id="7017219178341817193">הוסף דף חדש</translation>
 <translation id="1038168778161626396">הצפן בלבד</translation>
@@ -4700,6 +4727,9 @@
 <translation id="7763146744708046348">אל תצבור את הנתונים - פעולה זו עשויה להיות אטית!</translation>
 <translation id="203165784383062719">&amp;אפשרויות בודק האיות</translation>
 <translation id="5626134646977739690">שם:</translation>
+<translation id="1070377999570795893">‏תכנית אחרת במחשב התקינה תוסף שעשוי לשנות את אופן הפעולה של Chrome.
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="5854409662653665676">אם אתה נתקל בבעיות לעתים קרובות, תוכל לנסות את הפעולות הבאות לפתירת הבעיה במודול זה:</translation>
 <translation id="3776796446459804932">‏התוסף מפר את המדיניות בחנות האינטרנט של Chrome.</translation>
 <translation id="3681007416295224113">פרטי אישור</translation>
@@ -4930,6 +4960,7 @@
 <translation id="7136694880210472378">הפוך לברירת מחדל</translation>
 <translation id="3274763671541996799">עברת למסך מלא.</translation>
 <translation id="7681202901521675750">‏כרטיס ה-SIM נעול, הזן PIN. ניסיונות שנותרו: <ph name="TRIES_COUNT"/></translation>
+<translation id="2710492340506088372"><ph name="PERCENT"/>% הושלמו, <ph name="TIME_LEFT"/>,</translation>
 <translation id="2489918096470125693">הוסף &amp;תיקיה...</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME"/> דורש הרשאות חדשות</translation>
 <translation id="5582414689677315220">בלחיצה על 'המשך', אתה מביע את הסכמתך ל<ph name="LEGAL_DOC_LINK_TEXT_1"/>‏, <ph name="LEGAL_DOC_LINK_TEXT_2"/> ו<ph name="LEGAL_DOC_LINK_TEXT_3"/>.</translation>
@@ -5058,6 +5089,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT"/> פריטים נבחרו</translation>
 <translation id="4443536555189480885">&amp;עזרה</translation>
 <translation id="5067867186035333991">שאל אם <ph name="HOST"/> רוצה לגשת למיקרופון שלך</translation>
+<translation id="219985413780390209">הגן על עצמך ועל המכשיר מפני אתרים מסוכנים</translation>
 <translation id="4074900173531346617">אישור חותם אימייל</translation>
 <translation id="437184764829821926">הגדרות גופן מתקדמות</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
@@ -5166,6 +5198,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="1384211230590313258">מטפל באיתור שירותים</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
 <translation id="1937256809970138538">‏אמור &quot;Ok Google&quot; כשהמסך פועל ואינו נעול</translation>
+<translation id="8464505512337106916">זהה והפעל יישומי פלאגין חשובים (מומלץ)</translation>
 <translation id="1949433054743893124">מעבר למצב גלישה בסתר לא מסתיר את הגלישה שלך מהמעסיק, מספק האינטרנט או מהאתרים שבהם אתה מבקר.</translation>
 <translation id="4193154014135846272">‏מסמך Google</translation>
 <translation id="4771973620359291008">‏אירעה שגיאה לא מוכרת.
@@ -5432,6 +5465,7 @@ Del</translation>
 <translation id="2176045495080708525">התוספים הבאים כבר מותקנים:</translation>
 <translation id="1984603991036629094">מקלדת פונטית ארמנית</translation>
 <translation id="3046910703532196514">דף אינטרנט, שלם</translation>
+<translation id="783140679984912140">השבת צבע מרזה.</translation>
 <translation id="5062930723426326933">הכניסה נכשלה. התחבר לאינטרנט ונסה שוב.</translation>
 <translation id="3444783709767514481">שעת השידור הראשון</translation>
 <translation id="5316716239522500219">שיקוף צגים</translation>
@@ -5472,6 +5506,7 @@ Del</translation>
 <translation id="3688526734140524629">שנה ערוץ</translation>
 <translation id="4959447747655704388">אם אתה מבין את הסיכונים בנוגע לאבטחה שלך, תוכל <ph name="BEGIN_LINK"/>לבקר באתר נגוע זה<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">ייתכן שתוקפים פרצו לאתר הזה והם עשויים לנסות להתקין במחשב שלך תכניות מסוכנות שגונבות או מוחקות את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי).</translation>
+<translation id="6263625581655667292">‏מאלץ הפעלה תמידית של מצב Lo-Fi של חוסך הנתונים (Data Saver), הפעלה רק בחיבורים סלולריים או השבתה. חוסך הנתונים (Data Saver) חייב לפעול על מנת שתוכל להשתמש במצב Lo-Fi.</translation>
 <translation id="5941153596444580863">הוסף משתמש...</translation>
 <translation id="4503387275462811823">תיאור של תוסף</translation>
 <translation id="2157875535253991059">דף זה הוא במסך מלא כעת.</translation>
@@ -5485,6 +5520,7 @@ Del</translation>
 <translation id="8467473010914675605">שיטת קלט קוריאנית</translation>
 <translation id="8759408218731716181">לא ניתן להגדיר כניסה עם מספר חשבונות</translation>
 <translation id="8102535138653976669">‏<ph name="PRODUCT_NAME"/> מסנכרן באופן מאובטח את הנתונים שלך עם חשבון Google. ודא שהכל יישאר מסונכרן או התאם אישית סוגי נתונים מסונכרנים והגדרות הצפנה.</translation>
+<translation id="5943961789508834869">{NUM_DOWNLOADS,plural, =1{בוצעה הורדה של קובץ}two{בוצעה הורדה של # קבצים}many{בוצעה הורדה של # קבצים}other{בוצעה הורדה של # קבצים}}</translation>
 <translation id="3819800052061700452">&amp;מסך מלא</translation>
 <translation id="48607902311828362">מצב טיסה</translation>
 <translation id="711840821796638741">הצג סימניות מנוהלות</translation>
@@ -5835,6 +5871,7 @@ Del</translation>
 <translation id="2491341326828824053">השבת את יוצר רשת הנקודות עבור עותק יחיד</translation>
 <translation id="7250799832286185545">שנים</translation>
 <translation id="5849869942539715694">ארוז תוסף...</translation>
+<translation id="93766956588638423">תקן את התוסף</translation>
 <translation id="7339785458027436441">בדוק איות בעת ההקלדה</translation>
 <translation id="5233736638227740678">&amp;הדבק</translation>
 <translation id="1828901632669367785">הדפס באמצעות תיבת דו-שיח של המערכת...</translation>
@@ -5855,6 +5892,7 @@ Del</translation>
 <translation id="8610892630019863050">שאל כשאתר רוצה להציג הודעות (מומלץ)</translation>
 <translation id="1729533290416704613">הגדרה זו גם קובעת איזה דף מוצג כשאתה מבצע חיפוש מסרגל הכתובות.</translation>
 <translation id="2650446666397867134">הגישה לקובץ נדחתה</translation>
+<translation id="1026822031284433028">טען תמונה</translation>
 <translation id="5832830184511718549">משתמש בשרשור משני לביצוע איחוד של דף האינטרנט. פעולה זו מאפשרת גלילה חלקה, אפילו כאשר השרשור הראשי אינו מגיב.</translation>
 <translation id="7943385054491506837">‏ארה&quot;ב - Colemak</translation>
 <translation id="4316693445078347518">‏יוצר כרטיס וירטואלי של Google Payments...</translation>

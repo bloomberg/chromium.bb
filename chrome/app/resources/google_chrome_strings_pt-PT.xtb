@@ -253,6 +253,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="7592736734348559088">O Google Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="3735758079232443276">A extensão &quot;<ph name="EXTENSION_NAME"/>&quot; alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="6991142834212251086">Associar os meus dados do Chrome a esta conta</translation>
+<translation id="1350930993895295930">O Chrome detetou um comportamento pouco habitual</translation>
 <translation id="3451115285585441894">A adicionar ao Chrome...</translation>
 <translation id="3047079729301751317">Desligar <ph name="USERNAME"/> irá limpar o seu histórico, os marcadores, as definições e outros dados do Chrome armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK"/>Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">O arquivo do programa de instalação está corrompido ou é inválido. Transfira de novo o Google Chrome.</translation>

@@ -257,6 +257,7 @@
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="3735758079232443276">Розширення &quot;<ph name="EXTENSION_NAME"/>&quot; змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="6991142834212251086">Пов’язати мої дані Chrome із цим обліковим записом</translation>
+<translation id="1350930993895295930">У Chrome виявлено незвичну активність</translation>
 <translation id="3451115285585441894">Додавання в Chrome...</translation>
 <translation id="3047079729301751317">Якщо від’єднати користувача <ph name="USERNAME"/>, вашу історію, закладки, налаштування й інші дані Chrome, збережені на цьому пристрої, буде видалено. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="GOOGLE_DASHBOARD_LINK"/>Інформаційній панелі Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Архів програми встановлення недійсний або пошкоджений. Завантажте Google Chrome знову.</translation>

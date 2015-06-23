@@ -258,6 +258,7 @@
 <translation id="7592736734348559088">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="3735758079232443276">ส่วนขยาย &quot;<ph name="EXTENSION_NAME"/>&quot; ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chrome</translation>
 <translation id="6991142834212251086">เชื่อมโยงข้อมูล Chrome ของฉันกับบัญชีนี้</translation>
+<translation id="1350930993895295930">Chrome ตรวจพบการทำงานที่ผิดปกติ</translation>
 <translation id="3451115285585441894">กำลังเพิ่มลงใน Chrome...</translation>
 <translation id="3047079729301751317">การยกเลิกการเชื่อมต่อกับ <ph name="USERNAME"/> จะล้างประวัติการเข้าชม บุ๊กมาร์ก การตั้งค่า และข้อมูลอื่นๆ ของ Chrome ที่เก็บไว้ในอุปกรณ์นี้ ข้อมูลที่เก็บไว้ในบัญชี Google ของคุณจะไม่ถูกล้างและสามารถจัดการได้บน <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/></translation>
 <translation id="1001534784610492198">การเก็บข้อมูลของโปรแกรมติดตั้งเสียหายหรือไม่ถูกต้อง โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>

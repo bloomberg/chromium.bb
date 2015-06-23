@@ -123,6 +123,7 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="200669432486043882">Aizstāt failu</translation>
 <translation id="9086455579313502267">Nevar piekļūt tīklam</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
+<translation id="4663756553811254707">Dzēstas <ph name="NUMBER_OF_BOOKMARKS"/> grāmatzīmes</translation>
 <translation id="8413385045638830869">Vispirms jautāt (ieteicams)</translation>
 <translation id="2100273922101894616">Automātiski pierakstīties</translation>
 <translation id="5313967007315987356">Pievienot vietni</translation>
@@ -170,7 +171,9 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="8583805026567836021">Konta datu dzēšana</translation>
 <translation id="6464825623202322042">Šī ierīce</translation>
+<translation id="7501135638693251872">Visas grāmatzīmes</translation>
 <translation id="5860033963881614850">Izsl.</translation>
+<translation id="2678212031093903894">Grāmatzīmju dublēšana un sinhronizēšana</translation>
 <translation id="2960796085439532066">Autortiesības <ph name="YEAR"/> Google Inc. Visas tiesības paturētas.</translation>
 <translation id="6388207532828177975">Notīrīt un atiestatīt</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> saglabātu datu</translation>
@@ -256,6 +259,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="3328801116991980348">Vietnes informācija</translation>
 <translation id="8497726226069778601">Šeit vēl nekā nav...</translation>
 <translation id="7987073022710626672">Lietošanas noteikumi</translation>
+<translation id="3269093882174072735">Ielādēt attēlu</translation>
 <translation id="588258955323874662">Pilnekrāna</translation>
 <translation id="5668404140385795438">Ignorēt vietnes pieprasījumu, lai novērstu tuvināšanu</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
@@ -323,6 +327,7 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="4526249700380860531">Skatīt un pārvaldīt saglabātās paroles vietnē <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Pārlūkošanas vēsture</translation>
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
+<translation id="7648120236428811856">Lai varētu piekļūt grāmatzīmēm no jebkuras ierīces, pierakstieties pārlūkprogrammā Chrome</translation>
 <translation id="6964496835063002391">Pievienojiet kontu</translation>
 <translation id="4698413471314543145">Trūkst būtiskas funkcionalitātes, kas nepieciešama pārlūka Chrome palaišanai. Vai nu jūsu pārlūka Chrome instalācija ir nepilnīga, vai arī pārlūks nav saderīgs ar Android versiju.</translation>
 <translation id="1943432128510653496">Paroļu saglabāšana</translation>
@@ -359,6 +364,7 @@ Lai izietu, nospiediet pogu “Atpakaļ”.</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
 <translation id="5899349522111170522">Izveidot jaunu failu</translation>
 <translation id="3158619413803296679">Grāmatzīmes izvēlēšanās</translation>
+<translation id="6138140242378429169">Padarīt lapu piemērotu mobilajām ierīcēm</translation>
 <translation id="5345040418939504969">Grāmatzīme <ph name="BOOKMARK_TITLE"/> tika dzēsta</translation>
 <translation id="7232255641409319872">Atļaujiet attēlu rādīšanu jūsu norādītās vietnēs, vienlaicīgi bloķējot tos pārējās vietnēs.</translation>
 <translation id="2360035970720276770">Var lejupielādēt tikai tos URL, kuri sākas ar “http” vai “https”.</translation>
@@ -504,7 +510,6 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="4084682180776658562">Grāmatzīme</translation>
 <translation id="2646820313617290661">Jūsu vecāki palīdz pārvaldīt šos iestatījumus.</translation>
 <translation id="2433507940547922241">Izskats</translation>
-<translation id="430949144625048957">Pāriet uz saraksta/režģa režīmu</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="6177390657002841081">Ieslēgt Datu lietojuma samazinātāju</translation>
 <translation id="4056223980640387499">Sēpija</translation>

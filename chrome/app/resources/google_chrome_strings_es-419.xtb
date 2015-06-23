@@ -255,6 +255,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="7592736734348559088">Google Chrome no pudo sincronizar los datos porque los datos de acceso de la cuenta están obsoletos.</translation>
 <translation id="3735758079232443276">La extensión &quot;<ph name="EXTENSION_NAME"/>&quot; cambió la página que se muestra al iniciar Chrome.</translation>
 <translation id="6991142834212251086">Vincular mis datos de Google Chrome con esta cuenta</translation>
+<translation id="1350930993895295930">Chrome detectó un comportamiento inusual</translation>
 <translation id="3451115285585441894">Agregando a Chrome...</translation>
 <translation id="3047079729301751317">Si desconectas <ph name="USERNAME"/>, se borrarán el historial, los marcadores, la configuración y otros datos de Chrome almacenados en este dispositivo. Los datos almacenados en la cuenta de Google no se borrarán y se pueden administrar en el <ph name="GOOGLE_DASHBOARD_LINK"/>Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">El instalador está dañado o no es válido. Descargue Google Chrome nuevamente.</translation>

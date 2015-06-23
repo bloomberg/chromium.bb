@@ -123,6 +123,7 @@
 <translation id="200669432486043882">Замінити файл</translation>
 <translation id="9086455579313502267">Неможливо отримати доступ до мережі</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
+<translation id="4663756553811254707">Видалено закладок: <ph name="NUMBER_OF_BOOKMARKS"/></translation>
 <translation id="8413385045638830869">Спершу запитувати (рекомендується)</translation>
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="5313967007315987356">Додати сайт</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>
 <translation id="6464825623202322042">Цей пристрій</translation>
+<translation id="7501135638693251872">Усі закладки</translation>
 <translation id="5860033963881614850">Вимк.</translation>
+<translation id="2678212031093903894">Створюйте резервні копії своїх закладок і синхронізуйте їх</translation>
 <translation id="2960796085439532066">Авторське право <ph name="YEAR"/> Google Inc. Усі права захищено.</translation>
 <translation id="6388207532828177975">Очистити та скинути</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> збережених даних</translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">Інформація про сайт</translation>
 <translation id="8497726226069778601">Тут ще нічого немає…</translation>
 <translation id="7987073022710626672">Умови використання Google Chrome</translation>
+<translation id="3269093882174072735">Завантажити зображення</translation>
 <translation id="588258955323874662">Повноекранний режим</translation>
 <translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
 <translation id="8428213095426709021">Налаштування</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Історія переглядів</translation>
 <translation id="6108923351542677676">Виконується налаштування…</translation>
+<translation id="7648120236428811856">Увійдіть в обліковий запис у Chrome, щоб отримати доступ до своїх закладок на будь-якому пристрої</translation>
 <translation id="6964496835063002391">Додати обліковий запис</translation>
 <translation id="4698413471314543145">Немає важливого компонента, який потрібний для роботи Chrome. Встановлення Chrome не завершено або веб-переглядач не сумісний із цією версією Android.</translation>
 <translation id="1943432128510653496">Зберігання паролів</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="5899349522111170522">Створити файл</translation>
 <translation id="3158619413803296679">Вибрати закладку</translation>
+<translation id="6138140242378429169">Налаштувати сторінку для мобільних пристроїв</translation>
 <translation id="5345040418939504969">Закладку &quot;<ph name="BOOKMARK_TITLE"/>&quot; видалено</translation>
 <translation id="7232255641409319872">Дозволити зображення на вказаних веб-сайтах і заборонити їх для решти сайтів</translation>
 <translation id="2360035970720276770">Можна завантажувати лише URL-адреси, які починаються з &quot;http&quot; або &quot;https&quot;</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">Закладка</translation>
 <translation id="2646820313617290661">Цими налаштуваннями керують ваші батьки.</translation>
 <translation id="2433507940547922241">Зовнішній вигляд</translation>
-<translation id="430949144625048957">Переглядати як список чи таблицю</translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="6177390657002841081">Увімкнути Заощадження трафіку</translation>
 <translation id="4056223980640387499">Сепія</translation>

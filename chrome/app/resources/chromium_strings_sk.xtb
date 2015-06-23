@@ -269,6 +269,7 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="5531349711857992002">Certifikačný reťazec pre tieto webové stránky obsahuje minimálne jeden certifikát, ktorý bol podpísaný pomocou zastaraného podpisového algoritmu založeného na funkcii SHA-1.</translation>
 <translation id="918373042641772655">Ak odpojíte účet <ph name="USERNAME"/>, vymaže sa história, záložky, nastavenia a všetky ďalšie údaje prehliadača Chromium uložené na vašom zariadení. Údaje uložené v účte Google sa nevymažú a môžete ich spravovať v službe <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium je webový prehliadač, ktorý spúšťa webové stránky a aplikácie rýchlosťou svetla. Je rýchly, stabilný a ľahko sa používa. S ochranou proti škodlivému softvéru a phishingu, ktorá je zabudovaná do prehliadača Chromium, môžete prehliadať web bezpečnejšie.</translation>
+<translation id="3312805357485578561">Prehliadač Chromium zistil neobvyklé správanie</translation>
 <translation id="4230135487732243613">Chcete prepojiť údaje prehliadača Chromium s týmto účtom?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Prehliadač Chromium bol práve vylepšený</translation>

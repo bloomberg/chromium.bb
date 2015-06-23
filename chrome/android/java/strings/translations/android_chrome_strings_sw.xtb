@@ -123,6 +123,7 @@ Unaingia katika akaunti kwa kutumia akaunti inayosimamiwa na kumpa msimamizi wa 
 <translation id="200669432486043882">Badilisha faili</translation>
 <translation id="9086455579313502267">Haiwezi kufikia mtandao</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>
+<translation id="4663756553811254707">Alamisho <ph name="NUMBER_OF_BOOKMARKS"/> zimefutwa</translation>
 <translation id="8413385045638830869">Uliza kwanza (imependekezwa)</translation>
 <translation id="2100273922101894616">Ingia katika Akaunti Kiotomatiki</translation>
 <translation id="5313967007315987356">Ongeza tovuti</translation>
@@ -170,7 +171,9 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="8583805026567836021">Inafuta data ya akaunti</translation>
 <translation id="6464825623202322042">Kifaa hiki</translation>
+<translation id="7501135638693251872">Alamisho zote</translation>
 <translation id="5860033963881614850">Kimezimwa</translation>
+<translation id="2678212031093903894">Hifadhi nakala na usawazishe alamisho zako</translation>
 <translation id="2960796085439532066">Hakimiliki <ph name="YEAR"/> Google Inc. Haki zote zimehifadhiwa.</translation>
 <translation id="6388207532828177975">Futa na uweke upya</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> za data iliyohifadhiwa</translation>
@@ -256,6 +259,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="3328801116991980348">Maelezo ya tovuti</translation>
 <translation id="8497726226069778601">Hapana cha kuangalia hapa... bado</translation>
 <translation id="7987073022710626672">Sheria na Masharti ya Chrome</translation>
+<translation id="3269093882174072735">Pakia picha</translation>
 <translation id="588258955323874662">Skrini nzima</translation>
 <translation id="5668404140385795438">Batilisha ombi la tovuti ili kuzuia kuvuta karibu</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
@@ -323,6 +327,7 @@ Gonga kitufe cha nyuma ili uondoke.</translation>
 <translation id="4526249700380860531">Angalia na udhibiti manenosiri yaliyohifadhiwa kwenye <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historia ya kuvinjari</translation>
 <translation id="6108923351542677676">Usanidi unaendelea...</translation>
+<translation id="7648120236428811856">Ingia katika Chrome ili ufikie alamisho zako kutoka kwenye kifaa chochote</translation>
 <translation id="6964496835063002391">Ongeza akaunti</translation>
 <translation id="4698413471314543145">Utendaji muhimu unahitajika kuendesha Chrome zinakosekana; huenda usakinishaji wako wa Chrome haujakamilika, au hauoani na toleo hili la Android.</translation>
 <translation id="1943432128510653496">Hifadhi manenosiri</translation>
@@ -359,6 +364,7 @@ Gonga kitufe cha nyuma ili uondoke.</translation>
 <translation id="3089395242580810162">Fungua kwenye kichupo fiche</translation>
 <translation id="5899349522111170522">Unda faili mpya</translation>
 <translation id="3158619413803296679">Chagua alamisho</translation>
+<translation id="6138140242378429169">Fanya ukurasa usomeke vizuri kwenye kifaa cha mkononi</translation>
 <translation id="5345040418939504969">Umefuta <ph name="BOOKMARK_TITLE"/></translation>
 <translation id="7232255641409319872">Ruhusu picha kwenye tovuti unazobainisha huku ukizizuia kwenye wavuti mwingine wote</translation>
 <translation id="2360035970720276770">Inaweza kupakua http au https URL</translation>
@@ -504,7 +510,6 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="4084682180776658562">Alamisho</translation>
 <translation id="2646820313617290661">Wazazi wako husaidia kudhibiti mipangilio hii.</translation>
 <translation id="2433507940547922241">Sura</translation>
-<translation id="430949144625048957">Kugeuza kati ya orodha na hali ya gridi</translation>
 <translation id="6643016212128521049">Futa</translation>
 <translation id="6177390657002841081">Washa Kiokoa Data</translation>
 <translation id="4056223980640387499">Sepia</translation>

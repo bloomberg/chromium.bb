@@ -240,6 +240,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="5531349711857992002">此网站的证书链包含至少一个使用基于 SHA-1 的过时签名算法进行签名的证书。</translation>
 <translation id="918373042641772655">取消与<ph name="USERNAME"/>的关联将会清除您的历史记录、书签、设置以及存储在此设备上的其他Chromium数据。您的Google帐户中存储的数据将不会被清除，并且您可以通过<ph name="GOOGLE_DASHBOARD_LINK"/>Google信息中心<ph name="END_GOOGLE_DASHBOARD_LINK"/>管理这些数据。</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
+<translation id="3312805357485578561">Chromium 检测到异常行为</translation>
 <translation id="4230135487732243613">是否将您的 Chromium 数据与此帐户相关联？</translation>
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
 <translation id="7617377681829253106">Chromium现在更好用了</translation>

@@ -123,6 +123,7 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="200669432486043882">Dosyayı değiştir</translation>
 <translation id="9086455579313502267">Ağa erişilemiyor</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> yer işareti silindi</translation>
 <translation id="8413385045638830869">Önce sor (önerilir)</translation>
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
 <translation id="5313967007315987356">Site ekle</translation>
@@ -170,7 +171,9 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="8583805026567836021">Hesap verileri temizleniyor</translation>
 <translation id="6464825623202322042">Bu cihazda</translation>
+<translation id="7501135638693251872">Tüm yer işaretleri</translation>
 <translation id="5860033963881614850">Kapalı</translation>
+<translation id="2678212031093903894">Yer işaretlerinizi yedekleyin ve senkronize edin</translation>
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR"/> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="6388207532828177975">Temizle ve sıfırla</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> depolanmış veri</translation>
@@ -256,6 +259,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3328801116991980348">Site bilgileri</translation>
 <translation id="8497726226069778601">Burada görülecek bir şey yok… henüz</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
+<translation id="3269093882174072735">Resim yükle</translation>
 <translation id="588258955323874662">Tam ekran</translation>
 <translation id="5668404140385795438">Web sitesinin yakınlaştırmayı önleme isteğini geçersiz kıl</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
@@ -323,6 +327,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4526249700380860531">Kaydedilmiş şifreleri <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> adresinden görüntüleyin ve yönetin</translation>
 <translation id="2496180316473517155">Tarama geçmişi</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
+<translation id="7648120236428811856">Yer işaretlerinize herhangi bir cihazdan erişmek için Chrome'da oturum açın</translation>
 <translation id="6964496835063002391">Bir hesap ekleyin</translation>
 <translation id="4698413471314543145">Chrome'un çalışması için gereken çok önemli bir işlev eksik; Chrome yüklemeniz eksik olabilir ya da Android'in bu sürümü ile uyumlu olmayabilir.</translation>
 <translation id="1943432128510653496">Şifreleri kaydetme</translation>
@@ -359,6 +364,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
 <translation id="5899349522111170522">Yeni dosya oluştur</translation>
 <translation id="3158619413803296679">Bir yer işareti seçin</translation>
+<translation id="6138140242378429169">Sayfayı mobil uyumlu hale getir</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> silindi</translation>
 <translation id="7232255641409319872">Belirttiğiniz web sitelerinde resimlere izin verirken web'in geri kalanında engelleyin</translation>
 <translation id="2360035970720276770">Yalnızca http veya https URL'leri indirilebilir</translation>
@@ -504,7 +510,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="4084682180776658562">Yer İşareti</translation>
 <translation id="2646820313617290661">Ebeveyniniz bu ayarları yönetmenize yardımcı olabilir.</translation>
 <translation id="2433507940547922241">Görünüm</translation>
-<translation id="430949144625048957">Liste ve tablo modu arasında geçiş yap</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="6177390657002841081">Veri Tasarrufu'nu aç</translation>
 <translation id="4056223980640387499">Sepya Tonu</translation>

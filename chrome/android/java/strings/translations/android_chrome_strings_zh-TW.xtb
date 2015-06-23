@@ -123,6 +123,7 @@
 <translation id="200669432486043882">取代檔案</translation>
 <translation id="9086455579313502267">無法存取網路</translation>
 <translation id="5595485650161345191">編輯地址</translation>
+<translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS"/> 個書籤</translation>
 <translation id="8413385045638830869">先詢問我 (建議)</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="5313967007315987356">新增網站</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">允許</translation>
 <translation id="8583805026567836021">正在清除帳戶資料</translation>
 <translation id="6464825623202322042">這個裝置</translation>
+<translation id="7501135638693251872">所有書籤</translation>
 <translation id="5860033963881614850">關閉</translation>
+<translation id="2678212031093903894">備份並同步處理您的書籤</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. 版權所有。</translation>
 <translation id="6388207532828177975">清除並重設</translation>
 <translation id="3198916472715691905">儲存了 <ph name="STORAGE_AMOUNT"/> 的資料</translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
+<translation id="3269093882174072735">載入圖片</translation>
 <translation id="588258955323874662">全螢幕</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> 查看及管理已儲存的密碼</translation>
 <translation id="2496180316473517155">瀏覽紀錄</translation>
 <translation id="6108923351542677676">設定中…</translation>
+<translation id="7648120236428811856">無論使用任何裝置，只要登入 Chrome，即可存取您的書籤</translation>
 <translation id="6964496835063002391">新增帳戶</translation>
 <translation id="4698413471314543145">找不到執行 Chrome 所需的重要功能；Chrome 安裝程序可能未完成，或是 Chrome 與這個 Android 版本不相容。</translation>
 <translation id="1943432128510653496">儲存密碼</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="5899349522111170522">建立新檔案</translation>
 <translation id="3158619413803296679">選擇書籤</translation>
+<translation id="6138140242378429169">讓網頁適合透過行動裝置瀏覽</translation>
 <translation id="5345040418939504969">已刪除的「<ph name="BOOKMARK_TITLE"/>」</translation>
 <translation id="7232255641409319872">允許在您指定的網站上顯示圖片，但禁止其他網站顯示</translation>
 <translation id="2360035970720276770">只能透過 http 或 https 網址下載檔案</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">書籤</translation>
 <translation id="2646820313617290661">您的家長會協助管理這些設定。</translation>
 <translation id="2433507940547922241">外觀</translation>
-<translation id="430949144625048957">切換清單/格狀模式</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6177390657002841081">開啟 Data Saver</translation>
 <translation id="4056223980640387499">深褐色調</translation>

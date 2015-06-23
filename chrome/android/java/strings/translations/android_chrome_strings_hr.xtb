@@ -123,6 +123,7 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="200669432486043882">Zamijeni datoteku</translation>
 <translation id="9086455579313502267">Nije moguće pristupiti mreži</translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
+<translation id="4663756553811254707">Oznake su izbrisane (<ph name="NUMBER_OF_BOOKMARKS"/>)</translation>
 <translation id="8413385045638830869">Prvo pitaj (preporučeno)</translation>
 <translation id="2100273922101894616">Automatska prijava</translation>
 <translation id="5313967007315987356">Dodaj web-lokaciju</translation>
@@ -170,7 +171,9 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="8583805026567836021">Brisanje podataka računa</translation>
 <translation id="6464825623202322042">Ovaj uređaj</translation>
+<translation id="7501135638693251872">Sve oznake</translation>
 <translation id="5860033963881614850">Isključeno</translation>
+<translation id="2678212031093903894">Stvorite sigurnosne kopije oznaka i sinkronizirajte ih</translation>
 <translation id="2960796085439532066">Autorska prava <ph name="YEAR"/>. Google Inc. Sva prava pridržana.</translation>
 <translation id="6388207532828177975">Izbriši i poništi</translation>
 <translation id="3198916472715691905">Pohranjeni podaci: <ph name="STORAGE_AMOUNT"/></translation>
@@ -256,6 +259,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3328801116991980348">Informacije o web-lokaciji</translation>
 <translation id="8497726226069778601">Ovdje nema ničega... zasad</translation>
 <translation id="7987073022710626672">Chromeovi uvjeti pružanja usluge</translation>
+<translation id="3269093882174072735">Učitaj sliku</translation>
 <translation id="588258955323874662">Puni zaslon</translation>
 <translation id="5668404140385795438">Poništavanje zahtjeva web-lokacije za sprječavanje povećavanja</translation>
 <translation id="8428213095426709021">Postavke</translation>
@@ -323,6 +327,7 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="4526249700380860531">Prikaz spremljenih zaporki i upravljanje njima na <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Povijest pregledavanja</translation>
 <translation id="6108923351542677676">Postavljanje je u tijeku…</translation>
+<translation id="7648120236428811856">Prijavite se na Chrome da biste pristupali svojim oznakama s bilo kojeg uređaja</translation>
 <translation id="6964496835063002391">Dodajte račun</translation>
 <translation id="4698413471314543145">Nedostaje ključna funkcija potrebna za izvođenje preglednika Chrome; instalacija Chromea nije potpuna ili Chrome nije kompatibilan s tom verzijom Androida.</translation>
 <translation id="1943432128510653496">Spremanje zaporki</translation>
@@ -359,6 +364,7 @@ Za izlazak pritisnite gumb Natrag.</translation>
 <translation id="3089395242580810162">Otvori na kartici Anonimno</translation>
 <translation id="5899349522111170522">Napravi novu datoteku</translation>
 <translation id="3158619413803296679">Odaberite oznaku</translation>
+<translation id="6138140242378429169">Prilagodite stranicu mobilnim uređajima</translation>
 <translation id="5345040418939504969">Izbrisana je oznaka <ph name="BOOKMARK_TITLE"/></translation>
 <translation id="7232255641409319872">Dopuštaju se slike na web-lokacijama koje navedete, ali se blokiraju za ostatak weba</translation>
 <translation id="2360035970720276770">Mogu se preuzeti samo http ili https URL-ovi</translation>
@@ -504,7 +510,6 @@ Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzet
 <translation id="4084682180776658562">Oznaka</translation>
 <translation id="2646820313617290661">Tvoji roditelji pomažu pri upravljanju tim postavkama.</translation>
 <translation id="2433507940547922241">Prikaz</translation>
-<translation id="430949144625048957">Izmjenjuj način popisa i rešetke</translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6177390657002841081">Uključi uštedu podataka</translation>
 <translation id="4056223980640387499">Sepija</translation>

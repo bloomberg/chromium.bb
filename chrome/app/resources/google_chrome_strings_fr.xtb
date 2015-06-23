@@ -265,6 +265,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="3735758079232443276">L'extension <ph name="EXTENSION_NAME"/> a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
 <translation id="6991142834212251086">Lier mes données Google Chrome à ce compte</translation>
+<translation id="1350930993895295930">Un comportement inhabituel a été détecté dans Chrome</translation>
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="3047079729301751317">La déconnexion de <ph name="USERNAME"/> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chrome stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">L'archive du programme d'installation est corrompue ou incorrecte. Veuillez télécharger de nouveau Google Chrome.</translation>

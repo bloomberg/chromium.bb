@@ -123,6 +123,7 @@
 <translation id="200669432486043882">Заменить файл</translation>
 <translation id="9086455579313502267">Нет доступа к сети</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
+<translation id="4663756553811254707">Удалено закладок: <ph name="NUMBER_OF_BOOKMARKS"/></translation>
 <translation id="8413385045638830869">Всегда спрашивать (рекомендуется)</translation>
 <translation id="2100273922101894616">Автоматический вход</translation>
 <translation id="5313967007315987356">Добавить сайт</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>
 <translation id="6464825623202322042">На этом устройстве</translation>
+<translation id="7501135638693251872">Все закладки</translation>
 <translation id="5860033963881614850">Выкл.</translation>
+<translation id="2678212031093903894">Сохраняйте и синхронизируйте закладки</translation>
 <translation id="2960796085439532066">© Google Inc., <ph name="YEAR"/>. Все права защищены.</translation>
 <translation id="6388207532828177975">Очистить и сбросить</translation>
 <translation id="3198916472715691905">В памяти занято: <ph name="STORAGE_AMOUNT"/></translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="8497726226069778601">Здесь появятся часто посещаемые страницы</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
+<translation id="3269093882174072735">Загрузить изображение</translation>
 <translation id="588258955323874662">Полноэкранный режим</translation>
 <translation id="5668404140385795438">Игнорировать запросы сайтов на запрет масштабирования</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">История просмотров</translation>
 <translation id="6108923351542677676">Настройка…</translation>
+<translation id="7648120236428811856">Войдите в Chrome, чтобы получить доступ к своим закладкам с любого устройства</translation>
 <translation id="6964496835063002391">Добавить аккаунт</translation>
 <translation id="4698413471314543145">Отсутствует функция, необходимая для работы Chrome. Возможно, установка не была завершена или вы используете несовместимую версию Android.</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="5899349522111170522">Новый файл</translation>
 <translation id="3158619413803296679">Выберите закладку</translation>
+<translation id="6138140242378429169">Адаптировать страницу для мобильных устройств</translation>
 <translation id="5345040418939504969">Закладка &quot;<ph name="BOOKMARK_TITLE"/>&quot; удалена</translation>
 <translation id="7232255641409319872">Разрешить изображения на указанных сайтах и блокировать на всех остальных</translation>
 <translation id="2360035970720276770">Скачивать можно только с адресов http и https</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">Закладка</translation>
 <translation id="2646820313617290661">Этими настройками управляют родители.</translation>
 <translation id="2433507940547922241">Внешний вид</translation>
-<translation id="430949144625048957">Режим списка/режим сетки</translation>
 <translation id="6643016212128521049">Очистить</translation>
 <translation id="6177390657002841081">Включить режим экономии трафика</translation>
 <translation id="4056223980640387499">Сепия</translation>

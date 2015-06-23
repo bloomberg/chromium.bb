@@ -261,6 +261,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="7592736734348559088">Google Chrome ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="3735758079232443276">Laiendus „<ph name="EXTENSION_NAME"/>” muutis seda, milline leht kuvatakse Chrome'i käivitamisel.</translation>
 <translation id="6991142834212251086">Lingi minu Chrome'i andmed selle kontoga</translation>
+<translation id="1350930993895295930">Chrome tuvastas tavatu käitumise</translation>
 <translation id="3451115285585441894">Chrome'i lisamine ...</translation>
 <translation id="3047079729301751317">Kui katkestate ühenduse kasutajaga <ph name="USERNAME"/>, siis kustutatakse sellesse seadmesse salvestatud ajalugu, järjehoidjad, seaded ja muud Chrome'i andmed. Google'i kontole salvestatud andmeid ei kustutata ja neid saab hallata <ph name="GOOGLE_DASHBOARD_LINK"/>Google'i juhtpaneelil<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Installija arhiiv on rikutud või kehtetu. Palun laadige Google Chrome uuesti alla.</translation>

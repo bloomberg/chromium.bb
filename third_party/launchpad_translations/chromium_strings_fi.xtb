@@ -267,6 +267,7 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="5531349711857992002">Verkkosivuston varmennusketju sisältää ainakin yhden varmenteen, joka on allekirjoitettu vanhentuneella SHA-1-pohjaisella algoritmilla.</translation>
 <translation id="918373042641772655">Jos irrotat tilin <ph name="USERNAME"/>, historiasi, kirjanmerkkisi ja muut laitteelle tallennetut Chromium-tiedot poistetaan. Google-tiliisi tallennetut tiedot säilyvät ennallaan, ja voit hallinnoida niitä <ph name="GOOGLE_DASHBOARD_LINK"/>Google Hallintapaneelin kautta<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium on selain, jolla verkkosivut ja sovellukset toimivat salamannopeasti. Se on nopea, vakaa ja helppokäyttöinen. Chromiumin sisäänrakennettu haittaohjelma- ja tietojenkalastelusuojaus tekevät verkkoselauksesta turvallisempaa.</translation>
+<translation id="3312805357485578561">Chromium on havainnut epätavallista toimintaa</translation>
 <translation id="4230135487732243613">Linkitetäänkö Chromium-tiedot tähän tiliin?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium on nyt entistä parempi</translation>

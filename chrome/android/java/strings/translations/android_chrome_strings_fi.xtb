@@ -123,6 +123,7 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="200669432486043882">Korvaa tiedosto.</translation>
 <translation id="9086455579313502267">Ei yhteyttä verkkoon.</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> kirjanmerkkiä poistettiin</translation>
 <translation id="8413385045638830869">Kysy ensin (suositus)</translation>
 <translation id="2100273922101894616">Automaattinen kirjautuminen</translation>
 <translation id="5313967007315987356">Lisää sivusto</translation>
@@ -170,7 +171,9 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5039804452771397117">Salli</translation>
 <translation id="8583805026567836021">Poistetaan tilin tietoja</translation>
 <translation id="6464825623202322042">Tässä laitteessa</translation>
+<translation id="7501135638693251872">Kaikki kirjanmerkit</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
+<translation id="2678212031093903894">Varmuuskopioi ja synkronoi kirjanmerkit</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="6388207532828177975">Tyhjennä ja nollaa</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> tallennettua tietoa</translation>
@@ -256,6 +259,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3328801116991980348">Tietoja sivustosta</translation>
 <translation id="8497726226069778601">Täällä ei ole mitään nähtävää… vielä</translation>
 <translation id="7987073022710626672">Chromen käyttöehdot</translation>
+<translation id="3269093882174072735">Lataa kuva</translation>
 <translation id="588258955323874662">Koko ruutu</translation>
 <translation id="5668404140385795438">Ohita sivuston zoomauksen estämispyyntö</translation>
 <translation id="8428213095426709021">Asetukset</translation>
@@ -323,6 +327,7 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="4526249700380860531">Tarkastele ja hallinnoi tallennettuja salasanoja osoitteessa <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Selaushistoria</translation>
 <translation id="6108923351542677676">Synkronointia valmistellaan…</translation>
+<translation id="7648120236428811856">Kirjaudu Chromeen, niin voit käyttää kirjanmerkkejäsi millä tahansa laitteella.</translation>
 <translation id="6964496835063002391">Lisää tili.</translation>
 <translation id="4698413471314543145">Chromen suorittamiseen tarvittava kriittinen toiminto puuttuu. Joko Chromea ei ole asennettu loppuun tai selain ei sovi yhteen tämän Android-version kanssa.</translation>
 <translation id="1943432128510653496">Salasanojen tallentaminen</translation>
@@ -359,6 +364,7 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
 <translation id="5899349522111170522">Luo uusi tiedosto.</translation>
 <translation id="3158619413803296679">Valitse kirjanmerkki</translation>
+<translation id="6138140242378429169">Tee sivusta mobiililaitteisiin sopiva</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> poistettiin.</translation>
 <translation id="7232255641409319872">Salli kuvat määrittämissäsi sivustoissa mutta estä ne muissa sivustoissa.</translation>
 <translation id="2360035970720276770">Vain http- tai https-alkuisista URL-osoitteista voi ladata.</translation>
@@ -504,7 +510,6 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="4084682180776658562">Kirjanmerkki</translation>
 <translation id="2646820313617290661">Vanhempasi auttavat näiden asetusten hallinnassa.</translation>
 <translation id="2433507940547922241">Ulkonäkö</translation>
-<translation id="430949144625048957">Siirry luettelosta ruudukkoon</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6177390657002841081">Ota Data Saver käyttöön</translation>
 <translation id="4056223980640387499">Seepia</translation>

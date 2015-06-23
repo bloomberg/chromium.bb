@@ -255,6 +255,7 @@
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="3735758079232443276">拡張機能「<ph name="EXTENSION_NAME"/>」により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="6991142834212251086">Chrome データをこのアカウントにリンクする</translation>
+<translation id="1350930993895295930">Chrome で異常な動作が検出されました</translation>
 <translation id="3451115285585441894">Chrome に追加...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/> の接続を解除すると、履歴、ブックマーク、設定、このデバイスに保存されたその他の Chrome データが消去されます。ただし、Google アカウントに保存されたデータは消去されず、引き続き <ph name="GOOGLE_DASHBOARD_LINK"/>Google ダッシュボード<ph name="END_GOOGLE_DASHBOARD_LINK"/>で管理できます。</translation>
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>

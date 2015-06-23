@@ -123,6 +123,7 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="200669432486043882">Reemplazar el archivo</translation>
 <translation id="9086455579313502267">No se puede acceder a la red</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> marcadores eliminados</translation>
 <translation id="8413385045638830869">Preguntar primero (recomendado)</translation>
 <translation id="2100273922101894616">Acceso automático</translation>
 <translation id="5313967007315987356">Agregar sitio</translation>
@@ -170,7 +171,9 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>
 <translation id="6464825623202322042">Este dispositivo</translation>
+<translation id="7501135638693251872">Todos los marcadores</translation>
 <translation id="5860033963881614850">Desactivado</translation>
+<translation id="2678212031093903894">Crea una copia de seguridad de tus marcadores y sincronízalos</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Todos los derechos reservados.</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
 <translation id="3198916472715691905">Datos almacenados: <ph name="STORAGE_AMOUNT"/></translation>
@@ -256,6 +259,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="8497726226069778601">Aún no hay elementos para ver</translation>
 <translation id="7987073022710626672">Condiciones del servicio de Chrome</translation>
+<translation id="3269093882174072735">Cargar imagen</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5668404140385795438">Anular la solicitud de inhabilitación del zoom de un sitio web</translation>
 <translation id="8428213095426709021">Configuración</translation>
@@ -323,6 +327,7 @@ Para salir de esta vista, presiona el botón Atrás.</translation>
 <translation id="4526249700380860531">Consulta y administra las contraseñas que guardaste en <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/>.</translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
+<translation id="7648120236428811856">Accede a Chrome para tener acceso a tus marcadores desde cualquier dispositivo.</translation>
 <translation id="6964496835063002391">Agregar una cuenta</translation>
 <translation id="4698413471314543145">Faltan funciones esenciales para que Chrome se ejecute. Es posible que no se haya completado la instalación de Chrome o que tu versión de Android no sea compatible.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
@@ -360,6 +365,7 @@ Para salir de esta vista, presiona el botón Atrás.</translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
 <translation id="5899349522111170522">Crear un archivo nuevo</translation>
 <translation id="3158619413803296679">Elegir un marcador</translation>
+<translation id="6138140242378429169">Optimizar la página para celulares</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> borrado</translation>
 <translation id="7232255641409319872">Admite las imágenes de los sitios web que especifiques a la vez que las bloquea en el resto de la Web.</translation>
 <translation id="2360035970720276770">Solo se pueden descargar URL &quot;http&quot; o &quot;https&quot;.</translation>
@@ -505,7 +511,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="2646820313617290661">Tus padres ayudan a administrar esta configuración.</translation>
 <translation id="2433507940547922241">Diseño</translation>
-<translation id="430949144625048957">Alternar modo lista y cuadrícula</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6177390657002841081">Activar la extensión Reducir datos</translation>
 <translation id="4056223980640387499">Sepia</translation>

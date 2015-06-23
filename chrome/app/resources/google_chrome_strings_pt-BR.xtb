@@ -258,6 +258,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7592736734348559088">O Google Chrome não pôde sincronizar seus dados, pois os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="3735758079232443276">A extensão &quot;<ph name="EXTENSION_NAME"/>&quot; alterou a página que é exibida quando você inicia o Chrome.</translation>
 <translation id="6991142834212251086">Vincular meus dados do Google Chrome a esta conta</translation>
+<translation id="1350930993895295930">O Chrome detectou um comportamento incomum</translation>
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
 <translation id="3047079729301751317">Ao desconectar <ph name="USERNAME"/>, o histórico, os favoritos, as configurações e outros dados do Google Chrome armazenados neste dispositivo serão excluídos. Os dados armazenados na sua Conta do Google não serão excluídos e poderão ser gerenciados no <ph name="GOOGLE_DASHBOARD_LINK"/>Painel de Controle do Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">O arquivo do instalador está corrompido ou é inválido. Baixe o Google Chrome novamente.</translation>

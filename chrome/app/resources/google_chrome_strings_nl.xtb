@@ -256,6 +256,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="7592736734348559088">Google Chrome kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="3735758079232443276">De extensie '<ph name="EXTENSION_NAME"/>' heeft gewijzigd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="6991142834212251086">Mijn Chrome-gegevens koppelen aan dit account</translation>
+<translation id="1350930993895295930">Chrome heeft ongebruikelijk gedrag gedetecteerd</translation>
 <translation id="3451115285585441894">Toevoegen aan Chrome...</translation>
 <translation id="3047079729301751317">Als je de verbinding met <ph name="USERNAME"/> verbreekt, worden je geschiedenis, bladwijzers, instellingen en andere Chrome-gegevens op dit apparaat opgeslagen. De gegevens die in je Google-account zijn opgeslagen, worden niet gewist en kunnen worden beheerd via <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Google Chrome opnieuw.</translation>

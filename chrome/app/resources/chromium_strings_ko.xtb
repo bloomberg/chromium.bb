@@ -267,6 +267,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5531349711857992002">이 웹사이트에 대한 인증서 체인이 SHA-1을 기반으로 하는 지원 중단된 서명 알고리즘을 사용해 서명된 인증서를 적어도 하나 포함하고 있습니다.</translation>
 <translation id="918373042641772655"><ph name="USERNAME"/>의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 Chromium 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK"/>Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK"/>에서 관리될 수 있습니다.</translation>
 <translation id="6403826409255603130">Chromium은 빠른 속도로 웹페이지와 애플리케이션을 실행하는 웹 브라우저입니다. 빠르고 안정적이며 사용하기에 편리합니다. Chromium에 내장된 멀웨어 및 악성 코드 방지 기능을 사용하여 더욱 안전하게 웹을 검색하세요.</translation>
+<translation id="3312805357485578561">Chromium에서 비정상적인 동작을 감지했습니다.</translation>
 <translation id="4230135487732243613">Chromium 데이터를 이 계정에 연결하시겠습니까?</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
 <translation id="7617377681829253106">더욱 업그레이드된 Chromium</translation>

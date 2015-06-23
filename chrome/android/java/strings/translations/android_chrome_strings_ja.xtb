@@ -123,6 +123,7 @@
 <translation id="200669432486043882">ファイルを交換</translation>
 <translation id="9086455579313502267">ネットワークにアクセスできません</translation>
 <translation id="5595485650161345191">住所の編集</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> 件のブックマークを削除しました</translation>
 <translation id="8413385045638830869">最初に確認する（推奨）</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="5313967007315987356">サイトを追加</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">許可</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
 <translation id="6464825623202322042">このデバイス</translation>
+<translation id="7501135638693251872">すべてのブックマーク</translation>
 <translation id="5860033963881614850">オフ</translation>
+<translation id="2678212031093903894">ブックマークをバックアップして同期しよう</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. All rights reserved.</translation>
 <translation id="6388207532828177975">消去してリセット</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> の保存データ</translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">サイト情報</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
 <translation id="7987073022710626672">Chrome 利用規約</translation>
+<translation id="3269093882174072735">画像を読み込む</translation>
 <translation id="588258955323874662">全画面表示</translation>
 <translation id="5668404140385795438">ウェブサイトのズーム防止リクエストを上書きする</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531"><ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> での保存パスワードの表示と管理</translation>
 <translation id="2496180316473517155">閲覧履歴</translation>
 <translation id="6108923351542677676">設定しています...</translation>
+<translation id="7648120236428811856">Chrome にログインすると、どのデバイスからでもブックマークにアクセスできます</translation>
 <translation id="6964496835063002391">アカウントを追加</translation>
 <translation id="4698413471314543145">Chrome の実行に必須の機能が見つかりません。Chrome のインストールが完了していないか、Chrome がこのバージョンの Android と互換性がないことが原因です。</translation>
 <translation id="1943432128510653496">パスワードを保存する</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="5899349522111170522">新しいファイルを作成</translation>
 <translation id="3158619413803296679">ブックマークの選択</translation>
+<translation id="6138140242378429169">ページをモバイル向け画面で表示</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> を削除しました</translation>
 <translation id="7232255641409319872">指定するウェブサイト上で画像を許可し、その他のウェブサイト上ではブロックします</translation>
 <translation id="2360035970720276770">ダウンロードできるのは http または https の URL のみです</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">ブックマーク</translation>
 <translation id="2646820313617290661">これらの設定はあなたの保護者が管理します。</translation>
 <translation id="2433507940547922241">デザイン</translation>
-<translation id="430949144625048957">リストとグリッドモードを切り替え</translation>
 <translation id="6643016212128521049">クリア</translation>
 <translation id="6177390657002841081">データセーバーをオンにする</translation>
 <translation id="4056223980640387499">セピア</translation>

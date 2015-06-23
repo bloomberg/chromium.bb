@@ -123,6 +123,7 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="200669432486043882">Nahradit soubor</translation>
 <translation id="9086455579313502267">Nelze získat přístup k síti.</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
+<translation id="4663756553811254707">Smazané záložky: <ph name="NUMBER_OF_BOOKMARKS"/></translation>
 <translation id="8413385045638830869">Nejprve se dotázat (doporučeno)</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="5313967007315987356">Přidat web</translation>
@@ -170,7 +171,9 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="8583805026567836021">Mazání dat účtu</translation>
 <translation id="6464825623202322042">Toto zařízení</translation>
+<translation id="7501135638693251872">Všechny záložky</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
+<translation id="2678212031093903894">Zálohujte a synchronizujte si záložky</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
 <translation id="3198916472715691905">Uložená data: <ph name="STORAGE_AMOUNT"/></translation>
@@ -256,6 +259,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3328801116991980348">Informace o stránkách</translation>
 <translation id="8497726226069778601">Zatím tu nic není...</translation>
 <translation id="7987073022710626672">Smluvní podmínky Chrome</translation>
+<translation id="3269093882174072735">Načíst obrázek</translation>
 <translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5668404140385795438">Přepsat požadavek webu na zákaz přiblížení</translation>
 <translation id="8428213095426709021">Nastavení</translation>
@@ -323,6 +327,7 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historie procházení</translation>
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
+<translation id="7648120236428811856">Přihlaste se do Chromu, abyste ke svým záložkám měli přístup v libovolném zařízení</translation>
 <translation id="6964496835063002391">Přidat účet</translation>
 <translation id="4698413471314543145">Chybí nezbytná funkce pro spuštění aplikace Chrome. Instalace aplikace Chrome buď nebyla dokončena, nebo aplikace není kompatibilní s touto verzí platformy Android.</translation>
 <translation id="1943432128510653496">Ukládání hesel</translation>
@@ -359,6 +364,7 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="5899349522111170522">Vytvořit nový soubor</translation>
 <translation id="3158619413803296679">Vyberte záložku</translation>
+<translation id="6138140242378429169">Optimalizovat stránku pro mobily</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE"/> byla smazána</translation>
 <translation id="7232255641409319872">Povolit obrázky na webech, které uvedete, ale na zbytku webu jej blokovat</translation>
 <translation id="2360035970720276770">Lze stahovat jen adresy URL typu http nebo https</translation>
@@ -504,7 +510,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="4084682180776658562">Záložka</translation>
 <translation id="2646820313617290661">Tato nastavení pomáhají spravovat rodiče.</translation>
 <translation id="2433507940547922241">Vzhled</translation>
-<translation id="430949144625048957">Přepnout režim seznamu/mřížky</translation>
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="6177390657002841081">Zapnutí Spořiče dat</translation>
 <translation id="4056223980640387499">Sépie</translation>

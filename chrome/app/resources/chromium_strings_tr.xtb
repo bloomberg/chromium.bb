@@ -262,6 +262,7 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="5531349711857992002">Bu web sitesinin sertifika zincirinde, kullanımdan kaldırılmış SHA-1'e dayalı imza algoritması ile imzalanmış en az bir sertifika var.</translation>
 <translation id="918373042641772655"><ph name="USERNAME"/> kullanıcısının bağlantısını kesmek, geçmişinizi, yer işaretlerinizi, ayarlarınızı ve bu cihazda depolanan diğer Chromium verilerinizi temizler. Google Hesabınızda depolanan veriler temizlenmez ve <ph name="GOOGLE_DASHBOARD_LINK"/>Google Hesap Özeti<ph name="END_GOOGLE_DASHBOARD_LINK"/>'nden yönetilebilir.</translation>
 <translation id="6403826409255603130">Chromium, Web sayfalarını ve uygulamaları yıldırım hızıyla çalıştıran bir Web tarayıcısıdır. Hızlı ve kararlı çalışır, kolay kullanılır. Chromium'da dahili olarak bulunan zararlı yazılım ve kimlik avı koruması sayesinde Web'de daha güvenli gezinin.</translation>
+<translation id="3312805357485578561">Chromium olağandışı bir davranış algıladı</translation>
 <translation id="4230135487732243613">Chromium verileriniz bu hesaba bağlansın mı?</translation>
 <translation id="2572494885440352020">Chromium Yardımcısı</translation>
 <translation id="7617377681829253106">Chromium daha da iyi bir hale geldi</translation>

@@ -123,6 +123,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="200669432486043882">Sustituir archivo</translation>
 <translation id="9086455579313502267">No ha sido posible acceder a la red</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
+<translation id="4663756553811254707">Se han eliminado <ph name="NUMBER_OF_BOOKMARKS"/> marcadores</translation>
 <translation id="8413385045638830869">Preguntar antes (recomendado)</translation>
 <translation id="2100273922101894616">Iniciar sesión automáticamente</translation>
 <translation id="5313967007315987356">Añadir sitio</translation>
@@ -170,7 +171,9 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>
 <translation id="6464825623202322042">Este dispositivo</translation>
+<translation id="7501135638693251872">Todos los marcadores</translation>
 <translation id="5860033963881614850">No</translation>
+<translation id="2678212031093903894">Haz una copia de seguridad de tus marcadores y sincronízalos</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Todos los derechos reservados.</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> de datos almacenados</translation>
@@ -256,6 +259,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="8497726226069778601">Aún no tienes contenido</translation>
 <translation id="7987073022710626672">Condiciones de servicio de Chrome</translation>
+<translation id="3269093882174072735">Cargar imagen</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5668404140385795438">Ignorar la solicitud de un sitio web para no ampliar la imagen</translation>
 <translation id="8428213095426709021">Configuración</translation>
@@ -323,6 +327,7 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="4526249700380860531">Consulta y administra contraseñas guardadas en la página <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
+<translation id="7648120236428811856">Inicia sesión en Chrome para acceder a tus marcadores desde cualquier dispositivo</translation>
 <translation id="6964496835063002391">Añadir una cuenta</translation>
 <translation id="4698413471314543145">Falta una función esencial obligatoria para ejecutar Chrome. Es posible que tu instalación de Chrome no esté completa o que no sea compatible con esta versión de Android.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
@@ -359,6 +364,7 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
 <translation id="5899349522111170522">Crear archivo nuevo</translation>
 <translation id="3158619413803296679">Seleccionar un marcador</translation>
+<translation id="6138140242378429169">Optimizar página para móviles</translation>
 <translation id="5345040418939504969">Se ha eliminado <ph name="BOOKMARK_TITLE"/></translation>
 <translation id="7232255641409319872">Permite mostrar imágenes en los sitios web especificados y bloquearlas en el resto de la Web</translation>
 <translation id="2360035970720276770">Solo se pueden descargar URL de tipo http o https</translation>
@@ -504,7 +510,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="2646820313617290661">Tus padres ayudan a administrar estas opciones.</translation>
 <translation id="2433507940547922241">Aspecto</translation>
-<translation id="430949144625048957">Alternar entre lista y cuadrícula</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6177390657002841081">Activar el Economizador de datos</translation>
 <translation id="4056223980640387499">Sepia</translation>

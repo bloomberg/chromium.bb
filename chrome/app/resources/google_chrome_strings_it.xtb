@@ -248,6 +248,7 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="7592736734348559088">Impossibile sincronizzare i dati in Google Chrome perché i dati di accesso dell'account sono obsoleti.</translation>
 <translation id="3735758079232443276">L'estensione &quot;<ph name="EXTENSION_NAME"/>&quot; ha cambiato la pagina mostrata all'avvio di Chrome.</translation>
 <translation id="6991142834212251086">Collega i miei dati Chrome a questo account</translation>
+<translation id="1350930993895295930">Chrome ha rilevato un comportamento insolito</translation>
 <translation id="3451115285585441894">Aggiunta a Chrome in corso...</translation>
 <translation id="3047079729301751317">Se ti disconnetti da <ph name="USERNAME"/> verranno cancellati la cronologia, i Preferiti, le impostazioni e gli altri dati di Chrome memorizzati sul dispositivo. I dati memorizzati nel tuo account Google non verranno cancellati e potrai gestirli su <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>

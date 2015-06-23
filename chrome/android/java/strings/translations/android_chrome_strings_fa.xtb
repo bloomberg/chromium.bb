@@ -121,6 +121,7 @@
 <translation id="200669432486043882">جایگزینی فایل</translation>
 <translation id="9086455579313502267">دسترسی به شبکه امکان‌پذیر نیست</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> نشانک حذف شد</translation>
 <translation id="8413385045638830869">ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
 <translation id="5313967007315987356">افزودن سایت</translation>
@@ -167,7 +168,9 @@
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="8583805026567836021">پاکسازی اطلاعات حساب</translation>
 <translation id="6464825623202322042">این دستگاه</translation>
+<translation id="7501135638693251872">همه نشانک‌ها</translation>
 <translation id="5860033963881614850">خاموش</translation>
+<translation id="2678212031093903894">پشتیبان‌گیری و همگام‌سازی نشانک‌های شما</translation>
 <translation id="2960796085439532066">‏حق نسخه‌برداری ‪<ph name="YEAR"/> Google Inc.‬. کلیه حقوق محفوظ است.</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> اطلاعات ذخیره شده</translation>
@@ -253,6 +256,7 @@
 <translation id="3328801116991980348">اطلاعات سایت</translation>
 <translation id="8497726226069778601">هنوز… چیزی برای دیدن وجود ندارد</translation>
 <translation id="7987073022710626672">‏شرایط سرویس Chrome</translation>
+<translation id="3269093882174072735">بارگیری تصویر</translation>
 <translation id="588258955323874662">تمام صفحه</translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
@@ -320,6 +324,7 @@
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
+<translation id="7648120236428811856">‏برای دسترسی به نشانک‌هایتان از هر دستگاهی، به سیستم Chrome وارد شوید</translation>
 <translation id="6964496835063002391">افزودن حساب</translation>
 <translation id="4698413471314543145">‏یکی از قابلیت‌های مهم برای اجرای Chrome موجود نیست؛ ممکن است نصب Chrome شما به‌ صورت ناقص انجام شده باشد یا اینکه با این نسخه از Android سازگار نباشد.</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
@@ -356,6 +361,7 @@
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
 <translation id="5899349522111170522">ایجاد فایل جدید</translation>
 <translation id="3158619413803296679">انتخاب نشانک</translation>
+<translation id="6138140242378429169">تبدیل صفحه به حالت مناسب دستگاه همراه</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> حذف شد</translation>
 <translation id="7232255641409319872">تصاویر در وب‌سایت‌هایی که تعیین می‌کنید مجاز باشد اما برای بقیه وب غیرمجاز باشد</translation>
 <translation id="2360035970720276770">‏فقط می‌توانید نشانی‌های اینترنتی «http» یا «https» را دانلود کنید</translation>
@@ -501,7 +507,6 @@
 <translation id="4084682180776658562">نشانک</translation>
 <translation id="2646820313617290661">والدین شما در مدیریت این تنظیمات کمک می‌کنند.</translation>
 <translation id="2433507940547922241">شکل ظاهری</translation>
-<translation id="430949144625048957">جابه‌جایی بین حالت فهرست و جدول</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6177390657002841081">روشن کردن «صرفه‌جویی در مصرف داده»</translation>
 <translation id="4056223980640387499">سپیا</translation>

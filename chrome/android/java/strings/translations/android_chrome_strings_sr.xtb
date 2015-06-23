@@ -123,6 +123,7 @@
 <translation id="200669432486043882">Замени датотеку</translation>
 <translation id="9086455579313502267">Не можемо да приступимо мрежи</translation>
 <translation id="5595485650161345191">Измена адресе</translation>
+<translation id="4663756553811254707">Избрисали сте <ph name="NUMBER_OF_BOOKMARKS"/> обележивача</translation>
 <translation id="8413385045638830869">Прво питај (препоручено)</translation>
 <translation id="2100273922101894616">Аутоматско пријављивање</translation>
 <translation id="5313967007315987356">Додај сајт</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="8583805026567836021">Брисање података о налогу</translation>
 <translation id="6464825623202322042">Овај уређај</translation>
+<translation id="7501135638693251872">Сви обележивачи</translation>
 <translation id="5860033963881614850">Искључено</translation>
+<translation id="2678212031093903894">Правите резервне копије обележивача и синхронизујте их</translation>
 <translation id="2960796085439532066">Ауторска права <ph name="YEAR"/>. Google Inc. Сва права задржана.</translation>
 <translation id="6388207532828177975">Обриши и ресетуј</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> сачуваних података</translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">Информације о сајту</translation>
 <translation id="8497726226069778601">Овде нема ничега... засад</translation>
 <translation id="7987073022710626672">Chrome услови коришћења услуге</translation>
+<translation id="3269093882174072735">Учитај слику</translation>
 <translation id="588258955323874662">Цеo екран</translation>
 <translation id="5668404140385795438">Одбијање захтева веб-сајта да се спречи увећавање</translation>
 <translation id="8428213095426709021">Подешавања</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">Прегледајте сачуване лозинке и управљајте њима на <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Историја прегледања</translation>
 <translation id="6108923351542677676">Подешавање је у току...</translation>
+<translation id="7648120236428811856">Пријавите се на Chrome да бисте приступали обележивачима са било ког уређаја</translation>
 <translation id="6964496835063002391">Додајте налог</translation>
 <translation id="4698413471314543145">Недостаје функција од критичне важности потребна за покретање Chrome-а; или инсталација Chrome-а није комплетна или није компатибилна са овом верзијом Android-а.</translation>
 <translation id="1943432128510653496">Сачувај лозинке</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">Отварање на картици без архивирања</translation>
 <translation id="5899349522111170522">Направи нову датотеку</translation>
 <translation id="3158619413803296679">Изабери обележивач</translation>
+<translation id="6138140242378429169">Прилагодите страницу мобилним уређајима</translation>
 <translation id="5345040418939504969">Обележивач <ph name="BOOKMARK_TITLE"/> је избрисан</translation>
 <translation id="7232255641409319872">Дозволите слике на веб-сајтовима које наведете, а за остатак веба их блокирајте</translation>
 <translation id="2360035970720276770">Могуће је преузети само URL-ове који садрже http или https</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">Обележивач</translation>
 <translation id="2646820313617290661">Родитељи помажу у управљању овим подешавањима.</translation>
 <translation id="2433507940547922241">Изглед</translation>
-<translation id="430949144625048957">Са листе на мрежу и обратно</translation>
 <translation id="6643016212128521049">Обриши</translation>
 <translation id="6177390657002841081">Укључи Уштеду података</translation>
 <translation id="4056223980640387499">Сепија</translation>

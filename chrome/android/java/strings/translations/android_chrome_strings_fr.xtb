@@ -123,6 +123,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="200669432486043882">Remplacer un fichier</translation>
 <translation id="9086455579313502267">Impossible d'accéder au réseau.</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> favoris ont été supprimés.</translation>
 <translation id="8413385045638830869">Demander d'abord (recommandé)</translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
 <translation id="5313967007315987356">Ajouter un site</translation>
@@ -170,7 +171,9 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="8583805026567836021">Suppression des données du compte</translation>
 <translation id="6464825623202322042">Cet appareil</translation>
+<translation id="7501135638693251872">Tous les favoris</translation>
 <translation id="5860033963881614850">Désactivé</translation>
+<translation id="2678212031093903894">Sauvegardez et synchronisez vos favoris</translation>
 <translation id="2960796085439532066">Copyright Google Inc. <ph name="YEAR"/>. Tous droits réservés.</translation>
 <translation id="6388207532828177975">Effacer et réinitialiser</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> de données stockées</translation>
@@ -256,6 +259,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3328801116991980348">Informations sur le site</translation>
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
 <translation id="7987073022710626672">Conditions d'utilisation de Chrome</translation>
+<translation id="3269093882174072735">Charger l'image</translation>
 <translation id="588258955323874662">Plein écran</translation>
 <translation id="5668404140385795438">Ignorer la demande d'un site refusant de faire un zoom avant</translation>
 <translation id="8428213095426709021">Paramètres</translation>
@@ -323,6 +327,7 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Historique de navigation</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
+<translation id="7648120236428811856">Connectez-vous à Chrome pour accéder à vos favoris à partir de n'importe quel appareil.</translation>
 <translation id="6964496835063002391">Ajouter un compte</translation>
 <translation id="4698413471314543145">Une fonctionnalité essentielle à l'exécution de Google Chrome est manquante. Soit vous n'avez pas terminé d'installer Google Chrome, soit la version installée n'est pas compatible avec cette version d'Android.</translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
@@ -360,6 +365,7 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
 <translation id="5899349522111170522">Créer un fichier</translation>
 <translation id="3158619413803296679">Sélectionner un favori</translation>
+<translation id="6138140242378429169">Ouvrir la page adaptée aux mobiles</translation>
 <translation id="5345040418939504969">Le favori &quot;<ph name="BOOKMARK_TITLE"/>&quot; a été supprimé.</translation>
 <translation id="7232255641409319872">Autoriser les images sur les sites Web que vous spécifiez, tout en les bloquant pour le reste du Web</translation>
 <translation id="2360035970720276770">Seules les URL &quot;http&quot; et &quot;https&quot; peuvent être téléchargées.</translation>
@@ -505,7 +511,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="4084682180776658562">Favori</translation>
 <translation id="2646820313617290661">Vos parents vous aident à gérer ces paramètres.</translation>
 <translation id="2433507940547922241">Apparence</translation>
-<translation id="430949144625048957">Changer de mode (Liste ou Grille)</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6177390657002841081">Activer l'Économiseur de données</translation>
 <translation id="4056223980640387499">Sépia</translation>

@@ -123,6 +123,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="200669432486043882">Thay thế tệp</translation>
 <translation id="9086455579313502267">Không thể truy cập mạng</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
+<translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS"/> dấu trang</translation>
 <translation id="8413385045638830869">Hỏi trước (được đề xuất)</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
 <translation id="5313967007315987356">Thêm trang web</translation>
@@ -170,7 +171,9 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>
 <translation id="6464825623202322042">Thiết bị này</translation>
+<translation id="7501135638693251872">Tất cả dấu trang</translation>
 <translation id="5860033963881614850">Tắt</translation>
+<translation id="2678212031093903894">Sao lưu và đồng bộ hóa dấu trang của bạn</translation>
 <translation id="2960796085439532066">Bản quyền <ph name="YEAR"/> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> dữ liệu được lưu trữ</translation>
@@ -256,6 +259,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3328801116991980348">Thông tin về trang web</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
+<translation id="3269093882174072735">Tải hình ảnh</translation>
 <translation id="588258955323874662">Toàn màn hình</translation>
 <translation id="5668404140385795438">Ghi đè yêu cầu của trang web để chặn phóng to</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
@@ -323,6 +327,7 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Lịch sử duyệt web</translation>
 <translation id="6108923351542677676">Đang thiết lập…</translation>
+<translation id="7648120236428811856">Đăng nhập vào Chrome để truy cập dấu trang của bạn từ mọi thiết bị</translation>
 <translation id="6964496835063002391">Thêm tài khoản</translation>
 <translation id="4698413471314543145">Chức năng quan trọng cần có để chạy Chrome bị thiếu; quá trình cài đặt Chrome của bạn chưa hoàn tất hoặc không tương thích với phiên bản Android này.</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
@@ -359,6 +364,7 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="5899349522111170522">Tạo tệp mới</translation>
 <translation id="3158619413803296679">Chọn dấu trang</translation>
+<translation id="6138140242378429169">Đặt trang ở chế độ thân thiện với thiết bị di động</translation>
 <translation id="5345040418939504969">Đã xóa <ph name="BOOKMARK_TITLE"/></translation>
 <translation id="7232255641409319872">Cho phép hình ảnh trên các trang web bạn chỉ định trong khi chặn đối với các phần web khác</translation>
 <translation id="2360035970720276770">Chỉ có thể tải xuống URL http hoặc https</translation>
@@ -504,7 +510,6 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 <translation id="4084682180776658562">Dấu trang</translation>
 <translation id="2646820313617290661">Cha mẹ của bạn giúp quản lý những cài đặt này.</translation>
 <translation id="2433507940547922241">Hình thức</translation>
-<translation id="430949144625048957">Chuyển đổi giữa chế độ lưới và danh sách</translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>

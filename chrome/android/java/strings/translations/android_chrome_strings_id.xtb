@@ -123,6 +123,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="200669432486043882">Ganti file</translation>
 <translation id="9086455579313502267">Tidak dapat mengakses jaringan</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> bookmark dihapus</translation>
 <translation id="8413385045638830869">Tanya dulu (disarankan)</translation>
 <translation id="2100273922101894616">Masuk Otomatis</translation>
 <translation id="5313967007315987356">Tambahkan situs</translation>
@@ -170,7 +171,9 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="8583805026567836021">Menghapus data akun</translation>
 <translation id="6464825623202322042">Perangkat ini</translation>
+<translation id="7501135638693251872">Semua bookmark</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
+<translation id="2678212031093903894">Cadangkan dan sinkronkan bookmark Anda</translation>
 <translation id="2960796085439532066">Hak cipta <ph name="YEAR"/> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> data tersimpan</translation>
@@ -256,6 +259,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="8497726226069778601">Belum ada yang dapat dilihat di sini…</translation>
 <translation id="7987073022710626672">Persyaratan Layanan Chrome</translation>
+<translation id="3269093882174072735">Muat gambar</translation>
 <translation id="588258955323874662">Layar Penuh</translation>
 <translation id="5668404140385795438">Mengganti permintaan situs web untuk mencegah pembesaran</translation>
 <translation id="8428213095426709021">Setelan</translation>
@@ -323,6 +327,7 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Riwayat jelajah</translation>
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
+<translation id="7648120236428811856">Masuk ke Chrome untuk mengakses bookmark Anda dari perangkat apa pun</translation>
 <translation id="6964496835063002391">Tambahkan akun</translation>
 <translation id="4698413471314543145">Fungsi penting yang diperlukan untuk menjalankan Chrome tidak ada; bisa jadi karena pemasangan Chrome Anda tidak lengkap, atau tidak kompatibel dengan versi Android ini.</translation>
 <translation id="1943432128510653496">Menyimpan sandi</translation>
@@ -359,6 +364,7 @@ Tekan tombol kembali untuk keluar.</translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
 <translation id="5899349522111170522">Buat file baru</translation>
 <translation id="3158619413803296679">Pilih bookmark</translation>
+<translation id="6138140242378429169">Buat laman mobile-friendly</translation>
 <translation id="5345040418939504969">Menghapus <ph name="BOOKMARK_TITLE"/></translation>
 <translation id="7232255641409319872">Mengizinkan gambar pada situs web yang Anda tentukan dan memblokirnya untuk web lainnya</translation>
 <translation id="2360035970720276770">Hanya dapat mengunduh URL http atau https</translation>
@@ -504,7 +510,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="2646820313617290661">Orang tua Anda membantu mengelola setelan ini.</translation>
 <translation id="2433507940547922241">Tampilan</translation>
-<translation id="430949144625048957">Beralih mode daftar - kisi</translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6177390657002841081">Mengaktifkan Penghemat Data</translation>
 <translation id="4056223980640387499">Sepia</translation>

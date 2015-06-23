@@ -260,6 +260,7 @@ Chromium non è in grado di recuperare le impostazioni.</translation>
 <translation id="5531349711857992002">La catena di certificati per questo sito web contiene almeno un certificato che è stato firmato utilizzando un algoritmo di firma obsoleto basato su SHA-1.</translation>
 <translation id="918373042641772655">Se ti disconnetti da <ph name="USERNAME"/> verranno cancellati la cronologia, i Preferiti, le impostazioni e gli altri dati di Chromium memorizzati sul dispositivo. I dati memorizzati nel tuo account Google non verranno cancellati e potrai gestirli su <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium è un browser web che esegue le pagine web e le applicazioni alla velocità della luce. È veloce, stabile e facile da utilizzare. Naviga su Internet in modo più sicuro grazie alla protezione da malware e phishing integrata in Chromium.</translation>
+<translation id="3312805357485578561">Chromium ha rilevato un comportamento insolito</translation>
 <translation id="4230135487732243613">Collegare i tuoi dati Chromium a questo account?</translation>
 <translation id="2572494885440352020">Supporto Chromium</translation>
 <translation id="7617377681829253106">Da oggi Chromium è ancora meglio</translation>

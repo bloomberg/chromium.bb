@@ -269,6 +269,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="5531349711857992002">Selle veebisaidi sertifikaadiahel sisaldab vähemalt ühte sertifikaati, mis allkirjastati ebasoovitatava allkirja algoritmiga, mis põhineb SHA-1-l.</translation>
 <translation id="918373042641772655">Kui katkestate ühenduse kasutajaga <ph name="USERNAME"/>, siis kustutatakse sellesse seadmesse salvestatud ajalugu, järjehoidjad, seaded ja muud Chromiumi andmed. Google'i kontole salvestatud andmeid ei kustutata ja neid saab hallata <ph name="GOOGLE_DASHBOARD_LINK"/>Google'i juhtpaneelil<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium on veebibrauser, mis avab veebilehti ja rakendusi välgukiirusel. See on kiire, stabiilne ja hõlpsasti kasutatav. Sirvige veebi turvalisemalt tänu Chromiumi sisseehitatud pahavara- ja andmepüügikaitsele.</translation>
+<translation id="3312805357485578561">Chromium tuvastas tavatu käitumise</translation>
 <translation id="4230135487732243613">Kas soovite linkida Chromiumi andmed selle kontoga?</translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>
 <translation id="7617377681829253106">Chromium muutus just paremaks</translation>

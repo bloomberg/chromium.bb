@@ -256,6 +256,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7592736734348559088">Google Chrome ei voinut synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="3735758079232443276">Laajennus <ph name="EXTENSION_NAME"/> on vaihtanut Chromen aloitussivun.</translation>
 <translation id="6991142834212251086">Linkitä Chrome-tietoni tähän tiliin</translation>
+<translation id="1350930993895295930">Chrome on havainnut epätavallista toimintaa</translation>
 <translation id="3451115285585441894">Lisätään Chromeen...</translation>
 <translation id="3047079729301751317">Jos irrotat tilin <ph name="USERNAME"/>, historiasi, kirjanmerkkisi ja muut laitteelle tallennetut Chrome-tiedot poistetaan. Google-tiliisi tallennetut tiedot säilyvät ennallaan ja voit hallinnoida niitä <ph name="GOOGLE_DASHBOARD_LINK"/>Google Hallintapaneelin kautta<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Asennusohjelman arkistotiedosto on vioittunut tai se ei kelpaa. Lataa Google Chrome uudelleen.</translation>

@@ -123,6 +123,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="200669432486043882">Bytt ut fil</translation>
 <translation id="9086455579313502267">Fikk ikke tilgang til nettverket</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> bokmerker ble slettet</translation>
 <translation id="8413385045638830869">Spør først (anbefales)</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="5313967007315987356">Legg til et nettsted</translation>
@@ -170,7 +171,9 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
 <translation id="6464825623202322042">Denne enheten</translation>
+<translation id="7501135638693251872">Alle bokmerker</translation>
 <translation id="5860033963881614850">Av</translation>
+<translation id="2678212031093903894">Sikkerhetskopiér og synkroniser bokmerkene dine</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Med enerett.</translation>
 <translation id="6388207532828177975">Slett alt og tilbakestill</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> lagrede data</translation>
@@ -256,6 +259,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
 <translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
+<translation id="3269093882174072735">Last inn bildet</translation>
 <translation id="588258955323874662">Fullskjerm</translation>
 <translation id="5668404140385795438">Overstyr nettstedets forespørsel om å forhindre zooming</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
@@ -323,6 +327,7 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="4526249700380860531">Se på og administrer lagrede passord på <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Nettlesingslogg</translation>
 <translation id="6108923351542677676">Konfigurasjon pågår …</translation>
+<translation id="7648120236428811856">Logg på Chrome for å få tilgang til bokmerkene dine fra alle slags enheter</translation>
 <translation id="6964496835063002391">Legg til en konto</translation>
 <translation id="4698413471314543145">En avgjørende funksjon som kreves for å kjøre Chrome, mangler. Chrome-installasjonen er enten ufullstendig eller ikke kompatibel med denne versjonen av Android.</translation>
 <translation id="1943432128510653496">Lagring av passord</translation>
@@ -359,6 +364,7 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="5899349522111170522">Opprett en ny fil</translation>
 <translation id="3158619413803296679">Velg et bokmerke</translation>
+<translation id="6138140242378429169">Gjør siden mobilvennlig</translation>
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE"/></translation>
 <translation id="7232255641409319872">Tillater bilder på nettsteder du oppgir, og blokkerer bilder på alle andre nettsteder.</translation>
 <translation id="2360035970720276770">Kan bare laste ned nettadresser som begynner på «http» eller «https».</translation>
@@ -504,7 +510,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="4084682180776658562">Legg til bokmerke</translation>
 <translation id="2646820313617290661">Foreldrene dine er med på å styre disse innstillingene.</translation>
 <translation id="2433507940547922241">Utseende</translation>
-<translation id="430949144625048957">Bytt mellom liste-/rutenettmodus</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6177390657002841081">Slå på Datasparing</translation>
 <translation id="4056223980640387499">Sepia</translation>

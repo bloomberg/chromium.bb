@@ -92,6 +92,7 @@
 <translation id="2580889980133367162">始终允许 <ph name="HOST"/> 下载多个文件</translation>
 <translation id="8972513834460200407">请与您的网络管理员联系，确保防火墙没有阻止系统从 Google 服务器下载内容。</translation>
 <translation id="1444628761356461360">此设置由设备所有者<ph name="OWNER_EMAIL"/>管理。</translation>
+<translation id="2850541429955027218">添加主题背景</translation>
 <translation id="6562437808764959486">正在提取恢复映像...</translation>
 <translation id="1260240842868558614">显示：</translation>
 <translation id="2226449515541314767">已禁止该网站完全控制 MIDI 设备。</translation>
@@ -251,6 +252,7 @@
 <translation id="7774497835322490043">启用 GDB 调试存根。这会在启动时停止 Native Client 应用，然后等待 nacl-gdb（来自 NaCl SDK）附加到该应用。</translation>
 <translation id="2686444421126615064">查看帐户</translation>
 <translation id="9215293857209265904">已添加“<ph name="EXTENSION_NAME"/>”</translation>
+<translation id="8089515035584227384">{NUM_DOWNLOADS,plural, =1{正在下载 1 个文件}other{正在下载 # 个文件}}</translation>
 <translation id="7693221960936265065">全部</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="4920887663447894854">系统已阻止以下网站跟踪您在此网页上的位置：</translation>
@@ -434,6 +436,7 @@
 <translation id="4684748086689879921">略过导入</translation>
 <translation id="6912686727854004322">为此，您需要启用语音和音频活动记录功能并按以下步骤训练 Chromebook。</translation>
 <translation id="8191230140820435481">管理您的应用、扩展程序和主题背景</translation>
+<translation id="2163418719022613650">不对绘图使用 Slimming Paint 显示列表。请注意，enable-slimming-paint 的优先级高于此项（如果两者同时存在）。</translation>
 <translation id="8279107132611114222">您想访问该网站的请求已发送给<ph name="NAME"/>。</translation>
 <translation id="8034955203865359138">未找到任何历史记录条目。</translation>
 <translation id="9130015405878219958">输入的模式无效。</translation>
@@ -843,6 +846,7 @@
 <translation id="3984413272403535372">为扩展程序签名时出错。</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3298461240075561421">即使您之前从该网站下载过文件，但该网站可能当时已遭到黑客入侵。您可以日后再尝试下载，而不是恢复此文件。</translation>
+<translation id="5485102783864353244">添加应用</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="672609503628871915">了解一下新变化</translation>
 <translation id="9208886416788010685">Adobe Reader 已过期</translation>
@@ -1036,6 +1040,7 @@
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME"/>）不正确，因此无法与 <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> 建立私密连接。</translation>
 <translation id="2915500479781995473">此服务器无法证明它是<ph name="DOMAIN"/>；其安全证书已过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为<ph name="CURRENT_TIME"/>，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。</translation>
 <translation id="1975841812214822307">移除…</translation>
+<translation id="108346963417674655">无法安全地连接到服务器。此网站之前可能是正常的，但现在服务器出现问题。对于所有用户而言，连接到此类网站都会导致安全性下降，因此系统已禁止连接到此类网站。</translation>
 <translation id="8280151743281770066">亚美尼亚语（注音）</translation>
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION"/></translation>
 <translation id="8261378640211443080">该扩展程序未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>中，并可能是在您不知情的情况下添加的。</translation>
@@ -1289,6 +1294,9 @@
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="1849186935225320012">此页面可以完全控制 MIDI 设备。</translation>
 <translation id="7309416673261215716">扩展程序版本</translation>
+<translation id="760353356052806707">您计算机上的其他程序擅自安装了一个可能会更改 Chrome 工作方式的应用。
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="3313590242757056087">要设置受监管用户可以浏览哪些网站，您可以转到 <ph name="MANAGEMENT_URL"/> 配置限制和设置。
@@ -1307,6 +1315,7 @@
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="127353061808977798">字体和编码</translation>
 <translation id="3122464029669770682">CPU</translation>
+<translation id="4518677423782794009">Chrome 是否出现以下异常情况：崩溃、启动页或工具栏异常、您无法关闭不想看到的广告，或您的浏览设置遭到篡改？或许您可以通过运行 Chrome Cleanup Tool 来解决该问题。</translation>
 <translation id="6080689532560039067">检查系统时间</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
@@ -1333,6 +1342,7 @@
 <translation id="3778152852029592020">已取消下载。</translation>
 <translation id="8235613855873080297">停用 Encrypted Media Extensions。</translation>
 <translation id="2148227560636747235">投射此标签页</translation>
+<translation id="3507421388498836150">“<ph name="EXTENSION_NAME"/>”目前拥有的权限</translation>
 <translation id="7831368056091621108">在您的所有设备上使用此扩展程序并共享历史记录和其他 Chrome 设置。</translation>
 <translation id="5469868506864199649">意大利语</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -1530,6 +1540,7 @@
 <translation id="3866443872548686097">您的恢复媒体已创建完毕，现在可以将其从系统中移除。</translation>
 <translation id="5525677322972469346">创建新的受监管用户</translation>
 <translation id="6824564591481349393">复制电子邮件地址(&amp;E)</translation>
+<translation id="3843027123789255408">流量节省程序低保真模式</translation>
 <translation id="907148966137935206">不允许任何网站显示弹出式窗口（推荐）</translation>
 <translation id="7618337809041914424">打印框架(&amp;P)…</translation>
 <translation id="4406896451731180161">搜索结果</translation>
@@ -1569,7 +1580,6 @@
 <translation id="6948142510520900350">您的&lt;strong&gt;系统管理员&lt;/strong&gt;已禁止访问该网页。</translation>
 <translation id="5702898740348134351">修改搜索引擎(&amp;E)...</translation>
 <translation id="3687701603889589626">允许运行 chrome:// 网址下的扩展程序，该网址下的扩展程序明确要求此权限。</translation>
-<translation id="6471055753088234288">在 Chrome 操作系统上停用增强型内存压力处理功能。</translation>
 <translation id="4899376560703610051">您的<ph name="DEVICE_TYPE"/>已被手动锁定。您需要输入密码才能进入。</translation>
 <translation id="1756681705074952506">输入法</translation>
 <translation id="418179967336296930">俄语注音 (YaZHert) 键盘</translation>
@@ -1882,6 +1892,7 @@
 <translation id="5900302528761731119">Google 个人资料照片</translation>
 <translation id="3512810056947640266">网址（可选)：</translation>
 <translation id="131364520783682672">Caps Lock</translation>
+<translation id="5483785310822538350">撤消对文件和设备的访问权限</translation>
 <translation id="8757742102600829832">选择要连接的 Chromebox</translation>
 <translation id="2335122562899522968">该页用于设置 Cookie。</translation>
 <translation id="4628757576491864469">设备</translation>
@@ -2315,6 +2326,7 @@
 <translation id="389589731200570180">与访客共享</translation>
 <translation id="1510200760579344855">此设备已被 <ph name="SAML_DOMAIN"/> 管理员锁定。</translation>
 <translation id="7205869271332034173">SSID：</translation>
+<translation id="3335561837873115802">下载 Chrome Cleanup Tool</translation>
 <translation id="4731351517694976331">允许 Google 服务获取您的位置信息</translation>
 <translation id="5815645614496570556">X.400 地址</translation>
 <translation id="1223853788495130632">您的管理员建议将此设置设为某个特定值。</translation>
@@ -2473,6 +2485,7 @@
 <translation id="4011708746171704399">在首次运行教程期间启用动画转换。</translation>
 <translation id="304826556400666995">将所有标签页取消静音</translation>
 <translation id="4314564217497012208">将此标签页投射至…</translation>
+<translation id="2674170444375937751">确定要从历史记录中删除这些页吗？</translation>
 <translation id="2932883381142163287">举报滥用行为</translation>
 <translation id="9111102763498581341">解锁</translation>
 <translation id="5975792506968920132">电池充电百分比</translation>
@@ -2506,6 +2519,7 @@
 <translation id="409579654357498729">添加到云打印</translation>
 <translation id="2120316813730635488">安装扩展程序时出现</translation>
 <translation id="8398877366907290961">仍然继续</translation>
+<translation id="2797019681257472009">检测到异常行为</translation>
 <translation id="5063180925553000800">新 PIN：</translation>
 <translation id="4883178195103750615">将书签导出到 HTML 文件...</translation>
 <translation id="2496540304887968742">该设备必须至少拥有 4 GB 的容量。</translation>
@@ -2549,7 +2563,6 @@
 <translation id="2136953289241069843">音译(namaste → नमस्कार)</translation>
 <translation id="1358032944105037487">日语键盘</translation>
 <translation id="3897224341549769789">启用</translation>
-<translation id="7093382443623905433">停用内存压力处理功能</translation>
 <translation id="1438632560381091872">将所有标签页取消静音</translation>
 <translation id="4648491805942548247">权限不足</translation>
 <translation id="1183083053288481515">正在使用管理员提供的证书</translation>
@@ -2612,6 +2625,7 @@
 <translation id="3450157232394774192">闲置状态占用率</translation>
 <translation id="1110155001042129815">等待</translation>
 <translation id="2607101320794533334">证书持有者的公共密钥信息</translation>
+<translation id="4048441759170415907">对所有绘图使用 Slimming Paint 显示列表。此项的优先级高于 disable-slimming-paint（如果两者同时存在）。</translation>
 <translation id="89720367119469899">转义</translation>
 <translation id="4419409365248380979">总是允许 <ph name="HOST"/> 设置 Cookie</translation>
 <translation id="1717810180141539171">启用界面组件上的其他触摸反馈功能。</translation>
@@ -2715,6 +2729,7 @@
 <translation id="258095186877893873">长</translation>
 <translation id="8248050856337841185">粘贴(&amp;P)</translation>
 <translation id="347785443197175480">继续允许 <ph name="HOST"/> 使用您的摄像头和麦克风</translation>
+<translation id="3269093882174072735">加载图片</translation>
 <translation id="6052976518993719690">SSL 证书授权中心</translation>
 <translation id="1482124012545051544">可以开始备份 <ph name="FILE_COUNT"/> 张新照片了</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
@@ -2759,6 +2774,7 @@
 <translation id="7654941827281939388">已有人在此计算机上使用此帐户。</translation>
 <translation id="204914487372604757">创建快捷方式</translation>
 <translation id="5957613098218939406">更多选项</translation>
+<translation id="8950446148892140517">仅限连接到移动网络时</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="452785312504541111">全角英语</translation>
 <translation id="7589461650300748890">注意！</translation>
@@ -2804,6 +2820,7 @@
 <translation id="1091767800771861448">按 ESC 键可跳过更新（仅限非官方版本）。</translation>
 <translation id="2965328226365382335">过去 15 分钟</translation>
 <translation id="6731320427842222405">这可能需要几分钟时间</translation>
+<translation id="3640214691812501263">要为<ph name="USER_NAME"/>添加“<ph name="EXTENSION_NAME"/>”吗？</translation>
 <translation id="7503191893372251637">Netscape 证书类型</translation>
 <translation id="4135450933899346655">您的证书</translation>
 <translation id="971774202801778802">书签网址</translation>
@@ -3199,6 +3216,9 @@
 <translation id="3910699493603749297">高棉语键盘</translation>
 <translation id="5487982064049856365">您近期更改了密码。请使用新密码登录。</translation>
 <translation id="2345055320165338418">启用此项后，某些类型的查询对应的响应将直接显示在多功能框的建议列表中。</translation>
+<translation id="1585717515139318619">您计算机上的其他程序擅自安装了一个可能会更改 Chrome 工作方式的主题背景。
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="438503109373656455">小马</translation>
 <translation id="7984180109798553540">为提高安全性，<ph name="PRODUCT_NAME"/>会对您的数据进行加密。</translation>
 <translation id="5036662165765606524">禁止任何网站自动下载多个文件</translation>
@@ -3881,6 +3901,7 @@
 <translation id="5271247532544265821">在简体中文/繁体中文模式之间切换</translation>
 <translation id="2052610617971448509">您没有进行充分的沙盒测试！</translation>
 <translation id="6417515091412812850">无法检查证书是否已吊销。</translation>
+<translation id="5900623698597156974">TLS 1.0 回退能够与服务器握手，但我们已不再接受 TLS 1.0 回退。服务器需要更新，以便正确实现版本协商（最好能支持 TLS 1.2）。</translation>
 <translation id="460028601412914923">停用 WebRTC 中的 Delay Agnostic AEC。</translation>
 <translation id="2809586584051668049">及另外<ph name="NUMBER_ADDITIONAL_DISABLED"/>个扩展程序</translation>
 <translation id="8373281062075027970">参与方名称：<ph name="PARTY_NAME"/></translation>
@@ -4017,6 +4038,7 @@
 <translation id="5264252276333215551">请先连接到互联网，然后在信息亭模式下启动您的应用。</translation>
 <translation id="7180865173735832675">自定义</translation>
 <translation id="7054808953701320293">知道了，以后不要再显示此信息。</translation>
+<translation id="4903369323166982260">运行 Chrome Cleanup Tool</translation>
 <translation id="144932861331386147">请连接到互联网以更新您的 Chromebook。</translation>
 <translation id="2938685643439809023">蒙古语</translation>
 <translation id="5368720394188453070">配对手机已锁定，需将其解锁才能进入。</translation>
@@ -4046,6 +4068,7 @@
 <translation id="308903551226753393">自动配置</translation>
 <translation id="5230516054153933099">窗口</translation>
 <translation id="4992458225095111526">确认 Powerwash 操作</translation>
+<translation id="5027562294707732951">添加扩展程序</translation>
 <translation id="951981865514037445"><ph name="URL"/> 想要使用您的设备位置信息。</translation>
 <translation id="7387339603919136090">中位数</translation>
 <translation id="2750518858905599015"><ph name="SHORT_PRODUCT_NAME"/>已更新</translation>
@@ -4216,6 +4239,7 @@
 <translation id="7863133010182113457">在 Chrome 启动时，清除通过使用数据缩减代理而生成的数据流量节省情况。</translation>
 <translation id="4235200303672858594">整个屏幕</translation>
 <translation id="5951823343679007761">没有电池</translation>
+<translation id="806705617346045388">检测到异常行为</translation>
 <translation id="2518024842978892609">使用您的客户端证书</translation>
 <translation id="479555359673800162">停用密码管理器重新验证</translation>
 <translation id="8569682776816196752">未找到任何目标</translation>
@@ -4383,6 +4407,7 @@
 <translation id="774465434535803574">打包扩展程序错误</translation>
 <translation id="8200772114523450471">继续</translation>
 <translation id="5750676294091770309">扩展程序阻止</translation>
+<translation id="5067399438976153555">始终启用</translation>
 <translation id="523299859570409035">通知例外情况</translation>
 <translation id="7017480957358237747">允许或禁止访问某些网站；</translation>
 <translation id="1029595648591494741">要试用“<ph name="EXTENSION_NAME"/>”吗？</translation>
@@ -4417,6 +4442,7 @@
 <translation id="3648607100222897006">这些实验性功能随时可能会更改、中止或取消。因此，我们完全无法保证您启用某项实验性功能后会发生什么情况，您的浏览器甚至可能会自动崩溃。请注意，您的浏览器可能会删除您的所有数据，您的安全和隐私也有可能受到意外伤害。您启用的所有实验性功能将用于此浏览器的所有用户。启用前，请务必三思。</translation>
 <translation id="8148913456785123871">在启动器中显示 Google 即时贴</translation>
 <translation id="3937640725563832867">证书颁发者的备用名称</translation>
+<translation id="1926339101652878330">这些设置由企业政策控制。如需更多信息，请与管理员联系。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/><ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">查看框架的源代码(&amp;V)</translation>
 <translation id="8770196827482281187">波斯语输入法（ISIRI 2901 布局）</translation>
@@ -4634,6 +4660,7 @@
 <translation id="7015226785571892184">如果您接受这一请求，就会启动以下应用：<ph name="APPLICATION"/></translation>
 <translation id="177336675152937177">托管应用数据</translation>
 <translation id="6804671422566312077">在新窗口中打开所有书签(&amp;N)</translation>
+<translation id="3905761538810670789">修复应用</translation>
 <translation id="4009293373538135798">不正常的退出</translation>
 <translation id="7017219178341817193">添加新网页</translation>
 <translation id="1038168778161626396">仅加密</translation>
@@ -4685,6 +4712,9 @@
 <translation id="7763146744708046348">请勿汇总数据 - 这可能会使速度变慢！</translation>
 <translation id="203165784383062719">拼写检查工具选项(&amp;O)</translation>
 <translation id="5626134646977739690">名字：</translation>
+<translation id="1070377999570795893">您计算机上的其他程序擅自安装了一个可能会更改 Chrome 工作方式的扩展程序。
+
+<ph name="EXTENSION_NAME"/></translation>
 <translation id="5854409662653665676">如果您经常遇到问题，可以试着用以下方法解决此模块存在的问题：</translation>
 <translation id="3776796446459804932">此扩展程序违反了 Chrome 网上应用店政策。</translation>
 <translation id="3681007416295224113">证书信息</translation>
@@ -4916,6 +4946,7 @@
 <translation id="7136694880210472378">设为默认搜索引擎</translation>
 <translation id="3274763671541996799">您已进入全屏模式。</translation>
 <translation id="7681202901521675750">SIM 卡已锁定，请输入 PIN。剩余尝试次数：<ph name="TRIES_COUNT"/></translation>
+<translation id="2710492340506088372">已完成 <ph name="PERCENT"/>%，<ph name="TIME_LEFT"/>，</translation>
 <translation id="2489918096470125693">添加文件夹(&amp;F)...</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME"/> 需要新的权限</translation>
 <translation id="5582414689677315220">点击“继续”，即表示您同意遵守<ph name="LEGAL_DOC_LINK_TEXT_1"/>、<ph name="LEGAL_DOC_LINK_TEXT_2"/>和<ph name="LEGAL_DOC_LINK_TEXT_3"/>。</translation>
@@ -5042,6 +5073,7 @@
 <translation id="4839847978919684242">已经选择 <ph name="SELCTED_FILES_COUNT"/> 个文件或目录</translation>
 <translation id="4443536555189480885">帮助(&amp;H)</translation>
 <translation id="5067867186035333991">当 <ph name="HOST"/> 想要使用麦克风时询问我</translation>
+<translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="4074900173531346617">电子邮件签名人证书</translation>
 <translation id="437184764829821926">高级字体设置</translation>
 <translation id="6165508094623778733">了解详情</translation>
@@ -5150,6 +5182,7 @@
 <translation id="1384211230590313258">服务发现处理程序</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
 <translation id="1937256809970138538">当屏幕处于开启状态并且未锁定时说“Ok Google”</translation>
+<translation id="8464505512337106916">检测并运行重要插件内容（推荐）</translation>
 <translation id="1949433054743893124">即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="4193154014135846272">Google 文档</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
@@ -5409,6 +5442,7 @@
 <translation id="2176045495080708525">以下扩展程序现已安装完毕：</translation>
 <translation id="1984603991036629094">亚美尼亚语拼音键盘</translation>
 <translation id="3046910703532196514">网页，全部</translation>
+<translation id="783140679984912140">停用 Slimming Paint。</translation>
 <translation id="5062930723426326933">登录失败，请连接到互联网，然后重试。</translation>
 <translation id="3444783709767514481">首次传送时间</translation>
 <translation id="5316716239522500219">镜像显示器</translation>
@@ -5449,6 +5483,7 @@
 <translation id="3688526734140524629">变更版本</translation>
 <translation id="4959447747655704388">如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK"/>访问这个受感染的网站<ph name="END_LINK"/>。</translation>
 <translation id="7030084719913890980">攻击者可能已入侵此网站，并可能会试图通过在您的计算机上安装危险程序来窃取或删除您的信息（例如：照片、密码、通讯内容和信用卡信息）。</translation>
+<translation id="6263625581655667292">强制使流量节省程序低保真模式始终保持启用状态、仅在连接到移动网络时启用，或保持停用状态。必须启用流量节省程序，才能使用低保真模式。</translation>
 <translation id="5941153596444580863">添加用户…</translation>
 <translation id="4503387275462811823">扩展程序说明</translation>
 <translation id="2157875535253991059">此网页现处于全屏模式。</translation>
@@ -5462,6 +5497,7 @@
 <translation id="8467473010914675605">韩语输入法</translation>
 <translation id="8759408218731716181">无法设置多帐户登录</translation>
 <translation id="8102535138653976669"><ph name="PRODUCT_NAME"/>会安全地与您的 Google 帐户同步数据。您可以选择同步所有内容，也可以自定义同步的数据类型和加密设置。</translation>
+<translation id="5943961789508834869">{NUM_DOWNLOADS,plural, =1{已下载 1 个文件}other{已下载 # 个文件}}</translation>
 <translation id="3819800052061700452">全屏(&amp;F)</translation>
 <translation id="48607902311828362">飞行模式</translation>
 <translation id="711840821796638741">显示托管书签</translation>
@@ -5812,6 +5848,7 @@
 <translation id="2491341326828824053">停用单副本光栅化处理程序</translation>
 <translation id="7250799832286185545">年</translation>
 <translation id="5849869942539715694">打包扩展程序...</translation>
+<translation id="93766956588638423">修复扩展程序</translation>
 <translation id="7339785458027436441">键入内容时检查拼写</translation>
 <translation id="5233736638227740678">粘贴(&amp;P)</translation>
 <translation id="1828901632669367785">使用系统对话框进行打印...</translation>
@@ -5832,6 +5869,7 @@
 <translation id="8610892630019863050">当网站要显示通知时询问您（推荐）</translation>
 <translation id="1729533290416704613">它还能够控制您通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="2650446666397867134">访问文件遭拒</translation>
+<translation id="1026822031284433028">加载图片</translation>
 <translation id="5832830184511718549">使用辅助线程执行网页合成。这样，即使主线程停止响应，也可以保证平滑滚动。</translation>
 <translation id="7943385054491506837">美国英语(Colemak)</translation>
 <translation id="4316693445078347518">正在生成 Google Payments 虚拟卡…</translation>

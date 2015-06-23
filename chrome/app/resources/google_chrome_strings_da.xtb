@@ -256,6 +256,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="3735758079232443276">Udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; har ændret din startside i Chrome.</translation>
 <translation id="6991142834212251086">Knyt mine Chrome-data til denne konto</translation>
+<translation id="1350930993895295930">Chrome har registreret usædvanlig adfærd</translation>
 <translation id="3451115285585441894">Føjer til Chrome...</translation>
 <translation id="3047079729301751317">Hvis du afbryder forbindelsen for <ph name="USERNAME"/>, slettes din historik, dine bogmærker, dine indstillinger og andre Chrome-data, der er gemt på denne enhed. Data, der er gemt på din Google-konto, slettes ikke og kan administreres i <ph name="GOOGLE_DASHBOARD_LINK"/>Google Betjeningspanel<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Installationsarkivet er beskadiget eller ugyldigt. Download Google Chrome igen.</translation>

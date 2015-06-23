@@ -123,6 +123,7 @@
 <translation id="200669432486043882">替换文件</translation>
 <translation id="9086455579313502267">无法访问网络</translation>
 <translation id="5595485650161345191">修改地址</translation>
+<translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS"/> 个书签</translation>
 <translation id="8413385045638830869">先询问（推荐）</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="5313967007315987356">添加网站</translation>
@@ -170,7 +171,9 @@
 <translation id="5039804452771397117">允许</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
 <translation id="6464825623202322042">此设备</translation>
+<translation id="7501135638693251872">所有书签</translation>
 <translation id="5860033963881614850">关闭</translation>
+<translation id="2678212031093903894">备份并同步您的书签</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR"/> Google Inc. 保留所有权利。</translation>
 <translation id="6388207532828177975">清除并重置</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT"/> 数据</translation>
@@ -256,6 +259,7 @@
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
+<translation id="3269093882174072735">加载图片</translation>
 <translation id="588258955323874662">全屏</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
 <translation id="8428213095426709021">设置</translation>
@@ -323,6 +327,7 @@
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/> 查看和管理已保存的密码</translation>
 <translation id="2496180316473517155">浏览记录</translation>
 <translation id="6108923351542677676">正在设置…</translation>
+<translation id="7648120236428811856">通过任意设备登录 Chrome 后均可获取您的书签</translation>
 <translation id="6964496835063002391">添加帐户</translation>
 <translation id="4698413471314543145">缺少运行 Chrome 所需的关键功能；您可能未完成 Chrome 安装过程，或者 Chrome 与此版本的 Android 不兼容。</translation>
 <translation id="1943432128510653496">保存密码</translation>
@@ -359,6 +364,7 @@
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="5899349522111170522">创建新文件</translation>
 <translation id="3158619413803296679">选择书签</translation>
+<translation id="6138140242378429169">使网页适合移动设备</translation>
 <translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE"/>”</translation>
 <translation id="7232255641409319872">允许在您指定的网站上使用图片，同时禁止在其他网站上使用图片</translation>
 <translation id="2360035970720276770">只能从 http 或 https 网址下载</translation>
@@ -504,7 +510,6 @@
 <translation id="4084682180776658562">已保存的书签</translation>
 <translation id="2646820313617290661">您的家长会协助管理这些设置。</translation>
 <translation id="2433507940547922241">外观</translation>
-<translation id="430949144625048957">在列表模式和网格模式之间切换</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6177390657002841081">启用流量节省程序</translation>
 <translation id="4056223980640387499">棕色调</translation>

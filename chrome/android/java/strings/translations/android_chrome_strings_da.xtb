@@ -123,6 +123,7 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="200669432486043882">Erstat fil</translation>
 <translation id="9086455579313502267">Der kunne ikke opnås adgang til netværket</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
+<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> bogmærker blev slettet</translation>
 <translation id="8413385045638830869">Spørg først (anbefales)</translation>
 <translation id="2100273922101894616">Automatisk login</translation>
 <translation id="5313967007315987356">Tilføj website</translation>
@@ -170,7 +171,9 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
 <translation id="6464825623202322042">Denne enhed</translation>
+<translation id="7501135638693251872">Alle bogmærker</translation>
 <translation id="5860033963881614850">Fra</translation>
+<translation id="2678212031093903894">Sikkerhedskopiér og synkroniser dine bogmærker</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="6388207532828177975">Ryd og nulstil</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> gemte data</translation>
@@ -256,6 +259,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3328801116991980348">Webstedoplysninger</translation>
 <translation id="8497726226069778601">Her er ikke noget at se… endnu</translation>
 <translation id="7987073022710626672">Chromes servicevilkår</translation>
+<translation id="3269093882174072735">Indlæs billede</translation>
 <translation id="588258955323874662">Fuld skærm</translation>
 <translation id="5668404140385795438">Tilsidesæt en anmodning fra et website om at undgå at zoome ind</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
@@ -323,6 +327,7 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="4526249700380860531">Se og administrer gemte adgangskoder på <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="2496180316473517155">Browserhistorik</translation>
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
+<translation id="7648120236428811856">Log ind på Chrome for at få adgang til dine bogmærker fra enhver enhed</translation>
 <translation id="6964496835063002391">Tilføj en konto</translation>
 <translation id="4698413471314543145">Vigtig funktionalitet, som kræves for at køre Chrome, mangler. Enten er Chrome-installationen ufuldstændig eller ikke kompatibel med denne version af Android.</translation>
 <translation id="1943432128510653496">Gem adgangskoder</translation>
@@ -359,6 +364,7 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="5899349522111170522">Opret en ny fil</translation>
 <translation id="3158619413803296679">Vælg et bogmærke</translation>
+<translation id="6138140242378429169">Gør siden mobilvenlig</translation>
 <translation id="5345040418939504969">Slettede <ph name="BOOKMARK_TITLE"/></translation>
 <translation id="7232255641409319872">Tillad billeder på de websites, du angiver, mens det blokeres på resten af internettet</translation>
 <translation id="2360035970720276770">Der kan kun downloades webadresser med &quot;http&quot; eller &quot;https&quot;</translation>
@@ -504,7 +510,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="4084682180776658562">Bogmærke</translation>
 <translation id="2646820313617290661">Dine forældre hjælper med at administrere disse indstillinger.</translation>
 <translation id="2433507940547922241">Udseende</translation>
-<translation id="430949144625048957">Skift mellem liste- og gittertilstand</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6177390657002841081">Slå Datasparefunktion til</translation>
 <translation id="4056223980640387499">Sepia</translation>

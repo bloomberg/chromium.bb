@@ -267,6 +267,7 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="5531349711857992002">Lanac certifikata za ovu web-lokaciju sadrži barem jedan certifikat potpisan ukinutim algoritmom potpisa na temelju SHA-1.</translation>
 <translation id="918373042641772655">Prekidanjem veze s računom <ph name="USERNAME"/> izbrisat ćete svoju povijest, oznake, postavke i ostale Chromiumove podatke pohranjene na ovom uređaju. Podaci pohranjeni na vašem Google računu neće se izbrisati. Tim podacima možete upravljati na <ph name="GOOGLE_DASHBOARD_LINK"/>Google nadzornoj ploči<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium je web-preglednik koji munjevitom brzinom prikazuje web-stranice i aplikacije. Brz je, stabilan i jednostavan za upotrebu. Pregledavajte web sigurnije jer je zaštita od zlonamjernog softvera i krađe identiteta ugrađena u Chromium.</translation>
+<translation id="3312805357485578561">Chromium je otkrio neuobičajeno ponašanje</translation>
 <translation id="4230135487732243613">Želite li povezati svoje podatke sustava Chromium s tim računom?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium je upravo postao bolji</translation>

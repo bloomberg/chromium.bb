@@ -269,6 +269,7 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="5531349711857992002">La chaîne de certificats associée à ce site Web contient au moins un certificat signé à l'aide d'un algorithme de signature obsolète basé sur SHA-1.</translation>
 <translation id="918373042641772655">La déconnexion de <ph name="USERNAME"/> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chromium stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium est un navigateur Web qui exécute les pages Web et les applications à une vitesse fulgurante. Il est rapide, stable et simple d'utilisation. Naviguez sur le Web en toute sécurité tout en bénéficiant de la protection offerte par Chromium contre les logiciels malveillants et de phishing.</translation>
+<translation id="3312805357485578561">Un comportement inhabituel a été détecté dans Chromium</translation>
 <translation id="4230135487732243613">Associer vos données Chromium à ce compte ?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium s'est amélioré</translation>

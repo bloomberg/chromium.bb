@@ -254,6 +254,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="7592736734348559088">Google Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
 <translation id="3735758079232443276">Proširenje &quot;<ph name="EXTENSION_NAME"/>&quot; promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromea.</translation>
 <translation id="6991142834212251086">Poveži moje podatke sustava Chrome s ovim računom</translation>
+<translation id="1350930993895295930">Chrome je otkrio neuobičajeno ponašanje</translation>
 <translation id="3451115285585441894">Dodavanje u Chrome...</translation>
 <translation id="3047079729301751317">Prekidanjem veze s računom <ph name="USERNAME"/> izbrisat ćete svoju povijest, oznake, postavke i ostale Chromeove podatke pohranjene na ovom uređaju. Podaci pohranjeni na vašem Google računu neće se izbrisati. Tim podacima možete upravljati na <ph name="GOOGLE_DASHBOARD_LINK"/>Google nadzornoj ploči<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Arhiva programa za instalaciju je oštećena ili nevažeća. Ponovno preuzmite program Google Chrome.</translation>

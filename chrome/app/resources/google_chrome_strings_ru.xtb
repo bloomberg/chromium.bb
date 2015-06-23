@@ -245,6 +245,7 @@
 <translation id="7592736734348559088">Google Chrome не удалось синхронизировать данные, поскольку ваши учетные данные устарели.</translation>
 <translation id="3735758079232443276">Расширение &quot;<ph name="EXTENSION_NAME"/>&quot; изменило стартовую страницу Chrome.</translation>
 <translation id="6991142834212251086">Связать данные Chrome с этим аккаунтом</translation>
+<translation id="1350930993895295930">В работе Chrome обнаружены сбои</translation>
 <translation id="3451115285585441894">Установка...</translation>
 <translation id="3047079729301751317">Если вы отключите аккаунт <ph name="USERNAME"/>, все сохраненные на этом устройстве закладки, настройки, история и другие данные Chrome будут удалены. Данные в вашем аккаунте Google сохранятся, и вы сможете управлять ими в <ph name="GOOGLE_DASHBOARD_LINK"/>Личном кабинете Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Архив программы установки поврежден или имеет неправильный формат. Скачайте Google Chrome снова.</translation>

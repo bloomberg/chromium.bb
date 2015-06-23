@@ -266,6 +266,7 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="5531349711857992002">Sertifikatkjeden for dette nettstedet inneholder minst ett sertifikat som ble signert med en avviklet signaturalgoritme som er basert på SHA-1.</translation>
 <translation id="918373042641772655">Hvis du kobler fra <ph name="USERNAME"/>, slettes loggen din, bokmerkene, innstillingene og andre Chromium-data som er lagret på denne enheten. Data som er lagret i Google-kontoen din, blir ikke tømt og kan administreres på <ph name="GOOGLE_DASHBOARD_LINK"/>Google Oversikt<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium er en nettleser som kjører nettsider og programmer i lynets hastighet. Den er rask, stabil og enkel å bruke. Surf på nettet på en tryggere måte med Chromium, som har innebygd beskyttelse mot skadelig programvare og nettfisking.</translation>
+<translation id="3312805357485578561">Chromium har oppdaget uvanlig atferd</translation>
 <translation id="4230135487732243613">Vil du koble Chromium-dataene dine til denne kontoen?</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>
 <translation id="7617377681829253106">Nå er Chromium blitt enda bedre</translation>

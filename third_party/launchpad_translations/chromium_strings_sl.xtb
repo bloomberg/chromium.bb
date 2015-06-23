@@ -270,6 +270,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="5531349711857992002">Veriga potrdil za to spletno mesto vsebuje vsaj eno potrdilo, ki je bilo podpisano z zastarelim podpisnim algoritmom, ki temelji na SHA-1.</translation>
 <translation id="918373042641772655">Če prekinete povezavo za <ph name="USERNAME"/>, boste izbrisali zgodovino, zaznamke, nastavitve in druge Chromiumove podatke, ki so shranjeni v tej napravi. Podatki, shranjeni v Google Računu, se ne bodo izbrisali in jih je mogoče upravljati na <ph name="GOOGLE_DASHBOARD_LINK"/>Google Nadzorni plošči<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="6403826409255603130">Chromium je spletni brskalnik, ki bliskovito odpira spletne strani in izvaja aplikacije. Je hiter, stabilen in preprost za uporabo. Z vgrajeno zaščito pred zlonamerno programsko opremo in lažnim predstavljanjem je brskanje po spletu varno.</translation>
+<translation id="3312805357485578561">Chromium je zaznal nenavadno delovanje</translation>
 <translation id="4230135487732243613">Želite svoje podatke v Chromiumu povezati s tem računom?</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
 <translation id="7617377681829253106">Chromium je pravkar postal še boljši</translation>

@@ -268,6 +268,7 @@ Chromium 無法復原您的設定。</translation>
 <translation id="5531349711857992002">這個網站的憑證鏈結中至少有一個憑證是使用已淘汰的 SHA-1 型簽章演算法進行簽署。</translation>
 <translation id="918373042641772655">解除與 <ph name="USERNAME"/> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chromium 資料。不過，這不會清除 Google 帳戶中儲存的資料，您可以在 <ph name="GOOGLE_DASHBOARD_LINK"/>Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK"/>管理這些資料。</translation>
 <translation id="6403826409255603130">Chromium 網路瀏覽器開啟網頁和執行應用程式的速度十分迅速。除了迅速、穩定且易於使用之外，Chromium 的內建惡意軟體與網路釣魚防護功能，可讓您安心悠遊網路。</translation>
+<translation id="3312805357485578561">Chromium 偵測到異常行為</translation>
 <translation id="4230135487732243613">要將您的 Chromium 資料連結至這個帳戶嗎？</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="7617377681829253106">Chromium 變得更進步了</translation>
