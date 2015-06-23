@@ -72,7 +72,7 @@ def get_isolates():
   return [os.path.basename(f) for f in files if f.endswith('.isolate')]
 
 
-def process_builder_convert(data, filename, builder, test_name):
+def process_builder_convert(data, test_name):
   """Converts 'test_name' to run on Swarming in 'data'.
 
   Returns True if 'test_name' was found.
@@ -83,7 +83,6 @@ def process_builder_convert(data, filename, builder, test_name):
       continue
     test.setdefault('swarming', {})
     if not test['swarming'].get('can_use_on_swarming_builders'):
-      print('- %s: %s' % (filename, builder))
       test['swarming']['can_use_on_swarming_builders'] = True
     result = True
   return result
@@ -103,7 +102,7 @@ def process_builder_remaining(data, filename, builder, tests_location):
 
 def process_file(mode, test_name, tests_location, filepath, ninja_targets,
                  ninja_targets_seen):
-  """Processes a file.
+  """Processes a json file describing what tests should be run for each recipe.
 
   The action depends on mode. Updates tests_location.
 
@@ -142,10 +141,14 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
 
     config[builder]['gtest_tests'] = sorted(
         data['gtest_tests'], key=lambda x: x['test'])
-    if mode == 'remaining':
+
+    # The trick here is that process_builder_remaining() is called before
+    # process_builder_convert() so tests_location can be used to know how many
+    # tests were converted.
+    if mode in ('convert', 'remaining'):
       process_builder_remaining(data, filename, builder, tests_location)
-    elif mode == 'convert':
-      process_builder_convert(data, filename, builder, test_name)
+    if mode == 'convert':
+      process_builder_convert(data, test_name)
 
   expected = json.dumps(
       config, sort_keys=True, indent=2, separators=(',', ': ')) + '\n'
@@ -162,7 +165,26 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
   return True
 
 
-def print_remaining(test_name,tests_location):
+def print_convert(test_name, tests_location):
+  """Prints statistics for a test being converted for use in a CL description.
+  """
+  data = tests_location[test_name]
+  print('Convert %s to run exclusively on Swarming' % test_name)
+  print('')
+  print('%d configs already ran on Swarming' % data['count_run_on_swarming'])
+  print('%d used to run locally and were converted:' % data['count_run_local'])
+  for master, builders in sorted(data['local_configs'].iteritems()):
+    for builder in builders:
+      print('- %s: %s' % (master, builder))
+  print('')
+  print('Ran:')
+  print('  ./manage.py --convert %s' % test_name)
+  print('')
+  print('R=')
+  print('BUG=98637')
+
+
+def print_remaining(test_name, tests_location):
   """Prints a visual summary of what tests are yet to be converted to run on
   Swarming.
   """
@@ -262,7 +284,9 @@ def main():
       raise Error('%s listed in ninja_to_gn.pyl but not in any .json files' %
                   extra_targets_str)
 
-    if args.mode == 'remaining':
+    if args.mode == 'convert':
+      print_convert(args.test_name, tests_location)
+    elif args.mode == 'remaining':
       print_remaining(args.test_name, tests_location)
     return result
   except Error as e:
