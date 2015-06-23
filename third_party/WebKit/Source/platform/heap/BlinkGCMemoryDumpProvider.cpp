@@ -54,7 +54,6 @@ void BlinkGCMemoryDumpProvider::clearProcessDumpForCurrentGC()
 BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
     : m_currentProcessMemoryDump(adoptPtr(Platform::current()->createProcessMemoryDump()))
 {
-    ASSERT(m_currentProcessMemoryDump);
 }
 
 } // namespace blink
