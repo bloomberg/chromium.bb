@@ -55,6 +55,8 @@ class CORE_EXPORT AutoscrollController {
 public:
     static PassOwnPtr<AutoscrollController> create(Page&);
 
+    static const int noPanScrollRadius = 15;
+
     void animate(double monotonicFrameBeginTime);
     bool autoscrollInProgress() const;
     bool autoscrollInProgress(const LayoutBox*) const;

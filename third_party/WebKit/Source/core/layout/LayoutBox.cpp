@@ -827,9 +827,9 @@ void LayoutBox::panScroll(const IntPoint& sourcePoint)
 
     IntSize delta = lastKnownMousePosition - sourcePoint;
 
-    if (abs(delta.width()) <= FrameView::noPanScrollRadius) // at the center we let the space for the icon
+    if (abs(delta.width()) <= AutoscrollController::noPanScrollRadius) // at the center we let the space for the icon
         delta.setWidth(0);
-    if (abs(delta.height()) <= FrameView::noPanScrollRadius)
+    if (abs(delta.height()) <= AutoscrollController::noPanScrollRadius)
         delta.setHeight(0);
     scrollByRecursively(adjustedScrollDelta(delta), ScrollOffsetClamped);
 }

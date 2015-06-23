@@ -94,7 +94,6 @@ void AutoscrollController::stopAutoscroll()
 #if OS(WIN)
     if (panScrollInProgress()) {
         if (FrameView* view = scrollable->frame()->view()) {
-            view->removePanScrollIcon();
             view->setCursor(pointerCursor());
         }
     }
@@ -202,8 +201,6 @@ void AutoscrollController::startPanScrolling(LayoutBox* scrollable, const IntPoi
     m_autoscrollLayoutObject = scrollable;
     m_panScrollStartPos = lastKnownMousePosition;
 
-    if (FrameView* view = scrollable->frame()->view())
-        view->addPanScrollIcon(lastKnownMousePosition);
     startAutoscroll();
 }
 #else
@@ -265,10 +262,10 @@ void AutoscrollController::updatePanScrollState(FrameView* view, const IntPoint&
 {
     // At the original click location we draw a 4 arrowed icon. Over this icon there won't be any scroll
     // So we don't want to change the cursor over this area
-    bool east = m_panScrollStartPos.x() < (lastKnownMousePosition.x() - FrameView::noPanScrollRadius);
-    bool west = m_panScrollStartPos.x() > (lastKnownMousePosition.x() + FrameView::noPanScrollRadius);
-    bool north = m_panScrollStartPos.y() > (lastKnownMousePosition.y() + FrameView::noPanScrollRadius);
-    bool south = m_panScrollStartPos.y() < (lastKnownMousePosition.y() - FrameView::noPanScrollRadius);
+    bool east = m_panScrollStartPos.x() < (lastKnownMousePosition.x() - noPanScrollRadius);
+    bool west = m_panScrollStartPos.x() > (lastKnownMousePosition.x() + noPanScrollRadius);
+    bool north = m_panScrollStartPos.y() > (lastKnownMousePosition.y() + noPanScrollRadius);
+    bool south = m_panScrollStartPos.y() < (lastKnownMousePosition.y() - noPanScrollRadius);
 
     if (m_autoscrollType == AutoscrollForPan && (east || west || north || south))
         m_autoscrollType = AutoscrollForPanCanStop;

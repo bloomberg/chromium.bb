@@ -3781,15 +3781,6 @@ ScrollBehavior FrameView::scrollBehaviorStyle() const
     return ScrollBehaviorInstant;
 }
 
-void FrameView::paintPanScrollIcon(GraphicsContext* context)
-{
-    DEFINE_STATIC_REF(Image, panScrollIcon, (Image::loadPlatformResource("panIcon")));
-    IntPoint iconGCPoint = m_panScrollIconPoint;
-    if (parent())
-        iconGCPoint = toFrameView(parent())->rootFrameToContents(iconGCPoint);
-    context->drawImage(panScrollIcon, iconGCPoint);
-}
-
 void FrameView::paint(GraphicsContext* context, const IntRect& rect)
 {
     FramePainter(*this).paint(context, rect);
@@ -3901,25 +3892,6 @@ void FrameView::hide()
     }
 
     Widget::hide();
-}
-
-void FrameView::addPanScrollIcon(const IntPoint& iconPosition)
-{
-    HostWindow* window = hostWindow();
-    if (!window)
-        return;
-    m_shouldDrawPanScrollIcon = true;
-    m_panScrollIconPoint = IntPoint(iconPosition.x() - panIconSizeLength / 2 , iconPosition.y() - panIconSizeLength / 2);
-    window->invalidateRect(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
-}
-
-void FrameView::removePanScrollIcon()
-{
-    HostWindow* window = hostWindow();
-    if (!window)
-        return;
-    m_shouldDrawPanScrollIcon = false;
-    window->invalidateRect(IntRect(m_panScrollIconPoint, IntSize(panIconSizeLength, panIconSizeLength)));
 }
 
 void FrameView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAll, bool updatePositionSynchronously)

@@ -59,10 +59,6 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
 
         paintScrollbars(context, scrollViewDirtyRect);
     }
-
-    // Paint the panScroll Icon
-    if (m_frameView.drawPanScrollIcon())
-        m_frameView.paintPanScrollIcon(context);
 }
 
 void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)

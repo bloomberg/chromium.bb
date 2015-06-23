@@ -519,12 +519,6 @@ public:
     virtual void hide() override;
     virtual void setParentVisible(bool) override;
 
-    // Pan scrolling.
-    static const int noPanScrollRadius = 15;
-    void addPanScrollIcon(const IntPoint&);
-    void removePanScrollIcon();
-    void paintPanScrollIcon(GraphicsContext*);
-
     bool isPointInScrollbarCorner(const IntPoint&);
     bool scrollbarCornerPresent() const;
     virtual IntRect scrollCornerRect() const override;
