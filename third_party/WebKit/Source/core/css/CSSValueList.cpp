@@ -41,7 +41,7 @@ CSSValueList::CSSValueList(ValueListSeparator listSeparator)
 bool CSSValueList::removeAll(CSSValue* val)
 {
     bool found = false;
-    for (size_t index = 0; index < m_values.size(); index++) {
+    for (int index = m_values.size() - 1; index >= 0; --index) {
         RefPtrWillBeMember<CSSValue>& value = m_values.at(index);
         if (value && val && value->equals(*val)) {
             m_values.remove(index);
