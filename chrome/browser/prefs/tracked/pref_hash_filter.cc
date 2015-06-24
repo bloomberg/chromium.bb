@@ -31,6 +31,8 @@ void CleanupDeprecatedTrackedPreferences(
   static const char* const kDeprecatedTrackedPreferences[] = {
     // TODO(grt): Remove in M44+.
     "safebrowsing.incident_report_sent",
+    // TODO(mad): Remove in M48+.
+    "software_reporter.prompt_reason",
   };
 
   for (size_t i = 0; i < arraysize(kDeprecatedTrackedPreferences); ++i) {

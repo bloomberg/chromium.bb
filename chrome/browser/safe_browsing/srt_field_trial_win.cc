@@ -57,4 +57,8 @@ void RecordSRTPromptHistogram(SRTPromptHistogramValue value) {
                             SRT_PROMPT_MAX);
 }
 
+void RecordReporterStepHistogram(SwReporterUmaValue value) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Step", value, SW_REPORTER_MAX);
+}
+
 }  // namespace safe_browsing

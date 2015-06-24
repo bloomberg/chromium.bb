@@ -11,37 +11,22 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/process/kill.h"
-#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
-#include "chrome/browser/safe_browsing/srt_global_error_win.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/default_component_installer.h"
@@ -52,31 +37,12 @@
 #include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
-using safe_browsing::IsInSRTPromptFieldTrialGroups;
-
 namespace component_updater {
 
 namespace {
 
 // These two sets of values are used to send UMA information and are replicated
 // in the histograms.xml file, so the order MUST NOT CHANGE.
-enum SwReporterUmaValue {
-  SW_REPORTER_EXPLICIT_REQUEST = 0,        // Deprecated.
-  SW_REPORTER_STARTUP_RETRY = 1,           // Deprecated.
-  SW_REPORTER_RETRIED_TOO_MANY_TIMES = 2,  // Deprecated.
-  SW_REPORTER_START_EXECUTION = 3,
-  SW_REPORTER_FAILED_TO_START = 4,
-  SW_REPORTER_REGISTRY_EXIT_CODE = 5,
-  SW_REPORTER_RESET_RETRIES = 6,  // Deprecated.
-  SW_REPORTER_DOWNLOAD_START = 7,
-  SW_REPORTER_NO_BROWSER = 8,
-  SW_REPORTER_NO_LOCAL_STATE = 9,
-  SW_REPORTER_NO_PROMPT_NEEDED = 10,
-  SW_REPORTER_NO_PROMPT_FIELD_TRIAL = 11,
-  SW_REPORTER_ALREADY_PROMPTED = 12,
-  SW_REPORTER_MAX,
-};
 enum SRTCompleted {
   SRT_COMPLETED_NOT_YET = 0,
   SRT_COMPLETED_YES = 1,
@@ -86,9 +52,6 @@ enum SRTCompleted {
 
 // The maximum number of times to retry a download on startup.
 const int kMaxRetry = 20;
-
-// The number of days to wait before triggering another sw reporter run.
-const int kDaysBetweenSwReporterRuns = 7;
 
 // CRX hash. The extension id is: gkmgaooipdjhmangpemjhigmamcehddo. The hash was
 // generated in Python with something like this:
@@ -101,7 +64,7 @@ const uint8_t kSha256Hash[] = {0x6a, 0xc6, 0x0e, 0xe8, 0xf3, 0x97, 0xc0, 0xd6,
 const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
 
-// Where to fetch the reporter exit code in the registry.
+// Where to fetch the reporter's list of found uws in the registry.
 const wchar_t kSoftwareRemovalToolRegistryKey[] =
     L"Software\\Google\\Software Removal Tool";
 const wchar_t kCleanerSuffixRegistryKey[] = L"Cleaner";
@@ -115,16 +78,6 @@ const wchar_t kVersionValueName[] = L"Version";
 const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
 const char kFoundUwsReadErrorMetricName[] =
     "SoftwareReporter.FoundUwSReadError";
-
-// Exit codes that identify that a cleanup is needed.
-const int kCleanupNeeded = 0;
-const int kNothingFound = 2;
-const int kPostRebootCleanupNeeded = 4;
-const int kDelayedPostRebootCleanupNeeded = 15;
-
-void ReportUmaStep(SwReporterUmaValue value) {
-  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Step", value, SW_REPORTER_MAX);
-}
 
 void SRTHasCompleted(SRTCompleted value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.HasCompleted", value,
@@ -189,96 +142,6 @@ void ReportUploadsWithUma(const base::string16& upload_results) {
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
 }
 
-// This function is called on the UI thread to report the SwReporter exit code
-// and then clear it from the registry as well as clear the execution state
-// from the local state. This could be called from an interruptible worker
-// thread so should be resilient to unexpected shutdown. |version| is provided
-// so the kSwReporterPromptVersion prefs can be set.
-void ReportAndClearExitCode(int exit_code, const std::string& version) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.ExitCode", exit_code);
-
-  if (g_browser_process && g_browser_process->local_state()) {
-    g_browser_process->local_state()->SetInteger(prefs::kSwReporterLastExitCode,
-                                                 exit_code);
-  }
-
-  base::win::RegKey srt_key(HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey,
-                            KEY_SET_VALUE);
-  srt_key.DeleteValue(kExitCodeValueName);
-
-  if (!IsInSRTPromptFieldTrialGroups()) {
-    // Knowing about disabled field trial is more important than reporter not
-    // finding anything to remove.
-    ReportUmaStep(SW_REPORTER_NO_PROMPT_FIELD_TRIAL);
-    return;
-  }
-
-  if (exit_code != kPostRebootCleanupNeeded && exit_code != kCleanupNeeded) {
-    ReportUmaStep(SW_REPORTER_NO_PROMPT_NEEDED);
-    return;
-  }
-
-  // Find the last active browser, which may be NULL, in which case we won't
-  // show the prompt this time and will wait until the next run of the
-  // reporter. We can't use other ways of finding a browser because we don't
-  // have a profile.
-  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-  Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
-  if (!browser) {
-    ReportUmaStep(SW_REPORTER_NO_BROWSER);
-    return;
-  }
-
-  Profile* profile = browser->profile();
-  DCHECK(profile);
-
-  PrefService* prefs = profile->GetPrefs();
-  DCHECK(prefs);
-
-  // Don't show the prompt again if it's been shown before for this profile
-  // and for the current Finch seed.
-  std::string incoming_seed = safe_browsing::GetIncomingSRTSeed();
-  std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
-  if (!incoming_seed.empty() && incoming_seed == old_seed) {
-    ReportUmaStep(SW_REPORTER_ALREADY_PROMPTED);
-    return;
-  }
-
-  if (!incoming_seed.empty())
-    prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
-  prefs->SetString(prefs::kSwReporterPromptVersion, version);
-  prefs->SetInteger(prefs::kSwReporterPromptReason, exit_code);
-
-  // Download the SRT.
-  ReportUmaStep(SW_REPORTER_DOWNLOAD_START);
-  safe_browsing::FetchSRTAndDisplayBubble();
-}
-
-// This function is called from a worker thread to launch the SwReporter and
-// wait for termination to collect its exit code. This task could be interrupted
-// by a shutdown at anytime, so it shouldn't depend on anything external that
-// could be shutdown beforehand.
-void LaunchAndWaitForExit(const base::FilePath& exe_path,
-                          const std::string& version) {
-  const base::CommandLine reporter_command_line(exe_path);
-  base::Process scan_reporter_process =
-      base::LaunchProcess(reporter_command_line, base::LaunchOptions());
-  if (!scan_reporter_process.IsValid()) {
-    ReportUmaStep(SW_REPORTER_FAILED_TO_START);
-    return;
-  }
-  ReportUmaStep(SW_REPORTER_START_EXECUTION);
-
-  int exit_code = -1;
-  bool success = scan_reporter_process.WaitForExit(&exit_code);
-  DCHECK(success);
-  // It's OK if this doesn't complete, the work will continue on next startup.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ReportAndClearExitCode, exit_code, version));
-}
-
 // Reports UwS found by the software reporter tool via UMA and RAPPOR.
 void ReportFoundUwS() {
   base::win::RegKey reporter_key(HKEY_CURRENT_USER,
@@ -315,7 +178,7 @@ void ReportFoundUwS() {
 
 class SwReporterInstallerTraits : public ComponentInstallerTraits {
  public:
-  explicit SwReporterInstallerTraits(PrefService* prefs) : prefs_(prefs) {}
+  SwReporterInstallerTraits() {}
 
   ~SwReporterInstallerTraits() override {}
 
@@ -334,51 +197,10 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
                       scoped_ptr<base::DictionaryValue> manifest) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     ReportVersionWithUma(version);
-
-    wcsncpy_s(version_dir_,
-              _MAX_PATH,
-              install_dir.value().c_str(),
-              install_dir.value().size());
-
-    // A previous run may have results in the registry, so check and report
-    // them if present.
-    std::string version_string(version.GetString());
-    base::win::RegKey srt_key(
-        HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_READ);
-    DWORD exit_code;
-    if (srt_key.Valid() &&
-        srt_key.ReadValueDW(kExitCodeValueName, &exit_code) == ERROR_SUCCESS) {
-      ReportUmaStep(SW_REPORTER_REGISTRY_EXIT_CODE);
-      ReportAndClearExitCode(exit_code, version_string);
-    }
-
-    // If we can't access local state, we can't see when we last ran, so
-    // just exit without running.
-    if (!g_browser_process || !g_browser_process->local_state()) {
-      ReportUmaStep(SW_REPORTER_NO_LOCAL_STATE);
-      return;
-    }
-
-    // Run the reporter if it hasn't been triggered in the
-    // kDaysBetweenSwReporterRuns days.
-    const base::Time last_time_triggered = base::Time::FromInternalValue(
-        g_browser_process->local_state()->GetInt64(
-            prefs::kSwReporterLastTimeTriggered));
-    if ((base::Time::Now() - last_time_triggered).InDays() >=
-        kDaysBetweenSwReporterRuns) {
-      g_browser_process->local_state()->SetInt64(
-          prefs::kSwReporterLastTimeTriggered,
-          base::Time::Now().ToInternalValue());
-
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&LaunchAndWaitForExit,
-                     install_dir.Append(kSwReporterExeName),
-                     version_string),
-          true);
-    }
+    safe_browsing::RunSwReporter(install_dir.Append(kSwReporterExeName),
+                                 version.GetString());
   }
 
   base::FilePath GetBaseDirectory() const override { return install_dir(); }
@@ -402,28 +224,20 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
     return update_client::GetCrxComponentID(component);
   }
 
-  static base::FilePath VersionPath() { return base::FilePath(version_dir_); }
-
  private:
   static void GetPkHash(std::vector<uint8_t>* hash) {
     DCHECK(hash);
     hash->assign(kSha256Hash, kSha256Hash + sizeof(kSha256Hash));
   }
-
-  PrefService* prefs_;
-  static wchar_t version_dir_[_MAX_PATH];
 };
-
-wchar_t SwReporterInstallerTraits::version_dir_[] = {};
 
 }  // namespace
 
-void RegisterSwReporterComponent(ComponentUpdateService* cus,
-                                 PrefService* prefs) {
+void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   // The Sw reporter doesn't need to run if the user isn't reporting metrics and
   // isn't in the SRTPrompt field trial "On" group.
   if (!ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() &&
-      !IsInSRTPromptFieldTrialGroups()) {
+      !safe_browsing::IsInSRTPromptFieldTrialGroups()) {
     return;
   }
 
@@ -461,7 +275,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
                                  run_time);
       }
       // Get exit code. Assume nothing was found if we can't read the exit code.
-      DWORD exit_code = kNothingFound;
+      DWORD exit_code = safe_browsing::kSwReporterNothingFound;
       if (cleaner_key.HasValue(kExitCodeValueName)) {
         cleaner_key.ReadValueDW(kExitCodeValueName, &exit_code);
         UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.ExitCode",
@@ -470,8 +284,9 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
       }
       cleaner_key.DeleteValue(kStartTimeValueName);
 
-      if (exit_code == kPostRebootCleanupNeeded ||
-          exit_code == kDelayedPostRebootCleanupNeeded) {
+      if (exit_code == safe_browsing::kSwReporterPostRebootCleanupNeeded ||
+          exit_code ==
+              safe_browsing::kSwReporterDelayedPostRebootCleanupNeeded) {
         // Check if we are running after the user has rebooted.
         base::TimeDelta elapsed(
             base::Time::Now() -
@@ -497,8 +312,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
   ReportFoundUwS();
 
   // Install the component.
-  scoped_ptr<ComponentInstallerTraits> traits(
-      new SwReporterInstallerTraits(prefs));
+  scoped_ptr<ComponentInstallerTraits> traits(new SwReporterInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(traits.Pass());
@@ -512,8 +326,6 @@ void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {
 
 void RegisterProfilePrefsForSwReporter(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kSwReporterPromptReason, -1);
-
   registry->RegisterStringPref(prefs::kSwReporterPromptVersion, "");
 
   registry->RegisterStringPref(prefs::kSwReporterPromptSeed, "");

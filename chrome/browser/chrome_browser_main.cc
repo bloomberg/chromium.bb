@@ -471,7 +471,7 @@ void RegisterComponentsForUpdate() {
 
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)
-  RegisterSwReporterComponent(cus, g_browser_process->local_state());
+  RegisterSwReporterComponent(cus);
 #endif  // defined(GOOGLE_CHROME_BUILD)
   RegisterCAPSComponent(cus);
 #endif  // defined(OS_WIN)

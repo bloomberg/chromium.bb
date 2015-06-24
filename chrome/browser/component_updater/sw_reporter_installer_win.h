@@ -18,8 +18,7 @@ class ComponentUpdateService;
 
 // Call once during startup to make the component update service aware of the
 // SwReporter.
-void RegisterSwReporterComponent(ComponentUpdateService* cus,
-                                 PrefService* prefs);
+void RegisterSwReporterComponent(ComponentUpdateService* cus);
 
 // Register local state preferences related to the SwReporter.
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry);
