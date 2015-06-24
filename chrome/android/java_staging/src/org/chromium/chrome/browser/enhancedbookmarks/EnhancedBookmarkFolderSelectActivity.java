@@ -153,7 +153,6 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             entryList.add(new FolderListEntry(null, 0,
                     getString(R.string.enhanced_bookmark_add_folder), false,
                     FolderListEntry.TYPE_NEW_FOLDER));
-            entryList.add(new FolderListEntry(null, 0, "", false, FolderListEntry.TYPE_DIVIDER));
         }
 
         for (int i = 0; i < folderList.size(); i++) {
@@ -191,8 +190,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             if (entry.mType == FolderListEntry.TYPE_NORMAL) {
                 selectedFolder = entry.mId;
             } else {
-                assert false : "Divider and new folder items should not "
-                        + "be clickable in creating mode";
+                assert false : "New folder items should not be clickable in creating mode";
             }
             Intent intent = new Intent();
             intent.putExtra(INTENT_SELECTED_FOLDER, selectedFolder.toString());
@@ -223,8 +221,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
      */
     private static class FolderListEntry {
         public static final int TYPE_NEW_FOLDER = 0;
-        public static final int TYPE_DIVIDER = 1;
-        public static final int TYPE_NORMAL = 2;
+        public static final int TYPE_NORMAL = 1;
 
         BookmarkId mId;
         String mTitle;
@@ -234,7 +231,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
 
         public FolderListEntry(BookmarkId bookmarkId, int depth, String title, boolean isSelected,
                 int type) {
-            assert type == TYPE_DIVIDER || type == TYPE_NEW_FOLDER || type == TYPE_NORMAL;
+            assert type == TYPE_NEW_FOLDER || type == TYPE_NORMAL;
             mDepth = depth;
             mId = bookmarkId;
             mTitle = title;
@@ -276,11 +273,11 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         }
 
         /**
-         * There are 3 types of entries: new folder, divider and normal.
+         * There are 2 types of entries: new folder and normal.
          */
         @Override
         public int getViewTypeCount() {
-            return 3;
+            return 2;
         }
 
         @Override
@@ -296,13 +293,8 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
                 return convertView;
             }
             if (convertView == null) {
-                if (entry.mType == FolderListEntry.TYPE_DIVIDER) {
-                    return LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.eb_divider, parent, false);
-                } else {
-                    convertView = LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.eb_folder_select_item, parent, false);
-                }
+                convertView = LayoutInflater.from(parent.getContext()).inflate(
+                        R.layout.eb_folder_select_item, parent, false);
             }
             TextView textView = (TextView) convertView;
             textView.setText(entry.mTitle);
@@ -318,9 +310,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
          * i.e. New Folder, Normal and Selected.
          */
         private void setUpIcons(FolderListEntry entry, TextView textView) {
-            // Divider entry should not have start drawables.
             int iconId = 0;
-
             if (entry.mType == FolderListEntry.TYPE_NORMAL) {
                 iconId = R.drawable.eb_folder;
             } else if (entry.mType == FolderListEntry.TYPE_NEW_FOLDER) {
@@ -345,19 +335,6 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
                     * mPaddingIncrement;
             ApiCompatibilityUtils.setPaddingRelative(textView, paddingStart, 0,
                     mBasePadding, 0);
-        }
-
-        @Override
-        public boolean areAllItemsEnabled() {
-            return false;
-        }
-
-        /**
-         * Disables divider as an entry in list
-         */
-        @Override
-        public boolean isEnabled(int position) {
-            return getItem(position).mType != FolderListEntry.TYPE_DIVIDER;
         }
     }
 }
