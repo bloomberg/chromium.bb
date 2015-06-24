@@ -9,6 +9,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -44,7 +45,9 @@ void ObjectBackedNativeHandler::Router(
   // See comment in header file for why we do this.
   if (handler_function_value.IsEmpty() ||
       handler_function_value->IsUndefined()) {
-    console::Error(args.GetIsolate()->GetCallingContext(),
+    ScriptContext* script_context = ScriptContextSet::GetContextByV8Context(
+        args.GetIsolate()->GetCallingContext());
+    console::Error(script_context ? script_context->GetRenderFrame() : nullptr,
                    "Extension view no longer exists");
     return;
   }

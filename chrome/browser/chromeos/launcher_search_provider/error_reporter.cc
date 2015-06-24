@@ -4,29 +4,27 @@
 
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/console_message_level.h"
-#include "extensions/common/extension_messages.h"
 
 namespace chromeos {
 namespace launcher_search_provider {
 
-ErrorReporter::ErrorReporter(IPC::Sender* sender, const int routing_id)
-    : sender_(sender), routing_id_(routing_id) {
+ErrorReporter::ErrorReporter(content::RenderFrameHost* host) : host_(host) {
 }
 
 ErrorReporter::~ErrorReporter() {
 }
 
 void ErrorReporter::Warn(const std::string& message) {
-  DCHECK(sender_);
+  DCHECK(host_);
 
-  sender_->Send(new ExtensionMsg_AddMessageToConsole(
-      routing_id_, content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING,
-      message));
+  host_->AddMessageToConsole(
+      content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING, message);
 }
 
 scoped_ptr<ErrorReporter> ErrorReporter::Duplicate() {
-  return make_scoped_ptr(new ErrorReporter(sender_, routing_id_));
+  return make_scoped_ptr(new ErrorReporter(host_));
 }
 
 }  // namespace launcher_search_provider

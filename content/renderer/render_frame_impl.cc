@@ -1351,8 +1351,7 @@ void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
 
 void RenderFrameImpl::OnAddMessageToConsole(ConsoleMessageLevel level,
                                             const std::string& message) {
-  if (devtools_agent_)
-    devtools_agent_->AddMessageToConsole(level, message);
+  AddMessageToConsole(level, message);
 }
 
 void RenderFrameImpl::OnJavaScriptExecuteRequest(
@@ -1893,6 +1892,12 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
       isolate,
       ServiceRegistryJsWrapper::kModuleName,
       ServiceRegistryJsWrapper::Create(isolate, &service_registry_).ToV8());
+}
+
+void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
+                                          const std::string& message) {
+  if (devtools_agent_)
+    devtools_agent_->AddMessageToConsole(level, message);
 }
 
 // blink::WebFrameClient implementation ----------------------------------------

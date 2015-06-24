@@ -18,6 +18,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/modules/module_registry.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -57,15 +58,18 @@ void Fatal(ScriptContext* context, const std::string& message) {
 
   ExtensionsClient* client = ExtensionsClient::Get();
   if (client->ShouldSuppressFatalErrors()) {
-    console::Error(context->isolate()->GetCallingContext(), full_message);
+    console::Error(context->GetRenderFrame(), full_message);
     client->RecordDidSuppressFatalError();
   } else {
-    console::Fatal(context->isolate()->GetCallingContext(), full_message);
+    console::Fatal(context->GetRenderFrame(), full_message);
   }
 }
 
 void Warn(v8::Isolate* isolate, const std::string& message) {
-  console::Warn(isolate->GetCallingContext(), message);
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(isolate->GetCallingContext());
+  console::Warn(script_context ? script_context->GetRenderFrame() : nullptr,
+                message);
 }
 
 // Default exception handler which logs the exception.

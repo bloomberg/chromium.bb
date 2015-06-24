@@ -116,8 +116,6 @@ void ExtensionFrameHelper::WillReleaseScriptContext(
 bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionFrameHelper, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_AddMessageToConsole,
-                        OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect,
                         OnExtensionDispatchOnConnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
@@ -135,12 +133,6 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ExtensionFrameHelper::OnAddMessageToConsole(
-    content::ConsoleMessageLevel level,
-    const std::string& message) {
-  console::AddMessage(render_frame()->GetRenderView(), level, message);
 }
 
 void ExtensionFrameHelper::OnExtensionDispatchOnConnect(

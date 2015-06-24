@@ -112,7 +112,9 @@ void AppBindings::GetDetailsForFrame(
 
   WebLocalFrame* target_frame = WebLocalFrame::frameForContext(context);
   if (!target_frame) {
-    console::Error(args.GetIsolate()->GetCallingContext(),
+    ScriptContext* script_context = ScriptContextSet::GetContextByV8Context(
+        args.GetIsolate()->GetCallingContext());
+    console::Error(script_context ? script_context->GetRenderFrame() : nullptr,
                    "Could not find frame for specified object.");
     return;
   }

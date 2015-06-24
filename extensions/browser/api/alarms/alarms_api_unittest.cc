@@ -288,18 +288,30 @@ TEST_F(ExtensionAlarmsTest, CreateDupe) {
 
 TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
   // Create an alarm with delay below the minimum accepted value.
-  CreateAlarm("[\"negative\", {\"delayInMinutes\": -0.2}]");
   IPC::TestSink& sink =
       static_cast<content::MockRenderProcessHost*>(
           contents()->GetRenderViewHost()->GetProcess())->sink();
+  size_t initial_message_count = sink.message_count();
+  CreateAlarm("[\"negative\", {\"delayInMinutes\": -0.2}]");
+  // A new message should have been added.
+  ASSERT_GT(sink.message_count(), initial_message_count);
+
+  // All of this would be cleaner if we could read the message as a
+  // FrameMsg_AddMessageToConsole, but that would be a layering violation.
+  // Better yet would be an observer method for frames adding console messages,
+  // but it's not worth adding just for a test.
   const IPC::Message* warning =
-      sink.GetUniqueMessageMatching(ExtensionMsg_AddMessageToConsole::ID);
+      sink.GetMessageAt(initial_message_count /* 0-based */);
   ASSERT_TRUE(warning);
-  ExtensionMsg_AddMessageToConsole::Param params;
-  ExtensionMsg_AddMessageToConsole::Read(warning, &params);
-  content::ConsoleMessageLevel level = base::get<0>(params);
-  std::string message = base::get<1>(params);
-  EXPECT_EQ(content::CONSOLE_MESSAGE_LEVEL_WARNING, level);
+
+  int level = 0;
+  base::PickleIterator iter(*warning);
+  ASSERT_TRUE(iter.ReadInt(&level));
+  std::string message;
+  ASSERT_TRUE(iter.ReadString(&message));
+
+  EXPECT_EQ(content::CONSOLE_MESSAGE_LEVEL_WARNING,
+            static_cast<content::ConsoleMessageLevel>(level));
   EXPECT_THAT(message, testing::HasSubstr("delay is less than minimum of 1"));
 }
 

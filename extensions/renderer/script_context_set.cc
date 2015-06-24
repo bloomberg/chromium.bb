@@ -17,12 +17,20 @@
 
 namespace extensions {
 
+namespace {
+// There is only ever one instance of the ScriptContextSet.
+ScriptContextSet* g_context_set = nullptr;
+}
+
 ScriptContextSet::ScriptContextSet(ExtensionSet* extensions,
                                    ExtensionIdSet* active_extension_ids)
     : extensions_(extensions), active_extension_ids_(active_extension_ids) {
+  DCHECK(!g_context_set);
+  g_context_set = this;
 }
 
 ScriptContextSet::~ScriptContextSet() {
+  g_context_set = nullptr;
 }
 
 ScriptContext* ScriptContextSet::Register(
@@ -77,6 +85,12 @@ ScriptContext* ScriptContextSet::GetByV8Context(
       return script_context;
   }
   return nullptr;
+}
+
+ScriptContext* ScriptContextSet::GetContextByV8Context(
+    const v8::Local<v8::Context>& v8_context) {
+  // g_context_set can be null in unittests.
+  return g_context_set ? g_context_set->GetByV8Context(v8_context) : nullptr;
 }
 
 void ScriptContextSet::ForEach(

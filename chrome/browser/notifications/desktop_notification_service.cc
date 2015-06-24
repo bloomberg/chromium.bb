@@ -116,9 +116,8 @@ void DesktopNotificationService::RequestNotificationPermission(
     }
   }
   if (IsExtensionWithPermissionOrSuggestInConsole(
-          extensions::APIPermission::kNotifications,
-          extension,
-          web_contents->GetRenderViewHost())) {
+          extensions::APIPermission::kNotifications, extension,
+          web_contents->GetMainFrame())) {
     result_callback.Run(CONTENT_SETTING_ALLOW);
     return;
   }

@@ -104,11 +104,11 @@ class ExtensionBadgedIconImageTestImpl : public ExtensionBadgedIconImage {
 // A fake error reporter to test error message.
 class FakeErrorReporter : public ErrorReporter {
  public:
-  FakeErrorReporter() : ErrorReporter(nullptr, -1) {
+  FakeErrorReporter() : ErrorReporter(nullptr) {
     last_message_.reset(new std::string());
   }
   explicit FakeErrorReporter(const linked_ptr<std::string>& last_message)
-      : ErrorReporter(nullptr, -1), last_message_(last_message) {}
+      : ErrorReporter(nullptr), last_message_(last_message) {}
   ~FakeErrorReporter() override {}
   void Warn(const std::string& message) override {
     last_message_->clear();

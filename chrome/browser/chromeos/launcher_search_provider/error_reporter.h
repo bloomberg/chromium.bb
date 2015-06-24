@@ -8,7 +8,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "ipc/ipc_sender.h"
+
+namespace content {
+class RenderFrameHost;
+}
 
 namespace chromeos {
 namespace launcher_search_provider {
@@ -16,7 +19,7 @@ namespace launcher_search_provider {
 // A utility class which sends error message to developer console.
 class ErrorReporter {
  public:
-  ErrorReporter(IPC::Sender* sender, const int routing_id);
+  explicit ErrorReporter(content::RenderFrameHost* host);
   virtual ~ErrorReporter();
 
   // Shows |message| as warning in the developer console of the extension.
@@ -28,9 +31,7 @@ class ErrorReporter {
 
  private:
   // Not owned.
-  IPC::Sender* sender_;
-
-  const int routing_id_;
+  content::RenderFrameHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorReporter);
 };

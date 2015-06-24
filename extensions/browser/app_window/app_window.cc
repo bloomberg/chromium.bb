@@ -926,7 +926,7 @@ void AppWindow::ToggleFullscreenModeForTab(content::WebContents* source,
     return;
 
   if (!IsExtensionWithPermissionOrSuggestInConsole(
-          APIPermission::kFullscreen, extension, source->GetRenderViewHost())) {
+          APIPermission::kFullscreen, extension, source->GetMainFrame())) {
     return;
   }
 

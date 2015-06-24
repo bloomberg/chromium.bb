@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_
 
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/media_stream_request.h"
 
 namespace blink {
@@ -55,10 +54,6 @@ class AppWebContentsHelper {
 
  private:
   const Extension* GetExtension() const;
-
-  // Helper method to add a message to the renderer's DevTools console.
-  void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
-                                   const std::string& message) const;
 
   // The browser context with which this window is associated.
   // AppWindowWebContentsDelegate does not own this object.

@@ -7,12 +7,12 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/console_message_level.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/suggest_permission_util.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
@@ -46,7 +46,7 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
   // TOOD(mihaip): Can we check for user gestures instead?
   WindowOpenDisposition disposition = params.disposition;
   if (disposition == CURRENT_TAB) {
-    AddMessageToDevToolsConsole(
+    web_contents_->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
         base::StringPrintf(
             "Can't open same-window link to \"%s\"; try target=\"_blank\".",
@@ -63,7 +63,7 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
   content::WebContents* contents =
       app_delegate_->OpenURLFromTab(browser_context_, web_contents_, params);
   if (!contents) {
-    AddMessageToDevToolsConsole(
+    web_contents_->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
         base::StringPrintf(
             "Can't navigate to \"%s\"; apps do not support navigation.",
@@ -79,9 +79,7 @@ void AppWebContentsHelper::RequestToLockMouse() const {
     return;
 
   bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
-      APIPermission::kPointerLock,
-      extension,
-      web_contents_->GetRenderViewHost());
+      APIPermission::kPointerLock, extension, web_contents_->GetMainFrame());
 
   web_contents_->GotResponseToLockMouseRequest(has_permission);
 }
@@ -112,14 +110,6 @@ const Extension* AppWebContentsHelper::GetExtension() const {
   return ExtensionRegistry::Get(browser_context_)
       ->enabled_extensions()
       .GetByID(extension_id_);
-}
-
-void AppWebContentsHelper::AddMessageToDevToolsConsole(
-    content::ConsoleMessageLevel level,
-    const std::string& message) const {
-  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  rvh->Send(new ExtensionMsg_AddMessageToConsole(
-      rvh->GetRoutingID(), level, message));
 }
 
 }  // namespace extensions

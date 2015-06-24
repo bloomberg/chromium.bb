@@ -555,11 +555,6 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetChannel,
                      int /* channel */)
 
-// Adds a logging message to the renderer's root frame DevTools console.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_AddMessageToConsole,
-                    content::ConsoleMessageLevel /* level */,
-                    std::string /* message */)
-
 // Notify the renderer that its window has closed.
 IPC_MESSAGE_ROUTED0(ExtensionMsg_AppWindowClosed)
 

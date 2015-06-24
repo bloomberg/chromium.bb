@@ -11,37 +11,25 @@
 #include "v8/include/v8.h"
 
 namespace content {
-class RenderView;
+class RenderFrame;
 }
 
 namespace extensions {
 
-// Utility for logging messages to RenderViews.
+// Utility for logging messages to RenderFrames.
 namespace console {
 
-// Adds |message| to the console of |render_view| at various log levels.
-void Debug(content::RenderView* render_view, const std::string& message);
-void Log(content::RenderView* render_view, const std::string& message);
-void Warn(content::RenderView* render_view, const std::string& message);
-void Error(content::RenderView* render_view, const std::string& message);
+// Adds |message| to the console of |render_frame|. If |render_frame| is null,
+// LOG()s the message instead.
+void Debug(content::RenderFrame* render_frame, const std::string& message);
+void Log(content::RenderFrame* render_frame, const std::string& message);
+void Warn(content::RenderFrame* render_frame, const std::string& message);
+void Error(content::RenderFrame* render_frame, const std::string& message);
 
 // Logs an Error then crashes the current process.
-void Fatal(content::RenderView* render_view, const std::string& message);
+void Fatal(content::RenderFrame* render_frame, const std::string& message);
 
-void AddMessage(content::RenderView* render_view,
-                content::ConsoleMessageLevel level,
-                const std::string& message);
-
-// Adds |message| to the console that hosts |context|, if any.
-void Debug(v8::Local<v8::Context> context, const std::string& message);
-void Log(v8::Local<v8::Context> context, const std::string& message);
-void Warn(v8::Local<v8::Context> context, const std::string& message);
-void Error(v8::Local<v8::Context> context, const std::string& message);
-
-// Logs an Error then crashes the current process.
-void Fatal(v8::Local<v8::Context> context, const std::string& message);
-
-void AddMessage(v8::Local<v8::Context> context,
+void AddMessage(content::RenderFrame* render_frame,
                 content::ConsoleMessageLevel level,
                 const std::string& message);
 

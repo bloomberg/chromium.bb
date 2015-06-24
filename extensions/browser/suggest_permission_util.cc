@@ -4,15 +4,15 @@
 
 #include "extensions/browser/suggest_permission_util.h"
 
-#include "content/public/browser/render_view_host.h"
+#include "base/strings/stringprintf.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 
 using content::CONSOLE_MESSAGE_LEVEL_WARNING;
-using content::RenderViewHost;
 
 namespace extensions {
 
@@ -23,12 +23,10 @@ const char kPermissionsHelpURLForExtensions[] =
 const char kPermissionsHelpURLForApps[] =
     "http://developer.chrome.com/apps/declare_permissions.html";
 
-void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
-                                           const Extension* extension,
-                                           content::RenderViewHost* host) {
-  if (!extension || !host)
-    return;
-
+void SuggestAPIPermissionInDevToolsConsole(
+    APIPermission::ID permission,
+    const Extension* extension,
+    content::RenderFrameHost* render_frame_host) {
   const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByID(permission);
   CHECK(permission_info);
@@ -41,8 +39,10 @@ void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
       extension->is_platform_app() ?
           kPermissionsHelpURLForApps : kPermissionsHelpURLForExtensions);
 
-  host->Send(new ExtensionMsg_AddMessageToConsole(
-      host->GetRoutingID(), CONSOLE_MESSAGE_LEVEL_WARNING, message));
+  // Only the main frame handles dev tools messages.
+  content::WebContents::FromRenderFrameHost(render_frame_host)
+      ->GetMainFrame()
+      ->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING, message);
 }
 
 }  // namespace
@@ -50,12 +50,14 @@ void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
 bool IsExtensionWithPermissionOrSuggestInConsole(
     APIPermission::ID permission,
     const Extension* extension,
-    content::RenderViewHost* host) {
+    content::RenderFrameHost* render_frame_host) {
   if (extension && extension->permissions_data()->HasAPIPermission(permission))
     return true;
 
-  if (extension)
-    SuggestAPIPermissionInDevToolsConsole(permission, extension, host);
+  if (extension && render_frame_host) {
+    SuggestAPIPermissionInDevToolsConsole(permission, extension,
+                                          render_frame_host);
+  }
 
   return false;
 }

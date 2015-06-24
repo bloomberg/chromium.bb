@@ -71,7 +71,7 @@ bool GeolocationPermissionContextExtensions::RequestPermission(
             requesting_frame_origin);
     if (IsExtensionWithPermissionOrSuggestInConsole(
             APIPermission::kGeolocation, extension,
-            web_contents->GetRenderViewHost())) {
+            web_contents->GetMainFrame())) {
       // Make sure the extension is in the calling process.
       if (extensions::ProcessMap::Get(profile_)->Contains(
               extension->id(), request_id.render_process_id())) {

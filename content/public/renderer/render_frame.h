@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
@@ -142,6 +143,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void EnsureMojoBuiltinsAreAvailable(
       v8::Isolate* isolate,
       v8::Local<v8::Context> context) = 0;
+
+  // Adds |message| to the DevTools console.
+  virtual void AddMessageToConsole(ConsoleMessageLevel level,
+                                   const std::string& message) = 0;
 
  protected:
   ~RenderFrame() override {}

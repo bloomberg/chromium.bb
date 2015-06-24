@@ -479,8 +479,10 @@ void UIThreadExtensionFunction::SetTransferredBlobUUIDs(
 void UIThreadExtensionFunction::WriteToConsole(
     content::ConsoleMessageLevel level,
     const std::string& message) {
-  render_frame_host_->Send(new ExtensionMsg_AddMessageToConsole(
-      render_frame_host_->GetRoutingID(), level, message));
+  // Only the main frame handles dev tools messages.
+  WebContents::FromRenderFrameHost(render_frame_host_)
+      ->GetMainFrame()
+      ->AddMessageToConsole(level, message);
 }
 
 IOThreadExtensionFunction::IOThreadExtensionFunction()

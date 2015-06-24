@@ -77,6 +77,9 @@ class ScriptContextSet {
   // Gets the ScriptContext corresponding to the specified
   // v8::Context or NULL if no such context exists.
   ScriptContext* GetByV8Context(const v8::Local<v8::Context>& context) const;
+  // Static equivalent of the above.
+  static ScriptContext* GetContextByV8Context(
+      const v8::Local<v8::Context>& context);
 
   // Synchronously runs |callback| with each ScriptContext that belongs to
   // |extension_id| in |render_frame|.

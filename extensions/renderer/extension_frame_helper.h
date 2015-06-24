@@ -69,8 +69,6 @@ class ExtensionFrameHelper
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC handlers.
-  void OnAddMessageToConsole(content::ConsoleMessageLevel level,
-                             const std::string& message);
   void OnExtensionDispatchOnConnect(
       int target_port_id,
       const std::string& channel_name,

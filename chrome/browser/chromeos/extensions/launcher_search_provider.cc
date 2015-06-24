@@ -25,8 +25,7 @@ bool LauncherSearchProviderSetSearchResultsFunction::RunSync() {
   DCHECK(render_frame_host());
 
   scoped_ptr<ErrorReporter> error_reporter(
-      new ErrorReporter(render_frame_host(),
-                        render_frame_host()->GetRoutingID()));
+      new ErrorReporter(render_frame_host()));
   Service* const service = Service::Get(GetProfile());
   service->SetSearchResults(extension(), error_reporter.Pass(),
                             params->query_id, params->results);

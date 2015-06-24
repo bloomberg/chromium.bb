@@ -8,7 +8,7 @@
 #include "extensions/common/permissions/api_permission.h"
 
 namespace content {
-class RenderViewHost;
+class RenderFrameHost;
 }
 
 namespace extensions {
@@ -21,7 +21,7 @@ class Extension;
 bool IsExtensionWithPermissionOrSuggestInConsole(
     APIPermission::ID permission,
     const Extension* extension,
-    content::RenderViewHost* host);
+    content::RenderFrameHost* render_frame_host);
 
 }  // namespace extensions
 
