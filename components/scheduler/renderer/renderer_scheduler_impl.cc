@@ -446,11 +446,6 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     case Policy::COMPOSITOR_CRITICAL_PATH_PRIORITY:
       helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
                                PrioritizingTaskQueueSelector::HIGH_PRIORITY);
-      // TODO(scheduler-dev): Add a task priority between HIGH and BEST_EFFORT
-      // that still has some guarantee of running.
-      helper_.SetQueuePriority(
-          LOADING_TASK_QUEUE,
-          PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
       helper_.DisableQueue(LOADING_TASK_QUEUE);
       policy_disables_timer_queue = true;
       break;
