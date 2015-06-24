@@ -764,9 +764,11 @@ crbug.com/502308 webexposed/global-interface-listing-dedicated-worker.html [ Nee
 crbug.com/502308 webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
 crbug.com/502308 fast/events/constructors/midi-message-event-constructor.html [ NeedsManualRebaseline ]
 crbug.com/502308 webexposed/global-interface-listing-compositor-worker.html [ NeedsManualRebaseline ]
-crbug.com/502308 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
-crbug.com/502308 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
+crbug.com/502308 [ Release ] virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
+crbug.com/502308 [ Release ] virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
 crbug.com/502308 virtual/display_list_2d_canvas/fast/canvas/webgl/type-conversion-test.html [ NeedsManualRebaseline ]
+crbug.com/502308 [ Debug ] virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline Timeout ]
+crbug.com/502308 [ Debug ] virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline Timeout ]
 
 crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
