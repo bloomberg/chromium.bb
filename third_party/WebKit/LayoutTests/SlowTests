@@ -214,4 +214,4 @@ crbug.com/498539 inspector/sources/debugger-step/debugger-step-into-async1.html 
 crbug.com/498539 inspector/sources/debugger-step/debugger-step-into-async2.html [ Slow ]
 
 crbug.com/485428 [ Debug Linux Win ] css3/filters/huge-region.html [ Slow ]
-
+crbug.com/503175 http/tests/serviceworker/getregistrations.html [ Slow ]
