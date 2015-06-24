@@ -62,66 +62,33 @@ class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CanSetupDefaultVideoCall DISABLED_CanSetupDefaultVideoCall
-// Flaky on TSAN v2. http://crbug.com/408006
-#elif defined(THREAD_SANITIZER)
-#define MAYBE_CanSetupDefaultVideoCall DISABLED_CanSetupDefaultVideoCall
-#else
-#define MAYBE_CanSetupDefaultVideoCall CanSetupDefaultVideoCall
-#endif
-
 // These tests will make a complete PeerConnection-based call and verify that
 // video is playing for the call.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupDefaultVideoCall) {
+                       CanSetupDefaultVideoCall) {
   MakeTypicalPeerConnectionCall(
       "callAndExpectResolution({video: true}, 640, 480);");
 }
 
-// Flaky on TSAN v2. http://crbug.com/408006
-#if defined(THREAD_SANITIZER)
-#define MAYBE_CanSetupVideoCallWith1To1AspectRatio \
-  DISABLED_CanSetupVideoCallWith1To1AspectRatio
-#else
-#define MAYBE_CanSetupVideoCallWith1To1AspectRatio \
-  CanSetupVideoCallWith1To1AspectRatio
-#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupVideoCallWith1To1AspectRatio) {
+                       CanSetupVideoCallWith1To1AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: {minWidth: 320,"
       " maxWidth: 320, minHeight: 320, maxHeight: 320}}}, 320, 320);";
   MakeTypicalPeerConnectionCall(javascript);
 }
 
-// Flaky on TSAN v2. http://crbug.com/408006
-#if defined(THREAD_SANITIZER)
-#define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
-  DISABLED_CanSetupVideoCallWith16To9AspectRatio
-#else
-#define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
-  CanSetupVideoCallWith16To9AspectRatio
-#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupVideoCallWith16To9AspectRatio) {
+                       CanSetupVideoCallWith16To9AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: {minWidth: 640,"
       " maxWidth: 640, minAspectRatio: 1.777}}}, 640, 360);";
   MakeTypicalPeerConnectionCall(javascript);
 }
 
-// Flaky on TSAN v2. http://crbug.com/408006
-#if defined(THREAD_SANITIZER)
-#define MAYBE_CanSetupVideoCallWith4To3AspectRatio \
-  DISABLED_CanSetupVideoCallWith4To3AspectRatio
-#else
-#define MAYBE_CanSetupVideoCallWith4To3AspectRatio \
-  CanSetupVideoCallWith4To3AspectRatio
-#endif
+
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupVideoCallWith4To3AspectRatio) {
+                       CanSetupVideoCallWith4To3AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: { minWidth: 960,"
       "maxWidth: 960, minAspectRatio: 1.333, maxAspectRatio: 1.333}}}, 960,"
@@ -129,35 +96,19 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(javascript);
 }
 
-// Flaky on TSAN v2. http://crbug.com/408006
-#if defined(THREAD_SANITIZER)
-#define MAYBE_CanSetupVideoCallAndDisableLocalVideo \
-  DISABLED_CanSetupVideoCallAndDisableLocalVideo
-#else
-#define MAYBE_CanSetupVideoCallAndDisableLocalVideo \
-  CanSetupVideoCallAndDisableLocalVideo
-#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupVideoCallAndDisableLocalVideo) {
+                       CanSetupVideoCallAndDisableLocalVideo) {
   const std::string javascript =
       "callAndDisableLocalVideo({video: true});";
   MakeTypicalPeerConnectionCall(javascript);
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux, see http://crbug.com/240376
-#define MAYBE_CanSetupAudioAndVideoCall DISABLED_CanSetupAudioAndVideoCall
-#else
-#define MAYBE_CanSetupAudioAndVideoCall CanSetupAudioAndVideoCall
-#endif
-
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupAudioAndVideoCall) {
+                       CanSetupAudioAndVideoCall) {
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MANUAL_CanSetupCallAndSendDtmf) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanSetupCallAndSendDtmf) {
   MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,abc\');");
 }
 
@@ -175,14 +126,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(kJavascript);
 }
 
-#if defined(OS_MACOSX)
-// Flaky on Mac-10.9: https://crbug.com/484826
-#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio DISABLED_CanMakeVideoCallAndThenRenegotiateToAudio
-#else
-#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio CanMakeVideoCallAndThenRenegotiateToAudio
-#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio) {
+                       CanMakeVideoCallAndThenRenegotiateToAudio) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndRenegotiateToAudio({audio: true, video:true}, {audio: true});");
 }
@@ -212,16 +157,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
 // MSID. http://tools.ietf.org/html/draft-alvestrand-rtcweb-msid-02
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux, see http://crbug.com/240373
-#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
-        DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
-#else
-#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
-        CanSetupAudioAndVideoCallWithoutMsidAndBundle
-#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
+                       CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
   MakeTypicalPeerConnectionCall("callWithoutMsidAndBundle();");
 }
 
@@ -244,16 +181,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, NegotiateOfferWithBLine) {
   MakeTypicalPeerConnectionCall("negotiateOfferWithBLine();");
 }
 
-// This test will make a complete PeerConnection-based call using legacy SDP
-// settings: GIce, external SDES, and no BUNDLE.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux, see http://crbug.com/240373
-#define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
-#else
-#define MAYBE_CanSetupLegacyCall CanSetupLegacyCall
-#endif
-
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_CanSetupLegacyCall) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanSetupLegacyCall) {
   MakeTypicalPeerConnectionCall("callWithLegacySdp();");
 }
 
@@ -274,62 +202,38 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_CallWithSctpDataOnly) {
   MakeTypicalPeerConnectionCall("callWithSctpDataOnly();");
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CallWithDataAndMedia DISABLED_CallWithDataAndMedia
-#else
-#define MAYBE_CallWithDataAndMedia CallWithDataAndMedia
-#endif
-
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
 // TODO(mallinath) - Remove this test after rtp based data channel is disabled.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_CallWithDataAndMedia) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallWithDataAndMedia) {
   MakeTypicalPeerConnectionCall("callWithDataAndMedia();");
 }
 
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS) && \
-     defined(ARCH_CPU_ARM_FAMILY)) || defined(MEMORY_SANITIZER)
-// Timing out on ARM linux bot: http://crbug.com/238490
+#if defined(MEMORY_SANITIZER)
 // Fails under MemorySanitizer: http://crbug.com/405951
 #define MAYBE_CallWithSctpDataAndMedia DISABLED_CallWithSctpDataAndMedia
 #else
 #define MAYBE_CallWithSctpDataAndMedia CallWithSctpDataAndMedia
 #endif
-
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        MAYBE_CallWithSctpDataAndMedia) {
   MakeTypicalPeerConnectionCall("callWithSctpDataAndMedia();");
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CallWithDataAndLaterAddMedia DISABLED_CallWithDataAndLaterAddMedia
-#else
-// Temporarily disable the test on all platforms. http://crbug.com/293252
-#define MAYBE_CallWithDataAndLaterAddMedia DISABLED_CallWithDataAndLaterAddMedia
-#endif
-
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and later add an audio and video track.
+// Doesn't work, therefore disabled: https://crbug.com/293252.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CallWithDataAndLaterAddMedia) {
+                       DISABLED_CallWithDataAndLaterAddMedia) {
   MakeTypicalPeerConnectionCall("callWithDataAndLaterAddMedia();");
 }
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CallWithNewVideoMediaStream DISABLED_CallWithNewVideoMediaStream
-#else
-#define MAYBE_CallWithNewVideoMediaStream CallWithNewVideoMediaStream
-#endif
 
 // This test will make a PeerConnection-based call and send a new Video
 // MediaStream that has been created based on a MediaStream created with
 // getUserMedia.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_CallWithNewVideoMediaStream) {
+                       CallWithNewVideoMediaStream) {
   MakeTypicalPeerConnectionCall("callWithNewVideoMediaStream();");
 }
 
@@ -388,16 +292,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
       "callAndEnsureRemoteVideoMutingDoesntMuteAudio();");
 }
 
-// Flaky on TSAN v2: http://crbug.com/373637
-#if defined(THREAD_SANITIZER)
-#define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks\
-        DISABLED_EstablishAudioVideoCallAndVerifyUnmutingWorks
-#else
-#define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks\
-        EstablishAudioVideoCallAndVerifyUnmutingWorks
-#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks) {
+                       EstablishAudioVideoCallAndVerifyUnmutingWorks) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndEnsureAudioTrackUnmutingWorks();");
 }
