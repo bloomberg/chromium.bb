@@ -41,10 +41,11 @@ void PpapiDecryptor::Create(
   scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper =
       create_pepper_cdm_cb.Run(plugin_type, security_origin);
   if (!pepper_cdm_wrapper) {
-    DLOG(ERROR) << "Plugin instance creation failed.";
+    std::string message =
+        "Unable to create the CDM for the key system " + key_system + ".";
+    DLOG(ERROR) << message;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(cdm_created_cb, nullptr,
-                              "Plugin instance creation failed."));
+        FROM_HERE, base::Bind(cdm_created_cb, nullptr, message));
     return;
   }
 
@@ -113,7 +114,7 @@ void PpapiDecryptor::SetServerCertificate(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
 
@@ -129,7 +130,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
 
@@ -145,7 +146,7 @@ void PpapiDecryptor::LoadSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
   CdmDelegate()->LoadSession(session_type, session_id, promise.Pass());
@@ -158,7 +159,7 @@ void PpapiDecryptor::UpdateSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
   CdmDelegate()->UpdateSession(session_id, response, promise.Pass());
@@ -169,7 +170,7 @@ void PpapiDecryptor::CloseSession(const std::string& session_id,
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
 
@@ -182,7 +183,7 @@ void PpapiDecryptor::RemoveSession(
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
-    promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
+    promise->reject(INVALID_STATE_ERROR, 0, "CDM has failed.");
     return;
   }
 
