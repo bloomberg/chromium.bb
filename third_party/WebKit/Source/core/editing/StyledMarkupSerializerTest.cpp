@@ -10,6 +10,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
+#include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/markup.h"
 #include "core/frame/FrameView.h"
@@ -37,7 +38,10 @@ protected:
     HTMLDocument& document() const { return *m_document; }
 
     template <typename Tree>
-    std::string serialize();
+    std::string serialize(EAnnotateForInterchange = DoNotAnnotateForInterchange);
+
+    template <typename Tree>
+    std::string serializePart(const typename Tree::PositionType& start, const typename Tree::PositionType& end, EAnnotateForInterchange = DoNotAnnotateForInterchange);
 
     void setBodyContent(const char*);
     PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char*);
@@ -55,12 +59,18 @@ void StyledMarkupSerializerTest::SetUp()
 }
 
 template <typename Tree>
-std::string StyledMarkupSerializerTest::serialize()
+std::string StyledMarkupSerializerTest::serialize(EAnnotateForInterchange shouldAnnotate)
 {
     using PositionType = typename Tree::PositionType;
     PositionType start = PositionType(m_document->body(), PositionType::PositionIsBeforeChildren);
     PositionType end = PositionType(m_document->body(), PositionType::PositionIsAfterChildren);
-    return createMarkup(start, end).utf8().data();
+    return createMarkup(start, end, shouldAnnotate).utf8().data();
+}
+
+template <typename Tree>
+std::string StyledMarkupSerializerTest::serializePart(const typename Tree::PositionType& start, const typename Tree::PositionType& end, EAnnotateForInterchange shouldAnnotate)
+{
+    return createMarkup(start, end, shouldAnnotate).utf8().data();
 }
 
 static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
@@ -77,7 +87,9 @@ void StyledMarkupSerializerTest::setBodyContent(const char* bodyContent)
 
 PassRefPtrWillBeRawPtr<ShadowRoot> StyledMarkupSerializerTest::setShadowContent(const char* shadowContent)
 {
-    return createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+    document().recalcDistribution();
+    return shadowRoot;
 }
 
 TEST_F(StyledMarkupSerializerTest, TextOnly)
@@ -211,6 +223,29 @@ TEST_F(StyledMarkupSerializerTest, StyleDisplayNoneAndNewLines)
     setBodyContent(bodyContent);
     EXPECT_EQ("", serialize<EditingStrategy>());
     EXPECT_EQ("", serialize<EditingInComposedTreeStrategy>());
+}
+
+TEST_F(StyledMarkupSerializerTest, ShadowTreeStyle)
+{
+    const char* bodyContent = "<p id='host' style='color: red'><span style='font-weight: bold;'><span id='one'>11</span></span></p>\n";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+    RefPtrWillBeRawPtr<Text> text = toText(one->firstChild());
+    Position startDOM(text, 0);
+    Position endDOM(text, 2);
+    const std::string& serializedDOM = serializePart<EditingStrategy>(startDOM, endDOM, AnnotateForInterchange);
+
+    bodyContent = "<p id='host' style='color: red'>00<span id='one'>11</span>22</p>\n";
+    const char* shadowContent = "<span style='font-weight: bold'><content select=#one></content></span>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent);
+    one = document().getElementById("one");
+    text = toText(one->firstChild());
+    PositionInComposedTree startICT(text, 0);
+    PositionInComposedTree endICT(text, 2);
+    const std::string& serializedICT = serializePart<EditingInComposedTreeStrategy>(startICT, endICT, AnnotateForInterchange);
+
+    EXPECT_EQ(serializedDOM, serializedICT);
 }
 
 } // namespace blink
