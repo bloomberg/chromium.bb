@@ -25,6 +25,7 @@ public class TabRedirectHandler {
      * An invalid entry index.
      */
     public static final int INVALID_ENTRY_INDEX = -1;
+    private static final long INVALID_TIME = -1;
 
     private static final int NAVIGATION_TYPE_NONE = 0;
     private static final int NAVIGATION_TYPE_FROM_INTENT = 1;
@@ -38,7 +39,7 @@ public class TabRedirectHandler {
     private final HashSet<ComponentName> mCachedResolvers = new HashSet<ComponentName>();
     private boolean mIsInitialIntentHeadingToChrome;
 
-    private long mLastNewUrlLoadingTime;
+    private long mLastNewUrlLoadingTime = INVALID_TIME;
     private boolean mIsOnEffectiveRedirectChain;
     private int mInitialNavigationType;
     private int mLastCommittedEntryIndexBeforeStartingNavigation;
@@ -137,7 +138,8 @@ public class TabRedirectHandler {
                 isNewLoadingStartedByUser = true;
             } else if (pageTransitionCore != PageTransition.LINK) {
                 isNewLoadingStartedByUser = true;
-            } else if (lastUserInteractionTime > prevNewUrlLoadingTime || isFromIntent) {
+            } else if (prevNewUrlLoadingTime == INVALID_TIME || isFromIntent
+                    || lastUserInteractionTime > prevNewUrlLoadingTime) {
                 isNewLoadingStartedByUser = true;
             }
         }

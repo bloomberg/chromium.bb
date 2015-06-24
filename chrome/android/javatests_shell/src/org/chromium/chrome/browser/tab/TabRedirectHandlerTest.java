@@ -382,6 +382,22 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
     }
 
+    @SmallTest
+    @Feature({"IntentHandling"})
+    public void testNavigationWithUninitializedUserInteractionTime() {
+        // User interaction time could be uninitialized when a new document activity is opened after
+        // clicking a link. In that case, the value is 0.
+        final long uninitializedUserInteractionTime = 0;
+        TabRedirectHandler handler = new TabRedirectHandler(mContext);
+
+        assertFalse(handler.isOnNavigation());
+        handler.updateNewUrlLoading(PageTransition.LINK, false, true,
+                uninitializedUserInteractionTime, TabRedirectHandler.INVALID_ENTRY_INDEX);
+        assertTrue(handler.isOnNavigation());
+        assertEquals(TabRedirectHandler.INVALID_ENTRY_INDEX,
+                handler.getLastCommittedEntryIndexBeforeStartingNavigation());
+    }
+
     private static class TestPackageManager extends MockPackageManager {
         @Override
         public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
