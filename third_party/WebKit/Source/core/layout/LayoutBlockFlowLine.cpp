@@ -379,7 +379,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 
     LayoutUnit hyphenWidth = 0;
     if (toInlineTextBox(run->m_box)->hasHyphen())
-        hyphenWidth = measureHyphenWidth(layoutText, font, run->direction());
+        hyphenWidth = layoutText->hyphenWidth(font, run->direction());
 
     float measuredWidth = 0;
     FloatRect glyphBounds;

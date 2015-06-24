@@ -496,13 +496,6 @@ inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
     return 0;
 }
 
-inline float measureHyphenWidth(LayoutText* layoutText, const Font& font, TextDirection textDirection)
-{
-    const ComputedStyle& style = layoutText->styleRef();
-    return font.width(constructTextRun(layoutText, font,
-        style.hyphenString().string(), style, style.direction()));
-}
-
 ALWAYS_INLINE TextDirection textDirectionFromUnicode(WTF::Unicode::Direction direction)
 {
     return direction == WTF::Unicode::RightToLeft
@@ -594,7 +587,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             m_lineInfo.setEmpty(false, m_block, &m_width);
 
         if (c == softHyphenCharacter && m_autoWrap && !hyphenWidth) {
-            hyphenWidth = measureHyphenWidth(layoutText, font, textDirectionFromUnicode(m_resolver.position().direction()));
+            hyphenWidth = layoutText->hyphenWidth(font, textDirectionFromUnicode(m_resolver.position().direction()));
             m_width.addUncommittedWidth(hyphenWidth);
         }
 

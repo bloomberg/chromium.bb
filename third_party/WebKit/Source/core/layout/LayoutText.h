@@ -26,6 +26,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/TextRunConstructor.h"
 #include "platform/LengthFunctions.h"
 #include "platform/text/TextPath.h"
 #include "wtf/Forward.h"
@@ -141,6 +142,8 @@ public:
 
     PassRefPtr<AbstractInlineTextBox> firstAbstractInlineTextBox();
 
+    float hyphenWidth(const Font&, TextDirection);
+
 protected:
     virtual void willBeDestroyed() override;
 
@@ -222,6 +225,12 @@ inline UChar LayoutText::characterAt(unsigned i) const
         return 0;
 
     return uncheckedCharacterAt(i);
+}
+
+inline float LayoutText::hyphenWidth(const Font& font, TextDirection direction)
+{
+    const ComputedStyle& style = styleRef();
+    return font.width(constructTextRun(this, font, style.hyphenString().string(), style, direction));
 }
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutText, isText());

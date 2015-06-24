@@ -35,7 +35,6 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/GlyphOverflow.h"
@@ -857,12 +856,6 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth)
     computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphBounds);
 }
 
-static inline float hyphenWidth(LayoutText* layoutObject, const Font& font, TextDirection direction)
-{
-    const ComputedStyle& style = layoutObject->styleRef();
-    return font.width(constructTextRun(layoutObject, font, style.hyphenString().string(), style, direction));
-}
-
 void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, FloatRect& glyphBounds)
 {
     ASSERT(m_hasTab || preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts);
@@ -1019,7 +1012,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             } else {
                 w = widthFromFont(f, i, wordLen, leadWidth, currMaxWidth, textDirection, &fallbackFonts, &glyphBounds);
                 if (c == softHyphenCharacter)
-                    currMinWidth += hyphenWidth(this, f, textDirection);
+                    currMinWidth += hyphenWidth(f, textDirection);
             }
 
             currMinWidth += w;
