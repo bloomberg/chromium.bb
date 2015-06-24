@@ -109,3 +109,12 @@ class ThreadTimesKeyIdlePowerCases(_ThreadTimes):
   def ValueCanBeAddedPredicate(cls, value, _):
     # Only report per-second metrics.
     return 'per_frame' not in value.name and 'mean_frame' not in value.name
+
+class ThreadTimesToughScrollingCases(_ThreadTimes):
+  """Measure timeline metrics while performing smoothness action on tough
+  scrolling cases."""
+  page_set = page_sets.ToughScrollingCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'thread_times.tough_scrolling_cases'
