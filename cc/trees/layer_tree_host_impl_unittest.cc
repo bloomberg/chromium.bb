@@ -28,6 +28,7 @@
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
+#include "cc/layers/viewport.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/compositor_frame_metadata.h"
@@ -291,6 +292,34 @@ class LayerTreeHostImplTest : public testing::Test,
         host_impl_->active_tree(), content_size);
     host_impl_->active_tree()->DidBecomeActive();
     return scroll_layer;
+  }
+
+  // Sets up a typical virtual viewport setup with one child content layer.
+  // Returns a pointer to the content layer.
+  LayerImpl* CreateBasicVirtualViewportLayers(const gfx::Size& viewport_size,
+                                              const gfx::Size& content_size) {
+    // CreateScrollAndContentsLayers makes the outer viewport unscrollable and
+    // the inner a different size from the outer. We'll reuse its layer
+    // hierarchy but adjust the sizing to our needs.
+    CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+
+    LayerImpl* content_layer =
+        host_impl_->OuterViewportScrollLayer()->children().back();
+    content_layer->SetBounds(content_size);
+    host_impl_->OuterViewportScrollLayer()->SetBounds(content_size);
+
+    LayerImpl* outer_clip = host_impl_->OuterViewportScrollLayer()->parent();
+    outer_clip->SetBounds(viewport_size);
+
+    LayerImpl* inner_clip_layer =
+        host_impl_->InnerViewportScrollLayer()->parent()->parent();
+    inner_clip_layer->SetBounds(viewport_size);
+    host_impl_->InnerViewportScrollLayer()->SetBounds(viewport_size);
+
+    host_impl_->SetViewportSize(viewport_size);
+    host_impl_->active_tree()->DidBecomeActive();
+
+    return content_layer;
   }
 
   // TODO(wjmaclean) Add clip-layer pointer to parameters.
@@ -1090,30 +1119,21 @@ TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
   CreateHostImpl(settings,
                  CreateOutputSurface());
 
-  LayerImpl* inner_scroll_layer =
-      SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
-  // Adjust the content layer to be larger than the outer viewport container so
-  // that we get scrolling in both viewports.
-  LayerImpl* content_layer =
-      host_impl_->OuterViewportScrollLayer()->children().back();
   LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
-  LayerImpl* inner_clip_layer =
-      host_impl_->InnerViewportScrollLayer()->parent()->parent();
-  inner_clip_layer->SetBounds(gfx::Size(100, 100));
-  outer_scroll_layer->SetBounds(gfx::Size(200, 200));
-  content_layer->SetBounds(gfx::Size(200, 200));
-
-  host_impl_->SetViewportSize(gfx::Size(100, 100));
+  LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
 
   EXPECT_VECTOR_EQ(
-      gfx::Vector2dF(100, 100),
+      gfx::Vector2dF(500, 500),
       outer_scroll_layer->MaxScrollOffset());
 
-  host_impl_->ScrollBegin(gfx::Point(99, 99), InputHandler::GESTURE);
+  host_impl_->ScrollBegin(gfx::Point(250, 250), InputHandler::GESTURE);
   host_impl_->PinchGestureBegin();
-  host_impl_->PinchGestureUpdate(2, gfx::Point(99, 99));
-  host_impl_->ScrollBy(gfx::Point(99, 99), gfx::Vector2dF(10.f, 10.f));
+  host_impl_->PinchGestureUpdate(2, gfx::Point(250, 250));
+  host_impl_->ScrollBy(gfx::Point(250, 250), gfx::Vector2dF(10.f, 10.f));
   host_impl_->PinchGestureEnd();
   host_impl_->ScrollEnd();
 
@@ -1121,28 +1141,102 @@ TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
       gfx::Vector2dF(0, 0),
       outer_scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(
-      gfx::Vector2dF(50, 50),
+      gfx::Vector2dF(130, 130),
       inner_scroll_layer->CurrentScrollOffset());
 }
 
+// Tests the "snapping" of pinch-zoom gestures to the screen edge. That is, when
+// a pinch zoom is anchored within a certain margin of the screen edge, we
+// should assume the user means to scroll into the edge of the screen.
+TEST_F(LayerTreeHostImplTest, PinchZoomSnapsToScreenEdge) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.invert_viewport_scroll_order = true;
+  CreateHostImpl(settings,
+                 CreateOutputSurface());
+
+  const gfx::Size content_size(1000, 1000);
+  const gfx::Size viewport_size(500, 500);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+
+  int offsetFromEdge = Viewport::kPinchZoomSnapMarginDips - 5;
+  gfx::Point anchor(viewport_size.width() - offsetFromEdge,
+                    viewport_size.height() - offsetFromEdge);
+
+  // Pinch in within the margins. The scroll should stay exactly locked to the
+  // bottom and right.
+  host_impl_->ScrollBegin(anchor, InputHandler::GESTURE);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2, anchor);
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(250, 250),
+      host_impl_->InnerViewportScrollLayer()->CurrentScrollOffset());
+
+  // Reset.
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(1.f);
+  host_impl_->InnerViewportScrollLayer()->SetScrollDelta(gfx::Vector2d());
+  host_impl_->OuterViewportScrollLayer()->SetScrollDelta(gfx::Vector2d());
+
+  // Pinch in within the margins. The scroll should stay exactly locked to the
+  // top and left.
+  anchor = gfx::Point(offsetFromEdge, offsetFromEdge);
+  host_impl_->ScrollBegin(anchor, InputHandler::GESTURE);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2, anchor);
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(0, 0),
+      host_impl_->InnerViewportScrollLayer()->CurrentScrollOffset());
+
+  // Reset.
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(1.f);
+  host_impl_->InnerViewportScrollLayer()->SetScrollDelta(gfx::Vector2d());
+  host_impl_->OuterViewportScrollLayer()->SetScrollDelta(gfx::Vector2d());
+
+  // Pinch in just outside the margin. There should be no snapping.
+  offsetFromEdge = Viewport::kPinchZoomSnapMarginDips;
+  anchor = gfx::Point(offsetFromEdge, offsetFromEdge);
+  host_impl_->ScrollBegin(anchor, InputHandler::GESTURE);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2, anchor);
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(50, 50),
+      host_impl_->InnerViewportScrollLayer()->CurrentScrollOffset());
+
+  // Reset.
+  host_impl_->active_tree()->SetPageScaleOnActiveTree(1.f);
+  host_impl_->InnerViewportScrollLayer()->SetScrollDelta(gfx::Vector2d());
+  host_impl_->OuterViewportScrollLayer()->SetScrollDelta(gfx::Vector2d());
+
+  // Pinch in just outside the margin. There should be no snapping.
+  offsetFromEdge = Viewport::kPinchZoomSnapMarginDips;
+  anchor = gfx::Point(viewport_size.width() - offsetFromEdge,
+                      viewport_size.height() - offsetFromEdge);
+  host_impl_->ScrollBegin(anchor, InputHandler::GESTURE);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2, anchor);
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(200, 200),
+      host_impl_->InnerViewportScrollLayer()->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest, ImplPinchZoomWheelBubbleBetweenViewports) {
-  LayerImpl* inner_scroll_layer =
-      SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  const gfx::Size content_size(200, 200);
+  const gfx::Size viewport_size(100, 100);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
 
-  // Adjust the content layer to be larger than the outer viewport container so
-  // that we get scrolling in both viewports.
-  LayerImpl* content_layer =
-      host_impl_->OuterViewportScrollLayer()->children().back();
   LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
-  LayerImpl* inner_clip_layer =
-      host_impl_->InnerViewportScrollLayer()->parent()->parent();
-  inner_clip_layer->SetBounds(gfx::Size(100, 100));
-  outer_scroll_layer->SetBounds(gfx::Size(200, 200));
-  content_layer->SetBounds(gfx::Size(200, 200));
-
-  host_impl_->SetViewportSize(gfx::Size(100, 100));
-
-  DrawFrame();
+  LayerImpl* inner_scroll_layer = host_impl_->InnerViewportScrollLayer();
 
   // Zoom into the page by a 2X factor
   float min_page_scale = 1.f, max_page_scale = 4.f;

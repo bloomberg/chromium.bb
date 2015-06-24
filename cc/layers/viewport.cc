@@ -20,17 +20,16 @@ scoped_ptr<Viewport> Viewport::Create(
 }
 
 Viewport::Viewport(LayerTreeHostImpl* host_impl)
-    : host_impl_(host_impl) {
+    : host_impl_(host_impl)
+    , pinch_zoom_active_(false) {
   DCHECK(host_impl_);
 }
 
 void Viewport::Pan(const gfx::Vector2dF& delta) {
   gfx::Vector2dF pending_delta = delta;
-
-  pending_delta -= host_impl_->ScrollLayer(InnerScrollLayer(),
-                                           pending_delta,
-                                           gfx::Point(),
-                                           false);
+  float page_scale = host_impl_->active_tree()->current_page_scale_factor();
+  pending_delta.Scale(1 / page_scale);
+  InnerScrollLayer()->ScrollBy(pending_delta);
 }
 
 Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
@@ -67,6 +66,70 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   result.applied_delta = content_delta - pending_content_delta;
   return result;
+}
+
+void Viewport::SnapPinchAnchorIfWithinMargin(const gfx::Point& anchor) {
+  gfx::SizeF viewport_size =
+      host_impl_->active_tree()->InnerViewportContainerLayer()->bounds();
+
+  if (anchor.x() < kPinchZoomSnapMarginDips)
+    pinch_anchor_adjustment_.set_x(-anchor.x());
+  else if (anchor.x() > viewport_size.width() - kPinchZoomSnapMarginDips)
+    pinch_anchor_adjustment_.set_x(viewport_size.width() - anchor.x());
+
+  if (anchor.y() < kPinchZoomSnapMarginDips)
+    pinch_anchor_adjustment_.set_y(-anchor.y());
+  else if (anchor.y() > viewport_size.height() - kPinchZoomSnapMarginDips)
+    pinch_anchor_adjustment_.set_y(viewport_size.height() - anchor.y());
+}
+
+void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
+  if (!pinch_zoom_active_) {
+    // If this is the first pinch update and the pinch is within a margin-
+    // length of the screen edge, offset all updates by the amount so that we
+    // effectively snap the pinch zoom to the edge of the screen. This makes it
+    // easy to zoom in on position: fixed elements.
+    if (host_impl_->settings().invert_viewport_scroll_order)
+      SnapPinchAnchorIfWithinMargin(anchor);
+
+    pinch_zoom_active_ = true;
+  }
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Keep the center-of-pinch anchor specified by (x, y) in a stable
+  // position over the course of the magnify.
+  gfx::Point adjusted_anchor = anchor + pinch_anchor_adjustment_;
+  float page_scale = active_tree->current_page_scale_factor();
+  gfx::PointF previous_scale_anchor =
+      gfx::ScalePoint(adjusted_anchor, 1.f / page_scale);
+  active_tree->SetPageScaleOnActiveTree(page_scale * magnify_delta);
+  page_scale = active_tree->current_page_scale_factor();
+  gfx::PointF new_scale_anchor =
+      gfx::ScalePoint(adjusted_anchor, 1.f / page_scale);
+  gfx::Vector2dF move = previous_scale_anchor - new_scale_anchor;
+
+  // Scale back to viewport space since that's the coordinate space ScrollBy
+  // uses.
+  move.Scale(page_scale);
+
+  // If clamping the inner viewport scroll offset causes a change, it should
+  // be accounted for from the intended move.
+  move -= InnerScrollLayer()->ClampScrollToMaxScrollOffset();
+
+  if (host_impl_->settings().invert_viewport_scroll_order) {
+    Pan(move);
+  } else {
+    gfx::Point viewport_point;
+    bool is_wheel_event = false;
+    bool affect_top_controls = false;
+    ScrollBy(move, viewport_point, is_wheel_event, affect_top_controls);
+  }
+}
+
+void Viewport::PinchEnd() {
+  pinch_anchor_adjustment_ = gfx::Vector2d();
+  pinch_zoom_active_ = false;
 }
 
 gfx::Vector2dF Viewport::ScrollTopControls(const gfx::Vector2dF& delta) {

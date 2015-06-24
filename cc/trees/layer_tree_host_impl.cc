@@ -2922,7 +2922,6 @@ bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
 
 void LayerTreeHostImpl::PinchGestureBegin() {
   pinch_gesture_active_ = true;
-  previous_pinch_anchor_ = gfx::Point();
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
   if (active_tree_->OuterViewportScrollLayer()) {
@@ -2947,36 +2946,7 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   // the pinch update.
   active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
 
-  // Keep the center-of-pinch anchor specified by (x, y) in a stable
-  // position over the course of the magnify.
-  float page_scale = active_tree_->current_page_scale_factor();
-  gfx::PointF previous_scale_anchor = gfx::ScalePoint(anchor, 1.f / page_scale);
-  active_tree_->SetPageScaleOnActiveTree(page_scale * magnify_delta);
-  page_scale = active_tree_->current_page_scale_factor();
-  gfx::PointF new_scale_anchor = gfx::ScalePoint(anchor, 1.f / page_scale);
-  gfx::Vector2dF move = previous_scale_anchor - new_scale_anchor;
-
-  // Scale back to viewport space since that's the coordinate space ScrollBy
-  // uses.
-  move.Scale(page_scale);
-
-  previous_pinch_anchor_ = anchor;
-
-  // If clamping the inner viewport scroll offset causes a change, it should
-  // be accounted for from the intended move.
-  move -= InnerViewportScrollLayer()->ClampScrollToMaxScrollOffset();
-
-  if (settings().invert_viewport_scroll_order) {
-    viewport()->Pan(move);
-  } else {
-    gfx::Point viewport_point;
-    bool is_wheel_event = false;
-    bool affect_top_controls = false;
-    viewport()->ScrollBy(move,
-                         viewport_point,
-                         is_wheel_event,
-                         affect_top_controls);
-  }
+  viewport()->PinchUpdate(magnify_delta, anchor);
 
   active_tree_->SetRootLayerScrollOffsetDelegate(
       root_layer_scroll_offset_delegate_);
@@ -2992,6 +2962,7 @@ void LayerTreeHostImpl::PinchGestureEnd() {
     pinch_gesture_end_should_clear_scrolling_layer_ = false;
     ClearCurrentlyScrollingLayer();
   }
+  viewport()->PinchEnd();
   top_controls_manager_->PinchEnd();
   client_->SetNeedsCommitOnImplThread();
   // When a pinch ends, we may be displaying content cached at incorrect scales,

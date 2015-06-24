@@ -709,7 +709,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   bool pinch_gesture_active_;
   bool pinch_gesture_end_should_clear_scrolling_layer_;
-  gfx::Point previous_pinch_anchor_;
 
   scoped_ptr<TopControlsManager> top_controls_manager_;
 
