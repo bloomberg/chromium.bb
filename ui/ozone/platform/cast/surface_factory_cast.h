@@ -32,12 +32,6 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
                                                  gfx::Size size,
                                                  BufferFormat format,
                                                  BufferUsage usage) override;
-  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                            int plane_z_order,
-                            gfx::OverlayTransform plane_transform,
-                            scoped_refptr<NativePixmap> buffer,
-                            const gfx::Rect& display_bounds,
-                            const gfx::RectF& crop_rect) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;

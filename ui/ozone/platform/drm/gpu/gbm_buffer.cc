@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 
 namespace ui {
@@ -65,7 +66,9 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   return buffer;
 }
 
-GbmPixmap::GbmPixmap(const scoped_refptr<GbmBuffer>& buffer) : buffer_(buffer) {
+GbmPixmap::GbmPixmap(const scoped_refptr<GbmBuffer>& buffer,
+                     ScreenManager* screen_manager)
+    : buffer_(buffer), screen_manager_(screen_manager) {
 }
 
 bool GbmPixmap::Initialize() {
@@ -95,6 +98,16 @@ int GbmPixmap::GetDmaBufFd() {
 
 int GbmPixmap::GetDmaBufPitch() {
   return gbm_bo_get_stride(buffer_->bo());
+}
+
+bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                     int plane_z_order,
+                                     gfx::OverlayTransform plane_transform,
+                                     const gfx::Rect& display_bounds,
+                                     const gfx::RectF& crop_rect) {
+  screen_manager_->GetWindow(widget)->QueueOverlayPlane(OverlayPlane(
+      buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
+  return true;
 }
 
 }  // namespace ui

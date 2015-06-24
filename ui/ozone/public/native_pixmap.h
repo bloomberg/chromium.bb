@@ -6,6 +6,13 @@
 #define UI_OZONE_PUBLIC_NATIVE_PIXMAP_H_
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_transform.h"
+
+namespace gfx {
+class Rect;
+class RectF;
+}
 
 namespace ui {
 
@@ -18,6 +25,23 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   virtual void* /* EGLClientBuffer */ GetEGLClientBuffer() = 0;
   virtual int GetDmaBufFd() = 0;
   virtual int GetDmaBufPitch() = 0;
+
+  // Sets the overlay plane to switch to at the next page flip.
+  // |w| specifies the screen to display this overlay plane on.
+  // |plane_z_order| specifies the stacking order of the plane relative to the
+  // main framebuffer located at index 0.
+  // |plane_transform| specifies how the buffer is to be transformed during.
+  // composition.
+  // |buffer| to be presented by the overlay.
+  // |display_bounds| specify where it is supposed to be on the screen.
+  // |crop_rect| specifies the region within the buffer to be placed
+  // inside |display_bounds|. This is specified in texture coordinates, in the
+  // range of [0,1].
+  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                    int plane_z_order,
+                                    gfx::OverlayTransform plane_transform,
+                                    const gfx::Rect& display_bounds,
+                                    const gfx::RectF& crop_rect) = 0;
 
  protected:
   virtual ~NativePixmap() {}

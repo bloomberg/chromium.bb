@@ -36,10 +36,8 @@ class GLImageOzoneNativePixmap : public gfx::GLImageEGL {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override {
-    return OzonePlatform::GetInstance()
-        ->GetSurfaceFactoryOzone()
-        ->ScheduleOverlayPlane(widget, z_order, transform, pixmap_, bounds_rect,
-                               crop_rect);
+    return pixmap_->ScheduleOverlayPlane(widget, z_order, transform,
+                                         bounds_rect, crop_rect);
   }
 
  protected:
@@ -75,10 +73,8 @@ class GLImageOzoneNativePixmapDmaBuf : public gfx::GLImageLinuxDMABuffer {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override {
-    return OzonePlatform::GetInstance()
-        ->GetSurfaceFactoryOzone()
-        ->ScheduleOverlayPlane(widget, z_order, transform, pixmap_, bounds_rect,
-                               crop_rect);
+    return pixmap_->ScheduleOverlayPlane(widget, z_order, transform,
+                                         bounds_rect, crop_rect);
   }
 
  protected:

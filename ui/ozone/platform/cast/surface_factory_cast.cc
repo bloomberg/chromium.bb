@@ -190,6 +190,13 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     }
     int GetDmaBufFd() override { return 0; }
     int GetDmaBufPitch() override { return 0; }
+    bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                              int plane_z_order,
+                              gfx::OverlayTransform plane_transform,
+                              const gfx::Rect& display_bounds,
+                              const gfx::RectF& crop_rect) override {
+      return true;
+    }
 
    private:
     ~CastPixmap() override {}
@@ -197,16 +204,6 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     DISALLOW_COPY_AND_ASSIGN(CastPixmap);
   };
   return make_scoped_refptr(new CastPixmap);
-}
-
-bool SurfaceFactoryCast::ScheduleOverlayPlane(
-    gfx::AcceleratedWidget widget,
-    int plane_z_order,
-    gfx::OverlayTransform plane_transform,
-    scoped_refptr<NativePixmap> buffer,
-    const gfx::Rect& display_bounds,
-    const gfx::RectF& crop_rect) {
-  return true;
 }
 
 bool SurfaceFactoryCast::LoadEGLGLES2Bindings(
