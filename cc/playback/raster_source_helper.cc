@@ -51,7 +51,7 @@ void RasterSourceHelper::PrepareForPlaybackToCanvas(
       canvas->save();
       canvas->clipRect(gfx::RectToSkRect(
           canvas_playback_rect - canvas_bitmap_rect.OffsetFromOrigin()));
-      canvas->drawColor(SK_ColorTRANSPARENT);
+      canvas->drawColor(SK_ColorTRANSPARENT, SkXfermode::kClear_Mode);
       canvas->restore();
     }
   } else {

@@ -428,6 +428,97 @@ TEST(DisplayListRasterSourceTest, RasterPartialContents) {
   EXPECT_GT(num_white, 0);
 }
 
+TEST(DisplayListRasterSourceTest, RasterPartialClear) {
+  gfx::Size layer_bounds(3, 5);
+  gfx::Size partial_bounds(2, 4);
+  float contents_scale = 1.5f;
+
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->SetBackgroundColor(SK_ColorGREEN);
+  recording_source->SetRequiresClear(true);
+  recording_source->SetClearCanvasWithDebugColor(false);
+
+  // First record everything as white.
+  const unsigned alpha_dark = 10u;
+  SkPaint white_paint;
+  white_paint.setColor(SK_ColorWHITE);
+  white_paint.setAlpha(alpha_dark);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(layer_bounds),
+                                             white_paint);
+  recording_source->Rerecord();
+
+  scoped_refptr<DisplayListRasterSource> raster =
+      DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+          recording_source.get(), false);
+
+  gfx::Size content_bounds(
+      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(content_bounds.width(), content_bounds.height());
+  SkCanvas canvas(bitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
+
+  // Playback the full rect which should make everything light gray (alpha=10).
+  gfx::Rect raster_full_rect(content_bounds);
+  gfx::Rect playback_rect(content_bounds);
+  raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
+                           contents_scale);
+
+  {
+    SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
+    for (int i = 0; i < bitmap.width(); ++i) {
+      for (int j = 0; j < bitmap.height(); ++j) {
+        SCOPED_TRACE(i);
+        SCOPED_TRACE(j);
+        EXPECT_EQ(alpha_dark, SkColorGetA(pixels[i + j * bitmap.width()]));
+        EXPECT_EQ(alpha_dark, SkColorGetR(pixels[i + j * bitmap.width()]));
+        EXPECT_EQ(alpha_dark, SkColorGetG(pixels[i + j * bitmap.width()]));
+        EXPECT_EQ(alpha_dark, SkColorGetB(pixels[i + j * bitmap.width()]));
+      }
+    }
+  }
+
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source_light =
+      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source_light->SetBackgroundColor(SK_ColorGREEN);
+  recording_source_light->SetRequiresClear(true);
+  recording_source_light->SetClearCanvasWithDebugColor(false);
+
+  // Record everything as a slightly lighter white.
+  const unsigned alpha_light = 18u;
+  white_paint.setAlpha(alpha_light);
+  recording_source_light->add_draw_rect_with_paint(gfx::Rect(layer_bounds),
+                                                   white_paint);
+  recording_source_light->Rerecord();
+
+  // Make a new RasterSource from the new recording.
+  raster = DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+      recording_source_light.get(), false);
+
+  // We're going to playback from alpha(18) white rectangle into a smaller area
+  // of the recording resulting in a smaller lighter white rectangle over a
+  // darker white background rectangle.
+  playback_rect = gfx::Rect(
+      gfx::ToCeiledSize(gfx::ScaleSize(partial_bounds, contents_scale)));
+  raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
+                           contents_scale);
+
+  // Test that the whole playback_rect was cleared and repainted with new alpha.
+  SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
+  for (int i = 0; i < playback_rect.width(); ++i) {
+    for (int j = 0; j < playback_rect.height(); ++j) {
+      SCOPED_TRACE(j);
+      SCOPED_TRACE(i);
+      EXPECT_EQ(alpha_light, SkColorGetA(pixels[i + j * bitmap.width()]));
+      EXPECT_EQ(alpha_light, SkColorGetR(pixels[i + j * bitmap.width()]));
+      EXPECT_EQ(alpha_light, SkColorGetG(pixels[i + j * bitmap.width()]));
+      EXPECT_EQ(alpha_light, SkColorGetB(pixels[i + j * bitmap.width()]));
+    }
+  }
+}
+
 TEST(DisplayListRasterSourceTest, RasterContentsTransparent) {
   gfx::Size layer_bounds(5, 3);
   float contents_scale = 0.5f;
