@@ -96,11 +96,19 @@ void AudioRecorderImpl::Finalize() {
 void AudioRecorderImpl::InitializeOnAudioThread() {
   DCHECK(media::AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
 
-  media::AudioParameters params =
-      params_for_testing_
-          ? *params_for_testing_
-          : media::AudioManager::Get()->GetInputStreamParameters(
-                media::AudioManagerBase::kDefaultDeviceId);
+  media::AudioParameters params;
+  if (params_for_testing_) {
+    params = *params_for_testing_;
+  } else {
+    params = media::AudioManager::Get()->GetInputStreamParameters(
+        media::AudioManagerBase::kDefaultDeviceId);
+    params = media::AudioParameters(params.format(),
+                                    params.channel_layout(),
+                                    params.sample_rate(),
+                                    params.bits_per_sample(),
+                                    params.frames_per_buffer(),
+                                    media::AudioParameters::NO_EFFECTS);
+  }
 
   total_buffer_frames_ = kProcessIntervalMs * params.sample_rate() / 1000;
   buffer_ = media::AudioBus::Create(params.channels(), total_buffer_frames_);
