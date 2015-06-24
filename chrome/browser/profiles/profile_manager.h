@@ -332,6 +332,13 @@ class ProfileManager : public base::NonThreadSafe,
       Profile* loaded_profile,
       Profile::CreateStatus status);
 
+  // Object to cache various information about profiles. Contains information
+  // about every profile which has been created for this instance of Chrome,
+  // if it has not been explicitly deleted. It must be destroyed after
+  // |profiles_info_| because ~ProfileInfo can trigger a chain of events leading
+  // to an access to this member.
+  scoped_ptr<ProfileInfoCache> profile_info_cache_;
+
   content::NotificationRegistrar registrar_;
 
   // The path to the user data directory (DIR_USER_DATA).
@@ -351,11 +358,6 @@ class ProfileManager : public base::NonThreadSafe,
   // objects in a running instance of Chrome.
   typedef std::map<base::FilePath, linked_ptr<ProfileInfo> > ProfilesInfoMap;
   ProfilesInfoMap profiles_info_;
-
-  // Object to cache various information about profiles. Contains information
-  // about every profile which has been created for this instance of Chrome,
-  // if it has not been explicitly deleted.
-  scoped_ptr<ProfileInfoCache> profile_info_cache_;
 
   // Manages the process of creating, deleteing and updating Desktop shortcuts.
   scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
