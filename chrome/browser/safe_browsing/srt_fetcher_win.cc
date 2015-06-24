@@ -170,7 +170,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
  private:
   friend struct DefaultSingletonTraits<ReporterRunner>;
   ReporterRunner() {}
-  ~ReporterRunner() {}
+  ~ReporterRunner() override {}
 
   // BrowserListObserver.
   void OnBrowserSetLastActive(Browser* browser) override {}
