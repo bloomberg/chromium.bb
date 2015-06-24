@@ -1521,7 +1521,7 @@ crbug.com/472970 [ Win Mac ] http/tests/fetch/workers/stream-reader-base-https-o
 crbug.com/472970 [ Win Mac ] http/tests/fetch/serviceworker/stream-reader-base-https-other-https.html [ Pass Failure Timeout ]
 
 crbug.com/480769 [ Linux Release ] http/tests/inspector/service-workers/service-worker-manager.html [ Crash Pass ]
-crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow ]
+crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow Failure ]
 crbug.com/480769 [ Release ] http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass ]
 
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ ImageOnlyFailure ]
@@ -1784,3 +1784,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-digits2-003.html 
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-digits3-003.html [ ImageOnlyFailure Pass ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-digits4-003.html [ ImageOnlyFailure Pass ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-none-001.html [ ImageOnlyFailure Pass ]
+
+crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
+crbug.com/503875 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure ]
