@@ -19,7 +19,7 @@
 AppBanner status=stable
 AlwaysUseComplexText
 ApplicationCache status=stable
-AudioOutputDevices status=test
+AudioOutputDevices status=experimental
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BackgroundSync status=experimental
@@ -60,7 +60,7 @@ DeviceLight status=experimental
 DisplayList2dCanvas status=stable
 ForceDisplayList2dCanvas
 EncryptedMedia status=stable
-EnumerateDevices status=test
+EnumerateDevices status=experimental
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
 ExperimentalCanvasFeatures status=test
