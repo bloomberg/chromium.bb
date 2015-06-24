@@ -456,6 +456,10 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
           info->runtime_errors.push_back(ConstructRuntimeError(
               static_cast<const RuntimeError&>(*error)));
           break;
+        case ExtensionError::INTERNAL_ERROR:
+          // TODO(wittman): Support InternalError in developer tools:
+          // https://crbug.com/503427.
+          break;
         case ExtensionError::NUM_ERROR_TYPES:
           NOTREACHED();
           break;

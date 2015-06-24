@@ -20,8 +20,8 @@ user clicks on it, you'll have to keep using the $(ref:pageAction) API.
 
 <p>As a <a href="events#declarative">declarative API</a>, this
 API lets you register rules on the
-<code>$(ref:onPageChanged)</code> $(ref:events.Event event) object which
-take an action (currently just <code>$(ref:ShowPageAction)</code>) when
+<code>$(ref:onPageChanged)</code> $(ref:events.Event event) object which take an
+action (<code>$(ref:ShowPageAction)</code> and <code>$(ref:SetIcon)</code>) when
 a set of conditions, represented as a
 <code>$(ref:PageStateMatcher)</code>, are met.
 </p>
@@ -119,3 +119,11 @@ selector is <code>display:none</code> or one of its parent elements
 is <code>display:none</code>, it doesn't cause the condition to match.  Elements
 styled with <code>visibility:hidden</code>, positioned off-screen, or hidden by
 other elements can still make your condition match.</p>
+
+
+<h2 id="css-matching">Bookmarked State Matching</h2>
+
+<p>The $(ref:PageStateMatcher.isBookmarked) condition allows matching of the
+bookmarked state of the current URL in the user's profile. To make use of this
+condition the "bookmarks" permission must be declared in
+the <a href="manifest">extension manifest</a></p>

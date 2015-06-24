@@ -664,6 +664,7 @@
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.cc',
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_test.h',
       'browser/extensions/api/declarative_content/declarative_content_css_condition_tracker_unittest.cc',
+      'browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker_unittest.cc',
       'browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker_unittest.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc',

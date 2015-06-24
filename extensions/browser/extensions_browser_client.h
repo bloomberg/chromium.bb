@@ -40,6 +40,7 @@ class AppSorting;
 class ComponentExtensionResourceManager;
 class Extension;
 class ExtensionCache;
+class ExtensionError;
 class ExtensionHostDelegate;
 class ExtensionPrefsObserver;
 class ExtensionSystem;
@@ -212,6 +213,10 @@ class ExtensionsBrowserClient {
   // embedders share the same versioning model, so interpretation of the string
   // is left up to the embedder.
   virtual bool IsMinBrowserVersionSupported(const std::string& min_version) = 0;
+
+  // Embedders can override this function to handle extension errors.
+  virtual void ReportError(content::BrowserContext* context,
+                           scoped_ptr<ExtensionError> error);
 
   // Returns the ExtensionWebContentsObserver for the given |web_contents|.
   virtual ExtensionWebContentsObserver* GetExtensionWebContentsObserver(

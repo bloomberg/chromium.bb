@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/chrome_mojo_service_registration.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
 #include "chrome/browser/extensions/chrome_url_request_util.h"
+#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -322,6 +323,12 @@ ExtensionWebContentsObserver*
 ChromeExtensionsBrowserClient::GetExtensionWebContentsObserver(
     content::WebContents* web_contents) {
   return ChromeExtensionWebContentsObserver::FromWebContents(web_contents);
+}
+
+void ChromeExtensionsBrowserClient::ReportError(
+    content::BrowserContext* context,
+    scoped_ptr<ExtensionError> error) {
+  extensions::ErrorConsole::Get(context)->ReportError(error.Pass());
 }
 
 }  // namespace extensions

@@ -26,6 +26,7 @@ class ExtensionError {
   enum Type {
     MANIFEST_ERROR = 0,
     RUNTIME_ERROR,
+    INTERNAL_ERROR,
     NUM_ERROR_TYPES,  // Put new values above this.
   };
 
@@ -34,7 +35,7 @@ class ExtensionError {
   // Serializes the ExtensionError into JSON format.
   virtual scoped_ptr<base::DictionaryValue> ToValue() const;
 
-  virtual std::string PrintForTest() const;
+  virtual std::string GetDebugString() const;
 
   // Return true if this error and |rhs| are considered equal, and should be
   // grouped together.
@@ -102,7 +103,7 @@ class ManifestError : public ExtensionError {
 
   scoped_ptr<base::DictionaryValue> ToValue() const override;
 
-  std::string PrintForTest() const override;
+  std::string GetDebugString() const override;
 
   const base::string16& manifest_key() const { return manifest_key_; }
   const base::string16& manifest_specific() const { return manifest_specific_; }
@@ -139,7 +140,7 @@ class RuntimeError : public ExtensionError {
 
   scoped_ptr<base::DictionaryValue> ToValue() const override;
 
-  std::string PrintForTest() const override;
+  std::string GetDebugString() const override;
 
   const GURL& context_url() const { return context_url_; }
   const StackTrace& stack_trace() const { return stack_trace_; }
@@ -173,6 +174,21 @@ class RuntimeError : public ExtensionError {
   int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeError);
+};
+
+class InternalError : public ExtensionError {
+ public:
+  InternalError(const std::string& extension_id,
+                const base::string16& message,
+                logging::LogSeverity level);
+  ~InternalError() override;
+
+  std::string GetDebugString() const override;
+
+ private:
+  bool IsEqualImpl(const ExtensionError* rhs) const override;
+
+  DISALLOW_COPY_AND_ASSIGN(InternalError);
 };
 
 }  // namespace extensions

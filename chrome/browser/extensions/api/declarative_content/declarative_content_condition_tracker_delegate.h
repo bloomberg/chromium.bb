@@ -19,8 +19,8 @@ namespace extensions {
 class DeclarativeContentConditionTrackerDelegate {
  public:
   // Requests re-evaluation of conditions for |contents|. This must be called
-  // whenever the state monitored by the condition changes, even if the value of
-  // the condition itself doesn't change.
+  // whenever the URL or page state changes, even if the value of the condition
+  // itself doesn't change.
   virtual void RequestEvaluation(content::WebContents* contents) = 0;
 
   // Returns true if the evaluator should manage condition state for |context|.

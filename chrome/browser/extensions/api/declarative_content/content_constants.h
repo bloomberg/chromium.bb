@@ -17,6 +17,7 @@ extern const char kOnPageChanged[];
 extern const char kAllFrames[];
 extern const char kCss[];
 extern const char kInstanceType[];
+extern const char kIsBookmarked[];
 extern const char kJs[];
 extern const char kMatchAboutBlank[];
 extern const char kPageUrl[];

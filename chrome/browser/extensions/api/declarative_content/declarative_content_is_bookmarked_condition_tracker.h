@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_PAGE_URL_CONDITION_TRACKER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_PAGE_URL_CONDITION_TRACKER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_IS_BOOKMARKED_CONDITION_TRACKER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_IS_BOOKMARKED_CONDITION_TRACKER_H_
 
-#include <set>
+#include <map>
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
-#include "components/url_matcher/url_matcher.h"
+#include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -24,32 +25,13 @@ namespace extensions {
 
 // Supports tracking of URL matches across tab contents in a browser context,
 // and querying for the matching condition sets.
-class DeclarativeContentPageUrlConditionTracker {
+class DeclarativeContentIsBookmarkedConditionTracker
+    : public bookmarks::BaseBookmarkModelObserver {
  public:
-  DeclarativeContentPageUrlConditionTracker(
+  DeclarativeContentIsBookmarkedConditionTracker(
       content::BrowserContext* context,
       DeclarativeContentConditionTrackerDelegate* delegate);
-  ~DeclarativeContentPageUrlConditionTracker();
-
-  // Adds new URLMatcherConditionSet to the URL Matcher. Each condition set
-  // must have a unique ID.
-  void AddConditionSets(
-      const url_matcher::URLMatcherConditionSet::Vector& condition_sets);
-
-  // Removes the listed condition sets. All |condition_set_ids| must be
-  // currently registered.
-  void RemoveConditionSets(
-      const std::vector<url_matcher::URLMatcherConditionSet::ID>&
-      condition_set_ids);
-
-  // Removes all unused condition sets from the ConditionFactory.
-  void ClearUnusedConditionSets();
-
-  // Returns the URLMatcherConditionFactory that must be used to create
-  // URLMatcherConditionSets for this tracker.
-  url_matcher::URLMatcherConditionFactory* condition_factory() {
-    return url_matcher_.condition_factory();
-  }
+  ~DeclarativeContentIsBookmarkedConditionTracker() override;
 
   // Requests that URL matches be tracked for |contents|.
   void TrackForWebContents(content::WebContents* contents);
@@ -65,12 +47,8 @@ class DeclarativeContentPageUrlConditionTracker {
                                const content::LoadCommittedDetails& details,
                                const content::FrameNavigateParams& params);
 
-  // Gets the maching IDs for the last navigation on WebContents.
-  void GetMatches(content::WebContents* contents,
-                  std::set<url_matcher::URLMatcherConditionSet::ID>* matches);
-
-  // Returns true if this object retains no allocated data. Only for debugging.
-  bool IsEmpty() const;
+  // Returns true if |contents| current URL is bookmarked.
+  bool IsUrlBookmarked(content::WebContents* contents);
 
  private:
   class PerWebContentsTracker : public content::WebContentsObserver {
@@ -82,51 +60,74 @@ class DeclarativeContentPageUrlConditionTracker {
 
     PerWebContentsTracker(
         content::WebContents* contents,
-        url_matcher::URLMatcher* url_matcher,
         const RequestEvaluationCallback& request_evaluation,
         const WebContentsDestroyedCallback& web_contents_destroyed);
     ~PerWebContentsTracker() override;
 
-    void UpdateMatchesForCurrentUrl(bool request_evaluation_if_unchanged);
+    void BookmarkAddedForUrl(const GURL& url);
+    void BookmarkRemovedForUrls(const std::set<GURL>& urls);
+    void UpdateState(bool request_evaluation_if_unchanged);
 
-    const std::set<url_matcher::URLMatcherConditionSet::ID>& matches() {
-      return matches_;
+    bool is_url_bookmarked() {
+      return is_url_bookmarked_;
     }
 
    private:
+    bool IsCurrentUrlBookmarked();
+
     // content::WebContentsObserver
     void WebContentsDestroyed() override;
 
-    url_matcher::URLMatcher* url_matcher_;
+    bool is_url_bookmarked_;
     const RequestEvaluationCallback request_evaluation_;
     const WebContentsDestroyedCallback web_contents_destroyed_;
-
-    std::set<url_matcher::URLMatcherConditionSet::ID> matches_;
 
     DISALLOW_COPY_AND_ASSIGN(PerWebContentsTracker);
   };
 
+  // bookmarks::BookmarkModelObserver implementation.
+  void BookmarkModelChanged() override;
+  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
+                         const bookmarks::BookmarkNode* parent,
+                         int index) override;
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* parent,
+                           int old_index,
+                           const bookmarks::BookmarkNode* node,
+                           const std::set<GURL>& no_longer_bookmarked) override;
+  void ExtensiveBookmarkChangesBeginning(
+      bookmarks::BookmarkModel* model) override;
+  void ExtensiveBookmarkChangesEnded(
+      bookmarks::BookmarkModel* model) override;
+  void GroupedBookmarkChangesBeginning(
+      bookmarks::BookmarkModel* model) override;
+  void GroupedBookmarkChangesEnded(
+      bookmarks::BookmarkModel* model) override;
+
   // Called by PerWebContentsTracker on web contents destruction.
   void DeletePerWebContentsTracker(content::WebContents* tracker);
 
-  void UpdateMatchesForAllTrackers();
-
-  // Matches URLs for all WebContents.
-  url_matcher::URLMatcher url_matcher_;
+  // Updates the bookmark state of all per-WebContents trackers.
+  void UpdateAllPerWebContentsTrackers();
 
   // Maps WebContents to the tracker for that WebContents state.
   std::map<content::WebContents*,
            linked_ptr<PerWebContentsTracker>> per_web_contents_tracker_;
 
-  // The context whose state we're monitoring for evaluation.
-  content::BrowserContext* context_;
+  // Count of the number of extensive bookmarks changes in progress (e.g. due to
+  // sync). The rules need only be evaluated once after the extensive changes
+  // are complete.
+  int extensive_bookmark_changes_in_progress_;
 
   // Weak.
   DeclarativeContentConditionTrackerDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentPageUrlConditionTracker);
+  ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
+      scoped_bookmarks_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedConditionTracker);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_PAGE_URL_CONDITION_TRACKER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_DECLARATIVE_CONTENT_IS_BOOKMARKED_CONDITION_TRACKER_H_

@@ -14,7 +14,7 @@
 namespace extensions {
 
 DeclarativeContentConditionTrackerTest::DeclarativeContentConditionTrackerTest()
-    : browser_context_(new TestingProfile) {}
+    : profile_(new TestingProfile) {}
 
 DeclarativeContentConditionTrackerTest::
 ~DeclarativeContentConditionTrackerTest() {
@@ -27,7 +27,7 @@ DeclarativeContentConditionTrackerTest::
 scoped_ptr<content::WebContents>
 DeclarativeContentConditionTrackerTest::MakeTab() {
   return make_scoped_ptr(content::WebContentsTester::CreateTestWebContents(
-      browser_context_.get(),
+      profile_.get(),
       nullptr));
 }
 

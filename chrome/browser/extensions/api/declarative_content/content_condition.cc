@@ -8,12 +8,13 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "components/url_matcher/url_matcher_factory.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using url_matcher::URLMatcherConditionFactory;
 using url_matcher::URLMatcherConditionSet;
 using url_matcher::URLMatcherFactory;
 
-namespace keys = extensions::declarative_content_constants;
+namespace extensions {
 
 namespace {
 static URLMatcherConditionSet::ID g_next_id = 0;
@@ -26,14 +27,20 @@ const char kConditionWithoutInstanceType[] = "A condition had no instanceType";
 const char kExpectedOtherConditionType[] = "Expected a condition of type "
     "declarativeContent.PageStateMatcher";
 const char kUnknownConditionAttribute[] = "Unknown condition attribute '%s'";
-const char kInvalidTypeOfParamter[] = "Attribute '%s' has an invalid type";
-}  // namespace
+const char kInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
+const char kIsBookmarkedRequiresBookmarkPermission[] =
+    "Property 'isBookmarked' requires 'bookmarks' permission";
 
-namespace extensions {
+bool HasBookmarkAPIPermission(const Extension* extension) {
+  return extension->permissions_data()->HasAPIPermission(
+      APIPermission::kBookmark);
+}
+
+}  // namespace
 
 namespace keys = declarative_content_constants;
 
-RendererContentMatchData::RendererContentMatchData() {}
+RendererContentMatchData::RendererContentMatchData() : is_bookmarked(false) {}
 RendererContentMatchData::~RendererContentMatchData() {}
 
 //
@@ -41,10 +48,14 @@ RendererContentMatchData::~RendererContentMatchData() {}
 //
 
 ContentCondition::ContentCondition(
+    scoped_refptr<const Extension> extension,
     scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
-    const std::vector<std::string>& css_selectors)
-    : url_matcher_conditions_(url_matcher_conditions),
-      css_selectors_(css_selectors) {
+    const std::vector<std::string>& css_selectors,
+    BookmarkedStateMatch bookmarked_state)
+    : extension_(extension.Pass()),
+      url_matcher_conditions_(url_matcher_conditions),
+      css_selectors_(css_selectors),
+      bookmarked_state_(bookmarked_state) {
   CHECK(url_matcher_conditions.get());
 }
 
@@ -62,12 +73,19 @@ bool ContentCondition::IsFulfilled(
     if (!ContainsKey(renderer_data.css_selectors, *i))
       return false;
   }
+
+  if (HasBookmarkAPIPermission(extension_.get()) &&
+      bookmarked_state_ != DONT_CARE) {
+    return (bookmarked_state_ == BOOKMARKED && renderer_data.is_bookmarked) ||
+        (bookmarked_state_ == NOT_BOOKMARKED && !renderer_data.is_bookmarked);
+  }
+
   return true;
 }
 
 // static
 scoped_ptr<ContentCondition> ContentCondition::Create(
-    const Extension* extension,
+    scoped_refptr<const Extension> extension,
     URLMatcherConditionFactory* url_matcher_condition_factory,
     const base::Value& condition,
     std::string* error) {
@@ -90,6 +108,7 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set;
   std::vector<std::string> css_rules;
+  BookmarkedStateMatch bookmarked_state = DONT_CARE;
 
   for (base::DictionaryValue::Iterator iter(*condition_dict);
        !iter.IsAtEnd(); iter.Advance()) {
@@ -100,7 +119,7 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
     } else if (condition_attribute_name == keys::kPageUrl) {
       const base::DictionaryValue* dict = NULL;
       if (!condition_attribute_value.GetAsDictionary(&dict)) {
-        *error = base::StringPrintf(kInvalidTypeOfParamter,
+        *error = base::StringPrintf(kInvalidTypeOfParameter,
                                     condition_attribute_name.c_str());
       } else {
         url_matcher_condition_set =
@@ -113,14 +132,25 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
         for (size_t i = 0; i < css_rules_value->GetSize(); ++i) {
           std::string css_rule;
           if (!css_rules_value->GetString(i, &css_rule)) {
-            *error = base::StringPrintf(kInvalidTypeOfParamter,
+            *error = base::StringPrintf(kInvalidTypeOfParameter,
                                         condition_attribute_name.c_str());
             break;
           }
           css_rules.push_back(css_rule);
         }
       } else {
-        *error = base::StringPrintf(kInvalidTypeOfParamter,
+        *error = base::StringPrintf(kInvalidTypeOfParameter,
+                                    condition_attribute_name.c_str());
+      }
+    } else if (condition_attribute_name == keys::kIsBookmarked){
+      bool value;
+      if (condition_attribute_value.GetAsBoolean(&value)) {
+        if (!HasBookmarkAPIPermission(extension.get()))
+          *error = kIsBookmarkedRequiresBookmarkPermission;
+        else
+          bookmarked_state = value ? BOOKMARKED : NOT_BOOKMARKED;
+      } else {
+        *error = base::StringPrintf(kInvalidTypeOfParameter,
                                     condition_attribute_name.c_str());
       }
     } else {
@@ -139,8 +169,9 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
     url_matcher_condition_set =
         new URLMatcherConditionSet(++g_next_id, url_matcher_conditions);
   }
-  return scoped_ptr<ContentCondition>(
-      new ContentCondition(url_matcher_condition_set, css_rules));
+  return make_scoped_ptr(
+      new ContentCondition(extension.Pass(), url_matcher_condition_set,
+                           css_rules, bookmarked_state));
 }
 
 }  // namespace extensions

@@ -32,6 +32,8 @@ struct RendererContentMatchData {
   // All watched CSS selectors that match on frames with the same
   // origin as the page's main frame.
   base::hash_set<std::string> css_selectors;
+  // True if the URL is bookmarked.
+  bool is_bookmarked;
 };
 
 // Representation of a condition in the Declarative Content API. A condition
@@ -58,16 +60,21 @@ class ContentCondition {
   // DeclarativeConditionSet<ContentCondition>::IsFulfilled.
   typedef RendererContentMatchData MatchData;
 
+  // Possible states for matching bookmarked state.
+  enum BookmarkedStateMatch { NOT_BOOKMARKED, BOOKMARKED, DONT_CARE };
+
   ContentCondition(
+      scoped_refptr<const Extension> extension,
       scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions,
-      const std::vector<std::string>& css_selectors);
+      const std::vector<std::string>& css_selectors,
+      BookmarkedStateMatch bookmarked_state);
   ~ContentCondition();
 
   // Factory method that instantiates a ContentCondition according to the
   // description |condition| passed by the extension API.  |condition| should be
   // an instance of declarativeContent.PageStateMatcher.
   static scoped_ptr<ContentCondition> Create(
-      const Extension* extension,
+      scoped_refptr<const Extension> extension,
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& condition,
       std::string* error);
@@ -102,9 +109,13 @@ class ContentCondition {
     return css_selectors_;
   }
 
+  BookmarkedStateMatch bookmarked_state() const { return bookmarked_state_; }
+
  private:
+  const scoped_refptr<const Extension> extension_;
   scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions_;
   std::vector<std::string> css_selectors_;
+  BookmarkedStateMatch bookmarked_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCondition);
 };

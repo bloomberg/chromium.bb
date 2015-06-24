@@ -58,7 +58,7 @@ scoped_ptr<DictionaryValue> ExtensionError::ToValue() const {
   return value.Pass();
 }
 
-std::string ExtensionError::PrintForTest() const {
+std::string ExtensionError::GetDebugString() const {
   return std::string("Extension Error:") +
          "\n  OTR:     " + std::string(from_incognito_ ? "true" : "false") +
          "\n  Level:   " + base::IntToString(static_cast<int>(level_)) +
@@ -109,8 +109,8 @@ scoped_ptr<DictionaryValue> ManifestError::ToValue() const {
   return value.Pass();
 }
 
-std::string ManifestError::PrintForTest() const {
-  return ExtensionError::PrintForTest() +
+std::string ManifestError::GetDebugString() const {
+  return ExtensionError::GetDebugString() +
          "\n  Type:    ManifestError";
 }
 
@@ -184,8 +184,8 @@ scoped_ptr<DictionaryValue> RuntimeError::ToValue() const {
   return value.Pass();
 }
 
-std::string RuntimeError::PrintForTest() const {
-  std::string result = ExtensionError::PrintForTest() +
+std::string RuntimeError::GetDebugString() const {
+  std::string result = ExtensionError::GetDebugString() +
          "\n  Type:    RuntimeError"
          "\n  Context: " + context_url_.spec() +
          "\n  Stack Trace: ";
@@ -233,6 +233,33 @@ void RuntimeError::CleanUpInit() {
   // of the error.
   if (!stack_trace_.empty() && source_ != stack_trace_[0].source)
     source_ = stack_trace_[0].source;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// InternalError
+
+InternalError::InternalError(const std::string& extension_id,
+                             const base::string16& message,
+                             logging::LogSeverity level)
+    : ExtensionError(ExtensionError::INTERNAL_ERROR,
+                     extension_id,
+                     false,  // not incognito.
+                     level,
+                     base::string16(),
+                     message) {
+}
+
+InternalError::~InternalError() {
+}
+
+std::string InternalError::GetDebugString() const {
+  return ExtensionError::GetDebugString() +
+         "\n  Type:    InternalError";
+}
+
+bool InternalError::IsEqualImpl(const ExtensionError* rhs) const {
+  // ExtensionError logic is sufficient for comparison.
+  return true;
 }
 
 }  // namespace extensions

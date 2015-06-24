@@ -7,8 +7,11 @@
 #include <string>
 
 #include "base/test/values_test_util.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -17,15 +20,30 @@
 
 namespace extensions {
 
-TEST(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
-  TestExtensionEnvironment env;
+class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
+ public:
+  DeclarativeChromeContentRulesRegistryTest() {
+    env_.profile()->CreateBookmarkModel(true);
+    bookmarks::test::WaitForBookmarkModelToLoad(
+        BookmarkModelFactory::GetForProfile(env_.profile()));
+  }
 
+ protected:
+  TestExtensionEnvironment* env() { return &env_; }
+
+ private:
+  TestExtensionEnvironment env_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeChromeContentRulesRegistryTest);
+};
+
+TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   scoped_refptr<ChromeContentRulesRegistry> registry(
-      new ChromeContentRulesRegistry(env.profile(), NULL));
+      new ChromeContentRulesRegistry(env()->profile(), NULL));
 
   EXPECT_EQ(0u, registry->GetActiveRulesCountForTesting());
 
-  scoped_ptr<content::WebContents> tab = env.MakeTab();
+  scoped_ptr<content::WebContents> tab = env()->MakeTab();
   registry->MonitorWebContentsForRuleEvaluation(tab.get());
   registry->DidNavigateMainFrame(tab.get(), content::LoadCommittedDetails(),
                                  content::FrameNavigateParams());
@@ -51,7 +69,7 @@ TEST(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   std::vector<linked_ptr<RulesRegistry::Rule> > rules;
   rules.push_back(rule);
 
-  const Extension* extension = env.MakeExtension(*base::test::ParseJson(
+  const Extension* extension = env()->MakeExtension(*base::test::ParseJson(
       "{\"page_action\": {}}"));
   registry->AddRulesImpl(extension->id(), rules);
 
@@ -68,7 +86,7 @@ TEST(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
   tab.reset();
   EXPECT_EQ(0u, registry->GetActiveRulesCountForTesting());
 
-  tab = env.MakeTab();
+  tab = env()->MakeTab();
   registry->MonitorWebContentsForRuleEvaluation(tab.get());
   registry->UpdateMatchingCssSelectorsForTesting(tab.get(), css_selectors);
   EXPECT_EQ(1u, registry->GetActiveRulesCountForTesting());

@@ -40,6 +40,11 @@
 //            "description": "Matches if all of the regular expressions in the array match text in the page. The regular expressions use the <a href=\"http://code.google.com/p/re2/wiki/Syntax\">RE2 syntax</a>.",
 //            "items": { "type": "string" }
           },
+          "isBookmarked": {
+            "type": "boolean",
+            "description": "Matches if the bookmarked state of the page is equal to the specified value. Requres the <a href='declare_permissions'>bookmarks permission</a>.",
+            "optional": true
+          },
           "instanceType": {
             "type": "string", "enum": ["declarativeContent.PageStateMatcher"],
             "nodoc": true

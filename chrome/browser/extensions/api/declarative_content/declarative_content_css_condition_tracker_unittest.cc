@@ -80,8 +80,7 @@ class DeclarativeContentCssConditionTrackerTest
 // Tests the basic flow of operations on the
 // DeclarativeContentCssConditionTracker.
 TEST_F(DeclarativeContentCssConditionTrackerTest, Basic) {
-  DeclarativeContentCssConditionTracker tracker(browser_context(),
-                                                &delegate_);
+  DeclarativeContentCssConditionTracker tracker(profile(), &delegate_);
   int expected_evaluation_requests = 0;
 
   const scoped_ptr<content::WebContents> tab = MakeTab();
@@ -146,8 +145,7 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, WebContentsOutlivesTracker) {
   const scoped_ptr<content::WebContents> tab = MakeTab();
 
   {
-    DeclarativeContentCssConditionTracker tracker(browser_context(),
-                                                  &delegate_);
+    DeclarativeContentCssConditionTracker tracker(profile(), &delegate_);
     tracker.TrackForWebContents(tab.get());
   }
 }

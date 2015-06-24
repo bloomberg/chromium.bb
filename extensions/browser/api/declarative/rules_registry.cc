@@ -12,17 +12,21 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
+#include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/common/api/declarative/declarative_manifest_data.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace extensions {
@@ -247,14 +251,14 @@ void RulesRegistry::OnExtensionUnloaded(const Extension* extension) {
   DCHECK_CURRENTLY_ON(owner_thread());
   std::string error = RemoveAllRulesImpl(extension->id());
   if (!error.empty())
-    LOG(ERROR) << error;
+    ReportInternalError(extension->id(), error);
 }
 
 void RulesRegistry::OnExtensionUninstalled(const Extension* extension) {
   DCHECK_CURRENTLY_ON(owner_thread());
   std::string error = RemoveAllRulesNoStoreUpdate(extension->id(), true);
   if (!error.empty())
-    LOG(ERROR) << error;
+    ReportInternalError(extension->id(), error);
 }
 
 void RulesRegistry::OnExtensionLoaded(const Extension* extension) {
@@ -270,12 +274,12 @@ void RulesRegistry::OnExtensionLoaded(const Extension* extension) {
       std::string error =
           AddRulesInternal(extension->id(), manifest_rules, &manifest_rules_);
       if (!error.empty())
-        LOG(ERROR) << error;
+        ReportInternalError(extension->id(), error);
     }
   }
   std::string error = AddRulesImpl(extension->id(), rules);
   if (!error.empty())
-    LOG(ERROR) << error;
+    ReportInternalError(extension->id(), error);
 }
 
 size_t RulesRegistry::GetNumberOfUsedRuleIdentifiersForTesting() const {
@@ -296,7 +300,18 @@ void RulesRegistry::DeserializeAndAddRules(
     scoped_ptr<base::Value> rules) {
   DCHECK_CURRENTLY_ON(owner_thread());
 
-  AddRulesNoFill(extension_id, RulesFromValue(rules.get()), &rules_);
+  std::string error =
+      AddRulesNoFill(extension_id, RulesFromValue(rules.get()), &rules_);
+  if (!error.empty())
+    ReportInternalError(extension_id, error);
+}
+
+void RulesRegistry::ReportInternalError(const std::string& extension_id,
+                                        const std::string& error) {
+  scoped_ptr<ExtensionError> error_instance(new InternalError(
+      extension_id, base::ASCIIToUTF16(error), logging::LOG_ERROR));
+  ExtensionsBrowserClient::Get()->ReportError(browser_context_,
+                                              error_instance.Pass());
 }
 
 RulesRegistry::~RulesRegistry() {

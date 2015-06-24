@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
@@ -11,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -31,7 +35,7 @@ const char kDeclarativeContentManifest[] =
     "  },\n"
     "  \"page_action\": {},\n"
     "  \"permissions\": [\n"
-    "    \"declarativeContent\"\n"
+    "    \"declarativeContent\", \"bookmarks\"\n"
     "  ],\n"
     "  \"incognito\": \"spanning\"\n"
     "}\n";
@@ -108,6 +112,10 @@ class DeclarativeContentApiTest : public ExtensionApiTest {
   // |is_enabled_in_incognito|.
   void CheckIncognito(IncognitoMode mode, bool is_enabled_in_incognito);
 
+  // Checks that the rules matching a bookmarked state of |is_bookmarked| are
+  // correctly evaluated on bookmark events.
+  void CheckBookmarkEvents(bool is_bookmarked);
+
   TestExtensionDir ext_dir_;
 
  private:
@@ -182,6 +190,60 @@ void DeclarativeContentApiTest::CheckIncognito(IncognitoMode mode,
   NavigateInRenderer(tab, GURL("http://test_split/"));
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
+
+void DeclarativeContentApiTest::CheckBookmarkEvents(bool match_is_bookmarked) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
+
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+  const ExtensionAction* page_action = ExtensionActionManager::Get(
+      browser()->profile())->GetPageAction(*extension);
+  ASSERT_TRUE(page_action);
+
+  NavigateInRenderer(tab, GURL("http://test1/"));
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+
+  static const char kSetIsBookmarkedRule[] =
+      "setRules([{\n"
+      "  conditions: [new PageStateMatcher({isBookmarked: %s})],\n"
+      "  actions: [new ShowPageAction()]\n"
+      "}], 'test_rule');\n";
+
+  EXPECT_EQ("test_rule", ExecuteScriptInBackgroundPage(
+      extension->id(),
+      base::StringPrintf(kSetIsBookmarkedRule,
+                         match_is_bookmarked ? "true" : "false")));
+  EXPECT_EQ(!match_is_bookmarked, page_action->GetIsVisible(tab_id));
+
+  // Check rule evaluation on add/remove bookmark.
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(browser()->profile());
+  const bookmarks::BookmarkNode* node =
+      bookmark_model->AddURL(bookmark_model->other_node(), 0,
+                             base::ASCIIToUTF16("title"),
+                             GURL("http://test1/"));
+  EXPECT_EQ(match_is_bookmarked, page_action->GetIsVisible(tab_id));
+
+  bookmark_model->Remove(node);
+  EXPECT_EQ(!match_is_bookmarked, page_action->GetIsVisible(tab_id));
+
+  // Check rule evaluation on navigate to bookmarked and non-bookmarked URL.
+  bookmark_model->AddURL(bookmark_model->other_node(), 0,
+                         base::ASCIIToUTF16("title"),
+                         GURL("http://test2/"));
+
+  NavigateInRenderer(tab, GURL("http://test2/"));
+  EXPECT_EQ(match_is_bookmarked, page_action->GetIsVisible(tab_id));
+
+  NavigateInRenderer(tab, GURL("http://test3/"));
+  EXPECT_EQ(!match_is_bookmarked, page_action->GetIsVisible(tab_id));
+}
+
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
@@ -655,6 +717,20 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                   "  Return(e.message);\n"
                   "}\n"),
               testing::ContainsRegex("compound selector.*: div input$"));
+}
+
+// Tests that the rules with isBookmarked: true are evaluated when handling
+// bookmarking events.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       IsBookmarkedRulesEvaluatedOnBookmarkEvents) {
+  CheckBookmarkEvents(true);
+}
+
+// Tests that the rules with isBookmarked: false are evaluated when handling
+// bookmarking events.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       NotBookmarkedRulesEvaluatedOnBookmarkEvents) {
+  CheckBookmarkEvents(false);
 }
 
 // https://crbug.com/497586

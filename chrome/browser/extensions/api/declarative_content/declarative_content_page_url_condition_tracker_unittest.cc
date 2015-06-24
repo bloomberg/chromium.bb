@@ -64,8 +64,7 @@ class DeclarativeContentPageUrlConditionTrackerTest
 // the matching WebContents.
 TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
        AddAndRemoveConditionSets) {
-  DeclarativeContentPageUrlConditionTracker tracker(browser_context(),
-                                                    &delegate_);
+  DeclarativeContentPageUrlConditionTracker tracker(profile(), &delegate_);
 
   // Create two tabs.
   ScopedVector<content::WebContents> tabs;
@@ -108,8 +107,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
 // Tests that tracking WebContents triggers evaluation requests for matching
 // rules.
 TEST_F(DeclarativeContentPageUrlConditionTrackerTest, TrackWebContents) {
-  DeclarativeContentPageUrlConditionTracker tracker(browser_context(),
-                                                    &delegate_);
+  DeclarativeContentPageUrlConditionTracker tracker(profile(), &delegate_);
 
   const int condition_set_id = 100;
   std::set<url_matcher::URLMatcherCondition> conditions;
@@ -140,8 +138,7 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest, TrackWebContents) {
 // matching rules.
 TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
        NotifyWebContentsNavigation) {
-  DeclarativeContentPageUrlConditionTracker tracker(browser_context(),
-                                                    &delegate_);
+  DeclarativeContentPageUrlConditionTracker tracker(profile(), &delegate_);
 
   const int condition_set_id = 100;
   std::set<url_matcher::URLMatcherCondition> conditions;

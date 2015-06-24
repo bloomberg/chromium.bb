@@ -226,6 +226,11 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   void DeserializeAndAddRules(const std::string& extension_id,
                               scoped_ptr<base::Value> rules);
 
+  // Reports an internal error with the specified params to the extensions
+  // client.
+  void ReportInternalError(const std::string& extension_id,
+                           const std::string& error);
+
   // The context to which this rules registry belongs.
   content::BrowserContext* browser_context_;
 

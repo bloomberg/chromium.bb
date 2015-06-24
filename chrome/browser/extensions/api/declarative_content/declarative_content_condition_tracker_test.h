@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
@@ -38,7 +39,7 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
   content::MockRenderProcessHost* GetMockRenderProcessHost(
       content::WebContents* contents);
 
-  content::BrowserContext* browser_context() { return browser_context_.get(); }
+  TestingProfile* profile() { return profile_.get(); }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -46,7 +47,7 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
   // Enables MockRenderProcessHosts.
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
 
-  const scoped_ptr<content::BrowserContext> browser_context_;
+  const scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentConditionTrackerTest);
 };

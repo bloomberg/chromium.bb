@@ -14,6 +14,7 @@ const char kOnPageChanged[] = "declarativeContent.onPageChanged";
 const char kAllFrames[] = "allFrames";
 const char kCss[] = "css";
 const char kInstanceType[] = "instanceType";
+const char kIsBookmarked[] = "isBookmarked";
 const char kJs[] = "js";
 const char kMatchAboutBlank[] = "matchAboutBlank";
 const char kPageUrl[] = "pageUrl";

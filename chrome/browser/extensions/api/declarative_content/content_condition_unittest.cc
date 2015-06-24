@@ -11,6 +11,8 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "components/url_matcher/url_matcher.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -21,7 +23,25 @@ using url_matcher::URLMatcher;
 using url_matcher::URLMatcherConditionSet;
 
 namespace extensions {
+
 namespace {
+
+scoped_refptr<Extension> CreateExtensionWithBookmarksPermission(
+    bool include_bookmarks) {
+  ListBuilder permissions;
+  permissions.Append("declarativeContent");
+  if (include_bookmarks)
+    permissions.Append("bookmarks");
+  return ExtensionBuilder()
+      .SetManifest(DictionaryBuilder()
+          .Set("name", "Test extension")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Set("permissions", permissions))
+          .Build();
+}
+
+}  // namespace
 
 TEST(DeclarativeContentConditionTest, UnknownConditionName) {
   URLMatcher matcher;
@@ -79,10 +99,12 @@ TEST(DeclarativeContentConditionTest, WrongCssDatatype) {
 
 TEST(DeclarativeContentConditionTest, ConditionWithUrlAndCss) {
   URLMatcher matcher;
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(false);
 
   std::string error;
   scoped_ptr<ContentCondition> result = ContentCondition::Create(
-      NULL,
+      extension.get(),
       matcher.condition_factory(),
       *base::test::ParseJson(
           "{\n"
@@ -116,5 +138,116 @@ TEST(DeclarativeContentConditionTest, ConditionWithUrlAndCss) {
   EXPECT_FALSE(result->IsFulfilled(match_data));
 }
 
-}  // namespace
+// Tests that condition with isBookmarked requires "bookmarks" permission.
+TEST(DeclarativeContentConditionTest, IsBookmarkedRequiresBookmarkPermission) {
+  URLMatcher matcher;
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(false);
+
+  std::string error;
+  scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      extension.get(),
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+          "{\n"
+          "  \"isBookmarked\": true,\n"
+          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+          "}"),
+      &error);
+  EXPECT_THAT(error, HasSubstr("requires 'bookmarks' permission"));
+  ASSERT_FALSE(result);
+}
+
+// Tests an invalid isBookmarked value type.
+TEST(DeclarativeContentConditionTest, WrongIsBookmarkedDatatype) {
+  URLMatcher matcher;
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(true);
+
+  std::string error;
+  scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      extension.get(),
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+          "{\n"
+          "  \"isBookmarked\": [],\n"
+          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+          "}"),
+      &error);
+  EXPECT_THAT(error, HasSubstr("invalid type"));
+  EXPECT_FALSE(result);
+}
+
+// Tests isBookmark: true.
+TEST(DeclarativeContentConditionTest, IsBookmarkedTrue) {
+  URLMatcher matcher;
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(true);
+
+  std::string error;
+  scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      extension.get(),
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+          "{\n"
+          "  \"isBookmarked\": true,\n"
+          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+          "}"),
+      &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(result);
+
+  // TODO(wittman): Getting/adding URL matcher condition sets should not be
+  // necessary when we haven't specified any pageUrl conditions. Remove this and
+  // the MatchURL call below, and refactor ContentCondition and
+  // ChromeContentRulesRegistry to not depend on a ContentCondition always
+  // having a URL matcher condition.
+  URLMatcherConditionSet::Vector all_new_condition_sets;
+  result->GetURLMatcherConditionSets(&all_new_condition_sets);
+  matcher.AddConditionSets(all_new_condition_sets);
+
+  RendererContentMatchData data;
+  data.page_url_matches = matcher.MatchURL(GURL("http://test/"));
+  data.is_bookmarked = true;
+  EXPECT_TRUE(result->IsFulfilled(data));
+  data.is_bookmarked = false;
+  EXPECT_FALSE(result->IsFulfilled(data));
+}
+
+// Tests isBookmark: false.
+TEST(DeclarativeContentConditionTest, IsBookmarkedFalse) {
+  URLMatcher matcher;
+  scoped_refptr<Extension> extension =
+      CreateExtensionWithBookmarksPermission(true);
+
+  std::string error;
+  scoped_ptr<ContentCondition> result = ContentCondition::Create(
+      extension.get(),
+      matcher.condition_factory(),
+      *base::test::ParseJson(
+          "{\n"
+          "  \"isBookmarked\": false,\n"
+          "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
+          "}"),
+      &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(result);
+
+  // TODO(wittman): Getting/adding URL matcher condition sets should not be
+  // necessary when we haven't specified any pageUrl conditions. Remove this and
+  // the MatchURL call below, and refactor ContentCondition and
+  // ChromeContentRulesRegistry to not depend on a ContentCondition always
+  // having a URL matcher condition.
+  URLMatcherConditionSet::Vector all_new_condition_sets;
+  result->GetURLMatcherConditionSets(&all_new_condition_sets);
+  matcher.AddConditionSets(all_new_condition_sets);
+
+  RendererContentMatchData data;
+  data.page_url_matches = matcher.MatchURL(GURL("http://test/"));
+  data.is_bookmarked = true;
+  EXPECT_FALSE(result->IsFulfilled(data));
+  data.is_bookmarked = false;
+  EXPECT_TRUE(result->IsFulfilled(data));
+}
+
 }  // namespace extensions

@@ -33,7 +33,7 @@ DeclarativeContentPageUrlConditionTracker::PerWebContentsTracker::
 void DeclarativeContentPageUrlConditionTracker::PerWebContentsTracker::
 UpdateMatchesForCurrentUrl(bool request_evaluation_if_unchanged) {
   std::set<url_matcher::URLMatcherConditionSet::ID> new_matches =
-      url_matcher_->MatchURL(web_contents()->GetURL());
+      url_matcher_->MatchURL(web_contents()->GetVisibleURL());
   matches_.swap(new_matches);
   if (matches_ != new_matches || request_evaluation_if_unchanged)
     request_evaluation_.Run(web_contents());
@@ -107,14 +107,14 @@ void DeclarativeContentPageUrlConditionTracker::GetMatches(
   *matches = per_web_contents_tracker_[contents]->matches();
 }
 
+bool DeclarativeContentPageUrlConditionTracker::IsEmpty() const {
+  return url_matcher_.IsEmpty();
+}
+
 void DeclarativeContentPageUrlConditionTracker::DeletePerWebContentsTracker(
     content::WebContents* contents) {
   DCHECK(ContainsKey(per_web_contents_tracker_, contents));
   per_web_contents_tracker_.erase(contents);
-}
-
-bool DeclarativeContentPageUrlConditionTracker::IsEmpty() const {
-  return url_matcher_.IsEmpty();
 }
 
 void DeclarativeContentPageUrlConditionTracker::UpdateMatchesForAllTrackers() {

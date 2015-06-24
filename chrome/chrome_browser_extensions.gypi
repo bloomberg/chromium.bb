@@ -219,6 +219,8 @@
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h',
       'browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.cc',
       'browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h',
+      'browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker.cc',
+      'browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker.h',
       'browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker.cc',
       'browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker.h',
       'browser/extensions/api/desktop_capture/desktop_capture_api.cc',

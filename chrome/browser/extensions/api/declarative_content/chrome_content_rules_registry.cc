@@ -85,6 +85,7 @@ ChromeContentRulesRegistry::ChromeContentRulesRegistry(
                            RulesRegistryService::kDefaultRulesRegistryID),
       page_url_condition_tracker_(browser_context, this),
       css_condition_tracker_(browser_context, this),
+      is_bookmarked_condition_tracker_(browser_context, this),
       evaluation_disposition_(EVALUATE_REQUESTS) {
   extension_info_map_ = ExtensionSystem::Get(browser_context)->info_map();
 
@@ -137,6 +138,7 @@ void ChromeContentRulesRegistry::MonitorWebContentsForRuleEvaluation(
   EvaluationScope evaluation_scope(this);
   page_url_condition_tracker_.TrackForWebContents(contents);
   css_condition_tracker_.TrackForWebContents(contents);
+  is_bookmarked_condition_tracker_.TrackForWebContents(contents);
 }
 
 void ChromeContentRulesRegistry::DidNavigateMainFrame(
@@ -148,6 +150,8 @@ void ChromeContentRulesRegistry::DidNavigateMainFrame(
     page_url_condition_tracker_.OnWebContentsNavigation(contents, details,
                                                         params);
     css_condition_tracker_.OnWebContentsNavigation(contents, details, params);
+    is_bookmarked_condition_tracker_.OnWebContentsNavigation(contents, details,
+                                                             params);
   }
 }
 
@@ -362,6 +366,8 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
   page_url_condition_tracker_.GetMatches(tab, &renderer_data.page_url_matches);
   css_condition_tracker_.GetMatchingCssSelectors(tab,
                                                  &renderer_data.css_selectors);
+  renderer_data.is_bookmarked =
+      is_bookmarked_condition_tracker_.IsUrlBookmarked(tab);
   std::set<const ContentRule*> matching_rules =
       GetMatches(renderer_data, tab->GetBrowserContext()->IsOffTheRecord());
   if (matching_rules.empty() && !ContainsKey(active_rules_, tab))
