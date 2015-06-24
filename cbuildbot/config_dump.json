@@ -12050,6 +12050,7 @@
     },
     "nyan-chrome-pfq": {
         "_template": "chrome-pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "nyan"
         ],

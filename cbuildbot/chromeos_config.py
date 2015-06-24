@@ -648,6 +648,7 @@ _waterfall_config_map = {
         # Experimental PFQs.
         'peach_pit-chrome-pfq',
         'tricky-chrome-pfq',
+        'nyan-chrome-pfq',
 
         # Incremental Builders.
         'mario-incremental',
