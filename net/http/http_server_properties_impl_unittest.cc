@@ -373,7 +373,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   ASSERT_TRUE(HasAlternativeService(test_host_port_pair));
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
   impl_.ClearAlternativeService(test_host_port_pair);
-  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {

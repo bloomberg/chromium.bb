@@ -374,21 +374,7 @@ void HttpServerPropertiesImpl::ClearAlternativeService(
   if (it == alternative_service_map_.end()) {
     return;
   }
-  AlternativeService alternative_service(it->second.alternative_service);
-  if (alternative_service.host.empty()) {
-    alternative_service.host = origin.host();
-  }
   alternative_service_map_.Erase(it);
-
-  // The following is temporary to keep the existing semantics, which is that if
-  // there is a broken alternative service in the mapping, then this method
-  // leaves it in a non-broken, but recently broken state.
-  //
-  // TODO(bnc):
-  //  1. Verify and document the class invariant that no broken alternative
-  //     service can be in the mapping.
-  //  2. Remove the rest of this method as it will be moot.
-  broken_alternative_services_.erase(alternative_service);
 }
 
 const AlternativeServiceMap& HttpServerPropertiesImpl::alternative_service_map()
