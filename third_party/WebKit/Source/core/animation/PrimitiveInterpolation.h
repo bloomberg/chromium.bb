@@ -61,9 +61,9 @@ private:
         , m_end(end)
         , m_nonInterpolableValue(nonInterpolableValue)
     { }
-    OwnPtrWillBeRawPtr<InterpolableValue> m_start;
-    OwnPtrWillBeRawPtr<InterpolableValue> m_end;
-    RefPtrWillBeRawPtr<NonInterpolableValue> m_nonInterpolableValue;
+    OwnPtrWillBeMember<InterpolableValue> m_start;
+    OwnPtrWillBeMember<InterpolableValue> m_end;
+    RefPtrWillBeMember<NonInterpolableValue> m_nonInterpolableValue;
 };
 
 // Represents a pair of incompatible keyframes that fall back to 50% flip behaviour eg. "auto" and "0px".
