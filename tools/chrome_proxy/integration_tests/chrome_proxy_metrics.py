@@ -11,7 +11,7 @@ from common import network_metrics
 from common.chrome_proxy_metrics import ChromeProxyMetricException
 from telemetry.page import page_test
 from telemetry.value import scalar
-
+from metrics import Metric
 
 class ChromeProxyMetric(network_metrics.NetworkMetric):
   """A Chrome proxy timeline metric."""
@@ -704,6 +704,30 @@ class ChromeProxyVideoMetric(network_metrics.NetworkMetric):
     for (k,v) in self.videoMetrics.iteritems():
       k = "%s_%s" % (k, kind)
       results.AddValue(scalar.ScalarValue(results.current_page, k, "", v))
+
+class ChromeProxyInstrumentedVideoMetric(Metric):
+  """Metric for pages instrumented to evaluate video transcoding."""
+  def __init__(self):
+    super(ChromeProxyInstrumentedVideoMetric, self).__init__()
+
+  def Stop(self, page, tab):
+    waitTime = tab.EvaluateJavaScript('test.waitTime')
+    tab.WaitForJavaScriptExpression('test.metrics.complete', waitTime)
+    super(ChromeProxyInstrumentedVideoMetric, self).Stop(page, tab)
+
+  def AddResults(self, tab, results):
+    metrics = tab.EvaluateJavaScript('test.metrics')
+    for (k,v) in metrics.iteritems():
+      results.AddValue(scalar.ScalarValue(results.current_page, k, '', v))
+    try:
+      complete = metrics['complete']
+      failed = metrics['failed']
+      if not complete:
+        raise ChromeProxyMetricException, 'Test not complete'
+      if failed:
+        raise ChromeProxyMetricException, 'failed'
+    except KeyError:
+        raise ChromeProxyMetricException, 'No metrics found'
 
 # Returns whether |url| is a block-once test URL. Data Reduction Proxy has been
 # configured to always return block-once for these URLs.

@@ -414,7 +414,6 @@ class ChromeProxyVideoValidation(page_test.PageTest):
   def CustomizeBrowserOptionsForSinglePage(self, page, options):
     if page.use_chrome_proxy:
       options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
-      options.AppendExtraBrowserArgs('--data-reduction-proxy-experiment=video')
 
   def DidNavigateToPage(self, page, tab):
     self._currMetrics = metrics.ChromeProxyVideoMetric(tab)
@@ -479,3 +478,23 @@ class ChromeProxyVideoValidation(page_test.PageTest):
     if pxocl != dcl:
       err('Mismatch for content length (proxied=%s direct=%s): %s' %
           (str(pxocl), str(dcl), page.url))
+
+class ChromeProxyInstrumentedVideoValidation(page_test.PageTest):
+  """Tests a specially instrumented page for correct video transcoding."""
+
+  def __init__(self):
+    super(ChromeProxyInstrumentedVideoValidation, self).__init__(
+        needs_browser_restart_after_each_page=True,
+        clear_cache_before_each_run=True)
+    self._metrics = metrics.ChromeProxyInstrumentedVideoMetric()
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
+
+  def WillNavigateToPage(self, page, tab):
+    tab.ClearCache(force=True)
+    self._metrics.Start(page, tab)
+
+  def ValidateAndMeasurePage(self, page, tab, results):
+    self._metrics.Stop(page, tab)
+    self._metrics.AddResults(tab, results)
