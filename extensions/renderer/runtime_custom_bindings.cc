@@ -161,6 +161,13 @@ void RuntimeCustomBindings::GetExtensionViews(
   v8::Local<v8::Array> v8_views = v8::Array::New(args.GetIsolate());
   int v8_index = 0;
   for (content::RenderFrame* frame : frames) {
+    // We filter out iframes here. GetExtensionViews should only return the
+    // main views, not any subframes. (Returning subframes can cause broken
+    // behavior by treating an app window's iframe as its main frame, and maybe
+    // other nastiness).
+    if (frame->GetWebFrame()->top() != frame->GetWebFrame())
+      continue;
+
     v8::Local<v8::Context> context =
         frame->GetWebFrame()->mainWorldScriptContext();
     if (!context.IsEmpty()) {
