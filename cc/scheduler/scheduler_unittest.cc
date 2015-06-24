@@ -141,13 +141,6 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionInvalidateOutputSurface");
     states_.push_back(scheduler_->AsValue());
   }
-  base::TimeDelta DrawDurationEstimate() override { return base::TimeDelta(); }
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
-    return base::TimeDelta();
-  }
-  base::TimeDelta CommitToActivateDurationEstimate() override {
-    return base::TimeDelta();
-  }
 
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
     begin_frame_args_sent_to_children_ = args;
@@ -191,31 +184,6 @@ class FakeSchedulerClient : public SchedulerClient {
   std::vector<scoped_refptr<base::trace_event::ConvertableToTraceFormat>>
       states_;
   TestScheduler* scheduler_;
-};
-
-class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
- public:
-  SchedulerClientWithFixedEstimates(
-      base::TimeDelta draw_duration,
-      base::TimeDelta begin_main_frame_to_commit_duration,
-      base::TimeDelta commit_to_activate_duration)
-      : draw_duration_(draw_duration),
-        begin_main_frame_to_commit_duration_(
-            begin_main_frame_to_commit_duration),
-        commit_to_activate_duration_(commit_to_activate_duration) {}
-
-  base::TimeDelta DrawDurationEstimate() override { return draw_duration_; }
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
-    return begin_main_frame_to_commit_duration_;
-  }
-  base::TimeDelta CommitToActivateDurationEstimate() override {
-    return commit_to_activate_duration_;
-  }
-
- private:
-  base::TimeDelta draw_duration_;
-  base::TimeDelta begin_main_frame_to_commit_duration_;
-  base::TimeDelta commit_to_activate_duration_;
 };
 
 class FakeExternalBeginFrameSource : public BeginFrameSourceBase {
@@ -262,9 +230,15 @@ class SchedulerTest : public testing::Test {
       fake_external_begin_frame_source_.reset(
           new FakeExternalBeginFrameSource(client_.get()));
     }
+
+    scoped_ptr<FakeCompositorTimingHistory> fake_compositor_timing_history =
+        FakeCompositorTimingHistory::Create();
+    fake_compositor_timing_history_ = fake_compositor_timing_history.get();
+
     scheduler_ = TestScheduler::Create(
         now_src_.get(), client_.get(), scheduler_settings_, 0,
-        task_runner_.get(), fake_external_begin_frame_source_.get());
+        task_runner_.get(), fake_external_begin_frame_source_.get(),
+        fake_compositor_timing_history.Pass());
     DCHECK(scheduler_);
     client_->set_scheduler(scheduler_.get());
     return scheduler_.get();
@@ -422,6 +396,7 @@ class SchedulerTest : public testing::Test {
   SchedulerSettings scheduler_settings_;
   scoped_ptr<FakeSchedulerClient> client_;
   scoped_ptr<TestScheduler> scheduler_;
+  FakeCompositorTimingHistory* fake_compositor_timing_history_;
 };
 
 TEST_F(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
@@ -473,13 +448,14 @@ TEST_F(SchedulerTest, SendBeginFramesToChildrenWithoutCommit) {
 
 TEST_F(SchedulerTest, SendBeginFramesToChildrenDeadlineNotAdjusted) {
   // Set up client with specified estimates.
-  SchedulerClientWithFixedEstimates* client =
-      new SchedulerClientWithFixedEstimates(
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMilliseconds(2),
-          base::TimeDelta::FromMilliseconds(4));
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(true);
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
+  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
+      base::TimeDelta::FromMilliseconds(2));
+  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+      base::TimeDelta::FromMilliseconds(4));
 
   EXPECT_FALSE(client_->needs_begin_frames());
   scheduler_->SetChildrenNeedBeginFrames(true);
@@ -1318,16 +1294,16 @@ void SchedulerTest::MainFrameInHighLatencyMode(
     int64 commit_to_activate_estimate_in_ms,
     bool impl_latency_takes_priority,
     bool should_send_begin_main_frame) {
-  // Set up client with specified estimates (draw duration is set to 1).
-  SchedulerClientWithFixedEstimates* client =
-      new SchedulerClientWithFixedEstimates(
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMilliseconds(
-              begin_main_frame_to_commit_estimate_in_ms),
-          base::TimeDelta::FromMilliseconds(commit_to_activate_estimate_in_ms));
-
   scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(true);
+
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
+  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
+      base::TimeDelta::FromMilliseconds(
+          begin_main_frame_to_commit_estimate_in_ms));
+  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+      base::TimeDelta::FromMilliseconds(commit_to_activate_estimate_in_ms));
 
   scheduler_->SetImplLatencyTakesPriority(impl_latency_takes_priority);
 
@@ -1342,9 +1318,9 @@ void SchedulerTest::MainFrameInHighLatencyMode(
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
-  EXPECT_TRUE(client->HasAction("ScheduledActionSendBeginMainFrame"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
 
-  client->Reset();
+  client_->Reset();
   scheduler_->SetNeedsCommit();
   EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
   EXPECT_SCOPED(AdvanceFrame());
@@ -1352,7 +1328,7 @@ void SchedulerTest::MainFrameInHighLatencyMode(
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(scheduler_->MainThreadIsInHighLatencyMode(),
             should_send_begin_main_frame);
-  EXPECT_EQ(client->HasAction("ScheduledActionSendBeginMainFrame"),
+  EXPECT_EQ(client_->HasAction("ScheduledActionSendBeginMainFrame"),
             should_send_begin_main_frame);
 }
 
@@ -1390,14 +1366,16 @@ TEST_F(
 
   // Since we are simulating a long commit, set up a client with draw duration
   // estimates that prevent skipping main frames to get to low latency mode.
-  SchedulerClientWithFixedEstimates* client =
-      new SchedulerClientWithFixedEstimates(
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMilliseconds(32),
-          base::TimeDelta::FromMilliseconds(32));
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(true);
+
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
+  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
+      base::TimeDelta::FromMilliseconds(32));
+  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+      base::TimeDelta::FromMilliseconds(32));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -1467,15 +1445,17 @@ TEST_F(SchedulerTest,
 
   // Since we are simulating a long commit, set up a client with draw duration
   // estimates that prevent skipping main frames to get to low latency mode.
-  SchedulerClientWithFixedEstimates* client =
-      new SchedulerClientWithFixedEstimates(
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMilliseconds(32),
-          base::TimeDelta::FromMilliseconds(32));
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
   scheduler_settings_.main_frame_before_activation_enabled = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(true);
+
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
+  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
+      base::TimeDelta::FromMilliseconds(32));
+  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+      base::TimeDelta::FromMilliseconds(32));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -1553,15 +1533,17 @@ TEST_F(
 
   // Since we are simulating a long commit, set up a client with draw duration
   // estimates that prevent skipping main frames to get to low latency mode.
-  SchedulerClientWithFixedEstimates* client =
-      new SchedulerClientWithFixedEstimates(
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMilliseconds(32),
-          base::TimeDelta::FromMilliseconds(32));
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
   scheduler_settings_.main_frame_before_activation_enabled = true;
-  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+  SetUpScheduler(true);
+
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
+  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
+      base::TimeDelta::FromMilliseconds(32));
+  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+      base::TimeDelta::FromMilliseconds(32));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.

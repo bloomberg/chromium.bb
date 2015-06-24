@@ -2,25 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TREES_PROXY_TIMING_HISTORY_H_
-#define CC_TREES_PROXY_TIMING_HISTORY_H_
+#ifndef CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
+#define CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
 
 #include "cc/base/rolling_time_delta_history.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
+
+namespace base {
+namespace trace_event {
+class TracedValue;
+}  // namespace trace_event
+}  // namespace base
 
 namespace cc {
 
-class ProxyTimingHistory {
+class RenderingStatsInstrumentation;
+
+class CC_EXPORT CompositorTimingHistory {
  public:
-  explicit ProxyTimingHistory(
+  explicit CompositorTimingHistory(
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
-  ~ProxyTimingHistory();
+  virtual ~CompositorTimingHistory();
 
-  base::TimeDelta DrawDurationEstimate() const;
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() const;
-  base::TimeDelta CommitToActivateDurationEstimate() const;
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  void DidBeginMainFrame();
+  virtual base::TimeDelta DrawDurationEstimate() const;
+  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() const;
+  virtual base::TimeDelta CommitToActivateDurationEstimate() const;
+
+  void WillBeginMainFrame();
   void DidCommit();
   void DidActivateSyncTree();
   void DidStartDrawing();
@@ -39,8 +48,11 @@ class ProxyTimingHistory {
   base::TimeTicks start_draw_time_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CompositorTimingHistory);
 };
 
 }  // namespace cc
 
-#endif  // CC_TREES_PROXY_TIMING_HISTORY_H_
+#endif  // CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_

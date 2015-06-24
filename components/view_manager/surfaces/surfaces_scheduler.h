@@ -11,6 +11,7 @@
 
 namespace cc {
 class Display;
+class RenderingStatsInstrumentation;
 }
 
 namespace surfaces {
@@ -41,15 +42,13 @@ class SurfacesScheduler : public cc::SchedulerClient {
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionPrepareTiles() override;
   void ScheduledActionInvalidateOutputSurface() override;
-  base::TimeDelta DrawDurationEstimate() override;
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
-  base::TimeDelta CommitToActivateDurationEstimate() override;
   void SendBeginFramesToChildren(const cc::BeginFrameArgs& args) override;
   void SendBeginMainFrameNotExpectedSoon() override;
 
   std::set<cc::Display*> displays_;
   scoped_ptr<cc::Scheduler> scheduler_;
-  base::TimeDelta draw_estimate_;
+  scoped_ptr<cc::RenderingStatsInstrumentation>
+      rendering_stats_instrumentation_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesScheduler);
 };

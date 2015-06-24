@@ -4,15 +4,21 @@
 
 #include "components/view_manager/surfaces/surfaces_scheduler.h"
 
+#include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/scheduler/compositor_timing_history.h"
 #include "cc/surfaces/display.h"
 
 namespace surfaces {
 
-SurfacesScheduler::SurfacesScheduler() {
+SurfacesScheduler::SurfacesScheduler()
+    : rendering_stats_instrumentation_(
+          cc::RenderingStatsInstrumentation::Create()) {
   cc::SchedulerSettings settings;
+  scoped_ptr<cc::CompositorTimingHistory> compositor_timing_history(
+      new cc::CompositorTimingHistory(rendering_stats_instrumentation_.get()));
   scheduler_ = cc::Scheduler::Create(
       this, settings, 0, base::MessageLoop::current()->task_runner().get(),
-      nullptr);
+      nullptr, compositor_timing_history.Pass());
   scheduler_->SetCanStart();
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
@@ -62,13 +68,9 @@ void SurfacesScheduler::ScheduledActionSendBeginMainFrame() {
 }
 
 cc::DrawResult SurfacesScheduler::ScheduledActionDrawAndSwapIfPossible() {
-  base::TimeTicks start = base::TimeTicks::Now();
   for (const auto& it : displays_) {
     it->DrawAndSwap();
   }
-  base::TimeDelta duration = base::TimeTicks::Now() - start;
-
-  draw_estimate_ = (duration + draw_estimate_) / 2;
   return cc::DRAW_SUCCESS;
 }
 
@@ -95,18 +97,6 @@ void SurfacesScheduler::ScheduledActionPrepareTiles() {
 }
 
 void SurfacesScheduler::ScheduledActionInvalidateOutputSurface() {
-}
-
-base::TimeDelta SurfacesScheduler::DrawDurationEstimate() {
-  return draw_estimate_;
-}
-
-base::TimeDelta SurfacesScheduler::BeginMainFrameToCommitDurationEstimate() {
-  return base::TimeDelta();
-}
-
-base::TimeDelta SurfacesScheduler::CommitToActivateDurationEstimate() {
-  return base::TimeDelta();
 }
 
 void SurfacesScheduler::SendBeginFramesToChildren(

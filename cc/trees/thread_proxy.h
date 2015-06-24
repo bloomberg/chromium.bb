@@ -17,7 +17,6 @@
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
-#include "cc/trees/proxy_timing_history.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -126,9 +125,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
     DelayedUniqueNotifier smoothness_priority_expiration_notifier;
 
-    ProxyTimingHistory timing_history;
-
     scoped_ptr<BeginFrameSource> external_begin_frame_source;
+
+    RenderingStatsInstrumentation* rendering_stats_instrumentation;
 
     // Values used to keep track of frame durations. Used only in frame timing.
     BeginFrameArgs last_begin_main_frame_args;
@@ -219,9 +218,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionPrepareTiles() override;
   void ScheduledActionInvalidateOutputSurface() override;
-  base::TimeDelta DrawDurationEstimate() override;
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
-  base::TimeDelta CommitToActivateDurationEstimate() override;
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
   void SendBeginMainFrameNotExpectedSoon() override;
 

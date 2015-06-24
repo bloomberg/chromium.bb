@@ -13,6 +13,8 @@
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
+#include "cc/scheduler/compositor_timing_history.h"
+#include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -41,7 +43,6 @@ SingleThreadProxy::SingleThreadProxy(
       layer_tree_host_(layer_tree_host),
       client_(client),
       external_begin_frame_source_(external_begin_frame_source.Pass()),
-      timing_history_(layer_tree_host->rendering_stats_instrumentation()),
       next_frame_is_newly_committed_frame_(false),
 #if DCHECK_IS_ON()
       inside_impl_frame_(false),
@@ -62,9 +63,15 @@ SingleThreadProxy::SingleThreadProxy(
     SchedulerSettings scheduler_settings(
         layer_tree_host->settings().ToSchedulerSettings());
     scheduler_settings.commit_to_active_tree = CommitToActiveTree();
+
+    scoped_ptr<CompositorTimingHistory> compositor_timing_history(
+        new CompositorTimingHistory(
+            layer_tree_host->rendering_stats_instrumentation()));
+
     scheduler_on_impl_thread_ = Scheduler::Create(
         this, scheduler_settings, layer_tree_host_->id(),
-        MainThreadTaskRunner(), external_begin_frame_source_.get());
+        MainThreadTaskRunner(), external_begin_frame_source_.get(),
+        compositor_timing_history.Pass());
   }
 }
 
@@ -291,7 +298,6 @@ void SingleThreadProxy::CommitComplete() {
   commit_blocking_task_runner_.reset();
   layer_tree_host_->CommitComplete();
   layer_tree_host_->DidBeginMainFrame();
-  timing_history_.DidCommit();
 
   next_frame_is_newly_committed_frame_ = true;
 }
@@ -447,8 +453,6 @@ void SingleThreadProxy::DidActivateSyncTree() {
   // |commit_blocking_task_runner| would make sure all tasks posted during
   // commit/activation before CommitComplete.
   CommitComplete();
-
-  timing_history_.DidActivateSyncTree();
 }
 
 void SingleThreadProxy::DidPrepareTiles() {
@@ -638,8 +642,6 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
       return DRAW_ABORTED_CANT_DRAW;
     }
 
-    timing_history_.DidStartDrawing();
-
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile2(
@@ -675,7 +677,6 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     tracked_objects::ScopedTracker tracking_profile7(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "461509 SingleThreadProxy::DoComposite7"));
-    timing_history_.DidFinishDrawing();
   }
 
   if (draw_frame) {
@@ -822,8 +823,6 @@ void SingleThreadProxy::DoBeginMainFrame(
 
   layer_tree_host_->UpdateLayers();
 
-  timing_history_.DidBeginMainFrame();
-
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
   // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside
   // thread_proxy.cc
@@ -892,18 +891,6 @@ void SingleThreadProxy::ScheduledActionPrepareTiles() {
 
 void SingleThreadProxy::ScheduledActionInvalidateOutputSurface() {
   NOTREACHED();
-}
-
-base::TimeDelta SingleThreadProxy::DrawDurationEstimate() {
-  return timing_history_.DrawDurationEstimate();
-}
-
-base::TimeDelta SingleThreadProxy::BeginMainFrameToCommitDurationEstimate() {
-  return timing_history_.BeginMainFrameToCommitDurationEstimate();
-}
-
-base::TimeDelta SingleThreadProxy::CommitToActivateDurationEstimate() {
-  return timing_history_.CommitToActivateDurationEstimate();
 }
 
 void SingleThreadProxy::DidFinishImplFrame() {

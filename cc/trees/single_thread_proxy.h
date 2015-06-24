@@ -15,7 +15,6 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
-#include "cc/trees/proxy_timing_history.h"
 
 namespace cc {
 
@@ -74,9 +73,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionPrepareTiles() override;
   void ScheduledActionInvalidateOutputSurface() override;
-  base::TimeDelta DrawDurationEstimate() override;
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
-  base::TimeDelta CommitToActivateDurationEstimate() override;
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
   void SendBeginMainFrameNotExpectedSoon() override;
 
@@ -153,7 +149,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // Accessed from both threads.
   scoped_ptr<BeginFrameSource> external_begin_frame_source_;
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
-  ProxyTimingHistory timing_history_;
 
   scoped_ptr<BlockingTaskRunner::CapturePostTasks> commit_blocking_task_runner_;
   bool next_frame_is_newly_committed_frame_;

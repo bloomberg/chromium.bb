@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
+#include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"
 
 namespace cc {
@@ -23,7 +24,8 @@ scoped_ptr<Scheduler> Scheduler::Create(
     const SchedulerSettings& settings,
     int layer_tree_host_id,
     base::SingleThreadTaskRunner* task_runner,
-    BeginFrameSource* external_frame_source) {
+    BeginFrameSource* external_frame_source,
+    scoped_ptr<CompositorTimingHistory> compositor_timing_history) {
   scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source;
   if (!settings.use_external_begin_frame_source) {
     synthetic_frame_source = SyntheticBeginFrameSource::Create(
@@ -33,7 +35,8 @@ scoped_ptr<Scheduler> Scheduler::Create(
       BackToBackBeginFrameSource::Create(task_runner);
   return make_scoped_ptr(new Scheduler(
       client, settings, layer_tree_host_id, task_runner, external_frame_source,
-      synthetic_frame_source.Pass(), unthrottled_frame_source.Pass()));
+      synthetic_frame_source.Pass(), unthrottled_frame_source.Pass(),
+      compositor_timing_history.Pass()));
 }
 
 Scheduler::Scheduler(
@@ -43,7 +46,8 @@ Scheduler::Scheduler(
     base::SingleThreadTaskRunner* task_runner,
     BeginFrameSource* external_frame_source,
     scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source,
-    scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source)
+    scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source,
+    scoped_ptr<CompositorTimingHistory> compositor_timing_history)
     : settings_(settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
@@ -53,6 +57,7 @@ Scheduler::Scheduler(
       unthrottled_frame_source_(unthrottled_frame_source.Pass()),
       frame_source_(BeginFrameSourceMultiplexer::Create()),
       throttle_frame_production_(false),
+      compositor_timing_history_(compositor_timing_history.Pass()),
       begin_impl_frame_deadline_mode_(
           SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE),
       begin_impl_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
@@ -439,7 +444,7 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
                  "MainThreadLatency", main_thread_is_in_high_latency_mode);
 
   BeginFrameArgs adjusted_args = args;
-  adjusted_args.deadline -= client_->DrawDurationEstimate();
+  adjusted_args.deadline -= compositor_timing_history_->DrawDurationEstimate();
 
   if (!state_machine_.impl_latency_takes_priority() &&
       main_thread_is_in_high_latency_mode &&
@@ -574,8 +579,16 @@ void Scheduler::OnBeginImplFrameDeadline() {
 }
 
 void Scheduler::DrawAndSwapIfPossible() {
+  compositor_timing_history_->DidStartDrawing();
   DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
   state_machine_.DidDrawIfPossibleCompleted(result);
+  compositor_timing_history_->DidFinishDrawing();
+}
+
+void Scheduler::DrawAndSwapForced() {
+  compositor_timing_history_->DidStartDrawing();
+  client_->ScheduledActionDrawAndSwapForced();
+  compositor_timing_history_->DidFinishDrawing();
 }
 
 void Scheduler::SetDeferCommits(bool defer_commits) {
@@ -614,6 +627,7 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionAnimate();
         break;
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
+        compositor_timing_history_->WillBeginMainFrame();
         client_->ScheduledActionSendBeginMainFrame();
         break;
       case SchedulerStateMachine::ACTION_COMMIT: {
@@ -623,10 +637,12 @@ void Scheduler::ProcessScheduledActions() {
             FROM_HERE_WITH_EXPLICIT_FUNCTION(
                 "461509 Scheduler::ProcessScheduledActions4"));
         client_->ScheduledActionCommit();
+        compositor_timing_history_->DidCommit();
         break;
       }
       case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
         client_->ScheduledActionActivateSyncTree();
+        compositor_timing_history_->DidActivateSyncTree();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
         // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
@@ -638,7 +654,7 @@ void Scheduler::ProcessScheduledActions() {
         break;
       }
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
-        client_->ScheduledActionDrawAndSwapForced();
+        DrawAndSwapForced();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT:
         // No action is actually performed, but this allows the state machine to
@@ -703,15 +719,8 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndDictionary();
   state->EndDictionary();
 
-  state->BeginDictionary("client_state");
-  state->SetDouble("draw_duration_estimate_ms",
-                   client_->DrawDurationEstimate().InMillisecondsF());
-  state->SetDouble(
-      "begin_main_frame_to_commit_duration_estimate_ms",
-      client_->BeginMainFrameToCommitDurationEstimate().InMillisecondsF());
-  state->SetDouble(
-      "commit_to_activate_duration_estimate_ms",
-      client_->CommitToActivateDurationEstimate().InMillisecondsF());
+  state->BeginDictionary("compositor_timing_history");
+  compositor_timing_history_->AsValueInto(state);
   state->EndDictionary();
 }
 
@@ -722,8 +731,9 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
   // Check if the main thread computation and commit can be finished before the
   // impl thread's deadline.
   base::TimeTicks estimated_draw_time =
-      args.frame_time + client_->BeginMainFrameToCommitDurationEstimate() +
-      client_->CommitToActivateDurationEstimate();
+      args.frame_time +
+      compositor_timing_history_->BeginMainFrameToCommitDurationEstimate() +
+      compositor_timing_history_->CommitToActivateDurationEstimate();
 
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                "CanCommitAndActivateBeforeDeadline",

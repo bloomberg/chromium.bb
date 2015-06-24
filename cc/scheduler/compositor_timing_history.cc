@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/trees/proxy_timing_history.h"
+#include "cc/scheduler/compositor_timing_history.h"
 
 #include "base/metrics/histogram.h"
+#include "base/trace_event/trace_event.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 
 const size_t kDurationHistorySize = 60;
 const double kCommitAndActivationDurationEstimationPercentile = 50.0;
@@ -13,7 +15,7 @@ const int kDrawDurationEstimatePaddingInMicroseconds = 0;
 
 namespace cc {
 
-ProxyTimingHistory::ProxyTimingHistory(
+CompositorTimingHistory::CompositorTimingHistory(
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : draw_duration_history_(kDurationHistorySize),
       begin_main_frame_to_commit_duration_history_(kDurationHistorySize),
@@ -21,9 +23,20 @@ ProxyTimingHistory::ProxyTimingHistory(
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {
 }
 
-ProxyTimingHistory::~ProxyTimingHistory() {}
+CompositorTimingHistory::~CompositorTimingHistory() {
+}
 
-base::TimeDelta ProxyTimingHistory::DrawDurationEstimate() const {
+void CompositorTimingHistory::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->SetDouble("begin_main_frame_to_commit_duration_estimate_ms",
+                   BeginMainFrameToCommitDurationEstimate().InMillisecondsF());
+  state->SetDouble("commit_to_activate_duration_estimate_ms",
+                   CommitToActivateDurationEstimate().InMillisecondsF());
+  state->SetDouble("draw_duration_estimate_ms",
+                   DrawDurationEstimate().InMillisecondsF());
+}
+
+base::TimeDelta CompositorTimingHistory::DrawDurationEstimate() const {
   base::TimeDelta historical_estimate =
       draw_duration_history_.Percentile(kDrawDurationEstimationPercentile);
   base::TimeDelta padding = base::TimeDelta::FromMicroseconds(
@@ -31,22 +44,23 @@ base::TimeDelta ProxyTimingHistory::DrawDurationEstimate() const {
   return historical_estimate + padding;
 }
 
-base::TimeDelta ProxyTimingHistory::BeginMainFrameToCommitDurationEstimate()
-    const {
+base::TimeDelta
+CompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
   return begin_main_frame_to_commit_duration_history_.Percentile(
       kCommitAndActivationDurationEstimationPercentile);
 }
 
-base::TimeDelta ProxyTimingHistory::CommitToActivateDurationEstimate() const {
+base::TimeDelta CompositorTimingHistory::CommitToActivateDurationEstimate()
+    const {
   return commit_to_activate_duration_history_.Percentile(
       kCommitAndActivationDurationEstimationPercentile);
 }
 
-void ProxyTimingHistory::DidBeginMainFrame() {
+void CompositorTimingHistory::WillBeginMainFrame() {
   begin_main_frame_sent_time_ = base::TimeTicks::Now();
 }
 
-void ProxyTimingHistory::DidCommit() {
+void CompositorTimingHistory::DidCommit() {
   commit_complete_time_ = base::TimeTicks::Now();
   base::TimeDelta begin_main_frame_to_commit_duration =
       commit_complete_time_ - begin_main_frame_sent_time_;
@@ -62,7 +76,7 @@ void ProxyTimingHistory::DidCommit() {
       begin_main_frame_to_commit_duration);
 }
 
-void ProxyTimingHistory::DidActivateSyncTree() {
+void CompositorTimingHistory::DidActivateSyncTree() {
   base::TimeDelta commit_to_activate_duration =
       base::TimeTicks::Now() - commit_complete_time_;
 
@@ -76,11 +90,11 @@ void ProxyTimingHistory::DidActivateSyncTree() {
       commit_to_activate_duration);
 }
 
-void ProxyTimingHistory::DidStartDrawing() {
+void CompositorTimingHistory::DidStartDrawing() {
   start_draw_time_ = base::TimeTicks::Now();
 }
 
-void ProxyTimingHistory::DidFinishDrawing() {
+void CompositorTimingHistory::DidFinishDrawing() {
   base::TimeDelta draw_duration = base::TimeTicks::Now() - start_draw_time_;
 
   // Before adding the new data point to the timing history, see what we would
@@ -95,7 +109,7 @@ void ProxyTimingHistory::DidFinishDrawing() {
   draw_duration_history_.InsertSample(draw_duration);
 }
 
-void ProxyTimingHistory::AddDrawDurationUMA(
+void CompositorTimingHistory::AddDrawDurationUMA(
     base::TimeDelta draw_duration,
     base::TimeDelta draw_duration_estimate) {
   base::TimeDelta draw_duration_overestimate;
@@ -104,21 +118,17 @@ void ProxyTimingHistory::AddDrawDurationUMA(
     draw_duration_underestimate = draw_duration - draw_duration_estimate;
   else
     draw_duration_overestimate = draw_duration_estimate - draw_duration;
-  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDuration",
-                             draw_duration,
+  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDuration", draw_duration,
                              base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(100),
-                             50);
+                             base::TimeDelta::FromMilliseconds(100), 50);
   UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationUnderestimate",
                              draw_duration_underestimate,
                              base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(100),
-                             50);
+                             base::TimeDelta::FromMilliseconds(100), 50);
   UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationOverestimate",
                              draw_duration_overestimate,
                              base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(100),
-                             50);
+                             base::TimeDelta::FromMilliseconds(100), 50);
 }
 
 }  // namespace cc

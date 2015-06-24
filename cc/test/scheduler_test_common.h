@@ -10,12 +10,14 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "cc/scheduler/delay_based_time_source.h"
+#include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
+
+class RenderingStatsInstrumentation;
 
 class FakeTimeSourceClient : public TimeSourceClient {
  public:
@@ -159,6 +161,34 @@ class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
   DISALLOW_COPY_AND_ASSIGN(TestSyntheticBeginFrameSource);
 };
 
+class FakeCompositorTimingHistory : public CompositorTimingHistory {
+ public:
+  static scoped_ptr<FakeCompositorTimingHistory> Create();
+  ~FakeCompositorTimingHistory() override;
+
+  void SetDrawDurationEstimate(base::TimeDelta duration);
+  void SetBeginMainFrameToCommitDurationEstimate(base::TimeDelta duration);
+  void SetCommitToActivateDurationEstimate(base::TimeDelta duration);
+
+  base::TimeDelta DrawDurationEstimate() const override;
+  base::TimeDelta BeginMainFrameToCommitDurationEstimate() const override;
+  base::TimeDelta CommitToActivateDurationEstimate() const override;
+
+ protected:
+  FakeCompositorTimingHistory(scoped_ptr<RenderingStatsInstrumentation>
+                                  rendering_stats_instrumentation_owned);
+
+  scoped_ptr<RenderingStatsInstrumentation>
+      rendering_stats_instrumentation_owned_;
+
+  base::TimeDelta draw_duration_;
+  base::TimeDelta begin_main_frame_to_commit_duration_;
+  base::TimeDelta commit_to_activate_duration_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeCompositorTimingHistory);
+};
+
 class TestScheduler : public Scheduler {
  public:
   static scoped_ptr<TestScheduler> Create(
@@ -167,7 +197,8 @@ class TestScheduler : public Scheduler {
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       OrderedSimpleTaskRunner* task_runner,
-      BeginFrameSource* external_frame_source);
+      BeginFrameSource* external_frame_source,
+      scoped_ptr<CompositorTimingHistory> compositor_timing_history);
 
   // Extra test helper functionality
   bool IsBeginRetroFrameArgsEmpty() const {
@@ -198,9 +229,9 @@ class TestScheduler : public Scheduler {
       OrderedSimpleTaskRunner* task_runner,
       BeginFrameSource* external_frame_source,
       scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
-      scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source);
+      scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source,
+      scoped_ptr<CompositorTimingHistory> compositor_timing_history);
 
-  // Not owned.
   base::SimpleTestTickClock* now_src_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScheduler);

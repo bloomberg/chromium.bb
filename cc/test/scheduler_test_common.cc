@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "cc/debug/rendering_stats_instrumentation.h"
 
 namespace cc {
 
@@ -65,13 +66,60 @@ TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
 TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
 }
 
+scoped_ptr<FakeCompositorTimingHistory> FakeCompositorTimingHistory::Create() {
+  scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation =
+      RenderingStatsInstrumentation::Create();
+  return make_scoped_ptr(
+      new FakeCompositorTimingHistory(rendering_stats_instrumentation.Pass()));
+}
+
+FakeCompositorTimingHistory::FakeCompositorTimingHistory(
+    scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation)
+    : CompositorTimingHistory(rendering_stats_instrumentation.get()),
+      rendering_stats_instrumentation_owned_(
+          rendering_stats_instrumentation.Pass()) {
+}
+
+FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
+}
+
+void FakeCompositorTimingHistory::SetDrawDurationEstimate(
+    base::TimeDelta duration) {
+  draw_duration_ = duration;
+}
+
+void FakeCompositorTimingHistory::SetBeginMainFrameToCommitDurationEstimate(
+    base::TimeDelta duration) {
+  begin_main_frame_to_commit_duration_ = duration;
+}
+
+void FakeCompositorTimingHistory::SetCommitToActivateDurationEstimate(
+    base::TimeDelta duration) {
+  commit_to_activate_duration_ = duration;
+}
+
+base::TimeDelta FakeCompositorTimingHistory::DrawDurationEstimate() const {
+  return draw_duration_;
+}
+
+base::TimeDelta
+FakeCompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
+  return begin_main_frame_to_commit_duration_;
+}
+
+base::TimeDelta FakeCompositorTimingHistory::CommitToActivateDurationEstimate()
+    const {
+  return commit_to_activate_duration_;
+}
+
 scoped_ptr<TestScheduler> TestScheduler::Create(
     base::SimpleTestTickClock* now_src,
     SchedulerClient* client,
     const SchedulerSettings& settings,
     int layer_tree_host_id,
     OrderedSimpleTaskRunner* task_runner,
-    BeginFrameSource* external_frame_source) {
+    BeginFrameSource* external_frame_source,
+    scoped_ptr<CompositorTimingHistory> compositor_timing_history) {
   scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source;
   if (!settings.use_external_begin_frame_source) {
     synthetic_frame_source = TestSyntheticBeginFrameSource::Create(
@@ -82,7 +130,7 @@ scoped_ptr<TestScheduler> TestScheduler::Create(
   return make_scoped_ptr(new TestScheduler(
       now_src, client, settings, layer_tree_host_id, task_runner,
       external_frame_source, synthetic_frame_source.Pass(),
-      unthrottled_frame_source.Pass()));
+      unthrottled_frame_source.Pass(), compositor_timing_history.Pass()));
 }
 
 TestScheduler::TestScheduler(
@@ -93,14 +141,16 @@ TestScheduler::TestScheduler(
     OrderedSimpleTaskRunner* task_runner,
     BeginFrameSource* external_frame_source,
     scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
-    scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source)
+    scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source,
+    scoped_ptr<CompositorTimingHistory> compositor_timing_history)
     : Scheduler(client,
                 scheduler_settings,
                 layer_tree_host_id,
                 task_runner,
                 external_frame_source,
                 synthetic_frame_source.Pass(),
-                unthrottled_frame_source.Pass()),
+                unthrottled_frame_source.Pass(),
+                compositor_timing_history.Pass()),
       now_src_(now_src) {
 }
 

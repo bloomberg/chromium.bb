@@ -30,6 +30,8 @@ class SingleThreadTaskRunner;
 
 namespace cc {
 
+class CompositorTimingHistory;
+
 class SchedulerClient {
  public:
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
@@ -42,9 +44,6 @@ class SchedulerClient {
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionPrepareTiles() = 0;
   virtual void ScheduledActionInvalidateOutputSurface() = 0;
-  virtual base::TimeDelta DrawDurationEstimate() = 0;
-  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() = 0;
-  virtual base::TimeDelta CommitToActivateDurationEstimate() = 0;
   virtual void DidFinishImplFrame() = 0;
   virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
@@ -60,7 +59,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       base::SingleThreadTaskRunner* task_runner,
-      BeginFrameSource* external_frame_source);
+      BeginFrameSource* external_frame_source,
+      scoped_ptr<CompositorTimingHistory> compositor_timing_history);
 
   ~Scheduler() override;
 
@@ -153,10 +153,10 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
             base::SingleThreadTaskRunner* task_runner,
             BeginFrameSource* external_frame_source,
             scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source,
-            scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source);
+            scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source,
+            scoped_ptr<CompositorTimingHistory> compositor_timing_history);
 
-  // virtual for testing - Don't call these in the constructor or
-  // destructor!
+  // Virtual for testing.
   virtual base::TimeTicks Now() const;
 
   const SchedulerSettings settings_;
@@ -173,6 +173,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   base::TimeDelta authoritative_vsync_interval_;
   base::TimeTicks last_vsync_timebase_;
 
+  scoped_ptr<CompositorTimingHistory> compositor_timing_history_;
   base::TimeDelta estimated_parent_draw_time_;
 
   std::deque<BeginFrameArgs> begin_retro_frame_args_;
@@ -195,6 +196,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
   void DrawAndSwapIfPossible();
+  void DrawAndSwapForced();
   void ProcessScheduledActions();
   bool CanCommitAndActivateBeforeDeadline() const;
   void AdvanceCommitStateIfPossible();
