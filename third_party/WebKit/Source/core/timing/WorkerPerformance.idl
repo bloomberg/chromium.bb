@@ -39,7 +39,10 @@
     [RuntimeEnabled=ServiceWorkerPerformanceTimeline] sequence<PerformanceEntry> getEntriesByType(DOMString entryType);
     [RuntimeEnabled=ServiceWorkerPerformanceTimeline] sequence<PerformanceEntry> getEntriesByName(DOMString name, optional DOMString entryType = null);
 
-    // TODO(ksakamoto): Add Resource Timing methods and attributes. crbug.com/465641
+    // See http://www.w3.org/TR/resource-timing/
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, MeasureAs=PrefixedPerformanceClearResourceTimings] void webkitClearResourceTimings();
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, MeasureAs=PrefixedPerformanceSetResourceTimingBufferSize] void webkitSetResourceTimingBufferSize(unsigned long maxSize);
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] attribute EventHandler onwebkitresourcetimingbufferfull;
 
     // See http://www.w3.org/TR/2012/CR-user-timing-20120726/
     [RuntimeEnabled=ServiceWorkerPerformanceTimeline, RaisesException] void mark(DOMString markName);
