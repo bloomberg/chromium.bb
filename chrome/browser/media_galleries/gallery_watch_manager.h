@@ -109,8 +109,9 @@ class GalleryWatchManager
   typedef std::map<base::FilePath, NotificationInfo> WatchedPaths;
   typedef std::map<content::BrowserContext*, GalleryWatchManagerObserver*>
       ObserverMap;
-  typedef ScopedPtrMap<content::BrowserContext*,
-                       scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
+  typedef base::ScopedPtrMap<
+      content::BrowserContext*,
+      scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
       BrowserContextSubscriptionMap;
 
   // Ensure there is a subscription to shutdown notifications for

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
 namespace {
 
 // A ScopedDestroyer sets a Boolean to true upon destruction.
@@ -236,3 +237,4 @@ TEST(ScopedPtrMapTest, Passed) {
 };
 
 }  // namespace
+}  // namespace base

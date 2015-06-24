@@ -254,7 +254,7 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
       new MetricsMemoryDetails(callback, &memory_growth_tracker_));
   details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
 
-  ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>> current_map;
+  base::ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>> current_map;
   host_resource_usage_map_.swap(current_map);
 
   // Collect WebCore cache information to put into a histogram.

@@ -191,7 +191,8 @@ class ChromeMetricsServiceClient
   const base::TimeTicks start_time_;
 
   // Map of ProcessResourceUsage from render process host IDs.
-  ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>> host_resource_usage_map_;
+  base::ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>>
+      host_resource_usage_map_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

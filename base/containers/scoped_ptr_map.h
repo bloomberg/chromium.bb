@@ -14,6 +14,8 @@
 #include "base/move.h"
 #include "base/stl_util.h"
 
+namespace base {
+
 // ScopedPtrMap provides a std::map that supports scoped_ptr values. It ensures
 // that the map's values are properly deleted when removed from the map, or when
 // the map is destroyed.
@@ -136,5 +138,7 @@ class ScopedPtrMap {
     return data_.find(it->first);
   };
 };
+
+}  // namespace base
 
 #endif  // BASE_CONTAINERS_SCOPED_PTR_MAP_H_

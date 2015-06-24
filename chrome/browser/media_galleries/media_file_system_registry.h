@@ -117,8 +117,9 @@ class MediaFileSystemRegistry
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
   // Map a profile to a shutdown notification subscription.
-  typedef ScopedPtrMap<Profile*,
-                       scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
+  typedef base::ScopedPtrMap<
+      Profile*,
+      scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
       ProfileSubscriptionMap;
 
   void OnPermissionRemoved(MediaGalleriesPreferences* pref,
