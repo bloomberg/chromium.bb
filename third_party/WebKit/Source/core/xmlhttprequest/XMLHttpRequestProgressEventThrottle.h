@@ -77,8 +77,6 @@ public:
     void suspend();
     void resume();
 
-    // Promptly stop this timer once finalizable.
-    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
 private:
