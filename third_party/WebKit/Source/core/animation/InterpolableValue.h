@@ -32,6 +32,7 @@ private:
     virtual void multiply(double scalar, InterpolableValue& result) const = 0;
 
     friend class Interpolation;
+    friend class PairwisePrimitiveInterpolation;
 
     // Keep interpolate private, but allow calls within the hierarchy without
     // knowledge of type.

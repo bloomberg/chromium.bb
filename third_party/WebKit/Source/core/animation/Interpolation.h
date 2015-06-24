@@ -17,9 +17,10 @@ class CORE_EXPORT Interpolation : public RefCountedWillBeGarbageCollectedFinaliz
 public:
     virtual ~Interpolation();
 
-    void interpolate(int iteration, double fraction) const;
+    virtual void interpolate(int iteration, double fraction);
 
     virtual bool isStyleInterpolation() const { return false; }
+    virtual bool isInvalidatableStyleInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
     virtual bool isSVGInterpolation() const { return false; }
 

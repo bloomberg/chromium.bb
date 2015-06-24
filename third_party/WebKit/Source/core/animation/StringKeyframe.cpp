@@ -6,6 +6,8 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/animation/AngleSVGInterpolation.h"
+#include "core/animation/AnimationType.h"
+#include "core/animation/CSSValueAnimationType.h"
 #include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
@@ -17,6 +19,7 @@
 #include "core/animation/ImageStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
 #include "core/animation/IntegerSVGInterpolation.h"
+#include "core/animation/InvalidatableStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
@@ -150,11 +153,34 @@ InterpolationRange setRange(CSSPropertyID id)
     }
 }
 
+const Vector<const AnimationType*>* applicableTypesForProperty(CSSPropertyID property)
+{
+    using ApplicableTypesMap = HashMap<CSSPropertyID, const Vector<const AnimationType*>*>;
+    DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicableTypesMap, ());
+    auto entry = applicableTypesMap.find(property);
+    if (entry != applicableTypesMap.end())
+        return entry->value;
+
+    // TODO(alancutter): Support all animatable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
+    if (CSSPropertyMetadata::isAnimatableProperty(property))
+        return nullptr;
+
+    auto applicableTypes = new Vector<const AnimationType*>();
+    applicableTypes->append(new CSSValueAnimationType(property));
+    applicableTypesMap.add(property, applicableTypes);
+    return applicableTypes;
+}
+
 } // namespace
 
 PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
     CSSPropertyID property = propertyHandle.cssProperty();
+    const Vector<const AnimationType*>* applicableTypes = applicableTypesForProperty(property);
+    if (applicableTypes)
+        return InvalidatableStyleInterpolation::create(*applicableTypes, *this, toCSSPropertySpecificKeyframe(end));
+
+    // TODO(alancutter): Remove the remainder of this function.
 
     // FIXME: Refactor this into a generic piece that lives in InterpolationEffect, and a template parameter specific converter.
     CSSValue* fromCSSValue = m_value.get();
@@ -178,7 +204,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
         return nullptr;
     }
 
-    // FIXME: Generate this giant switch statement.
     switch (property) {
     case CSSPropertyLineHeight:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))

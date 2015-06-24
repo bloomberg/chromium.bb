@@ -11,6 +11,8 @@ namespace {
 
 bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
 {
+    if (start == end)
+        return true;
     if (start->isNumber())
         return end->isNumber();
     if (start->isBool())
@@ -37,7 +39,7 @@ Interpolation::Interpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, Pa
     , m_end(end)
     , m_cachedFraction(0)
     , m_cachedIteration(0)
-    , m_cachedValue(m_start->clone())
+    , m_cachedValue(m_start ? m_start->clone() : nullptr)
 {
     RELEASE_ASSERT(typesMatch(m_start.get(), m_end.get()));
 }
@@ -46,7 +48,7 @@ Interpolation::~Interpolation()
 {
 }
 
-void Interpolation::interpolate(int iteration, double fraction) const
+void Interpolation::interpolate(int iteration, double fraction)
 {
     if (m_cachedFraction != fraction || m_cachedIteration != iteration) {
         m_start->interpolate(*m_end, fraction, *m_cachedValue);
