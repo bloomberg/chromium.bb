@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
-  /** @const */ var Item = downloads.Item;
-
   /**
    * Creates and updates the DOM representation for a download.
    * @constructor
@@ -57,6 +55,34 @@ cr.define('downloads', function() {
     this.dangerRemove_.onclick = this.onDangerRemoveClick_.bind(this);
     this.discard_.onclick = this.onDiscardClick_.bind(this);
   }
+
+  /**
+   * Explains why a download is in DANGEROUS state.
+   * @enum {string}
+   */
+  ItemView.DangerType = {
+    NOT_DANGEROUS: 'NOT_DANGEROUS',
+    DANGEROUS_FILE: 'DANGEROUS_FILE',
+    DANGEROUS_URL: 'DANGEROUS_URL',
+    DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
+    UNCOMMON_CONTENT: 'UNCOMMON_CONTENT',
+    DANGEROUS_HOST: 'DANGEROUS_HOST',
+    POTENTIALLY_UNWANTED: 'POTENTIALLY_UNWANTED',
+  };
+
+  /**
+   * The states a download can be in. These correspond to states defined in
+   * DownloadsDOMHandler::CreateDownloadItemValue
+   * @enum {string}
+   */
+  ItemView.States = {
+    IN_PROGRESS: 'IN_PROGRESS',
+    CANCELLED: 'CANCELLED',
+    COMPLETE: 'COMPLETE',
+    PAUSED: 'PAUSED',
+    DANGEROUS: 'DANGEROUS',
+    INTERRUPTED: 'INTERRUPTED',
+  };
 
   /** Progress meter constants. */
   ItemView.Progress = {
@@ -176,17 +202,18 @@ cr.define('downloads', function() {
       if (dangerText) {
         this.ensureTextIs_(this.description_, dangerText);
 
-        var dangerousFile = data.danger_type == Item.DangerType.DANGEROUS_FILE;
+        var dangerType = data.danger_type;
+        var dangerousFile = dangerType == ItemView.DangerType.DANGEROUS_FILE;
         this.description_.classList.toggle('malware', !dangerousFile);
 
         var idr = dangerousFile ? 'IDR_WARNING' : 'IDR_SAFEBROWSING_WARNING';
         ItemView.loadScaledIcon(this.dangerImg_, 'chrome://theme/' + idr);
 
         var showMalwareControls =
-            data.danger_type == Item.DangerType.DANGEROUS_CONTENT ||
-            data.danger_type == Item.DangerType.DANGEROUS_HOST ||
-            data.danger_type == Item.DangerType.DANGEROUS_URL ||
-            data.danger_type == Item.DangerType.POTENTIALLY_UNWANTED;
+            dangerType == ItemView.DangerType.DANGEROUS_CONTENT ||
+            dangerType == ItemView.DangerType.DANGEROUS_HOST ||
+            dangerType == ItemView.DangerType.DANGEROUS_URL ||
+            dangerType == ItemView.DangerType.POTENTIALLY_UNWANTED;
 
         this.malwareControls_.hidden = !showMalwareControls;
         this.discard_.hidden = showMalwareControls;
@@ -195,17 +222,20 @@ cr.define('downloads', function() {
         var path = encodeURIComponent(data.file_path);
         ItemView.loadScaledIcon(this.safeImg_, 'chrome://fileicon/' + path);
 
-        /** @const */ var isInProgress = data.state == Item.States.IN_PROGRESS;
+        /** @const */ var isInProgress =
+            data.state == ItemView.States.IN_PROGRESS;
         this.node.classList.toggle('in-progress', isInProgress);
 
         /** @const */ var completelyOnDisk =
-            data.state == Item.States.COMPLETE && !data.file_externally_removed;
+            data.state == ItemView.States.COMPLETE &&
+            !data.file_externally_removed;
 
         this.fileLink_.href = data.url;
         this.ensureTextIs_(this.fileLink_, data.file_name);
         this.fileLink_.hidden = !completelyOnDisk;
 
-        /** @const */ var isInterrupted = data.state == Item.States.INTERRUPTED;
+        /** @const */ var isInterrupted =
+            data.state == ItemView.States.INTERRUPTED;
         this.fileName_.classList.toggle('interrupted', isInterrupted);
         this.ensureTextIs_(this.fileName_, data.file_name);
         this.fileName_.hidden = completelyOnDisk;
@@ -219,7 +249,7 @@ cr.define('downloads', function() {
 
         this.resume_.hidden = !data.resume;
 
-        /** @const */ var isPaused = data.state == Item.States.PAUSED;
+        /** @const */ var isPaused = data.state == ItemView.States.PAUSED;
         /** @const */ var showCancel = isPaused || isInProgress;
         this.cancel_.hidden = !showCancel;
 
@@ -319,17 +349,17 @@ cr.define('downloads', function() {
      */
     getDangerText_: function(data) {
       switch (data.danger_type) {
-        case Item.DangerType.DANGEROUS_FILE:
+        case ItemView.DangerType.DANGEROUS_FILE:
           return loadTimeData.getStringF('danger_file_desc', data.file_name);
-        case Item.DangerType.DANGEROUS_URL:
+        case ItemView.DangerType.DANGEROUS_URL:
           return loadTimeData.getString('danger_url_desc');
-        case Item.DangerType.DANGEROUS_CONTENT:  // Fall through.
-        case Item.DangerType.DANGEROUS_HOST:
+        case ItemView.DangerType.DANGEROUS_CONTENT:  // Fall through.
+        case ItemView.DangerType.DANGEROUS_HOST:
           return loadTimeData.getStringF('danger_content_desc', data.file_name);
-        case Item.DangerType.UNCOMMON_CONTENT:
+        case ItemView.DangerType.UNCOMMON_CONTENT:
           return loadTimeData.getStringF('danger_uncommon_desc',
                                          data.file_name);
-        case Item.DangerType.POTENTIALLY_UNWANTED:
+        case ItemView.DangerType.POTENTIALLY_UNWANTED:
           return loadTimeData.getStringF('danger_settings_desc',
                                          data.file_name);
         default:
@@ -344,18 +374,18 @@ cr.define('downloads', function() {
      */
     getStatusText_: function(data) {
       switch (data.state) {
-        case Item.States.IN_PROGRESS:
-        case Item.States.PAUSED:  // Fallthrough.
+        case ItemView.States.IN_PROGRESS:
+        case ItemView.States.PAUSED:  // Fallthrough.
           assert(typeof data.progress_status_text == 'string');
           return data.progress_status_text;
-        case Item.States.CANCELLED:
+        case ItemView.States.CANCELLED:
           return loadTimeData.getString('status_cancelled');
-        case Item.States.DANGEROUS:
+        case ItemView.States.DANGEROUS:
           break;  // Intentionally hit assertNotReached(); at bottom.
-        case Item.States.INTERRUPTED:
+        case ItemView.States.INTERRUPTED:
           assert(typeof data.last_reason_text == 'string');
           return data.last_reason_text;
-        case Item.States.COMPLETE:
+        case ItemView.States.COMPLETE:
           return data.file_externally_removed ?
               loadTimeData.getString('status_removed') : '';
       }

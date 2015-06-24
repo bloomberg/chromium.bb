@@ -6,34 +6,6 @@ cr.define('downloads', function() {
   /** @constructor */
   function Item() {}
 
-  /**
-   * The states a download can be in. These correspond to states defined in
-   * DownloadsDOMHandler::CreateDownloadItemValue
-   * @enum {string}
-   */
-  Item.States = {
-    IN_PROGRESS: 'IN_PROGRESS',
-    CANCELLED: 'CANCELLED',
-    COMPLETE: 'COMPLETE',
-    PAUSED: 'PAUSED',
-    DANGEROUS: 'DANGEROUS',
-    INTERRUPTED: 'INTERRUPTED',
-  };
-
-  /**
-   * Explains why a download is in DANGEROUS state.
-   * @enum {string}
-   */
-  Item.DangerType = {
-    NOT_DANGEROUS: 'NOT_DANGEROUS',
-    DANGEROUS_FILE: 'DANGEROUS_FILE',
-    DANGEROUS_URL: 'DANGEROUS_URL',
-    DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
-    UNCOMMON_CONTENT: 'UNCOMMON_CONTENT',
-    DANGEROUS_HOST: 'DANGEROUS_HOST',
-    POTENTIALLY_UNWANTED: 'POTENTIALLY_UNWANTED',
-  };
-
   Item.prototype = {
     /** @type {downloads.ItemView} */
     view: null,
