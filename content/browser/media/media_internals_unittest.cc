@@ -152,14 +152,14 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   const float kFrameRate = 30.0f;
   const gfx::Size kFrameSize(1280, 720);
   const media::VideoPixelFormat kPixelFormat = media::PIXEL_FORMAT_I420;
-  const media::VideoPixelStorage kPixelStorage = media::PIXEL_STORAGE_CPU;
   const media::VideoCaptureFormat capture_format(
-      kFrameSize, kFrameRate, kPixelFormat, kPixelStorage);
-  const std::string expected_string = base::StringPrintf(
-      "(%s)@%.3ffps, pixel format: %s storage: %s.",
-      kFrameSize.ToString().c_str(), kFrameRate,
-      media::VideoCaptureFormat::PixelFormatToString(kPixelFormat).c_str(),
-      media::VideoCaptureFormat::PixelStorageToString(kPixelStorage).c_str());
+      kFrameSize, kFrameRate, kPixelFormat);
+  const std::string expected_string =
+      base::StringPrintf("resolution: %s, fps: %.3f, pixel format: %s",
+                         kFrameSize.ToString().c_str(),
+                         kFrameRate,
+                         media::VideoCaptureFormat::PixelFormatToString(
+                              kPixelFormat).c_str());
   EXPECT_EQ(expected_string, capture_format.ToString());
 }
 

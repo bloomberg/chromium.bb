@@ -13,7 +13,6 @@ using media::AudioParameters;
 using media::ChannelLayout;
 using media::VideoCaptureFormat;
 using media::VideoPixelFormat;
-using media::VideoPixelStorage;
 
 namespace IPC {
 
@@ -64,24 +63,23 @@ void ParamTraits<VideoCaptureFormat>::Write(Message* m,
   m->WriteInt(p.frame_size.height());
   m->WriteFloat(p.frame_rate);
   m->WriteInt(static_cast<int>(p.pixel_format));
-  m->WriteInt(static_cast<int>(p.pixel_storage));
 }
 
 bool ParamTraits<VideoCaptureFormat>::Read(const Message* m,
                                            base::PickleIterator* iter,
                                            VideoCaptureFormat* r) {
-  int frame_size_width, frame_size_height, pixel_format, pixel_storage;
+  int frame_size_width, frame_size_height, pixel_format;
   if (!iter->ReadInt(&frame_size_width) ||
       !iter->ReadInt(&frame_size_height) ||
       !iter->ReadFloat(&r->frame_rate) ||
-      !iter->ReadInt(&pixel_format) ||
-      !iter->ReadInt(&pixel_storage))
+      !iter->ReadInt(&pixel_format))
     return false;
 
   r->frame_size.SetSize(frame_size_width, frame_size_height);
   r->pixel_format = static_cast<VideoPixelFormat>(pixel_format);
-  r->pixel_storage = static_cast<VideoPixelStorage>(pixel_storage);
-  return r->IsValid();
+  if (!r->IsValid())
+    return false;
+  return true;
 }
 
 void ParamTraits<VideoCaptureFormat>::Log(const VideoCaptureFormat& p,

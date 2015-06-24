@@ -247,9 +247,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // The output buffer stays reserved and mapped for use until the Buffer
     // object is destroyed or returned.
     virtual scoped_ptr<Buffer> ReserveOutputBuffer(
-        const gfx::Size& dimensions,
-        VideoPixelFormat format,
-        VideoPixelStorage storage) = 0;
+        media::VideoPixelFormat format,
+        const gfx::Size& dimensions) = 0;
 
     // Captured new video data, held in |frame| or |buffer|, respectively for
     // OnIncomingCapturedVideoFrame() and  OnIncomingCapturedBuffer().

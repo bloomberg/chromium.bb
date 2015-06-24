@@ -99,12 +99,9 @@ class MockClient : public VideoCaptureDevice::Client {
   }
 
   // Trampoline methods to workaround GMOCK problems with scoped_ptr<>.
-  scoped_ptr<Buffer> ReserveOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override {
+  scoped_ptr<Buffer> ReserveOutputBuffer(VideoPixelFormat format,
+                                         const gfx::Size& dimensions) override {
     DoReserveOutputBuffer();
-    NOTREACHED() << "This should never be called";
     return scoped_ptr<Buffer>();
   }
   void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,

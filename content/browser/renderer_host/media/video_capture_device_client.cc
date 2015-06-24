@@ -216,11 +216,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     int rotation,
     const base::TimeTicks& timestamp) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedData");
-  DCHECK_EQ(frame_format.pixel_storage, media::PIXEL_STORAGE_CPU);
 
   if (last_captured_pixel_format_ != frame_format.pixel_format) {
-    OnLog("Pixel format: " +
-          VideoCaptureFormat::PixelFormatToString(frame_format.pixel_format));
+    OnLog("Pixel format: " + media::VideoCaptureFormat::PixelFormatToString(
+                                 frame_format.pixel_format));
     last_captured_pixel_format_ = frame_format.pixel_format;
   }
 
@@ -258,8 +257,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     return;
   }
 
-  scoped_ptr<Buffer> buffer(ReserveOutputBuffer(
-      dimensions, media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU));
+  scoped_ptr<Buffer> buffer(
+      ReserveOutputBuffer(media::PIXEL_FORMAT_I420, dimensions));
   if (!buffer.get())
     return;
 
@@ -351,15 +350,16 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
                             rotation_mode,
                             origin_colorspace) != 0) {
     DLOG(WARNING) << "Failed to convert buffer's pixel format to I420 from "
-                  << VideoCaptureFormat::PixelFormatToString(
+                  << media::VideoCaptureFormat::PixelFormatToString(
                          frame_format.pixel_format);
     return;
   }
 
-  const VideoCaptureFormat output_format =
-      VideoCaptureFormat(dimensions, frame_format.frame_rate,
-                         media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU);
-  OnIncomingCapturedBuffer(buffer.Pass(), output_format, timestamp);
+  OnIncomingCapturedBuffer(buffer.Pass(),
+                           media::VideoCaptureFormat(dimensions,
+                                                     frame_format.frame_rate,
+                                                     media::PIXEL_FORMAT_I420),
+                           timestamp);
 }
 
 void
@@ -375,12 +375,10 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
     const base::TimeTicks& timestamp) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedYuvData");
   DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
-  DCHECK_EQ(frame_format.pixel_storage, media::PIXEL_STORAGE_CPU);
   DCHECK_EQ(clockwise_rotation, 0) << "Rotation not supported";
 
-  scoped_ptr<Buffer> buffer(ReserveOutputBuffer(frame_format.frame_size,
-                                                frame_format.pixel_format,
-                                                frame_format.pixel_storage));
+  scoped_ptr<Buffer> buffer(
+      ReserveOutputBuffer(frame_format.pixel_format, frame_format.frame_size));
   if (!buffer.get())
     return;
 
@@ -420,26 +418,22 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
 };
 
 scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
-VideoCaptureDeviceClient::ReserveOutputBuffer(
-    const gfx::Size& frame_size,
-    media::VideoPixelFormat pixel_format,
-    media::VideoPixelStorage pixel_storage) {
-  DCHECK(pixel_format == media::PIXEL_FORMAT_I420 ||
-         pixel_format == media::PIXEL_FORMAT_ARGB);
-  DCHECK_GT(frame_size.width(), 0);
-  DCHECK_GT(frame_size.height(), 0);
+VideoCaptureDeviceClient::ReserveOutputBuffer(media::VideoPixelFormat format,
+                                              const gfx::Size& dimensions) {
+  DCHECK(format == media::PIXEL_FORMAT_I420 ||
+         format == media::PIXEL_FORMAT_TEXTURE ||
+         format == media::PIXEL_FORMAT_GPUMEMORYBUFFER);
+  DCHECK_GT(dimensions.width(), 0);
+  DCHECK_GT(dimensions.height(), 0);
 
-  if (pixel_storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER &&
-      !texture_wrap_helper_) {
+  if (format == media::PIXEL_FORMAT_GPUMEMORYBUFFER && !texture_wrap_helper_) {
     texture_wrap_helper_ =
         new TextureWrapHelper(controller_, capture_task_runner_);
   }
 
-  // TODO(mcasas): For PIXEL_STORAGE_GPUMEMORYBUFFER, find a way to indicate if
-  // it's a ShMem GMB or a DmaBuf GMB.
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
-  const int buffer_id = buffer_pool_->ReserveForProducer(
-      pixel_format, pixel_storage, frame_size, &buffer_id_to_drop);
+  const int buffer_id =
+      buffer_pool_->ReserveForProducer(format, dimensions, &buffer_id_to_drop);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return NULL;
 
@@ -458,9 +452,9 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     scoped_ptr<Buffer> buffer,
-    const VideoCaptureFormat& frame_format,
+    const media::VideoCaptureFormat& frame_format,
     const base::TimeTicks& timestamp) {
-  if (frame_format.pixel_storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER) {
+  if (frame_format.pixel_format == media::PIXEL_FORMAT_GPUMEMORYBUFFER) {
     capture_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer,
@@ -469,8 +463,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
                    frame_format,
                    timestamp));
   } else {
-    DCHECK(frame_format.pixel_format == media::PIXEL_FORMAT_I420 ||
-           frame_format.pixel_format == media::PIXEL_FORMAT_ARGB);
+    DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
     scoped_refptr<VideoFrame> video_frame =
         VideoFrame::WrapExternalData(
             VideoFrame::I420,
@@ -544,8 +537,7 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
         const media::VideoCaptureFormat& frame_format,
         const base::TimeTicks& timestamp) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_ARGB);
-  DCHECK_EQ(frame_format.pixel_storage, media::PIXEL_STORAGE_GPUMEMORYBUFFER);
+  DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_GPUMEMORYBUFFER);
   if (!gl_helper_) {
     // |gl_helper_| might not exist due to asynchronous initialization not
     // finished or due to termination in process after a context loss.

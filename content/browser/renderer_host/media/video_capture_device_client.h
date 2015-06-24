@@ -53,10 +53,8 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
                                  const media::VideoCaptureFormat& frame_format,
                                  int clockwise_rotation,
                                  const base::TimeTicks& timestamp) override;
-  scoped_ptr<Buffer> ReserveOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override;
+  scoped_ptr<Buffer> ReserveOutputBuffer(media::VideoPixelFormat format,
+                                         const gfx::Size& dimensions) override;
   void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
                                 const base::TimeTicks& timestamp) override;

@@ -52,13 +52,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   const gfx::Size coded_size((visible_size.width() + 15) & ~15,
                              (visible_size.height() + 15) & ~15);
 
-  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
-      client_->ReserveOutputBuffer(coded_size,
-                                   (params_.requested_format.pixel_storage !=
-                                    media::PIXEL_STORAGE_TEXTURE)
-                                       ? media::PIXEL_FORMAT_I420
-                                       : media::PIXEL_FORMAT_ARGB,
-                                   params_.requested_format.pixel_storage));
+  scoped_ptr<VideoCaptureDevice::Client::Buffer> output_buffer(
+      client_->ReserveOutputBuffer(params_.requested_format.pixel_format,
+                                   coded_size));
   // TODO(miu): Use current buffer pool utilization to drive automatic video
   // resolution changes.  http://crbug.com/156767.
   VLOG(2) << "Current buffer pool utilization is "
@@ -102,9 +98,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.get(),
                            "frame_number", frame_number,
                            "trigger", event_name);
-  // Texture frames wrap a texture mailbox, which we don't have at the moment.
-  // We do not construct those frames.
-  if (params_.requested_format.pixel_storage != media::PIXEL_STORAGE_TEXTURE) {
+  // NATIVE_TEXTURE frames wrap a texture mailbox, which we don't have at the
+  // moment.  We do not construct those frames.
+  if (params_.requested_format.pixel_format != PIXEL_FORMAT_TEXTURE) {
     *storage = VideoFrame::WrapExternalData(
         VideoFrame::I420,
         coded_size,
