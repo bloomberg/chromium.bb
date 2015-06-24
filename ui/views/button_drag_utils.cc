@@ -16,6 +16,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 

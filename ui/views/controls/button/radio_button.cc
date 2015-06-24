@@ -9,6 +9,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

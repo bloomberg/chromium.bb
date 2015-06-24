@@ -122,8 +122,8 @@ html[dir=rtl] .tree-row[may-have-children] > .tree-label {
 
 html[dir=rtl] .tree-item[expanded] > .tree-row > .tree-label {
   background-image: -webkit-image-set(
-     url(../../../resources/default_100_percent/common/folder_open_rtl.png) 1x,
-     url(../../../resources/default_200_percent/common/folder_open_rtl.png) 2x);
+     url(../../../views/resources/default_100_percent/common/folder_open_rtl.png) 1x,
+     url(../../../views/resources/default_200_percent/common/folder_open_rtl.png) 2x);
 }
 
 tree[icon-visibility=hidden] .tree-label {
@@ -145,8 +145,8 @@ tree[icon-visibility=parent] .tree-row[has-children=false] > .tree-label {
 
 .tree-item[expanded] > .tree-row > .tree-label {
   background-image: -webkit-image-set(
-      url(../../../resources/default_100_percent/common/folder_open.png) 1x,
-      url(../../../resources/default_200_percent/common/folder_open.png) 2x);
+      url(../../../views/resources/default_100_percent/common/folder_open.png) 1x,
+      url(../../../views/resources/default_200_percent/common/folder_open.png) 2x);
 }
 
 /* We need to ensure that even empty labels take up space */

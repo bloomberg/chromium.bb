@@ -29,6 +29,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
 

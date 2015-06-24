@@ -11,6 +11,7 @@
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/menu/menu_image_util.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 namespace views {
 

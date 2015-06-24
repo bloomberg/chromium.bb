@@ -46,7 +46,6 @@ source_set("aura") {
     "//ui/events:events_base",
     "//ui/gl",
     "//ui/mojo/init",
-    "//ui/resources:ui_test_pak",
     "//ui/views",
   ]
 

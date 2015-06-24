@@ -380,6 +380,12 @@ repack("pak") {
     "//ui/strings",
   ]
 
+  if (toolkit_views) {
+    deps += [ "//ui/views/resources" ]
+    sources +=
+        [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
+  }
+
   sources += [ "$root_gen_dir/blink/devtools_resources.pak" ]
   deps += [ "//content/browser/devtools:resources" ]
   output = "$root_out_dir/content_shell.pak"

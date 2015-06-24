@@ -20,6 +20,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"

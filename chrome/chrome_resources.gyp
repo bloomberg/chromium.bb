@@ -461,6 +461,11 @@
              '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
           ],
         }],
+        ['toolkit_views==1', {
+          'dependencies': [
+             '<(DEPTH)/ui/views/resources/views_resources.gyp:views_resources',
+          ],
+        }],
         ['chromeos==1', {
           'dependencies': [
             '<(DEPTH)/remoting/remoting.gyp:remoting_resources',

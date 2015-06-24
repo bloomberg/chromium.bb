@@ -623,6 +623,7 @@
         '../native_theme/native_theme.gyp:native_theme',
         '../resources/ui_resources.gyp:ui_resources',
         '../strings/ui_strings.gyp:ui_strings',
+        'resources/views_resources.gyp:views_resources',
       ],
       'all_dependent_settings': {
         'defines': [
@@ -631,6 +632,7 @@
       },
       'export_dependent_settings': [
         '../accessibility/accessibility.gyp:ax_gen',
+        'resources/views_resources.gyp:views_resources',
       ],
       'defines': [
         'VIEWS_IMPLEMENTATION',
@@ -769,6 +771,7 @@
         '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        'resources/views_resources.gyp:views_resources',
         'views',
       ],
       'include_dirs': [
@@ -817,6 +820,7 @@
         '../resources/ui_resources.gyp:ui_resources',
         '../resources/ui_resources.gyp:ui_test_pak',
         '../strings/ui_strings.gyp:ui_strings',
+        'resources/views_resources.gyp:views_resources',
         'views',
         'views_test_support',
       ],

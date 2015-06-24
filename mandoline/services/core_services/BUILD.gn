@@ -53,15 +53,15 @@ if (is_android) {
       "//third_party/icu:icudata",
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
-      "//ui/resources:ui_test_pak",
+      "//ui/views/resources",
     ]
     if (is_win) {
       copy("copy_files") {
         sources = [
+          "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
           "$root_out_dir/icudtl.dat",
           "$root_out_dir/libEGL.dll",
           "$root_out_dir/libGLESv2.dll",
-          "$root_out_dir/ui_test.pak",
         ]
         outputs = [
           "$root_out_dir/core_services/{{source_file_part}}",

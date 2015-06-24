@@ -9,6 +9,7 @@
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 namespace views {
 

@@ -16,6 +16,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 namespace {
 

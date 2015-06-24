@@ -24,6 +24,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/ime/input_method.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 using ui::TreeModel;
 using ui::TreeModelNode;

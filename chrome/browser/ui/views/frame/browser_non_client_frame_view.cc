@@ -27,6 +27,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 #if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"

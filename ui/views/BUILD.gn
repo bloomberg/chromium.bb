@@ -33,6 +33,7 @@ component("views") {
     "//ui/native_theme",
     "//ui/resources",
     "//ui/strings",
+    "//ui/views/resources",
     "//url",
   ]
 
@@ -47,6 +48,7 @@ component("views") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/views/resources",
   ]
 
   if (use_x11 && !is_chromeos) {

@@ -16,12 +16,12 @@ mojo_native_application("browser") {
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/application/public/cpp",
     "//third_party/icu:icudata",
-    "//ui/resources:ui_test_pak",
+    "//ui/views/resources",
   ]
 
   resources = [
     "$root_out_dir/icudtl.dat",
-    "$root_out_dir/ui_test.pak",
+    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
   ]
 }
 

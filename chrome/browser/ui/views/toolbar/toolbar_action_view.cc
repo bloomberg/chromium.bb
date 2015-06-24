@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 using views::LabelButtonBorder;
 

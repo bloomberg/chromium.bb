@@ -25,7 +25,7 @@ namespace {
 
 // Paths resources are loaded from.
 const char kResourceIcudtl[] = "icudtl.dat";
-const char kResourceUIPak[] = "ui_test.pak";
+const char kResourceUIPak[] = "views_resources_100_percent.pak";
 
 std::set<std::string> GetResourcePaths() {
   std::set<std::string> paths;
@@ -73,9 +73,9 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
 
   ui::RegisterPathProvider();
 
-  base::FilePath ui_test_pak_path;
-  CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+  base::FilePath resource_pak_path;
+  CHECK(PathService::Get(ui::UI_TEST_PAK, &resource_pak_path));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(resource_pak_path);
 #endif
 
   // There is a bunch of static state in gfx::Font, by running this now,

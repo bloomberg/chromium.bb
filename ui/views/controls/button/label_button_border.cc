@@ -18,6 +18,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/native_theme_delegate.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 namespace views {
 

@@ -19,6 +19,11 @@
           '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',
         ],
       }],
+      ['toolkit_views==1', {
+        'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
+        ],
+      }],
       ['use_ash==1', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',

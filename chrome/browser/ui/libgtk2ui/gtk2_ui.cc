@@ -55,6 +55,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
+#include "ui/views/resources/grit/views_resources.h"
 
 #if defined(USE_GCONF)
 #include "chrome/browser/ui/libgtk2ui/gconf_listener.h"

@@ -65,6 +65,11 @@
                   '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/strings/ui_chromeos_strings_en-US.pak',
                 ],
               }],
+              ['toolkit_views==1', {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
+                ],
+              }],
             ],
           },
           'includes': [ '../../build/repack_action.gypi' ],
@@ -75,6 +80,11 @@
           'dependencies': [
             '../chromeos/ui_chromeos.gyp:ui_chromeos_strings',
             '../chromeos/ui_chromeos.gyp:ui_chromeos_resources',
+          ],
+        }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '../views/resources/views_resources.gyp:views_resources',
           ],
         }],
         ['OS != "mac"', {

@@ -121,6 +121,12 @@ repack("repack_ui_test_pak") {
       "//ui/chromeos/strings",
     ]
   }
+
+  if (toolkit_views) {
+    deps += [ "//ui/views/resources" ]
+    sources +=
+        [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
+  }
 }
 
 # Repack just the strings for the framework locales on Mac and iOS. This

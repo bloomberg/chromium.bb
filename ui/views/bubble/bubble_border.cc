@@ -13,6 +13,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/painter.h"
+#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view.h"
 
 namespace views {

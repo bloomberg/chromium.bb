@@ -35,6 +35,7 @@
 #include "ui/views/ime/input_method.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/painter.h"
+#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

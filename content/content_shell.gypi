@@ -414,6 +414,11 @@
             },
           ],
         }],
+        ['toolkit_views==1', {
+          'dependencies': [
+            '<(DEPTH)/ui/views/resources/views_resources.gyp:views_resources'
+          ],
+        }],
       ],
       'actions': [
         {
@@ -434,6 +439,11 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
             'conditions': [
+              ['toolkit_views==1', {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
+                ],
+              }],
               ['OS!="android"', {
                 'pak_inputs': ['<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',],
                 'pak_output': '<(PRODUCT_DIR)/content_shell.pak',

@@ -13,6 +13,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view.h"
 
 using base::ASCIIToUTF16;
