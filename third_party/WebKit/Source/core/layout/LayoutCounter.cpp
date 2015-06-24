@@ -569,6 +569,8 @@ void LayoutCounter::layoutObjectStyleChanged(LayoutObject& layoutObject, const C
                 LayoutCounter::destroyCounterNodes(layoutObject);
         }
     } else if (newCounterDirectives) {
+        if (layoutObject.hasCounterNodeMap())
+            LayoutCounter::destroyCounterNodes(layoutObject);
         CounterDirectiveMap::const_iterator newMapEnd = newCounterDirectives->end();
         for (CounterDirectiveMap::const_iterator it = newCounterDirectives->begin(); it != newMapEnd; ++it) {
             // We must create this node here, because the added node may be a node with no display such as
