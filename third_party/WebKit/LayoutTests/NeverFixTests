@@ -167,6 +167,9 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001l.html [ WontFix ]
 [ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ WontFix ]
 
+# Relies on precise timing which isn't reliable on XP.
+[ XP ] imported/web-platform-tests/user-timing/test_user_timing_mark.html [ WontFix ]
+
 # We don't have full plane2 support on XP.
 [ XP ] fast/text/international/plane2.html [ WontFix ]
 
