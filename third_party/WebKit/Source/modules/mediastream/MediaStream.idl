@@ -33,7 +33,7 @@
     NoInterfaceObject,
 ] interface MediaStream : EventTarget {
     // DEPRECATED
-    [MeasureAs=MediaStreamLabel] readonly attribute DOMString label;
+    [DeprecateAs=MediaStreamLabel] readonly attribute DOMString label;
 
     readonly attribute DOMString id;
 
@@ -46,12 +46,12 @@
     MediaStreamTrack getTrackById(DOMString trackId);
     [CallWith=ExecutionContext] MediaStream clone();
     // DEPRECATED
-    [MeasureAs=MediaStreamEnded] readonly attribute boolean ended;
+    [DeprecateAs=MediaStreamEnded] readonly attribute boolean ended;
 
     readonly attribute boolean active;
 
     // DEPRECATED
-    [MeasureAs=MediaStreamStop] void stop();
+    [DeprecateAs=MediaStreamStop] void stop();
 
     attribute EventHandler onactive;
     attribute EventHandler oninactive;
