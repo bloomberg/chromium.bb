@@ -557,10 +557,7 @@ URLRequest::URLRequest(const GURL& url,
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
-      notified_before_network_start_(false),
-      // TODO(mmenke):  Remove this after we figure out current causes of
-      // http://crbug.com/498289.
-      stack_trace_(new base::debug::StackTrace()) {
+      notified_before_network_start_(false) {
   // Sanity check out environment.
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
