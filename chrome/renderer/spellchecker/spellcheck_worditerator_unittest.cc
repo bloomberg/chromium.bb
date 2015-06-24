@@ -229,6 +229,54 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
   }
 }
 
+// Vertify SpellcheckWordIterator treats typographical apostrophe as a part of
+// the word.
+TEST(SpellcheckWordIteratorTest, TypographicalApostropheIsPartOfWord) {
+  static const struct {
+    const char* language;
+    const wchar_t* word;
+  } kTestCases[] = {
+    // Typewriter apostrophe:
+    {
+      "en-AU", L"you're"
+    }, {
+      "en-CA", L"you're"
+    }, {
+      "en-GB", L"you're"
+    }, {
+      "en-US", L"you're"
+    },
+    // Typographical apostrophe:
+    {
+      "en-AU", L"you\x2019re"
+    }, {
+      "en-CA", L"you\x2019re"
+    }, {
+      "en-GB", L"you\x2019re"
+    }, {
+      "en-US", L"you\x2019re"
+    },
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    SpellcheckCharAttribute attributes;
+    attributes.SetDefaultLanguage(kTestCases[i].language);
+
+    base::string16 input_word(base::WideToUTF16(kTestCases[i].word));
+    SpellcheckWordIterator iterator;
+    EXPECT_TRUE(iterator.Initialize(&attributes, true));
+    EXPECT_TRUE(iterator.SetText(input_word.c_str(), input_word.length()));
+
+    base::string16 actual_word;
+    int actual_start, actual_end;
+    EXPECT_TRUE(iterator.GetNextWord(&actual_word, &actual_start, &actual_end));
+    EXPECT_EQ(input_word, actual_word);
+    EXPECT_EQ(0, actual_start);
+    EXPECT_EQ(input_word.length(),
+              static_cast<base::string16::size_type>(actual_end));
+  }
+}
+
 TEST(SpellcheckWordIteratorTest, Initialization) {
   // Test initialization works when a default language is set.
   {
