@@ -5,4 +5,5 @@
 
 <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDrawerListItemView xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/EnhancedBookmarkDrawerItemStyle"
-    android:textColor="@color/eb_drawer_text_color" />
+    android:textColor="@color/eb_drawer_text_color"
+    android:background="@drawable/eb_drawer_item_background" />
