@@ -70,15 +70,15 @@ scoped_ptr<TestScheduler> TestScheduler::Create(
     SchedulerClient* client,
     const SchedulerSettings& settings,
     int layer_tree_host_id,
-    const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+    OrderedSimpleTaskRunner* task_runner,
     BeginFrameSource* external_frame_source) {
   scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source;
   if (!settings.use_external_begin_frame_source) {
     synthetic_frame_source = TestSyntheticBeginFrameSource::Create(
-        now_src, task_runner.get(), BeginFrameArgs::DefaultInterval());
+        now_src, task_runner, BeginFrameArgs::DefaultInterval());
   }
   scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source =
-      TestBackToBackBeginFrameSource::Create(now_src, task_runner.get());
+      TestBackToBackBeginFrameSource::Create(now_src, task_runner);
   return make_scoped_ptr(new TestScheduler(
       now_src, client, settings, layer_tree_host_id, task_runner,
       external_frame_source, synthetic_frame_source.Pass(),
@@ -90,7 +90,7 @@ TestScheduler::TestScheduler(
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
-    const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+    OrderedSimpleTaskRunner* task_runner,
     BeginFrameSource* external_frame_source,
     scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
     scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source)

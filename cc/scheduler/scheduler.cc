@@ -22,15 +22,15 @@ scoped_ptr<Scheduler> Scheduler::Create(
     SchedulerClient* client,
     const SchedulerSettings& settings,
     int layer_tree_host_id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::SingleThreadTaskRunner* task_runner,
     BeginFrameSource* external_frame_source) {
   scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source;
   if (!settings.use_external_begin_frame_source) {
     synthetic_frame_source = SyntheticBeginFrameSource::Create(
-        task_runner.get(), BeginFrameArgs::DefaultInterval());
+        task_runner, BeginFrameArgs::DefaultInterval());
   }
   scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source =
-      BackToBackBeginFrameSource::Create(task_runner.get());
+      BackToBackBeginFrameSource::Create(task_runner);
   return make_scoped_ptr(new Scheduler(
       client, settings, layer_tree_host_id, task_runner, external_frame_source,
       synthetic_frame_source.Pass(), unthrottled_frame_source.Pass()));
@@ -40,7 +40,7 @@ Scheduler::Scheduler(
     SchedulerClient* client,
     const SchedulerSettings& settings,
     int layer_tree_host_id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::SingleThreadTaskRunner* task_runner,
     BeginFrameSource* external_frame_source,
     scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source,
     scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source)

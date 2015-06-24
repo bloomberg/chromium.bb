@@ -59,7 +59,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::SingleThreadTaskRunner* task_runner,
       BeginFrameSource* external_frame_source);
 
   ~Scheduler() override;
@@ -150,7 +150,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   Scheduler(SchedulerClient* client,
             const SchedulerSettings& scheduler_settings,
             int layer_tree_host_id,
-            const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+            base::SingleThreadTaskRunner* task_runner,
             BeginFrameSource* external_frame_source,
             scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source,
             scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source);
@@ -162,7 +162,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   const SchedulerSettings settings_;
   SchedulerClient* client_;
   int layer_tree_host_id_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::SingleThreadTaskRunner* task_runner_;
   BeginFrameSource* external_frame_source_;
   scoped_ptr<SyntheticBeginFrameSource> synthetic_frame_source_;
   scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source_;

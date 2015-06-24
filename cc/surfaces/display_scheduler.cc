@@ -12,11 +12,10 @@
 
 namespace cc {
 
-DisplayScheduler::DisplayScheduler(
-    DisplaySchedulerClient* client,
-    BeginFrameSource* begin_frame_source,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    int max_pending_swaps)
+DisplayScheduler::DisplayScheduler(DisplaySchedulerClient* client,
+                                   BeginFrameSource* begin_frame_source,
+                                   base::SingleThreadTaskRunner* task_runner,
+                                   int max_pending_swaps)
     : client_(client),
       begin_frame_source_(begin_frame_source),
       task_runner_(task_runner),

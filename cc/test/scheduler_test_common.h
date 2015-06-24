@@ -166,7 +166,7 @@ class TestScheduler : public Scheduler {
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
-      const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+      OrderedSimpleTaskRunner* task_runner,
       BeginFrameSource* external_frame_source);
 
   // Extra test helper functionality
@@ -195,7 +195,7 @@ class TestScheduler : public Scheduler {
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
-      const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
+      OrderedSimpleTaskRunner* task_runner,
       BeginFrameSource* external_frame_source,
       scoped_ptr<TestSyntheticBeginFrameSource> synthetic_frame_source,
       scoped_ptr<TestBackToBackBeginFrameSource> unthrottled_frame_source);

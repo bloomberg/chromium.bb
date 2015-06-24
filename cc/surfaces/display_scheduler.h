@@ -30,7 +30,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
  public:
   DisplayScheduler(DisplaySchedulerClient* client,
                    BeginFrameSource* begin_frame_source,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                   base::SingleThreadTaskRunner* task_runner,
                    int max_pending_swaps);
   ~DisplayScheduler() override;
 
@@ -56,7 +56,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
 
   DisplaySchedulerClient* client_;
   BeginFrameSource* begin_frame_source_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::SingleThreadTaskRunner* task_runner_;
 
   BeginFrameArgs current_begin_frame_args_;
   base::Closure begin_frame_deadline_closure_;

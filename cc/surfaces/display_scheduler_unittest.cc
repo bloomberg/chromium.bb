@@ -16,6 +16,8 @@
 namespace cc {
 namespace {
 
+const int kMaxPendingSwaps = 1;
+
 class FakeDisplaySchedulerClient : public DisplaySchedulerClient {
  public:
   FakeDisplaySchedulerClient() : draw_and_swap_count_(0) {}
@@ -39,7 +41,7 @@ class TestDisplayScheduler : public DisplayScheduler {
  public:
   TestDisplayScheduler(DisplaySchedulerClient* client,
                        BeginFrameSource* begin_frame_source,
-                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                       base::SingleThreadTaskRunner* task_runner,
                        int max_pending_swaps)
       : DisplayScheduler(client,
                          begin_frame_source,
@@ -68,14 +70,15 @@ class TestDisplayScheduler : public DisplayScheduler {
 
 class DisplaySchedulerTest : public testing::Test {
  public:
-  DisplaySchedulerTest() : now_src_(new base::SimpleTestTickClock()) {
-    const int max_pending_swaps = 1;
+  DisplaySchedulerTest()
+      : now_src_(new base::SimpleTestTickClock()),
+        task_runner_(new base::NullTaskRunner),
+        client_(new FakeDisplaySchedulerClient),
+        scheduler_(new TestDisplayScheduler(client_.get(),
+                                            &fake_begin_frame_source_,
+                                            task_runner_.get(),
+                                            kMaxPendingSwaps)) {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(10000));
-    null_task_runner_ = make_scoped_refptr(new base::NullTaskRunner);
-    client_ = make_scoped_ptr(new FakeDisplaySchedulerClient);
-    scheduler_ = make_scoped_ptr(
-        new TestDisplayScheduler(client_.get(), &fake_begin_frame_source_,
-                                 null_task_runner_, max_pending_swaps));
   }
 
   ~DisplaySchedulerTest() override {}
@@ -96,10 +99,10 @@ class DisplaySchedulerTest : public testing::Test {
   FakeDisplaySchedulerClient& client() { return *client_; }
   DisplayScheduler& scheduler() { return *scheduler_; }
 
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
-  scoped_refptr<base::NullTaskRunner> null_task_runner_;
-
   FakeBeginFrameSource fake_begin_frame_source_;
+
+  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  scoped_refptr<base::NullTaskRunner> task_runner_;
   scoped_ptr<FakeDisplaySchedulerClient> client_;
   scoped_ptr<TestDisplayScheduler> scheduler_;
 };

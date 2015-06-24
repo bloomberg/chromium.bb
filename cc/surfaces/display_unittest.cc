@@ -33,7 +33,9 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
 
 class DisplayTest : public testing::Test {
  public:
-  DisplayTest() : factory_(&manager_, &empty_client_) {}
+  DisplayTest()
+      : factory_(&manager_, &empty_client_),
+        task_runner_(new base::NullTaskRunner) {}
 
  protected:
   void SetUpContext(scoped_ptr<TestWebGraphicsContext3D> context) {
@@ -65,6 +67,7 @@ class DisplayTest : public testing::Test {
   scoped_ptr<FakeOutputSurface> output_surface_;
   FakeOutputSurface* output_surface_ptr_;
   FakeBeginFrameSource fake_begin_frame_source_;
+  scoped_refptr<base::NullTaskRunner> task_runner_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
 };
 
@@ -82,11 +85,9 @@ class TestDisplayClient : public DisplayClient {
 class TestDisplayScheduler : public DisplayScheduler {
  public:
   TestDisplayScheduler(DisplaySchedulerClient* client,
-                       BeginFrameSource* begin_frame_source)
-      : DisplayScheduler(client,
-                         begin_frame_source,
-                         make_scoped_refptr(new base::NullTaskRunner),
-                         1),
+                       BeginFrameSource* begin_frame_source,
+                       base::NullTaskRunner* task_runner)
+      : DisplayScheduler(client, begin_frame_source, task_runner, 1),
         damaged(false),
         entire_display_damaged(false),
         swapped(false) {}
@@ -128,7 +129,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
   Display display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
                   settings);
 
-  TestDisplayScheduler scheduler(&display, &fake_begin_frame_source_);
+  TestDisplayScheduler scheduler(&display, &fake_begin_frame_source_,
+                                 task_runner_.get());
   display.Initialize(output_surface_.Pass(), &scheduler);
 
   SurfaceId surface_id(7u);
@@ -335,7 +337,8 @@ TEST_F(DisplayTest, Finish) {
   Display display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
                   settings);
 
-  TestDisplayScheduler scheduler(&display, &fake_begin_frame_source_);
+  TestDisplayScheduler scheduler(&display, &fake_begin_frame_source_,
+                                 task_runner_.get());
   display.Initialize(output_surface_.Pass(), &scheduler);
 
   SurfaceId surface_id(7u);

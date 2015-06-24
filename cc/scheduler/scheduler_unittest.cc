@@ -262,9 +262,9 @@ class SchedulerTest : public testing::Test {
       fake_external_begin_frame_source_.reset(
           new FakeExternalBeginFrameSource(client_.get()));
     }
-    scheduler_ = TestScheduler::Create(now_src_.get(), client_.get(),
-                                       scheduler_settings_, 0, task_runner_,
-                                       fake_external_begin_frame_source_.get());
+    scheduler_ = TestScheduler::Create(
+        now_src_.get(), client_.get(), scheduler_settings_, 0,
+        task_runner_.get(), fake_external_begin_frame_source_.get());
     DCHECK(scheduler_);
     client_->set_scheduler(scheduler_.get());
     return scheduler_.get();

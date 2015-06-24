@@ -11,7 +11,8 @@ namespace surfaces {
 SurfacesScheduler::SurfacesScheduler() {
   cc::SchedulerSettings settings;
   scheduler_ = cc::Scheduler::Create(
-      this, settings, 0, base::MessageLoop::current()->task_runner(), nullptr);
+      this, settings, 0, base::MessageLoop::current()->task_runner().get(),
+      nullptr);
   scheduler_->SetCanStart();
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);

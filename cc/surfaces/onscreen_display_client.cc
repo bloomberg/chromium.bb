@@ -52,8 +52,8 @@ bool OnscreenDisplayClient::Initialize() {
     frame_source = synthetic_frame_source_.get();
   }
 
-  scheduler_.reset(new DisplayScheduler(display_.get(), frame_source,
-                                        task_runner_, max_frames_pending));
+  scheduler_.reset(new DisplayScheduler(
+      display_.get(), frame_source, task_runner_.get(), max_frames_pending));
 
   return display_->Initialize(output_surface_.Pass(), scheduler_.get());
 }
