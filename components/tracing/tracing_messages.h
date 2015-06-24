@@ -39,6 +39,9 @@ IPC_MESSAGE_CONTROL2(TracingMsg_BeginTracing,
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
 
+// Sent to all child processes to cancel trace event recording.
+IPC_MESSAGE_CONTROL0(TracingMsg_CancelTracing)
+
 // Sent to all child processes to start monitoring.
 IPC_MESSAGE_CONTROL2(TracingMsg_EnableMonitoring,
                      std::string /*  trace_config_str */,

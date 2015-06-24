@@ -28,6 +28,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void SendBeginTracing(
       const base::trace_event::TraceConfig& trace_config);
   void SendEndTracing();
+  void SendCancelTracing();
   void SendEnableMonitoring(
       const base::trace_event::TraceConfig& trace_config);
   void SendDisableMonitoring();

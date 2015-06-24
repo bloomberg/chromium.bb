@@ -428,6 +428,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   void Flush(const OutputCallback& cb, bool use_worker_thread = false);
   void FlushButLeaveBufferIntact(const OutputCallback& flush_output_callback);
 
+  // Cancels tracing and discards collected data.
+  void CancelTracing(const OutputCallback& cb);
+
   // Called by TRACE_EVENT* macros, don't call this directly.
   // The name parameter is a category group for example:
   // TRACE_EVENT0("renderer,webkit", "WebViewImpl::HandleInputEvent")
@@ -596,16 +599,20 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   TraceEvent* GetEventByHandleInternal(TraceEventHandle handle,
                                        OptionalAutoLock* lock);
 
+  void FlushInternal(const OutputCallback& cb,
+                     bool use_worker_thread,
+                     bool discard_events);
+
   // |generation| is used in the following callbacks to check if the callback
   // is called for the flush of the current |logged_events_|.
-  void FlushCurrentThread(int generation);
+  void FlushCurrentThread(int generation, bool discard_events);
   // Usually it runs on a different thread.
   static void ConvertTraceEventsToTraceFormat(
       scoped_ptr<TraceBuffer> logged_events,
       const TraceLog::OutputCallback& flush_output_callback,
       const TraceEvent::ArgumentFilterPredicate& argument_filter_predicate);
-  void FinishFlush(int generation);
-  void OnFlushTimeout(int generation);
+  void FinishFlush(int generation, bool discard_events);
+  void OnFlushTimeout(int generation, bool discard_events);
 
   int generation() const {
     return static_cast<int>(subtle::NoBarrier_Load(&generation_));

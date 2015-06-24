@@ -43,6 +43,7 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
   void OnBeginTracing(const std::string& trace_config_str,
                       base::TraceTicks browser_time);
   void OnEndTracing();
+  void OnCancelTracing();
   void OnEnableMonitoring(const std::string& trace_config_str,
                           base::TraceTicks browser_time);
   void OnDisableMonitoring();

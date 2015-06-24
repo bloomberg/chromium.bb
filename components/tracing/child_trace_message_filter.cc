@@ -38,6 +38,7 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChildTraceMessageFilter, message)
     IPC_MESSAGE_HANDLER(TracingMsg_BeginTracing, OnBeginTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_EndTracing, OnEndTracing)
+    IPC_MESSAGE_HANDLER(TracingMsg_CancelTracing, OnCancelTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_EnableMonitoring, OnEnableMonitoring)
     IPC_MESSAGE_HANDLER(TracingMsg_DisableMonitoring, OnDisableMonitoring)
     IPC_MESSAGE_HANDLER(TracingMsg_CaptureMonitoringSnapshot,
@@ -79,6 +80,11 @@ void ChildTraceMessageFilter::OnEndTracing() {
   // OnTraceDataCollected. We are already on the IO thread, so the
   // OnTraceDataCollected calls will not be deferred.
   TraceLog::GetInstance()->Flush(
+      base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
+}
+
+void ChildTraceMessageFilter::OnCancelTracing() {
+  TraceLog::GetInstance()->CancelTracing(
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
 }
 

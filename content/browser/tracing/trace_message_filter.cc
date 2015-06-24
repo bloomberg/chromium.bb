@@ -74,6 +74,13 @@ void TraceMessageFilter::SendEndTracing() {
   Send(new TracingMsg_EndTracing);
 }
 
+void TraceMessageFilter::SendCancelTracing() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!is_awaiting_end_ack_);
+  is_awaiting_end_ack_ = true;
+  Send(new TracingMsg_CancelTracing);
+}
+
 void TraceMessageFilter::SendEnableMonitoring(
       const base::trace_event::TraceConfig& trace_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

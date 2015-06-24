@@ -87,6 +87,12 @@ class TraceEventTestFixture : public testing::Test {
                                         TraceLog::RECORDING_MODE);
   }
 
+  void CancelTrace() {
+    WaitableEvent flush_complete_event(false, false);
+    CancelTraceAsync(&flush_complete_event);
+    flush_complete_event.Wait();
+  }
+
   void EndTraceAndFlush() {
     num_flush_callbacks_ = 0;
     WaitableEvent flush_complete_event(false, false);
@@ -104,6 +110,13 @@ class TraceEventTestFixture : public testing::Test {
         FROM_HERE, base::Bind(&TraceEventTestFixture::EndTraceAndFlushAsync,
                               base::Unretained(this), &flush_complete_event));
     flush_complete_event.Wait();
+  }
+
+  void CancelTraceAsync(WaitableEvent* flush_complete_event) {
+    TraceLog::GetInstance()->CancelTracing(
+        base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
+                   base::Unretained(static_cast<TraceEventTestFixture*>(this)),
+                   base::Unretained(flush_complete_event)));
   }
 
   void EndTraceAndFlushAsync(WaitableEvent* flush_complete_event) {
@@ -906,6 +919,19 @@ TEST_F(TraceEventTestFixture, DataCaptured) {
   EndTraceAndFlush();
 
   ValidateAllTraceMacrosCreatedData(trace_parsed_);
+}
+
+// Emit some events and validate that only empty strings are received
+// if we tell Flush() to discard events.
+TEST_F(TraceEventTestFixture, DataDiscarded) {
+  TraceLog::GetInstance()->SetEnabled(TraceConfig(kRecordAllCategoryFilter, ""),
+                                      TraceLog::RECORDING_MODE);
+
+  TraceWithAllMacroVariants(NULL);
+
+  CancelTrace();
+
+  EXPECT_TRUE(trace_parsed_.empty());
 }
 
 class MockEnabledStateChangedObserver :

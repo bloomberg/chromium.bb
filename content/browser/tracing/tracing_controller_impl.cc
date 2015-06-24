@@ -231,17 +231,27 @@ void TracingControllerImpl::OnDisableRecordingDone() {
   // trace log. Once the flush has completed the caller will be notified that
   // tracing has ended.
   if (pending_disable_recording_ack_count_ == 1) {
-    // Flush asynchronously now, because we don't have any children to wait for.
-    TraceLog::GetInstance()->Flush(
-        base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                   base::Unretained(this)),
-        true);
+    // Flush/cancel asynchronously now, because we don't have any children to
+    // wait for.
+    if (trace_data_sink_) {
+      TraceLog::GetInstance()->Flush(
+          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
+                     base::Unretained(this)),
+          true);
+    } else {
+      TraceLog::GetInstance()->CancelTracing(
+          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
+                     base::Unretained(this)));
+    }
   }
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
-    it->get()->SendEndTracing();
+    if (trace_data_sink_)
+      it->get()->SendEndTracing();
+    else
+      it->get()->SendCancelTracing();
   }
 }
 
@@ -566,10 +576,16 @@ void TracingControllerImpl::OnDisableRecordingAcked(
     // All acks from subprocesses have been received. Now flush the local trace.
     // During or after this call, our OnLocalTraceDataCollected will be
     // called with the last of the local trace data.
+    if (trace_data_sink_) {
     TraceLog::GetInstance()->Flush(
         base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
                    base::Unretained(this)),
         true);
+    } else {
+      TraceLog::GetInstance()->CancelTracing(
+          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
+                     base::Unretained(this)));
+    }
     return;
   }
 
