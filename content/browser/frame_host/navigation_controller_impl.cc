@@ -848,34 +848,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
-  NavigationType new_type = ClassifyNavigationWithoutPageID(rfh, params);
-  bool ignore_mismatch = false;
-  // There are disagreements on some Android bots over SAME_PAGE between the two
-  // classifiers so ignore disagreements if that's the case.
-  ignore_mismatch |= details->type == NAVIGATION_TYPE_EXISTING_PAGE &&
-                     new_type == NAVIGATION_TYPE_SAME_PAGE;
-  ignore_mismatch |= details->type == NAVIGATION_TYPE_SAME_PAGE &&
-                     new_type == NAVIGATION_TYPE_EXISTING_PAGE;
-  // There are mismatches in the field where the new classifier thinks it's
-  // AUTO_SUBFRAME and the old classifier somehow thinks it's NEW or IGNORE. For
-  // IGNORE we know of at least one repro (https://crbug.com/492875), and for
-  // NEW it's not entirely clear what's going on, but we're pretty sure the new
-  // classifier is correct for both cases, so we're letting these mismatches go.
-  ignore_mismatch |= details->type == NAVIGATION_TYPE_NEW_SUBFRAME &&
-                     new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
-  ignore_mismatch |= details->type == NAVIGATION_TYPE_NAV_IGNORE &&
-                     new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
-  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
-  if (is_site_per_process) {
-    // We know that the old classifier is wrong for OOPIFs, so use the new one
-    // in --site-per-process mode.
-    details->type = new_type;
-    ignore_mismatch = true;
-  }
-  if (!ignore_mismatch) {
-    DCHECK_EQ(details->type, new_type);
-  }
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = IsURLInPageNavigation(
@@ -935,7 +907,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry = GetLastCommittedEntry();
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
-  if (is_site_per_process) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
     // Update the frame-specific PageState.
     FrameNavigationEntry* frame_entry =
         active_entry->GetFrameEntry(rfh->frame_tree_node());
@@ -978,118 +951,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
 }
 
 NavigationType NavigationControllerImpl::ClassifyNavigation(
-    RenderFrameHostImpl* rfh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const {
-  if (params.page_id == -1) {
-    // The renderer generates the page IDs, and so if it gives us the invalid
-    // page ID (-1) we know it didn't actually navigate. This happens in a few
-    // cases:
-    //
-    // - If a page makes a popup navigated to about blank, and then writes
-    //   stuff like a subframe navigated to a real page. We'll get the commit
-    //   for the subframe, but there won't be any commit for the outer page.
-    //
-    // - We were also getting these for failed loads (for example, bug 21849).
-    //   The guess is that we get a "load commit" for the alternate error page,
-    //   but that doesn't affect the page ID, so we get the "old" one, which
-    //   could be invalid. This can also happen for a cross-site transition
-    //   that causes us to swap processes. Then the error page load will be in
-    //   a new process with no page IDs ever assigned (and hence a -1 value),
-    //   yet the navigation controller still might have previous pages in its
-    //   list.
-    //
-    // In these cases, there's nothing we can do with them, so ignore.
-    return NAVIGATION_TYPE_NAV_IGNORE;
-  }
-
-  if (params.page_id > delegate_->GetMaxPageIDForSiteInstance(
-          rfh->GetSiteInstance())) {
-    // Greater page IDs than we've ever seen before are new pages. We may or may
-    // not have a pending entry for the page, and this may or may not be the
-    // main frame.
-    if (!rfh->GetParent())
-      return NAVIGATION_TYPE_NEW_PAGE;
-
-    // When this is a new subframe navigation, we should have a committed page
-    // for which it's a suframe in. This may not be the case when an iframe is
-    // navigated on a popup navigated to about:blank (the iframe would be
-    // written into the popup by script on the main page). For these cases,
-    // there isn't any navigation stuff we can do, so just ignore it.
-    if (!GetLastCommittedEntry())
-      return NAVIGATION_TYPE_NAV_IGNORE;
-
-    // Valid subframe navigation.
-    return NAVIGATION_TYPE_NEW_SUBFRAME;
-  }
-
-  // We only clear the session history when navigating to a new page.
-  DCHECK(!params.history_list_was_cleared);
-
-  // Now we know that the notification is for an existing page. Find that entry.
-  int existing_entry_index = GetEntryIndexWithPageID(
-      rfh->GetSiteInstance(),
-      params.page_id);
-  if (existing_entry_index == -1) {
-    // The renderer has committed a navigation to an entry that no longer
-    // exists. Because the renderer is showing that page, resurrect that entry.
-    return NAVIGATION_TYPE_NEW_PAGE;
-  }
-  NavigationEntryImpl* existing_entry = entries_[existing_entry_index];
-
-  if (rfh->GetParent()) {
-    // All manual subframes would get new IDs and were handled above, so we
-    // know this is auto. Since the current page was found in the navigation
-    // entry list, we're guaranteed to have a last committed entry.
-    DCHECK(GetLastCommittedEntry());
-    return NAVIGATION_TYPE_AUTO_SUBFRAME;
-  }
-
-  // Anything below here we know is a main frame navigation.
-  if (pending_entry_ &&
-      !pending_entry_->is_renderer_initiated() &&
-      existing_entry != pending_entry_ &&
-      pending_entry_->GetPageID() == -1 &&
-      existing_entry == GetLastCommittedEntry() &&
-      !params.was_within_same_page) {
-    // In order to prevent unrelated pending entries from interfering with
-    // this classification, make sure that the URL committed matches the URLs
-    // of both the existing entry and the pending entry. There might have been
-    // a redirection, though, so allow both the existing and pending entries
-    // to match either the final URL that committed, or the original one
-    // before redirection.
-    GURL original_url;
-    if (params.redirects.size())
-      original_url = params.redirects[0];
-
-    if ((params.url == existing_entry->GetURL() ||
-         original_url == existing_entry->GetURL()) &&
-        (params.url == pending_entry_->GetURL() ||
-         original_url == pending_entry_->GetURL())) {
-      // In this case, we have a pending entry for a URL but Blink didn't do a
-      // new navigation. This happens when you press enter in the URL bar to
-      // reload. We will create a pending entry, but Blink will convert it to a
-      // reload since it's the same page and not create a new entry for it (the
-      // user doesn't want to have a new back/forward entry when they do this).
-      // If this matches the last committed entry, we want to just ignore the
-      // pending entry and go back to where we were (the "existing entry").
-      return NAVIGATION_TYPE_SAME_PAGE;
-    }
-  }
-
-  // Any toplevel navigations with the same base (minus the reference fragment)
-  // are in-page navigations. We weeded out subframe navigations above. Most of
-  // the time this doesn't matter since WebKit doesn't tell us about subframe
-  // navigations that don't actually navigate, but it can happen when there is
-  // an encoding override (it always sends a navigation request).
-  if (IsURLInPageNavigation(params.url, params.was_within_same_page, rfh))
-    return NAVIGATION_TYPE_IN_PAGE;
-
-  // Since we weeded out "new" navigations above, we know this is an existing
-  // (back/forward) navigation.
-  return NAVIGATION_TYPE_EXISTING_PAGE;
-}
-
-NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const {
   if (params.did_create_new_entry) {

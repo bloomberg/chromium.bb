@@ -260,12 +260,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   NavigationType ClassifyNavigation(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const;
-  // This does the same as above (hopefully), but does so without any use of
-  // deprecated page id values. Once it bakes and is verified to behave the
-  // same, it will replace it. http://crbug.com/369661
-  NavigationType ClassifyNavigationWithoutPageID(
-      RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const;
 
   // Handlers for the different types of navigation types. They will actually
   // handle the navigations corresponding to the different NavClasses above.
