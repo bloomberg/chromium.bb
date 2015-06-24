@@ -35,6 +35,8 @@ struct ivi_shell
 
 	struct wl_list ivi_surface_list; /* struct ivi_shell_surface::link */
 
+	struct text_backend *text_backend;
+
 	struct wl_listener show_input_panel_listener;
 	struct wl_listener hide_input_panel_listener;
 	struct wl_listener update_input_panel_listener;

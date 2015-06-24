@@ -148,6 +148,8 @@ struct desktop_shell {
 	bool showing_input_panels;
 	bool prepare_event_sent;
 
+	struct text_backend *text_backend;
+
 	struct {
 		struct weston_surface *surface;
 		pixman_box32_t cursor_rectangle;

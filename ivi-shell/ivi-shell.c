@@ -343,6 +343,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 		container_of(listener, struct ivi_shell, destroy_listener);
 	struct ivi_shell_surface *ivisurf, *next;
 
+	text_backend_destroy(shell->text_backend);
 	input_panel_destroy(shell);
 
 	wl_list_for_each_safe(ivisurf, next, &shell->ivi_surface_list, link) {
@@ -439,7 +440,8 @@ module_init(struct weston_compositor *compositor,
 	if (input_panel_setup(shell) < 0)
 		goto out_settings;
 
-	if (text_backend_init(compositor) < 0)
+	shell->text_backend = text_backend_init(compositor);
+	if (!shell->text_backend)
 		goto out_settings;
 
 	if (wl_global_create(compositor->wl_display,

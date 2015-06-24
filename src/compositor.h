@@ -1456,8 +1456,13 @@ weston_screenshooter_shoot(struct weston_output *output, struct weston_buffer *b
 struct clipboard *
 clipboard_create(struct weston_seat *seat);
 
-int
+struct text_backend;
+
+struct text_backend *
 text_backend_init(struct weston_compositor *ec);
+
+void
+text_backend_destroy(struct text_backend *text_backend);
 
 struct weston_process;
 typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,

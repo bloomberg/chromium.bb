@@ -6347,6 +6347,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 	wl_list_remove(&shell->idle_listener.link);
 	wl_list_remove(&shell->wake_listener.link);
 
+	text_backend_destroy(shell->text_backend);
 	input_panel_destroy(shell);
 
 	wl_list_for_each_safe(shell_output, tmp, &shell->output_list, link) {
@@ -6513,7 +6514,8 @@ module_init(struct weston_compositor *ec,
 	if (input_panel_setup(shell) < 0)
 		return -1;
 
-	if (text_backend_init(ec) < 0)
+	shell->text_backend = text_backend_init(ec);
+	if (!shell->text_backend)
 		return -1;
 
 	shell_configuration(shell);
