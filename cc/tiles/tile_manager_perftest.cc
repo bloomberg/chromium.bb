@@ -84,13 +84,6 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
 base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
     LAZY_INSTANCE_INITIALIZER;
 
-class LayerTreeSettingsWithLargeInterestArea : public LayerTreeSettings {
- public:
-  LayerTreeSettingsWithLargeInterestArea() {
-    tiling_interest_area_viewport_multiplier = 10000;
-  }
-};
-
 class TileManagerPerfTest : public testing::Test {
  public:
   TileManagerPerfTest()
@@ -98,7 +91,7 @@ class TileManagerPerfTest : public testing::Test {
         max_tiles_(10000),
         id_(7),
         proxy_(base::ThreadTaskRunnerHandle::Get()),
-        host_impl_(LayerTreeSettingsWithLargeInterestArea(),
+        host_impl_(LayerTreeSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),

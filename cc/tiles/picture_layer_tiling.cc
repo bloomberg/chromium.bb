@@ -38,12 +38,12 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
-    float tiling_interest_area_viewport_multiplier,
+    size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels) {
   return make_scoped_ptr(new PictureLayerTiling(
-      tree, contents_scale, raster_source, client,
-      tiling_interest_area_viewport_multiplier, skewport_target_time_in_seconds,
+      tree, contents_scale, raster_source, client, max_tiles_for_interest_area,
+      skewport_target_time_in_seconds,
       skewport_extrapolation_limit_in_content_pixels));
 }
 
@@ -52,11 +52,10 @@ PictureLayerTiling::PictureLayerTiling(
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
-    float tiling_interest_area_viewport_multiplier,
+    size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels)
-    : tiling_interest_area_viewport_multiplier_(
-          tiling_interest_area_viewport_multiplier),
+    : max_tiles_for_interest_area_(max_tiles_for_interest_area),
       skewport_target_time_in_seconds_(skewport_target_time_in_seconds),
       skewport_extrapolation_limit_in_content_pixels_(
           skewport_extrapolation_limit_in_content_pixels),
@@ -626,9 +625,9 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
   DCHECK(skewport.Contains(visible_rect_in_content_space));
 
   // Calculate the eventually/live tiles rect.
-  int64 eventually_rect_area = tiling_interest_area_viewport_multiplier_ *
-                               visible_rect_in_content_space.width() *
-                               visible_rect_in_content_space.height();
+  gfx::Size tile_size = tiling_data_.max_texture_size();
+  int64 eventually_rect_area =
+      max_tiles_for_interest_area_ * tile_size.width() * tile_size.height();
 
   gfx::Rect eventually_rect =
       ExpandRectEquallyToAreaBoundedBy(visible_rect_in_content_space,

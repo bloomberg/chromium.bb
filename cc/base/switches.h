@@ -25,6 +25,7 @@ CC_EXPORT extern const char kTopControlsHideThreshold[];
 CC_EXPORT extern const char kTopControlsShowThreshold[];
 CC_EXPORT extern const char kSlowDownRasterScaleFactor[];
 CC_EXPORT extern const char kCompositeToMailbox[];
+CC_EXPORT extern const char kMaxTilesForInterestArea[];
 CC_EXPORT extern const char kMaxUnusedResourceMemoryUsagePercentage[];
 CC_EXPORT extern const char kStrictLayerPropertyChangeChecking[];
 CC_EXPORT extern const char kEnablePropertyTreeVerification[];

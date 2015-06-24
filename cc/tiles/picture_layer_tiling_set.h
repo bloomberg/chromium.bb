@@ -40,7 +40,7 @@ class CC_EXPORT PictureLayerTilingSet {
   static scoped_ptr<PictureLayerTilingSet> Create(
       WhichTree tree,
       PictureLayerTilingClient* client,
-      float tiling_interest_area_viewport_multiplier,
+      size_t max_tiles_for_interest_area,
       float skewport_target_time_in_seconds,
       int skewport_extrapolation_limit_in_content);
 
@@ -175,7 +175,7 @@ class CC_EXPORT PictureLayerTilingSet {
   explicit PictureLayerTilingSet(
       WhichTree tree,
       PictureLayerTilingClient* client,
-      float tiling_interest_area_viewport_multiplier,
+      size_t max_tiles_for_interest_area,
       float skewport_target_time_in_seconds,
       int skewport_extrapolation_limit_in_content_pixels);
 
@@ -190,7 +190,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   ScopedPtrVector<PictureLayerTiling> tilings_;
 
-  const float tiling_interest_area_viewport_multiplier_;
+  const size_t max_tiles_for_interest_area_;
   const float skewport_target_time_in_seconds_;
   const int skewport_extrapolation_limit_in_content_pixels_;
   WhichTree tree_;

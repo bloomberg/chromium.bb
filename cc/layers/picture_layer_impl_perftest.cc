@@ -36,18 +36,11 @@ void AddTiling(float scale,
       tiling_tiles.begin(), tiling_tiles.end(), std::back_inserter(*all_tiles));
 }
 
-class LayerTreeSettingsWithLargeInterestArea : public LayerTreeSettings {
- public:
-  LayerTreeSettingsWithLargeInterestArea() {
-    tiling_interest_area_viewport_multiplier = 10000;
-  }
-};
-
 class PictureLayerImplPerfTest : public testing::Test {
  public:
   PictureLayerImplPerfTest()
       : proxy_(base::ThreadTaskRunnerHandle::Get()),
-        host_impl_(LayerTreeSettingsWithLargeInterestArea(),
+        host_impl_(LayerTreeSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_),

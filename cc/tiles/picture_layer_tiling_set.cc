@@ -33,11 +33,11 @@ inline float LargerRatio(float float1, float float2) {
 scoped_ptr<PictureLayerTilingSet> PictureLayerTilingSet::Create(
     WhichTree tree,
     PictureLayerTilingClient* client,
-    float tiling_interest_area_viewport_multiplier,
+    size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels) {
   return make_scoped_ptr(new PictureLayerTilingSet(
-      tree, client, tiling_interest_area_viewport_multiplier,
+      tree, client, max_tiles_for_interest_area,
       skewport_target_time_in_seconds,
       skewport_extrapolation_limit_in_content_pixels));
 }
@@ -45,11 +45,10 @@ scoped_ptr<PictureLayerTilingSet> PictureLayerTilingSet::Create(
 PictureLayerTilingSet::PictureLayerTilingSet(
     WhichTree tree,
     PictureLayerTilingClient* client,
-    float tiling_interest_area_viewport_multiplier,
+    size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels)
-    : tiling_interest_area_viewport_multiplier_(
-          tiling_interest_area_viewport_multiplier),
+    : max_tiles_for_interest_area_(max_tiles_for_interest_area),
       skewport_target_time_in_seconds_(skewport_target_time_in_seconds),
       skewport_extrapolation_limit_in_content_pixels_(
           skewport_extrapolation_limit_in_content_pixels),
@@ -79,8 +78,7 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     if (!this_tiling) {
       scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
           tree_, contents_scale, raster_source, client_,
-          tiling_interest_area_viewport_multiplier_,
-          skewport_target_time_in_seconds_,
+          max_tiles_for_interest_area_, skewport_target_time_in_seconds_,
           skewport_extrapolation_limit_in_content_pixels_);
       tilings_.push_back(new_tiling.Pass());
       this_tiling = tilings_.back();
@@ -261,8 +259,7 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
 
   tilings_.push_back(PictureLayerTiling::Create(
       tree_, contents_scale, raster_source, client_,
-      tiling_interest_area_viewport_multiplier_,
-      skewport_target_time_in_seconds_,
+      max_tiles_for_interest_area_, skewport_target_time_in_seconds_,
       skewport_extrapolation_limit_in_content_pixels_));
   PictureLayerTiling* appended = tilings_.back();
 

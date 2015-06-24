@@ -98,7 +98,7 @@ class CC_EXPORT PictureLayerTiling {
       float contents_scale,
       scoped_refptr<RasterSource> raster_source,
       PictureLayerTilingClient* client,
-      float tiling_interest_area_viewport_multiplier,
+      size_t max_tiles_for_interest_area,
       float skewport_target_time_in_seconds,
       int skewport_extrapolation_limit_in_content_pixels);
 
@@ -287,7 +287,7 @@ class CC_EXPORT PictureLayerTiling {
                      float contents_scale,
                      scoped_refptr<RasterSource> raster_source,
                      PictureLayerTilingClient* client,
-                     float tiling_interest_area_viewport_multiplier,
+                     size_t max_tiles_for_interest_area,
                      float skewport_target_time_in_seconds,
                      int skewport_extrapolation_limit_in_content_pixels);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
@@ -375,7 +375,7 @@ class CC_EXPORT PictureLayerTiling {
   }
   void RemoveTilesInRegion(const Region& layer_region, bool recreate_tiles);
 
-  const float tiling_interest_area_viewport_multiplier_;
+  const size_t max_tiles_for_interest_area_;
   const float skewport_target_time_in_seconds_;
   const int skewport_extrapolation_limit_in_content_pixels_;
 
