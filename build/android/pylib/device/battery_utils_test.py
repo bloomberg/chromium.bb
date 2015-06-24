@@ -40,6 +40,45 @@ _DUMPSYS_OUTPUT = [
 
 class BatteryUtilsTest(mock_calls.TestCase):
 
+  _NEXUS_5 = {
+    'name': 'Nexus 5',
+    'witness_file': '/sys/kernel/debug/bq24192/INPUT_SRC_CONT',
+    'enable_command': (
+        'echo 0x4A > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
+        'echo 1 > /sys/class/power_supply/usb/online'),
+    'disable_command': (
+        'echo 0xCA > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
+        'chmod 644 /sys/class/power_supply/usb/online && '
+        'echo 0 > /sys/class/power_supply/usb/online'),
+    'charge_counter': None,
+    'voltage': None,
+    'current': None,
+
+  }
+
+  _NEXUS_6 = {
+    'name': 'Nexus 6',
+    'witness_file': None,
+    'enable_command': None,
+    'disable_command': None,
+    'charge_counter': (
+        '/sys/class/power_supply/max170xx_battery/charge_counter_ext'),
+    'voltage': '/sys/class/power_supply/max170xx_battery/voltage_now',
+    'current': '/sys/class/power_supply/max170xx_battery/current_now',
+
+  }
+
+  _NEXUS_10 = {
+    'name': 'Nexus 10',
+    'witness_file': None,
+    'enable_command': None,
+    'disable_command': None,
+    'charge_counter': (
+        '/sys/class/power_supply/ds2784-fuelgauge/charge_counter_ext'),
+    'voltage': '/sys/class/power_supply/ds2784-fuelgauge/voltage_now',
+    'current': '/sys/class/power_supply/ds2784-fuelgauge/current_now',
+  }
+
   def ShellError(self, output=None, status=1):
     def action(cmd, *args, **kwargs):
       raise device_errors.AdbShellCommandFailedError(
@@ -76,8 +115,8 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
 
   @mock.patch('time.sleep', mock.Mock())
   def testSetCharging_enabled(self):
+    self.battery._cache['profile'] = self._NEXUS_5
     with self.assertCalls(
-        (self.call.device.FileExists(mock.ANY), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
         (self.call.battery.GetCharging(), False),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
@@ -85,16 +124,16 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
       self.battery.SetCharging(True)
 
   def testSetCharging_alreadyEnabled(self):
+    self.battery._cache['profile'] = self._NEXUS_5
     with self.assertCalls(
-        (self.call.device.FileExists(mock.ANY), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
         (self.call.battery.GetCharging(), True)):
       self.battery.SetCharging(True)
 
   @mock.patch('time.sleep', mock.Mock())
   def testSetCharging_disabled(self):
+    self.battery._cache['profile'] = self._NEXUS_5
     with self.assertCalls(
-        (self.call.device.FileExists(mock.ANY), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
         (self.call.battery.GetCharging(), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
@@ -346,6 +385,7 @@ class BatteryUtilsGetNetworkDataTest(BatteryUtilsTest):
       self.battery._cache.clear()
       self.assertEqual(self.battery.GetNetworkData('test_package1'), (1,2))
 
+
 class BatteryUtilsLetBatteryCoolToTemperatureTest(BatteryUtilsTest):
 
   @mock.patch('time.sleep', mock.Mock())
@@ -360,6 +400,106 @@ class BatteryUtilsLetBatteryCoolToTemperatureTest(BatteryUtilsTest):
         (self.call.battery.GetBatteryInfo(), {'temperature': '500'}),
         (self.call.battery.GetBatteryInfo(), {'temperature': '400'})):
       self.battery.LetBatteryCoolToTemperature(400)
+
+class BatteryUtilsSupportsFuelGaugeTest(BatteryUtilsTest):
+
+  def testSupportsFuelGauge_false(self):
+    self.battery._cache['profile'] = self._NEXUS_5
+    self.assertFalse(self.battery.SupportsFuelGauge())
+
+  def testSupportsFuelGauge_trueMax(self):
+    self.battery._cache['profile'] = self._NEXUS_6
+    # TODO(rnephew): Change this to assertTrue when we have support for
+    # disabling hardware charging on nexus 6.
+    self.assertFalse(self.battery.SupportsFuelGauge())
+
+  def testSupportsFuelGauge_trueDS(self):
+    self.battery._cache['profile'] = self._NEXUS_10
+    # TODO(rnephew): Change this to assertTrue when we have support for
+    # disabling hardware charging on nexus 10.
+    self.assertFalse(self.battery.SupportsFuelGauge())
+
+
+class BatteryUtilsGetFuelGaugeChargeCounterTest(BatteryUtilsTest):
+
+  def testGetFuelGaugeChargeCounter_noFuelGauge(self):
+    self.battery._cache['profile'] = self._NEXUS_5
+    with self.assertRaises(device_errors.CommandFailedError):
+        self.battery.GetFuelGaugeChargeCounter()
+
+  def testGetFuelGaugeChargeCounter_fuelGaugePresent(self):
+    self.battery._cache['profile']= self._NEXUS_6
+    with self.assertCalls(
+        (self.call.battery.SupportsFuelGauge(), True),
+        (self.call.device.ReadFile(mock.ANY), '123')):
+      self.assertEqual(self.battery.GetFuelGaugeChargeCounter(), 123)
+
+
+class BatteryUtilsTieredSetCharging(BatteryUtilsTest):
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testTieredSetCharging_softwareSetTrue(self):
+    self.battery._cache['profile'] = self._NEXUS_6
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(mock.ANY, retries=0, single_line=True,
+            timeout=10, check_return=True), '22'),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'reset'], check_return=True), []),
+        (self.call.battery.GetCharging(), False),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery'], check_return=True), ['UPDATES STOPPED']),
+        (self.call.battery.GetCharging(), True)):
+      self.battery.TieredSetCharging(True)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testTieredSetCharging_softwareSetFalse(self):
+    self.battery._cache['profile'] = self._NEXUS_6
+    with self.assertCalls(
+        (self.call.device.RunShellCommand( mock.ANY, retries=0,
+            single_line=True, timeout=10, check_return=True), '22'),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--charged', '--checkin'],
+            check_return=True, large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '0'], check_return=True), []),
+        (self.call.battery.GetCharging(), False)):
+      self.battery.TieredSetCharging(False)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testTieredSetCharging_hardwareSetTrue(self):
+    self.battery._cache['profile'] = self._NEXUS_5
+    with self.assertCalls((self.call.battery.SetCharging(True))):
+      self.battery.TieredSetCharging(True)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testTieredSetCharging_hardwareSetFalse(self):
+    self.battery._cache['profile'] = self._NEXUS_5
+    with self.assertCalls((self.call.battery.SetCharging(False))):
+      self.battery.TieredSetCharging(False)
+
+
+class BatteryUtilsDiscoverDeviceProfile(BatteryUtilsTest):
+
+  def testDiscoverDeviceProfile_known(self):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.product.model'), "Nexus 4")):
+      self.battery._DiscoverDeviceProfile()
+      self.assertEqual(self.battery._cache['profile']['name'], "Nexus 4")
+
+  def testDiscoverDeviceProfile_unknown(self):
+    with self.assertCalls(
+        (self.call.adb.Shell('getprop ro.product.model'), "Other")):
+      self.battery._DiscoverDeviceProfile()
+      self.assertEqual(self.battery._cache['profile']['name'], None)
+
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)
