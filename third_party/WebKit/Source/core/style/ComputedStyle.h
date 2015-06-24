@@ -1887,9 +1887,12 @@ inline bool ComputedStyle::setZoom(float f)
 
 inline bool ComputedStyle::setEffectiveZoom(float f)
 {
-    if (compareEqual(rareInheritedData->m_effectiveZoom, f))
+    // Clamp the effective zoom value to a smaller (but hopeful still large
+    // enough) range, to avoid overflow in derived computations.
+    float clampedEffectiveZoom = clampTo<float>(f, 1e-6, 1e6);
+    if (compareEqual(rareInheritedData->m_effectiveZoom, clampedEffectiveZoom))
         return false;
-    rareInheritedData.access()->m_effectiveZoom = f;
+    rareInheritedData.access()->m_effectiveZoom = clampedEffectiveZoom;
     return true;
 }
 

@@ -92,7 +92,11 @@ public:
     double viewportMaxPercent() const;
 
     void setFontSizes(const FontSizes& fontSizes) { m_fontSizes = fontSizes; }
-    void setZoom(float zoom) { m_zoom = clampTo<float>(zoom, std::numeric_limits<float>::denorm_min()); }
+    void setZoom(float zoom)
+    {
+        ASSERT(std::isfinite(zoom) && zoom > 0);
+        m_zoom = zoom;
+    }
 
     CSSToLengthConversionData copyWithAdjustedZoom(float newZoom) const
     {
