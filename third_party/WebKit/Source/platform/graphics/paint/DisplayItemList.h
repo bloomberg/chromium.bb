@@ -74,7 +74,8 @@ protected:
     DisplayItemList()
         : m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
-        , m_skippingCacheCount(0) { }
+        , m_skippingCacheCount(0)
+        , m_numCachedItems(0) { }
 
 private:
     friend class DisplayItemListTest;
@@ -120,6 +121,8 @@ private:
     bool m_constructionDisabled;
 
     int m_skippingCacheCount;
+
+    int m_numCachedItems;
 
     // Scope ids are allocated per client to ensure that the ids are stable for non-invalidated
     // clients between frames, so that we can use the id to match new display items to cached

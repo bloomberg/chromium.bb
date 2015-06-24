@@ -28,6 +28,8 @@
 
 #include "platform/EventTracer.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/TraceEvent.h"
+#include "platform/TracedValue.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -51,10 +53,24 @@ ContentLayerDelegate::~ContentLayerDelegate()
 {
 }
 
+PassRefPtr<TracedValue> toTracedValue(const WebRect& clip)
+{
+    RefPtr<TracedValue> tracedValue = TracedValue::create();
+    tracedValue->beginArray("clip_rect");
+    tracedValue->pushInteger(clip.x);
+    tracedValue->pushInteger(clip.y);
+    tracedValue->pushInteger(clip.width);
+    tracedValue->pushInteger(clip.height);
+    tracedValue->endArray();
+    return tracedValue;
+}
+
 void ContentLayerDelegate::paintContents(
     SkCanvas* canvas, const WebRect& clip,
     WebContentLayerClient::PaintingControlSetting paintingControl)
 {
+    TRACE_EVENT1("blink,benchmark", "ContentLayerDelegate::paintContents", "clip_rect", toTracedValue(clip));
+
     ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
 
     GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
@@ -70,6 +86,8 @@ void ContentLayerDelegate::paintContents(
     WebDisplayItemList* webDisplayItemList, const WebRect& clip,
     WebContentLayerClient::PaintingControlSetting paintingControl)
 {
+    TRACE_EVENT1("blink,benchmark", "ContentLayerDelegate::paintContents", "clip_rect", toTracedValue(clip));
+
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
 
     DisplayItemList* displayItemList = m_painter->displayItemList();

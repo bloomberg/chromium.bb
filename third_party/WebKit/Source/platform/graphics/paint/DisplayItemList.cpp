@@ -66,6 +66,9 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
     ASSERT(!m_constructionDisabled);
     ASSERT(!skippingCache() || !displayItem->isCached());
 
+    if (DisplayItem::isCachedType(displayItem->type()))
+        ++m_numCachedItems;
+
 #if ENABLE(ASSERT)
     // Verify noop begin/end pairs have been removed.
     if (!m_newDisplayItems.isEmpty() && m_newDisplayItems.last().isBegin() && !m_newDisplayItems.last().drawsContent())
@@ -215,7 +218,8 @@ DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayI
 // and the average number of (Drawing|BeginSubtree)DisplayItems per client.
 void DisplayItemList::commitNewDisplayItems()
 {
-    TRACE_EVENT0("blink,benchmark", "DisplayItemList::commitNewDisplayItems");
+    TRACE_EVENT2("blink,benchmark", "DisplayItemList::commitNewDisplayItems", "current_display_list_size", (int)m_currentDisplayItems.size(),
+        "num_non_cached_new_items", (int)m_newDisplayItems.size() - m_numCachedItems);
 
     // These data structures are used during painting only.
     m_clientScopeIdMap.clear();
@@ -235,6 +239,7 @@ void DisplayItemList::commitNewDisplayItems()
 #endif
         m_currentDisplayItems.swap(m_newDisplayItems);
         m_validlyCachedClientsDirty = true;
+        m_numCachedItems = 0;
         return;
     }
 
@@ -320,6 +325,7 @@ void DisplayItemList::commitNewDisplayItems()
     m_validlyCachedClientsDirty = true;
     m_currentDisplayItems.clear();
     m_currentDisplayItems.swap(updatedList);
+    m_numCachedItems = 0;
 }
 
 void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
