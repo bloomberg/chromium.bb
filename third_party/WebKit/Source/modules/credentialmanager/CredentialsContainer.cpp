@@ -13,7 +13,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
+#include "modules/credentialmanager/CredentialRequestOptions.h"
 #include "modules/credentialmanager/FederatedCredential.h"
+#include "modules/credentialmanager/FederatedCredentialRequestOptions.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -114,15 +116,23 @@ static bool checkBoilerplate(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resol
     return true;
 }
 
-ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const Dictionary&)
+ScriptPromise CredentialsContainer::request(ScriptState* scriptState, const CredentialRequestOptions& options)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
 
-    WebVector<WebURL> tempVector;
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchRequest(false, tempVector, new RequestCallbacks(resolver));
+    Vector<KURL> providers;
+    if (options.hasFederated() && options.federated().hasProviders()) {
+        for (const auto& string : options.federated().providers()) {
+            KURL url = KURL(KURL(), string);
+            if (url.isValid())
+                providers.append(url);
+        }
+    }
+
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchRequest(options.suppressUI(), providers, new RequestCallbacks(resolver));
     return promise;
 }
 
