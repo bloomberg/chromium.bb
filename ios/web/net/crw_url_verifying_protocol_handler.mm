@@ -11,7 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "ios/web/public/web_client.h"
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 

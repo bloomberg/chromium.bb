@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_TEST_WEB_TEST_UTIL_H_
 #define IOS_WEB_PUBLIC_TEST_WEB_TEST_UTIL_H_
 
-#include "ios/web/public/web_view_util.h"
+#include "ios/web/public/web_view_creation_util.h"
 
 // A helper macro that allows skipping a unit test on iOS7 and earlier. Example:
 //

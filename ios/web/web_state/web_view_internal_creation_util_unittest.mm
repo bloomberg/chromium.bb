@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <WebKit/WebKit.h>
@@ -14,6 +14,7 @@
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "ios/web/public/test/web_test_util.h"
+#import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/ui/crw_debug_web_view.h"
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
@@ -53,8 +54,8 @@ class WebViewCreationUtilsTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    logJavaScriptPref_ = [[NSUserDefaults standardUserDefaults]
-        boolForKey:@"LogJavascript"];
+    logJavaScriptPref_ =
+        [[NSUserDefaults standardUserDefaults] boolForKey:@"LogJavascript"];
     SetWebClient(&creation_utils_web_client_);
     creation_utils_web_client_.SetUserAgent("TestUA", false);
   }
@@ -69,14 +70,16 @@ class WebViewCreationUtilsTest : public PlatformTest {
   // PostWebViewCreation into captured_web_view param.
   void ExpectWebClientCalls(UIWebView** captured_web_view) const {
     EXPECT_CALL(creation_utils_web_client_, PreWebViewCreation()).Times(1);
-    EXPECT_CALL(creation_utils_web_client_, PostWebViewCreation(
-        testing::_)).Times(1).WillOnce(testing::SaveArg<0>(captured_web_view));
+    EXPECT_CALL(creation_utils_web_client_, PostWebViewCreation(testing::_))
+        .Times(1)
+        .WillOnce(testing::SaveArg<0>(captured_web_view));
   }
 
   // BrowserState, UIThread and MessageLoop required by factory functions.
   web::TestBrowserState browser_state_;
   base::MessageLoop message_loop_;
   web::TestWebThread ui_thread_;
+
  private:
   // Original value of @"LogJavascript" pref from NSUserDefaults.
   BOOL logJavaScriptPref_;
@@ -96,8 +99,8 @@ TEST_F(WebViewCreationUtilsTest, CreationWithRequestGroupID) {
   EXPECT_TRUE(CGRectEqualToRect(kTestFrame, [web_view frame]));
   EXPECT_NSEQ(web_view, captured_web_view);
 
-  NSString* const kExpectedUserAgent = [NSString stringWithFormat:
-      @"TestUA (%@)", kTestRequestGroupID];
+  NSString* const kExpectedUserAgent =
+      [NSString stringWithFormat:@"TestUA (%@)", kTestRequestGroupID];
   NSString* const kActualUserAgent = GetWebViewUserAgent(web_view);
   EXPECT_NSEQ(kExpectedUserAgent, kActualUserAgent);
   EXPECT_TRUE([ExtractRequestGroupIDFromUserAgent(kActualUserAgent)
@@ -110,8 +113,8 @@ TEST_F(WebViewCreationUtilsTest, CreationWithRequestGroupID) {
 TEST_F(WebViewCreationUtilsTest, CRWStaticFileWebViewFalse) {
   base::scoped_nsobject<UIWebView> web_view(
       CreateWebView(CGRectZero, kTestRequestGroupID, NO));
-  EXPECT_FALSE([CRWStaticFileWebView isStaticFileUserAgent:
-      GetWebViewUserAgent(web_view)]);
+  EXPECT_FALSE([CRWStaticFileWebView
+      isStaticFileUserAgent:GetWebViewUserAgent(web_view)]);
 }
 
 // Tests web::CreateWebView function that it correctly returns a UIWebView with

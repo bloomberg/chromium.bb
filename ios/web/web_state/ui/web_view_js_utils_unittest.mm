@@ -10,7 +10,8 @@
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test_util.h"
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/public/web_view_creation_util.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 

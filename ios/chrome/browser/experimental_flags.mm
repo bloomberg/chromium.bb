@@ -18,7 +18,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/web/public/web_view_util.h"
+#include "ios/web/public/web_view_creation_util.h"
 
 namespace {
 NSString* const kEnableAlertOnBackgroundUpload =

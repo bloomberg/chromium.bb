@@ -19,7 +19,7 @@
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_controller_factory.h"
 #include "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/web_view_util.h"
+#include "ios/web/public/web_view_creation_util.h"
 #include "ios/web/shell/shell_browser_state.h"
 #include "ios/web/web_state/ui/crw_web_controller.h"
 #include "ios/web/web_state/web_state_impl.h"

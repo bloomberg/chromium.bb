@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/test/test_browser_state.h"
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/public/web_view_creation_util.h"
 #import "third_party/ocmock/OCMock/NSInvocation+OCMAdditions.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 

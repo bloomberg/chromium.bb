@@ -33,7 +33,7 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "ios/web/web_state/web_state_impl.h"
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/url_constants.h"
 

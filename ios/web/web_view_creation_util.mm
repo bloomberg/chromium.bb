@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/web_view_util.h"
+#include "ios/web/public/web_view_creation_util.h"
 
 #include <Foundation/Foundation.h>
 #include <sys/sysctl.h>
 
 #include "base/ios/ios_util.h"
+#include "base/logging.h"
+#import "ios/web/public/browsing_data_partition.h"
+#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 
 namespace web {
 
@@ -37,6 +41,15 @@ bool IsWKWebViewSupported() {
 #else
   return true;
 #endif
+}
+
+WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state) {
+  DCHECK(browser_state);
+
+  WKWebViewConfigurationProvider& config_provider =
+      WKWebViewConfigurationProvider::FromBrowserState(browser_state);
+  return CreateWKWebView(frame, config_provider.GetWebViewConfiguration(),
+                         browser_state);
 }
 
 }  // namespace web

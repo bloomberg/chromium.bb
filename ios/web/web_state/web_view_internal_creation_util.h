@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_WEB_VIEW_CREATION_UTILS_H_
-#define IOS_WEB_WEB_STATE_WEB_VIEW_CREATION_UTILS_H_
+#ifndef IOS_WEB_WEB_STATE_WEB_VIEW_INTERNAL_CREATION_UTIL_H_
+#define IOS_WEB_WEB_STATE_WEB_VIEW_INTERNAL_CREATION_UTIL_H_
 
 #import <UIKit/UIKit.h>
 
@@ -43,12 +43,14 @@ WKWebView* CreateWKWebView(CGRect frame,
                            NSString* request_group_id,
                            BOOL use_desktop_user_agent);
 
-// Returns a new WKWebView for displaying regular web content.
-// WKWebViewConfiguration object for resulting web view will be obtained from
-// the given |browser_state| which must not be null.
+// Creates and returns a new WKWebView for displaying regular web content.
+// |browser_state| cannot be null. The |configuration| should have the same
+// WKProcessPool as the WKWebViewConfiguration associated with |browser_state|.
 // The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the returned WKWebView.
-WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state);
+WKWebView* CreateWKWebView(CGRect frame,
+                           WKWebViewConfiguration* configuration,
+                           BrowserState* browser_state);
 
 // Returns the total number of WKWebViews that are currently present.
 // NOTE: This only works in Debug builds and should not be used in Release
@@ -87,4 +89,4 @@ UIWebView* CreateStaticFileWebView();
 
 }  // namespace web
 
-#endif // IOS_WEB_WEB_STATE_WEB_VIEW_CREATION_UTILS_H_
+#endif  // IOS_WEB_WEB_STATE_WEB_VIEW_INTERNAL_CREATION_UTIL_H_

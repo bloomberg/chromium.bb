@@ -30,7 +30,7 @@
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/webui/crw_web_ui_manager.h"
 #import "net/base/mac/url_conversions.h"
 

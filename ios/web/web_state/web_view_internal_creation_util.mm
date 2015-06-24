@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 
 #import <objc/runtime.h>
 #import <WebKit/WebKit.h>
@@ -10,9 +10,10 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #import "ios/web/alloc_with_zone_interceptor.h"
-#import "ios/web/public/browsing_data_partition.h"
 #include "ios/web/public/browser_state.h"
+#import "ios/web/public/browsing_data_partition.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_view_creation_util.h"
 #include "ios/web/ui_web_view_util.h"
 #import "ios/web/weak_nsobject_counter.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
@@ -36,10 +37,10 @@ web::WeakNSObjectCounter& GetActiveWKWebViewCounter() {
 BOOL gAllowWKWebViewCreation = NO;
 }  // namespace
 
-@interface WKWebView(CRWAdditions)
+@interface WKWebView (CRWAdditions)
 @end
 
-@implementation WKWebView(CRWAdditions)
+@implementation WKWebView (CRWAdditions)
 
 + (void)load {
   id (^allocator)(Class klass, NSZone* zone) = ^id(Class klass, NSZone* zone) {
@@ -58,34 +59,6 @@ BOOL gAllowWKWebViewCreation = NO;
 @end
 
 #endif  // !defined(NDEBUG)
-
-namespace {
-// Returns a new WKWebView for displaying regular web content.
-// Note: Callers are responsible for releasing the returned WKWebView.
-WKWebView* CreateWKWebViewWithConfiguration(
-    CGRect frame,
-    WKWebViewConfiguration* configuration) {
-  DCHECK(configuration);
-  DCHECK(web::GetWebClient());
-  web::GetWebClient()->PreWebViewCreation();
-#if !defined(NDEBUG)
-  gAllowWKWebViewCreation = YES;
-#endif
-
-  WKWebView* result =
-      [[WKWebView alloc] initWithFrame:frame configuration:configuration];
-#if !defined(NDEBUG)
-  GetActiveWKWebViewCounter().Insert(result);
-  gAllowWKWebViewCreation = NO;
-#endif
-
-  // TODO(stuartmorgan): Figure out how to make this work; two different client
-  // methods for the two web view types?
-  // web::GetWebClient()->PostWebViewCreation(result);
-
-  return result;
-}
-}
 
 namespace web {
 
@@ -130,26 +103,40 @@ WKWebView* CreateWKWebView(CGRect frame,
                            BrowserState* browser_state,
                            NSString* request_group_id,
                            BOOL use_desktop_user_agent) {
-  DCHECK(browser_state);
-  DCHECK(web::BrowsingDataPartition::IsSynchronized());
+  web::BuildAndRegisterUserAgentForUIWebView(request_group_id,
+                                             use_desktop_user_agent);
+  return CreateWKWebView(frame, configuration, browser_state);
+}
 
+WKWebView* CreateWKWebView(CGRect frame,
+                           WKWebViewConfiguration* configuration,
+                           BrowserState* browser_state) {
+  DCHECK(browser_state);
+  DCHECK(configuration);
+  DCHECK(web::BrowsingDataPartition::IsSynchronized());
   WKWebViewConfigurationProvider& config_provider =
       WKWebViewConfigurationProvider::FromBrowserState(browser_state);
   DCHECK_EQ([config_provider.GetWebViewConfiguration() processPool],
             [configuration processPool]);
-  web::BuildAndRegisterUserAgentForUIWebView(request_group_id,
-                                             use_desktop_user_agent);
-  return CreateWKWebViewWithConfiguration(frame, configuration);
-}
 
-WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state) {
-  DCHECK(browser_state);
-  DCHECK(web::BrowsingDataPartition::IsSynchronized());
+  DCHECK(web::GetWebClient());
+  web::GetWebClient()->PreWebViewCreation();
+#if !defined(NDEBUG)
+  gAllowWKWebViewCreation = YES;
+#endif
 
-  WKWebViewConfigurationProvider& config_provider =
-      WKWebViewConfigurationProvider::FromBrowserState(browser_state);
-  return CreateWKWebViewWithConfiguration(
-      frame, config_provider.GetWebViewConfiguration());
+  WKWebView* result =
+      [[WKWebView alloc] initWithFrame:frame configuration:configuration];
+#if !defined(NDEBUG)
+  GetActiveWKWebViewCounter().Insert(result);
+  gAllowWKWebViewCreation = NO;
+#endif
+
+  // TODO(stuartmorgan): Figure out how to make this work; two different client
+  // methods for the two web view types?
+  // web::GetWebClient()->PostWebViewCreation(result);
+
+  return result;
 }
 
 NSUInteger GetActiveWKWebViewsCount() {

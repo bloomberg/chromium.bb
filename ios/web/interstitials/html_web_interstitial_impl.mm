@@ -11,7 +11,7 @@
 #include "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #include "ios/web/web_state/web_state_impl.h"
-#import "ios/web/web_state/web_view_creation_utils.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/gfx/geometry/size.h"
 
