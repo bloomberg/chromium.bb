@@ -350,7 +350,10 @@ class MetaBuildWrapper(object):
     ret, _, _ = self.Run(cmd)
 
     for target in swarming_targets:
-      deps_path = self.ToAbsPath(path, target + '.runtime_deps')
+      if sys.platform == 'win32':
+        deps_path = self.ToAbsPath(path, target + '.exe.runtime_deps')
+      else:
+        deps_path = self.ToAbsPath(path, target + '.runtime_deps')
       if not self.Exists(deps_path):
           raise MBErr('did not generate %s' % deps_path)
 
@@ -372,9 +375,9 @@ class MetaBuildWrapper(object):
         {
           'args': [
             '--isolated',
-            self.ToSrcRelPath('%s/%s.isolated' % (path, target)),
+            self.ToSrcRelPath('%s%s%s.isolated' % (path, os.sep, target)),
             '--isolate',
-            self.ToSrcRelPath('%s/%s.isolate' % (path, target)),
+            self.ToSrcRelPath('%s%s%s.isolate' % (path, os.sep, target)),
           ],
           'dir': self.chromium_src_dir,
           'version': 1,
@@ -557,7 +560,7 @@ class MetaBuildWrapper(object):
     """Returns a relative path from the top of the repo."""
     # TODO: Support normal paths in addition to source-absolute paths.
     assert(path.startswith('//'))
-    return path[2:]
+    return path[2:].replace('/', os.sep)
 
   def ParseGYPConfigPath(self, path):
     rpath = self.ToSrcRelPath(path)
