@@ -6,6 +6,7 @@
 
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -393,5 +394,33 @@ TEST_F(BaseBubbleControllerTest, BubbleStaysOpenWithSheet) {
 
   // Now that the sheet is gone, a key status change should close the bubble.
   SimulateKeyStatusChange();
+  EXPECT_FALSE([bubble_window_ isVisible]);
+}
+
+// Tests that a bubble will close when a window enters fullscreen.
+TEST_F(BaseBubbleControllerTest, EnterFullscreen) {
+  base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
+
+  EXPECT_TRUE([bubble_window_ isVisible]);
+
+  // Post the "enter fullscreen" notification.
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center postNotificationName:NSWindowWillEnterFullScreenNotification
+                        object:test_window()];
+
+  EXPECT_FALSE([bubble_window_ isVisible]);
+}
+
+// Tests that a bubble will close when a window exits fullscreen.
+TEST_F(BaseBubbleControllerTest, ExitFullscreen) {
+  base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
+
+  EXPECT_TRUE([bubble_window_ isVisible]);
+
+  // Post the "exit fullscreen" notification.
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center postNotificationName:NSWindowWillExitFullScreenNotification
+                        object:test_window()];
+
   EXPECT_FALSE([bubble_window_ isVisible]);
 }

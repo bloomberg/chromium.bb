@@ -26,7 +26,7 @@
 - (void)recordAnchorOffset;
 - (void)parentWindowDidResize:(NSNotification*)notification;
 - (void)parentWindowWillClose:(NSNotification*)notification;
-- (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification;
+- (void)parentWindowWillToggleFullScreen:(NSNotification*)notification;
 - (void)closeCleanup;
 @end
 
@@ -124,8 +124,13 @@
                object:parentWindow_];
   // Watch for the full screen event, if so, close the bubble
   [center addObserver:self
-             selector:@selector(parentWindowWillBecomeFullScreen:)
+             selector:@selector(parentWindowWillToggleFullScreen:)
                  name:NSWindowWillEnterFullScreenNotification
+               object:parentWindow_];
+  // Watch for the full screen exit event, if so, close the bubble
+  [center addObserver:self
+             selector:@selector(parentWindowWillToggleFullScreen:)
+                 name:NSWindowWillExitFullScreenNotification
                object:parentWindow_];
   // Watch for parent window's resizing, to ensure this one is always
   // anchored correctly.
@@ -146,6 +151,9 @@
                   object:parentWindow_];
   [center removeObserver:self
                     name:NSWindowWillEnterFullScreenNotification
+                  object:parentWindow_];
+  [center removeObserver:self
+                    name:NSWindowWillExitFullScreenNotification
                   object:parentWindow_];
   [center removeObserver:self
                     name:NSWindowDidResizeNotification
@@ -223,7 +231,7 @@
   [self close];
 }
 
-- (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification {
+- (void)parentWindowWillToggleFullScreen:(NSNotification*)notification {
   [self setParentWindow:nil];
   [self close];
 }
