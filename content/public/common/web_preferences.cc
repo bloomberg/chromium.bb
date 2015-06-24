@@ -31,9 +31,6 @@ STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
 STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
                              WebSettings::EditingBehaviorAndroid);
 
-// This change has both Chrome + blink components. The #if-guard allows us
-// to do this in two steps.
-#ifdef CLEANUP_V8_CACHE_OPTIONS_GUARD
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_DEFAULT,
                              WebSettings::V8CacheOptionsDefault);
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_NONE,
@@ -44,7 +41,6 @@ STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
                              WebSettings::V8CacheOptionsCode);
 STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
                              WebSettings::V8CacheOptionsCode);
-#endif  // CLEANUP_V8_CACHE_OPTIONS_GUARD
 
 STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_ALLOWED,
                              WebSettings::ImageAnimationPolicyAllowed);
