@@ -86,6 +86,12 @@ void AddPair(base::ListValue* list,
   AddPair16(list, UTF8ToUTF16(key), UTF8ToUTF16(value));
 }
 
+void AddPairBool(base::ListValue* list,
+                 const base::StringPiece& key,
+                 bool value) {
+  AddPair(list, key, value ? "Yes" : "No");
+}
+
 // Generate an empty data-pair which acts as a line break.
 void AddLineBreak(base::ListValue* list) {
   AddPair(list, "", "");
@@ -271,14 +277,11 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
 
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
-    AddPair(list, "Microphone Present",
-            hotword_service && hotword_service->microphone_available() ? "Yes"
-                                                                       : "No");
+    AddPairBool(list, "Microphone Present",
+                hotword_service && hotword_service->microphone_available());
 
-    std::string audio_capture = "No";
-    if (profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed))
-      audio_capture = "Yes";
-    AddPair(list, "Audio Capture Allowed", audio_capture);
+    AddPairBool(list, "Audio Capture Allowed",
+                profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed));
 
     AddLineBreak(list);
   }
@@ -305,25 +308,18 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
   void AddHotwordInfo(base::ListValue* list)  {
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
-    std::string hotword_allowed = "No";
-    if (hotword_service && hotword_service->IsHotwordAllowed())
-      hotword_allowed = "Yes";
-    AddPair(list, "Hotword Module Installable", hotword_allowed);
+    AddPairBool(list, "Hotword Module Installable",
+                hotword_service && hotword_service->IsHotwordAllowed());
 
-    std::string search_enabled = "No";
-    if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
-      search_enabled = "Yes";
-    AddPair(list, "Hotword Search Enabled", search_enabled);
+    AddPairBool(list, "Hotword Search Enabled",
+                profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
 
-    std::string always_on_search_enabled = "No";
-    if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled))
-      always_on_search_enabled = "Yes";
-    AddPair(list, "Always-on Hotword Search Enabled", always_on_search_enabled);
+    AddPairBool(
+        list, "Always-on Hotword Search Enabled",
+        profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled));
 
-    std::string audio_logging_enabled = "No";
-    if (hotword_service && hotword_service->IsOptedIntoAudioLogging())
-      audio_logging_enabled = "Yes";
-    AddPair(list, "Hotword Audio Logging Enabled", audio_logging_enabled);
+    AddPairBool(list, "Hotword Audio Logging Enabled",
+                hotword_service && hotword_service->IsOptedIntoAudioLogging());
 
     AddLineBreak(list);
   }
