@@ -63,17 +63,18 @@ static_library("libxslt") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   public_configs = [ ":libxslt_config" ]
 
+  cflags = []
   if (is_linux || is_android) {
     include_dirs = [ "linux" ]
   } else if (is_win) {
     include_dirs = [ "win32" ]
-    cflags = [ "/wd4267" ]  # size_t to int.
+    cflags += [ "/wd4267" ]  # size_t to int.
   } else if (is_mac) {
     include_dirs = [ "mac" ]
   }
 
   if (is_clang) {
-    cflags = [ "-Wno-pointer-sign" ]
+    cflags += [ "-Wno-pointer-sign" ]
   }
 
   deps = [
