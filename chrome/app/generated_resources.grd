@@ -6434,11 +6434,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to enable syncing the app list.">
         Enable App Launcher sync. This also enables Folders where available (non OSX).
       </message>
-      <message name="IDS_FLAGS_ENABLE_LAUNCHER_SEARCH_PROVIDER_API" desc="Name of the flag to enable launcher search provider api.">
-        Enable Launcher Search Provider API.
+      <message name="IDS_FLAGS_DISABLE_DRIVE_SEARCH_IN_APP_LAUNCHER" desc="Name of the flag to disable drive search in app launcher.">
+        Disable Drive search in Chrome App Launcher.
       </message>
-      <message name="IDS_FLAGS_ENABLE_LAUNCHER_SEARCH_PROVIDER_API_DESCRIPTION" desc="Description for the flag to enable launcher search provider api.">
-        This API allows extensions to listen queries of the Chrome Launcher and return their search results to it.
+      <message name="IDS_FLAGS_DISABLE_DRIVE_SEARCH_IN_APP_LAUNCHER_DESCRIPTION" desc="Description for the flag to disable drive search in app launcher.">
+        Files from Drive will no longer show up when searching in the Chrome App Launcher.
+      </message>
+      <message name="IDS_FLAGS_DISABLE_LAUNCHER_SEARCH_PROVIDER_API" desc="Name of the flag to disable launcher search provider api.">
+        Disable the public Launcher Search Provider API.
+      </message>
+      <message name="IDS_FLAGS_DISABLE_LAUNCHER_SEARCH_PROVIDER_API_DESCRIPTION" desc="Description for the flag to disable launcher search provider api.">
+        Disable the public version of the Launcher Search Provider API. This API allows apps/extensions to listen to searches in the Chrome App Launcher and respond with search results. This flag does not affect Drive search.
       </message>
       <if expr="is_macosx">
         <message name="IDS_FLAGS_ENABLE_AVFOUNDATION_NAME" desc="Name of the flag to enable Mac AVFoundation.">

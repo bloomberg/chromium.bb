@@ -33,9 +33,13 @@ const char kDisableExperimentalAppList[] = "disable-experimental-app-list";
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 const char kDisableSyncAppList[] = "disable-sync-app-list";
 
-// Enables launcher search provider api.
-const char kEnableLauncherSearchProviderApi[] =
-    "enable-launcher-search-provider-api";
+// Disable drive search in app launcher.
+const char kDisableDriveSearchInAppLauncher[] =
+    "disable-drive-search-in-app-launcher";
+
+// Disable launcher search provider API.
+const char kDisableLauncherSearchProviderApi[] =
+    "disable-launcher-search-provider-api";
 
 // Enable/disable the new "blended" algorithm in app_list::Mixer. This is just
 // forcing the AppListMixer/Blended field trial.
@@ -110,10 +114,19 @@ bool IsDriveAppsInAppListEnabled() {
 #endif
 }
 
+bool IsDriveSearchEnabled() {
+#if defined(OS_CHROMEOS)
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableDriveSearchInAppLauncher);
+#else
+  return false;
+#endif
+}
+
 bool IsLauncherSearchProviderApiEnabled() {
 #if defined(OS_CHROMEOS)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableLauncherSearchProviderApi);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableLauncherSearchProviderApi);
 #else
   return false;
 #endif

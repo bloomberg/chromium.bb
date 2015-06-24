@@ -22,7 +22,8 @@ APP_LIST_EXPORT extern const char kEnableNewAppListMixer[];
 APP_LIST_EXPORT extern const char kDisableNewAppListMixer[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
-APP_LIST_EXPORT extern const char kEnableLauncherSearchProviderApi[];
+APP_LIST_EXPORT extern const char kDisableDriveSearchInAppLauncher[];
+APP_LIST_EXPORT extern const char kDisableLauncherSearchProviderApi[];
 
 #if defined(OS_MACOSX)
 APP_LIST_EXPORT extern const char kEnableMacViewsAppList[];
@@ -46,6 +47,8 @@ bool APP_LIST_EXPORT IsCenteredAppListEnabled();
 bool APP_LIST_EXPORT ShouldNotDismissOnBlur();
 
 bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
+
+bool APP_LIST_EXPORT IsDriveSearchEnabled();
 
 bool APP_LIST_EXPORT IsLauncherSearchProviderApiEnabled();
 

@@ -59080,6 +59080,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1725507605" label="enable-web-midi"/>
   <int value="-1719833926" label="disable-answers-in-suggest"/>
   <int value="-1716654100" label="tab-capture-downscale-quality"/>
+  <int value="-1714128884" label="disable-launcher-search-provider-api"/>
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
@@ -59427,6 +59428,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1495341532" label="disable-mtp-write-support"/>
   <int value="1497924954" label="js-flags"/>
   <int value="1505194447" label="disable-transition-compositing"/>
+  <int value="1509901380" label="disable-drive-search-in-app-launcher"/>
   <int value="1510476448" label="disable-prefixed-encrypted-media"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
