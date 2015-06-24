@@ -3659,30 +3659,30 @@ TEST_F(SourceBufferStreamTest, Remove_GOPBeingAppended) {
 }
 
 TEST_F(SourceBufferStreamTest, Remove_WholeGOPBeingAppended) {
-  Seek(0);
-  NewSegmentAppend("0K 30 60 90");
-  CheckExpectedRangesByTimestamp("{ [0,120) }");
+  SeekToTimestampMs(1000);
+  NewSegmentAppend("1000K 1030 1060 1090");
+  CheckExpectedRangesByTimestamp("{ [1000,1120) }");
 
   // Remove the keyframe of the current GOP being appended.
-  RemoveInMs(0, 30, 120);
+  RemoveInMs(1000, 1030, 1120);
   CheckExpectedRangesByTimestamp("{ }");
 
   // Continue appending the current GOP.
-  AppendBuffers("210 240");
+  AppendBuffers("1210 1240");
 
   CheckExpectedRangesByTimestamp("{ }");
 
   // Append the beginning of the next GOP.
-  AppendBuffers("270K 300");
+  AppendBuffers("1270K 1300");
 
   // Verify that the new range is started at the
   // beginning of the next GOP.
-  CheckExpectedRangesByTimestamp("{ [270,330) }");
+  CheckExpectedRangesByTimestamp("{ [1270,1330) }");
 
   // Verify the buffers in the ranges.
   CheckNoNextBuffer();
-  SeekToTimestampMs(270);
-  CheckExpectedBuffers("270K 300");
+  SeekToTimestampMs(1270);
+  CheckExpectedBuffers("1270K 1300");
 }
 
 TEST_F(SourceBufferStreamTest,
@@ -4122,6 +4122,167 @@ TEST_F(SourceBufferStreamTest, RefinedDurationEstimates_FrontOverlap) {
   Seek(0);
   CheckExpectedBuffers("0K 5D5E");
   CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, SeekToStartSatisfiedUpToThreshold) {
+  NewSegmentAppend("999K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [999,1030) }");
+
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("999K 1010 1020D10");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, SeekToStartUnsatisfiedBeyondThreshold) {
+  NewSegmentAppend("1000K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [1000,1030) }");
+
+  SeekToTimestampMs(0);
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest,
+       ReSeekToStartSatisfiedUpToThreshold_SameTimestamps) {
+  // Append a few buffers.
+  NewSegmentAppend("999K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [999,1030) }");
+
+  // Don't read any buffers between Seek and Remove.
+  SeekToTimestampMs(0);
+  RemoveInMs(999, 1030, 1030);
+  CheckExpectedRangesByTimestamp("{ }");
+  CheckNoNextBuffer();
+
+  // Append buffers at the original timestamps and verify no stall.
+  NewSegmentAppend("999K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [999,1030) }");
+  CheckExpectedBuffers("999K 1010 1020D10");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest,
+       ReSeekToStartSatisfiedUpToThreshold_EarlierTimestamps) {
+  // Append a few buffers.
+  NewSegmentAppend("999K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [999,1030) }");
+
+  // Don't read any buffers between Seek and Remove.
+  SeekToTimestampMs(0);
+  RemoveInMs(999, 1030, 1030);
+  CheckExpectedRangesByTimestamp("{ }");
+  CheckNoNextBuffer();
+
+  // Append buffers before the original timestamps and verify no stall (the
+  // re-seek to time 0 should still be satisfied with the new buffers).
+  NewSegmentAppend("500K 510 520D10");
+  CheckExpectedRangesByTimestamp("{ [500,530) }");
+  CheckExpectedBuffers("500K 510 520D10");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest,
+       ReSeekToStartSatisfiedUpToThreshold_LaterTimestamps) {
+  // Append a few buffers.
+  NewSegmentAppend("500K 510 520D10");
+  CheckExpectedRangesByTimestamp("{ [500,530) }");
+
+  // Don't read any buffers between Seek and Remove.
+  SeekToTimestampMs(0);
+  RemoveInMs(500, 530, 530);
+  CheckExpectedRangesByTimestamp("{ }");
+  CheckNoNextBuffer();
+
+  // Append buffers beginning after original timestamps, but still below the
+  // start threshold, and verify no stall (the re-seek to time 0 should still be
+  // satisfied with the new buffers).
+  NewSegmentAppend("999K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [999,1030) }");
+  CheckExpectedBuffers("999K 1010 1020D10");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, ReSeekBeyondStartThreshold_SameTimestamps) {
+  // Append a few buffers.
+  NewSegmentAppend("1000K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [1000,1030) }");
+
+  // Don't read any buffers between Seek and Remove.
+  SeekToTimestampMs(1000);
+  RemoveInMs(1000, 1030, 1030);
+  CheckExpectedRangesByTimestamp("{ }");
+  CheckNoNextBuffer();
+
+  // Append buffers at the original timestamps and verify no stall.
+  NewSegmentAppend("1000K 1010 1020D10");
+  CheckExpectedRangesByTimestamp("{ [1000,1030) }");
+  CheckExpectedBuffers("1000K 1010 1020D10");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, ReSeekBeyondThreshold_EarlierTimestamps) {
+  // Append a few buffers.
+  NewSegmentAppend("2000K 2010 2020D10");
+  CheckExpectedRangesByTimestamp("{ [2000,2030) }");
+
+  // Don't read any buffers between Seek and Remove.
+  SeekToTimestampMs(2000);
+  RemoveInMs(2000, 2030, 2030);
+  CheckExpectedRangesByTimestamp("{ }");
+  CheckNoNextBuffer();
+
+  // Append buffers before the original timestamps and verify no stall (the
+  // re-seek to time 2 seconds should still be satisfied with the new buffers
+  // and should emit preroll from last keyframe).
+  NewSegmentAppend("1080K 1090 2000D10");
+  CheckExpectedRangesByTimestamp("{ [1080,2010) }");
+  CheckExpectedBuffers("1080K 1090 2000D10");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, ConfigChange_ReSeek) {
+  // Append a few buffers, with a config change in the middle.
+  VideoDecoderConfig new_config = TestVideoConfig::Large();
+  NewSegmentAppend("2000K 2010 2020D10");
+  stream_->UpdateVideoConfig(new_config);
+  NewSegmentAppend("2030K 2040 2050D10");
+  CheckExpectedRangesByTimestamp("{ [2000,2060) }");
+
+  // Read the config change, but don't read any non-config-change buffer between
+  // Seek and Remove.
+  scoped_refptr<StreamParserBuffer> buffer;
+  CheckVideoConfig(video_config_);
+  SeekToTimestampMs(2030);
+  CheckVideoConfig(video_config_);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  CheckVideoConfig(new_config);
+
+  // Trigger the re-seek.
+  RemoveInMs(2030, 2060, 2060);
+  CheckExpectedRangesByTimestamp("{ [2000,2030) }");
+  CheckNoNextBuffer();
+
+  // Append buffers at the original timestamps and verify no stall or redundant
+  // signalling of config change.
+  NewSegmentAppend("2030K 2040 2050D10");
+  CheckVideoConfig(new_config);
+  CheckExpectedRangesByTimestamp("{ [2000,2060) }");
+  CheckExpectedBuffers("2030K 2040 2050D10");
+  CheckNoNextBuffer();
+  CheckVideoConfig(new_config);
+
+  // Seek to the start of buffered and verify config changes and buffers.
+  SeekToTimestampMs(2000);
+  CheckVideoConfig(new_config);
+  ASSERT_FALSE(new_config.Matches(video_config_));
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  CheckVideoConfig(video_config_);
+  CheckExpectedBuffers("2000K 2010 2020D10");
+  CheckVideoConfig(video_config_);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  CheckVideoConfig(new_config);
+  CheckExpectedBuffers("2030K 2040 2050D10");
+  CheckNoNextBuffer();
+  CheckVideoConfig(new_config);
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

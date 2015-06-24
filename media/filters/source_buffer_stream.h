@@ -388,8 +388,8 @@ class MEDIA_EXPORT SourceBufferStream {
   bool last_appended_buffer_is_keyframe_;
 
   // The decode timestamp on the last buffer returned by the most recent
-  // GetNextBuffer() call. Set to kNoTimestamp() if GetNextBuffer() hasn't been
-  // called yet or a seek has happened since the last GetNextBuffer() call.
+  // GetNextBuffer() call. Set to kNoDecodeTimestamp() if GetNextBuffer() hasn't
+  // been called yet or a seek has happened since the last GetNextBuffer() call.
   DecodeTimestamp last_output_buffer_timestamp_;
 
   // Stores the largest distance between two adjacent buffers in this stream.

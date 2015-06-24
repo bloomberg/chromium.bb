@@ -167,7 +167,8 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       config_change_pending_(false),
       splice_buffers_index_(0),
       pending_buffers_complete_(false),
-      splice_frames_enabled_(splice_frames_enabled) {}
+      splice_frames_enabled_(splice_frames_enabled) {
+}
 
 SourceBufferStream::~SourceBufferStream() {
   while (!ranges_.empty()) {
@@ -388,8 +389,19 @@ void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
   BufferQueue deleted_buffers;
   RemoveInternal(start_dts, remove_end_timestamp, false, &deleted_buffers);
 
-  if (!deleted_buffers.empty())
+  if (!deleted_buffers.empty()) {
+    // Buffers for the current position have been removed.
     SetSelectedRangeIfNeeded(deleted_buffers.front()->GetDecodeTimestamp());
+    if (last_output_buffer_timestamp_ == kNoDecodeTimestamp()) {
+      // We just removed buffers for the current playback position for this
+      // stream, yet we also had output no buffer since the last Seek.
+      // Re-seek to prevent stall.
+      DVLOG(1) << __FUNCTION__ << " " << GetStreamTypeName()
+               << ": re-seeking to " << seek_buffer_timestamp_
+               << " to prevent stall if this time becomes buffered again";
+      Seek(seek_buffer_timestamp_);
+    }
+  }
 }
 
 void SourceBufferStream::RemoveInternal(DecodeTimestamp start,
@@ -902,15 +914,15 @@ void SourceBufferStream::Seek(base::TimeDelta timestamp) {
            << " (" << timestamp.InSecondsF() << ")";
   ResetSeekState();
 
+  seek_buffer_timestamp_ = timestamp;
+  seek_pending_ = true;
+
   if (ShouldSeekToStartOfBuffered(timestamp)) {
     ranges_.front()->SeekToStart();
     SetSelectedRange(ranges_.front());
     seek_pending_ = false;
     return;
   }
-
-  seek_buffer_timestamp_ = timestamp;
-  seek_pending_ = true;
 
   DecodeTimestamp seek_dts = DecodeTimestamp::FromPresentationTime(timestamp);
 
