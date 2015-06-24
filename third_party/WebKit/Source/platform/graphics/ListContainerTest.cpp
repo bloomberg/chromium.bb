@@ -113,6 +113,14 @@ public:
     }
 };
 
+class SimpleDerivedElementConstructMagicNumberThree : public SimpleDerivedElement {
+public:
+    SimpleDerivedElementConstructMagicNumberThree()
+    {
+        setValue(kMagicNumberToUseForSimpleDerivedElementThree);
+    }
+};
+
 class MockDerivedElement : public SimpleDerivedElementConstructMagicNumberOne {
 public:
     ~MockDerivedElement() override { Destruct(); }
@@ -937,6 +945,34 @@ TEST(ListContainerTest, AppendByMovingLongAndSimpleDerivedElements)
     list.appendByMoving(simpleElement);
     EXPECT_TRUE(longElement->areAllValuesEqualTo(kMagicNumberToUseForLongSimpleDerivedElement));
     EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne, list.back()->getValue());
+}
+
+TEST(ListContainerTest, Swap)
+{
+    ListContainer<SimpleDerivedElement> list1(kCurrentLargestDerivedElementSize);
+    list1.allocateAndConstruct<SimpleDerivedElementConstructMagicNumberOne>();
+    ListContainer<SimpleDerivedElement> list2(kCurrentLargestDerivedElementSize);
+    list2.allocateAndConstruct<SimpleDerivedElementConstructMagicNumberTwo>();
+    list2.allocateAndConstruct<SimpleDerivedElementConstructMagicNumberThree>();
+
+    SimpleDerivedElement* preSwapList1Front = list1.front();
+
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne, list1.front()->getValue());
+    EXPECT_EQ(1u, list1.size());
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo, list2.front()->getValue());
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementThree, list2.back()->getValue());
+    EXPECT_EQ(2u, list2.size());
+
+    list2.swap(list1);
+
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo, list1.front()->getValue());
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementThree, list1.back()->getValue());
+    EXPECT_EQ(2u, list1.size());
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne, list2.front()->getValue());
+    EXPECT_EQ(1u, list2.size());
+
+    // Ensure pointers are still valid after swapping.
+    EXPECT_EQ(preSwapList1Front, list2.front());
 }
 
 } // namespace

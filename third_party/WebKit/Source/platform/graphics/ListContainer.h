@@ -264,6 +264,12 @@ public:
         return new (*at) DerivedElementType();
     }
 
+    template <typename DerivedElementType>
+    void swap(ListContainer<DerivedElementType>& other)
+    {
+        m_data.swap(other.m_data);
+    }
+
     // Appends a new item without copying. The original item will not be
     // destructed and will be replaced with a new DerivedElementType. The
     // DerivedElementType does not have to match the moved type as a full block
