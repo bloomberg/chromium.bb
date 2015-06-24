@@ -182,12 +182,12 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 				struct amdgpu_cs_request *ibs_request,
 				uint64_t *fence)
 {
-	int r = 0;
-	uint32_t i, size;
 	union drm_amdgpu_cs cs;
 	uint64_t *chunk_array;
 	struct drm_amdgpu_cs_chunk *chunks;
 	struct drm_amdgpu_cs_chunk_data *chunk_data;
+	uint32_t i, size;
+	int r = 0;
 
 	if (ibs_request->ip_type >= AMDGPU_HW_IP_NUM)
 		return -EINVAL;
@@ -196,17 +196,11 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	if (ibs_request->number_of_ibs > AMDGPU_CS_MAX_IBS_PER_SUBMIT)
 		return -EINVAL;
 
-	size = (ibs_request->number_of_ibs + 1) * (
-		sizeof(uint64_t) +
-		sizeof(struct drm_amdgpu_cs_chunk) +
-		sizeof(struct drm_amdgpu_cs_chunk_data));
+	size = ibs_request->number_of_ibs + 1;
 
-	chunk_array = alloca(size);
-	if (!chunk_array)
-		return -ENOMEM;
-
-	chunks = (struct drm_amdgpu_cs_chunk *)(chunk_array + ibs_request->number_of_ibs + 1);
-	chunk_data = (struct drm_amdgpu_cs_chunk_data *)(chunks + ibs_request->number_of_ibs + 1);
+	chunk_array = alloca(sizeof(uint64_t) * size);
+	chunks = alloca(sizeof(struct drm_amdgpu_cs_chunk) * size);
+	chunk_data = alloca(sizeof(struct drm_amdgpu_cs_chunk_data) * size);
 
 	memset(&cs, 0, sizeof(cs));
 	cs.in.chunks = (uint64_t)(uintptr_t)chunk_array;
