@@ -33,6 +33,7 @@ check_targets = [
   "//cloud_print/*",
 
   #"//components/*",  # Lots of errors.
+  "//components/autofill/*",
   "//components/bookmarks/*",
   "//components/pref_registry/*",
   "//components/undo/*",

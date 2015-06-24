@@ -65,6 +65,7 @@ source_set("unit_tests") {
     ":common",
     "//base",
     "//base:i18n",
+    "//components/autofill/core/browser",
     "//testing/gmock",
     "//testing/gtest",
     "//url",
