@@ -1108,20 +1108,17 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DestroyDatabase() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   Disable(FROM_HERE, STATUS_OK);
 
-  leveldb::Options options;
-  if (path_.empty()) {
-    if (env_) {
-      options.env = env_.get();
-    } else {
-      // In-memory database not initialized.
-      return STATUS_OK;
-    }
-  } else {
-    options.env = g_service_worker_env.Pointer();
+  if (IsDatabaseInMemory()) {
+    env_.reset();
+    return STATUS_OK;
   }
 
-  Status status =
-      LevelDBStatusToStatus(leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
+  // Directly delete the database directory instead of leveldb::DestroyDB()
+  // because the API does not delete the directory if there are unrelated files.
+  // (https://code.google.com/p/chromium/issues/detail?id=468926#c24)
+  Status status = base::DeleteFile(path_, true /* recursive */)
+                      ? STATUS_OK
+                      : STATUS_ERROR_FAILED;
   ServiceWorkerMetrics::RecordDestroyDatabaseResult(status);
   return status;
 }
@@ -1136,13 +1133,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   if (IsOpen())
     return STATUS_OK;
 
-  // When |path_| is empty, open a database in-memory.
-  bool use_in_memory_db = path_.empty();
-
   if (!create_if_missing) {
     // Avoid opening a database if it does not exist at the |path_|.
-    if (use_in_memory_db ||
-        !base::PathExists(path_) ||
+    if (IsDatabaseInMemory() || !base::PathExists(path_) ||
         base::IsDirectoryEmpty(path_)) {
       return STATUS_ERROR_NOT_FOUND;
     }
@@ -1151,7 +1144,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   leveldb::Options options;
   options.create_if_missing = create_if_missing;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
-  if (use_in_memory_db) {
+  if (IsDatabaseInMemory()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     options.env = env_.get();
   } else {
@@ -1605,6 +1598,10 @@ void ServiceWorkerDatabase::HandleWriteResult(
   if (status != STATUS_OK)
     Disable(from_here, status);
   ServiceWorkerMetrics::CountWriteDatabaseResult(status);
+}
+
+bool ServiceWorkerDatabase::IsDatabaseInMemory() const {
+  return path_.empty();
 }
 
 }  // namespace content

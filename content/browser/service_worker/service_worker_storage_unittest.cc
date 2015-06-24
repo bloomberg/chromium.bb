@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -34,6 +35,13 @@ namespace {
 
 typedef ServiceWorkerDatabase::RegistrationData RegistrationData;
 typedef ServiceWorkerDatabase::ResourceRecord ResourceRecord;
+
+void StatusAndQuitCallback(ServiceWorkerStatusCode* result,
+                           const base::Closure& quit_closure,
+                           ServiceWorkerStatusCode status) {
+  *result = status;
+  quit_closure.Run();
+}
 
 void StatusCallback(bool* was_called,
                     ServiceWorkerStatusCode* result,
@@ -1251,6 +1259,82 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   EXPECT_FALSE(
       VerifyBasicResponse(storage(), kStaleUncommittedResourceId, false));
   EXPECT_TRUE(VerifyBasicResponse(storage(), kNewResourceId, true));
+}
+
+TEST_F(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
+  EXPECT_FALSE(storage()->IsDisabled());
+  ASSERT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
+  ASSERT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
+
+  base::RunLoop run_loop;
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
+  storage()->DeleteAndStartOver(
+      base::Bind(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(storage()->IsDisabled());
+  EXPECT_FALSE(base::DirectoryExists(storage()->GetDiskCachePath()));
+  EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));
+}
+
+TEST_F(ServiceWorkerResourceStorageDiskTest,
+       DeleteAndStartOver_UnrelatedFileExists) {
+  EXPECT_FALSE(storage()->IsDisabled());
+  ASSERT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
+  ASSERT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
+
+  // Create an unrelated file in the database directory to make sure such a file
+  // does not prevent DeleteAndStartOver.
+  base::FilePath file_path;
+  ASSERT_TRUE(
+      base::CreateTemporaryFileInDir(storage()->GetDatabasePath(), &file_path));
+  ASSERT_TRUE(base::PathExists(file_path));
+
+  base::RunLoop run_loop;
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
+  storage()->DeleteAndStartOver(
+      base::Bind(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(storage()->IsDisabled());
+  EXPECT_FALSE(base::DirectoryExists(storage()->GetDiskCachePath()));
+  EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));
+}
+
+TEST_F(ServiceWorkerResourceStorageDiskTest,
+       DeleteAndStartOver_OpenedFileExists) {
+  EXPECT_FALSE(storage()->IsDisabled());
+  ASSERT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
+  ASSERT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
+
+  // Create an unrelated opened file in the database directory to make sure such
+  // a file does not prevent DeleteAndStartOver on non-Windows platforms.
+  base::FilePath file_path;
+  base::ScopedFILE file(base::CreateAndOpenTemporaryFileInDir(
+      storage()->GetDatabasePath(), &file_path));
+  ASSERT_TRUE(file);
+  ASSERT_TRUE(base::PathExists(file_path));
+
+  base::RunLoop run_loop;
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
+  storage()->DeleteAndStartOver(
+      base::Bind(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
+  run_loop.Run();
+
+#if defined(OS_WIN)
+  // On Windows, deleting the directory containing an opened file should fail.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
+  EXPECT_TRUE(storage()->IsDisabled());
+  EXPECT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
+  EXPECT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
+#else
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(storage()->IsDisabled());
+  EXPECT_FALSE(base::DirectoryExists(storage()->GetDiskCachePath()));
+  EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));
+#endif
 }
 
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {

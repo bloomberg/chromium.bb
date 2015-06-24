@@ -525,16 +525,105 @@ TEST_F(ServiceWorkerContextTest, RegisterDuplicateScript) {
   EXPECT_EQ(old_registration_id, notifications_[1].registration_id);
 }
 
-TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
+TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
+  const int kRenderProcessId1 = 1;
+  const int kRenderProcessId2 = 2;
+  const GURL kOrigin1 = GURL("http://www.example.com/");
+  const GURL kOrigin2 = GURL("https://www.example.com/");
+  int provider_id = 1;
+
+  // Host1 (provider_id=1): process_id=1, origin1.
+  ServiceWorkerProviderHost* host1(new ServiceWorkerProviderHost(
+      kRenderProcessId1, MSG_ROUTING_NONE, provider_id++,
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+  host1->SetDocumentUrl(kOrigin1);
+
+  // Host2 (provider_id=2): process_id=2, origin2.
+  ServiceWorkerProviderHost* host2(new ServiceWorkerProviderHost(
+      kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+  host2->SetDocumentUrl(kOrigin2);
+
+  // Host3 (provider_id=3): process_id=2, origin1.
+  ServiceWorkerProviderHost* host3(new ServiceWorkerProviderHost(
+      kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
+      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
+  host3->SetDocumentUrl(kOrigin1);
+
+  // Host4 (provider_id=4): process_id=2, origin2, for ServiceWorker.
+  ServiceWorkerProviderHost* host4(new ServiceWorkerProviderHost(
+      kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
+      SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, context()->AsWeakPtr(), nullptr));
+  host4->SetDocumentUrl(kOrigin2);
+
+  context()->AddProviderHost(make_scoped_ptr(host1));
+  context()->AddProviderHost(make_scoped_ptr(host2));
+  context()->AddProviderHost(make_scoped_ptr(host3));
+  context()->AddProviderHost(make_scoped_ptr(host4));
+
+  // Iterate over all provider hosts.
+  std::set<ServiceWorkerProviderHost*> results;
+  for (auto it = context()->GetProviderHostIterator(); !it->IsAtEnd();
+       it->Advance()) {
+    results.insert(it->GetProviderHost());
+  }
+  EXPECT_EQ(4u, results.size());
+  EXPECT_TRUE(ContainsKey(results, host1));
+  EXPECT_TRUE(ContainsKey(results, host2));
+  EXPECT_TRUE(ContainsKey(results, host3));
+  EXPECT_TRUE(ContainsKey(results, host4));
+
+  // Iterate over the client provider hosts that belong to kOrigin1.
+  results.clear();
+  for (auto it = context()->GetClientProviderHostIterator(kOrigin1);
+       !it->IsAtEnd(); it->Advance()) {
+    results.insert(it->GetProviderHost());
+  }
+  EXPECT_EQ(2u, results.size());
+  EXPECT_TRUE(ContainsKey(results, host1));
+  EXPECT_TRUE(ContainsKey(results, host3));
+
+  // Iterate over the provider hosts that belong to kOrigin2.
+  // (This should not include host4 as it's not for controllee.)
+  results.clear();
+  for (auto it = context()->GetClientProviderHostIterator(kOrigin2);
+       !it->IsAtEnd(); it->Advance()) {
+    results.insert(it->GetProviderHost());
+  }
+  EXPECT_EQ(1u, results.size());
+  EXPECT_TRUE(ContainsKey(results, host2));
+
+  context()->RemoveProviderHost(kRenderProcessId1, 1);
+  context()->RemoveProviderHost(kRenderProcessId2, 2);
+  context()->RemoveProviderHost(kRenderProcessId2, 3);
+  context()->RemoveProviderHost(kRenderProcessId2, 4);
+}
+
+class ServiceWorkerContextRecoveryTest
+    : public ServiceWorkerContextTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ServiceWorkerContextRecoveryTest() {}
+  virtual ~ServiceWorkerContextRecoveryTest() {}
+};
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerContextRecoveryTest,
+                        ServiceWorkerContextRecoveryTest,
+                        testing::Values(true, false));
+
+TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   GURL pattern("http://www.example.com/");
   GURL script_url("http://www.example.com/service_worker.js");
 
-  // Reinitialize the helper to test on-disk storage.
-  base::ScopedTempDir user_data_directory;
-  ASSERT_TRUE(user_data_directory.CreateUniqueTempDir());
-  helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.path(),
-                                             render_process_id_));
-  helper_->context_wrapper()->AddObserver(this);
+  bool is_storage_on_disk = GetParam();
+  if (is_storage_on_disk) {
+    // Reinitialize the helper to test on-disk storage.
+    base::ScopedTempDir user_data_directory;
+    ASSERT_TRUE(user_data_directory.CreateUniqueTempDir());
+    helper_.reset(new EmbeddedWorkerTestHelper(user_data_directory.path(),
+                                               render_process_id_));
+    helper_->context_wrapper()->AddObserver(this);
+  }
 
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
   bool called = false;
@@ -619,78 +708,5 @@ TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   EXPECT_EQ(registration_id, notifications_[2].registration_id);
 }
 
-TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
-  const int kRenderProcessId1 = 1;
-  const int kRenderProcessId2 = 2;
-  const GURL kOrigin1 = GURL("http://www.example.com/");
-  const GURL kOrigin2 = GURL("https://www.example.com/");
-  int provider_id = 1;
-
-  // Host1 (provider_id=1): process_id=1, origin1.
-  ServiceWorkerProviderHost* host1(new ServiceWorkerProviderHost(
-      kRenderProcessId1, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
-  host1->SetDocumentUrl(kOrigin1);
-
-  // Host2 (provider_id=2): process_id=2, origin2.
-  ServiceWorkerProviderHost* host2(new ServiceWorkerProviderHost(
-      kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
-  host2->SetDocumentUrl(kOrigin2);
-
-  // Host3 (provider_id=3): process_id=2, origin1.
-  ServiceWorkerProviderHost* host3(new ServiceWorkerProviderHost(
-      kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, context()->AsWeakPtr(), nullptr));
-  host3->SetDocumentUrl(kOrigin1);
-
-  // Host4 (provider_id=4): process_id=2, origin2, for ServiceWorker.
-  ServiceWorkerProviderHost* host4(new ServiceWorkerProviderHost(
-      kRenderProcessId2, MSG_ROUTING_NONE, provider_id++,
-      SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, context()->AsWeakPtr(), nullptr));
-  host4->SetDocumentUrl(kOrigin2);
-
-  context()->AddProviderHost(make_scoped_ptr(host1));
-  context()->AddProviderHost(make_scoped_ptr(host2));
-  context()->AddProviderHost(make_scoped_ptr(host3));
-  context()->AddProviderHost(make_scoped_ptr(host4));
-
-  // Iterate over all provider hosts.
-  std::set<ServiceWorkerProviderHost*> results;
-  for (auto it = context()->GetProviderHostIterator(); !it->IsAtEnd();
-       it->Advance()) {
-    results.insert(it->GetProviderHost());
-  }
-  EXPECT_EQ(4u, results.size());
-  EXPECT_TRUE(ContainsKey(results, host1));
-  EXPECT_TRUE(ContainsKey(results, host2));
-  EXPECT_TRUE(ContainsKey(results, host3));
-  EXPECT_TRUE(ContainsKey(results, host4));
-
-  // Iterate over the client provider hosts that belong to kOrigin1.
-  results.clear();
-  for (auto it = context()->GetClientProviderHostIterator(kOrigin1);
-       !it->IsAtEnd(); it->Advance()) {
-    results.insert(it->GetProviderHost());
-  }
-  EXPECT_EQ(2u, results.size());
-  EXPECT_TRUE(ContainsKey(results, host1));
-  EXPECT_TRUE(ContainsKey(results, host3));
-
-  // Iterate over the provider hosts that belong to kOrigin2.
-  // (This should not include host4 as it's not for controllee.)
-  results.clear();
-  for (auto it = context()->GetClientProviderHostIterator(kOrigin2);
-       !it->IsAtEnd(); it->Advance()) {
-    results.insert(it->GetProviderHost());
-  }
-  EXPECT_EQ(1u, results.size());
-  EXPECT_TRUE(ContainsKey(results, host2));
-
-  context()->RemoveProviderHost(kRenderProcessId1, 1);
-  context()->RemoveProviderHost(kRenderProcessId2, 2);
-  context()->RemoveProviderHost(kRenderProcessId2, 3);
-  context()->RemoveProviderHost(kRenderProcessId2, 4);
-}
 
 }  // namespace content

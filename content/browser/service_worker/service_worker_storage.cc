@@ -824,13 +824,11 @@ void ServiceWorkerStorage::DeleteAndStartOver(const StatusCallback& callback) {
 
   // Delete the database on the database thread.
   PostTaskAndReplyWithResult(
-      database_task_manager_->GetTaskRunner(),
-      FROM_HERE,
+      database_task_manager_->GetTaskRunner(), FROM_HERE,
       base::Bind(&ServiceWorkerDatabase::DestroyDatabase,
                  base::Unretained(database_.get())),
       base::Bind(&ServiceWorkerStorage::DidDeleteDatabase,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 int64 ServiceWorkerStorage::NewRegistrationId() {

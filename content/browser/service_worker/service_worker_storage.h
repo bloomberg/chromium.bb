@@ -241,6 +241,12 @@ class CONTENT_EXPORT ServiceWorkerStorage
                            CleanupOnRestart);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
                            ClearOnExit);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
+                           DeleteAndStartOver);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
+                           DeleteAndStartOver_UnrelatedFileExists);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageDiskTest,
+                           DeleteAndStartOver_OpenedFileExists);
 
   struct InitialData {
     int64 next_registration_id;
