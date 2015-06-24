@@ -117,6 +117,14 @@ AbortCallback FakeProvidedFileSystem::GetActions(
   return PostAbortableTask(base::Bind(callback, actions, base::File::FILE_OK));
 }
 
+AbortCallback FakeProvidedFileSystem::ExecuteAction(
+    const base::FilePath& entry_path,
+    const std::string& action_id,
+    const storage::AsyncFileUtil::StatusCallback& callback) {
+  // TODO(mtomasz): Implement it once needed.
+  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+}
+
 AbortCallback FakeProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {

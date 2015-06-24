@@ -88,6 +88,10 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       override;
   AbortCallback GetActions(const base::FilePath& entry_path,
                            const GetActionsCallback& callback) override;
+  AbortCallback ExecuteAction(
+      const base::FilePath& entry_path,
+      const std::string& action_id,
+      const storage::AsyncFileUtil::StatusCallback& callback) override;
   AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
       const storage::AsyncFileUtil::ReadDirectoryCallback& callback) override;

@@ -124,6 +124,12 @@ class ProvidedFileSystemInterface {
   virtual AbortCallback GetActions(const base::FilePath& entry_path,
                                    const GetActionsCallback& callback) = 0;
 
+  // Executes the |action_id| action on the entry at |entry_path|.
+  virtual AbortCallback ExecuteAction(
+      const base::FilePath& entry_path,
+      const std::string& action_id,
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Requests enumerating entries from the passed |directory_path|. The callback
   // can be called multiple times until |has_more| is set to false.
   virtual AbortCallback ReadDirectory(

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_GET_ACTIONS_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_GET_ACTIONS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_EXECUTE_ACTION_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_EXECUTE_ACTION_H_
+
+#include <string>
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,6 +14,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
+#include "storage/browser/fileapi/async_file_util.h"
 
 namespace base {
 class FilePath;
@@ -25,15 +28,17 @@ namespace chromeos {
 namespace file_system_provider {
 namespace operations {
 
-// Bridge between fileapi get actions operation and providing extension's get
-// actions request. Created per request.
-class GetActions : public Operation {
+// Bridge between chrome.fileManagerPrivate.executeEntryAction operation and
+// the providing extension's onExecuteActionRequested event. Created per
+// request.
+class ExecuteAction : public Operation {
  public:
-  GetActions(extensions::EventRouter* event_router,
-             const ProvidedFileSystemInfo& file_system_info,
-             const base::FilePath& entry_path,
-             const ProvidedFileSystemInterface::GetActionsCallback& callback);
-  ~GetActions() override;
+  ExecuteAction(extensions::EventRouter* event_router,
+                const ProvidedFileSystemInfo& file_system_info,
+                const base::FilePath& entry_path,
+                const std::string& action_id,
+                const storage::AsyncFileUtil::StatusCallback& callback);
+  ~ExecuteAction() override;
 
   // Operation overrides.
   bool Execute(int request_id) override;
@@ -45,14 +50,15 @@ class GetActions : public Operation {
                base::File::Error error) override;
 
  private:
-  base::FilePath entry_path_;
-  const ProvidedFileSystemInterface::GetActionsCallback callback_;
+  const base::FilePath entry_path_;
+  const std::string action_id_;
+  const storage::AsyncFileUtil::StatusCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetActions);
+  DISALLOW_COPY_AND_ASSIGN(ExecuteAction);
 };
 
 }  // namespace operations
 }  // namespace file_system_provider
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_GET_ACTIONS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_EXECUTE_ACTION_H_

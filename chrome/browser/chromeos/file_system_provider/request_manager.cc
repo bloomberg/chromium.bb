@@ -32,6 +32,8 @@ std::string RequestTypeToString(RequestType type) {
       return "GET_METADATA";
     case GET_ACTIONS:
       return "GET_ACTIONS";
+    case EXECUTE_ACTION:
+      return "EXECUTE_ACTION";
     case READ_DIRECTORY:
       return "READ_DIRECTORY";
     case OPEN_FILE:
