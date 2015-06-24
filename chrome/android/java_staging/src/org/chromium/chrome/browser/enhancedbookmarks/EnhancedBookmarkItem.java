@@ -44,7 +44,6 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
 
     private ImageView mIconImageView;
     private TintedImageButton mMoreIcon;
-    private TextView mFolderTitleView;
     private TextView mTitleView;
     private EnhancedBookmarkItemHighlightView mHighlightView;
     private String mUrl;
@@ -85,7 +84,6 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
         mMoreIcon = (TintedImageButton) findViewById(R.id.more);
         mMoreIcon.setOnClickListener(this);
         mMoreIcon.setColorFilterMode(PorterDuff.Mode.SRC.MULTIPLY);
-        mFolderTitleView = (TextView) findViewById(R.id.folder_title);
         mTitleView = (TextView) findViewById(R.id.title);
         mHighlightView = (EnhancedBookmarkItemHighlightView) findViewById(R.id.highlight);
     }
@@ -193,24 +191,10 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
         if (mBookmarkId == null) return;
 
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
-        mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
-
-        mTitleView.setText(bookmarkItem.getTitle());
-
-        mFolderTitleView.setVisibility(View.INVISIBLE);
-        BookmarkId parentId = bookmarkItem.getParentId();
-        // On folder mode, folder name is shown at top so no need to show it again.
-        if (mDelegate.getCurrentState() != UIState.STATE_FOLDER
-                && parentId != null) {
-            BookmarkItem parentItem = mDelegate.getModel().getBookmarkById(parentId);
-            if (parentItem != null) {
-                mFolderTitleView.setVisibility(View.VISIBLE);
-                mFolderTitleView.setText(parentItem.getTitle());
-            }
-        }
-
         mUrl = bookmarkItem.getUrl();
         mLargeIconBridge.getLargeIconForUrl(Profile.getLastUsedProfile(), mUrl, mMinIconSize, this);
+        mTitleView.setText(bookmarkItem.getTitle());
+        mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
     }
 
     @Override

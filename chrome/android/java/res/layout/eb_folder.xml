@@ -6,19 +6,19 @@
 <view class="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkFolder"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="56dp" >
+    android:layout_height="48dp" >
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="start|center"
-        android:layout_margin="8dp"
-        android:paddingStart="12dp"
-        android:drawablePadding="28dp"
+        android:layout_gravity="start|center_vertical"
+        android:layout_marginStart="20dp"
+        android:drawablePadding="20dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:singleLine="true"
+        android:textAlignment="viewStart"
         android:textColor="#DF000000"
         android:textSize="16sp" />
 
