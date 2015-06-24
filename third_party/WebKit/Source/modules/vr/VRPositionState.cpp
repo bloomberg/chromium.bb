@@ -9,13 +9,13 @@ namespace blink {
 
 namespace {
 
-DOMPoint* VecToDomPoint(const WebVRVector4& vec, bool valid)
+DOMPoint* vecToDomPoint(const WebVRVector4& vec, bool valid)
 {
     if (valid)
         return DOMPoint::create(vec.x, vec.y, vec.z, vec.w);
     return nullptr;
 }
-DOMPoint* VecToDomPoint(const WebVRVector3& vec, bool valid)
+DOMPoint* vecToDomPoint(const WebVRVector3& vec, bool valid)
 {
     if (valid)
         return DOMPoint::create(vec.x, vec.y, vec.z, 0.0);
@@ -32,12 +32,12 @@ VRPositionState::VRPositionState()
 void VRPositionState::setState(const WebHMDSensorState &state)
 {
     m_timeStamp = state.timestamp;
-    m_orientation = VecToDomPoint(state.orientation, state.flags & WebVRSensorStateOrientation);
-    m_position = VecToDomPoint(state.position, state.flags & WebVRSensorStatePosition);
-    m_angularVelocity = VecToDomPoint(state.angularVelocity, state.flags & WebVRSensorStateAngularVelocity);
-    m_linearVelocity = VecToDomPoint(state.linearVelocity, state.flags & WebVRSensorStateLinearVelocity);
-    m_angularAcceleration = VecToDomPoint(state.angularAcceleration, state.flags & WebVRSensorStateAngularAcceleration);
-    m_linearAcceleration =  VecToDomPoint(state.linearAcceleration, state.flags & WebVRSensorStateLinearAcceleration);
+    m_orientation = vecToDomPoint(state.orientation, state.flags & WebVRSensorStateOrientation);
+    m_position = vecToDomPoint(state.position, state.flags & WebVRSensorStatePosition);
+    m_angularVelocity = vecToDomPoint(state.angularVelocity, state.flags & WebVRSensorStateAngularVelocity);
+    m_linearVelocity = vecToDomPoint(state.linearVelocity, state.flags & WebVRSensorStateLinearVelocity);
+    m_angularAcceleration = vecToDomPoint(state.angularAcceleration, state.flags & WebVRSensorStateAngularAcceleration);
+    m_linearAcceleration =  vecToDomPoint(state.linearAcceleration, state.flags & WebVRSensorStateLinearAcceleration);
 }
 
 DEFINE_TRACE(VRPositionState)

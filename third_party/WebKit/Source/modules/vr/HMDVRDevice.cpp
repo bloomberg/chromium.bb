@@ -11,20 +11,24 @@
 
 namespace blink {
 
-HMDVRDevice::HMDVRDevice(VRHardwareUnit* hardwareUnit, unsigned deviceId)
-    : VRDevice(hardwareUnit, deviceId)
-{
-    m_eyeParametersLeft = VREyeParameters::create();
-    m_eyeParametersRight = VREyeParameters::create();
-}
+namespace {
 
-VREye HMDVRDevice::StringToVREye(const String& whichEye)
+VREye stringToVREye(const String& whichEye)
 {
     if (whichEye == "left")
         return VREyeLeft;
     if (whichEye == "right")
         return VREyeRight;
     return VREyeNone;
+}
+
+} // namepspace
+
+HMDVRDevice::HMDVRDevice(VRHardwareUnit* hardwareUnit, unsigned deviceId)
+    : VRDevice(hardwareUnit, deviceId)
+{
+    m_eyeParametersLeft = VREyeParameters::create();
+    m_eyeParametersRight = VREyeParameters::create();
 }
 
 void HMDVRDevice::updateFromWebVRDevice(const WebVRDevice& device)
@@ -38,7 +42,7 @@ void HMDVRDevice::updateFromWebVRDevice(const WebVRDevice& device)
 
 VREyeParameters* HMDVRDevice::getEyeParameters(const String& whichEye)
 {
-    switch (StringToVREye(whichEye)) {
+    switch (stringToVREye(whichEye)) {
     case VREyeLeft:
         return m_eyeParametersLeft;
     case VREyeRight:

@@ -29,8 +29,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    static VREye StringToVREye(const String&);
-
     Member<VREyeParameters> m_eyeParametersLeft;
     Member<VREyeParameters> m_eyeParametersRight;
 };
