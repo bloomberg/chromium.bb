@@ -682,6 +682,8 @@ RenderFrameImpl::~RenderFrameImpl() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
 
+  base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
+
 #if defined(VIDEO_HOLE)
   if (contains_media_player_)
     render_view_->UnregisterVideoHoleFrame(this);
