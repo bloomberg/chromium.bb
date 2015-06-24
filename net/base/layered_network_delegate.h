@@ -77,7 +77,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                       CookieOptions* options) final;
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const final;
-  bool OnCanThrottleRequest(const URLRequest& request) const final;
   bool OnCanEnablePrivacyMode(const GURL& url,
                               const GURL& first_party_for_cookies) const final;
   bool OnFirstPartyOnlyCookieExperimentEnabled() const final;
@@ -146,8 +145,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   virtual void OnCanAccessFileInternal(const URLRequest& request,
                                        const base::FilePath& path) const;
-
-  virtual void OnCanThrottleRequestInternal(const URLRequest& request) const;
 
   virtual void OnCanEnablePrivacyModeInternal(
       const GURL& url,

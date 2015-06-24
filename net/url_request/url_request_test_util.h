@@ -276,9 +276,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
     first_party_only_cookies_enabled_ = val;
   }
 
-  void set_can_throttle_requests(bool val) { can_throttle_requests_ = val; }
-  bool can_throttle_requests() const { return can_throttle_requests_; }
-
   void set_cancel_request_with_policy_violating_referrer(bool val) {
     cancel_request_with_policy_violating_referrer_ = val;
   }
@@ -335,7 +332,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                       CookieOptions* options) override;
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const override;
-  bool OnCanThrottleRequest(const URLRequest& request) const override;
   bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
@@ -381,7 +377,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   bool has_load_timing_info_before_auth_;
 
   bool can_access_files_;  // true by default
-  bool can_throttle_requests_;  // true by default
   bool first_party_only_cookies_enabled_;               // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool will_be_intercepted_on_next_error_;

@@ -153,11 +153,6 @@ bool NetworkDelegate::CanAccessFile(const URLRequest& request,
   return OnCanAccessFile(request, path);
 }
 
-bool NetworkDelegate::CanThrottleRequest(const URLRequest& request) const {
-  DCHECK(CalledOnValidThread());
-  return OnCanThrottleRequest(request);
-}
-
 bool NetworkDelegate::CanEnablePrivacyMode(
     const GURL& url,
     const GURL& first_party_for_cookies) const {

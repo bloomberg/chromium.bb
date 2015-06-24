@@ -229,16 +229,6 @@ void LayeredNetworkDelegate::OnCanAccessFileInternal(
     const base::FilePath& path) const {
 }
 
-bool LayeredNetworkDelegate::OnCanThrottleRequest(
-    const URLRequest& request) const {
-  OnCanThrottleRequestInternal(request);
-  return nested_network_delegate_->CanThrottleRequest(request);
-}
-
-void LayeredNetworkDelegate::OnCanThrottleRequestInternal(
-    const URLRequest& request) const {
-}
-
 bool LayeredNetworkDelegate::OnCanEnablePrivacyMode(
     const GURL& url,
     const GURL& first_party_for_cookies) const {

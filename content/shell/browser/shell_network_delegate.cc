@@ -111,11 +111,6 @@ bool ShellNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   return true;
 }
 
-bool ShellNetworkDelegate::OnCanThrottleRequest(
-    const net::URLRequest& request) const {
-  return false;
-}
-
 bool ShellNetworkDelegate::OnFirstPartyOnlyCookieExperimentEnabled() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);

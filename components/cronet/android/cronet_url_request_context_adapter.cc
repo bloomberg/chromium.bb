@@ -103,10 +103,6 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
     return false;
   }
 
-  bool OnCanThrottleRequest(const net::URLRequest& request) const override {
-    return false;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 

@@ -120,12 +120,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
     return true;
   }
 
-  bool OnCanThrottleRequest(const URLRequest& request) const override {
-    // Returning true will only enable throttling if there's also a
-    // URLRequestThrottlerManager, which there isn't, by default.
-    return true;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 

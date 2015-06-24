@@ -147,11 +147,9 @@ void URLRequestThrottlerEntry::DetachManager() {
 }
 
 bool URLRequestThrottlerEntry::ShouldRejectRequest(
-    const URLRequest& request,
-    NetworkDelegate* network_delegate) const {
+    const URLRequest& request) const {
   bool reject_request = false;
   if (!is_backoff_disabled_ && !ExplicitUserRequest(request.load_flags()) &&
-      (!network_delegate || network_delegate->CanThrottleRequest(request)) &&
       GetBackoffEntry()->ShouldRejectRequest()) {
     net_log_.AddEvent(
         NetLog::TYPE_THROTTLING_REJECTED_REQUEST,

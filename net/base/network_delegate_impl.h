@@ -172,11 +172,6 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const override;
 
-  // Returns true if the given request may be rejected when the
-  // URLRequestThrottlerManager believes the server servicing the
-  // request is overloaded or down.
-  bool OnCanThrottleRequest(const URLRequest& request) const override;
-
   // Returns true if the given |url| has to be requested over connection that
   // is not tracked by the server. Usually is false, unless user privacy
   // settings block cookies from being get or set.

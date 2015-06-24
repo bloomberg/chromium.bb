@@ -495,8 +495,7 @@ void URLRequestHttpJob::StartTransactionInternal() {
                      base::Unretained(this)));
 
       if (!throttling_entry_.get() ||
-          !throttling_entry_->ShouldRejectRequest(*request_,
-                                                  network_delegate())) {
+          !throttling_entry_->ShouldRejectRequest(*request_)) {
         rv = transaction_->Start(
             &request_info_, start_callback_, request_->net_log());
         start_time_ = base::TimeTicks::Now();

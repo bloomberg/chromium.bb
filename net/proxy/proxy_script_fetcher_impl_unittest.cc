@@ -178,9 +178,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
                        const base::FilePath& path) const override {
     return true;
   }
-  bool OnCanThrottleRequest(const URLRequest& request) const override {
-    return false;
-  }
 
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };

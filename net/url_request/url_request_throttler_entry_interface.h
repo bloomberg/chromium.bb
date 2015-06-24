@@ -26,14 +26,11 @@ class NET_EXPORT URLRequestThrottlerEntryInterface
 
   // Returns true when we have encountered server errors and are doing
   // exponential back-off, unless the request has load flags that mean
-  // it is likely to be user-initiated, or the NetworkDelegate returns
-  // false for |CanThrottleRequest(request)|.
+  // it is likely to be user-initiated.
   //
   // URLRequestHttpJob checks this method prior to every request; it
   // cancels requests if this method returns true.
-  virtual bool ShouldRejectRequest(
-      const URLRequest& request,
-      NetworkDelegate* network_delegate) const = 0;
+  virtual bool ShouldRejectRequest(const URLRequest& request) const = 0;
 
   // Calculates a recommended sending time for the next request and reserves it.
   // The sending time is not earlier than the current exponential back-off

@@ -136,11 +136,6 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     return false;
   }
 
-  bool OnCanThrottleRequest(const URLRequest& request) const override {
-    IncrementAndCompareCounter("on_can_throttle_request_count");
-    return false;
-  }
-
   bool OnCanEnablePrivacyMode(
       const GURL& url,
       const GURL& first_party_for_cookies) const override {
@@ -214,7 +209,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList()));
     EXPECT_FALSE(OnCanSetCookie(*request, std::string(), NULL));
     EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath()));
-    EXPECT_FALSE(OnCanThrottleRequest(*request));
     EXPECT_FALSE(OnCanEnablePrivacyMode(GURL(), GURL()));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(
         *request, GURL(), GURL()));
@@ -330,11 +324,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
                                const base::FilePath& path) const override {
     ++(*counters_)["on_can_access_file_count"];
     EXPECT_EQ(1, (*counters_)["on_can_access_file_count"]);
-  }
-
-  void OnCanThrottleRequestInternal(const URLRequest& request) const override {
-    ++(*counters_)["on_can_throttle_request_count"];
-    EXPECT_EQ(1, (*counters_)["on_can_throttle_request_count"]);
   }
 
   void OnCanEnablePrivacyModeInternal(

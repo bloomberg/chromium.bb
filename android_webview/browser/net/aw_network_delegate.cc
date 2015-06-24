@@ -117,9 +117,4 @@ bool AwNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   return true;
 }
 
-bool AwNetworkDelegate::OnCanThrottleRequest(
-    const net::URLRequest& request) const {
-  return false;
-}
-
 }  // namespace android_webview

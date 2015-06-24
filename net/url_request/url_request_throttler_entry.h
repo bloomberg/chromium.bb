@@ -85,8 +85,7 @@ class NET_EXPORT URLRequestThrottlerEntry
   void DetachManager();
 
   // Implementation of URLRequestThrottlerEntryInterface.
-  bool ShouldRejectRequest(const URLRequest& request,
-                           NetworkDelegate* network_delegate) const override;
+  bool ShouldRejectRequest(const URLRequest& request) const override;
   int64 ReserveSendingTimeForNextRequest(
       const base::TimeTicks& earliest_time) override;
   base::TimeTicks GetExponentialBackoffReleaseTime() const override;

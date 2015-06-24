@@ -76,9 +76,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                        const base::FilePath& path) const override {
     return true;
   }
-  bool OnCanThrottleRequest(const URLRequest& request) const override {
-    return false;
-  }
 
   bool got_pac_error_;
 };
