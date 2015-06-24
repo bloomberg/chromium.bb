@@ -307,7 +307,7 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
             case TYPE_ALL_ITEMS:
                 title = listItemView.getContext().getResources()
                         .getString(R.string.enhanced_bookmark_drawer_all_items);
-                iconDrawableId = R.drawable.btn_star_filled;
+                iconDrawableId = R.drawable.btn_star;
                 break;
             case TYPE_FOLDER:
                 title = mDelegate.getModel().getBookmarkById(item.mFolderId).getTitle();
