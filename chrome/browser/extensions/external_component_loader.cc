@@ -54,8 +54,10 @@ void ExternalComponentLoader::StartLoading() {
   prefs_.reset(new base::DictionaryValue());
   AddExternalExtension(extension_misc::kInAppPaymentsSupportAppId);
 
+#if defined(ENABLE_HOTWORDING)
   if (HotwordServiceFactory::IsHotwordAllowed(profile_))
     AddExternalExtension(extension_misc::kHotwordSharedModuleId);
+#endif  // defined(ENABLE_HOTWORDING)
 
   {
     std::string extension_id;
