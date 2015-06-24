@@ -9,8 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/accessible_pane_view.h"
@@ -18,6 +16,7 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/test/focus_manager_test.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -121,6 +120,10 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
 }
 
 TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
+  // First, ensure the simulator is aware of the Widget created in SetUp() being
+  // currently active.
+  test::WidgetTest::SimulateNativeActivate(GetWidget());
+
   TestWidgetFocusChangeListener widget_listener;
   AddWidgetFocusChangeListener(&widget_listener);
 
@@ -139,14 +142,14 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view1 = widget1->GetNativeView();
-  aura::client::GetFocusClient(native_view1)->FocusWindow(native_view1);
+  test::WidgetTest::SimulateNativeActivate(widget1.get());
   ASSERT_EQ(2u, widget_listener.focus_changes().size());
   EXPECT_EQ(nullptr, widget_listener.focus_changes()[0]);
   EXPECT_EQ(native_view1, widget_listener.focus_changes()[1]);
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view2 = widget2->GetNativeView();
-  aura::client::GetFocusClient(native_view2)->FocusWindow(native_view2);
+  test::WidgetTest::SimulateNativeActivate(widget2.get());
   ASSERT_EQ(2u, widget_listener.focus_changes().size());
   EXPECT_EQ(nullptr, widget_listener.focus_changes()[0]);
   EXPECT_EQ(native_view2, widget_listener.focus_changes()[1]);

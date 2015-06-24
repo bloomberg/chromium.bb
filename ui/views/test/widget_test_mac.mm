@@ -37,6 +37,10 @@ class FakeActivationMac : public WidgetTest::FakeActivation {
   DISALLOW_COPY_AND_ASSIGN(FakeActivationMac);
 };
 
+// The NSWindow last activated by SimulateNativeActivate(). It will have a
+// simulated deactivate on a subsequent call.
+NSWindow* g_simulated_active_window_ = nil;
+
 }  // namespace
 
 // static
@@ -46,6 +50,23 @@ void WidgetTest::SimulateNativeDestroy(Widget* widget) {
   // this reference will exist on an event delivered to the runloop.
   base::scoped_nsobject<NSWindow> window([widget->GetNativeWindow() retain]);
   [window close];
+}
+
+// static
+void WidgetTest::SimulateNativeActivate(Widget* widget) {
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  if (g_simulated_active_window_) {
+    [center postNotificationName:NSWindowDidResignKeyNotification
+                          object:g_simulated_active_window_];
+  }
+
+  g_simulated_active_window_ = widget->GetNativeWindow();
+  DCHECK(g_simulated_active_window_);
+
+  // For now, don't simulate main status or windows that can't activate.
+  DCHECK([g_simulated_active_window_ canBecomeKeyWindow]);
+  [center postNotificationName:NSWindowDidBecomeKeyNotification
+                        object:g_simulated_active_window_];
 }
 
 // static

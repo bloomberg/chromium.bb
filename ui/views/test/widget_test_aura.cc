@@ -4,6 +4,7 @@
 
 #include "ui/views/test/widget_test.h"
 
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/widget.h"
@@ -50,6 +51,12 @@ bool FindLayersInOrder(const std::vector<ui::Layer*>& children,
 // static
 void WidgetTest::SimulateNativeDestroy(Widget* widget) {
   delete widget->GetNativeView();
+}
+
+// static
+void WidgetTest::SimulateNativeActivate(Widget* widget) {
+  gfx::NativeView native_view = widget->GetNativeView();
+  aura::client::GetFocusClient(native_view)->FocusWindow(native_view);
 }
 
 // static
