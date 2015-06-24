@@ -3083,7 +3083,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [_delegate presentSSLError:info
                 forSSLStatus:status
                  recoverable:recoverable
-                    callback:shouldContinue];
+                    callback:^(BOOL proceed) {
+                      if (proceed) {
+                        // The interstitial will be removed during reload.
+                        [self loadCurrentURL];
+                      }
+                      if (shouldContinue) {
+                        shouldContinue(proceed);
+                      }
+                    }];
 }
 
 - (void)updatedProgress:(float)progress {
