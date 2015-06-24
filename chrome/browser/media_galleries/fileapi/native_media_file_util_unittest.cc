@@ -299,9 +299,8 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
         expectation = base::File::FILE_ERROR_INVALID_OPERATION;
       }
       operation_runner()->Copy(
-          url,
-          dest_url,
-          storage::FileSystemOperation::OPTION_NONE,
+          url, dest_url, storage::FileSystemOperation::OPTION_NONE,
+          storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
           storage::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
@@ -365,9 +364,8 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
         }
       }
       operation_runner()->Copy(
-          src_url,
-          url,
-          storage::FileSystemOperation::OPTION_NONE,
+          src_url, url, storage::FileSystemOperation::OPTION_NONE,
+          storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
           storage::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();

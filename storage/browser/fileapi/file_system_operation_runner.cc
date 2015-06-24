@@ -86,6 +86,7 @@ OperationID FileSystemOperationRunner::Copy(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     CopyOrMoveOption option,
+    ErrorBehavior error_behavior,
     const CopyProgressCallback& progress_callback,
     const StatusCallback& callback) {
   base::File::Error error = base::File::FILE_OK;
@@ -99,14 +100,13 @@ OperationID FileSystemOperationRunner::Copy(
   }
   PrepareForWrite(handle.id, dest_url);
   PrepareForRead(handle.id, src_url);
-  operation->Copy(
-      src_url, dest_url, option,
-      progress_callback.is_null() ?
-          CopyProgressCallback() :
-          base::Bind(&FileSystemOperationRunner::OnCopyProgress, AsWeakPtr(),
-                     handle, progress_callback),
-      base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
-                 handle, callback));
+  operation->Copy(src_url, dest_url, option, error_behavior,
+                  progress_callback.is_null()
+                      ? CopyProgressCallback()
+                      : base::Bind(&FileSystemOperationRunner::OnCopyProgress,
+                                   AsWeakPtr(), handle, progress_callback),
+                  base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
+                             handle, callback));
   return handle.id;
 }
 

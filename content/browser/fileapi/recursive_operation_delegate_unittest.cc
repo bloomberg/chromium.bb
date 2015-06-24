@@ -53,10 +53,14 @@ class LoggingRecursiveOperation : public storage::RecursiveOperationDelegate {
   // RecursiveOperationDelegate overrides.
   void Run() override { NOTREACHED(); }
 
-  void RunRecursively() override { StartRecursiveOperation(root_, callback_); }
+  void RunRecursively() override {
+    StartRecursiveOperation(
+        root_, storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT, callback_);
+  }
 
-  void RunRecursivelyWithIgnoringError(const ErrorCallback& error_callback) {
-    StartRecursiveOperationWithIgnoringError(root_, error_callback, callback_);
+  void RunRecursivelyWithIgnoringError() {
+    StartRecursiveOperation(
+        root_, storage::FileSystemOperation::ERROR_BEHAVIOR_SKIP, callback_);
   }
 
   void ProcessFile(const FileSystemURL& url,
@@ -122,15 +126,6 @@ void ReportStatus(base::File::Error* out_error,
                   base::File::Error error) {
   DCHECK(out_error);
   *out_error = error;
-}
-
-typedef std::pair<FileSystemURL, base::File::Error> ErrorEntry;
-
-void ReportError(std::vector<ErrorEntry>* out_errors,
-                 const FileSystemURL& url,
-                 base::File::Error error) {
-  DCHECK(out_errors);
-  out_errors->push_back(std::make_pair(url, error));
 }
 
 // To test the Cancel() during operation, calls Cancel() of |operation|
@@ -342,22 +337,16 @@ TEST_F(RecursiveOperationDelegateTest, ContinueWithError) {
   FileSystemURL src_file3(CreateFile("src/dir1/file3"));
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
-  std::vector<ErrorEntry> errors;
   scoped_ptr<FileSystemOperationContext> context = NewContext();
   scoped_ptr<LoggingRecursiveOperation> operation(
       new LoggingRecursiveOperation(context->file_system_context(), src_root,
                                     base::Bind(&ReportStatus, &error)));
   operation->SetEntryToFail(src_file1);
-  operation->RunRecursivelyWithIgnoringError(base::Bind(&ReportError, &errors));
+  operation->RunRecursivelyWithIgnoringError();
   base::RunLoop().RunUntilIdle();
 
   // Error code should be base::File::FILE_ERROR_FAILED.
   ASSERT_EQ(base::File::FILE_ERROR_FAILED, error);
-
-  // Error callback should be called.
-  ASSERT_EQ(1U, errors.size());
-  ASSERT_EQ(src_file1, errors[0].first);
-  ASSERT_EQ(base::File::FILE_ERROR_FAILED, errors[0].second);
 
   // Confirm that operation continues after the error.
   const std::vector<LoggingRecursiveOperation::LogEntry>& log_entries =

@@ -180,6 +180,8 @@ CopyProgressTypeToCopyProgressStatusType(
       return file_manager_private::COPY_PROGRESS_STATUS_TYPE_END_COPY_ENTRY;
     case storage::FileSystemOperation::PROGRESS:
       return file_manager_private::COPY_PROGRESS_STATUS_TYPE_PROGRESS;
+    case storage::FileSystemOperation::ERROR_COPY_ENTRY:
+      return file_manager_private::COPY_PROGRESS_STATUS_TYPE_ERROR;
   }
   NOTREACHED();
   return file_manager_private::COPY_PROGRESS_STATUS_TYPE_NONE;
@@ -544,10 +546,19 @@ void EventRouter::OnCopyProgress(
   file_manager_private::CopyProgressStatus status;
   status.type = CopyProgressTypeToCopyProgressStatusType(type);
   status.source_url.reset(new std::string(source_url.spec()));
-  if (type == storage::FileSystemOperation::END_COPY_ENTRY)
+  if (type == storage::FileSystemOperation::END_COPY_ENTRY ||
+      type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
     status.destination_url.reset(new std::string(destination_url.spec()));
+  if (type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
+    status.error.reset(
+        new std::string(FileErrorToErrorName(base::File::FILE_ERROR_FAILED)));
   if (type == storage::FileSystemOperation::PROGRESS)
     status.size.reset(new double(size));
+
+  // Discard error progress since current JS code cannot handle this properly.
+  // TODO(yawano): Remove this after JS side is implemented correctly.
+  if (type == storage::FileSystemOperation::ERROR_COPY_ENTRY)
+    return;
 
   // Should not skip events other than TYPE_PROGRESS.
   const bool always =

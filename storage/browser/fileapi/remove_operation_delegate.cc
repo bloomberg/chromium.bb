@@ -28,7 +28,8 @@ void RemoveOperationDelegate::Run() {
 }
 
 void RemoveOperationDelegate::RunRecursively() {
-  StartRecursiveOperation(url_, callback_);
+  StartRecursiveOperation(url_, FileSystemOperation::ERROR_BEHAVIOR_ABORT,
+                          callback_);
 }
 
 void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,

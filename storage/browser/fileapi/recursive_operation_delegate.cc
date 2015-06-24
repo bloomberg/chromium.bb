@@ -22,7 +22,7 @@ RecursiveOperationDelegate::RecursiveOperationDelegate(
     : file_system_context_(file_system_context),
       inflight_operations_(0),
       canceled_(false),
-      ignore_error_(false),
+      error_behavior_(FileSystemOperation::ERROR_BEHAVIOR_ABORT),
       failed_some_operations_(false) {
 }
 
@@ -36,27 +36,14 @@ void RecursiveOperationDelegate::Cancel() {
 
 void RecursiveOperationDelegate::StartRecursiveOperation(
     const FileSystemURL& root,
+    ErrorBehavior error_behavior,
     const StatusCallback& callback) {
   DCHECK(pending_directory_stack_.empty());
   DCHECK(pending_files_.empty());
   DCHECK_EQ(0, inflight_operations_);
 
+  error_behavior_ = error_behavior;
   callback_ = callback;
-
-  TryProcessFile(root);
-}
-
-void RecursiveOperationDelegate::StartRecursiveOperationWithIgnoringError(
-    const FileSystemURL& root,
-    const ErrorCallback& error_callback,
-    const StatusCallback& status_callback) {
-  DCHECK(pending_directory_stack_.empty());
-  DCHECK(pending_files_.empty());
-  DCHECK_EQ(0, inflight_operations_);
-
-  error_callback_ = error_callback;
-  callback_ = status_callback;
-  ignore_error_ = true;
 
   TryProcessFile(root);
 }
@@ -192,18 +179,15 @@ void RecursiveOperationDelegate::DidProcessFile(const FileSystemURL& url,
   --inflight_operations_;
 
   if (error != base::File::FILE_OK) {
-    if (!ignore_error_) {
+    if (error_behavior_ == FileSystemOperation::ERROR_BEHAVIOR_ABORT) {
       // If an error occurs, invoke Done immediately (even if there remain
       // running operations). It is because in the callback, this instance is
       // deleted.
       Done(error);
       return;
-    } else {
-      failed_some_operations_ = true;
-
-      if (!error_callback_.is_null())
-        error_callback_.Run(url, error);
     }
+
+    failed_some_operations_ = true;
   }
 
   ProcessPendingFiles();
@@ -262,7 +246,8 @@ void RecursiveOperationDelegate::Done(base::File::Error error) {
   if (canceled_ && error == base::File::FILE_OK) {
     callback_.Run(base::File::FILE_ERROR_ABORT);
   } else {
-    if (ignore_error_ && failed_some_operations_)
+    if (error_behavior_ == FileSystemOperation::ERROR_BEHAVIOR_SKIP &&
+        failed_some_operations_)
       callback_.Run(base::File::FILE_ERROR_FAILED);
     else
       callback_.Run(error);

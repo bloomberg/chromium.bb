@@ -104,11 +104,10 @@ base::File::Error AsyncFileTestHelper::CopyWithProgress(
     const CopyProgressCallback& progress_callback) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  context->operation_runner()->Copy(src,
-                                    dest,
-                                    storage::FileSystemOperation::OPTION_NONE,
-                                    progress_callback,
-                                    AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->Copy(
+      src, dest, storage::FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT, progress_callback,
+      AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }

@@ -184,18 +184,19 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
   // Note: |operation_id| is owned by the callback for
   // FileSystemOperationRunner::Copy(). It is always called in the next message
   // loop or later, so at least during this invocation it should alive.
+  //
+  // TODO(yawano): change ERROR_BEHAVIOR_ABORT to ERROR_BEHAVIOR_SKIP after
+  //     error messages of individual operations become appear in the Files.app
+  //     UI.
   storage::FileSystemOperationRunner::OperationID* operation_id =
       new storage::FileSystemOperationRunner::OperationID;
   *operation_id = file_system_context->operation_runner()->Copy(
-      source_url,
-      destination_url,
+      source_url, destination_url,
       storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+      storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       base::Bind(&OnCopyProgress, profile_id, base::Unretained(operation_id)),
-      base::Bind(&OnCopyCompleted,
-                 profile_id,
-                 base::Owned(operation_id),
-                 source_url,
-                 destination_url));
+      base::Bind(&OnCopyCompleted, profile_id, base::Owned(operation_id),
+                 source_url, destination_url));
   return *operation_id;
 }
 

@@ -316,9 +316,7 @@ class FileSystemOperationImplTest
     base::RunLoop run_loop;
     update_observer_.Enable();
     operation_runner()->Copy(
-        src,
-        dest,
-        option,
+        src, dest, option, storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
         FileSystemOperationRunner::CopyProgressCallback(),
         RecordStatusCallback(run_loop.QuitClosure(), &status));
     run_loop.Run();

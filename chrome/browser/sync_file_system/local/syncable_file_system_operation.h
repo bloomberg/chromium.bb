@@ -42,6 +42,7 @@ class SyncableFileSystemOperation
   void Copy(const storage::FileSystemURL& src_url,
             const storage::FileSystemURL& dest_url,
             CopyOrMoveOption option,
+            ErrorBehavior error_behavior,
             const CopyProgressCallback& progress_callback,
             const StatusCallback& callback) override;
   void Move(const storage::FileSystemURL& src_url,

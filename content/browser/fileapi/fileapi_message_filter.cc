@@ -280,9 +280,8 @@ void FileAPIMessageFilter::OnCopy(
   }
 
   operations_[request_id] = operation_runner()->Copy(
-      src_url,
-      dest_url,
-      storage::FileSystemOperation::OPTION_NONE,
+      src_url, dest_url, storage::FileSystemOperation::OPTION_NONE,
+      FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       storage::FileSystemOperationRunner::CopyProgressCallback(),
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }

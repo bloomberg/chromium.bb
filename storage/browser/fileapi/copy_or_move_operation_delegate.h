@@ -36,6 +36,7 @@ class CopyOrMoveOperationDelegate
   class CopyOrMoveImpl;
   typedef FileSystemOperation::CopyProgressCallback CopyProgressCallback;
   typedef FileSystemOperation::CopyOrMoveOption CopyOrMoveOption;
+  typedef FileSystemOperation::ErrorBehavior ErrorBehavior;
 
   enum OperationType {
     OPERATION_COPY,
@@ -91,14 +92,14 @@ class CopyOrMoveOperationDelegate
     DISALLOW_COPY_AND_ASSIGN(StreamCopyHelper);
   };
 
-  CopyOrMoveOperationDelegate(
-      FileSystemContext* file_system_context,
-      const FileSystemURL& src_root,
-      const FileSystemURL& dest_root,
-      OperationType operation_type,
-      CopyOrMoveOption option,
-      const CopyProgressCallback& progress_callback,
-      const StatusCallback& callback);
+  CopyOrMoveOperationDelegate(FileSystemContext* file_system_context,
+                              const FileSystemURL& src_root,
+                              const FileSystemURL& dest_root,
+                              OperationType operation_type,
+                              CopyOrMoveOption option,
+                              ErrorBehavior error_behavior,
+                              const CopyProgressCallback& progress_callback,
+                              const StatusCallback& callback);
   ~CopyOrMoveOperationDelegate() override;
 
   // RecursiveOperationDelegate overrides:
@@ -148,6 +149,7 @@ class CopyOrMoveOperationDelegate
   bool same_file_system_;
   OperationType operation_type_;
   CopyOrMoveOption option_;
+  ErrorBehavior error_behavior_;
   CopyProgressCallback progress_callback_;
   StatusCallback callback_;
 

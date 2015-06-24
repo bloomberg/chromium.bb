@@ -28,8 +28,8 @@ class STORAGE_EXPORT RecursiveOperationDelegate
     : public base::SupportsWeakPtr<RecursiveOperationDelegate> {
  public:
   typedef FileSystemOperation::StatusCallback StatusCallback;
-  typedef FileSystemOperation::ErrorCallback ErrorCallback;
   typedef FileSystemOperation::FileEntryList FileEntryList;
+  typedef FileSystemOperation::ErrorBehavior ErrorBehavior;
 
   virtual ~RecursiveOperationDelegate();
 
@@ -104,24 +104,13 @@ class STORAGE_EXPORT RecursiveOperationDelegate
   // PostProcessDirectory(b2_dir)
   // PostProcessDirectory(a_dir)
   //
+  // |error_behavior| is to specify how this behaves when an operation have
+  // failed.
   // |callback| is fired with base::File::FILE_OK when every file/directory
   // under |root| is processed, or fired earlier when any suboperation fails.
   void StartRecursiveOperation(const FileSystemURL& root,
+                               ErrorBehavior error_behavior,
                                const StatusCallback& callback);
-
-  // Starts to process files/directories recursively from the given |root|.
-  // Compared with StartRecursiveOperation, this continues operation with
-  // ignoring erros of ProcessFile.
-  //
-  // |error_callback| is fired when a ProcessFile has failed in the middle of
-  // operations. If some errors had happened, |status_callback| is fired with
-  // base::File::FILE_ERROR_FAILED at the end.
-  //
-  // TODO(yawano): Handle errors of ProcessDirectory as well.
-  void StartRecursiveOperationWithIgnoringError(
-      const FileSystemURL& root,
-      const ErrorCallback& error_callback,
-      const StatusCallback& status_callback);
 
   FileSystemContext* file_system_context() { return file_system_context_; }
   const FileSystemContext* file_system_context() const {
@@ -154,13 +143,12 @@ class STORAGE_EXPORT RecursiveOperationDelegate
 
   FileSystemContext* file_system_context_;
   StatusCallback callback_;
-  ErrorCallback error_callback_;
   std::stack<FileSystemURL> pending_directories_;
   std::stack<std::queue<FileSystemURL> > pending_directory_stack_;
   std::queue<FileSystemURL> pending_files_;
   int inflight_operations_;
   bool canceled_;
-  bool ignore_error_;
+  ErrorBehavior error_behavior_;
   bool failed_some_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(RecursiveOperationDelegate);

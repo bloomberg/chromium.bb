@@ -43,6 +43,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
   typedef FileSystemOperation::StatusCallback StatusCallback;
   typedef FileSystemOperation::WriteCallback WriteCallback;
   typedef FileSystemOperation::OpenFileCallback OpenFileCallback;
+  typedef FileSystemOperation::ErrorBehavior ErrorBehavior;
   typedef FileSystemOperation::CopyProgressCallback CopyProgressCallback;
   typedef FileSystemOperation::CopyFileProgressCallback
       CopyFileProgressCallback;
@@ -75,6 +76,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
   OperationID Copy(const FileSystemURL& src_url,
                    const FileSystemURL& dest_url,
                    CopyOrMoveOption option,
+                   ErrorBehavior error_behavior,
                    const CopyProgressCallback& progress_callback,
                    const StatusCallback& callback);
 

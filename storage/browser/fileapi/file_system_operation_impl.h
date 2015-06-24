@@ -41,6 +41,7 @@ class STORAGE_EXPORT FileSystemOperationImpl
   void Copy(const FileSystemURL& src_url,
             const FileSystemURL& dest_url,
             CopyOrMoveOption option,
+            ErrorBehavior error_behavior,
             const CopyProgressCallback& progress_callback,
             const StatusCallback& callback) override;
   void Move(const FileSystemURL& src_url,
