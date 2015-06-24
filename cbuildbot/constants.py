@@ -290,6 +290,12 @@ INFRA_PROJECTS = (CHROMITE_PROJECT,)
 # CrOS remotes specified in the manifests.
 EXTERNAL_REMOTE = 'cros'
 INTERNAL_REMOTE = 'cros-internal'
+
+GOB_REMOTES = {
+    EXTERNAL_GOB_INSTANCE: EXTERNAL_REMOTE,
+    INTERNAL_GOB_INSTANCE: INTERNAL_REMOTE,
+}
+
 # TODO(dgarrett): Reconsider when crbug.com/428215 is fixed.
 KAYLE_INTERNAL_REMOTE = 'kayle-cros-internal'
 CHROMIUM_REMOTE = 'chromium'

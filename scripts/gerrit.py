@@ -80,7 +80,7 @@ def GetGerrit(opts, cl=None):
     A tuple of a gerrit object and a sanitized CL #.
   """
   gob = opts.gob
-  if not cl is None:
+  if cl is not None:
     if cl.startswith('*'):
       gob = constants.INTERNAL_GOB_INSTANCE
       cl = cl[1:]
@@ -166,10 +166,8 @@ def _MyUserInfo():
   return emails, reviewers, owners
 
 
-def FilteredQuery(opts, query):
-  """Query gerrit and filter/clean up the results"""
-  ret = []
-
+def _Query(opts, query, raw=True):
+  """Queries Gerrit with a query string built from the commandline options"""
   if opts.branch is not None:
     query += ' branch:%s' % opts.branch
   if opts.project is not None:
@@ -178,7 +176,14 @@ def FilteredQuery(opts, query):
     query += ' topic: %s' % opts.topic
 
   helper, _ = GetGerrit(opts)
-  for cl in helper.Query(query, raw=True, bypass_cache=False):
+  return helper.Query(query, raw=raw, bypass_cache=False)
+
+
+def FilteredQuery(opts, query):
+  """Query gerrit and filter/clean up the results"""
+  ret = []
+
+  for cl in _Query(opts, query, raw=True):
     # Gerrit likes to return a stats record too.
     if not 'project' in cl:
       continue
@@ -193,7 +198,7 @@ def FilteredQuery(opts, query):
 
     ret.append(cl)
 
-  if opts.sort in ('number',):
+  if opts.sort == 'number':
     key = lambda x: int(x[opts.sort])
   else:
     key = lambda x: x[opts.sort]
@@ -243,6 +248,59 @@ def UserActMine(opts):
   """List your CLs with review statuses"""
   _, _, owners = _MyUserInfo()
   UserActSearch(opts, '( %s ) status:new' % (' OR '.join(owners),))
+
+
+def _BreadthFirstSearch(to_visit, children, visited_key=lambda x: x):
+  """Runs breadth first search starting from the nodes in |to_visit|
+
+  Args:
+    to_visit: the starting nodes
+    children: a function which takes a node and returns the nodes adjacent to it
+    visited_key: a function for deduplicating node visits. Defaults to the
+      identity function (lambda x: x)
+
+  Returns:
+    A list of nodes which are reachable from any node in |to_visit| by calling
+    |children| any number of times.
+  """
+  to_visit = list(to_visit)
+  seen = set(map(visited_key, to_visit))
+  for node in to_visit:
+    for child in children(node):
+      key = visited_key(child)
+      if key not in seen:
+        seen.add(key)
+        to_visit.append(child)
+  return to_visit
+
+
+def UserActDeps(opts, query):
+  """List CLs matching a query, and all transitive dependencies of those CLs"""
+  cls = _Query(opts, query, raw=False)
+
+  @cros_build_lib.Memoize
+  def _QueryChange(cl):
+    return _Query(opts, cl, raw=False)
+
+  def _Children(cl):
+    """Returns the Gerrit and CQ-Depends dependencies of a patch"""
+    cq_deps = cl.PaladinDependencies(None)
+    direct_deps = cl.GerritDependencies() + cq_deps
+    # We need to query the change to guarantee that we have a .gerrit_number
+    for dep in direct_deps:
+      # TODO(phobbs) this should maybe catch network errors.
+      change = _QueryChange(dep.ToGerritQueryText())[-1]
+      if change.status == 'NEW':
+        yield change
+
+  transitives = _BreadthFirstSearch(
+      cls, _Children,
+      visited_key=lambda cl: cl.gerrit_number)
+
+  transitives_raw = [cl.patch_dict for cl in transitives]
+  lims = limits(transitives_raw)
+  for cl in transitives_raw:
+    PrintCl(opts, cl, lims)
 
 
 def UserActInspect(opts, *args):

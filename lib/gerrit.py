@@ -72,7 +72,9 @@ class GerritHelper(object):
   def FromGob(cls, gob, **kwargs):
     """Return a helper for a GoB instance."""
     host = constants.GOB_HOST % ('%s-review' % gob)
-    return cls(host, gob, **kwargs)
+    # TODO(phobbs) this will be wrong when "gob" isn't in GOB_REMOTES.
+    # We should get rid of remotes altogether and just use the host.
+    return cls(host, constants.GOB_REMOTES.get(gob, gob), **kwargs)
 
   def SetReviewers(self, change, add=(), remove=(), dryrun=False):
     """Modify the list of reviewers on a gerrit change.
