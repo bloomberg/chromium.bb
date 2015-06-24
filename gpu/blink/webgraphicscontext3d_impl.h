@@ -518,24 +518,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                                     blink::WGC3Denum pname,
                                     blink::WGC3Duint* params);
 
-  // TODO(zmo): Remove the following two functions when blink side switch
-  // over to the correct version.
-  void copyTextureCHROMIUM(blink::WGC3Denum target,
-                           blink::WebGLId source_id,
-                           blink::WebGLId dest_id,
-                           blink::WGC3Denum internal_format,
-                           blink::WGC3Denum dest_type);
-
-  void copySubTextureCHROMIUM(blink::WGC3Denum target,
-                              blink::WebGLId source_id,
-                              blink::WebGLId dest_id,
-                              blink::WGC3Dint xoffset,
-                              blink::WGC3Dint yoffset,
-                              blink::WGC3Dint x,
-                              blink::WGC3Dint y,
-                              blink::WGC3Dsizei width,
-                              blink::WGC3Dsizei height);
-
   void copyTextureCHROMIUM(
       blink::WGC3Denum target,
       blink::WebGLId source_id,
@@ -544,7 +526,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
       blink::WGC3Denum dest_type,
       blink::WGC3Dboolean unpack_flip_y,
       blink::WGC3Dboolean unpack_premultiply_alpha,
-      blink::WGC3Dboolean unpack_unmultiply_alpha);
+      blink::WGC3Dboolean unpack_unmultiply_alpha) override;
 
   void copySubTextureCHROMIUM(
       blink::WGC3Denum target,
@@ -558,7 +540,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
       blink::WGC3Dsizei height,
       blink::WGC3Dboolean unpack_flip_y,
       blink::WGC3Dboolean unpack_premultiply_alpha,
-      blink::WGC3Dboolean unpack_unmultiply_alpha);
+      blink::WGC3Dboolean unpack_unmultiply_alpha) override;
 
   virtual void bindUniformLocationCHROMIUM(blink::WebGLId program,
                                            blink::WGC3Dint location,

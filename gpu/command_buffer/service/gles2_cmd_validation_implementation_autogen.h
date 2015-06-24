@@ -259,9 +259,6 @@ static const GLenum valid_g_l_state_table[] = {
     GL_TEXTURE_BINDING_2D,
     GL_TEXTURE_BINDING_CUBE_MAP,
     GL_UNPACK_ALIGNMENT,
-    GL_UNPACK_FLIP_Y_CHROMIUM,
-    GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-    GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM,
     GL_BIND_GENERATES_RESOURCE_CHROMIUM,
     GL_VERTEX_ARRAY_BINDING_OES,
     GL_VIEWPORT,
@@ -480,9 +477,6 @@ static const GLenum valid_matrix_mode_table[] = {
 static const GLenum valid_pixel_store_table[] = {
     GL_PACK_ALIGNMENT,
     GL_UNPACK_ALIGNMENT,
-    GL_UNPACK_FLIP_Y_CHROMIUM,
-    GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-    GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM,
 };
 
 static const GLenum valid_pixel_store_table_es3[] = {

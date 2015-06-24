@@ -2233,7 +2233,7 @@ TEST_F(GLES2ImplementationTest, GetIntegerCacheWrite) {
 
 static bool CheckRect(
     int width, int height, GLenum format, GLenum type, int alignment,
-    bool flip_y, const uint8* r1, const uint8* r2) {
+    const uint8* r1, const uint8* r2) {
   uint32 size = 0;
   uint32 unpadded_row_size = 0;
   uint32 padded_row_size = 0;
@@ -2243,10 +2243,7 @@ static bool CheckRect(
     return false;
   }
 
-  int r2_stride = flip_y ?
-      -static_cast<int>(padded_row_size) :
-      static_cast<int>(padded_row_size);
-  r2 = flip_y ? (r2 + (height - 1) * padded_row_size) : r2;
+  int r2_stride = static_cast<int>(padded_row_size);
 
   for (int y = 0; y < height; ++y) {
     if (memcmp(r1, r2, unpadded_row_size) != 0) {
@@ -2258,13 +2255,11 @@ static bool CheckRect(
   return true;
 }
 
-ACTION_P8(CheckRectAction, width, height, format, type, alignment, flip_y,
-          r1, r2) {
+ACTION_P7(CheckRectAction, width, height, format, type, alignment, r1, r2) {
   EXPECT_TRUE(CheckRect(
-      width, height, format, type, alignment, flip_y, r1, r2));
+      width, height, format, type, alignment, r1, r2));
 }
 
-// Test TexImage2D with and without flip_y
 TEST_F(GLES2ImplementationTest, TexImage2D) {
   struct Cmds {
     cmds::TexImage2D tex_image_2d;
@@ -2301,26 +2296,8 @@ TEST_F(GLES2ImplementationTest, TexImage2D) {
       pixels);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(CheckRect(
-      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment,
       pixels, mem1.ptr));
-
-  ClearCommands();
-  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
-
-  ExpectedMemoryInfo mem2 = GetExpectedMemory(sizeof(pixels));
-  Cmds2 expected2;
-  expected2.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
-      mem2.id, mem2.offset);
-  expected2.set_token.Init(GetNextToken());
-  const void* commands2 = GetPut();
-  gl_->TexImage2D(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
-      pixels);
-  EXPECT_EQ(0, memcmp(&expected2, commands2, sizeof(expected2)));
-  EXPECT_TRUE(CheckRect(
-      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, true,
-      pixels, mem2.ptr));
 }
 
 TEST_F(GLES2ImplementationTest, TexImage2DViaMappedMem) {
@@ -2365,7 +2342,7 @@ TEST_F(GLES2ImplementationTest, TexImage2DViaMappedMem) {
       pixels.get());
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(CheckRect(
-      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment,
       pixels.get(), mem1.ptr));
 }
 
@@ -2438,111 +2415,8 @@ TEST_F(GLES2ImplementationTest, TexImage2DViaTexSubImage2D) {
       pixels.get());
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(CheckRect(
-      kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment,
       pixels.get() + kHeight / 2 * padded_row_size, mem2.ptr));
-
-  ClearCommands();
-  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
-  const void* commands2 = GetPut();
-  ExpectedMemoryInfo mem3 = GetExpectedMemory(half_size);
-  ExpectedMemoryInfo mem4 = GetExpectedMemory(half_size);
-  expected.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
-      0, 0);
-  expected.tex_sub_image_2d1.Init(
-      kTarget, kLevel, 0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
-      mem3.id, mem3.offset, true);
-  expected.set_token1.Init(GetNextToken());
-  expected.tex_sub_image_2d2.Init(
-      kTarget, kLevel, 0, 0, kWidth, kHeight / 2, kFormat, kType,
-      mem4.id, mem4.offset, true);
-  expected.set_token2.Init(GetNextToken());
-
-  // TODO(gman): Make it possible to run this test
-  // EXPECT_CALL(*command_buffer(), OnFlush())
-  //     .WillOnce(CheckRectAction(
-  //         kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment,
-  //         true, pixels.get(),
-  //         GetExpectedTransferAddressFromOffsetAs<uint8>(offset3, half_size)))
-  //     .RetiresOnSaturation();
-
-  gl_->TexImage2D(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
-      pixels.get());
-  EXPECT_EQ(0, memcmp(&expected, commands2, sizeof(expected)));
-  EXPECT_TRUE(CheckRect(
-      kWidth, kHeight / 2, kFormat, kType, kPixelStoreUnpackAlignment, true,
-      pixels.get() + kHeight / 2 * padded_row_size, mem4.ptr));
-}
-
-// Test TexSubImage2D with GL_PACK_FLIP_Y set and partial multirow transfers
-TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
-  const GLsizei kTextureWidth = MaxTransferBufferSize() / 4;
-  const GLsizei kTextureHeight = 7;
-  const GLsizei kSubImageWidth = MaxTransferBufferSize() / 8;
-  const GLsizei kSubImageHeight = 4;
-  const GLint kSubImageXOffset = 1;
-  const GLint kSubImageYOffset = 2;
-  const GLenum kFormat = GL_RGBA;
-  const GLenum kType = GL_UNSIGNED_BYTE;
-  const GLenum kTarget = GL_TEXTURE_2D;
-  const GLint kLevel = 0;
-  const GLint kBorder = 0;
-  const GLint kPixelStoreUnpackAlignment = 4;
-
-  struct Cmds {
-    cmds::PixelStorei pixel_store_i1;
-    cmds::TexImage2D tex_image_2d;
-    cmds::PixelStorei pixel_store_i2;
-    cmds::TexSubImage2D tex_sub_image_2d1;
-    cmd::SetToken set_token1;
-    cmds::TexSubImage2D tex_sub_image_2d2;
-    cmd::SetToken set_token2;
-  };
-
-  uint32 sub_2_high_size = 0;
-  ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kSubImageWidth, 2, 1, kFormat, kType, kPixelStoreUnpackAlignment,
-      &sub_2_high_size, NULL, NULL));
-
-  ExpectedMemoryInfo mem1 = GetExpectedMemory(sub_2_high_size);
-  ExpectedMemoryInfo mem2 = GetExpectedMemory(sub_2_high_size);
-
-  Cmds expected;
-  expected.pixel_store_i1.Init(GL_UNPACK_ALIGNMENT, kPixelStoreUnpackAlignment);
-  expected.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kFormat,
-      kType, 0, 0);
-  expected.pixel_store_i2.Init(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
-  expected.tex_sub_image_2d1.Init(kTarget, kLevel, kSubImageXOffset,
-      kSubImageYOffset + 2, kSubImageWidth, 2, kFormat, kType,
-      mem1.id, mem1.offset, false);
-  expected.set_token1.Init(GetNextToken());
-  expected.tex_sub_image_2d2.Init(kTarget, kLevel, kSubImageXOffset,
-      kSubImageYOffset, kSubImageWidth , 2, kFormat, kType,
-      mem2.id, mem2.offset, false);
-  expected.set_token2.Init(GetNextToken());
-
-  gl_->PixelStorei(GL_UNPACK_ALIGNMENT, kPixelStoreUnpackAlignment);
-  gl_->TexImage2D(
-      kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kBorder, kFormat,
-      kType, NULL);
-  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
-  scoped_ptr<uint32[]> pixels(new uint32[kSubImageWidth * kSubImageHeight]);
-  for (int y = 0; y < kSubImageHeight; ++y) {
-    for (int x = 0; x < kSubImageWidth; ++x) {
-      pixels.get()[kSubImageWidth * y + x] = x | (y << 16);
-    }
-  }
-  gl_->TexSubImage2D(
-      GL_TEXTURE_2D, 0, kSubImageXOffset, kSubImageYOffset, kSubImageWidth,
-      kSubImageHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
-
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_TRUE(CheckRect(
-      kSubImageWidth, 2, kFormat, kType, kPixelStoreUnpackAlignment, true,
-      reinterpret_cast<uint8*>(pixels.get() + 2 * kSubImageWidth),
-      mem2.ptr));
 }
 
 TEST_F(GLES2ImplementationTest, SubImageUnpack) {
@@ -2571,13 +2445,11 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
 
   struct {
     cmds::PixelStorei pixel_store_i;
-    cmds::PixelStorei pixel_store_i2;
     cmds::TexImage2D tex_image_2d;
   } texImageExpected;
 
   struct  {
     cmds::PixelStorei pixel_store_i;
-    cmds::PixelStorei pixel_store_i2;
     cmds::TexImage2D tex_image_2d;
     cmds::TexSubImage2D tex_sub_image_2d;
   } texSubImageExpected;
@@ -2592,74 +2464,66 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
   }
 
   for (int sub = 0; sub < 2; ++sub) {
-    for (int flip_y = 0; flip_y < 2; ++flip_y) {
-      for (size_t a = 0; a < arraysize(unpack_alignments); ++a) {
-        GLint alignment = unpack_alignments[a];
-        uint32 size;
-        uint32 unpadded_row_size;
-        uint32 padded_row_size;
-        ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
-            kSrcSubImageWidth, kSrcSubImageHeight, 1, kFormat, kType, alignment,
-            &size, &unpadded_row_size, &padded_row_size));
-        ASSERT_TRUE(size <= MaxTransferBufferSize());
-        ExpectedMemoryInfo mem = GetExpectedMemory(size);
+    for (size_t a = 0; a < arraysize(unpack_alignments); ++a) {
+      GLint alignment = unpack_alignments[a];
+      uint32 size;
+      uint32 unpadded_row_size;
+      uint32 padded_row_size;
+      ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
+          kSrcSubImageWidth, kSrcSubImageHeight, 1, kFormat, kType, alignment,
+          &size, &unpadded_row_size, &padded_row_size));
+      ASSERT_TRUE(size <= MaxTransferBufferSize());
+      ExpectedMemoryInfo mem = GetExpectedMemory(size);
 
-        const void* commands = GetPut();
-        gl_->PixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-        gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
-        gl_->PixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
-        gl_->PixelStorei(GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
-        gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-        if (sub) {
-          gl_->TexImage2D(
-              GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight, kBorder,
-              kFormat, kType, NULL);
-          gl_->TexSubImage2D(
-              GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
-              kSrcSubImageWidth, kSrcSubImageHeight, kFormat, kType,
-              src_pixels.get());
-          texSubImageExpected.pixel_store_i.Init(
-              GL_UNPACK_ALIGNMENT, alignment);
-          texSubImageExpected.pixel_store_i2.Init(
-              GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-          texSubImageExpected.tex_image_2d.Init(
-              GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight,
-              kFormat, kType, 0, 0);
-          texSubImageExpected.tex_sub_image_2d.Init(
-              GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
-              kSrcSubImageWidth, kSrcSubImageHeight, kFormat, kType, mem.id,
-              mem.offset, GL_FALSE);
-          EXPECT_EQ(0, memcmp(
-              &texSubImageExpected, commands, sizeof(texSubImageExpected)));
-        } else {
-          gl_->TexImage2D(
-              GL_TEXTURE_2D, kLevel, kFormat,
-              kSrcSubImageWidth, kSrcSubImageHeight, kBorder, kFormat, kType,
-              src_pixels.get());
-          texImageExpected.pixel_store_i.Init(GL_UNPACK_ALIGNMENT, alignment);
-          texImageExpected.pixel_store_i2.Init(
-              GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
-          texImageExpected.tex_image_2d.Init(
-              GL_TEXTURE_2D, kLevel, kFormat, kSrcSubImageWidth,
-              kSrcSubImageHeight, kFormat, kType, mem.id, mem.offset);
-          EXPECT_EQ(0, memcmp(
-              &texImageExpected, commands, sizeof(texImageExpected)));
-        }
-        uint32 src_padded_row_size;
-        ASSERT_TRUE(GLES2Util::ComputeImagePaddedRowSize(
-            kSrcWidth, kFormat, kType, alignment, &src_padded_row_size));
-        uint32 bytes_per_group = GLES2Util::ComputeImageGroupSize(
-            kFormat, kType);
-        for (int y = 0; y < kSrcSubImageHeight; ++y) {
-          GLint src_sub_y = flip_y ? kSrcSubImageHeight - y - 1 : y;
-          const uint8* src_row = src_pixels.get() +
-              (kSrcSubImageY0 + src_sub_y) * src_padded_row_size +
-              bytes_per_group * kSrcSubImageX0;
-          const uint8* dst_row = mem.ptr + y * padded_row_size;
-          EXPECT_EQ(0, memcmp(src_row, dst_row, unpadded_row_size));
-        }
-        ClearCommands();
+      const void* commands = GetPut();
+      gl_->PixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+      gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
+      gl_->PixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
+      gl_->PixelStorei(GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
+      if (sub) {
+        gl_->TexImage2D(
+            GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight, kBorder,
+            kFormat, kType, NULL);
+        gl_->TexSubImage2D(
+            GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
+            kSrcSubImageWidth, kSrcSubImageHeight, kFormat, kType,
+            src_pixels.get());
+        texSubImageExpected.pixel_store_i.Init(
+            GL_UNPACK_ALIGNMENT, alignment);
+        texSubImageExpected.tex_image_2d.Init(
+            GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight,
+            kFormat, kType, 0, 0);
+        texSubImageExpected.tex_sub_image_2d.Init(
+            GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
+            kSrcSubImageWidth, kSrcSubImageHeight, kFormat, kType, mem.id,
+            mem.offset, GL_FALSE);
+        EXPECT_EQ(0, memcmp(
+            &texSubImageExpected, commands, sizeof(texSubImageExpected)));
+      } else {
+        gl_->TexImage2D(
+            GL_TEXTURE_2D, kLevel, kFormat,
+            kSrcSubImageWidth, kSrcSubImageHeight, kBorder, kFormat, kType,
+            src_pixels.get());
+        texImageExpected.pixel_store_i.Init(GL_UNPACK_ALIGNMENT, alignment);
+        texImageExpected.tex_image_2d.Init(
+            GL_TEXTURE_2D, kLevel, kFormat, kSrcSubImageWidth,
+            kSrcSubImageHeight, kFormat, kType, mem.id, mem.offset);
+        EXPECT_EQ(0, memcmp(
+            &texImageExpected, commands, sizeof(texImageExpected)));
       }
+      uint32 src_padded_row_size;
+      ASSERT_TRUE(GLES2Util::ComputeImagePaddedRowSize(
+          kSrcWidth, kFormat, kType, alignment, &src_padded_row_size));
+      uint32 bytes_per_group = GLES2Util::ComputeImageGroupSize(
+          kFormat, kType);
+      for (int y = 0; y < kSrcSubImageHeight; ++y) {
+        const uint8* src_row = src_pixels.get() +
+            (kSrcSubImageY0 + y) * src_padded_row_size +
+            bytes_per_group * kSrcSubImageX0;
+        const uint8* dst_row = mem.ptr + y * padded_row_size;
+        EXPECT_EQ(0, memcmp(src_row, dst_row, unpadded_row_size));
+      }
+      ClearCommands();
     }
   }
 }
@@ -2700,7 +2564,7 @@ TEST_F(GLES2ImplementationTest, TextureInvalidArguments) {
       pixels);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(CheckRect(
-      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment,
       pixels, mem1.ptr));
 
   ClearCommands();
@@ -2794,7 +2658,7 @@ TEST_F(GLES2ImplementationTest, TexImage3DSingleCommand) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(CheckRect(
       kWidth, kHeight * kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
-      false, reinterpret_cast<uint8*>(pixels.get()), mem.ptr));
+      reinterpret_cast<uint8*>(pixels.get()), mem.ptr));
 }
 
 TEST_F(GLES2ImplementationTest, TexImage3DViaMappedMem) {
@@ -2842,7 +2706,7 @@ TEST_F(GLES2ImplementationTest, TexImage3DViaMappedMem) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(CheckRect(
       kWidth, kHeight * kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
-      false, reinterpret_cast<uint8*>(pixels.get()), mem.ptr));
+      reinterpret_cast<uint8*>(pixels.get()), mem.ptr));
 }
 
 TEST_F(GLES2ImplementationTest, TexImage3DViaTexSubImage3D) {
@@ -2976,7 +2840,7 @@ TEST_F(GLES2ImplementationTest, TexSubImage3D4Writes) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   uint32 offset_to_last = first_size + second_size + third_size;
   EXPECT_TRUE(CheckRect(
-      kWidth, 2, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      kWidth, 2, kFormat, kType, kPixelStoreUnpackAlignment,
       reinterpret_cast<uint8*>(pixels.get()) + offset_to_last, mem2_2.ptr));
 }
 
@@ -3035,11 +2899,9 @@ TEST_F(GLES2ImplementationStrictSharedTest,
 TEST_F(GLES2ImplementationTest, GetString) {
   const uint32 kBucketId = GLES2Implementation::kResultBucketId;
   const Str7 kString = {"foobar"};
-  // GL_CHROMIUM_map_sub GL_CHROMIUM_flipy are hard coded into
-  // GLES2Implementation.
+  // GL_CHROMIUM_map_sub is hard coded into GLES2Implementation.
   const char* expected_str =
       "foobar "
-      "GL_CHROMIUM_flipy "
       "GL_EXT_unpack_subimage "
       "GL_CHROMIUM_map_sub";
   const char kBad = 0x12;

@@ -71,30 +71,6 @@ void WebGraphicsContext3DErrorMessageCallback::OnErrorMessage(
   graphics_context_->OnErrorMessage(msg, id);
 }
 
-void WebGraphicsContext3DImpl::copyTextureCHROMIUM(
-      blink::WGC3Denum target,
-      blink::WebGLId source_id,
-      blink::WebGLId dest_id,
-      blink::WGC3Denum internal_format,
-      blink::WGC3Denum dest_type) {
-  copyTextureCHROMIUM(target, source_id, dest_id, internal_format, dest_type,
-                      false, false, false);
-}
-
-void WebGraphicsContext3DImpl::copySubTextureCHROMIUM(
-      blink::WGC3Denum target,
-      blink::WebGLId source_id,
-      blink::WebGLId dest_id,
-      blink::WGC3Dint xoffset,
-      blink::WGC3Dint yoffset,
-      blink::WGC3Dint x,
-      blink::WGC3Dint y,
-      blink::WGC3Dsizei width,
-      blink::WGC3Dsizei height) {
-  copySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset,
-                         x, y, width, height, false, false, false);
-}
-
 // Helper macros to reduce the amount of code.
 
 #define DELEGATE_TO_GL(name, glname)                                    \

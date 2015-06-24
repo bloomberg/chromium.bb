@@ -696,9 +696,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // unpack alignment as last set by glPixelStorei
   GLint unpack_alignment_;
 
-  // unpack yflip as last set by glPixelstorei
-  bool unpack_flip_y_;
-
   // unpack row length as last set by glPixelStorei
   GLint unpack_row_length_;
 
