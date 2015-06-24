@@ -32,6 +32,7 @@ public:
     bool showInfo;
     bool showRulers;
     bool showExtensionLines;
+    bool showLayoutEditor;
 };
 
 class CORE_EXPORT InspectorHighlight {

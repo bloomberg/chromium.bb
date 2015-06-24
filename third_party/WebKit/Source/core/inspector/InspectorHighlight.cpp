@@ -428,6 +428,7 @@ InspectorHighlightConfig InspectorHighlight::defaultConfig()
     config.showInfo = true;
     config.showRulers = true;
     config.showExtensionLines = true;
+    config.showLayoutEditor = false;
     return config;
 }
 

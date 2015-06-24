@@ -1241,6 +1241,9 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
     bool showExtensionLines = false; // Default: false (do not show extension lines).
     highlightInspectorObject->getBoolean("showExtensionLines", &showExtensionLines);
     highlightConfig->showExtensionLines = showExtensionLines;
+    bool showLayoutEditor = false;
+    highlightInspectorObject->getBoolean("showLayoutEditor", &showLayoutEditor);
+    highlightConfig->showLayoutEditor = showLayoutEditor;
     highlightConfig->content = parseConfigColor("contentColor", highlightInspectorObject);
     highlightConfig->contentOutline = parseConfigColor("contentOutlineColor", highlightInspectorObject);
     highlightConfig->padding = parseConfigColor("paddingColor", highlightInspectorObject);

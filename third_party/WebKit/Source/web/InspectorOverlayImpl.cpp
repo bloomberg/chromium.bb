@@ -38,6 +38,7 @@
 #include "core/frame/Settings.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorOverlayHost.h"
+#include "core/inspector/LayoutEditor.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
@@ -223,6 +224,7 @@ void InspectorOverlayImpl::hideHighlight()
     m_highlightNode.clear();
     m_eventTargetNode.clear();
     m_highlightQuad.clear();
+    m_layoutEditor.clear();
     update();
 }
 
@@ -230,6 +232,8 @@ void InspectorOverlayImpl::highlightNode(Node* node, Node* eventTarget, const In
 {
     m_nodeHighlightConfig = highlightConfig;
     m_highlightNode = node;
+    if (highlightConfig.showLayoutEditor)
+        m_layoutEditor = LayoutEditor::create(node);
     m_eventTargetNode = eventTarget;
     m_omitTooltip = omitTooltip;
     update();
@@ -306,7 +310,14 @@ void InspectorOverlayImpl::drawNodeHighlight()
     InspectorHighlight highlight(m_highlightNode.get(), m_nodeHighlightConfig, appendElementInfo);
     if (m_eventTargetNode)
         highlight.appendEventTargetQuads(m_eventTargetNode.get(), m_nodeHighlightConfig);
-    evaluateInOverlay("drawHighlight", highlight.asJSONObject());
+
+    RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
+    if (m_layoutEditor) {
+        RefPtr<JSONObject> layoutEditorInfo = m_layoutEditor->buildJSONInfo();
+        if (layoutEditorInfo)
+            highlightJSON->setObject("layoutEditorInfo", layoutEditorInfo.release());
+    }
+    evaluateInOverlay("drawHighlight", highlightJSON.release());
 }
 
 void InspectorOverlayImpl::drawQuadHighlight()

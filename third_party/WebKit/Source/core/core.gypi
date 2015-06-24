@@ -1699,6 +1699,8 @@
             'inspector/InstrumentingAgents.h',
             'inspector/JSONParser.cpp',
             'inspector/JSONParser.h',
+            'inspector/LayoutEditor.cpp',
+            'inspector/LayoutEditor.h',
             'inspector/JavaScriptCallFrame.cpp',
             'inspector/JavaScriptCallFrame.h',
             'inspector/NetworkResourcesData.cpp',

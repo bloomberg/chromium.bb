@@ -146,6 +146,12 @@ body.platform-linux {
     color: rgb(153, 69, 0);
 }
 
+.editor-anchor {
+    height: 12px;
+    width: 12px;
+    position: absolute;
+}
+
 </style>
 <script>
 const lightGridColor = "rgba(0,0,0,0.2)";
@@ -340,6 +346,9 @@ function reset(resetData)
     window._controlsVisible = false;
     document.querySelector(".controls-line").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
+    var editor = document.getElementById("editor");
+    editor.style.visibility = "hidden";
+    editor.textContent = "";
     document.body.classList.remove("dimmed");
     window._gridPainted = false;
 }
@@ -564,6 +573,10 @@ function drawHighlight(highlight)
         if (highlight.elementInfo)
            _drawElementTitle(highlight.elementInfo, bounds);
     }
+
+    if (highlight.layoutEditorInfo)
+        showLayoutEditor(highlight.layoutEditorInfo);
+
     context.restore();
 }
 
@@ -617,6 +630,36 @@ function onDocumentKeyDown(event)
         InspectorOverlayHost.stepOver();
 }
 
+function showLayoutEditor(info)
+{
+    var editorElement = document.getElementById("editor");
+    editorElement.style.visibility = "visible";
+    var anchors = info.anchors;
+    for (var i = 0; i < anchors.length; ++i)
+        editorElement.appendChild(createAnchor(anchors[i]));
+}
+
+function createAnchor(anchorInfo)
+{
+    var handleWidth = 5;
+    context.save();
+    context.shadowColor = "black";
+    context.shadowBlur = 2;
+    context.strokeStyle = "rgb(0, 0, 128)";
+    context.fillStyle = "rgb(0, 0, 128)";
+    context.beginPath();
+    context.arc(anchorInfo.x, anchorInfo.y, handleWidth, 0, 2 * Math.PI);
+    context.fill();
+    context.stroke();
+    context.restore();
+
+    var anchorElement = document.createElement("div");
+    anchorElement.className = "editor-anchor";
+    anchorElement.style.left = anchorInfo.x - handleWidth + "px";
+    anchorElement.style.top = anchorInfo.y - handleWidth + "px";
+    return anchorElement;
+}
+
 window.addEventListener("DOMContentLoaded", onLoaded);
 document.addEventListener("keydown", onDocumentKeyDown);
 
@@ -634,5 +677,6 @@ document.addEventListener("keydown", onDocumentKeyDown);
   <span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span>
   <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
 </div>
+<div id="editor" class="fill"></div>
 <div id="log"></div>
 </html>

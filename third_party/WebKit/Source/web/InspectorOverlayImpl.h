@@ -54,6 +54,7 @@ class JSONValue;
 class Node;
 class Page;
 class WebViewImpl;
+class LayoutEditor;
 
 class InspectorOverlayImpl final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayImpl>, public InspectorOverlay, public WebPageOverlay, public InspectorOverlayHost::Listener {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayImpl);
@@ -126,6 +127,7 @@ private:
     int m_suspendCount;
     bool m_updating;
     RawPtrWillBeMember<InspectorOverlay::Listener> m_listener;
+    OwnPtr<LayoutEditor> m_layoutEditor;
 };
 
 } // namespace blink
