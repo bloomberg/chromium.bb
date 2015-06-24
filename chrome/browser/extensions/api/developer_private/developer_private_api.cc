@@ -46,7 +46,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -1253,19 +1252,20 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
     return RespondNow(NoArguments());
   }
 
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(properties.render_process_id,
-                                      properties.render_view_id);
+  // NOTE(devlin): Even though the properties use "render_view_id", this
+  // actually refers to a render frame.
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      properties.render_process_id, properties.render_view_id);
 
   content::WebContents* web_contents =
-      rvh ? content::WebContents::FromRenderViewHost(rvh) : nullptr;
-  // It's possible that the render view was closed since we last updated the
+      rfh ? content::WebContents::FromRenderFrameHost(rfh) : nullptr;
+  // It's possible that the render frame was closed since we last updated the
   // links. Handle this gracefully.
   if (!web_contents)
     return RespondNow(Error(kNoSuchRendererError));
 
   // If we include a url, we should inspect it specifically (and not just the
-  // render view).
+  // render frame).
   if (properties.url) {
     // Line/column numbers are reported in display-friendly 1-based numbers,
     // but are inspected in zero-based numbers.

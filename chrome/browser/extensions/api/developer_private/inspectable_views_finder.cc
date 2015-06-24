@@ -8,7 +8,6 @@
 #include "chrome/common/extensions/api/developer_private.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -33,14 +32,16 @@ InspectableViewsFinder::~InspectableViewsFinder() {
 InspectableViewsFinder::View InspectableViewsFinder::ConstructView(
     const GURL& url,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     bool incognito,
     ViewType type) {
   linked_ptr<api::developer_private::ExtensionView> view(
       new api::developer_private::ExtensionView());
   view->url = url.spec();
   view->render_process_id = render_process_id;
-  view->render_view_id = render_view_id;
+  // NOTE(devlin): This is called "render_view_id" in the api for legacy
+  // reasons, but it's not a high priority to change.
+  view->render_view_id = render_frame_id;
   view->incognito = incognito;
   switch (type) {
     case VIEW_TYPE_APP_WINDOW:
@@ -149,12 +150,8 @@ void InspectableViewsFinder::GetViewsForExtensionProcess(
     }
 
     content::RenderProcessHost* process = host->GetProcess();
-    result->push_back(ConstructView(
-        url,
-        process->GetID(),
-        host->GetRenderViewHost()->GetRoutingID(),
-        is_incognito,
-        host_type));
+    result->push_back(ConstructView(url, process->GetID(), host->GetRoutingID(),
+                                    is_incognito, host_type));
   }
 }
 
@@ -177,9 +174,7 @@ void InspectableViewsFinder::GetAppWindowViewsForExtension(
     if (url.is_empty())
       url = window->initial_url();
 
-    content::RenderViewHost* host = web_contents->GetRenderViewHost();
-    content::RenderProcessHost* process = host->GetProcess();
-
+    content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
     result->push_back(ConstructView(url,
                                     process->GetID(),
                                     web_contents->GetRoutingID(),

@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
@@ -47,7 +46,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
-#include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -283,8 +281,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_DetailedConsoleMessageAdded,
-                        OnDetailedConsoleMessageAdded)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
                         OnContentScriptsExecuting)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -433,28 +429,6 @@ void TabHelper::OnContentScriptsExecuting(
       ScriptExecutionObserver,
       script_execution_observers_,
       OnScriptsExecuted(web_contents(), executing_scripts_map, on_url));
-}
-
-void TabHelper::OnDetailedConsoleMessageAdded(
-    const base::string16& message,
-    const base::string16& source,
-    const StackTrace& stack_trace,
-    int32 severity_level) {
-  if (IsSourceFromAnExtension(source)) {
-    content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-    ErrorConsole::Get(profile_)->ReportError(
-        scoped_ptr<ExtensionError>(new RuntimeError(
-            extension_app_ ? extension_app_->id() : std::string(),
-            profile_->IsOffTheRecord(),
-            source,
-            message,
-            stack_trace,
-            web_contents() ?
-                web_contents()->GetLastCommittedURL() : GURL::EmptyGURL(),
-            static_cast<logging::LogSeverity>(severity_level),
-            rvh->GetRoutingID(),
-            rvh->GetProcess()->GetID())));
-  }
 }
 
 const Extension* TabHelper::GetExtension(const std::string& extension_app_id) {

@@ -22,28 +22,6 @@
 #include "extensions/common/extension_messages.h"
 
 namespace extensions {
-namespace {
-
-const Extension* GetExtensionForRenderFrame(
-    content::RenderFrameHost* render_frame_host) {
-  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
-  GURL url = render_frame_host->GetLastCommittedURL();
-  if (!url.is_empty()) {
-    if (site_instance->GetSiteURL().GetOrigin() != url.GetOrigin())
-      return nullptr;
-  } else {
-    url = site_instance->GetSiteURL();
-  }
-  content::BrowserContext* browser_context = site_instance->GetBrowserContext();
-  if (!url.SchemeIs(kExtensionScheme))
-    return nullptr;
-
-  return ExtensionRegistry::Get(browser_context)
-      ->enabled_extensions()
-      .GetExtensionOrAppByURL(url);
-}
-
-}  // namespace
 
 // static
 ExtensionWebContentsObserver* ExtensionWebContentsObserver::GetForWebContents(
@@ -75,8 +53,7 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
   render_frame_host->Send(new ExtensionMsg_NotifyRenderViewType(
       render_frame_host->GetRoutingID(), GetViewType(web_contents())));
 
-  const Extension* frame_extension =
-      GetExtensionForRenderFrame(render_frame_host);
+  const Extension* frame_extension = GetExtensionFromFrame(render_frame_host);
   if (frame_extension) {
     ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
                                                          frame_extension);
@@ -88,7 +65,7 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
   // This can be different from |frame_extension| above in the case of, e.g.,
   // a non-extension iframe hosted in a chrome-extension:// page.
   const Extension* main_frame_extension =
-      GetExtensionForRenderFrame(web_contents()->GetMainFrame());
+      GetExtensionFromFrame(web_contents()->GetMainFrame());
   // We notify the render frame that it's in an extension's tab, but not if this
   // is a hosted app (we don't mind scripting on hosted apps' pages).
   if (main_frame_extension && !main_frame_extension->is_hosted_app()) {
@@ -181,6 +158,28 @@ void ExtensionWebContentsObserver::PepperInstanceDeleted() {
       process_manager->GetExtensionForWebContents(web_contents());
   if (extension)
     process_manager->DecrementLazyKeepaliveCount(extension);
+}
+
+std::string ExtensionWebContentsObserver::GetExtensionIdFromFrame(
+    content::RenderFrameHost* render_frame_host) const {
+  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  GURL url = render_frame_host->GetLastCommittedURL();
+  if (!url.is_empty()) {
+    if (site_instance->GetSiteURL().GetOrigin() != url.GetOrigin())
+      return std::string();
+  } else {
+    url = site_instance->GetSiteURL();
+  }
+
+  return url.SchemeIs(kExtensionScheme) ? url.host() : std::string();
+}
+
+const Extension* ExtensionWebContentsObserver::GetExtensionFromFrame(
+    content::RenderFrameHost* render_frame_host) const {
+  return ExtensionRegistry::Get(
+             render_frame_host->GetProcess()->GetBrowserContext())
+      ->enabled_extensions()
+      .GetByID(GetExtensionIdFromFrame(render_frame_host));
 }
 
 const Extension* ExtensionWebContentsObserver::GetExtension(

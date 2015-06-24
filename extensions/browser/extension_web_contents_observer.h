@@ -70,10 +70,21 @@ class ExtensionWebContentsObserver
   void PepperInstanceCreated() override;
   void PepperInstanceDeleted() override;
 
+  // Returns the extension id associated with the given |render_frame_host|, or
+  // the empty string if there is none.
+  std::string GetExtensionIdFromFrame(
+      content::RenderFrameHost* render_frame_host) const;
+
+  // Returns the extension associated with the given |render_frame_host|, or
+  // null if there is none.
+  const Extension* GetExtensionFromFrame(
+      content::RenderFrameHost* render_frame_host) const;
+
+  // TODO(devlin): Remove these once callers are updated to use the FromFrame
+  // equivalents.
   // Returns the extension or app associated with a render view host. Returns
   // NULL if the render view host is not for a valid extension.
   const Extension* GetExtension(content::RenderViewHost* render_view_host);
-
   // Returns the extension or app ID associated with a render view host. Returns
   // the empty string if the render view host is not for a valid extension.
   static std::string GetExtensionId(content::RenderViewHost* render_view_host);

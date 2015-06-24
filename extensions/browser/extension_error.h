@@ -10,14 +10,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "extensions/common/stack_frame.h"
 #include "url/gurl.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace extensions {
 
@@ -31,9 +26,6 @@ class ExtensionError {
   };
 
   virtual ~ExtensionError();
-
-  // Serializes the ExtensionError into JSON format.
-  virtual scoped_ptr<base::DictionaryValue> ToValue() const;
 
   virtual std::string GetDebugString() const;
 
@@ -51,14 +43,6 @@ class ExtensionError {
   const base::string16& message() const { return message_; }
   size_t occurrences() const { return occurrences_; }
   void set_occurrences(size_t occurrences) { occurrences_ = occurrences; }
-
-  // Keys used for retrieving JSON values.
-  static const char kExtensionIdKey[];
-  static const char kFromIncognitoKey[];
-  static const char kLevelKey[];
-  static const char kMessageKey[];
-  static const char kSourceKey[];
-  static const char kTypeKey[];
 
  protected:
   ExtensionError(Type type,
@@ -101,16 +85,10 @@ class ManifestError : public ExtensionError {
                 const base::string16& manifest_specific);
   ~ManifestError() override;
 
-  scoped_ptr<base::DictionaryValue> ToValue() const override;
-
   std::string GetDebugString() const override;
 
   const base::string16& manifest_key() const { return manifest_key_; }
   const base::string16& manifest_specific() const { return manifest_specific_; }
-
-  // Keys used for retrieving JSON values.
-  static const char kManifestKeyKey[];
-  static const char kManifestSpecificKey[];
 
  private:
   bool IsEqualImpl(const ExtensionError* rhs) const override;
@@ -138,24 +116,12 @@ class RuntimeError : public ExtensionError {
                int render_process_id);
   ~RuntimeError() override;
 
-  scoped_ptr<base::DictionaryValue> ToValue() const override;
-
   std::string GetDebugString() const override;
 
   const GURL& context_url() const { return context_url_; }
   const StackTrace& stack_trace() const { return stack_trace_; }
-  int render_view_id() const { return render_view_id_; }
+  int render_frame_id() const { return render_frame_id_; }
   int render_process_id() const { return render_process_id_; }
-
-  // Keys used for retrieving JSON values.
-  static const char kColumnNumberKey[];
-  static const char kContextUrlKey[];
-  static const char kFunctionNameKey[];
-  static const char kLineNumberKey[];
-  static const char kStackTraceKey[];
-  static const char kUrlKey[];
-  static const char kRenderProcessIdKey[];
-  static const char kRenderViewIdKey[];
 
  private:
   bool IsEqualImpl(const ExtensionError* rhs) const override;
@@ -169,8 +135,8 @@ class RuntimeError : public ExtensionError {
   StackTrace stack_trace_;
 
   // Keep track of the render process which caused the error in order to
-  // inspect the view later, if possible.
-  int render_view_id_;
+  // inspect the frame later, if possible.
+  int render_frame_id_;
   int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeError);

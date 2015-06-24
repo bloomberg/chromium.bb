@@ -23,7 +23,7 @@
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -132,11 +132,13 @@ linked_ptr<developer::RuntimeError> ConstructRuntimeError(
       NOTREACHED();
   }
   result->occurrences = error.occurrences();
-  result->render_view_id = error.render_view_id();
+  // NOTE(devlin): This is called "render_view_id" in the api for legacy
+  // reasons, but it's not a high priority to change.
+  result->render_view_id = error.render_frame_id();
   result->render_process_id = error.render_process_id();
   result->can_inspect =
-      content::RenderViewHost::FromID(error.render_process_id(),
-                                      error.render_view_id()) != nullptr;
+      content::RenderFrameHost::FromID(error.render_process_id(),
+                                       error.render_frame_id()) != nullptr;
   for (const StackFrame& f : error.stack_trace()) {
     linked_ptr<developer::StackFrame> frame(new developer::StackFrame());
     frame->line_number = f.line_number;

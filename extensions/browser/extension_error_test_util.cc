@@ -36,15 +36,12 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
                             extension_id);
 
   return scoped_ptr<ExtensionError>(
-      new RuntimeError(extension_id,
-                       from_incognito,
-                       source,
-                       base::UTF8ToUTF16(message),
-                       stack_trace,
+      new RuntimeError(extension_id, from_incognito, source,
+                       base::UTF8ToUTF16(message), stack_trace,
                        GURL::EmptyGURL(),  // no context url
                        logging::LOG_INFO,
-                       0,
-                       0 /* Render [View|Process] ID */));
+                       0,    // Render frame id
+                       0));  // Render process id
 }
 
 scoped_ptr<ExtensionError> CreateNewRuntimeError(

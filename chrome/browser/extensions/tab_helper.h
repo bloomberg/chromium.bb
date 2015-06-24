@@ -172,10 +172,6 @@ class TabHelper : public content::WebContentsObserver,
   void OnContentScriptsExecuting(
       const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
       const GURL& on_url);
-  void OnDetailedConsoleMessageAdded(const base::string16& message,
-                                     const base::string16& source,
-                                     const StackTrace& stack_trace,
-                                     int32 severity_level);
 
   // App extensions related methods:
 

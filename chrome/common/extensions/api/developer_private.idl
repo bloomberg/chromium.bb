@@ -23,8 +23,9 @@ namespace developerPrivate {
 
     // For lazy background pages, the value is -1.
     long render_process_id;
-
+    // This actually refers to a render frame.
     long render_view_id;
+
     boolean incognito;
     boolean generatedBackgroundPage;
   };
@@ -150,6 +151,7 @@ namespace developerPrivate {
   dictionary ExtensionView {
     DOMString url;
     long renderProcessId;
+    // This actually refers to a render frame.
     long renderViewId;
     boolean incognito;
     ViewType type;
@@ -395,7 +397,8 @@ namespace developerPrivate {
     // page (where renderViewId and renderProcessId are -1).
     DOMString? extensionId;
 
-    // The ID of the render view in which the error occurred.
+    // The ID of the render frame in which the error occurred.
+    // Despite being called renderViewId, this refers to a render frame.
     long renderViewId;
 
     // The ID of the process in which the error occurred.
