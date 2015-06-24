@@ -278,7 +278,11 @@ StyledMarkupTraverser<Strategy>::StyledMarkupTraverser(StyledMarkupAccumulator* 
     ContainerNode* parent = Strategy::parent(*m_lastClosed);
     if (!parent)
         return;
-    m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(parent, shouldAnnotate());
+    if (shouldAnnotate()) {
+        m_wrappingStyle = EditingStyle::wrappingStyleForAnnotatedSerialization(parent);
+        return;
+    }
+    m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(parent);
 }
 
 template<typename Strategy>

@@ -1091,24 +1091,25 @@ void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPro
     }
 }
 
-PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(ContainerNode* context, bool shouldAnnotate)
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForAnnotatedSerialization(ContainerNode* context)
 {
-    RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = nullptr;
-    if (shouldAnnotate) {
-        wrappingStyle = EditingStyle::create(context, EditingStyle::EditingPropertiesInEffect);
+    RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::create(context, EditingStyle::EditingPropertiesInEffect);
 
-        // Styles that Mail blockquotes contribute should only be placed on the Mail blockquote,
-        // to help us differentiate those styles from ones that the user has applied.
-        // This helps us get the color of content pasted into blockquotes right.
-        wrappingStyle->removeStyleAddedByElement(toHTMLElement(enclosingNodeOfType(firstPositionInOrBeforeNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary)));
+    // Styles that Mail blockquotes contribute should only be placed on the Mail
+    // blockquote, to help us differentiate those styles from ones that the user
+    // has applied. This helps us get the color of content pasted into
+    // blockquotes right.
+    wrappingStyle->removeStyleAddedByElement(toHTMLElement(enclosingNodeOfType(firstPositionInOrBeforeNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary)));
 
-        // Call collapseTextDecorationProperties first or otherwise it'll copy the value over from in-effect to text-decorations.
-        wrappingStyle->collapseTextDecorationProperties();
+    // Call collapseTextDecorationProperties first or otherwise it'll copy the value over from in-effect to text-decorations.
+    wrappingStyle->collapseTextDecorationProperties();
 
-        return wrappingStyle.release();
-    }
+    return wrappingStyle.release();
+}
 
-    wrappingStyle = EditingStyle::create();
+PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization(ContainerNode* context)
+{
+    RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::create();
 
     // When not annotating for interchange, we only preserve inline style declarations.
     for (ContainerNode* node = context; node && !node->isDocumentNode(); node = node->parentNode()) {
@@ -1120,7 +1121,6 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::wrappingStyleForSerialization
 
     return wrappingStyle.release();
 }
-
 
 static void mergeTextDecorationValues(CSSValueList* mergedValue, const CSSValueList* valueToMerge)
 {

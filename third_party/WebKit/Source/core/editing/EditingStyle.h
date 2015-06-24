@@ -126,7 +126,8 @@ public:
     void mergeTypingStyle(Document*);
     enum CSSPropertyOverrideMode { OverrideValues, DoNotOverrideValues };
     void mergeInlineStyleOfElement(HTMLElement*, CSSPropertyOverrideMode, PropertiesToInclude = AllProperties);
-    static PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyleForSerialization(ContainerNode* context, bool shouldAnnotate);
+    static PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyleForAnnotatedSerialization(ContainerNode* context);
+    static PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyleForSerialization(ContainerNode* context);
     void mergeStyleFromRules(Element*);
     void mergeStyleFromRulesForSerialization(Element*);
     void removeStyleFromRulesAndContext(Element*, ContainerNode* context);
