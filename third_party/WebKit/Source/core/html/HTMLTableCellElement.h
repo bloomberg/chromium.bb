@@ -38,16 +38,16 @@ public:
 
     int cellIndex() const;
 
-    int colSpan() const;
-    int rowSpan() const;
+    unsigned colSpan() const;
+    unsigned rowSpan() const;
 
     void setCellIndex(int);
 
     const AtomicString& abbr() const;
     const AtomicString& axis() const;
-    void setColSpan(int);
+    void setColSpan(unsigned);
     const AtomicString& headers() const;
-    void setRowSpan(int);
+    void setRowSpan(unsigned);
     const AtomicString& scope() const;
 
     HTMLTableCellElement* cellAbove() const;

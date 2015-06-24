@@ -21,9 +21,8 @@
 // https://html.spec.whatwg.org/#attributes-common-to-td-and-th-elements
 
 interface HTMLTableCellElement : HTMLElement {
-    // TODO(philipj): All long types should be unsigned long.
-    attribute long colSpan;
-    attribute long rowSpan;
+    attribute unsigned long colSpan;
+    attribute unsigned long rowSpan;
     // TODO(philipj): headers should be a [PutForwards=value] readonly attribute
     // DOMSettableTokenList.
     [Reflect, TreatNullAs=NullString] attribute DOMString headers;

@@ -44,7 +44,7 @@ namespace blink {
 // (FIXME: We should consider increasing this limit (crbug.com/78577).
 // Firefox uses a limit of 1,000 for colspan and resets the value to 1
 // but we don't discriminate between rowspan / colspan as it is artificial.
-static const int maxColRowSpan = 8190;
+static const unsigned maxColRowSpan = 8190;
 
 using namespace HTMLNames;
 
@@ -55,22 +55,22 @@ inline HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tagName, 
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement)
 
-int HTMLTableCellElement::colSpan() const
+unsigned HTMLTableCellElement::colSpan() const
 {
     const AtomicString& colSpanValue = fastGetAttribute(colspanAttr);
-    int value = 0;
-    if (colSpanValue.isEmpty() || !parseHTMLInteger(colSpanValue, value))
+    unsigned value = 0;
+    if (colSpanValue.isEmpty() || !parseHTMLNonNegativeInteger(colSpanValue, value))
         return 1;
-    return max(1, min(value, maxColRowSpan));
+    return max(1u, min(value, maxColRowSpan));
 }
 
-int HTMLTableCellElement::rowSpan() const
+unsigned HTMLTableCellElement::rowSpan() const
 {
     const AtomicString& rowSpanValue = fastGetAttribute(rowspanAttr);
-    int value = 0;
-    if (rowSpanValue.isEmpty() || !parseHTMLInteger(rowSpanValue, value))
+    unsigned value = 0;
+    if (rowSpanValue.isEmpty() || !parseHTMLNonNegativeInteger(rowSpanValue, value))
         return 1;
-    return max(1, min(value, maxColRowSpan));
+    return max(1u, min(value, maxColRowSpan));
 }
 
 int HTMLTableCellElement::cellIndex() const
@@ -158,9 +158,9 @@ const AtomicString& HTMLTableCellElement::axis() const
     return fastGetAttribute(axisAttr);
 }
 
-void HTMLTableCellElement::setColSpan(int n)
+void HTMLTableCellElement::setColSpan(unsigned n)
 {
-    setIntegralAttribute(colspanAttr, n);
+    setUnsignedIntegralAttribute(colspanAttr, n);
 }
 
 const AtomicString& HTMLTableCellElement::headers() const
@@ -168,9 +168,9 @@ const AtomicString& HTMLTableCellElement::headers() const
     return fastGetAttribute(headersAttr);
 }
 
-void HTMLTableCellElement::setRowSpan(int n)
+void HTMLTableCellElement::setRowSpan(unsigned n)
 {
-    setIntegralAttribute(rowspanAttr, n);
+    setUnsignedIntegralAttribute(rowspanAttr, n);
 }
 
 const AtomicString& HTMLTableCellElement::scope() const

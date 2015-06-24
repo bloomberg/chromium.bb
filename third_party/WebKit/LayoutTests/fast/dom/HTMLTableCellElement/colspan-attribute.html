@@ -42,8 +42,7 @@ shouldBe('colspanAttributeEffect(arabicIndicDigitOne)', '1');
 shouldBe('colspanAttributeEffect("2" + arabicIndicDigitOne)', '2');
 
 shouldBe('colspanAttributeEffect("2147483647")', '8190');
-shouldBe('colspanAttributeEffect("2147483648")', '1');
-shouldBe('colspanAttributeEffect("4294967295")', '1');
+shouldBe('colspanAttributeEffect("4294967295")', '8190');
 shouldBe('colspanAttributeEffect("4294967296")', '1');
 </script>
 </body>
