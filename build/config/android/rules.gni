@@ -1686,6 +1686,9 @@ template("android_apk") {
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
     create_density_splits = _create_density_splits
+    if (defined(invoker.language_splits)) {
+      language_splits = invoker.language_splits
+    }
     if (defined(invoker.extensions_to_not_compress)) {
       extensions_to_not_compress = invoker.extensions_to_not_compress
     } else {

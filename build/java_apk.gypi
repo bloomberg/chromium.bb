@@ -31,8 +31,10 @@
 #  additional_bundled_libs - Additional libraries what will be stripped and
 #    bundled in the apk.
 #  asset_location - The directory where assets are located.
-#  create_density_splits - Whether to create density-based apk splits. Splits
+#  create_abi_split - Whether to create abi-based spilts. Splits
 #    are supported only for minSdkVersion >= 21.
+#  create_density_splits - Whether to create density-based apk splits.
+#  language_splits - List of languages to create apk splits for.
 #  generated_src_dirs - Same as additional_src_dirs except used for .java files
 #    that are generated at build time. This should be set automatically by a
 #    target's dependencies. The .java files in these directories are not
@@ -70,6 +72,7 @@
     'tested_apk_dex_path%': '/',
     'additional_input_paths': [],
     'create_density_splits%': 0,
+    'language_splits': [],
     'input_jars_paths': [],
     'library_dexed_jars_paths': [],
     'additional_src_dirs': [],
@@ -590,6 +593,7 @@
             'asset_location': '',
             'android_manifest_path': '<(split_android_manifest_path)',
             'create_density_splits': 0,
+            'language_splits=': [],
           },
           'includes': [ 'android/package_resources_action.gypi' ],
         },
@@ -681,6 +685,14 @@
                 '--split-apk-path=<(final_apk_path_no_extension)-density-xxhdpi.apk',
                 '--split-apk-path=<(final_apk_path_no_extension)-density-xxxhdpi.apk',
                 '--split-apk-path=<(final_apk_path_no_extension)-density-tvdpi.apk',
+              ],
+            }],
+            ['language_splits != []', {
+              'inputs': [
+                "<!@(python <(DEPTH)/build/apply_locales.py '<(final_apk_path_no_extension)-lang-ZZLOCALE.apk' <(language_splits))",
+              ],
+              'action': [
+                "<!@(python <(DEPTH)/build/apply_locales.py -- '--split-apk-path=<(final_apk_path_no_extension)-lang-ZZLOCALE.apk' <(language_splits))",
               ],
             }],
           ],

@@ -611,9 +611,12 @@ template("create_apk") {
     _configuration_name = "Debug"
   }
 
-  _create_density_splits =
-      defined(invoker.create_density_splits) && invoker.create_density_splits
-  if (_create_density_splits) {
+  _keystore_path = invoker.keystore_path
+  _keystore_name = invoker.keystore_name
+  _keystore_password = invoker.keystore_password
+
+  _split_densities = []
+  if (defined(invoker.create_density_splits) && invoker.create_density_splits) {
     _split_densities = [
       "hdpi",
       "xhdpi",
@@ -621,6 +624,11 @@ template("create_apk") {
       "xxxhdpi",
       "tvdpi",
     ]
+  }
+
+  _split_languages = []
+  if (defined(invoker.language_splits)) {
+    _split_languages = invoker.language_splits
   }
 
   _package_resources_target_name = "${target_name}__package_resources"
@@ -673,10 +681,16 @@ template("create_apk") {
     if (_shared_resources) {
       args += [ "--shared-resources" ]
     }
-    if (_create_density_splits) {
+    if (_split_densities != []) {
       args += [ "--create-density-splits" ]
       foreach(_density, _split_densities) {
-        outputs += [ "${_resource_packaged_apk_path}-${_density}" ]
+        outputs += [ "${_resource_packaged_apk_path}_${_density}" ]
+      }
+    }
+    if (_split_languages != []) {
+      args += [ "--language-splits=$_split_languages" ]
+      foreach(_language, _split_languages) {
+        outputs += [ "${_resource_packaged_apk_path}_${_language}" ]
       }
     }
     if (defined(invoker.extensions_to_not_compress)) {
@@ -751,9 +765,9 @@ template("create_apk") {
   finalize_apk(_finalize_apk_rule_name) {
     input_apk_path = _packaged_apk_path
     output_apk_path = _final_apk_path
-    keystore_path = invoker.keystore_path
-    keystore_name = invoker.keystore_name
-    keystore_password = invoker.keystore_password
+    keystore_path = _keystore_path
+    keystore_name = _keystore_name
+    keystore_password = _keystore_password
     rezip_apk = _load_library_from_apk
 
     public_deps = [
@@ -764,21 +778,36 @@ template("create_apk") {
 
   _final_deps = [ ":${_finalize_apk_rule_name}" ]
 
-  if (_create_density_splits) {
-    foreach(_density, _split_densities) {
-      _finalize_split_rule_name = "${target_name}__finalize_${_density}_split"
-      finalize_apk(_finalize_split_rule_name) {
-        input_apk_path = "${_resource_packaged_apk_path}-${_density}"
-        _output_paths = process_file_template(
-                [ _final_apk_path ],
-                "{{source_dir}}/{{source_name_part}}-${_density}.apk")
-        output_apk_path = _output_paths[0]
-        keystore_path = invoker.keystore_path
-        keystore_name = invoker.keystore_name
-        keystore_password = invoker.keystore_password
-      }
-      _final_deps += [ ":${_finalize_split_rule_name}" ]
+  template("finalize_split") {
+    finalize_apk(target_name) {
+      _config = invoker.split_config
+      _type = invoker.split_type
+      input_apk_path = "${_resource_packaged_apk_path}_${_config}"
+      _output_paths = process_file_template(
+              [ _final_apk_path ],
+              "{{source_dir}}/{{source_name_part}}-${_type}-${_config}.apk")
+      output_apk_path = _output_paths[0]
+      keystore_path = _keystore_path
+      keystore_name = _keystore_name
+      keystore_password = _keystore_password
     }
+  }
+
+  foreach(_split, _split_densities) {
+    _split_rule = "${target_name}__finalize_${_split}_split"
+    finalize_split(_split_rule) {
+      split_type = "density"
+      split_config = _split
+    }
+    _final_deps += [ ":$_split_rule" ]
+  }
+  foreach(_split, _split_languages) {
+    _split_rule = "${target_name}__finalize_${_split}_split"
+    finalize_split(_split_rule) {
+      split_type = "lang"
+      split_config = _split
+    }
+    _final_deps += [ ":$_split_rule" ]
   }
 
   group(target_name) {

@@ -52,15 +52,46 @@ def CreateLocalePaksXml(names):
   return VALUES_FILE_TEMPLATE % items
 
 
+def ComputeMappings(sources):
+  """Computes the mappings of sources -> resources.
+
+  Returns a tuple of:
+    - mappings: List of (src, dest) paths
+    - lang_to_locale_map: Map of language -> list of resource names
+      e.g. "en" -> ["en_gb.lpak"]
+  """
+  lang_to_locale_map = collections.defaultdict(list)
+  mappings = []
+  for src_path in sources:
+    basename = os.path.basename(src_path)
+    name = os.path.splitext(basename)[0]
+    res_name = ToResourceFileName(basename)
+    if name == 'en-US':
+      dest_dir = 'raw'
+    else:
+      # Chrome's uses different region mapping logic from Android, so include
+      # all regions for each language.
+      android_locale = _CHROME_TO_ANDROID_LOCALE_MAP.get(name, name)
+      lang = android_locale[0:2]
+      dest_dir = 'raw-' + lang
+      lang_to_locale_map[lang].append(res_name)
+    mappings.append((src_path, os.path.join(dest_dir, res_name)))
+  return mappings, lang_to_locale_map
+
+
 def main():
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
   parser.add_option('--locale-paks', help='List of files for res/raw-LOCALE')
   parser.add_option('--resources-zip', help='Path to output resources.zip')
+  parser.add_option('--print-languages',
+      action='store_true',
+      help='Print out the list of languages that cover the given locale paks '
+           '(using Android\'s language codes)')
 
   options, _ = parser.parse_args()
   build_utils.CheckOptions(options, parser,
-                           required=['locale_paks', 'resources_zip'])
+                           required=['locale_paks'])
 
   sources = build_utils.ParseGypList(options.locale_paks)
 
@@ -68,36 +99,27 @@ def main():
     deps = sources + build_utils.GetPythonDependencies()
     build_utils.WriteDepfile(options.depfile, deps)
 
-  with zipfile.ZipFile(options.resources_zip, 'w', zipfile.ZIP_STORED) as out:
-    # e.g. "en" -> ["en_gb.lpak"]
-    lang_to_locale_map = collections.defaultdict(list)
-    for src_path in sources:
-      basename = os.path.basename(src_path)
-      name = os.path.splitext(basename)[0]
-      res_name = ToResourceFileName(basename)
-      if name == 'en-US':
-        dest_dir = 'raw'
-      else:
-        # Chrome uses different region mapping logic from Android, so include
-        # all regions for each language.
-        android_locale = _CHROME_TO_ANDROID_LOCALE_MAP.get(name, name)
-        lang = android_locale[0:2]
-        dest_dir = 'raw-' + lang
-        lang_to_locale_map[lang].append(res_name)
-      out.write(src_path, os.path.join(dest_dir, res_name))
+  mappings, lang_to_locale_map = ComputeMappings(sources)
+  if options.print_languages:
+    print '\n'.join(sorted(lang_to_locale_map))
 
-    # Create a String Arrays resource so ResourceExtractor can enumerate files.
-    def WriteValuesFile(lang, names):
-      dest_dir = 'values'
-      if lang:
-        dest_dir += '-' + lang
-      # Always extract en-US.lpak since it's the fallback.
-      xml = CreateLocalePaksXml(names + ['en_us.lpak'])
-      out.writestr(os.path.join(dest_dir, 'locale-paks.xml'), xml)
+  if options.resources_zip:
+    with zipfile.ZipFile(options.resources_zip, 'w', zipfile.ZIP_STORED) as out:
+      for mapping in mappings:
+        out.write(mapping[0], mapping[1])
 
-    for lang, names in lang_to_locale_map.iteritems():
-      WriteValuesFile(lang, names)
-    WriteValuesFile(None, [])
+      # Create TypedArray resources so ResourceExtractor can enumerate files.
+      def WriteValuesFile(lang, names):
+        dest_dir = 'values'
+        if lang:
+          dest_dir += '-' + lang
+        # Always extract en-US.lpak since it's the fallback.
+        xml = CreateLocalePaksXml(names + ['en_us.lpak'])
+        out.writestr(os.path.join(dest_dir, 'locale-paks.xml'), xml)
+
+      for lang, names in lang_to_locale_map.iteritems():
+        WriteValuesFile(lang, names)
+      WriteValuesFile(None, [])
 
 
 if __name__ == '__main__':
