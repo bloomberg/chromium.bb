@@ -13,6 +13,7 @@
 namespace blink {
 
 class Document;
+class ExceptionState;
 class Navigator;
 class ServiceWorkerContainer;
 
@@ -25,13 +26,13 @@ public:
 
     virtual ~NavigatorServiceWorker();
 
-    static ServiceWorkerContainer* serviceWorker(Navigator&);
+    static ServiceWorkerContainer* serviceWorker(Navigator&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit NavigatorServiceWorker(Navigator&);
-    ServiceWorkerContainer* serviceWorker();
+    ServiceWorkerContainer* serviceWorker(ExceptionState&);
 
     static const char* supplementName();
 

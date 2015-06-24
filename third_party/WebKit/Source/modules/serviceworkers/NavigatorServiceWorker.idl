@@ -6,5 +6,5 @@
 [
     RuntimeEnabled=ServiceWorker,
 ] partial interface Navigator {
-    readonly attribute ServiceWorkerContainer serviceWorker;
+    [RaisesException] readonly attribute ServiceWorkerContainer serviceWorker;
 };

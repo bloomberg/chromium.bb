@@ -36,8 +36,10 @@ NavigatorServiceWorker& NavigatorServiceWorker::from(Navigator& navigator)
     if (!supplement) {
         supplement = new NavigatorServiceWorker(navigator);
         provideTo(navigator, supplementName(), supplement);
-        // Initialize ServiceWorkerContainer too.
-        supplement->serviceWorker();
+        if (navigator.frame() && navigator.frame()->securityContext()->securityOrigin()->canAccessServiceWorkers()) {
+            // Initialize ServiceWorkerContainer too.
+            supplement->serviceWorker(ASSERT_NO_EXCEPTION);
+        }
     }
     return *supplement;
 }
@@ -52,13 +54,20 @@ const char* NavigatorServiceWorker::supplementName()
     return "NavigatorServiceWorker";
 }
 
-ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(Navigator& navigator)
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(Navigator& navigator, ExceptionState& exceptionState)
 {
-    return NavigatorServiceWorker::from(navigator).serviceWorker();
+    return NavigatorServiceWorker::from(navigator).serviceWorker(exceptionState);
 }
 
-ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker()
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(ExceptionState& exceptionState)
 {
+    if (frame() && !frame()->securityContext()->securityOrigin()->canAccessServiceWorkers()) {
+        if (frame()->securityContext()->isSandboxed(SandboxOrigin))
+            exceptionState.throwSecurityError("Service worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag.");
+        else
+            exceptionState.throwSecurityError("Access to service workers is denied in this document origin.");
+        return nullptr;
+    }
     if (!m_serviceWorker && frame()) {
         ASSERT(frame()->domWindow());
         m_serviceWorker = ServiceWorkerContainer::create(frame()->domWindow()->executionContext());
