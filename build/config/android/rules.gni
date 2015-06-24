@@ -1621,7 +1621,7 @@ template("android_apk") {
 
   if (_native_libs != []) {
     action("${_template_name}__prepare_native") {
-      script = "//build/android/gyp/pack_arm_relocations.py"
+      script = "//build/android/gyp/pack_relocations.py"
       packed_libraries_dir = "$_native_libs_dir/$android_app_abi"
       depfile = "$target_gen_dir/$target_name.d"
       outputs = [

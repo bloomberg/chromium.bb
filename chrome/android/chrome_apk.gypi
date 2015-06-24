@@ -33,10 +33,10 @@
           ['"<(native_lib_placeholders_file)" != ""', {
             'native_lib_placeholders': ['<!@(cat <(native_lib_placeholders_file))'],
           }],
-          # Only attempt relocation packing for 32-bit and 64-bit arm builds
-          # that enable the chromium linker. Packing is a no-op if this
-          # is not a Release build.
-          ['chrome_apk_use_chromium_linker == 1 and (target_arch == "arm" or target_arch == "arm64")', {
+          # Pack relocations where the chromium linker is enabled. Packing is
+          # a no-op if this is not a Release build.
+          # TODO: Enable packed relocations for x64. See: b/20532404
+          ['chrome_apk_use_chromium_linker == 1 and target_arch != "x64"', {
             'use_relocation_packer': '<(chrome_apk_use_relocation_packer)',
           }],
         ],

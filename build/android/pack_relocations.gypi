@@ -7,7 +7,7 @@
 #
 # To use this, create a gyp target with the following form:
 #  {
-#    'action_name': 'pack_arm_relocations',
+#    'action_name': 'pack_relocations',
 #    'actions': [
 #      'variables': {
 #        'enable_packing': 'pack relocations if 1, plain file copy if 0'
@@ -17,7 +17,7 @@
 #        'stamp': 'file to touch when the action is complete'
 #        'stripped_libraries_dir': 'directory holding stripped libraries',
 #        'packed_libraries_dir': 'directory holding packed libraries',
-#      'includes': [ '../../build/android/pack_arm_relocations.gypi' ],
+#      'includes': [ '../../build/android/pack_relocations.gypi' ],
 #    ],
 #  },
 #
@@ -28,7 +28,7 @@
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
-    '<(DEPTH)/build/android/gyp/pack_arm_relocations.py',
+    '<(DEPTH)/build/android/gyp/pack_relocations.py',
     '<(ordered_libraries_file)',
     '>@(input_paths)',
   ],
@@ -45,7 +45,7 @@
         '<(PRODUCT_DIR)/android_relocation_packer',
       ],
       'action': [
-        'python', '<(DEPTH)/build/android/gyp/pack_arm_relocations.py',
+        'python', '<(DEPTH)/build/android/gyp/pack_relocations.py',
         '--configuration-name=<(CONFIGURATION_NAME)',
         '--enable-packing=1',
         '--exclude-packing-list=<@(exclude_packing_list)',
@@ -58,7 +58,7 @@
     }, {
       'message': 'Copying libraries (no relocation packing) for <(_target_name)',
       'action': [
-        'python', '<(DEPTH)/build/android/gyp/pack_arm_relocations.py',
+        'python', '<(DEPTH)/build/android/gyp/pack_relocations.py',
         '--configuration-name=<(CONFIGURATION_NAME)',
         '--enable-packing=0',
         '--stripped-libraries-dir=<(stripped_libraries_dir)',

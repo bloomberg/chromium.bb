@@ -116,7 +116,7 @@
     'instr_stamp': '<(intermediate_dir)/instr.stamp',
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
     'obfuscate_stamp': '<(intermediate_dir)/obfuscate.stamp',
-    'pack_arm_relocations_stamp': '<(intermediate_dir)/pack_arm_relocations.stamp',
+    'pack_relocations_stamp': '<(intermediate_dir)/pack_relocations.stamp',
     'strip_stamp': '<(intermediate_dir)/strip.stamp',
     'stripped_libraries_dir': '<(intermediate_dir)/stripped_libraries',
     'strip_additional_stamp': '<(intermediate_dir)/strip_additional.stamp',
@@ -395,7 +395,7 @@
           'includes': ['../build/android/insert_chromium_version.gypi'],
         },
         {
-          'action_name': 'pack_arm_relocations',
+          'action_name': 'pack_relocations',
           'variables': {
             'conditions': [
               ['use_chromium_linker == 1 and use_relocation_packer == 1 and profiling != 1', {
@@ -413,9 +413,9 @@
             'input_paths': [
               '<(version_stamp)'
             ],
-            'stamp': '<(pack_arm_relocations_stamp)',
+            'stamp': '<(pack_relocations_stamp)',
           },
-          'includes': ['../build/android/pack_arm_relocations.gypi'],
+          'includes': ['../build/android/pack_relocations.gypi'],
         },
         {
           'variables': {
@@ -517,7 +517,7 @@
                     'inputs': [
                       '<(ordered_libraries_file)',
                       '<(strip_additional_stamp)',
-                      '<(pack_arm_relocations_stamp)',
+                      '<(pack_relocations_stamp)',
                     ],
                     'output_apk_path': '<(unsigned_standalone_apk_path)',
                     'libraries_top_dir%': '<(libraries_top_dir)',
@@ -534,7 +534,7 @@
             'libraries_source_dir': '<(apk_package_native_libs_dir)/<(android_app_abi)',
             'package_input_paths': [
               '<(strip_additional_stamp)',
-              '<(pack_arm_relocations_stamp)',
+              '<(pack_relocations_stamp)',
             ],
           },
         }],
