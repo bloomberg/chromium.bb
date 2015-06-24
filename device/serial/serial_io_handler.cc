@@ -191,6 +191,21 @@ void SerialIoHandler::WriteCompleted(int bytes_written,
   Release();
 }
 
+void SerialIoHandler::ReadWriteSystemError() {
+  DCHECK(CalledOnValidThread());
+
+  DCHECK(IsWritePending());
+  scoped_ptr<ReadOnlyBuffer> pending_write_buffer =
+      pending_write_buffer_.Pass();
+  pending_write_buffer->DoneWithError(0, serial::SEND_ERROR_SYSTEM_ERROR);
+
+  DCHECK(IsReadPending());
+  scoped_ptr<WritableBuffer> pending_read_buffer = pending_read_buffer_.Pass();
+  pending_read_buffer->DoneWithError(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+
+  Release();
+}
+
 bool SerialIoHandler::IsReadPending() const {
   DCHECK(CalledOnValidThread());
   return pending_read_buffer_ != NULL;

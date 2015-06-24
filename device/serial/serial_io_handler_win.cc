@@ -322,7 +322,18 @@ void SerialIoHandlerWin::OnIOCompleted(
     if (write_canceled()) {
       WriteCompleted(0, write_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      WriteCompleted(0, serial::SEND_ERROR_SYSTEM_ERROR);
+      // For devices using drivers such as FTDI, CP2xxx, when device is
+      // disconnected, the context is comm_context_ and the error is
+      // ERROR_OPERATION_ABORTED.
+      // However, for devices using CDC-ACM driver, when device is disconnected,
+      // the context is write_context_ and the error is ERROR_GEN_FAILURE. In
+      // this situation, in addition to a write error signal, also need to
+      // generate a read error signal serial::OnReceiveError which will notify
+      // the app about the disconnection.
+      if (error == ERROR_GEN_FAILURE)
+        ReadWriteSystemError();
+      else
+        WriteCompleted(0, serial::SEND_ERROR_SYSTEM_ERROR);
     } else {
       WriteCompleted(bytes_transferred,
                      error == ERROR_SUCCESS ? serial::SEND_ERROR_NONE

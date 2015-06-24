@@ -139,6 +139,12 @@ class SerialIoHandler : public base::NonThreadSafe,
   // if the associated I/O operation was the only thing keeping it alive.
   void WriteCompleted(int bytes_written, serial::SendError error);
 
+  // Called by the implementation to signal that the device is disconnected in a
+  // write_context_, and also send a serial::OnReceiveError
+  // WARNING: Calling this method may destroy the SerialIoHandler instance
+  // if the associated I/O operation was the only thing keeping it alive.
+  void ReadWriteSystemError();
+
   // Queues a ReadCompleted call on the current thread. This is used to allow
   // ReadImpl to immediately signal completion with 0 bytes and an error,
   // without being reentrant.
