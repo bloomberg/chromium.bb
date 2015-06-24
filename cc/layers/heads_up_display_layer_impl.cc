@@ -226,6 +226,7 @@ void HeadsUpDisplayLayerImpl::ReleaseResources() {
 }
 
 gfx::Rect HeadsUpDisplayLayerImpl::GetEnclosingRectInTargetSpace() const {
+  DCHECK_GT(internal_contents_scale_, 0.f);
   return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
 }
 
