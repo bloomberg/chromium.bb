@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cstring>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -48,10 +49,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/cryptohome/key.pb.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/login/auth/key.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -261,13 +268,45 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
   return http_response.Pass();
 }
 
+// A FakeCryptohomeClient that stores the salted and hashed secret passed to
+// MountEx().
+class SecretInterceptingFakeCryptohomeClient : public FakeCryptohomeClient {
+ public:
+  SecretInterceptingFakeCryptohomeClient();
+
+  void MountEx(const cryptohome::AccountIdentifier& id,
+               const cryptohome::AuthorizationRequest& auth,
+               const cryptohome::MountRequest& request,
+               const ProtobufMethodCallback& callback) override;
+
+  const std::string& salted_hashed_secret() { return salted_hashed_secret_; }
+
+ private:
+  std::string salted_hashed_secret_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecretInterceptingFakeCryptohomeClient);
+};
+
+SecretInterceptingFakeCryptohomeClient::
+    SecretInterceptingFakeCryptohomeClient() {
+}
+
+void SecretInterceptingFakeCryptohomeClient::MountEx(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::AuthorizationRequest& auth,
+    const cryptohome::MountRequest& request,
+    const ProtobufMethodCallback& callback) {
+  salted_hashed_secret_ = auth.key().secret();
+  FakeCryptohomeClient::MountEx(id, auth, request, callback);
+}
+
 }  // namespace
 
 // Boolean parameter is used to run this test for webview (true) and for
 // iframe (false) GAIA sign in.
 class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
  public:
-  SamlTest() {
+  SamlTest() : cryptohome_client_(new SecretInterceptingFakeCryptohomeClient) {
     set_use_webview(GetParam());
     set_initialize_fake_merge_session(false);
   }
@@ -287,6 +326,13 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
     fake_gaia_->RegisterSamlUser(kDifferentDomainSAMLUserEmail, saml_idp_url);
 
     OobeBaseTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+        scoped_ptr<CryptohomeClient>(cryptohome_client_));
+
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
@@ -357,6 +403,8 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
 
   HTTPSForwarder saml_https_forwarder_;
 
+  SecretInterceptingFakeCryptohomeClient* cryptohome_client_;
+
  private:
   FakeSamlIdp fake_saml_idp_;
 
@@ -416,11 +464,21 @@ IN_PROC_BROWSER_TEST_P(SamlTest, CredentialPassingAPI) {
 
   // Fill-in the SAML IdP form and submit.
   SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
+  SetSignFormField("Dummy", "not_the_password");
+  SetSignFormField("Password", "actual_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   // Login should finish login and a session should start.
   session_start_waiter.Wait();
+
+  // Regression test for http://crbug.com/490737: Verify that the user's actual
+  // password was used, not the contents of the first type=password input field
+  // found on the page.
+  Key key("actual_password");
+  key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                SystemSaltGetter::ConvertRawSaltToHexString(
+                    FakeCryptohomeClient::GetStubSystemSalt()));
+  EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 }
 
 // Tests the single password scraped flow.

@@ -269,8 +269,8 @@ Authenticator.prototype = {
     var msg = {
       'method': 'completeLogin',
       'email': (opt_extraMsg && opt_extraMsg.email) || this.email_,
-      'password': (opt_extraMsg && opt_extraMsg.password) ||
-                  this.passwordBytes_,
+      'password': this.passwordBytes_ ||
+                  (opt_extraMsg && opt_extraMsg.password),
       'usingSAML': this.isSAMLFlow_,
       'chooseWhatToSync': this.chooseWhatToSync_ || false,
       'skipForNow': (opt_extraMsg && opt_extraMsg.skipForNow) ||
