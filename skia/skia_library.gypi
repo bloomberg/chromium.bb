@@ -46,11 +46,11 @@
     '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
     '../third_party/skia/src/ports/SkFontHost_FreeType_common.cpp',
     '../third_party/skia/src/ports/SkFontHost_FreeType_common.h',
-    '../third_party/skia/src/ports/SkFontConfigParser_android.cpp',
     '../third_party/skia/src/ports/SkFontHost_mac.cpp',
     '../third_party/skia/src/ports/SkFontHost_win.cpp',
     "../third_party/skia/src/ports/SkFontMgr_android.cpp",
     "../third_party/skia/src/ports/SkFontMgr_android_factory.cpp",
+    '../third_party/skia/src/ports/SkFontMgr_android_parser.cpp',
     '../third_party/skia/src/ports/SkFontMgr_win_dw.cpp',
     '../third_party/skia/src/ports/SkGlobalInitialization_chromium.cpp',
     '../third_party/skia/src/ports/SkOSFile_posix.cpp',
@@ -258,6 +258,7 @@
     },{ # not 'OS == "android"'
       'sources!': [
         "../third_party/skia/src/ports/SkFontMgr_android_factory.cpp",
+        '../third_party/skia/src/ports/SkFontMgr_android_parser.cpp',
       ],
     }],
     [ 'OS == "ios"', {

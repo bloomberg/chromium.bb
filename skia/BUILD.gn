@@ -456,9 +456,9 @@ component("skia") {
   }
   if (!is_android) {
     sources -= [
-      "//third_party/skia/src/ports/SkFontConfigParser_android.cpp",
       "//third_party/skia/src/ports/SkFontMgr_android.cpp",
       "//third_party/skia/src/ports/SkFontMgr_android_factory.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_android_parser.cpp",
     ]
   }
   if (!is_mac) {
