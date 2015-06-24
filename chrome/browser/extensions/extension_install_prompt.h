@@ -67,7 +67,6 @@ class ExtensionInstallPrompt
     REMOTE_INSTALL_PROMPT,
     REPAIR_PROMPT,
     DELEGATED_PERMISSIONS_PROMPT,
-    DELEGATED_BUNDLE_PERMISSIONS_PROMPT,
     NUM_PROMPT_TYPES
   };
 
@@ -152,8 +151,7 @@ class ExtensionInstallPrompt
     size_t GetRetainedDeviceCount() const;
     base::string16 GetRetainedDeviceMessageString(size_t index) const;
 
-    // Populated for BUNDLE_INSTALL_PROMPT and
-    // DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
+    // Populated for BUNDLE_INSTALL_PROMPT.
     const extensions::BundleInstaller* bundle() const { return bundle_; }
     void set_bundle(const extensions::BundleInstaller* bundle) {
       bundle_ = bundle;
@@ -305,19 +303,9 @@ class ExtensionInstallPrompt
   // This is called by the bundle installer to verify whether the bundle
   // should be installed.
   //
-  // We *MUST* eventually call either Proceed() or Abort() on |bundle|.
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmBundleInstall(
       extensions::BundleInstaller* bundle,
-      const SkBitmap* icon,
-      const extensions::PermissionSet* permissions);
-
-  // This is called by the bundle installer to verify the permissions for a
-  // delegated bundle install.
-  //
-  // We *MUST* eventually call either Proceed() or Abort() on |bundle|.
-  virtual void ConfirmPermissionsForDelegatedBundleInstall(
-      extensions::BundleInstaller* bundle,
-      const std::string& delegated_username,
       const SkBitmap* icon,
       const extensions::PermissionSet* permissions);
 
@@ -439,15 +427,14 @@ class ExtensionInstallPrompt
   SkBitmap icon_;
 
   // The extension we are showing the UI for, if type is not
-  // BUNDLE_INSTALL_PROMPT or DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
+  // BUNDLE_INSTALL_PROMPT.
   const extensions::Extension* extension_;
 
-  // The bundle we are showing the UI for, if type BUNDLE_INSTALL_PROMPT or
-  // DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
+  // The bundle we are showing the UI for, if type BUNDLE_INSTALL_PROMPT.
   const extensions::BundleInstaller* bundle_;
 
   // The name of the user we are asking about, if type
-  // DELEGATED_PERMISSIONS_PROMPT or DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
+  // DELEGATED_PERMISSIONS_PROMPT.
   std::string delegated_username_;
 
   // A custom set of permissions to show in the install prompt instead of the
