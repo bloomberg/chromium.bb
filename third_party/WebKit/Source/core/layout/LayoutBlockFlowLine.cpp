@@ -435,7 +435,10 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     // Negative word-spacing and/or letter-spacing may cause some glyphs to overflow the left boundary and result
     // negative measured width. Reset measured width to 0 and adjust glyph bounds accordingly to cover the overflow.
     if (measuredWidth < 0) {
-        glyphBounds.move(measuredWidth, 0);
+        if (measuredWidth < glyphBounds.x()) {
+            glyphBounds.expand(glyphBounds.x() - measuredWidth, 0);
+            glyphBounds.setX(measuredWidth);
+        }
         measuredWidth = 0;
     }
 
