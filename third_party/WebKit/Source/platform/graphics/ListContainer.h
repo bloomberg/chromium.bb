@@ -149,6 +149,8 @@ protected:
     size_t size() const;
     bool empty() const;
 
+    size_t maxSizeForDerivedClass() const;
+
     // Unlike the ListContainer method, this one does not invoke element destructors.
     void clear();
 
@@ -260,6 +262,20 @@ public:
     {
         at->~BaseElementType();
         return new (*at) DerivedElementType();
+    }
+
+    // Appends a new item without copying. The original item will not be
+    // destructed and will be replaced with a new DerivedElementType. The
+    // DerivedElementType does not have to match the moved type as a full block
+    // of memory will be moved (up to maxSizeForDerivedClass()).
+    template <typename DerivedElementType>
+    void appendByMoving(DerivedElementType* item)
+    {
+        size_t maxSize = maxSizeForDerivedClass();
+        void* newItem = allocate(maxSize);
+        memcpy(newItem, static_cast<void*>(item), maxSize);
+        // Construct a new element in-place so it can be destructed safely.
+        new (item) DerivedElementType;
     }
 
     using ListContainerBase::size;
