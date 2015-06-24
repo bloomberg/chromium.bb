@@ -29,19 +29,48 @@ static base::subtle::Atomic32 frame_data_count = 0;
 static int kMaximumFrameDataCount = 150;
 static size_t kFrameAreaLimit = 256000;
 
+class TraceableDevToolsScreenshot
+    : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  TraceableDevToolsScreenshot(const SkBitmap& bitmap) : frame_(bitmap) {}
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    out->append("\"");
+    if (!frame_.drawsNothing()) {
+      std::vector<unsigned char> data;
+      SkAutoLockPixels lock_image(frame_);
+      bool encoded = gfx::PNGCodec::Encode(
+          reinterpret_cast<unsigned char*>(frame_.getAddr32(0, 0)),
+          gfx::PNGCodec::FORMAT_SkBitmap,
+          gfx::Size(frame_.width(), frame_.height()),
+          frame_.width() * frame_.bytesPerPixel(), false,
+          std::vector<gfx::PNGCodec::Comment>(), &data);
+      if (encoded) {
+        std::string encoded_data;
+        base::Base64Encode(
+            base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
+            &encoded_data);
+        out->append(encoded_data);
+      }
+    }
+    out->append("\"");
+  }
+
+ private:
+  ~TraceableDevToolsScreenshot() override {
+    base::subtle::NoBarrier_AtomicIncrement(&frame_data_count, -1);
+  }
+
+  SkBitmap frame_;
+};
+
 }  // namespace
 
 class DevToolsFrameTraceRecorderData
-    : public base::trace_event::ConvertableToTraceFormat {
+    : public base::RefCounted<DevToolsFrameTraceRecorderData> {
  public:
   DevToolsFrameTraceRecorderData(const cc::CompositorFrameMetadata& metadata)
-      : metadata_(metadata),
-        weak_factory_(this) {
-  }
-
-  base::WeakPtr<DevToolsFrameTraceRecorderData> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
+      : metadata_(metadata), timestamp_(base::TraceTicks::Now()) {}
 
   void FrameCaptured(const SkBitmap& bitmap, ReadbackResponse response) {
     if (response != READBACK_SUCCESS)
@@ -49,9 +78,14 @@ class DevToolsFrameTraceRecorderData
     int current_frame_count = base::subtle::NoBarrier_Load(&frame_data_count);
     if (current_frame_count >= kMaximumFrameDataCount)
       return;
-    frame_ = bitmap;
-    if (!frame_.drawsNothing())
-      base::subtle::NoBarrier_AtomicIncrement(&frame_data_count, 1);
+    if (bitmap.drawsNothing())
+      return;
+    base::subtle::NoBarrier_AtomicIncrement(&frame_data_count, 1);
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID_AND_TIMESTAMP(
+        TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), "Screenshot", 1,
+        timestamp_.ToInternalValue(),
+        scoped_refptr<base::trace_event::ConvertableToTraceFormat>(
+            new TraceableDevToolsScreenshot(bitmap)));
   }
 
   void CaptureFrame(RenderFrameHostImpl* host) {
@@ -68,44 +102,18 @@ class DevToolsFrameTraceRecorderData
       scale = sqrt(kFrameAreaLimit / area);
     gfx::Size snapshot_size(gfx::ToRoundedSize(gfx::ScaleSize(
         metadata_.scrollable_viewport_size, scale)));
-    view->CopyFromCompositingSurface(gfx::Rect(), snapshot_size,
-        base::Bind(
-            &DevToolsFrameTraceRecorderData::FrameCaptured,
-            GetWeakPtr()),
+    view->CopyFromCompositingSurface(
+        gfx::Rect(), snapshot_size,
+        base::Bind(&DevToolsFrameTraceRecorderData::FrameCaptured, this),
         kN32_SkColorType);
   }
 
-  void AppendAsTraceFormat(std::string* out) const override {
-    out->append("\"");
-    if (!frame_.drawsNothing()) {
-      std::vector<unsigned char> data;
-      SkAutoLockPixels lock_image(frame_);
-      bool encoded = gfx::PNGCodec::Encode(
-          reinterpret_cast<unsigned char*>(frame_.getAddr32(0, 0)),
-          gfx::PNGCodec::FORMAT_SkBitmap,
-          gfx::Size(frame_.width(), frame_.height()),
-          frame_.width() * frame_.bytesPerPixel(),
-          false, std::vector<gfx::PNGCodec::Comment>(), &data);
-      if (encoded) {
-        std::string encoded_data;
-        base::Base64Encode(
-            base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
-            &encoded_data);
-        out->append(encoded_data);
-      }
-    }
-    out->append("\"");
-  }
-
  private:
-  ~DevToolsFrameTraceRecorderData() override {
-    if (!frame_.drawsNothing())
-      base::subtle::NoBarrier_AtomicIncrement(&frame_data_count, -1);
-  }
+  friend class base::RefCounted<DevToolsFrameTraceRecorderData>;
+  ~DevToolsFrameTraceRecorderData() {}
 
   cc::CompositorFrameMetadata metadata_;
-  SkBitmap frame_;
-  base::WeakPtrFactory<DevToolsFrameTraceRecorderData> weak_factory_;
+  base::TraceTicks timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorderData);
 };
@@ -118,26 +126,18 @@ void DevToolsFrameTraceRecorder::OnSwapCompositorFrame(
     RenderFrameHostImpl* host,
     const cc::CompositorFrameMetadata& frame_metadata) {
   if (!host)
-      return;
+    return;
 
   bool enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), &enabled);
-  if (!enabled)
+  if (!enabled) {
+    pending_frame_data_ = nullptr;
     return;
-
-  if (last_event_data_.get())
-    last_event_data_->CaptureFrame(host);
-
-  scoped_refptr<DevToolsFrameTraceRecorderData> data(
-      new DevToolsFrameTraceRecorderData(frame_metadata));
-  last_event_data_ = data->GetWeakPtr();
-  TRACE_EVENT_INSTANT1(
-      TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"),
-      "CaptureFrame",
-      TRACE_EVENT_SCOPE_THREAD,
-      "data",
-      scoped_refptr<base::trace_event::ConvertableToTraceFormat>(data));
+  }
+  if (pending_frame_data_.get())
+    pending_frame_data_->CaptureFrame(host);
+  pending_frame_data_ = new DevToolsFrameTraceRecorderData(frame_metadata);
 }
 
 }  // namespace content

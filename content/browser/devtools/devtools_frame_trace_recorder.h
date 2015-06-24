@@ -27,7 +27,7 @@ class DevToolsFrameTraceRecorder {
       const cc::CompositorFrameMetadata& frame_metadata);
 
  private:
-  base::WeakPtr<DevToolsFrameTraceRecorderData> last_event_data_;
+  scoped_refptr<DevToolsFrameTraceRecorderData> pending_frame_data_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorder);
 };
 
