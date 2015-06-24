@@ -146,6 +146,12 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // which point we'll receive a new ResourceHandler.
   bool is_transferring_;
 
+  // Instrumentation add to investigate http://crbug.com/503306.
+  // TODO(mmenke): Remove once bug is fixed.
+  int times_cancelled_before_request_start_;
+  bool started_request_;
+  int times_cancelled_after_request_start_;
+
   base::RepeatingTimer<ResourceLoader> progress_timer_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;

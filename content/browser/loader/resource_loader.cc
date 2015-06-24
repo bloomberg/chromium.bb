@@ -87,6 +87,9 @@ ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
       last_upload_position_(0),
       waiting_for_upload_progress_ack_(false),
       is_transferring_(false),
+      times_cancelled_before_request_start_(0),
+      started_request_(false),
+      times_cancelled_after_request_start_(0),
       weak_ptr_factory_(this) {
   request_->set_delegate(this);
   handler_->SetController(this);
@@ -491,6 +494,7 @@ void ResourceLoader::StartRequestInternal() {
     return;
   }
 
+  started_request_ = true;
   request_->Start();
 
   delegate_->DidStartRequest(this);
@@ -532,6 +536,12 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
     login_delegate_ = NULL;
   }
   ssl_client_auth_handler_.reset();
+
+  if (!started_request_) {
+    times_cancelled_before_request_start_++;
+  } else {
+    times_cancelled_after_request_start_++;
+  }
 
   request_->CancelWithError(error);
 
