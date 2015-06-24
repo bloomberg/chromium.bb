@@ -138,7 +138,8 @@ void WindowsEventRouter::OnActiveWindowChanged(
   focused_profile_ = window_profile;
   focused_window_id_ = window_id;
 
-  scoped_ptr<Event> event(new Event(windows::OnFocusChanged::kEventName,
+  scoped_ptr<Event> event(new Event(events::UNKNOWN,
+                                    windows::OnFocusChanged::kEventName,
                                     make_scoped_ptr(new base::ListValue())));
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowFocusedEvent,
@@ -150,7 +151,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
 void WindowsEventRouter::DispatchEvent(const std::string& event_name,
                                       Profile* profile,
                                       scoped_ptr<base::ListValue> args) {
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   event->restrict_to_browser_context = profile;
   EventRouter::Get(profile)->BroadcastEvent(event.Pass());
 }

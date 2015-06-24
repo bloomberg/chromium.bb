@@ -162,8 +162,8 @@ bool EasyUnlockAppManagerImpl::SendUserUpdatedEvent(const std::string& user_id,
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(info.ToValue().release());
 
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(event_name, args.Pass()));
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::UNKNOWN, event_name, args.Pass()));
 
   event_router->DispatchEventToExtension(app_id_, event.Pass());
   return true;

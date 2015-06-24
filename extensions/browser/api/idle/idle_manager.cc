@@ -49,8 +49,8 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           ui::IdleState new_state) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
-  scoped_ptr<Event> event(
-      new Event(idle::OnStateChanged::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, idle::OnStateChanged::kEventName, args.Pass()));
   event->restrict_to_browser_context = context_;
   EventRouter::Get(context_)
       ->DispatchEventToExtension(extension_id, event.Pass());

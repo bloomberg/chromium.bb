@@ -126,7 +126,8 @@ void DispatchEventToExtensions(
       }
 
       scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
-      scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
+      scoped_ptr<Event> event(
+          new Event(events::UNKNOWN, event_name, args_copy.Pass()));
       event->restrict_to_browser_context = restrict_to_profile;
       router->DispatchEventToExtension(extension->id(), event.Pass());
     }

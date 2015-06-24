@@ -184,7 +184,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
     if (!event_router_)
       return;
 
-    scoped_ptr<Event> event(new Event(name, args.Pass()));
+    scoped_ptr<Event> event(new Event(events::UNKNOWN, name, args.Pass()));
     event->user_gesture = user_gesture;
     event_router_->DispatchEventToExtension(extension_id_, event.Pass());
   }

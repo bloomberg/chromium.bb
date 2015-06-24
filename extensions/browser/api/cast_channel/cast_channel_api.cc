@@ -512,7 +512,8 @@ void CastChannelOpenFunction::CastMessageHandler::OnError(
 
   scoped_ptr<base::ListValue> results =
       OnError::Create(channel_info, error_info);
-  scoped_ptr<Event> event(new Event(OnError::kEventName, results.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, OnError::kEventName, results.Pass()));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(ui_dispatch_cb_, socket_->owner_extension_id(),
@@ -532,7 +533,8 @@ void CastChannelOpenFunction::CastMessageHandler::OnMessage(
 
   scoped_ptr<base::ListValue> results =
       OnMessage::Create(channel_info, message_info);
-  scoped_ptr<Event> event(new Event(OnMessage::kEventName, results.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, OnMessage::kEventName, results.Pass()));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(ui_dispatch_cb_, socket_->owner_extension_id(),

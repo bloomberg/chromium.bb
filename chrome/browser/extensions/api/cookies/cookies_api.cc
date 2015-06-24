@@ -193,7 +193,8 @@ void CookiesEventRouter::DispatchEvent(content::BrowserContext* context,
   EventRouter* router = context ? extensions::EventRouter::Get(context) : NULL;
   if (!router)
     return;
-  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, event_name, event_args.Pass()));
   event->restrict_to_browser_context = context;
   event->event_url = cookie_domain;
   router->BroadcastEvent(event.Pass());

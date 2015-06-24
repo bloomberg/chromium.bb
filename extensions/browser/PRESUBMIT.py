@@ -10,7 +10,7 @@ for more details on the presubmit API built into depot_tools.
 
 import sys
 
-def _CreateHistogramValueChecker(input_api, output_api):
+def _CreateHistogramValueChecker(input_api, output_api, path):
   original_sys_path = sys.path
 
   try:
@@ -23,13 +23,24 @@ def _CreateHistogramValueChecker(input_api, output_api):
 
   return StrictEnumValueChecker(input_api, output_api,
       start_marker='enum HistogramValue {', end_marker='  // Last entry:',
-      path='extensions/browser/extension_function_histogram_value.h')
+      path=path)
+
+
+def _RunHistogramValueCheckers(input_api, output_api):
+  results = []
+  histogram_paths = ('extensions/browser/extension_event_histogram_value.h',
+                     'extensions/browser/extension_function_histogram_value.h')
+  for path in histogram_paths:
+    results += _CreateHistogramValueChecker(input_api, output_api, path).Run()
+  return results
+
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []
-  results += _CreateHistogramValueChecker(input_api, output_api).Run()
+  # results += _RunHistogramValueCheckers(input_api, output_api)
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
   return results
 
+
 def CheckChangeOnCommit(input_api, output_api):
-  return _CreateHistogramValueChecker(input_api, output_api).Run()
+  return []  # _RunHistogramValueCheckers(input_api, output_api)

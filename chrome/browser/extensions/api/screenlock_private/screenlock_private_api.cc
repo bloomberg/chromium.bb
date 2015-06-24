@@ -134,7 +134,7 @@ void ScreenlockPrivateEventRouter::DispatchEvent(
   if (arg)
     args->Append(arg);
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      event_name, args.Pass()));
+      extensions::events::UNKNOWN, event_name, args.Pass()));
   extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
@@ -164,7 +164,8 @@ bool ScreenlockPrivateEventRouter::OnAuthAttempted(
   args->AppendString(value);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      screenlock::OnAuthAttempted::kEventName, args.Pass()));
+      extensions::events::UNKNOWN, screenlock::OnAuthAttempted::kEventName,
+      args.Pass()));
   router->BroadcastEvent(event.Pass());
   return true;
 }

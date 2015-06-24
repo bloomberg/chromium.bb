@@ -64,6 +64,7 @@ void NotifyProcessOutput(Profile* profile,
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
   if (profile && event_router) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
+        extensions::events::UNKNOWN,
         terminal_private::OnProcessOutput::kEventName, args.Pass()));
         event_router->DispatchEventToExtension(extension_id, event.Pass());
   }

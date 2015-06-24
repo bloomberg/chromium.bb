@@ -178,8 +178,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
           DownloadsNotificationSource* dns =
               content::Source<DownloadsNotificationSource>(source).ptr();
           Event* new_event = new Event(
-              dns->profile,
-              dns->event_name,
+              dns->profile, dns->event_name,
               *content::Details<std::string>(details).ptr(), base::Time::Now());
           events_.push_back(new_event);
           if (waiting_ &&

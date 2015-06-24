@@ -97,8 +97,9 @@ bool IsRecoveryToolRunning(Profile* profile) {
 void BroadcastEvent(Profile* profile,
                     const std::string& event_name,
                     scoped_ptr<base::ListValue> event_args) {
-  extensions::EventRouter::Get(profile)->BroadcastEvent(
-      make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
+  extensions::EventRouter::Get(profile)
+      ->BroadcastEvent(make_scoped_ptr(new extensions::Event(
+          extensions::events::UNKNOWN, event_name, event_args.Pass())));
 }
 
 // Sends an event named |event_name| with arguments |event_args| to an extension
@@ -109,7 +110,8 @@ void DispatchEventToExtension(Profile* profile,
                               scoped_ptr<base::ListValue> event_args) {
   extensions::EventRouter::Get(profile)->DispatchEventToExtension(
       extension_id,
-      make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
+      make_scoped_ptr(new extensions::Event(extensions::events::UNKNOWN,
+                                            event_name, event_args.Pass())));
 }
 
 file_manager_private::MountCompletedStatus

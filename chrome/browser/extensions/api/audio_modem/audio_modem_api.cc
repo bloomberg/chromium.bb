@@ -244,10 +244,11 @@ void AudioModemAPI::TokensReceived(const std::vector<AudioToken>& tokens) {
     if (app_id.empty())
       continue;
 
-    EventRouter::Get(browser_context_)->DispatchEventToExtension(
-      app_id,
-      make_scoped_ptr(new Event(OnReceived::kEventName,
-                                OnReceived::Create(tokens))));
+    EventRouter::Get(browser_context_)
+        ->DispatchEventToExtension(
+            app_id,
+            make_scoped_ptr(new Event(events::UNKNOWN, OnReceived::kEventName,
+                                      OnReceived::Create(tokens))));
   }
 }
 

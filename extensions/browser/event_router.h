@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/event_listener_map.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/event_filtering_info.h"
 #include "ipc/ipc_sender.h"
@@ -335,6 +336,11 @@ struct Event {
                               const Extension*,
                               base::ListValue*)> WillDispatchCallback;
 
+  // The identifier for the event, for histograms. In most cases this
+  // correlates 1:1 with |event_name|, in some cases events will generate
+  // their own names, but they cannot generate their own identifier.
+  events::HistogramValue histogram_value;
+
   // The event to dispatch.
   std::string event_name;
 
@@ -366,14 +372,17 @@ struct Event {
   // this event to be dispatched to non-extension processes, like WebUI.
   WillDispatchCallback will_dispatch_callback;
 
-  Event(const std::string& event_name,
+  Event(events::HistogramValue histogram_value,
+        const std::string& event_name,
         scoped_ptr<base::ListValue> event_args);
 
-  Event(const std::string& event_name,
+  Event(events::HistogramValue histogram_value,
+        const std::string& event_name,
         scoped_ptr<base::ListValue> event_args,
         content::BrowserContext* restrict_to_browser_context);
 
-  Event(const std::string& event_name,
+  Event(events::HistogramValue histogram_value,
+        const std::string& event_name,
         scoped_ptr<base::ListValue> event_args,
         content::BrowserContext* restrict_to_browser_context,
         const GURL& event_url,

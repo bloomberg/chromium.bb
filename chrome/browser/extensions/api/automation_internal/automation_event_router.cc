@@ -73,7 +73,7 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName);
   scoped_ptr<base::ListValue> args(
       api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   event->restrict_to_browser_context = browser_context;
   EventRouter::Get(browser_context)->BroadcastEvent(event.Pass());
 }

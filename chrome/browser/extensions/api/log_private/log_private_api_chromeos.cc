@@ -249,8 +249,9 @@ void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
     // Create the event's arguments value.
     scoped_ptr<base::ListValue> event_args(new base::ListValue());
     event_args->Append(value->DeepCopy());
-    scoped_ptr<Event> event(
-        new Event(events::kOnCapturedEvents, event_args.Pass()));
+    scoped_ptr<Event> event(new Event(::extensions::events::UNKNOWN,
+                                      ::events::kOnCapturedEvents,
+                                      event_args.Pass()));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(*ix, event.Pass());
   }

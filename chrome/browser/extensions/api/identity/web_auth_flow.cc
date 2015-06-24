@@ -89,7 +89,8 @@ void WebAuthFlow::Start() {
     args->AppendString("silent");
 
   scoped_ptr<Event> event(
-      new Event(identity_private::OnWebFlowRequest::kEventName, args.Pass()));
+      new Event(events::UNKNOWN, identity_private::OnWebFlowRequest::kEventName,
+                args.Pass()));
   event->restrict_to_browser_context = profile_;
   ExtensionSystem* system = ExtensionSystem::Get(profile_);
 

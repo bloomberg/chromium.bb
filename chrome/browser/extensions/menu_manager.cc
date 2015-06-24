@@ -698,8 +698,8 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   {
     // Dispatch to menu item's .onclick handler.
     scoped_ptr<Event> event(
-        new Event(webview_guest ? kOnWebviewContextMenus
-                                : kOnContextMenus,
+        new Event(events::UNKNOWN,
+                  webview_guest ? kOnWebviewContextMenus : kOnContextMenus,
                   scoped_ptr<base::ListValue>(args->DeepCopy())));
     event->restrict_to_browser_context = context;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
@@ -707,10 +707,10 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   }
   {
     // Dispatch to .contextMenus.onClicked handler.
-    scoped_ptr<Event> event(
-        new Event(webview_guest ? chrome_web_view::OnClicked::kEventName
-                                : context_menus::OnClicked::kEventName,
-                  args.Pass()));
+    scoped_ptr<Event> event(new Event(
+        events::UNKNOWN, webview_guest ? chrome_web_view::OnClicked::kEventName
+                                       : context_menus::OnClicked::kEventName,
+        args.Pass()));
     event->restrict_to_browser_context = context;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     if (webview_guest)

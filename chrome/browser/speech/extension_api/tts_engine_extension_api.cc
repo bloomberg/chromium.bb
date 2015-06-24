@@ -193,7 +193,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   base::JSONWriter::Write(*args, &json);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      tts_engine_events::kOnSpeak, args.Pass()));
+      extensions::events::UNKNOWN, tts_engine_events::kOnSpeak, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter::Get(profile)
@@ -203,7 +203,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
 void TtsExtensionEngine::Stop(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      tts_engine_events::kOnStop, args.Pass()));
+      extensions::events::UNKNOWN, tts_engine_events::kOnStop, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter::Get(profile)
@@ -213,7 +213,7 @@ void TtsExtensionEngine::Stop(Utterance* utterance) {
 void TtsExtensionEngine::Pause(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      tts_engine_events::kOnPause, args.Pass()));
+      extensions::events::UNKNOWN, tts_engine_events::kOnPause, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter* event_router = EventRouter::Get(profile);
@@ -225,7 +225,7 @@ void TtsExtensionEngine::Pause(Utterance* utterance) {
 void TtsExtensionEngine::Resume(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      tts_engine_events::kOnResume, args.Pass()));
+      extensions::events::UNKNOWN, tts_engine_events::kOnResume, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter* event_router = EventRouter::Get(profile);

@@ -866,8 +866,8 @@ void BluetoothLowEnergyEventRouter::GattServiceRemoved(
 
   scoped_ptr<base::ListValue> args =
       apibtle::OnServiceRemoved::Create(api_service);
-  scoped_ptr<Event> event(
-      new Event(apibtle::OnServiceRemoved::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, apibtle::OnServiceRemoved::kEventName, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
@@ -887,8 +887,8 @@ void BluetoothLowEnergyEventRouter::GattDiscoveryCompleteForService(
 
   scoped_ptr<base::ListValue> args =
       apibtle::OnServiceAdded::Create(api_service);
-  scoped_ptr<Event> event(
-      new Event(apibtle::OnServiceAdded::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, apibtle::OnServiceAdded::kEventName, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
@@ -1160,7 +1160,8 @@ void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
 
     // Send the event.
     scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
-    scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
+    scoped_ptr<Event> event(
+        new Event(events::UNKNOWN, event_name, args_copy.Pass()));
     EventRouter::Get(browser_context_)->DispatchEventToExtension(
         extension_id, event.Pass());
   }

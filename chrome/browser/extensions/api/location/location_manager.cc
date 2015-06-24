@@ -33,7 +33,7 @@ namespace updatepolicy {
 // Base class for all update policies for sending a location.
 class UpdatePolicy : public base::RefCounted<UpdatePolicy> {
  public:
-  explicit UpdatePolicy() {}
+  UpdatePolicy() {}
 
   // True if the caller should send an update based off of this policy.
   virtual bool ShouldSendUpdate(const content::Geoposition&) const = 0;
@@ -332,7 +332,7 @@ void LocationManager::SendLocationUpdate(
     event_name = location::OnLocationError::kEventName;
   }
 
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
 
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());

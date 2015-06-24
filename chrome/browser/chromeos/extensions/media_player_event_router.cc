@@ -16,7 +16,7 @@ static void BroadcastEvent(content::BrowserContext* context,
   if (context && EventRouter::Get(context)) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     scoped_ptr<extensions::Event> event(new extensions::Event(
-        event_name, args.Pass()));
+        extensions::events::UNKNOWN, event_name, args.Pass()));
     EventRouter::Get(context)->BroadcastEvent(event.Pass());
   }
 }

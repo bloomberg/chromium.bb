@@ -201,7 +201,8 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
                                    bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  scoped_ptr<Event> event(new Event(tabs::OnCreated::kEventName, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, tabs::OnCreated::kEventName, args.Pass()));
   event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
@@ -430,7 +431,7 @@ void TabsEventRouter::DispatchEvent(
   if (!profile_->IsSameProfile(profile) || !event_router)
     return;
 
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   event->restrict_to_browser_context = profile;
   event->user_gesture = user_gesture;
   event_router->BroadcastEvent(event.Pass());
@@ -471,8 +472,8 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
   // WillDispatchTabUpdatedEvent.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
 
-  scoped_ptr<Event> event(
-      new Event(tabs::OnUpdated::kEventName, args_base.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, tabs::OnUpdated::kEventName, args_base.Pass()));
   event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =

@@ -183,10 +183,10 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   Profile* profile = Profile::FromBrowserContext(browser_context());
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(extensions::api::wallpaper_private::
-                                OnWallpaperChangedBy3rdParty::kEventName,
-                            event_args.Pass()));
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::UNKNOWN, extensions::api::wallpaper_private::
+                                       OnWallpaperChangedBy3rdParty::kEventName,
+      event_args.Pass()));
   event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
                                          event.Pass());
 }

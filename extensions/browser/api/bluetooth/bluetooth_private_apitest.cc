@@ -101,8 +101,8 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
 
     scoped_ptr<base::ListValue> args =
         bt_private::OnPairing::Create(pairing_event);
-    scoped_ptr<Event> event(
-        new Event(bt_private::OnPairing::kEventName, args.Pass()));
+    scoped_ptr<Event> event(new Event(
+        events::UNKNOWN, bt_private::OnPairing::kEventName, args.Pass()));
     EventRouter::Get(browser()->profile())->DispatchEventToExtension(
         kTestExtensionId, event.Pass());
   }

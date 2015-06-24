@@ -134,8 +134,9 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     accept_info.client_socket_id = client_socket_id;
     scoped_ptr<base::ListValue> args =
         sockets_tcp_server::OnAccept::Create(accept_info);
-    scoped_ptr<Event> event(
-        new Event(sockets_tcp_server::OnAccept::kEventName, args.Pass()));
+    scoped_ptr<Event> event(new Event(events::UNKNOWN,
+                                      sockets_tcp_server::OnAccept::kEventName,
+                                      args.Pass()));
     PostEvent(params, event.Pass());
 
     // Post a task to delay the "accept" until the socket is available, as
@@ -153,7 +154,8 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     scoped_ptr<base::ListValue> args =
         sockets_tcp_server::OnAcceptError::Create(accept_error_info);
     scoped_ptr<Event> event(
-        new Event(sockets_tcp_server::OnAcceptError::kEventName, args.Pass()));
+        new Event(events::UNKNOWN,
+                  sockets_tcp_server::OnAcceptError::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 
     // Since we got an error, the socket is now "paused" until the application

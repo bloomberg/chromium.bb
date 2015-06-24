@@ -105,8 +105,8 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
   }
 
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  scoped_ptr<Event> event(
-      new Event(runtime::OnStartup::kEventName, event_args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, runtime::OnStartup::kEventName, event_args.Pass()));
   EventRouter::Get(browser_context)
       ->DispatchEventToExtension(extension_id, event.Pass());
 }
@@ -307,8 +307,8 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   }
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
-  scoped_ptr<Event> event(
-      new Event(runtime::OnInstalled::kEventName, event_args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, runtime::OnInstalled::kEventName, event_args.Pass()));
   event_router->DispatchEventWithLazyListener(extension_id, event.Pass());
 
   if (old_version.IsValid()) {
@@ -327,8 +327,9 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
         sm_info->SetString(kInstallReason, kInstallReasonSharedModuleUpdate);
         sm_info->SetString(kInstallPreviousVersion, old_version.GetString());
         sm_info->SetString(kInstallId, extension_id);
-        scoped_ptr<Event> sm_event(
-            new Event(runtime::OnInstalled::kEventName, sm_event_args.Pass()));
+        scoped_ptr<Event> sm_event(new Event(events::UNKNOWN,
+                                             runtime::OnInstalled::kEventName,
+                                             sm_event_args.Pass()));
         event_router->DispatchEventWithLazyListener((*i)->id(),
                                                     sm_event.Pass());
       }
@@ -349,8 +350,8 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
   args->Append(manifest->DeepCopy());
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
-  scoped_ptr<Event> event(
-      new Event(runtime::OnUpdateAvailable::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, runtime::OnUpdateAvailable::kEventName, args.Pass()));
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -365,7 +366,8 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);
   scoped_ptr<Event> event(
-      new Event(runtime::OnBrowserUpdateAvailable::kEventName, args.Pass()));
+      new Event(events::UNKNOWN, runtime::OnBrowserUpdateAvailable::kEventName,
+                args.Pass()));
   event_router->BroadcastEvent(event.Pass());
 }
 
@@ -379,7 +381,7 @@ void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
     return;
 
   scoped_ptr<Event> event(
-      new Event(runtime::OnRestartRequired::kEventName,
+      new Event(events::UNKNOWN, runtime::OnRestartRequired::kEventName,
                 core_api::runtime::OnRestartRequired::Create(reason)));
   EventRouter* event_router = EventRouter::Get(context);
   DCHECK(event_router);

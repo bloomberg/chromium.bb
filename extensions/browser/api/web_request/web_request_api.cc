@@ -359,9 +359,8 @@ void SendOnMessageEventOnUI(
   }
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      event_name,
-      event_args.Pass(), browser_context, GURL(),
-      extensions::EventRouter::USER_GESTURE_UNKNOWN,
+      extensions::events::UNKNOWN, event_name, event_args.Pass(),
+      browser_context, GURL(), extensions::EventRouter::USER_GESTURE_UNKNOWN,
       event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }

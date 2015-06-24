@@ -339,8 +339,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
       }
     }
 
-    scoped_ptr<extensions::Event> event(
-        new extensions::Event(event_name, args.Pass()));
+    scoped_ptr<extensions::Event> event(new extensions::Event(
+        extensions::events::UNKNOWN, event_name, args.Pass()));
     event->restrict_to_browser_context = profile_;
     extensions::EventRouter::Get(profile_)
         ->DispatchEventToExtension(extension_id_, event.Pass());

@@ -197,7 +197,8 @@ scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
   scoped_ptr<base::ListValue> results =
       extensions::core_api::networking_config::OnCaptivePortalDetected::Create(
           network_info);
-  scoped_ptr<Event> event(new Event(extensions::core_api::networking_config::
+  scoped_ptr<Event> event(new Event(events::UNKNOWN,
+                                    extensions::core_api::networking_config::
                                         OnCaptivePortalDetected::kEventName,
                                     results.Pass()));
   return event.Pass();

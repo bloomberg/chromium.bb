@@ -120,7 +120,8 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(command));
 
-  scoped_ptr<Event> event(new Event(kOnCommandEventName, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, kOnCommandEventName, args.Pass()));
   event->restrict_to_browser_context = browser_context_;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(browser_context_)

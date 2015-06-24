@@ -794,32 +794,38 @@ void EventRouter::OnExtensionUnloaded(content::BrowserContext* browser_context,
   listeners_.RemoveListenersForExtension(extension->id());
 }
 
-Event::Event(const std::string& event_name,
+Event::Event(events::HistogramValue histogram_value,
+             const std::string& event_name,
              scoped_ptr<base::ListValue> event_args)
-    : event_name(event_name),
+    : histogram_value(histogram_value),
+      event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_browser_context(NULL),
       user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
   DCHECK(this->event_args.get());
 }
 
-Event::Event(const std::string& event_name,
+Event::Event(events::HistogramValue histogram_value,
+             const std::string& event_name,
              scoped_ptr<base::ListValue> event_args,
              BrowserContext* restrict_to_browser_context)
-    : event_name(event_name),
+    : histogram_value(histogram_value),
+      event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_browser_context(restrict_to_browser_context),
       user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
   DCHECK(this->event_args.get());
 }
 
-Event::Event(const std::string& event_name,
+Event::Event(events::HistogramValue histogram_value,
+             const std::string& event_name,
              scoped_ptr<ListValue> event_args,
              BrowserContext* restrict_to_browser_context,
              const GURL& event_url,
              EventRouter::UserGestureState user_gesture,
              const EventFilteringInfo& filter_info)
-    : event_name(event_name),
+    : histogram_value(histogram_value),
+      event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_browser_context(restrict_to_browser_context),
       event_url(event_url),
@@ -831,11 +837,9 @@ Event::Event(const std::string& event_name,
 Event::~Event() {}
 
 Event* Event::DeepCopy() {
-  Event* copy = new Event(event_name,
+  Event* copy = new Event(histogram_value, event_name,
                           scoped_ptr<base::ListValue>(event_args->DeepCopy()),
-                          restrict_to_browser_context,
-                          event_url,
-                          user_gesture,
+                          restrict_to_browser_context, event_url, user_gesture,
                           filter_info);
   copy->will_dispatch_callback = will_dispatch_callback;
   return copy;

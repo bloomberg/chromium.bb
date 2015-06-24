@@ -174,7 +174,7 @@ void HistoryEventRouter::DispatchEvent(
     scoped_ptr<base::ListValue> event_args) {
   if (profile && extensions::EventRouter::Get(profile)) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
-        event_name, event_args.Pass()));
+        extensions::events::UNKNOWN, event_name, event_args.Pass()));
     event->restrict_to_browser_context = profile;
     extensions::EventRouter::Get(profile)->BroadcastEvent(event.Pass());
   }

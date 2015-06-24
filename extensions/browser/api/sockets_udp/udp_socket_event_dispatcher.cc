@@ -116,8 +116,8 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     receive_info.remote_port = port;
     scoped_ptr<base::ListValue> args =
         sockets_udp::OnReceive::Create(receive_info);
-    scoped_ptr<Event> event(
-        new Event(sockets_udp::OnReceive::kEventName, args.Pass()));
+    scoped_ptr<Event> event(new Event(
+        events::UNKNOWN, sockets_udp::OnReceive::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 
     // Post a task to delay the read until the socket is available, as
@@ -137,8 +137,8 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     receive_error_info.result_code = bytes_read;
     scoped_ptr<base::ListValue> args =
         sockets_udp::OnReceiveError::Create(receive_error_info);
-    scoped_ptr<Event> event(
-        new Event(sockets_udp::OnReceiveError::kEventName, args.Pass()));
+    scoped_ptr<Event> event(new Event(
+        events::UNKNOWN, sockets_udp::OnReceiveError::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 
     // Since we got an error, the socket is now "paused" until the application

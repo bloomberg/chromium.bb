@@ -148,7 +148,7 @@ void CopresenceService::HandleMessages(
 
   // Send the messages to the client app.
   scoped_ptr<Event> event(
-      new Event(OnMessagesReceived::kEventName,
+      new Event(events::UNKNOWN, OnMessagesReceived::kEventName,
                 OnMessagesReceived::Create(subscription_id, api_messages),
                 browser_context_));
   EventRouter::Get(browser_context_)
@@ -161,7 +161,7 @@ void CopresenceService::HandleStatusUpdate(
     copresence::CopresenceStatus status) {
   DCHECK_EQ(copresence::AUDIO_FAIL, status);
   scoped_ptr<Event> event(
-      new Event(OnStatusUpdated::kEventName,
+      new Event(events::UNKNOWN, OnStatusUpdated::kEventName,
                 OnStatusUpdated::Create(api::copresence::STATUS_AUDIOFAILED),
                 browser_context_));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());

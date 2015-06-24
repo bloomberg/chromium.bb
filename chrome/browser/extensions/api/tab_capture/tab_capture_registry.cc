@@ -313,8 +313,8 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   tab_capture::CaptureInfo info;
   request->GetCaptureInfo(&info);
   args->Append(info.ToValue().release());
-  scoped_ptr<Event> event(new Event(tab_capture::OnStatusChanged::kEventName,
-      args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::UNKNOWN, tab_capture::OnStatusChanged::kEventName, args.Pass()));
   event->restrict_to_browser_context = browser_context_;
 
   router->DispatchEventToExtension(request->extension_id(), event.Pass());

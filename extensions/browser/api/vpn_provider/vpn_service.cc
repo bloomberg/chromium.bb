@@ -518,7 +518,8 @@ void VpnService::SendSignalToExtension(const std::string& extension_id,
                                        const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args) {
   scoped_ptr<extensions::Event> event(
-      new extensions::Event(event_name, event_args.Pass(), browser_context_));
+      new extensions::Event(extensions::events::UNKNOWN, event_name,
+                            event_args.Pass(), browser_context_));
 
   event_router_->DispatchEventToExtension(extension_id, event.Pass());
 }

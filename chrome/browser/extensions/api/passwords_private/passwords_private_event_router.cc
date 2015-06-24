@@ -80,9 +80,10 @@ void PasswordsPrivateEventRouter::SendSavedPasswordListToListeners() {
     // If there is nothing to send, return early.
     return;
 
-  scoped_ptr<Event> extension_event(new Event(
-      api::passwords_private::OnSavedPasswordsListChanged::kEventName,
-      cached_saved_password_parameters_->CreateDeepCopy()));
+  scoped_ptr<Event> extension_event(
+      new Event(events::UNKNOWN,
+                api::passwords_private::OnSavedPasswordsListChanged::kEventName,
+                cached_saved_password_parameters_->CreateDeepCopy()));
   event_router_->BroadcastEvent(extension_event.Pass());
 }
 
@@ -100,6 +101,7 @@ void PasswordsPrivateEventRouter::SendPasswordExceptionListToListeners() {
     return;
 
   scoped_ptr<Event> extension_event(new Event(
+      events::UNKNOWN,
       api::passwords_private::OnPasswordExceptionsListChanged::kEventName,
       cached_password_exception_parameters_->CreateDeepCopy()));
   event_router_->BroadcastEvent(extension_event.Pass());
@@ -118,6 +120,7 @@ void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
   event_value->Append(params.ToValue());
 
   scoped_ptr<Event> extension_event(new Event(
+      events::UNKNOWN,
       api::passwords_private::OnPlaintextPasswordRetrieved::kEventName,
       event_value.Pass()));
   event_router_->BroadcastEvent(extension_event.Pass());

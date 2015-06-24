@@ -215,7 +215,7 @@ void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
     return;
   }
 
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 

@@ -61,6 +61,7 @@ void Service::OnQueryStarted(app_list::LauncherSearchProvider* provider,
     event_router->DispatchEventToExtension(
         extension_id,
         make_scoped_ptr(new extensions::Event(
+            extensions::events::UNKNOWN,
             api_launcher_search_provider::OnQueryStarted::kEventName,
             api_launcher_search_provider::OnQueryStarted::Create(
                 query_id_, query, max_result))));
@@ -79,6 +80,7 @@ void Service::OnQueryEnded() {
     event_router->DispatchEventToExtension(
         extension_id,
         make_scoped_ptr(new extensions::Event(
+            extensions::events::UNKNOWN,
             api_launcher_search_provider::OnQueryEnded::kEventName,
             api_launcher_search_provider::OnQueryEnded::Create(query_id_))));
   }
@@ -96,6 +98,7 @@ void Service::OnOpenResult(const ExtensionId& extension_id,
   event_router->DispatchEventToExtension(
       extension_id,
       make_scoped_ptr(new extensions::Event(
+          extensions::events::UNKNOWN,
           api_launcher_search_provider::OnOpenResult::kEventName,
           api_launcher_search_provider::OnOpenResult::Create(item_id))));
 }

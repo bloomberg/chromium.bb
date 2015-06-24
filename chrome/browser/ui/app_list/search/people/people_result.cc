@@ -167,9 +167,9 @@ void PeopleResult::OpenChat() {
   target->id = person_->owner_id;
   request.to.push_back(target);
 
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(OnHangoutRequested::kEventName,
-                            OnHangoutRequested::Create(request)));
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::UNKNOWN, OnHangoutRequested::kEventName,
+      OnHangoutRequested::Create(request)));
 
   // TODO(rkc): Change this once we remove the hangoutsPrivate API.
   // See crbug.com/306672

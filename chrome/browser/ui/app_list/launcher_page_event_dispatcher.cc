@@ -36,8 +36,8 @@ void LauncherPageEventDispatcher::PopSubpage() {
 void LauncherPageEventDispatcher::SendEventToLauncherPage(
     const std::string& event_name,
     scoped_ptr<base::ListValue> args) {
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(event_name, args.Pass()));
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::UNKNOWN, event_name, args.Pass()));
   extensions::EventRouter::Get(profile_)
       ->DispatchEventToExtension(extension_id_, event.Pass());
 }

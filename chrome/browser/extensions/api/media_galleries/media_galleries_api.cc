@@ -422,8 +422,8 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
   if (!router->ExtensionHasEventListener(extension_id, event_name))
     return;
 
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(event_name, event_args.Pass()));
+  scoped_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::UNKNOWN, event_name, event_args.Pass()));
   router->DispatchEventToExtension(extension_id, event.Pass());
 }
 

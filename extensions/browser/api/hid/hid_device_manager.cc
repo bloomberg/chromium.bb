@@ -318,7 +318,8 @@ void HidDeviceManager::OnEnumerationComplete(
 void HidDeviceManager::DispatchEvent(const std::string& event_name,
                                      scoped_ptr<base::ListValue> event_args,
                                      scoped_refptr<HidDeviceInfo> device_info) {
-  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, event_name, event_args.Pass()));
   event->will_dispatch_callback = base::Bind(
       &WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(), device_info);
   event_router_->BroadcastEvent(event.Pass());

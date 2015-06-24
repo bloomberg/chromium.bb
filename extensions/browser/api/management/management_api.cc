@@ -870,7 +870,8 @@ void ManagementEventRouter::BroadcastEvent(const Extension* extension,
   }
 
   EventRouter::Get(browser_context_)
-      ->BroadcastEvent(scoped_ptr<Event>(new Event(event_name, args.Pass())));
+      ->BroadcastEvent(scoped_ptr<Event>(
+          new Event(events::UNKNOWN, event_name, args.Pass())));
 }
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)

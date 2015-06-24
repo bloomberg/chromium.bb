@@ -62,9 +62,9 @@ BrailleDisplayPrivateAPI::GetFactoryInstance() {
 
 void BrailleDisplayPrivateAPI::OnBrailleDisplayStateChanged(
     const DisplayState& display_state) {
-  scoped_ptr<Event> event(new Event(
-      OnDisplayStateChanged::kEventName,
-      OnDisplayStateChanged::Create(display_state)));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, OnDisplayStateChanged::kEventName,
+                OnDisplayStateChanged::Create(display_state)));
   event_delegate_->BroadcastEvent(event.Pass());
 }
 
@@ -72,8 +72,8 @@ void BrailleDisplayPrivateAPI::OnBrailleKeyEvent(const KeyEvent& key_event) {
   // Key events only go to extensions of the active profile.
   if (!IsProfileActive())
     return;
-  scoped_ptr<Event> event(new Event(
-      OnKeyEvent::kEventName, OnKeyEvent::Create(key_event)));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, OnKeyEvent::kEventName,
+                                    OnKeyEvent::Create(key_event)));
   event_delegate_->BroadcastEvent(event.Pass());
 }
 

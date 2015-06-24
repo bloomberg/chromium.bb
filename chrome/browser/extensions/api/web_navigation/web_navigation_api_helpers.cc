@@ -48,7 +48,8 @@ void DispatchEvent(content::BrowserContext* browser_context,
   Profile* profile = Profile::FromBrowserContext(browser_context);
   EventRouter* event_router = EventRouter::Get(profile);
   if (profile && event_router) {
-    scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+    scoped_ptr<Event> event(
+        new Event(events::UNKNOWN, event_name, args.Pass()));
     event->restrict_to_browser_context = profile;
     event->filter_info = info;
     event_router->BroadcastEvent(event.Pass());

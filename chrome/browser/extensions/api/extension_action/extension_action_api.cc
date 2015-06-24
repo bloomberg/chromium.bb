@@ -305,7 +305,8 @@ void ExtensionActionAPI::DispatchEventToExtension(
   if (!EventRouter::Get(context))
     return;
 
-  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, event_name, event_args.Pass()));
   event->restrict_to_browser_context = context;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)

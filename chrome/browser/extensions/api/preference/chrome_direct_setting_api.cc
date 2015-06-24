@@ -145,7 +145,8 @@ void ChromeDirectSettingAPI::OnPrefChanged(
       const std::string& extension_id = extension->id();
       if (router->ExtensionHasEventListener(extension_id, event_name)) {
         scoped_ptr<base::ListValue> args_copy(args.DeepCopy());
-        scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
+        scoped_ptr<Event> event(
+            new Event(events::UNKNOWN, event_name, args_copy.Pass()));
         router->DispatchEventToExtension(extension_id, event.Pass());
       }
     }

@@ -125,7 +125,8 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
   EventRouter* event_router = EventRouter::Get(browser_context_);
   DCHECK(event_router);
 
-  scoped_ptr<Event> event(new Event(event_name, values.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, event_name, values.Pass()));
   event->restrict_to_browser_context = browser_context_;
 
   // No app_origin, broadcast to all listening extensions for this event name.

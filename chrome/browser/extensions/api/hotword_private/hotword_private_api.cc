@@ -121,7 +121,7 @@ void HotwordPrivateEventService::SignalEvent(const std::string& event_name,
   if (!router || !router->HasEventListener(event_name))
     return;
 
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   router->BroadcastEvent(event.Pass());
 }
 

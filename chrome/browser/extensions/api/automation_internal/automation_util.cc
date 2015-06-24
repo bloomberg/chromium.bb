@@ -114,7 +114,8 @@ void DispatchEventInternal(content::BrowserContext* context,
                            const std::string& event_name,
                            scoped_ptr<base::ListValue> args) {
   if (context && EventRouter::Get(context)) {
-    scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+    scoped_ptr<Event> event(
+        new Event(events::UNKNOWN, event_name, args.Pass()));
     event->restrict_to_browser_context = context;
     EventRouter::Get(context)->BroadcastEvent(event.Pass());
   }

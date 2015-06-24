@@ -469,7 +469,7 @@ void ProcessesEventRouter::DispatchEvent(
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
-        event_name, event_args.Pass()));
+        extensions::events::UNKNOWN, event_name, event_args.Pass()));
     event_router->BroadcastEvent(event.Pass());
   }
 }

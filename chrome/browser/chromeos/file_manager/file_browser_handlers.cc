@@ -409,8 +409,9 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      "fileBrowserHandler.onExecute", event_args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(extensions::events::UNKNOWN,
+                            "fileBrowserHandler.onExecute", event_args.Pass()));
   event->restrict_to_browser_context = profile_;
   router->DispatchEventToExtension(extension_->id(), event.Pass());
 

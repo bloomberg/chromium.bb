@@ -330,6 +330,7 @@ void DispatchVolumeListChangeEvent(Profile* profile) {
     event_router->DispatchEventToExtension(
         extension->id(),
         make_scoped_ptr(new Event(
+            events::UNKNOWN,
             extensions::api::file_system::OnVolumeListChanged::kEventName,
             extensions::api::file_system::OnVolumeListChanged::Create(
                 event_args))));

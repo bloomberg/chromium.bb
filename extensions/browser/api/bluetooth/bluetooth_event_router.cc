@@ -329,9 +329,9 @@ void BluetoothEventRouter::DispatchAdapterStateEvent() {
 
   scoped_ptr<base::ListValue> args =
       bluetooth::OnAdapterStateChanged::Create(state);
-  scoped_ptr<Event> event(new Event(
-      bluetooth::OnAdapterStateChanged::kEventName,
-      args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::UNKNOWN, bluetooth::OnAdapterStateChanged::kEventName,
+                args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
@@ -343,7 +343,7 @@ void BluetoothEventRouter::DispatchDeviceEvent(
 
   scoped_ptr<base::ListValue> args =
       bluetooth::OnDeviceAdded::Create(extension_device);
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 

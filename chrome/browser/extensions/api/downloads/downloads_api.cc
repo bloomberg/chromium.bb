@@ -1862,7 +1862,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   args->Append(arg);
   std::string json_args;
   base::JSONWriter::Write(*args, &json_args);
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   // The downloads system wants to share on-record events with off-record
   // extension renderers even in incognito_split_mode because that's how
   // chrome://downloads works. The "restrict_to_profile" mechanism does not

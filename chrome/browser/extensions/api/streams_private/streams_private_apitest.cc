@@ -181,7 +181,8 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     info.expected_content_size = 20;
 
     scoped_ptr<Event> event(
-        new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,
+        new Event(extensions::events::UNKNOWN,
+                  streams_private::OnExecuteMimeTypeHandler::kEventName,
                   streams_private::OnExecuteMimeTypeHandler::Create(info)));
 
     extensions::EventRouter::Get(browser()->profile())

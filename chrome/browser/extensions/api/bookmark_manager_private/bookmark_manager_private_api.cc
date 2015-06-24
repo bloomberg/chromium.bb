@@ -186,8 +186,9 @@ BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
 void BookmarkManagerPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  extensions::EventRouter::Get(browser_context_)->BroadcastEvent(
-      make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
+  extensions::EventRouter::Get(browser_context_)
+      ->BroadcastEvent(make_scoped_ptr(new extensions::Event(
+          extensions::events::UNKNOWN, event_name, event_args.Pass())));
 }
 
 void BookmarkManagerPrivateEventRouter::BookmarkModelChanged() {}
@@ -303,7 +304,7 @@ void BookmarkManagerPrivateDragEventRouter::DispatchEvent(
   if (!event_router)
     return;
 
-  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
   event_router->BroadcastEvent(event.Pass());
 }
 
