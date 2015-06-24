@@ -446,7 +446,10 @@ void V8SamplingThread::ThreadMain() {
   InstallSamplers();
   StartSamplers();
   InstallSignalHandler();
-  const int kSamplingFrequencyMicroseconds = 1000;
+  bool enabled_hires;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile.hires"), &enabled_hires);
+  const int kSamplingFrequencyMicroseconds = enabled_hires ? 100 : 1000;
   while (!cancellation_flag_.IsSet()) {
     Sample();
     if (waitable_event_for_testing_ &&
@@ -570,9 +573,11 @@ V8SamplingProfiler::V8SamplingProfiler(bool underTest)
       render_thread_sampler_(Sampler::CreateForCurrentThread()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(underTest || RenderThreadImpl::current());
-  // Force the "v8.cpu_profile" category to show up in the trace viewer.
+  // Force the "v8.cpu_profile*" categories to show up in the trace viewer.
   TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"));
+  TraceLog::GetCategoryGroupEnabled(
+      TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile.hires"));
   TraceLog::GetInstance()->AddEnabledStateObserver(this);
 }
 
