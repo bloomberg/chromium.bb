@@ -1155,6 +1155,8 @@
       'browser/ui/cocoa/passwords/account_avatar_fetcher_manager.mm',
       'browser/ui/cocoa/passwords/credential_item_view.h',
       'browser/ui/cocoa/passwords/credential_item_view.mm',
+      'browser/ui/cocoa/passwords/manage_credential_item_view_controller.h',
+      'browser/ui/cocoa/passwords/manage_credential_item_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_password_item_view_controller.h',
       'browser/ui/cocoa/passwords/manage_password_item_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.h',
