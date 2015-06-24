@@ -2848,7 +2848,8 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
   Send(new FrameHostMsg_DidFailLoadWithError(routing_id_,
                                              failed_request.url(),
                                              error.reason,
-                                             error_description));
+                                             error_description,
+                                             error.wasIgnoredByHandler));
 }
 
 void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
@@ -4779,6 +4780,7 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
       &params.error_description);
   params.url = error.unreachableURL;
   params.showing_repost_interstitial = show_repost_interstitial;
+  params.was_ignored_by_handler = error.wasIgnoredByHandler;
   Send(new FrameHostMsg_DidFailProvisionalLoadWithError(routing_id_, params));
 }
 

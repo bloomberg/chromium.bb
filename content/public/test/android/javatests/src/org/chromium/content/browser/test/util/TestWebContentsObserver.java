@@ -59,8 +59,9 @@ public class TestWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame,
-            int errorCode, String description, String failingUrl) {
-        super.didFailLoad(isProvisionalLoad, isMainFrame, errorCode, description, failingUrl);
+            int errorCode, String description, String failingUrl, boolean wasIgnoredByHandler) {
+        super.didFailLoad(isProvisionalLoad, isMainFrame, errorCode, description, failingUrl,
+                wasIgnoredByHandler);
         mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
     }
 }

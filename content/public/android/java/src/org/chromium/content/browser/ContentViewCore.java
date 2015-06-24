@@ -309,7 +309,7 @@ public class ContentViewCore implements
 
         @Override
         public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-                String description, String failingUrl) {
+                String description, String failingUrl, boolean wasIgnoredByHandler) {
             // Navigation that fails the provisional load will have the strong binding removed
             // here. One for which the provisional load is commited will have the strong binding
             // removed in navigationEntryCommitted() below.

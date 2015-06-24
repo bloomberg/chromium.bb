@@ -482,7 +482,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidFailLoadWithError(
       const GURL& url,
       int error_code,
-      const base::string16& error_description);
+      const base::string16& error_description,
+      bool was_ignored_by_handler);
   void OnDidCommitProvisionalLoad(const IPC::Message& msg);
   void OnDidDropNavigation();
   void OnBeforeUnloadACK(

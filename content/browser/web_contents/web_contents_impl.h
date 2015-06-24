@@ -514,7 +514,8 @@ class CONTENT_EXPORT WebContentsImpl
   void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                             const GURL& url,
                             int error_code,
-                            const base::string16& error_description) override;
+                            const base::string16& error_description,
+                            bool was_ignored_by_handler) override;
   void DidCommitProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                 const GURL& url,
                                 ui::PageTransition transition_type) override;

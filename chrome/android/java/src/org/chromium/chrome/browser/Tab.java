@@ -603,7 +603,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         @Override
         public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-                String description, String failingUrl) {
+                String description, String failingUrl, boolean wasIgnoredByHandler) {
             for (TabObserver observer : mObservers) {
                 observer.onDidFailLoad(Tab.this, isProvisionalLoad, isMainFrame, errorCode,
                         description, failingUrl);

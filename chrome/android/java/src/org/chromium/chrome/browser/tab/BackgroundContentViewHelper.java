@@ -408,8 +408,8 @@ public class BackgroundContentViewHelper extends EmptyTabObserver {
             }
 
             @Override
-            public void didFailLoad(boolean isProvisionalLoad,
-                    boolean isMainFrame, int errorCode, String description, String failingUrl) {
+            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+                    String description, String failingUrl, boolean wasIgnoredByHandler) {
                 if (isMainFrame) {
                     RecordHistogram.recordEnumeratedHistogram(
                             "InstantSearchClicks.ReasonForSwap",
@@ -810,8 +810,8 @@ public class BackgroundContentViewHelper extends EmptyTabObserver {
 
         mCurrentViewWebContentsObserver = new WebContentsObserver(mTab.getWebContents()) {
             @Override
-            public void didFailLoad(boolean isProvisionalLoad,
-                    boolean isMainFrame, int errorCode, String description, String failingUrl) {
+            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+                    String description, String failingUrl, boolean wasIgnoredByHandler) {
                 if (isMainFrame && hasPendingBackgroundPage()) {
                     if (TextUtils.equals(mContentViewCore.getWebContents().getUrl(),
                             getOriginalUrlForPreviewUrl(failingUrl))) {

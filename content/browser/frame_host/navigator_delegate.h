@@ -44,7 +44,8 @@ class CONTENT_EXPORT NavigatorDelegate {
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       int error_code,
-      const base::string16& error_description) {}
+      const base::string16& error_description,
+      bool was_ignored_by_handler) {}
 
   // A navigation was committed in |render_frame_host|.
   virtual void DidCommitProvisionalLoad(

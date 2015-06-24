@@ -48,7 +48,7 @@ public abstract class WebContentsObserver {
      * @param failingUrl The url that was loading when the error occurred.
      */
     public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
-            String description, String failingUrl) {}
+            String description, String failingUrl, boolean wasIgnoredByHandler) {}
 
     /**
      * Called when the main frame of the page has committed.

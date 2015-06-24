@@ -124,6 +124,9 @@ IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
   // True if the failure is the result of navigating to a POST again
   // and we're going to show the POST interstitial.
   IPC_STRUCT_MEMBER(bool, showing_repost_interstitial)
+  // True if the navigation was canceled because it was ignored by a handler,
+  // e.g. shouldOverrideUrlLoading.
+  IPC_STRUCT_MEMBER(bool, was_ignored_by_handler)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
@@ -696,10 +699,11 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidCommitProvisionalLoad,
 // Notifies the browser that a document has been loaded.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFinishDocumentLoad)
 
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidFailLoadWithError,
+IPC_MESSAGE_ROUTED4(FrameHostMsg_DidFailLoadWithError,
                     GURL /* validated_url */,
                     int /* error_code */,
-                    base::string16 /* error_description */)
+                    base::string16 /* error_description */,
+                    bool /* was_ignored_by_handler */)
 
 // Sent when the renderer decides to ignore a navigation.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDropNavigation)

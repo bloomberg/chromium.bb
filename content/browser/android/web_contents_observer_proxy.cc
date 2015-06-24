@@ -95,18 +95,20 @@ void WebContentsObserverProxy::DidFailProvisionalLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description) {
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
   DidFailLoadInternal(true, !render_frame_host->GetParent(), error_code,
-                      error_description, validated_url);
+                      error_description, validated_url, was_ignored_by_handler);
 }
 
 void WebContentsObserverProxy::DidFailLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description) {
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
   DidFailLoadInternal(false, !render_frame_host->GetParent(), error_code,
-                      error_description, validated_url);
+                      error_description, validated_url, was_ignored_by_handler);
 }
 
 void WebContentsObserverProxy::DidNavigateMainFrame(
@@ -253,7 +255,8 @@ void WebContentsObserverProxy::DidFailLoadInternal(
     bool is_main_frame,
     int error_code,
     const base::string16& description,
-    const GURL& url) {
+    const GURL& url,
+    bool was_ignored_by_handler) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(java_observer_);
   ScopedJavaLocalRef<jstring> jstring_error_description(
@@ -263,7 +266,8 @@ void WebContentsObserverProxy::DidFailLoadInternal(
 
   Java_WebContentsObserverProxy_didFailLoad(
       env, obj.obj(), is_provisional_load, is_main_frame, error_code,
-      jstring_error_description.obj(), jstring_url.obj());
+      jstring_error_description.obj(), jstring_url.obj(),
+      was_ignored_by_handler);
 }
 
 void WebContentsObserverProxy::DidFirstVisuallyNonEmptyPaint() {

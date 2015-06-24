@@ -340,7 +340,8 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description) {
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
   DVLOG(2) << "DidFailProvisionalLoad("
            << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID()
@@ -414,7 +415,8 @@ void WebNavigationTabObserver::DidFailLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description) {
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
   DVLOG(2) << "DidFailLoad("
            << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID()

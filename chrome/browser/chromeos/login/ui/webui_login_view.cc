@@ -493,7 +493,8 @@ void WebUILoginView::DidFailProvisionalLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code,
-    const base::string16& error_description) {
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
   FOR_EACH_OBSERVER(FrameObserver,
                     frame_observer_list_,
                     OnFrameError(render_frame_host->GetFrameName()));

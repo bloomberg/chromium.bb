@@ -163,7 +163,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description) {}
+      const base::string16& error_description,
+      bool was_ignored_by_handler) {}
 
   // If the provisional load corresponded to the main frame, this method is
   // invoked in addition to DidCommitProvisionalLoadForFrame.
@@ -213,7 +214,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void DidFailLoad(RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
                            int error_code,
-                           const base::string16& error_description) {}
+                           const base::string16& error_description,
+                           bool was_ignored_by_handler) {}
 
   // This method is invoked when content was loaded from an in-memory cache.
   virtual void DidLoadResourceFromMemoryCache(

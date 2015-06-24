@@ -37,6 +37,12 @@ blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
                                      bool stale_copy_in_cache,
                                      int reason);
 
+// Generates a WebURLError based on |reason|.
+blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
+                                     bool stale_copy_in_cache,
+                                     int reason,
+                                     bool was_ignored_by_handler);
+
 }  // namespace content
 
 #endif  // CONTENT_CHILD_WEB_URL_REQUEST_UTIL_H_

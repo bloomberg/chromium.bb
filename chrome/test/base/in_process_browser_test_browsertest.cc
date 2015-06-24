@@ -44,7 +44,8 @@ class LoadFailObserver : public content::WebContentsObserver {
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
       int error_code,
-      const base::string16& error_description) override {
+      const base::string16& error_description,
+      bool was_ignored_by_handler) override {
     failed_load_ = true;
     error_code_ = static_cast<net::Error>(error_code);
     validated_url_ = validated_url;

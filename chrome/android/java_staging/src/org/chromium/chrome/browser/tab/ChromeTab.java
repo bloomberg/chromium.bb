@@ -799,8 +799,8 @@ public class ChromeTab extends Tab {
             }
 
             @Override
-            public void didFailLoad(boolean isProvisionalLoad,
-                    boolean isMainFrame, int errorCode, String description, String failingUrl) {
+            public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+                    String description, String failingUrl, boolean wasIgnoredByHandler) {
                 if (isMainFrame) {
                     if (failingUrl.startsWith("chrome://newtab/")
                             || failingUrl.startsWith("chrome://welcome/")) {

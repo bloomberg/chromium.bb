@@ -51,7 +51,8 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   void DidFailProvisionalLoad(RenderFrameHost* render_frame_host,
                               const GURL& validated_url,
                               int error_code,
-                              const base::string16& error_description) override;
+                              const base::string16& error_description,
+                              bool was_ignored_by_handler) override;
   void DidNavigateMainFrame(const LoadCommittedDetails& details,
                             const FrameNavigateParams& params) override;
   void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
@@ -65,7 +66,8 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   void DidFailLoad(RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code,
-                   const base::string16& error_description) override;
+                   const base::string16& error_description,
+                   bool was_ignored_by_handler) override;
   void DidGetRedirectForResourceRequest(
       RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details) override;

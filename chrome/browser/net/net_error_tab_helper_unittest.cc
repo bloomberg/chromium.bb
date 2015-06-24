@@ -99,7 +99,8 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
         (main_frame == MAIN_FRAME) ? main_rfh() : subframe_,
         bogus_url_,  // validated_url
         net_error,
-        base::string16());
+        base::string16(),
+        false);
   }
 
   void FinishProbe(DnsProbeStatus status) { tab_helper_->FinishProbe(status); }

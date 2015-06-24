@@ -2610,7 +2610,8 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
                     DidFailProvisionalLoad(render_frame_host,
                                            validated_url,
                                            params.error_code,
-                                           params.error_description));
+                                           params.error_description,
+                                           params.was_ignored_by_handler));
 
   FrameTreeNode* ftn = render_frame_host->frame_tree_node();
   BrowserAccessibilityManager* manager =
@@ -2623,11 +2624,13 @@ void WebContentsImpl::DidFailLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
     int error_code,
-    const base::string16& error_description) {
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      DidFailLoad(render_frame_host, url, error_code, error_description));
+      DidFailLoad(render_frame_host, url, error_code, error_description,
+        was_ignored_by_handler));
 }
 
 void WebContentsImpl::NotifyChangedNavigationState(

@@ -43,8 +43,8 @@ public class AwWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
-    public void didFailLoad(boolean isProvisionalLoad,
-            boolean isMainFrame, int errorCode, String description, String failingUrl) {
+    public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
+            String description, String failingUrl, boolean wasIgnoredByHandler) {
         AwContentsClient client = mAwContentsClient.get();
         if (client == null) return;
         String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();

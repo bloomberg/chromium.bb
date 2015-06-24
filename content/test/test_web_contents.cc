@@ -253,9 +253,10 @@ void TestWebContents::TestDidFinishLoad(const GURL& url) {
 void TestWebContents::TestDidFailLoadWithError(
     const GURL& url,
     int error_code,
-    const base::string16& error_description) {
+    const base::string16& error_description,
+    bool was_ignored_by_handler) {
   FrameHostMsg_DidFailLoadWithError msg(
-      0, url, error_code, error_description);
+      0, url, error_code, error_description, was_ignored_by_handler);
   frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 

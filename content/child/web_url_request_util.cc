@@ -299,4 +299,14 @@ blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
   return error;
 }
 
+blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
+                                     bool stale_copy_in_cache,
+                                     int reason,
+                                     bool was_ignored_by_handler) {
+  blink::WebURLError error =
+      CreateWebURLError(unreachable_url, stale_copy_in_cache, reason);
+  error.wasIgnoredByHandler = was_ignored_by_handler;
+  return error;
+}
+
 }  // namespace content

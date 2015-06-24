@@ -37,11 +37,13 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DidFailProvisionalLoad(RenderFrameHost* render_frame_host,
                               const GURL& validated_url,
                               int error_code,
-                              const base::string16& error_description) override;
+                              const base::string16& error_description,
+                              bool was_ignored_by_handler) override;
   void DidFailLoad(RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code,
-                   const base::string16& error_description) override;
+                   const base::string16& error_description,
+                   bool was_ignored_by_handler) override;
   void DidNavigateMainFrame(const LoadCommittedDetails& details,
                             const FrameNavigateParams& params) override;
   void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
@@ -74,7 +76,8 @@ class WebContentsObserverProxy : public WebContentsObserver {
                            bool is_main_frame,
                            int error_code,
                            const base::string16& description,
-                           const GURL& url);
+                           const GURL& url,
+                           bool was_ignored_by_handler);
 
   base::android::ScopedJavaGlobalRef<jobject> java_observer_;
 
