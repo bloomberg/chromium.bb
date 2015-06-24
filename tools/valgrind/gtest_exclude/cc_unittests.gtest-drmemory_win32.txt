@@ -23,6 +23,3 @@ LayerTreeHostPictureTestRSLLMembershipWithScale.RunMultiThread_DirectRenderer_Im
 
 # https://crbug.com/486619
 LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame.RunSingleThread*
-
-# https://crbug.com/504051
-UIResourceLostBeforeCommit.RunMultiThread_DirectRenderer

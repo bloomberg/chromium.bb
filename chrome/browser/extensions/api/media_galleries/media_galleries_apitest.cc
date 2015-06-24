@@ -614,7 +614,13 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, CancelScan) {
   ASSERT_TRUE(RunMediaGalleriesTest("cancel_scan")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, Scan) {
+// Flaky time outs on MSAN. https://crbug.com/503329
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_Scan DISABLED_Scan
+#else
+#define MAYBE_Scan Scan
+#endif
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, MAYBE_Scan) {
   base::ScopedTempDir scan_root;
   ASSERT_TRUE(scan_root.CreateUniqueTempDir());
   std::vector<base::FilePath> roots;

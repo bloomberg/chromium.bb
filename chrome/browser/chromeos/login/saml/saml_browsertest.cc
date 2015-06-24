@@ -417,7 +417,14 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
 // Tests that signin frame should have 'saml' class and 'cancel' button is
 // visible when SAML IdP page is loaded. And 'cancel' button goes back to
 // gaia on clicking.
-IN_PROC_BROWSER_TEST_P(SamlTest, SamlUI) {
+//
+// Times out on CrOS MSAN. https://crbug.com/504141
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_SamlUI DISABLED_SamlUI
+#else
+#define MAYBE_SamlUI SamlUI
+#endif
+IN_PROC_BROWSER_TEST_P(SamlTest, MAYBE_SamlUI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
