@@ -79,6 +79,7 @@ bool isConstNonDerivedElementPointer(NonDerivedElement* ptr) {
 
 const int kMagicNumberToUseForSimpleDerivedElementOne = 42;
 const int kMagicNumberToUseForSimpleDerivedElementTwo = 314;
+const int kMagicNumberToUseForSimpleDerivedElementThree = 1618;
 
 class SimpleDerivedElement : public DerivedElement {
  public:
@@ -93,7 +94,7 @@ class SimpleDerivedElement : public DerivedElement {
 class SimpleDerivedElementConstructMagicNumberOne
     : public SimpleDerivedElement {
  public:
-  SimpleDerivedElementConstructMagicNumberOne() : SimpleDerivedElement() {
+  SimpleDerivedElementConstructMagicNumberOne() {
     set_value(kMagicNumberToUseForSimpleDerivedElementOne);
   }
 };
@@ -101,7 +102,7 @@ class SimpleDerivedElementConstructMagicNumberOne
 class SimpleDerivedElementConstructMagicNumberTwo
     : public SimpleDerivedElement {
  public:
-  SimpleDerivedElementConstructMagicNumberTwo() : SimpleDerivedElement() {
+  SimpleDerivedElementConstructMagicNumberTwo() {
     set_value(kMagicNumberToUseForSimpleDerivedElementTwo);
   }
 };
@@ -818,6 +819,139 @@ TEST(ListContainerTest, RemoveLastIteration) {
   pop();
   ASSERT_TRUE(list.empty());
   check_equal();  // Empty.
+}
+
+TEST(ListContainerTest, AppendByMovingSameList) {
+  ListContainer<SimpleDerivedElement> list(kCurrentLargestDerivedElementSize);
+  list.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberOne>();
+
+  list.AppendByMoving(list.front());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list.back()->get_value());
+  EXPECT_EQ(2u, list.size());
+
+  list.front()->set_value(kMagicNumberToUseForSimpleDerivedElementTwo);
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
+            list.front()->get_value());
+  list.AppendByMoving(list.front());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
+            list.back()->get_value());
+  EXPECT_EQ(3u, list.size());
+}
+
+TEST(ListContainerTest, AppendByMovingDoesNotDestruct) {
+  ListContainer<DerivedElement> list_1(kCurrentLargestDerivedElementSize);
+  ListContainer<DerivedElement> list_2(kCurrentLargestDerivedElementSize);
+  MockDerivedElement* mde_1 = list_1.AllocateAndConstruct<MockDerivedElement>();
+
+  // Make sure destructor isn't called during AppendByMoving.
+  list_2.AppendByMoving(mde_1);
+  EXPECT_CALL(*mde_1, Destruct()).Times(0);
+  testing::Mock::VerifyAndClearExpectations(mde_1);
+  mde_1 = static_cast<MockDerivedElement*>(list_2.back());
+  EXPECT_CALL(*mde_1, Destruct());
+}
+
+TEST(ListContainerTest, AppendByMovingReplacesSourceWithNewDerivedElement) {
+  ListContainer<SimpleDerivedElementConstructMagicNumberOne> list_1(
+      kCurrentLargestDerivedElementSize);
+  ListContainer<SimpleDerivedElementConstructMagicNumberTwo> list_2(
+      kCurrentLargestDerivedElementSize);
+
+  list_1.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberOne>();
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list_1.front()->get_value());
+
+  list_2.AppendByMoving(list_1.front());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list_1.front()->get_value());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list_2.front()->get_value());
+
+  // Change the value of list_2.front() to ensure the value is actually moved.
+  list_2.back()->set_value(kMagicNumberToUseForSimpleDerivedElementThree);
+
+  list_1.AppendByMoving(list_2.back());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list_1.front()->get_value());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementThree,
+            list_1.back()->get_value());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
+            list_2.back()->get_value());
+
+  // AppendByMoving replaces the source element with a new derived element so
+  // we do not expect sizes to shrink after AppendByMoving is called.
+  EXPECT_EQ(2u,
+            list_1.size());  // One direct allocation and one AppendByMoving.
+  EXPECT_EQ(1u, list_2.size());  // One AppendByMoving.
+}
+
+const size_t kLongCountForLongSimpleDerivedElement = 5;
+
+class LongSimpleDerivedElement : public SimpleDerivedElement {
+ public:
+  ~LongSimpleDerivedElement() override {}
+  void SetAllValues(unsigned long value) {
+    for (size_t i = 0; i < kLongCountForLongSimpleDerivedElement; i++)
+      values[i] = value;
+  }
+  bool AreAllValuesEqualTo(size_t value) const {
+    for (size_t i = 1; i < kLongCountForLongSimpleDerivedElement; i++) {
+      if (values[i] != values[0])
+        return false;
+    }
+    return true;
+  }
+
+ private:
+  unsigned long values[kLongCountForLongSimpleDerivedElement];
+};
+
+const unsigned long kMagicNumberToUseForLongSimpleDerivedElement = 2718ul;
+
+class LongSimpleDerivedElementConstructMagicNumber
+    : public LongSimpleDerivedElement {
+ public:
+  LongSimpleDerivedElementConstructMagicNumber() {
+    SetAllValues(kMagicNumberToUseForLongSimpleDerivedElement);
+  }
+};
+
+TEST(ListContainerTest, AppendByMovingLongAndSimpleDerivedElements) {
+  static_assert(sizeof(LongSimpleDerivedElement) > sizeof(SimpleDerivedElement),
+                "LongSimpleDerivedElement should be larger than "
+                "SimpleDerivedElement's size.");
+  static_assert(sizeof(LongSimpleDerivedElement) <= kLargestDerivedElementSize,
+                "LongSimpleDerivedElement should be smaller than the maximum "
+                "DerivedElement size.");
+
+  ListContainer<SimpleDerivedElement> list(kCurrentLargestDerivedElementSize);
+  list.AllocateAndConstruct<LongSimpleDerivedElementConstructMagicNumber>();
+  list.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberOne>();
+
+  EXPECT_TRUE(
+      static_cast<LongSimpleDerivedElement*>(list.front())
+          ->AreAllValuesEqualTo(kMagicNumberToUseForLongSimpleDerivedElement));
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list.back()->get_value());
+
+  // Test that moving a simple derived element actually moves enough data so
+  // that the LongSimpleDerivedElement at this location is entirely moved.
+  SimpleDerivedElement* simple_element = list.back();
+  list.AppendByMoving(list.front());
+  EXPECT_TRUE(
+      static_cast<LongSimpleDerivedElement*>(list.back())
+          ->AreAllValuesEqualTo(kMagicNumberToUseForLongSimpleDerivedElement));
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            simple_element->get_value());
+
+  LongSimpleDerivedElement* long_element =
+      static_cast<LongSimpleDerivedElement*>(list.back());
+  list.AppendByMoving(simple_element);
+  EXPECT_TRUE(long_element->AreAllValuesEqualTo(
+      kMagicNumberToUseForLongSimpleDerivedElement));
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list.back()->get_value());
 }
 
 }  // namespace

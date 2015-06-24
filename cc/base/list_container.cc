@@ -421,6 +421,10 @@ bool ListContainerBase::empty() const {
   return data_->IsEmpty();
 }
 
+size_t ListContainerBase::MaxSizeForDerivedClass() const {
+  return data_->element_size();
+}
+
 void ListContainerBase::clear() {
   data_->Clear();
 }
