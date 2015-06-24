@@ -1546,9 +1546,6 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
             if (!layoutState.hasInlineChild() && o->isInline())
                 layoutState.setHasInlineChild(true);
 
-            if (o->isBR() && o->style()->clear() != CNONE)
-                layoutState.setContainsBRWithClear(true);
-
             if (o->isReplaced() || o->isFloating() || o->isOutOfFlowPositioned()) {
                 LayoutBox* box = toLayoutBox(o);
 
@@ -1666,11 +1663,8 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             }
 
             // If the linebox breaks cleanly and with clearance then dirty from at least this point onwards so that we can clear the correct floats without difficulty.
-            if (!firstLineBoxWithBreakAndClearance && curr->endsWithBreak()) {
-                InlineBox* lastBox = style()->isLeftToRightDirection() ? curr->lastLeafChild() : curr->firstLeafChild();
-                if (lastBox && lastBox->layoutObject().isBR() && lastBox->layoutObject().style()->clear() != CNONE)
-                    firstLineBoxWithBreakAndClearance = curr;
-            }
+            if (!firstLineBoxWithBreakAndClearance && lineBoxHasBRWithClearance(curr))
+                firstLineBoxWithBreakAndClearance = curr;
 
             // If a new float has been inserted before this line or before its last known float, just do a full layout.
             bool encounteredNewFloat = false;
@@ -1762,6 +1756,16 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     return curr;
 }
 
+
+bool LayoutBlockFlow::lineBoxHasBRWithClearance(RootInlineBox* curr)
+{
+    // If the linebox breaks cleanly and with clearance then dirty from at least this point onwards so that we can clear the correct floats without difficulty.
+    if (!curr->endsWithBreak())
+        return false;
+    InlineBox* lastBox = style()->isLeftToRightDirection() ? curr->lastLeafChild() : curr->firstLeafChild();
+    return lastBox && lastBox->layoutObject().isBR() && lastBox->layoutObject().style()->clear() != CNONE;
+}
+
 void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInlineBox* startLine, InlineIterator& cleanLineStart, BidiStatus& cleanLineBidiStatus)
 {
     ASSERT(!layoutState.endLine());
@@ -1773,6 +1777,8 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInl
             bool dirtiedByFloat = false;
             checkFloatsInCleanLine(curr, layoutState.floats(), floatIndex, encounteredNewFloat, dirtiedByFloat);
             if (encounteredNewFloat)
+                return;
+            if (lineBoxHasBRWithClearance(curr))
                 return;
         }
         if (curr->isDirty())
@@ -1848,11 +1854,6 @@ bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState, const InlineB
         if (resolver.status() != endLineStatus)
             return false;
 
-        // A trailing BR can be collapsed as it usually doesn't contribute to the height,
-        // but if it has a clear style we need to force it to layout in the context of floats
-        // to honor that style.
-        if (layoutState.containsBRWithClear() && containsFloats())
-            return false;
         return checkPaginationAndFloatsAtEndLine(layoutState);
     }
 

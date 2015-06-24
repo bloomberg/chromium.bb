@@ -42,7 +42,6 @@ public:
         , m_checkForFloatsFromLastLine(false)
         , m_hasInlineChild(false)
         , m_isFullLayout(fullLayout)
-        , m_containsBRWithClear(false)
         , m_paintInvalidationLogicalTop(paintInvalidationLogicalTop)
         , m_paintInvalidationLogicalBottom(paintInvalidationLogicalBottom)
         , m_adjustedLogicalLineTop(0)
@@ -77,8 +76,6 @@ public:
     bool hasInlineChild() const { return m_hasInlineChild; }
     void setHasInlineChild(bool hasInlineChild) { m_hasInlineChild = hasInlineChild; }
 
-    bool containsBRWithClear() const { return m_containsBRWithClear; }
-    void setContainsBRWithClear(bool containsBRWithClear) { m_containsBRWithClear = containsBRWithClear; }
 
     LineInfo& lineInfo() { return m_lineInfo; }
     const LineInfo& lineInfo() const { return m_lineInfo; }
@@ -116,8 +113,6 @@ private:
     bool m_hasInlineChild;
 
     bool m_isFullLayout;
-
-    bool m_containsBRWithClear;
 
     // FIXME: Should this be a range object instead of two ints?
     LayoutUnit& m_paintInvalidationLogicalTop;
