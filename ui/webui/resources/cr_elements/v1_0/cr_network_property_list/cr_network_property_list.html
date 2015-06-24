@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 
 <dom-module name="cr-network-property-list">
   <link rel="import" type="css" href="cr_network_property_list.css">
@@ -17,9 +18,18 @@
       <div class="layout vertical">
         <template is="dom-repeat" items="[[fields]]">
           <div class="layout horizontal"
-              hidden$="[[!hasPropertyValue_(networkState, item)]]">
+              hidden$="[[!showNoEdit_(networkState, editFieldTypes, item)]]">
             <span>[[getPropertyValue_(networkState, item)]]</span>
           </div>
+          <div class="layout horizontal" hidden$=
+               "[[!showEdit_(networkState, editFieldTypes, item, 'String')]]">
+            <paper-input-container>
+              <input id="[[item]]" is="iron-input"
+                  value="[[getPropertyValue_(networkState, item)]]"
+                  on-blur="onValueChanged_">
+            </paper-input-container>
+          </div>
+          <!-- TODO(stevenjb): Support non-string types. -->
         </template>
       </div>
     </div>

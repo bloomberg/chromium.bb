@@ -165,6 +165,15 @@
   <structure name="IDR_CR_ELEMENTS_1_0_CR_NETWORK_LIST_ITEM_JS"
              file="../../webui/resources/cr_elements/v1_0/cr_network_list_item/cr_network_list_item.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_1_0_CR_NETWORK_NAMESERVERS_CSS"
+             file="../../webui/resources/cr_elements/v1_0/cr_network_nameservers/cr_network_nameservers.css"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_1_0_CR_NETWORK_NAMESERVERS_HTML"
+             file="../../webui/resources/cr_elements/v1_0/cr_network_nameservers/cr_network_nameservers.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_1_0_CR_NETWORK_NAMESERVERS_JS"
+             file="../../webui/resources/cr_elements/v1_0/cr_network_nameservers/cr_network_nameservers.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_1_0_CR_NETWORK_PROPERTY_LIST_CSS"
              file="../../webui/resources/cr_elements/v1_0/cr_network_property_list/cr_network_property_list.css"
              type="chrome_html" />

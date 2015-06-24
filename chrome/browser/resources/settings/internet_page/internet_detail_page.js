@@ -66,22 +66,6 @@ Polymer({
     },
 
     /**
-     * True if the Advanced section is expanded.
-     */
-    advancedExpanded: {
-      type: Boolean,
-      value: false
-    },
-
-    /**
-     * True if the device section is expanded.
-     */
-    deviceExpanded: {
-      type: Boolean,
-      value: false
-    },
-
-    /**
      * Name of the 'core-icon' to show. TODO(stevenjb): Update this with the
      * icon for the active internet connection.
      */
@@ -167,9 +151,11 @@ Polymer({
   networkStateChanged_: function() {
     if (!this.networkState)
       return;
-    // Update the autoConnect property if it has changed.
+    console.debug('DetailPage.networkStateChanged:');
+    console.debug(this.networkState);
+    // Update autoConnect if it has changed. Default value is false.
     var autoConnect =
-        CrOnc.getActiveTypeValue(this.networkState, 'AutoConnect');
+        CrOnc.getActiveTypeValue(this.networkState, 'AutoConnect') || false;
     if (autoConnect != this.autoConnect)
       this.autoConnect = autoConnect;
   },
@@ -182,7 +168,7 @@ Polymer({
       return;
     var onc = { Type: this.networkState.Type };
     CrOnc.setTypeProperty(onc, 'AutoConnect', this.autoConnect);
-    chrome.networkingPrivate.setProperties(this.guid, onc);
+    this.setNetworkProperties_(onc);
   },
 
   /**
@@ -212,7 +198,27 @@ Polymer({
    * @private
    */
   getPropertiesCallback_: function(state) {
+    console.debug('DetailPage.getPropertiesCallback:');
     this.networkState = state;
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.NetworkConfigProperties} onc The ONC
+   *     network properties.
+   * @private
+   */
+  setNetworkProperties_: function(onc) {
+    console.debug('DetailPage.networkingPrivate.setProperties:');
+    console.debug(onc);
+    chrome.networkingPrivate.setProperties(this.guid, onc, function() {
+      if (chrome.runtime.lastError) {
+        console.debug('networkingPrivate.setProperties error:');
+        console.debug(chrome.runtime.lastError);
+        // An error typically indicates invalid input; request the properties
+        // to update any invalid fields.
+        this.getNetworkDetails_();
+      }
+    }.bind(this));
   },
 
   /**
@@ -286,6 +292,76 @@ Polymer({
    */
   onDisconnectClicked_: function() {
     chrome.networkingPrivate.startDisconnect(this.guid);
+  },
+
+  /**
+   * Event triggered when the IP Config or NameServers element changes.
+   * @param {!{detail: { field: string,
+   *                     value: string|CrOnc.IPConfigProperties}}} event
+   *     The cr-network-ip-config or cr-network-nameservers changed event.
+   * @private
+   */
+  onIPConfigChanged_: function(event) {
+    if (!this.networkState)
+      return;
+
+    var field = event.detail.field;
+    var value = event.detail.value;
+    console.debug('DetailPage.IPConfigChanged: ' + field);
+    console.debug(value);
+
+    // Set just the IP Config properties that need to change.
+    var onc = {};
+    if (field == 'IPAddressConfigType') {
+      if (onc.IPAddressConfigType == value)
+        return;
+      onc.IPAddressConfigType = value;
+    } else if (field == 'NameServersConfigType') {
+      if (onc.NameServersConfigType == value)
+        return;
+      onc.NameServersConfigType = value;
+    } else if (field == 'StaticIPConfig') {
+      if (onc.IPAddressConfigType == 'Static' && onc.StaticIPConfig) {
+        var matches = true;
+        for (var key in value) {
+          if (onc.StaticIPConfig[key] != value[key]) {
+            matches = false;
+            break;
+          }
+        }
+        if (matches)
+          return;
+      }
+      onc.IPAddressConfigType = 'Static';
+      onc.StaticIPConfig = onc.StaticIPConfig || {};
+      for (key in value)
+        onc.StaticIPConfig[key] = value[key];
+    } else if (field == 'NameServers') {
+      if (onc.NameServersConfigType == 'Static' && onc.StaticIPConfig &&
+          onc.StaticIPConfig.NameServers == value) {
+        return;
+      }
+      onc.NameServersConfigType = 'Static';
+      onc.StaticIPConfig = onc.StaticIPConfig || {};
+      onc.StaticIPConfig.NameServers = value;
+    } else {
+      console.error('Unexpected changed field: ' + field);
+      return;
+    }
+    // setValidStaticIPConfig will fill in any other properties from
+    // networkState. This is necessary since we update IP Address and
+    // NameServers independently.
+    CrOnc.setValidStaticIPConfig(onc, this.networkState);
+    this.setNetworkProperties_(onc);
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if the AutoConnect checkbox should be shown.
+   * @private
+   */
+  showAutoConnect_: function(state) {
+    return state && state.Type != 'Ethernet';
   },
 
   /**
@@ -387,5 +463,14 @@ Polymer({
   hasDeviceFields_: function(state) {
     var fields = this.getDeviceFields_(state);
     return fields.length > 0;
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if the network section should be shown.
+   * @private
+   */
+  hasNetworkSection_: function(state) {
+    return state && state.Type != 'VPN';
   }
 });

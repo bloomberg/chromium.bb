@@ -44,13 +44,24 @@ CrOnc.ManagedNetworkStateProperty;
 /** @typedef {{
  *    Gateway: (string|undefined),
  *    IPAddress: (string|undefined),
- *    NameServers: (string|undefined),
+ *    NameServers: ?Array<string>,
  *    RoutingPrefix: (number|undefined),
  *    Type: (string|undefined),
  *    WebProxyAutoDiscoveryUrl: (string|undefined)
  * }}
  */
 CrOnc.IPConfigProperties;
+
+/** @typedef {{
+ *    Gateway: (string|undefined),
+ *    IPAddress: (string|undefined),
+ *    NameServers: ?Array<string>,
+ *    RoutingPrefix: (string|undefined),
+ *    Type: (string|undefined),
+ *    WebProxyAutoDiscoveryUrl: (string|undefined)
+ * }}
+ */
+CrOnc.IPConfigUIProperties;
 
 /** @enum {string} */
 CrOnc.Type = {
@@ -149,6 +160,10 @@ CrOnc.getActivePropertyValue = function(property) {
  *     dictionary if it exists, otherwise undefined.
  */
 CrOnc.getProperty = function(state, key) {
+  if (!state) {
+    console.error('CrOnc.getProperty called with undefined state');
+    return undefined;
+  }
   while (true) {
     var index = key.indexOf('.');
     if (index < 0)
@@ -202,6 +217,91 @@ CrOnc.getActiveTypeValue = function(state, key) {
 };
 
 /**
+ * Returns an IPConfigProperties object for |type|. For IPV4, these will be the
+ * static properties if IPAddressConfigType is Static and StaticIPConfig is set.
+ * @param {!CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {!CrOnc.IPType} type The IP Config type.
+ * @return {?CrOnc.IPConfigProperties} The IP Config object, or undefined if
+ *     no properties for |type| are available.
+ */
+CrOnc.getIPConfigForType = function(state, type) {
+  var result;
+  var ipConfigs = CrOnc.getActiveValue(state, 'IPConfigs');
+  if (ipConfigs) {
+    for (var i = 0; i < ipConfigs.length; ++i) {
+      var ipConfig = ipConfigs[i];
+      if (ipConfig.Type == type) {
+        result = ipConfig;
+        break;
+      }
+    }
+  }
+  if (type != CrOnc.IPType.IPV4)
+    return result;
+
+  var staticIpConfig = state.StaticIPConfig;
+  if (!staticIpConfig)
+    return result;
+
+  // If there is no entry in IPConfigs for |type|, return the static config.
+  if (!result)
+    return staticIpConfig;
+
+  // Otherwise, merge the appropriate static values into the result.
+  if (staticIpConfig.IPAddress &&
+      CrOnc.getActiveValue(state, 'IPAddressConfigType') == 'Static') {
+    result.Gateway = staticIpConfig.Gateway;
+    result.IPAddress = staticIpConfig.IPAddress;
+    result.RoutingPrefix = staticIpConfig.RoutingPrefix;
+    result.Type = staticIpConfig.Type;
+  }
+  if (staticIpConfig.NameServers &&
+      CrOnc.getActiveValue(state, 'NameServersConfigType') == 'Static') {
+    result.NameServers = staticIpConfig.NameServers;
+  }
+  return result;
+};
+
+/**
+ * Modifies |config| to include the correct set of properties for configuring
+ * a network IP Address and NameServer configuration for |state|. Existing
+ * properties in |config| will be preserved unless invalid.
+ * @param {!CrOnc.NetworkStateProperties} config A partial ONC configuration.
+ * @param {!CrOnc.NetworkStateProperties} state The complete ONC network state.
+ */
+CrOnc.setValidStaticIPConfig = function(config, state) {
+  config.IPAddressConfigType =
+      config.IPAddressConfigType || state.IPAddressConfigType || 'DHCP';
+  config.NameServersConfigType =
+      config.NameServersConfigType || state.NameServersConfigType || 'DHCP';
+
+  if (config.IPAddressConfigType != 'Static' &&
+      config.NameServersConfigType != 'Static') {
+    if (config.hasOwnProperty('StaticIPConfig'))
+      delete config.StaticIPConfig;
+    return;
+  }
+
+  if (!config.hasOwnProperty('StaticIPConfig'))
+    config.StaticIPConfig = {};
+
+  var staticIP = config.StaticIPConfig;
+  var stateIPConfig = CrOnc.getIPConfigForType(state, CrOnc.IPType.IPV4);
+  if (config.IPAddressConfigType == 'Static') {
+    staticIP.Gateway = staticIP.Gateway || stateIPConfig.Gateway || '';
+    staticIP.IPAddress = staticIP.IPAddress || stateIPConfig.IPAddress || '';
+    staticIP.RoutingPrefix =
+        staticIP.RoutingPrefix || stateIPConfig.RoutingPrefix || 0;
+    staticIP.Type = staticIP.Type || stateIPConfig.Type || CrOnc.IPType.IPV4;
+  }
+  if (config.NameServersConfigType == 'Static') {
+    staticIP.NameServers =
+        staticIP.NameServers || stateIPConfig.NameServers || [];
+  }
+};
+
+
+/**
  * Sets the value of a property in an ONC dictionary.
  * @param {!CrOnc.NetworkStateProperties} state The ONC network state to modify.
  * @param {string} key The property key which may be nested, e.g. 'Foo.Bar'.
@@ -237,7 +337,7 @@ CrOnc.setTypeProperty = function(state, key, value) {
  * @param {number} prefixLength The ONC routing prefix length.
  * @return {string} The corresponding netmask.
  */
-CrOnc.getRoutingPrefixAsAddress = function(prefixLength) {
+CrOnc.getRoutingPrefixAsNetmask = function(prefixLength) {
   // Return the empty string for invalid inputs.
   if (prefixLength < 0 || prefixLength > 32)
     return '';
@@ -258,4 +358,47 @@ CrOnc.getRoutingPrefixAsAddress = function(prefixLength) {
     netmask += value.toString();
   }
   return netmask;
+};
+
+/**
+ * Returns the routing prefix length as a number from the netmask string.
+ * @param {string} netmask The netmask string, e.g. 255.255.255.0.
+ * @return {number} The corresponding netmask or -1 if invalid.
+ */
+CrOnc.getRoutingPrefixAsLength = function(netmask) {
+  var prefixLength = 0;
+  var tokens = netmask.split('.');
+  if (tokens.length != 4)
+    return -1;
+  for (var i = 0; i < tokens.length; ++i) {
+    var token = tokens[i];
+    // If we already found the last mask and the current one is not
+    // '0' then the netmask is invalid. For example, 255.224.255.0
+    if (prefixLength / 8 != i) {
+      if (token != '0')
+        return -1;
+    } else if (token == '255') {
+      prefixLength += 8;
+    } else if (token == '254') {
+      prefixLength += 7;
+    } else if (token == '252') {
+      prefixLength += 6;
+    } else if (token == '248') {
+      prefixLength += 5;
+    } else if (token == '240') {
+      prefixLength += 4;
+    } else if (token == '224') {
+      prefixLength += 3;
+    } else if (token == '192') {
+      prefixLength += 2;
+    } else if (token == '128') {
+      prefixLength += 1;
+    } else if (token == '0') {
+      prefixLength += 0;
+    } else {
+      // mask is not a valid number.
+      return -1;
+    }
+  }
+  return prefixLength;
 };

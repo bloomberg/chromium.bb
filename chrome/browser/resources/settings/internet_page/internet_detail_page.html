@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_ip_config/cr_network_ip_config.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_nameservers/cr_network_nameservers.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_property_list/cr_network_property_list.html">
 
 <dom-module id="cr-settings-internet-detail-page">
@@ -24,17 +25,27 @@
         </div>
 
         <div id="infoDiv" class="layout vertical">
-          <cr-checkbox id="autoconnect" checked="{{autoConnect}}">
+          <cr-checkbox id="autoconnect" checked="{{autoConnect}}"
+              hidden$="[[!showAutoConnect_(networkState)]]">
             Automatically connect to this network
           </cr-checkbox>
-
-          <cr-network-ip-config network-state="[[networkState]]">
-          </cr-network-ip-config>
 
           <cr-network-property-list
               fields="[[getInfoFields_(networkState)]]"
               network-state="[[networkState]]">
           </cr-network-property-list>
+
+          <div class="layout vertical"
+              hidden$="[[!hasNetworkSection_(networkState)]]">
+            <cr-network-ip-config editable
+                network-state="[[networkState]]"
+                on-changed="onIPConfigChanged_">
+            </cr-network-ip-config>
+            <cr-network-nameservers editable
+                network-state="[[networkState]]"
+                on-changed="onIPConfigChanged_">
+            </cr-network-nameservers>
+          </div>
 
           <div class="layout horizontal center">
             <cr-button toggles active="{{advancedExpanded}}"
@@ -60,7 +71,7 @@
                   network-state="[[networkState]]">
               </cr-network-property-list>
 
-              <div id="deviceDiv" class="layout vertical"
+              <div class="layout vertical"
                   hidden$="[[!hasDeviceFields_(networkState)]]">
                 <cr-button toggles active="{{deviceExpanded}}">
                   Device

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Polymer element for displaying the IP Config properties fo
+ * @fileoverview Polymer element for displaying the IP Config properties for
  * a network state. TODO(stevenjb): Allow editing of static IP configurations
- * when 'editiable' is true.
+ * when 'editable' is true.
  */
 Polymer({
   is: 'cr-network-ip-config',
@@ -41,16 +41,16 @@ Polymer({
     },
 
     /**
-     * IP Config property dictionary.
+     * The currently visible IP Config property dictionary. The 'RoutingPrefix'
+     * property is a human-readable mask instead of a prefix length.
      * @type {{
-     *   ipv4: !CrOnc.IPConfigProperties,
-     *   ipv6: !CrOnc.IPConfigProperties
+     *   ipv4: !CrOnc.IPConfigUIProperties,
+     *   ipv6: !CrOnc.IPConfigUIProperties
      * }}
      */
     ipConfig: {
       type: Object,
-      value: function() { return {ipv4: {}, ipv6: {}}; },
-      observer: 'ipConfigChanged_'
+      value: function() { return {ipv4: {}, ipv6: {}}; }
     },
 
     /**
@@ -71,11 +71,20 @@ Polymer({
   },
 
   /**
+   * Saved static IP configuration properties when switching to 'automatic'.
+   * @type {?CrOnc.IPConfigUIProperties}
+   */
+  savedStaticIp_: null,
+
+  /**
    * Polymer networkState changed method.
    */
-  networkStateChanged_: function() {
-    if (!this.networkState)
+  networkStateChanged_: function(newValue, oldValue) {
+    if (this.networkState === undefined || this.ipConfig === undefined)
       return;
+
+    if (newValue.GUID != (oldValue && oldValue.GUID))
+      this.savedStaticIp_ = null;
 
     // Update the 'automatic' property.
     var ipConfigType =
@@ -83,35 +92,116 @@ Polymer({
     this.automatic = (ipConfigType != CrOnc.IPConfigType.STATIC);
 
     // Update the 'ipConfig' property.
-    var ipv4 = {}, ipv6 = {};
-    var ipConfigs = CrOnc.getActiveValue(this.networkState, 'IPConfigs');
-    if (ipConfigs) {
-      for (var i = 0; i < ipConfigs.length; ++i) {
-        var ipConfig = ipConfigs[i];
-        if (ipConfig.hasOwnProperty('RoutingPrefix')) {
-          ipConfig.RoutingPrefix =
-              CrOnc.getRoutingPrefixAsAddress(ipConfig.RoutingPrefix);
-        }
-        if (ipConfig.Type == CrOnc.IPType.IPV4 && !ipv4.IPAddress)
-          ipv4 = ipConfig;
-        else if (ipConfig.Type == CrOnc.IPType.IPV6 && !ipv6.IPAddress)
-          ipv6 = ipConfig;
-      }
-    }
-    this.ipConfig = {ipv4: ipv4, ipv6: ipv6};
+    var ipv4 = CrOnc.getIPConfigForType(this.networkState, CrOnc.IPType.IPV4);
+    var ipv6 = CrOnc.getIPConfigForType(this.networkState, CrOnc.IPType.IPV6);
+    this.ipConfig = {
+      ipv4: this.getIPConfigUIProperties_(ipv4),
+      ipv6: this.getIPConfigUIProperties_(ipv6)
+    };
   },
 
   /**
    * Polymer automatic changed method.
-   * TODO(stevenjb): Implement editing.
    */
   automaticChanged_: function() {
+    if (this.automatic === undefined || this.ipConfig === undefined)
+      return;
+    console.debug('IP.automaticChanged: ' + this.automatic);
+    if (this.automatic || !this.savedStaticIp_) {
+      // Save the static IP configuration when switching to automatic.
+      this.savedStaticIp_ = this.ipConfig.ipv4;
+      this.fire('changed', {
+        field: 'IPAddressConfigType',
+        value: this.automatic ? 'DHCP' : 'Static'
+      });
+    } else {
+      // Restore the saved static IP configuration.
+      var ipconfig = {
+        Gateway: this.savedStaticIp_.Gateway,
+        IPAddress: this.savedStaticIp_.IPAddress,
+        RoutingPrefix: this.savedStaticIp_.RoutingPrefix,
+        Type: this.savedStaticIp_.Type
+      };
+      this.fire('changed', {
+        field: 'StaticIPConfig',
+        value: this.getIPConfigProperties_(ipconfig)
+      });
+    }
   },
 
   /**
-   * Polymer ipConfig changed method.
-   * TODO(stevenjb): Implement editing.
+   * @param {?CrOnc.IPConfigProperties} ipconfig The IP Config properties.
+   * @return {!CrOnc.IPConfigUIProperties} A new IPConfigUIProperties object
+   *     with RoutingPrefix expressed as a string mask instead of a prefix
+   *     length. Returns an empty object if |ipconfig| is undefined.
+   * @private
    */
-  ipConfigChanged_: function() {
+  getIPConfigUIProperties_: function(ipconfig) {
+    var result = {};
+    if (!ipconfig)
+      return result;
+    for (var key in ipconfig) {
+      var value = ipconfig[key];
+      if (key == 'RoutingPrefix')
+        result.RoutingPrefix = CrOnc.getRoutingPrefixAsNetmask(value);
+      else
+        result[key] = value;
+    }
+    return result;
+  },
+
+  /**
+   * @param {!CrOnc.IPConfigUIProperties} ipconfig The IP Config UI properties.
+   * @return {!CrOnc.IPConfigProperties} A new IPConfigProperties object with
+   *     RoutingPrefix expressed as a a prefix length.
+   * @private
+   */
+  getIPConfigProperties_: function(ipconfig) {
+    var result = {};
+    for (var key in ipconfig) {
+      var value = ipconfig[key];
+      if (key == 'RoutingPrefix')
+        result.RoutingPrefix = CrOnc.getRoutingPrefixAsLength(value);
+      else
+        result[key] = value;
+    }
+    return result;
+  },
+
+  /**
+   * @param {!CrOnc.IPConfigUIProperties} ipConfig The IP Config properties.
+   * @param {boolean} editable The editable property.
+   * @param {boolean} automatic The automatic property.
+   * @return {Object} An object with the edit type for each editable field.
+   * @private
+   */
+  getIPEditFields_: function(ipConfig, editable, automatic) {
+    if (!editable || automatic)
+      return {};
+    return {
+      'ipv4.IPAddress': 'String',
+      'ipv4.RoutingPrefix': 'String',
+      'ipv4.Gateway': 'String'
+    };
+  },
+
+  /**
+   * Event triggered when the network property list changes.
+   * @param {!{detail: { field: string, value: string}}} event The
+   *     cr-network-property-list changed event.
+   * @private
+   */
+  onIPChanged_: function(event) {
+    event.stopPropagation();
+
+    var field = event.detail.field;
+    var value = event.detail.value;
+    console.debug('IP.onIPChanged: ' + field + " -> " + value);
+    // Note: |field| includes the 'ipv4.' prefix.
+    this.set('ipConfig.' + field, value);
+    this.fire('changed', {
+      field: 'StaticIPConfig',
+      value: this.getIPConfigProperties_(this.ipConfig.ipv4)
+    });
   },
 });

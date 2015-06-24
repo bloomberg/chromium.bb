@@ -11,8 +11,11 @@
           Configure IP Address Automatically
       </cr-checkbox>
       <cr-network-property-list
-          fields="[[ipConfigFields_]]" network-state="[[ipConfig]]">
+          fields="[[ipConfigFields_]]" network-state="[[ipConfig]]"
+          edit-field-types="[[getIPEditFields_(ipConfig, editable, automatic)]]"
+          on-changed="onIPChanged_">
       </cr-network-property-list>
+    </div>
   </template>
   <script src="cr_network_ip_config.js"></script>
 </dom-module>
