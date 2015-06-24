@@ -263,6 +263,7 @@ SkColor OmniboxResultView::GetColor(
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match;
+  match_.PossiblySwapContentsAndDescriptionForDisplay();
   ResetRenderTexts();
   animation_->Reset();
   answer_image_ = gfx::ImageSkia();

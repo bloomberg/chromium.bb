@@ -4,7 +4,6 @@
 
 #include "components/omnibox/autocomplete_match.h"
 
-#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -14,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/omnibox/autocomplete_provider.h"
-#include "components/omnibox/omnibox_switches.h"
 #include "components/omnibox/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -46,6 +44,7 @@ AutocompleteMatch::AutocompleteMatch()
       typed_count(-1),
       deletable(false),
       allowed_to_be_default_match(false),
+      swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_GENERATED),
       type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
       from_previous(false) {
@@ -60,6 +59,7 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       typed_count(-1),
       deletable(deletable),
       allowed_to_be_default_match(false),
+      swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_TYPED),
       type(type),
       from_previous(false) {
@@ -79,6 +79,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       contents_class(match.contents_class),
       description(match.description),
       description_class(match.description_class),
+      swap_contents_and_description(match.swap_contents_and_description),
       answer_contents(match.answer_contents),
       answer_type(match.answer_type),
       answer(SuggestionAnswer::copy(match.answer.get())),
@@ -116,6 +117,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   contents_class = match.contents_class;
   description = match.description;
   description_class = match.description_class;
+  swap_contents_and_description = match.swap_contents_and_description;
   answer_contents = match.answer_contents;
   answer_type = match.answer_type;
   answer = SuggestionAnswer::copy(match.answer.get());
@@ -329,6 +331,16 @@ void AutocompleteMatch::AddLastClassificationIfNecessary(
 }
 
 // static
+bool AutocompleteMatch::HasMatchStyle(
+    const ACMatchClassifications& classifications) {
+  for (const auto& it : classifications) {
+    if (it.style & AutocompleteMatch::ACMatchClassification::MATCH)
+      return true;
+  }
+  return false;
+}
+
+// static
 base::string16 AutocompleteMatch::SanitizeString(const base::string16& text) {
   // NOTE: This logic is mirrored by |sanitizeString()| in
   // omnibox_custom_bindings.js.
@@ -528,13 +540,8 @@ bool AutocompleteMatch::SupportsDeletion() const {
   return false;
 }
 
-void AutocompleteMatch::PossiblySwapContentsAndDescriptionForURLSuggestion(
-    const AutocompleteInput& input) {
-  if (!IsSearchType(type) && !description.empty() &&
-      base::CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEmphasizeTitlesInOmniboxDropdown) &&
-      ((input.type() == metrics::OmniboxInputType::QUERY) ||
-       (input.type() == metrics::OmniboxInputType::FORCED_QUERY))) {
+void AutocompleteMatch::PossiblySwapContentsAndDescriptionForDisplay() {
+  if (swap_contents_and_description) {
     std::swap(contents, description);
     std::swap(contents_class, description_class);
   }

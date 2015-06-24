@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -15,6 +16,7 @@
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/omnibox_switches.h"
 #include "components/search/search.h"
 #include "components/url_fixer/url_fixer.h"
 
@@ -170,7 +172,14 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
               i.description);
 #endif
     matches_.push_back(i);
-    matches_.back().PossiblySwapContentsAndDescriptionForURLSuggestion(input);
+    if (!AutocompleteMatch::IsSearchType(i.type) && !i.description.empty() &&
+        base::CommandLine::ForCurrentProcess()->
+            HasSwitch(switches::kEmphasizeTitlesInOmniboxDropdown) &&
+        ((input.type() == metrics::OmniboxInputType::QUERY) ||
+         (input.type() == metrics::OmniboxInputType::FORCED_QUERY)) &&
+        AutocompleteMatch::HasMatchStyle(i.description_class)) {
+      matches_.back().swap_contents_and_description = true;
+    }
   }
   default_match_ = end();
   alternate_nav_url_ = GURL();

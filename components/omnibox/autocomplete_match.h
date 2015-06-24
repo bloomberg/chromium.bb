@@ -153,6 +153,9 @@ struct AutocompleteMatch {
       size_t offset,
       int style);
 
+  // Returns true if at least one style in |classifications| is of type MATCH.
+  static bool HasMatchStyle(const ACMatchClassifications& classifications);
+
   // Removes invalid characters from |text|. Should be called on strings coming
   // from external sources (such as extensions) before assigning to |contents|
   // or |description|.
@@ -263,10 +266,11 @@ struct AutocompleteMatch {
   // Swaps the contents and description fields, and their associated
   // classifications, if this is a match for which we should emphasize the
   // title (stored in the description field) over the URL (in the contents
-  // field).  See the implementation for the conditions under which this is
-  // true.
-  void PossiblySwapContentsAndDescriptionForURLSuggestion(
-      const AutocompleteInput& input);
+  // field).  Intended to only be used at the UI level before displaying, lest
+  // other omnibox systems get confused about which is which.  See the code
+  // that sets |swap_contents_and_description| for conditions under which
+  // it is true.
+  void PossiblySwapContentsAndDescriptionForDisplay();
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
@@ -326,6 +330,10 @@ struct AutocompleteMatch {
   // Additional helper text for each entry, such as a title or description.
   base::string16 description;
   ACMatchClassifications description_class;
+
+  // If true, UI-level code should swap the contents and description fields
+  // before displaying.
+  bool swap_contents_and_description;
 
   // TODO(jdonnelly): Remove the first two properties once the downstream
   // clients are using the SuggestionAnswer.
