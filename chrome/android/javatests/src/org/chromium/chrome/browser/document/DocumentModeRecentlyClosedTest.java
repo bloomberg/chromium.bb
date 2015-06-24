@@ -11,7 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.chrome.browser.ChromeMobileApplication;;
+import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.ntp.CurrentlyOpenTab;
 import org.chromium.chrome.browser.ntp.DocumentRecentTabsManager;
@@ -194,7 +194,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
                         afterRecentlyClosed.get(0), WindowOpenDisposition.NEW_FOREGROUND_TAB);
             }
         };
-        DocumentActivity relaunchedActivity = (DocumentActivity) ActivityUtils.waitForActivity(
+        DocumentActivity relaunchedActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(), DocumentActivity.class, runnable);
         waitForFullLoad(relaunchedActivity, "Page 1");
         assertEquals("Wrong tab count", 3, selector.getTotalTabCount());

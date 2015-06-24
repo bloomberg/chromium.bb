@@ -8,7 +8,6 @@ import android.test.FlakyTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -95,17 +94,15 @@ public class ContextMenuTest extends DownloadTestBase {
                 nOpenedTabs , getActivity().getCurrentTabModel().getCount());
 
         // Wait for any new tab animation to finish if we're being driven by the compositor.
-        if (getActivity() instanceof ChromeActivity) {
-            final LayoutManager layoutDriver = ((ChromeActivity) getActivity())
-                    .getCompositorViewHolder().getLayoutManager();
-            assertTrue("Background tab animation not finished.",
-                    CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                        @Override
-                        public boolean isSatisfied() {
-                            return layoutDriver.getActiveLayout().shouldDisplayContentOverlay();
-                        }
-                    }));
-        }
+        final LayoutManager layoutDriver = getActivity()
+                .getCompositorViewHolder().getLayoutManager();
+        assertTrue("Background tab animation not finished.",
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return layoutDriver.getActiveLayout().shouldDisplayContentOverlay();
+                    }
+                }));
 
         ContextMenuUtils.selectContextMenuItem(this, tab, "testImage",
                 R.id.contextmenu_open_image_in_new_tab);

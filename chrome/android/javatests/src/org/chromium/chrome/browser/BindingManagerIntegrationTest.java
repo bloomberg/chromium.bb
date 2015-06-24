@@ -141,9 +141,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], TestHttpServerClient.getUrl(FILE_PATH));
 
         // Wait for the new tab animations on phones to finish.
-        if (!DeviceFormFactor.isTablet(getActivity())
-                && getActivity() instanceof ChromeActivity) {
-            final ChromeActivity activity = (ChromeActivity) getActivity();
+        if (!DeviceFormFactor.isTablet(getActivity())) {
+            final ChromeActivity activity = getActivity();
             assertTrue("Did not finish animation",
                     CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                         @Override
@@ -213,9 +212,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], TestHttpServerClient.getUrl(FILE_PATH));
 
         // Wait for the new tab animations on phones to finish.
-        if (!DeviceFormFactor.isTablet(getActivity())
-                && getActivity() instanceof ChromeActivity) {
-            final ChromeActivity activity = (ChromeActivity) getActivity();
+        if (!DeviceFormFactor.isTablet(getActivity())) {
+            final ChromeActivity activity = getActivity();
             assertTrue("Did not finish animation",
                     CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                         @Override

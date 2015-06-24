@@ -30,7 +30,7 @@ public class DomDistillerServiceFactory {
         ThreadUtils.assertOnUiThread();
         DomDistillerService service = sServiceMap.get(profile);
         if (service == null) {
-            service = (DomDistillerService) nativeGetForProfile(profile);
+            service = nativeGetForProfile(profile);
             sServiceMap.put(profile, service);
         }
         return service;

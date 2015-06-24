@@ -553,7 +553,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
 
         // Wait for the new Activity to finish loading and make sure the Activities are in the
         // correct state.
-        DocumentActivity secondActivity = (DocumentActivity) ActivityUtils.waitForActivity(
+        DocumentActivity secondActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(), DocumentActivity.class, fgTrigger);
         waitForFullLoad(secondActivity, "Page 4");
         assertEquals("New WebContents was not created",
@@ -598,7 +598,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
             }
         };
 
-        final DocumentActivity thirdActivity = (DocumentActivity) ActivityUtils.waitForActivity(
+        final DocumentActivity thirdActivity = ActivityUtils.waitForActivity(
                     getInstrumentation(), DocumentActivity.class, fgTrigger);
         waitForFullLoad(thirdActivity, "Page 4");
         assertEquals("Wrong number of tabs", 3, tabModel.getCount());

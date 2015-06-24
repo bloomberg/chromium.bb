@@ -128,7 +128,7 @@ public class ItemChooserDialog {
          * selected.
          */
         public String getSelectedItemKey() {
-            ItemChooserRow row = (ItemChooserRow) getItem(mSelectedItem);
+            ItemChooserRow row = getItem(mSelectedItem);
             if (row == null) return "";
             return row.mKey;
         }
@@ -162,7 +162,7 @@ public class ItemChooserDialog {
                 view.setTextColor(mDefaultTextColor);
             }
 
-            ItemChooserRow item = (ItemChooserRow) getItem(position);
+            ItemChooserRow item = getItem(position);
             view.setText(item.mDescription);
             return view;
         }
@@ -242,6 +242,7 @@ public class ItemChooserDialog {
         mConfirmButton.setText(labels.mPositiveButton);
         mConfirmButton.setEnabled(false);
         mConfirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
                 mItemSelectedCallback.onItemSelected(
                         mItemAdapter.getSelectedItemKey());
