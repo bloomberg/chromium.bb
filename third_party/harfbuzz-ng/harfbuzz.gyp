@@ -8,12 +8,11 @@
   ],
   'variables': {
     'conditions': [
-      ['OS=="linux" and (buildtype!="Official" or chromeos==1) and embedded==0', {
+      ['OS=="linux" and chromeos==1', {
         # Since version 1.31.0, pangoft2 which we depend on pulls in harfbuzz
         # anyways. However, we want to have control of the version of harfbuzz
-        # we use, so don't use system harfbuzz for official builds, unless we
-        # are building for chrome os, where we have the system harfbuzz under
-        # control as well.
+        # we use, so don't use system harfbuzz unless we are building for
+        # chrome os, where we have the system harfbuzz under control.
         'use_system_harfbuzz%': '<!(python ../../build/check_return_value.py <(pkg-config) --atleast-version=1.31.0 pangoft2)',
       }, {
         'use_system_harfbuzz': 0,
@@ -151,6 +150,9 @@
                 'src/hb-coretext.cc',
                 'src/hb-coretext.h',
               ],
+            }],
+            ['OS=="linux" and chromeos==0 and buildtype!="Official" and target_arch!="arm"', {
+              'cflags!': ['-fvisibility=hidden'],
             }],
           ],
         },
