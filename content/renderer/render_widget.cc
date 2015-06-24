@@ -378,9 +378,14 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
     widget_->screen_info_.availableRect = original_screen_info_.availableRect;
     widget_->window_screen_rect_ = original_window_screen_rect_;
   } else {
-    applied_widget_rect_.set_origin(gfx::Point(0, 0));
-    widget_->screen_info_.rect = applied_widget_rect_;
-    widget_->screen_info_.availableRect = applied_widget_rect_;
+    applied_widget_rect_.set_origin(params_.viewPosition);
+    gfx::Rect screen_rect = applied_widget_rect_;
+    if (!params_.screenSize.isEmpty()) {
+      screen_rect =
+          gfx::Rect(0, 0, params_.screenSize.width, params_.screenSize.height);
+    }
+    widget_->screen_info_.rect = screen_rect;
+    widget_->screen_info_.availableRect = screen_rect;
     widget_->window_screen_rect_ = applied_widget_rect_;
   }
 

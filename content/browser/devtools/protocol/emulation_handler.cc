@@ -125,24 +125,37 @@ Response EmulationHandler::CanEmulate(bool* result) {
 }
 
 Response EmulationHandler::SetDeviceMetricsOverride(
-    int width, int height, double device_scale_factor, bool mobile,
-    bool fit_window, const double* optional_scale,
-    const double* optional_offset_x, const double* optional_offset_y,
-    const int* screen_width, const int* screen_height,
-    const int* position_x, const int* position_y) {
-  return SetDeviceMetricsOverride(width, height, device_scale_factor, mobile,
-      fit_window, optional_scale, optional_offset_x, optional_offset_y);
-}
-
-Response EmulationHandler::SetDeviceMetricsOverride(
-    int width, int height, double device_scale_factor, bool mobile,
-    bool fit_window, const double* optional_scale,
-    const double* optional_offset_x, const double* optional_offset_y) {
+    int width,
+    int height,
+    double device_scale_factor,
+    bool mobile,
+    bool fit_window,
+    const double* optional_scale,
+    const double* optional_offset_x,
+    const double* optional_offset_y,
+    const int* screen_width,
+    const int* screen_height,
+    const int* position_x,
+    const int* position_y) {
   const static int max_size = 10000000;
   const static double max_scale = 10;
 
   if (!host_)
     return Response::InternalError("Could not connect to view");
+
+  if (screen_width && screen_height &&
+      (*screen_width < 0 || *screen_height < 0 ||
+           *screen_width > max_size || *screen_height > max_size)) {
+    return Response::InvalidParams(
+        "Screen width and height values must be positive, not greater than " +
+        base::IntToString(max_size));
+  }
+
+  if (screen_width && screen_height && position_x && position_y &&
+      (*position_x < 0 || *position_y < 0 ||
+           *position_x > *screen_width || *position_y > *screen_height)) {
+    return Response::InvalidParams("View position should be on the screen");
+  }
 
   if (width < 0 || height < 0 || width > max_size || height > max_size) {
     return Response::InvalidParams(
@@ -162,6 +175,10 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   blink::WebDeviceEmulationParams params;
   params.screenPosition = mobile ? blink::WebDeviceEmulationParams::Mobile :
       blink::WebDeviceEmulationParams::Desktop;
+  if (screen_width && screen_height)
+    params.screenSize = blink::WebSize(*screen_width, *screen_height);
+  if (position_x && position_y)
+    params.viewPosition = blink::WebPoint(*position_x, *position_y);
   params.deviceScaleFactor = device_scale_factor;
   params.viewSize = blink::WebSize(width, height);
   params.fitToView = fit_window;
