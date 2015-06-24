@@ -5,66 +5,12 @@
 #include "config.h"
 #include "core/editing/VisiblePosition.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Range.h"
-#include "core/dom/Text.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/CoreTestHelpers.h"
-#include "core/testing/DummyPageHolder.h"
-#include <gtest/gtest.h>
+#include "core/editing/EditingTestBase.h"
 
 namespace blink {
 
-namespace {
-
-Position positionInDOMTree(Node& anchor, int offset)
-{
-    return Position(&anchor, offset, Position::PositionIsOffsetInAnchor);
-}
-
-PositionInComposedTree positionInComposedTree(Node& anchor, int offset)
-{
-    return PositionInComposedTree(&anchor, offset, PositionInComposedTree::PositionIsOffsetInAnchor);
-}
-
-} // namespace
-
-class VisiblePositionTest : public ::testing::Test {
-protected:
-    void SetUp() override;
-
-    Document& document() const { return m_dummyPageHolder->document(); }
-
-    static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope&, const char* hostElementID, const char* shadowRootContent);
-
-    void setBodyContent(const char*);
-    PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char*);
-
-private:
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
+class VisiblePositionTest : public EditingTestBase {
 };
-
-void VisiblePositionTest::SetUp()
-{
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-}
-
-PassRefPtrWillBeRawPtr<ShadowRoot> VisiblePositionTest::createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
-{
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
-    shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
-    return shadowRoot.release();
-}
-
-void VisiblePositionTest::setBodyContent(const char* bodyContent)
-{
-    document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
-}
-
-PassRefPtrWillBeRawPtr<ShadowRoot> VisiblePositionTest::setShadowContent(const char* shadowContent)
-{
-    return createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-}
 
 TEST_F(VisiblePositionTest, ShadowDistributedNodes)
 {
