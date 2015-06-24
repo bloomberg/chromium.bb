@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
 namespace android_webview {
@@ -28,8 +29,9 @@ media::MediaClientAndroid::KeySystemUuidMap::value_type CreateMappingFromString(
     const std::string& key_system_uuid_mapping) {
   std::vector<uint8_t> uuid;
 
-  std::vector<std::string> tokens;
-  Tokenize(key_system_uuid_mapping, ",", &tokens);
+  std::vector<std::string> tokens =
+      base::SplitString(key_system_uuid_mapping, ",", base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
   RCHECK(tokens.size() == 2);
 
   std::string key_system;

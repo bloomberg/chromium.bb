@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -191,8 +192,8 @@ EventRewriter::DeviceType GetDeviceType(const std::string& device_name,
   if (base::LowerCaseEqualsASCII(device_name, "virtual core keyboard"))
     return EventRewriter::kDeviceVirtualCoreKeyboard;
 
-  std::vector<std::string> tokens;
-  Tokenize(device_name, " .", &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      device_name, " .", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   // If the |device_name| contains the two words, "apple" and "keyboard", treat
   // it as an Apple keyboard.

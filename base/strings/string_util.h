@@ -491,7 +491,7 @@ inline typename string_type::value_type* WriteInto(string_type* str,
 // |delimiters|.  Each field is added to the |tokens| vector.  Returns the
 // number of tokens found.
 //
-// DEPRECATED. Use SplitStringUsingSet for new code (these just forward).
+// DEPRECATED. Use base::SplitString for new code (these just forward).
 // TODO(brettw) convert callers and delete these forwarders.
 BASE_EXPORT size_t Tokenize(const base::string16& str,
                             const base::string16& delimiters,

@@ -9,6 +9,7 @@
 #include "ash/display/display_info.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/display.h"
@@ -129,20 +130,22 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   std::string main_spec = spec;
 
   float ui_scale = 1.0f;
-  std::vector<std::string> parts;
-  if (Tokenize(main_spec, "@", &parts) == 2) {
+  std::vector<std::string> parts = base::SplitString(
+      main_spec, "@", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (parts.size() == 2) {
     double scale_in_double = 0;
     if (base::StringToDouble(parts[1], &scale_in_double))
       ui_scale = scale_in_double;
     main_spec = parts[0];
   }
 
-  size_t count = Tokenize(main_spec, "/", &parts);
+  parts = base::SplitString(main_spec, "/", base::KEEP_WHITESPACE,
+                            base::SPLIT_WANT_NONEMPTY);
   gfx::Display::Rotation rotation(gfx::Display::ROTATE_0);
   bool has_overscan = false;
-  if (count) {
+  if (!parts.empty()) {
     main_spec = parts[0];
-    if (count >= 2) {
+    if (parts.size() >= 2) {
       std::string options = parts[1];
       for (size_t i = 0; i < options.size(); ++i) {
         char c = options[i];
@@ -172,18 +175,21 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   }
 
   std::vector<DisplayMode> display_modes;
-  if (Tokenize(main_spec, "#", &parts) == 2) {
+  parts = base::SplitString(main_spec, "#", base::KEEP_WHITESPACE,
+                            base::SPLIT_WANT_NONEMPTY);
+  if (parts.size() == 2) {
     size_t native_mode = 0;
     int largest_area = -1;
     float highest_refresh_rate = -1.0f;
     main_spec = parts[0];
     std::string resolution_list = parts[1];
-    count = Tokenize(resolution_list, "|", &parts);
-    for (size_t i = 0; i < count; ++i) {
+    parts = base::SplitString(resolution_list, "|", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY);
+    for (size_t i = 0; i < parts.size(); ++i) {
       DisplayMode mode;
       gfx::Rect mode_bounds;
-      std::vector<std::string> resolution;
-      Tokenize(parts[i], "%", &resolution);
+      std::vector<std::string> resolution = base::SplitString(
+          parts[i], "%", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
       if (GetDisplayBounds(
               resolution[0], &mode_bounds, &mode.device_scale_factor)) {
         mode.size = mode_bounds.size();

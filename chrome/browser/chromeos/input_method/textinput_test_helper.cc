@@ -4,6 +4,7 @@
 
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
@@ -164,8 +165,9 @@ void TextInputTestHelper::WaitForSurroundingTextChanged(
 bool TextInputTestHelper::ConvertRectFromString(const std::string& str,
                                                 gfx::Rect* rect) {
   DCHECK(rect);
-  std::vector<std::string> rect_piece;
-  if (Tokenize(str, ",", &rect_piece) != 4UL)
+  std::vector<base::StringPiece> rect_piece = base::SplitStringPiece(
+      str, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (rect_piece.size() != 4UL)
     return false;
   int x, y, width, height;
   if (!base::StringToInt(rect_piece[0], &x))

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/trace_event.h"
@@ -318,9 +319,9 @@ void AppendHeapProfileAsTraceFormat(const char* input, std::string* output) {
     input_string.assign(input);
   }
 
-  std::vector<std::string> lines;
-  size_t line_count = Tokenize(input_string, "\n", &lines);
-  if (line_count == 0) {
+  std::vector<std::string> lines = base::SplitString(
+      input_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (lines.empty()) {
     DLOG(WARNING) << "No lines found";
     return;
   }
@@ -330,10 +331,8 @@ void AppendHeapProfileAsTraceFormat(const char* input, std::string* output) {
   AppendHeapProfileTotalsAsTraceFormat(lines[0], output);
 
   // Handle the following stack trace lines.
-  for (size_t i = 1; i < line_count; ++i) {
-    const std::string& line = lines[i];
-    AppendHeapProfileLineAsTraceFormat(line, output);
-  }
+  for (size_t i = 1; i < lines.size(); i++)
+    AppendHeapProfileLineAsTraceFormat(lines[i], output);
   output->append("]\n");
 }
 

@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -498,8 +499,9 @@ void MockAndroidConnection::Receive(const std::string& data) {
     return;
 
   std::string request(request_.substr(0, request_end_pos));
-  std::vector<std::string> tokens;
-  Tokenize(request, " ", &tokens);
+  std::vector<std::string> tokens =
+      base::SplitString(request, " ", base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
   CHECK_EQ(3U, tokens.size());
   CHECK_EQ("GET", tokens[0]);
   CHECK_EQ("HTTP/1.1", tokens[2]);
@@ -547,10 +549,11 @@ void MockAndroidConnection::ProcessCommand(const std::string& command) {
     delegate_->SendSuccess(std::string());
   } else {
     if (command.find(kShellPrefix) == 0) {
-      std::vector<std::string> lines;
-      Tokenize(command.substr(strlen(kShellPrefix)), "\n", &lines);
       std::string result;
-      for (const auto& line : lines) {
+      for (const auto& line :
+           base::SplitString(command.substr(strlen(kShellPrefix)), "\n",
+                             base::KEEP_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY)) {
         if (line == kDeviceModelCommand) {
           result += kDeviceModel;
           result += "\r\n";

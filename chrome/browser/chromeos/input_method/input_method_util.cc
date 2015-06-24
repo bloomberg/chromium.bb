@@ -682,9 +682,11 @@ void InputMethodUtil::UpdateHardwareLayoutCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   hardware_layouts_.clear();
   hardware_login_layouts_.clear();
-  if (cached_hardware_layouts_.empty())
-    Tokenize(delegate_->GetHardwareKeyboardLayouts(), ",",
-             &cached_hardware_layouts_);
+  if (cached_hardware_layouts_.empty()) {
+    cached_hardware_layouts_ =
+        base::SplitString(delegate_->GetHardwareKeyboardLayouts(), ",",
+                          base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  }
   hardware_layouts_ = cached_hardware_layouts_;
   MigrateInputMethods(&hardware_layouts_);
 

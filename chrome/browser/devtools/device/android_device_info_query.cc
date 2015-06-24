@@ -124,11 +124,12 @@ void MapProcessesToPackages(const std::string& response,
   //
   // USER PID PPID VSIZE RSS WCHAN PC ? NAME
   //
-  std::vector<std::string> entries;
-  Tokenize(response, "\n", &entries);
-  for (size_t i = 1; i < entries.size(); ++i) {
-    std::vector<std::string> fields;
-    Tokenize(entries[i], " \r", &fields);
+  for (const base::StringPiece& line :
+       base::SplitStringPiece(response, "\n", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    std::vector<std::string> fields =
+        base::SplitString(line, " \r", base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
     if (fields.size() < 9)
       continue;
     std::string pid = fields[1];
@@ -148,11 +149,12 @@ StringMap MapSocketsToProcesses(const std::string& response) {
   // We need to find records with paths starting from '@' (abstract socket)
   // and containing the channel pattern ("_devtools_remote").
   StringMap socket_to_pid;
-  std::vector<std::string> entries;
-  Tokenize(response, "\n", &entries);
-  for (size_t i = 1; i < entries.size(); ++i) {
-    std::vector<std::string> fields;
-    Tokenize(entries[i], " \r", &fields);
+  for (const base::StringPiece& line :
+       base::SplitStringPiece(response, "\n", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    std::vector<std::string> fields =
+        base::SplitString(line, " \r", base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
     if (fields.size() < 8)
       continue;
     if (fields[3] != "00010000" || fields[5] != "01")
@@ -177,16 +179,18 @@ StringMap MapSocketsToProcesses(const std::string& response) {
   return socket_to_pid;
 }
 
-gfx::Size ParseScreenSize(const std::string& str) {
-  std::vector<std::string> pairs;
-  Tokenize(str, "-", &pairs);
+gfx::Size ParseScreenSize(base::StringPiece str) {
+  std::vector<base::StringPiece> pairs =
+      base::SplitStringPiece(str, "-", base::KEEP_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY);
   if (pairs.size() != 2)
     return gfx::Size();
 
   int width;
   int height;
-  std::vector<std::string> numbers;
-  Tokenize(pairs[1].substr(1, pairs[1].size() - 2), ",", &numbers);
+  std::vector<base::StringPiece> numbers =
+      base::SplitStringPiece(pairs[1].substr(1, pairs[1].size() - 2), ",",
+                             base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (numbers.size() != 2 ||
       !base::StringToInt(numbers[0], &width) ||
       !base::StringToInt(numbers[1], &height))
@@ -196,11 +200,11 @@ gfx::Size ParseScreenSize(const std::string& str) {
 }
 
 gfx::Size ParseWindowPolicyResponse(const std::string& response) {
-  std::vector<std::string> lines;
-  Tokenize(response, "\r", &lines);
-  for (const std::string& line : lines) {
+  for (const base::StringPiece& line :
+      base::SplitStringPiece(response, "\r", base::KEEP_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY)) {
     size_t pos = line.find(kScreenSizePrefix);
-    if (pos != std::string::npos) {
+    if (pos != base::StringPiece::npos) {
       return ParseScreenSize(
           line.substr(pos + strlen(kScreenSizePrefix)));
     }
@@ -218,18 +222,18 @@ StringMap MapIdsToUsers(const std::string& response) {
   //     Created: +3d4h35m1s139ms ago
   //     Last logged in: +17m26s287ms ago
   StringMap id_to_username;
-  std::vector<std::string> lines;
-  Tokenize(response, "\r", &lines);
-  for (const std::string& line : lines) {
+  for (const base::StringPiece& line :
+       base::SplitStringPiece(response, "\r", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
     size_t pos = line.find(kUserInfoPrefix);
     if (pos != std::string::npos) {
-      std::string fields = line.substr(pos + strlen(kUserInfoPrefix));
+      base::StringPiece fields = line.substr(pos + strlen(kUserInfoPrefix));
       size_t first_pos = fields.find_first_of(":");
       size_t last_pos = fields.find_last_of(":");
       if (first_pos != std::string::npos && last_pos != std::string::npos) {
-        std::string id = fields.substr(0, first_pos);
+        std::string id = fields.substr(0, first_pos).as_string();
         std::string name = fields.substr(first_pos + 1,
-                                         last_pos - first_pos - 1);
+                                         last_pos - first_pos - 1).as_string();
         id_to_username[id] = name;
       }
     }

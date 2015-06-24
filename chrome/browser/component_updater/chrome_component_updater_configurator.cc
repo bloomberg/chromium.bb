@@ -10,11 +10,9 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
-#if defined(OS_WIN)
-#include "base/win/win_util.h"
-#endif  // OS_WIN
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/component_updater/component_updater_url_constants.h"
@@ -25,6 +23,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif  // OS_WIN
 
 using update_client::Configurator;
 using update_client::OutOfProcessPatcher;
@@ -151,10 +153,9 @@ ChromeConfigurator::ChromeConfigurator(
       background_downloads_enabled_(false),
       fallback_to_alt_source_url_enabled_(false) {
   // Parse comma-delimited debug flags.
-  std::vector<std::string> switch_values;
-  Tokenize(cmdline->GetSwitchValueASCII(switches::kComponentUpdater),
-           ",",
-           &switch_values);
+  std::vector<std::string> switch_values = base::SplitString(
+      cmdline->GetSwitchValueASCII(switches::kComponentUpdater),
+      ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   fast_update_ = HasSwitchValue(switch_values, kSwitchFastUpdate);
   pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
   deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);

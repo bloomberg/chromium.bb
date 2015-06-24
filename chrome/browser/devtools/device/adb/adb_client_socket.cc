@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
@@ -95,7 +96,9 @@ class AdbQuerySocket : AdbClientSocket {
       : AdbClientSocket(port),
         current_query_(0),
         callback_(callback) {
-    if (Tokenize(query, "|", &queries_) == 0) {
+    queries_ = base::SplitString(query, "|", base::KEEP_WHITESPACE,
+                                 base::SPLIT_WANT_NONEMPTY);
+    if (queries_.empty()) {
       CheckNetResultOrDie(net::ERR_INVALID_ARGUMENT);
       return;
     }

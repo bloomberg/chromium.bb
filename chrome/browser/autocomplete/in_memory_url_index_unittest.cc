@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,7 +69,9 @@ void StringToTerms(const char* search_string,
     lower_string->insert(cursor_position, base::ASCIIToUTF16(" "));
   }
 
-  Tokenize(*lower_string, base::kWhitespaceUTF16, lower_terms);
+  *lower_terms = base::SplitString(*lower_string, base::kWhitespaceUTF16,
+                                   base::KEEP_WHITESPACE,
+                                   base::SPLIT_WANT_NONEMPTY);
 }
 
 }  // namespace
