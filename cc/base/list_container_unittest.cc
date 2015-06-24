@@ -107,6 +107,14 @@ class SimpleDerivedElementConstructMagicNumberTwo
   }
 };
 
+class SimpleDerivedElementConstructMagicNumberThree
+    : public SimpleDerivedElement {
+ public:
+  SimpleDerivedElementConstructMagicNumberThree() {
+    set_value(kMagicNumberToUseForSimpleDerivedElementThree);
+  }
+};
+
 class MockDerivedElement : public SimpleDerivedElementConstructMagicNumberOne {
  public:
   ~MockDerivedElement() override { Destruct(); }
@@ -881,8 +889,7 @@ TEST(ListContainerTest, AppendByMovingReplacesSourceWithNewDerivedElement) {
 
   // AppendByMoving replaces the source element with a new derived element so
   // we do not expect sizes to shrink after AppendByMoving is called.
-  EXPECT_EQ(2u,
-            list_1.size());  // One direct allocation and one AppendByMoving.
+  EXPECT_EQ(2u, list_1.size());  // One direct allocation, one AppendByMoving.
   EXPECT_EQ(1u, list_2.size());  // One AppendByMoving.
 }
 
@@ -952,6 +959,41 @@ TEST(ListContainerTest, AppendByMovingLongAndSimpleDerivedElements) {
       kMagicNumberToUseForLongSimpleDerivedElement));
   EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
             list.back()->get_value());
+}
+
+TEST(ListContainerTest, Swap) {
+  ListContainer<SimpleDerivedElement> list_1(kCurrentLargestDerivedElementSize);
+  list_1.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberOne>();
+  ListContainer<SimpleDerivedElement> list_2(kCurrentLargestDerivedElementSize);
+  list_2.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberTwo>();
+  list_2.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberThree>();
+
+  SimpleDerivedElement* pre_swap_list_1_front = list_1.front();
+
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list_1.front()->get_value());
+  EXPECT_EQ(1u, list_1.size());
+
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
+            list_2.front()->get_value());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementThree,
+            list_2.back()->get_value());
+  EXPECT_EQ(2u, list_2.size());
+
+  list_2.swap(list_1);
+
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
+            list_1.front()->get_value());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementThree,
+            list_1.back()->get_value());
+  EXPECT_EQ(2u, list_1.size());
+
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
+            list_2.front()->get_value());
+  EXPECT_EQ(1u, list_2.size());
+
+  // Ensure pointers are still valid after swapping.
+  EXPECT_EQ(pre_swap_list_1_front, list_2.front());
 }
 
 }  // namespace

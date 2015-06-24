@@ -288,6 +288,11 @@ class ListContainer : public ListContainerBase {
     return new (*at) DerivedElementType();
   }
 
+  template <typename DerivedElementType>
+  void swap(ListContainer<DerivedElementType>& other) {
+    data_.swap(other.data_);
+  }
+
   // Appends a new item without copying. The original item will not be
   // destructed and will be replaced with a new DerivedElementType. The
   // DerivedElementType does not have to match the moved type as a full block
