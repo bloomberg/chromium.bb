@@ -467,17 +467,7 @@ config("compiler") {
 
     if (!is_asan && !is_msan && !is_lsan && !is_tsan) {
       # TODO(brettw) common.gypi has this only for target toolset.
-      if (current_cpu == "x64") {
-        # --icf=safe disables much more folding on x86_64 than elsewhere, see
-        # http://crbug.com/492177.  Turning it on saves over 12 MB of binary
-        # size, but it seems to regress cold startup time by over a second
-        # (see http://crbug.com/492809).
-        # TODO(thakis): Check if disabling ICF would inmprove android cold start
-        # times by several seconds too.
-        ldflags += [ "-Wl,--icf=safe" ]
-      } else {
-        ldflags += [ "-Wl,--icf=all" ]
-      }
+      ldflags += [ "-Wl,--icf=all" ]
     }
 
     # TODO(thestig): Make this flag work with GN.
