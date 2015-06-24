@@ -25,19 +25,49 @@
 
 #include "config.h"
 #include "core/dom/DOMStringList.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include <algorithm>
 
 namespace blink {
 
-String DOMStringList::item(unsigned index) const
+String DOMStringList::anonymousIndexedGetter(unsigned index) const
 {
     if (index >= m_strings.size())
         return String();
     return m_strings[index];
 }
 
-bool DOMStringList::contains(const String& string) const
+
+String DOMStringList::item(ExecutionContext* context, unsigned index) const
 {
+    switch (m_source) {
+    case DOMStringList::IndexedDB:
+        UseCounter::count(context, UseCounter::DOMStringList_Item_AttributeGetter_IndexedDB);
+        break;
+    case DOMStringList::Location:
+        UseCounter::count(context, UseCounter::DOMStringList_Item_AttributeGetter_Location);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    return anonymousIndexedGetter(index);
+}
+
+bool DOMStringList::contains(ExecutionContext* context, const String& string) const
+{
+    switch (m_source) {
+    case DOMStringList::IndexedDB:
+        UseCounter::count(context, UseCounter::DOMStringList_Contains_Method_IndexedDB);
+        break;
+    case DOMStringList::Location:
+        UseCounter::count(context, UseCounter::DOMStringList_Contains_Method_Location);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
     // FIXME: Currently, all consumers of DOMStringList store fairly small lists and thus an O(n)
     //        algorithm is OK.  But this may need to be optimized if larger amounts of data are
     //        stored in m_strings.

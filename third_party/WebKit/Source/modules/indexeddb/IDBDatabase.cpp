@@ -168,7 +168,7 @@ void IDBDatabase::onComplete(int64_t transactionId)
 
 PassRefPtrWillBeRawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
 {
-    RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (IDBDatabaseMetadata::ObjectStoreMap::const_iterator it = m_metadata.objectStores.begin(); it != m_metadata.objectStores.end(); ++it)
         objectStoreNames->append(it->value.name);
     objectStoreNames->sort();

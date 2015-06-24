@@ -747,6 +747,10 @@ public:
         FormDataAppendNull = 843,
         HTMLDocumentCreateAttributeNameNotLowercase = 844,
         NonHTMLElementSetAttributeNodeFromHTMLDocumentNameNotLowercase = 845,
+        DOMStringList_Item_AttributeGetter_IndexedDB = 846,
+        DOMStringList_Item_AttributeGetter_Location = 847,
+        DOMStringList_Contains_Method_IndexedDB = 848,
+        DOMStringList_Contains_Method_Location = 849,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

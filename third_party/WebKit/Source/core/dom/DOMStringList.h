@@ -36,14 +36,22 @@
 
 namespace blink {
 
+class ExecutionContext;
+
 // FIXME: Some consumers of this class may benefit from lazily fetching items rather
 //        than creating the list statically as is currently the only option.
 class CORE_EXPORT DOMStringList final : public RefCountedWillBeGarbageCollectedFinalized<DOMStringList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DOMStringList> create()
+    // We would like to remove DOMStringList from the platform if possible.
+    // Track the source of each instance so we can measure the use of methods
+    // not present on Arrays and determine the feasibility of removal and
+    // what path it should take. http://crbug.com/460726
+    enum Source { IndexedDB, Location };
+
+    static PassRefPtrWillBeRawPtr<DOMStringList> create(Source source)
     {
-        return adoptRefWillBeNoop(new DOMStringList());
+        return adoptRefWillBeNoop(new DOMStringList(source));
     }
 
     bool isEmpty() const { return m_strings.isEmpty(); }
@@ -53,17 +61,20 @@ public:
 
     // Implements the IDL.
     size_t length() const { return m_strings.size(); }
-    String item(unsigned index) const;
-    bool contains(const String& str) const;
+    String anonymousIndexedGetter(unsigned index) const;
+
+    String item(ExecutionContext*, unsigned index) const;
+    bool contains(ExecutionContext*, const String&) const;
 
     operator const Vector<String>&() const { return m_strings; }
 
     DEFINE_INLINE_TRACE() { }
 
 private:
-    DOMStringList() { }
+    explicit DOMStringList(Source source) : m_source(source) { }
 
     Vector<String> m_strings;
+    Source m_source;
 };
 
 } // namespace blink

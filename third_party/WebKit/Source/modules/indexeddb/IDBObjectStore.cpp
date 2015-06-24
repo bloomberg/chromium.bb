@@ -79,7 +79,7 @@ ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
 PassRefPtrWillBeRawPtr<DOMStringList> IDBObjectStore::indexNames() const
 {
     IDB_TRACE("IDBObjectStore::indexNames");
-    RefPtrWillBeRawPtr<DOMStringList> indexNames = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> indexNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it)
         indexNames->append(it->value.name);
     indexNames->sort();

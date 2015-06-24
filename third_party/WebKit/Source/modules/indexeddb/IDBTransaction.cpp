@@ -333,7 +333,7 @@ PassRefPtrWillBeRawPtr<DOMStringList> IDBTransaction::objectStoreNames() const
     if (m_mode == WebIDBTransactionModeVersionChange)
         return m_database->objectStoreNames();
 
-    RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (const String& name : m_objectStoreNames)
         objectStoreNames->append(name);
     objectStoreNames->sort();

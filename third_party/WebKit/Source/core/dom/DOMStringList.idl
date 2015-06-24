@@ -30,6 +30,8 @@
     WillBeGarbageCollected,
 ] interface DOMStringList {
     readonly attribute unsigned long length;
-    [Measure] getter DOMString? item(unsigned long index);
-    [MeasureAs=DOMStringListContains] boolean contains(DOMString string);
+    getter DOMString? (unsigned long index);
+
+    [CallWith=ExecutionContext] DOMString? item(unsigned long index);
+    [CallWith=ExecutionContext,MeasureAs=DOMStringListContains] boolean contains(DOMString string);
 };

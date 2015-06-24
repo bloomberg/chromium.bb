@@ -120,7 +120,7 @@ String Location::origin() const
 
 PassRefPtrWillBeRawPtr<DOMStringList> Location::ancestorOrigins() const
 {
-    RefPtrWillBeRawPtr<DOMStringList> origins = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> origins = DOMStringList::create(DOMStringList::Location);
     if (!m_frame)
         return origins.release();
     for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent())

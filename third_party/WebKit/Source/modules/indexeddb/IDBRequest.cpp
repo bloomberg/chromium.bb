@@ -250,7 +250,7 @@ void IDBRequest::onSuccess(const Vector<String>& stringList)
     if (!shouldEnqueueEvent())
         return;
 
-    RefPtrWillBeRawPtr<DOMStringList> domStringList = DOMStringList::create();
+    RefPtrWillBeRawPtr<DOMStringList> domStringList = DOMStringList::create(DOMStringList::IndexedDB);
     for (size_t i = 0; i < stringList.size(); ++i)
         domStringList->append(stringList[i]);
     onSuccessInternal(IDBAny::create(domStringList.release()));
