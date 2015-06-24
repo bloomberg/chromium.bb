@@ -182,10 +182,12 @@ TEST(EscapeTest, UnescapeURLComponentASCII) {
     // Control characters.
     {"%01%02%03%04%05%06%07%08%09 %25", UnescapeRule::URL_SPECIAL_CHARS,
      "%01%02%03%04%05%06%07%08%09 %"},
-    {"%01%02%03%04%05%06%07%08%09 %25", UnescapeRule::CONTROL_CHARS,
+    {"%01%02%03%04%05%06%07%08%09 %25",
+     UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      "\x01\x02\x03\x04\x05\x06\x07\x08\x09 %25"},
     {"Hello%20%13%10%02", UnescapeRule::SPACES, "Hello %13%10%02"},
-    {"Hello%20%13%10%02", UnescapeRule::CONTROL_CHARS, "Hello%20\x13\x10\x02"},
+    {"Hello%20%13%10%02", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+     "Hello%20\x13\x10\x02"},
   };
 
   for (size_t i = 0; i < arraysize(unescape_cases); i++) {
@@ -205,7 +207,8 @@ TEST(EscapeTest, UnescapeURLComponentASCII) {
   expected.push_back(0);
   expected.push_back(0);
   expected.append("9Test");
-  EXPECT_EQ(expected, UnescapeURLComponent(input, UnescapeRule::CONTROL_CHARS));
+  EXPECT_EQ(expected, UnescapeURLComponent(
+                          input, UnescapeRule::SPOOFING_AND_CONTROL_CHARS));
 
   // When we're not unescaping NULLs.
   expected = "Null";
@@ -233,7 +236,7 @@ TEST(EscapeTest, UnescapeURLComponent) {
      L"Some%20random text %25\xE2\x80\x84OK"},
 
     // BiDi Control characters should not be unescaped unless explicity told to
-    // do so with UnescapeRule::CONTROL_CHARS
+    // do so with UnescapeRule::SPOOFING_AND_CONTROL_CHARS
     {L"Some%20random text %25%D8%9COK", UnescapeRule::NORMAL,
      L"Some%20random text %25%D8%9COK"},
     {L"Some%20random text %25%E2%80%8EOK", UnescapeRule::NORMAL,
@@ -250,31 +253,61 @@ TEST(EscapeTest, UnescapeURLComponent) {
      L"Some%20random text %25%E2%81%A6OK"},
     {L"Some%20random text %25%E2%81%A9OK", UnescapeRule::NORMAL,
      L"Some%20random text %25%E2%81%A9OK"},
-    // UnescapeRule::CONTROL_CHARS should unescape BiDi Control characters.
+    // UnescapeRule::SPOOFING_AND_CONTROL_CHARS should unescape BiDi Control
+    // characters.
     {L"Some%20random text %25%D8%9COK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xD8\x9COK"},
     {L"Some%20random text %25%E2%80%8EOK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xE2\x80\x8EOK"},
     {L"Some%20random text %25%E2%80%8FOK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xE2\x80\x8FOK"},
     {L"Some%20random text %25%E2%80%AAOK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xE2\x80\xAAOK"},
     {L"Some%20random text %25%E2%80%ABOK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xE2\x80\xABOK"},
     {L"Some%20random text %25%E2%80%AEOK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xE2\x80\xAEOK"},
     {L"Some%20random text %25%E2%81%A6OK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xE2\x81\xA6OK"},
     {L"Some%20random text %25%E2%81%A9OK",
-     UnescapeRule::NORMAL | UnescapeRule::CONTROL_CHARS,
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Some%20random text %25\xE2\x81\xA9OK"},
+
+    // Certain banned characters should not be unescaped unless explicitly told
+    // to do so with UnescapeRule::SPOOFING_AND_CONTROL_CHARS.
+    // U+1F50F LOCK WITH INK PEN
+    {L"Some%20random text %25%F0%9F%94%8FOK", UnescapeRule::NORMAL,
+     L"Some%20random text %25%F0%9F%94%8FOK"},
+    // U+1F510 CLOSED LOCK WITH KEY
+    {L"Some%20random text %25%F0%9F%94%90OK", UnescapeRule::NORMAL,
+     L"Some%20random text %25%F0%9F%94%90OK"},
+    // U+1F512 LOCK
+    {L"Some%20random text %25%F0%9F%94%92OK", UnescapeRule::NORMAL,
+     L"Some%20random text %25%F0%9F%94%92OK"},
+    // U+1F513 OPEN LOCK
+    {L"Some%20random text %25%F0%9F%94%93OK", UnescapeRule::NORMAL,
+     L"Some%20random text %25%F0%9F%94%93OK"},
+    // UnescapeRule::SPOOFING_AND_CONTROL_CHARS should unescape banned
+    // characters.
+    {L"Some%20random text %25%F0%9F%94%8FOK",
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+     L"Some%20random text %25\xF0\x9F\x94\x8FOK"},
+    {L"Some%20random text %25%F0%9F%94%90OK",
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+     L"Some%20random text %25\xF0\x9F\x94\x90OK"},
+    {L"Some%20random text %25%F0%9F%94%92OK",
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+     L"Some%20random text %25\xF0\x9F\x94\x92OK"},
+    {L"Some%20random text %25%F0%9F%94%93OK",
+     UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
+     L"Some%20random text %25\xF0\x9F\x94\x93OK"},
 
     {L"Some%20random text %25%2dOK", UnescapeRule::SPACES,
      L"Some random text %25-OK"},
@@ -298,12 +331,13 @@ TEST(EscapeTest, UnescapeURLComponent) {
     // Control characters.
     {L"%01%02%03%04%05%06%07%08%09 %25", UnescapeRule::URL_SPECIAL_CHARS,
      L"%01%02%03%04%05%06%07%08%09 %"},
-    {L"%01%02%03%04%05%06%07%08%09 %25", UnescapeRule::CONTROL_CHARS,
+    {L"%01%02%03%04%05%06%07%08%09 %25",
+     UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"\x01\x02\x03\x04\x05\x06\x07\x08\x09 %25"},
     {L"Hello%20%13%10%02", UnescapeRule::SPACES, L"Hello %13%10%02"},
-    {L"Hello%20%13%10%02", UnescapeRule::CONTROL_CHARS,
+    {L"Hello%20%13%10%02", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Hello%20\x13\x10\x02"},
-    {L"Hello\x9824\x9827", UnescapeRule::CONTROL_CHARS,
+    {L"Hello\x9824\x9827", UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
      L"Hello\x9824\x9827"},
   };
 
@@ -324,7 +358,8 @@ TEST(EscapeTest, UnescapeURLComponent) {
   expected.push_back(0);
   expected.push_back(0);
   expected.append(base::ASCIIToUTF16("9Test"));
-  EXPECT_EQ(expected, UnescapeURLComponent(input, UnescapeRule::CONTROL_CHARS));
+  EXPECT_EQ(expected, UnescapeURLComponent(
+                          input, UnescapeRule::SPOOFING_AND_CONTROL_CHARS));
 
   // When we're not unescaping NULLs.
   expected = base::WideToUTF16(L"Null");

@@ -182,7 +182,7 @@ bool ParseFileSystemSchemeURL(const GURL& url,
 
   std::string path = net::UnescapeURLComponent(url.path(),
       net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
-      net::UnescapeRule::CONTROL_CHARS);
+      net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
 
   // Ensure the path is relative.
   while (!path.empty() && path[0] == '/')

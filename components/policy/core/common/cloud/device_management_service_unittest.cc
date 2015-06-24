@@ -336,7 +336,7 @@ class QueryParams {
           net::UnescapeRule::NORMAL |
           net::UnescapeRule::SPACES |
           net::UnescapeRule::URL_SPECIAL_CHARS |
-          net::UnescapeRule::CONTROL_CHARS |
+          net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
           net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
       if (unescaped_name == name) {
         if (found)
@@ -347,7 +347,7 @@ class QueryParams {
             net::UnescapeRule::NORMAL |
             net::UnescapeRule::SPACES |
             net::UnescapeRule::URL_SPECIAL_CHARS |
-            net::UnescapeRule::CONTROL_CHARS |
+            net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
             net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
         if (unescaped_value != expected_value)
           return false;

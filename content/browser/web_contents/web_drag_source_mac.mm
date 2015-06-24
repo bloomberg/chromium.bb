@@ -173,7 +173,7 @@ void PromiseWriterHelper(const DropData& drop_data,
       net::UnescapeRule::Type unescapeRules =
           net::UnescapeRule::SPACES |
           net::UnescapeRule::URL_SPECIAL_CHARS |
-          net::UnescapeRule::CONTROL_CHARS;
+          net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS;
       std::string unescapedUrlString =
           net::UnescapeURLComponent(dropData_->url.spec(), unescapeRules);
       std::string escapedUrlString =

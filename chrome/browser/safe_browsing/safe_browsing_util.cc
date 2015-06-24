@@ -272,9 +272,10 @@ std::string Unescape(const std::string& url) {
   int loop_var = 0;
   do {
     old_unescaped_str = unescaped_str;
-    unescaped_str = net::UnescapeURLComponent(old_unescaped_str,
-        net::UnescapeRule::CONTROL_CHARS | net::UnescapeRule::SPACES |
-        net::UnescapeRule::URL_SPECIAL_CHARS);
+    unescaped_str = net::UnescapeURLComponent(
+        old_unescaped_str, net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
+                               net::UnescapeRule::SPACES |
+                               net::UnescapeRule::URL_SPECIAL_CHARS);
   } while (unescaped_str != old_unescaped_str && ++loop_var <=
            kMaxLoopIterations);
 

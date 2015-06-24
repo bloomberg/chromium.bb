@@ -99,7 +99,7 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
   if (base64_encoded) {
     temp_data = UnescapeURLComponent(temp_data,
         UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS |
-        UnescapeRule::CONTROL_CHARS);
+        UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
   }
 
   // Strip whitespace.
@@ -113,7 +113,7 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
   if (!base64_encoded) {
     temp_data = UnescapeURLComponent(temp_data,
         UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS |
-        UnescapeRule::CONTROL_CHARS);
+        UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
   }
 
   if (base64_encoded) {

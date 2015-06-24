@@ -92,13 +92,14 @@ class UnescapeRule {
     // interpreting as a URL and want to do as much unescaping as possible.
     URL_SPECIAL_CHARS = 4,
 
-    // Unescapes control characters such as %01. This INCLUDES NULLs. This is
-    // used for rare cases such as data: URL decoding where the result is binary
-    // data. This flag also unescapes BiDi control characters.
+    // Unescapes characters that can be used in spoofing attempts (such as LOCK)
+    // and control characters (such as BiDi control characters and %01).  This
+    // INCLUDES NULLs.  This is used for rare cases such as data: URL decoding
+    // where the result is binary data.
     //
-    // DO NOT use CONTROL_CHARS if the URL is going to be displayed in the UI
-    // for security reasons.
-    CONTROL_CHARS = 8,
+    // DO NOT use SPOOFING_AND_CONTROL_CHARS if the URL is going to be displayed
+    // in the UI for security reasons.
+    SPOOFING_AND_CONTROL_CHARS = 8,
 
     // URL queries use "+" for space. This flag controls that replacement.
     REPLACE_PLUS_WITH_SPACE = 16,
