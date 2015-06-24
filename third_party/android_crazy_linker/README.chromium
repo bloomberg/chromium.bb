@@ -82,3 +82,5 @@ Local Modifications:
 
 - Implement a stub __cxa_demangle to avoid linking to LLVM's implementation.
 
+- Change relocation packing constant names for C++ style (cosmetic only).
+

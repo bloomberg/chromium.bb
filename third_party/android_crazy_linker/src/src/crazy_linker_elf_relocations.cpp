@@ -419,25 +419,25 @@ class AndroidPackedRelocationGroupFlags {
   explicit AndroidPackedRelocationGroupFlags(size_t flags) : flags_(flags) { }
 
   bool is_relocation_grouped_by_info() const {
-    return hasFlag(RELOCATION_GROUPED_BY_INFO_FLAG);
+    return hasFlag(kRelocationGroupedByInfoFlag);
   }
   bool is_relocation_grouped_by_offset_delta() const {
-    return hasFlag(RELOCATION_GROUPED_BY_OFFSET_DELTA_FLAG);
+    return hasFlag(kRelocationGroupedByOffsetDeltaFlag);
   }
   bool is_relocation_grouped_by_addend() const {
-    return hasFlag(RELOCATION_GROUPED_BY_ADDEND_FLAG);
+    return hasFlag(kRelocationGroupedByAddendFlag);
   }
   bool is_relocation_group_has_addend() const {
-    return hasFlag(RELOCATION_GROUP_HAS_ADDEND_FLAG);
+    return hasFlag(kRelocationGroupHasAddendFlag);
   }
 
  private:
   bool hasFlag(size_t flag) const { return (flags_ & flag) != 0; }
 
-  static const size_t RELOCATION_GROUPED_BY_INFO_FLAG = 1 << 0;
-  static const size_t RELOCATION_GROUPED_BY_OFFSET_DELTA_FLAG = 1 << 1;
-  static const size_t RELOCATION_GROUPED_BY_ADDEND_FLAG = 1 << 2;
-  static const size_t RELOCATION_GROUP_HAS_ADDEND_FLAG = 1 << 3;
+  static const size_t kRelocationGroupedByInfoFlag = 1 << 0;
+  static const size_t kRelocationGroupedByOffsetDeltaFlag = 1 << 1;
+  static const size_t kRelocationGroupedByAddendFlag = 1 << 2;
+  static const size_t kRelocationGroupHasAddendFlag = 1 << 3;
 
   const size_t flags_;
 };
