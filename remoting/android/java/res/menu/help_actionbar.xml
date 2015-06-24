@@ -15,8 +15,4 @@
         android:id="@+id/actionbar_play_store"
         android:title="@string/actionbar_play_store"
         app:showAsAction="never"/>
-    <item
-        android:id="@+id/actionbar_credits"
-        android:title="@string/credits"
-        app:showAsAction="never"/>
 </menu>
