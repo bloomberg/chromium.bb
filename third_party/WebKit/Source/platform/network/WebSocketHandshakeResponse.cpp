@@ -76,9 +76,4 @@ void WebSocketHandshakeResponse::addHeaderField(const AtomicString& name, const 
     WebSocketHandshakeRequest::addAndMergeHeader(&m_headerFields, name, value);
 }
 
-void WebSocketHandshakeResponse::clearHeaderFields()
-{
-    m_headerFields.clear();
-}
-
 } // namespace blink

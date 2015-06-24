@@ -48,7 +48,6 @@ public:
     void setStatusText(const String&);
     const HTTPHeaderMap& headerFields() const;
     void addHeaderField(const AtomicString& name, const AtomicString& value);
-    void clearHeaderFields();
     const String& headersText() const { return m_headersText; }
     void setHeadersText(const String& text) { m_headersText = text; }
 
