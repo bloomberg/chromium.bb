@@ -1184,6 +1184,9 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     //       backgroundHtmlParserPendingTokenLimit
     "BackgroundHtmlParserTokenLimits",
 
+    // Keys: doHtmlPreloadScanning
+    "HtmlPreloadScanning",
+
     // Keys: lowPriorityIframes
     "LowPriorityIFrames",
   };
