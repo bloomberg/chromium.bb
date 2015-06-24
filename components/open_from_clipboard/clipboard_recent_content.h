@@ -20,12 +20,17 @@ class ClipboardRecentContent {
   // Returns an instance of the ClipboardContent singleton.
   static ClipboardRecentContent* GetInstance();
 
-  // Returns true if the clipboard contains a recent URL, and copies it in
-  // |url|. Otherwise, returns false. |url| must not be null.
+  // Returns true if the clipboard contains a recent URL that has not been
+  // supressed, and copies it in |url|. Otherwise, returns false. |url| must not
+  // be null.
   virtual bool GetRecentURLFromClipboard(GURL* url) const = 0;
 
   // Returns how old the content of the clipboard is.
   virtual base::TimeDelta GetClipboardContentAge() const = 0;
+
+  // Prevent GetRecentURLFromClipboard from returning anything until the
+  // clipboard's content changed.
+  virtual void SuppressClipboardContent() = 0;
 
   // Sets which URL scheme this app can be opened with. Used by
   // ClipboardRecentContent to determine whether or not the clipboard contains

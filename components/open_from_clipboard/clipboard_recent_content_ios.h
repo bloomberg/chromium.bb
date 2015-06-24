@@ -14,7 +14,7 @@
 
 namespace test {
 class ClipboardRecentContentIOSTestHelper;
-}
+}  // namespace test
 
 template <typename T>
 struct DefaultSingletonTraits;
@@ -30,24 +30,26 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
 
   base::TimeDelta GetClipboardContentAge() const override;
 
+  void SuppressClipboardContent() override;
+
  protected:
   // Protected for testing.
   ClipboardRecentContentIOS();
   ~ClipboardRecentContentIOS() override;
+  // |uptime| is how long ago the device has started.
+  ClipboardRecentContentIOS(base::TimeDelta uptime);
 
  private:
   friend struct DefaultSingletonTraits<ClipboardRecentContentIOS>;
   friend class test::ClipboardRecentContentIOSTestHelper;
-
+  // Initializes the object. |uptime| is how long ago the device has started.
+  void Init(base::TimeDelta uptime);
   // Loads information from the user defaults about the latest pasteboard entry.
   void LoadFromUserDefaults();
   // Saves information to the user defaults about the latest pasteboard entry.
   void SaveToUserDefaults();
   // Returns the URL contained in the clipboard (if any).
   GURL URLFromPasteboard();
-  // Returns whether the device has restarted since the last time a pasteboard
-  // change was detected.
-  bool DeviceRestartedSincePasteboardChanged();
 
   // The pasteboard's change count. Increases everytime the pasteboard changes.
   NSInteger lastPasteboardChangeCount_;
@@ -55,6 +57,9 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   base::scoped_nsobject<NSDate> lastPasteboardChangeDate_;
   // Cache of the GURL contained in the pasteboard (if any).
   GURL urlFromPasteboardCache_;
+  // A count identifying the suppressed pasteboard entry. Contains
+  // |NSIntegerMax| if there's no relevant entry to suppress.
+  NSInteger suppressedPasteboardEntryCount_;
   // Bridge to receive notification when the pasteboard changes.
   base::scoped_nsobject<PasteboardNotificationListenerBridge>
       notificationBridge_;
