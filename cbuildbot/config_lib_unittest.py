@@ -10,7 +10,7 @@ import copy
 import cPickle
 import json
 
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import config_lib
 from chromite.lib import cros_test_lib
 
@@ -194,7 +194,7 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
         self.assertRaises(AssertionError, self.AssertDeepCopy, x,
                           copy_x, copy.copy(x))
 
-class ConfigClassTest(cros_test_lib.TestCase):
+class SiteConfigClassTest(cros_test_lib.TestCase):
   """Config tests."""
 
   def testAdd(self):
@@ -396,6 +396,34 @@ class ConfigClassTest(cros_test_lib.TestCase):
     # Make sure we can dump debug content without crashing.
     self.assertNotEqual(config.DumpExpandedConfigToString(), '')
 
+  def testChromeOsLoad(self):
+    """This test compares chromeos_config to config_dump.json."""
+    # If there is a test failure, the diff will be big.
+    self.maxDiff = None
+
+    src = chromeos_config.GetConfig()
+    new = config_lib.LoadConfigFromFile()
+
+    self.assertDictEqual(src.GetDefault(),
+                         new.GetDefault())
+
+    #
+    # BUG ALERT ON TEST FAILURE
+    #
+    # assertDictEqual can correctly compare these structs for equivalence, but
+    # has a bug when displaying differences on failure. The embedded
+    # HWTestConfig values are correctly compared, but ALWAYS display as
+    # different, if something else triggers a failure.
+    #
+
+    # This for loop is to make differences easier to find/read.
+    for name in src.iterkeys():
+      self.assertDictEqual(new[name], src[name])
+
+    # This confirms they are exactly the same.
+    self.assertDictEqual(new, src)
+
+
 class SiteConfigFindTest(cros_test_lib.TestCase):
   """Tests related to Find helpers on SiteConfig."""
 
@@ -421,7 +449,7 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""
 
   def setUp(self):
-    self.config = cbuildbot_config.GetConfig()
+    self.config = chromeos_config.GetConfig()
 
   def _CheckFullConfig(
       self, board, external_expected=None, internal_expected=None):
