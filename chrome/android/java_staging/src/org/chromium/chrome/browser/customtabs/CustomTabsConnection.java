@@ -516,9 +516,12 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
         Point contentSize = estimateContentSize();
-        Intent extrasIntent = new Intent().putExtras(extras);
-        String referrer =
-                IntentHandler.getReferrerUrl(extrasIntent, mApplication.getApplicationContext());
+        String referrer = null;
+        if (extras != null) {
+            Intent extrasIntent = new Intent().putExtras(extras);
+            referrer = IntentHandler.getReferrerUrl(
+                    extrasIntent, mApplication.getApplicationContext());
+        }
         if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
                 Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y);
