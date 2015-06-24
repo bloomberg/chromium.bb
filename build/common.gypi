@@ -416,8 +416,10 @@
       # Web speech is enabled by default. Set to 0 to disable.
       'enable_web_speech%': 1,
 
-      # 'Ok Google' hotwording is enabled by default. Set to 0 to disable.
-      'enable_hotwording%': 1,
+      # 'Ok Google' hotwording is disabled by default in open source builds. Set
+      # to 1 to enable. (This will download a closed-source NaCl module at
+      # startup.) Chrome-branded builds have this enabled by default.
+      'enable_hotwording%': 0,
 
       # Notifications are compiled in by default. Set to 0 to disable.
       'notifications%' : 1,
@@ -834,6 +836,10 @@
 
         ['buildtype=="Official"', {
           'enable_prod_wallet_service%': 1,
+        }],
+
+        ['branding=="Chrome"', {
+          'enable_hotwording%': 1,
         }],
 
         ['OS=="android"', {

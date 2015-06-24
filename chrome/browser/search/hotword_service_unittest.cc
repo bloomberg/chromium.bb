@@ -159,9 +159,14 @@ INSTANTIATE_TEST_CASE_P(HotwordServiceTests,
                             extension_misc::kHotwordSharedModuleId));
 
 TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
-#if defined(ENABLE_HOTWORDING)
   TestingProfile::Builder profile_builder;
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
+
+#if defined(ENABLE_HOTWORDING)
+  bool hotwording_enabled = true;
+#else
+  bool hotwording_enabled = false;
+#endif
 
   // Check that the service exists so that a NULL service be ruled out in
   // following tests.
@@ -175,22 +180,26 @@ TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
 
   // Now with valid locales it should be fine.
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "en");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
+  EXPECT_EQ(hotwording_enabled,
+            HotwordServiceFactory::IsHotwordAllowed(profile.get()));
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "en-US");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
+  EXPECT_EQ(hotwording_enabled,
+            HotwordServiceFactory::IsHotwordAllowed(profile.get()));
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "en_us");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
+  EXPECT_EQ(hotwording_enabled,
+            HotwordServiceFactory::IsHotwordAllowed(profile.get()));
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "de_DE");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
+  EXPECT_EQ(hotwording_enabled,
+            HotwordServiceFactory::IsHotwordAllowed(profile.get()));
   SetApplicationLocale(static_cast<Profile*>(profile.get()), "fr_fr");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
+  EXPECT_EQ(hotwording_enabled,
+            HotwordServiceFactory::IsHotwordAllowed(profile.get()));
 
   // Test that incognito even with a valid locale and valid field trial
   // still returns false.
   Profile* otr_profile = profile->GetOffTheRecordProfile();
   SetApplicationLocale(otr_profile, "en");
   EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(otr_profile));
-#endif  // defined(ENABLE_HOTWORDING)
 }
 
 TEST_P(HotwordServiceTest, ShouldReinstallExtension) {
@@ -247,7 +256,6 @@ TEST_P(HotwordServiceTest, PreviousLanguageSetOnInstall) {
 }
 
 TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
-#if defined(ENABLE_HOTWORDING)
   InitializeEmptyExtensionService();
   service_->Init();
 
@@ -289,7 +297,11 @@ TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
 
   // Switch the locale to a valid but different one.
   SetApplicationLocale(profile(), "fr_fr");
+#if defined(ENABLE_HOTWORDING)
   EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+#else
+  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+#endif
 
   // Different but valid locale so expect uninstall.
   EXPECT_TRUE(hotword_service->MaybeReinstallHotwordExtension());
@@ -315,10 +327,13 @@ TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
   // If the locale is set back to the last valid one, then an uninstall-install
   // shouldn't be needed.
   SetApplicationLocale(profile(), "fr_fr");
+#if defined(ENABLE_HOTWORDING)
   EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+#else
+  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+#endif
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
   EXPECT_EQ(1, hotword_service->uninstall_count());  // no change
-#endif  // defined(ENABLE_HOTWORDING)
 }
 
 TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {

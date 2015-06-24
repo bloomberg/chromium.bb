@@ -20,8 +20,10 @@ if (is_desktop_linux) {
 }
 
 declare_args() {
-  # 'Ok Google' hotwording is enabled.
-  enable_hotwording = true
+  # 'Ok Google' hotwording is disabled by default in open source builds. Set to
+  # true to enable. (This will download a closed-source NaCl module at startup.)
+  # Chrome-branded builds have this enabled by default.
+  enable_hotwording = is_chrome_branded
 }
 
 about_credits_file = "$target_gen_dir/about_credits.html"
