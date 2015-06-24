@@ -844,7 +844,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
         chrome_version=self._chrome_version,
         build_id=build_id)
     if MasterSlaveLKGMSyncStage.sub_manager:
-      MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(manifest)
+      MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
+          manifest, build_id=build_id)
 
     return manifest
 
