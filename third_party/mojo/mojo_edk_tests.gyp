@@ -258,7 +258,7 @@
       ],
       'sources': [
         'src/mojo/edk/js/test/run_js_integration_tests.cc',
-        'src/mojo/edk/js/tests/js_to_cpp_tests',
+        'src/mojo/edk/js/tests/js_to_cpp_tests.cc',
       ],
     },
     {
