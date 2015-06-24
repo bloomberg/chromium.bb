@@ -97,7 +97,7 @@ const char* const kDefaultSupportedLanguages[] = {
 };
 
 // Constant URL string to fetch server supporting language list.
-const char kLanguageListFetchPath[] = "translate_a/l?client=chrome&cb=sl";
+const char kLanguageListFetchPath[] = "translate_a/l?client=chrome";
 
 // Used in kTranslateScriptURL to request supporting languages list including
 // "alpha languages".
@@ -112,8 +112,6 @@ const int kMaxRetryOn5xx = 5;
 
 }  // namespace
 
-// This must be kept in sync with the &cb= value in the kLanguageListFetchURL.
-const char TranslateLanguageList::kLanguageListCallbackName[] = "sl(";
 const char TranslateLanguageList::kTargetLanguagesKey[] = "tl";
 const char TranslateLanguageList::kAlphaLanguagesKey[] = "al";
 
@@ -243,10 +241,11 @@ void TranslateLanguageList::OnLanguageListFetchComplete(
 
   DCHECK_EQ(kFetcherId, id);
 
-  SetSupportedLanguages(data);
+  bool parsed_correctly = SetSupportedLanguages(data);
   language_list_fetcher_.reset();
 
-  last_updated_ = base::Time::Now();
+  if (parsed_correctly)
+    last_updated_ = base::Time::Now();
 }
 
 void TranslateLanguageList::NotifyEvent(int line, const std::string& message) {
@@ -256,33 +255,18 @@ void TranslateLanguageList::NotifyEvent(int line, const std::string& message) {
 
 bool TranslateLanguageList::SetSupportedLanguages(
     const std::string& language_list) {
-  // The format is:
-  // /* API response */ sl({
+  // The format is in JSON as:
+  // {
   //   "sl": {"XX": "LanguageName", ...},
   //   "tl": {"XX": "LanguageName", ...},
   //   "al": {"XX": 1, ...}
-  // })
-  // Where "sl(" is set in kLanguageListCallbackName, "tl" is
-  // kTargetLanguagesKey and "al" kAlphaLanguagesKey.
-  size_t start =
-      language_list.find(TranslateLanguageList::kLanguageListCallbackName);
-  if (start == std::string::npos ||
-      !base::EndsWith(language_list, ")", false)) {
-    // We don't have a NOTREACHED here since this can happen in ui_tests, even
-    // though the the BrowserMain function won't call us with parameters.ui_task
-    // is NULL some tests don't set it, so we must bail here.
-    return false;
-  }
-  static const size_t kLanguageListCallbackNameLength =
-      strlen(TranslateLanguageList::kLanguageListCallbackName);
-  std::string languages_json = language_list.substr(
-      start + kLanguageListCallbackNameLength,
-      language_list.size() - start - kLanguageListCallbackNameLength - 1);
-
+  // }
+  // Where "tl" and "al" are set in kTargetLanguagesKey and kAlphaLanguagesKey.
   scoped_ptr<base::Value> json_value(base::JSONReader::DeprecatedRead(
-      languages_json, base::JSON_ALLOW_TRAILING_COMMAS));
+      language_list, base::JSON_ALLOW_TRAILING_COMMAS));
 
   if (json_value == NULL || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
+    NotifyEvent(__LINE__, "Language list is invalid");
     NOTREACHED();
     return false;
   }
@@ -295,6 +279,7 @@ bool TranslateLanguageList::SetSupportedLanguages(
   if (!language_dict->GetDictionary(TranslateLanguageList::kTargetLanguagesKey,
                                     &target_languages) ||
       target_languages == NULL) {
+    NotifyEvent(__LINE__, "Target languages are not found in the response");
     NOTREACHED();
     return false;
   }

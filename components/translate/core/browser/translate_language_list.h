@@ -72,14 +72,13 @@ class TranslateLanguageList {
   static void DisableUpdate();
 
   // static const values shared with our browser tests.
-  static const char kLanguageListCallbackName[];
   static const char kTargetLanguagesKey[];
   static const char kAlphaLanguagesKey[];
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest, SetSupportedLanguages);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest,
-                           SetSupportedLanguagesWithComments);
+                           SetSupportedLanguagesWithAlphaKey);
 
   // Callback function called when TranslateURLFetcher::Request() is finished.
   void OnLanguageListFetchComplete(int id,

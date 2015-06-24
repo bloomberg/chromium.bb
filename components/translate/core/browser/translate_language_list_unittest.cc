@@ -11,10 +11,10 @@ namespace translate {
 
 TEST(TranslateLanguageListTest, SetSupportedLanguages) {
   std::string language_list(
-      "sl({"
+      "{"
       "\"sl\":{\"en\":\"English\",\"ja\":\"Japanese\"},"
       "\"tl\":{\"en\":\"English\",\"ja\":\"Japanese\"}"
-      "})");
+      "}");
   TranslateDownloadManager* manager = TranslateDownloadManager::GetInstance();
   manager->set_application_locale("en");
   EXPECT_TRUE(manager->language_list()->SetSupportedLanguages(language_list));
@@ -26,12 +26,13 @@ TEST(TranslateLanguageListTest, SetSupportedLanguages) {
   EXPECT_EQ("ja", results[1]);
 }
 
-TEST(TranslateLanguageListTest, SetSupportedLanguagesWithComments) {
+TEST(TranslateLanguageListTest, SetSupportedLanguagesWithAlphaKey) {
   std::string language_list(
-      "/* API response */ sl({"
+      "{"
       "\"sl\":{\"en\":\"English\",\"ja\":\"Japanese\"},"
-      "\"tl\":{\"en\":\"English\",\"ja\":\"Japanese\"}"
-      "})");
+      "\"tl\":{\"en\":\"English\",\"ja\":\"Japanese\"},"
+      "\"al\":{\"en\":1}"
+      "}");
   TranslateDownloadManager* manager = TranslateDownloadManager::GetInstance();
   manager->set_application_locale("en");
   EXPECT_TRUE(manager->language_list()->SetSupportedLanguages(language_list));

@@ -310,8 +310,7 @@ class TranslateManagerRenderViewHostTest
     std::string data;
     if (success) {
       data = base::StringPrintf(
-          "%s{\"sl\": {\"bla\": \"bla\"}, \"%s\": {",
-          translate::TranslateLanguageList::kLanguageListCallbackName,
+          "{\"sl\": {\"bla\": \"bla\"}, \"%s\": {",
           translate::TranslateLanguageList::kTargetLanguagesKey);
       const char* comma = "";
       for (size_t i = 0; i < languages.size(); ++i) {
@@ -334,7 +333,7 @@ class TranslateManagerRenderViewHostTest
         }
       }
 
-      data += "}})";
+      data += "}}";
     }
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
         translate::TranslateLanguageList::kFetcherId);
