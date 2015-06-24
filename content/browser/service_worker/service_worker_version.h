@@ -342,6 +342,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
                            ActivateWaitingVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, IdleTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, SetDevToolsAttached);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_FreshWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
+                           StaleUpdate_NonActiveWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_StartWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_RunningWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
+                           StaleUpdate_DoNotDeferTimer);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest, RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
@@ -512,6 +519,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
       ServiceWorkerStatusCode default_code);
 
+  // Sets |stale_time_| if this worker is stale, causing an update to eventually
+  // occur once the worker stops or is running too long.
+  void MarkIfStale();
+
+  void FoundRegistrationForUpdate(
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
+
   const int64 version_id_;
   const int64 registration_id_;
   const GURL script_url_;
@@ -550,6 +565,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeTicks idle_time_;
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
+  // Holds the time the worker was detected as stale and needs updating. We try
+  // to update once the worker stops, but will also update if it stays alive too
+  // long.
+  base::TimeTicks stale_time_;
 
   // New requests are added to |requests_| along with their entry in a callback
   // map. The timeout timer periodically checks |requests_| for entries that
@@ -560,6 +579,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
   bool force_bypass_cache_for_scripts_ = false;
+  bool is_update_scheduled_ = false;
 
   std::vector<int> pending_skip_waiting_requests_;
   scoped_ptr<net::HttpResponseInfo> main_script_http_info_;

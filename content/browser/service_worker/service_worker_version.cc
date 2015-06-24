@@ -415,7 +415,7 @@ class ServiceWorkerVersion::Metrics {
 // if the worker is not stalling.
 class ServiceWorkerVersion::PingController {
  public:
-  PingController(ServiceWorkerVersion* version) : version_(version) {}
+  explicit PingController(ServiceWorkerVersion* version) : version_(version) {}
   ~PingController() {}
 
   void Activate() { ping_state_ = PINGING; }
@@ -600,30 +600,37 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
 }
 
 void ServiceWorkerVersion::ScheduleUpdate() {
+  if (!context_)
+    return;
   if (update_timer_.IsRunning()) {
     update_timer_.Reset();
     return;
   }
-  update_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kUpdateDelaySeconds),
-      base::Bind(&ServiceWorkerVersion::StartUpdate,
+  if (is_update_scheduled_)
+    return;
+  is_update_scheduled_ = true;
+
+  // Protect |this| until the timer fires, since we may be stopping
+  // and soon no one might hold a reference to us.
+  context_->ProtectVersion(make_scoped_refptr(this));
+  update_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromSeconds(kUpdateDelaySeconds),
+                      base::Bind(&ServiceWorkerVersion::StartUpdate,
+                                 weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerVersion::StartUpdate() {
+  if (!context_)
+    return;
+  context_->storage()->FindRegistrationForId(
+      registration_id_, scope_.GetOrigin(),
+      base::Bind(&ServiceWorkerVersion::FoundRegistrationForUpdate,
                  weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerVersion::DeferScheduledUpdate() {
   if (update_timer_.IsRunning())
     update_timer_.Reset();
-}
-
-void ServiceWorkerVersion::StartUpdate() {
-  update_timer_.Stop();
-  if (!context_)
-    return;
-  ServiceWorkerRegistration* registration =
-      context_->GetLiveRegistration(registration_id_);
-  if (!registration || !registration->GetNewestVersion())
-    return;
-  context_->UpdateServiceWorker(registration, false /* force_bypass_cache */);
 }
 
 void ServiceWorkerVersion::DispatchMessageEvent(
@@ -1725,6 +1732,8 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     return;
   }
 
+  MarkIfStale();
+
   switch (running_status()) {
     case RUNNING:
       RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
@@ -1837,12 +1846,30 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
 
 void ServiceWorkerVersion::StopTimeoutTimer() {
   timeout_timer_.Stop();
+
+  // Trigger update if worker is stale.
+  if (!stale_time_.is_null()) {
+    ClearTick(&stale_time_);
+    if (!update_timer_.IsRunning())
+      ScheduleUpdate();
+  }
 }
 
 void ServiceWorkerVersion::OnTimeoutTimer() {
   DCHECK(running_status() == STARTING || running_status() == RUNNING ||
          running_status() == STOPPING)
       << running_status();
+
+  MarkIfStale();
+
+  // Trigger update if worker is stale and we waited long enough for it to go
+  // idle.
+  if (GetTickDuration(stale_time_) >
+      base::TimeDelta::FromMinutes(kRequestTimeoutMinutes)) {
+    ClearTick(&stale_time_);
+    if (!update_timer_.IsRunning())
+      ScheduleUpdate();
+  }
 
   // Starting a worker hasn't finished within a certain period.
   if (GetTickDuration(start_time_) >
@@ -2054,6 +2081,40 @@ ServiceWorkerStatusCode ServiceWorkerVersion::DeduceStartWorkerFailureReason(
   }
 
   return default_code;
+}
+
+void ServiceWorkerVersion::MarkIfStale() {
+  if (!context_)
+    return;
+  if (update_timer_.IsRunning() || !stale_time_.is_null())
+    return;
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  if (!registration || registration->active_version() != this)
+    return;
+  base::TimeDelta time_since_last_check =
+      base::Time::Now() - registration->last_update_check();
+  if (time_since_last_check >
+      base::TimeDelta::FromHours(kServiceWorkerScriptMaxCacheAgeInHours))
+    RestartTick(&stale_time_);
+}
+
+void ServiceWorkerVersion::FoundRegistrationForUpdate(
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  if (!context_)
+    return;
+
+  const scoped_refptr<ServiceWorkerVersion> protect = this;
+  if (is_update_scheduled_) {
+    context_->UnprotectVersion(version_id_);
+    is_update_scheduled_ = false;
+  }
+
+  if (status != SERVICE_WORKER_OK || registration->active_version() != this)
+    return;
+  context_->UpdateServiceWorker(registration.get(),
+                                false /* force_bypass_cache */);
 }
 
 }  // namespace content

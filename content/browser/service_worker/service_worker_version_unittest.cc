@@ -127,6 +127,11 @@ void SetUpDummyMessagePort(std::vector<TransferredMessagePort>* ports) {
   ports->push_back(dummy_port);
 }
 
+base::Time GetYesterday() {
+  return base::Time::Now() - base::TimeDelta::FromDays(1) -
+         base::TimeDelta::FromSeconds(1);
+}
+
 }  // namespace
 
 class ServiceWorkerVersionTest : public testing::Test {
@@ -546,6 +551,128 @@ TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
 
   version_ = nullptr;
   EXPECT_EQ(ServiceWorkerVersion::STOPPING, listener.last_status);
+}
+
+// Test that update isn't triggered for a non-stale worker.
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_FreshWorker) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  registration_->set_last_update_check(base::Time::Now());
+  version_->DispatchPushEvent(CreateReceiverOnCurrentThread(&status),
+                              std::string());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(version_->stale_time_.is_null());
+  EXPECT_FALSE(version_->update_timer_.IsRunning());
+}
+
+// Test that update isn't triggered for a non-active worker.
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_NonActiveWorker) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+
+  version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  registration_->SetInstallingVersion(version_);
+  registration_->set_last_update_check(GetYesterday());
+  version_->DispatchInstallEvent(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(version_->stale_time_.is_null());
+  EXPECT_FALSE(version_->update_timer_.IsRunning());
+}
+
+// Test that staleness is detected when starting a worker.
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_StartWorker) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+
+  // Starting the worker marks it as stale.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  registration_->set_last_update_check(GetYesterday());
+  version_->DispatchPushEvent(CreateReceiverOnCurrentThread(&status),
+                              std::string());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_FALSE(version_->stale_time_.is_null());
+  EXPECT_FALSE(version_->update_timer_.IsRunning());
+
+  // Update is actually scheduled after the worker stops.
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(version_->stale_time_.is_null());
+  EXPECT_TRUE(version_->update_timer_.IsRunning());
+}
+
+// Test that staleness is detected on a running worker.
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_RunningWorker) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+
+  // Start a fresh worker.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  registration_->set_last_update_check(base::Time::Now());
+  version_->DispatchPushEvent(CreateReceiverOnCurrentThread(&status),
+                              std::string());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(version_->stale_time_.is_null());
+
+  // Simulate it running for a day. It will be marked stale.
+  registration_->set_last_update_check(GetYesterday());
+  version_->OnTimeoutTimer();
+  EXPECT_FALSE(version_->stale_time_.is_null());
+  EXPECT_FALSE(version_->update_timer_.IsRunning());
+
+  // Simulate it running for past the wait threshold. The update will be
+  // scheduled.
+  version_->stale_time_ =
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromMinutes(
+          ServiceWorkerVersion::kStartWorkerTimeoutMinutes + 1);
+  version_->OnTimeoutTimer();
+  EXPECT_TRUE(version_->stale_time_.is_null());
+  EXPECT_TRUE(version_->update_timer_.IsRunning());
+}
+
+// Test that a stream of events doesn't restart the timer.
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
+  // Make a stale worker.
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  registration_->set_last_update_check(GetYesterday());
+  base::TimeTicks stale_time =
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromMinutes(
+          ServiceWorkerVersion::kStartWorkerTimeoutMinutes + 1);
+  version_->stale_time_ = stale_time;
+
+  // Stale time is not deferred.
+  version_->DispatchPushEvent(
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
+  version_->DispatchPushEvent(
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
+  EXPECT_EQ(stale_time, version_->stale_time_);
+
+  // Timeout triggers the update.
+  version_->OnTimeoutTimer();
+  EXPECT_TRUE(version_->stale_time_.is_null());
+  EXPECT_TRUE(version_->update_timer_.IsRunning());
+
+  // Update timer is not deferred.
+  base::TimeTicks run_time = version_->update_timer_.desired_run_time();
+  version_->DispatchPushEvent(
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
+  version_->DispatchPushEvent(
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
+  version_->DispatchPushEvent(
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), std::string());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(version_->stale_time_.is_null());
+  EXPECT_EQ(run_time, version_->update_timer_.desired_run_time());
 }
 
 TEST_F(ServiceWorkerWaitForeverInFetchTest, RequestTimeout) {

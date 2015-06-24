@@ -52,6 +52,10 @@ static const int64 kInvalidServiceWorkerResponseId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
 static const int kInvalidServiceWorkerClientId = 0;
 
+// The HTTP cache is bypassed for Service Worker scripts if the last network
+// fetch occurred over 24 hours ago.
+static const int kServiceWorkerScriptMaxCacheAgeInHours = 24;
+
 // ServiceWorker provider type.
 enum ServiceWorkerProviderType {
   SERVICE_WORKER_PROVIDER_UNKNOWN,

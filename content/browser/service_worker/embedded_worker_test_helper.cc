@@ -150,6 +150,7 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEventStub)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEventStub)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // Record all messages directed to inner script context.
@@ -192,6 +193,14 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
                             std::string(),
                             0,
                             GURL())));
+}
+
+void EmbeddedWorkerTestHelper::OnPushEvent(int embedded_worker_id,
+                                           int request_id,
+                                           const std::string& data) {
+  SimulateSend(new ServiceWorkerHostMsg_PushEventFinished(
+      embedded_worker_id, request_id,
+      blink::WebServiceWorkerEventResultCompleted));
 }
 
 void EmbeddedWorkerTestHelper::SimulatePausedAfterDownload(
@@ -346,6 +355,14 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
                  current_embedded_worker_id_,
                  request_id,
                  request));
+}
+
+void EmbeddedWorkerTestHelper::OnPushEventStub(int request_id,
+                                               const std::string& data) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnPushEvent,
+                            weak_factory_.GetWeakPtr(),
+                            current_embedded_worker_id_, request_id, data));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {

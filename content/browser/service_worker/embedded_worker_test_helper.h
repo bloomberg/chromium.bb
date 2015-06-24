@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_TEST_HELPER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_TEST_HELPER_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -99,6 +101,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnFetchEvent(int embedded_worker_id,
                             int request_id,
                             const ServiceWorkerFetchRequest& request);
+  virtual void OnPushEvent(int embedded_worker_id,
+                           int request_id,
+                           const std::string& data);
 
   // These functions simulate sending an EmbeddedHostMsg message to the
   // browser.
@@ -124,6 +129,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnInstallEventStub(int request_id);
   void OnFetchEventStub(int request_id,
                         const ServiceWorkerFetchRequest& request);
+  void OnPushEventStub(int request_id, const std::string& data);
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 

@@ -437,6 +437,18 @@ ServiceWorkerContextCore::GetAllLiveVersionInfo() {
   return infos;
 }
 
+void ServiceWorkerContextCore::ProtectVersion(
+    const scoped_refptr<ServiceWorkerVersion>& version) {
+  DCHECK(protected_versions_.find(version->version_id()) ==
+         protected_versions_.end());
+  protected_versions_[version->version_id()] = version;
+}
+
+void ServiceWorkerContextCore::UnprotectVersion(int64 version_id) {
+  DCHECK(protected_versions_.find(version_id) != protected_versions_.end());
+  protected_versions_.erase(version_id);
+}
+
 int ServiceWorkerContextCore::GetNewServiceWorkerHandleId() {
   return next_handle_id_++;
 }

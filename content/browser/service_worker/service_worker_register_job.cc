@@ -541,7 +541,8 @@ void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(
     // Only bump the last check time when we've bypassed the browser cache.
     base::TimeDelta time_since_last_check =
         base::Time::Now() - registration()->last_update_check();
-    if (time_since_last_check > base::TimeDelta::FromHours(24) ||
+    if (time_since_last_check > base::TimeDelta::FromHours(
+                                    kServiceWorkerScriptMaxCacheAgeInHours) ||
         new_version()->force_bypass_cache_for_scripts()) {
       registration()->set_last_update_check(base::Time::Now());
       context_->storage()->UpdateLastUpdateCheckTime(registration());
