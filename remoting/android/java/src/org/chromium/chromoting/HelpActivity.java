@@ -33,6 +33,7 @@ import org.chromium.ui.UiUtils;
  */
 public class HelpActivity extends ActionBarActivity {
     private static final String PLAY_STORE_URL = "market://details?id=";
+    private static final String CREDITS_URL = "file:///android_res/raw/credits.html";
 
     private static final String FEEDBACK_PACKAGE = "com.google.android.gms";
 
@@ -50,6 +51,9 @@ public class HelpActivity extends ActionBarActivity {
      * HelpActivity. There seems to be no better way of doing this.
      */
     private static Bitmap sScreenshot;
+
+    /** WebView used to display help content and credits. */
+    private WebView mWebView;
 
     /** Constant used to send the feedback parcel to the system feedback service. */
     private static final int SEND_FEEDBACK_INFO = Binder.FIRST_CALL_TRANSACTION;
@@ -111,8 +115,8 @@ public class HelpActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        WebView webView = new WebView(this);
-        setContentView(webView);
+        mWebView = new WebView(this);
+        setContentView(mWebView);
 
         getSupportActionBar().setTitle(getString(R.string.actionbar_help_title));
 
@@ -128,12 +132,25 @@ public class HelpActivity extends ActionBarActivity {
         CharSequence subtitle = TextUtils.concat(appName, " ", versionName);
         getSupportActionBar().setSubtitle(subtitle);
 
-        // This line ensures the WebView remains embedded in this activity and doesn't launch an
-        // external Chrome browser.
-        webView.setWebViewClient(new WebViewClient());
-        webView.getSettings().setJavaScriptEnabled(true);
-        String url = getIntent().getDataString();
-        webView.loadUrl(url);
+        String initialUrl = getIntent().getDataString();
+        final String initialHost = Uri.parse(initialUrl).getHost();
+
+        mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // Make sure any links to other websites open up in an external browser.
+                String host = Uri.parse(url).getHost();
+
+                // Note that |host| might be null, so allow for this in the test for equality.
+                if (initialHost.equals(host)) {
+                    return false;
+                }
+                openUrl(url);
+                return true;
+            }
+        });
+        mWebView.loadUrl(initialUrl);
     }
 
     @Override
@@ -151,6 +168,10 @@ public class HelpActivity extends ActionBarActivity {
         }
         if (id == R.id.actionbar_play_store) {
             openUrl(PLAY_STORE_URL + getPackageName());
+            return true;
+        }
+        if (id == R.id.actionbar_credits) {
+            mWebView.loadUrl(CREDITS_URL);
             return true;
         }
         return super.onOptionsItemSelected(item);
