@@ -32,7 +32,6 @@
 
 # Remove methods annotated with this if their return value is unused
 -assumenosideeffects class * {
-  @org.chromium.base.annotations.NoSideEffects <methods>;
   @org.chromium.base.annotations.RemovableInRelease <methods>;
 }
 
