@@ -27,6 +27,7 @@ protected:
 
     void setBodyContent(const char*);
     PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char*);
+    void updateLayoutAndStyleForPainting();
 
     static Position positionInDOMTree(Node& anchor, int offset);
     static PositionInComposedTree positionInComposedTree(Node& anchor, int offset);

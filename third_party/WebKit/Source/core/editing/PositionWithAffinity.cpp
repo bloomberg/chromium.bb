@@ -34,5 +34,6 @@ bool PositionWithAffinityTemplate<PositionType>::operator==(const PositionWithAf
 }
 
 template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<Position>;
+template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<PositionInComposedTree>;
 
 } // namespace blink

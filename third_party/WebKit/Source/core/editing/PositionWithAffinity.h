@@ -43,8 +43,10 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<Position>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<PositionInComposedTree>;
 
 using PositionWithAffinity = PositionWithAffinityTemplate<Position>;
+using PositionInComposedTreeWithAffinity = PositionWithAffinityTemplate<PositionInComposedTree>;
 
 } // namespace blink
 

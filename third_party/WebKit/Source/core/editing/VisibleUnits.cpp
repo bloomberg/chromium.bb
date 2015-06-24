@@ -778,6 +778,11 @@ static PositionWithAffinity startOfLine(const PositionWithAffinity& currentPosit
     return startOfLine(currentPosition, UseInlineBoxOrdering);
 }
 
+static PositionInComposedTreeWithAffinity startOfLine(const PositionInComposedTreeWithAffinity& currentPosition)
+{
+    return startOfLine(currentPosition, UseInlineBoxOrdering);
+}
+
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
 VisiblePosition startOfLine(const VisiblePosition& currentPosition)
 {
@@ -900,8 +905,8 @@ bool inSameLineAlgorithm(const PositionWithAffinityType& position1, const Positi
 {
     if (position1.isNull() || position2.isNull())
         return false;
-    PositionWithAffinity startOfLine1 = startOfLine(position1);
-    PositionWithAffinity startOfLine2 = startOfLine(position2);
+    PositionWithAffinityType startOfLine1 = startOfLine(position1);
+    PositionWithAffinityType startOfLine2 = startOfLine(position2);
     if (startOfLine1 == startOfLine2)
         return true;
     typename PositionWithAffinityType::PositionType canonicalized1 = canonicalPositionOf(startOfLine1.position());
@@ -913,6 +918,11 @@ bool inSameLineAlgorithm(const PositionWithAffinityType& position1, const Positi
 bool inSameLine(const PositionWithAffinity& a, const PositionWithAffinity& b)
 {
     return inSameLineAlgorithm(a, b);
+}
+
+bool inSameLine(const PositionInComposedTreeWithAffinity& position1, const PositionInComposedTreeWithAffinity& position2)
+{
+    return inSameLineAlgorithm(position1, position2);
 }
 
 bool inSameLine(const VisiblePosition &a, const VisiblePosition &b)

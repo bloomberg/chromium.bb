@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 
@@ -46,6 +47,11 @@ void EditingTestBase::setBodyContent(const char* bodyContent)
 PassRefPtrWillBeRawPtr<ShadowRoot> EditingTestBase::setShadowContent(const char* shadowContent)
 {
     return createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
+}
+
+void EditingTestBase::updateLayoutAndStyleForPainting()
+{
+    document().view()->updateLayoutAndStyleForPainting();
 }
 
 Position EditingTestBase::positionInDOMTree(Node& anchor, int offset)

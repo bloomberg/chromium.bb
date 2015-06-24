@@ -47,7 +47,8 @@ class RenderedPosition {
 public:
     RenderedPosition();
     explicit RenderedPosition(const VisiblePosition&);
-    explicit RenderedPosition(const Position&, EAffinity);
+    RenderedPosition(const Position&, EAffinity);
+    RenderedPosition(const PositionInComposedTree&, EAffinity);
     bool isEquivalent(const RenderedPosition&) const;
 
     bool isNull() const { return !m_layoutObject; }

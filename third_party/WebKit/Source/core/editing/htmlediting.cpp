@@ -136,6 +136,11 @@ ContainerNode* highestEditableRoot(const Position& position, EditableType editab
     return highestRoot;
 }
 
+ContainerNode* highestEditableRoot(const PositionInComposedTree& position, EditableType editableType)
+{
+    return highestEditableRoot(toPositionInDOMTree(position), editableType);
+}
+
 Element* lowestEditableAncestor(Node* node)
 {
     while (node) {
@@ -163,6 +168,11 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
         node = node->parentNode();
 
     return node->hasEditableStyle(editableType);
+}
+
+bool isEditablePosition(const PositionInComposedTree& p, EditableType editableType, EUpdateStyle updateStyle)
+{
+    return isEditablePosition(toPositionInDOMTree(p), editableType, updateStyle);
 }
 
 bool isAtUnsplittableElement(const Position& pos)
@@ -291,6 +301,11 @@ Position previousVisuallyDistinctCandidate(const Position& position)
     return previousVisuallyDistinctCandidateAlgorithm<Position>(position);
 }
 
+PositionInComposedTree previousVisuallyDistinctCandidate(const PositionInComposedTree& position)
+{
+    return previousVisuallyDistinctCandidateAlgorithm<PositionInComposedTree>(position);
+}
+
 VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, ContainerNode* highestRoot)
 {
     // position falls before highestRoot.
@@ -349,6 +364,11 @@ PositionType lastEditablePositionBeforePositionInRootAlgorithm(const PositionTyp
 Position lastEditablePositionBeforePositionInRoot(const Position& position, Node* highestRoot)
 {
     return lastEditablePositionBeforePositionInRootAlgorithm<Position>(position, highestRoot);
+}
+
+PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionInComposedTree& position, Node* highestRoot)
+{
+    return lastEditablePositionBeforePositionInRootAlgorithm<PositionInComposedTree>(position, highestRoot);
 }
 
 // FIXME: The method name, comment, and code say three different things here!

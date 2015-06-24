@@ -97,6 +97,11 @@ RenderedPosition::RenderedPosition(const Position& position, EAffinity affinity)
         m_layoutObject = layoutObjectFromPosition(position);
 }
 
+RenderedPosition::RenderedPosition(const PositionInComposedTree& position, EAffinity affinity)
+    : RenderedPosition(toPositionInDOMTree(position), affinity)
+{
+}
+
 InlineBox* RenderedPosition::prevLeafChild() const
 {
     if (m_prevLeafChild == uncachedInlineBox())

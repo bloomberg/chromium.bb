@@ -143,6 +143,7 @@ Element* enclosingBlockFlowElement(const VisiblePosition&);
 Position canonicalPositionOf(const Position&);
 PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
+PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
 
 bool isFirstVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);
 bool isLastVisiblePositionInNode(const VisiblePosition&, const ContainerNode*);

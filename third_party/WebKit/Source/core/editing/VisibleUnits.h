@@ -64,6 +64,7 @@ CORE_EXPORT VisiblePosition previousLinePosition(const VisiblePosition&, LayoutU
 CORE_EXPORT VisiblePosition nextLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
 CORE_EXPORT bool inSameLine(const VisiblePosition &, const VisiblePosition &);
 bool inSameLine(const PositionWithAffinity&, const PositionWithAffinity &);
+bool inSameLine(const PositionInComposedTreeWithAffinity&, const PositionInComposedTreeWithAffinity&);
 bool isStartOfLine(const VisiblePosition &);
 bool isEndOfLine(const VisiblePosition &);
 VisiblePosition logicalStartOfLine(const VisiblePosition &);

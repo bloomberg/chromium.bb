@@ -58,6 +58,7 @@ class VisibleSelection;
 // Functions returning Node
 
 CORE_EXPORT ContainerNode* highestEditableRoot(const Position&, EditableType = ContentIsEditable);
+ContainerNode* highestEditableRoot(const PositionInComposedTree&, EditableType = ContentIsEditable);
 
 Node* highestEnclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*),
     EditingBoundaryCrossingRule = CannotCrossEditingBoundary, Node* stayWithin = nullptr);
@@ -134,6 +135,7 @@ PositionInComposedTree previousCandidate(const PositionInComposedTree&);
 
 Position nextVisuallyDistinctCandidate(const Position&);
 Position previousVisuallyDistinctCandidate(const Position&);
+PositionInComposedTree previousVisuallyDistinctCandidate(const PositionInComposedTree&);
 
 Position positionBeforeContainingSpecialElement(const Position&, HTMLElement** containingSpecialElement = nullptr);
 Position positionAfterContainingSpecialElement(const Position&, HTMLElement** containingSpecialElement = nullptr);
@@ -149,6 +151,7 @@ inline Position lastPositionInOrAfterNode(Node* node)
 }
 
 Position lastEditablePositionBeforePositionInRoot(const Position&, Node*);
+PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionInComposedTree&, Node*);
 
 // comparision functions on Position
 
@@ -163,6 +166,7 @@ enum EUpdateStyle { UpdateStyle, DoNotUpdateStyle };
 // should make it clear that that is the contract.
 // FIXME: isRichlyEditablePosition should also take EUpdateStyle.
 bool isEditablePosition(const Position&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
+bool isEditablePosition(const PositionInComposedTree&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
 bool isRichlyEditablePosition(const Position&, EditableType = ContentIsEditable);
 bool lineBreakExistsAtPosition(const Position&);
 bool isAtUnsplittableElement(const Position&);

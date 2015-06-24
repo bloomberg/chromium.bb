@@ -445,7 +445,7 @@ VisiblePosition VisiblePosition::right(bool stayInEditableContent) const
 }
 
 template <typename PositionWithAffinityType>
-PositionWithAffinityType honorEditingBoundaryAtOrBeforeAlgorithm(const PositionWithAffinityType& pos, const Position& anchor)
+PositionWithAffinityType honorEditingBoundaryAtOrBeforeAlgorithm(const PositionWithAffinityType& pos, const typename PositionWithAffinityType::PositionType& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -472,6 +472,11 @@ PositionWithAffinityType honorEditingBoundaryAtOrBeforeAlgorithm(const PositionW
 }
 
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity& pos, const Position& anchor)
+{
+    return honorEditingBoundaryAtOrBeforeAlgorithm(pos, anchor);
+}
+
+PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity& pos, const PositionInComposedTree& anchor)
 {
     return honorEditingBoundaryAtOrBeforeAlgorithm(pos, anchor);
 }
