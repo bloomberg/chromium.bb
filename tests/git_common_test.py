@@ -391,7 +391,6 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.assertTrue(all(
         isinstance(x, int) for x in self.repo.run(self.gc.get_git_version)))
 
-  @unittest.expectedFailure
   def testGetBranchesInfo(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
     self.repo.git('checkout', '-tb', 'happybranch', 'master')
@@ -430,7 +429,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
         'parent_gone': (
             self.repo.run(self.gc.hash_one, 'parent_gone', short=True),
             'to_delete',
-            1 if supports_track else None,
+            None,
             None
         ),
         'to_delete': None

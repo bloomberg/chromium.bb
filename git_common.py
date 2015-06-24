@@ -92,9 +92,10 @@ GIT_TRANSIENT_ERRORS = (
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
                                      re.IGNORECASE)
 
-# First version where the for-each-ref command's format string supported the
-# upstream:track token.
-MIN_UPSTREAM_TRACK_GIT_VERSION = (1, 9)
+# git's for-each-ref command first supported the upstream:track token in its
+# format string in version 1.9.0, but some usages were broken until 2.3.0.
+# See git commit b6160d95 for more information.
+MIN_UPSTREAM_TRACK_GIT_VERSION = (2, 3)
 
 class BadCommitRefException(Exception):
   def __init__(self, refs):
