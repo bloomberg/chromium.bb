@@ -26,6 +26,7 @@ namespace media {
 
 class AudioRendererSink;
 class DemuxerStreamProviderShim;
+class CdmContextProvider;
 class Renderer;
 class VideoRendererSink;
 
@@ -34,19 +35,22 @@ class VideoRendererSink;
 class MEDIA_EXPORT MojoRendererService
     : NON_EXPORTED_BASE(mojo::MediaRenderer) {
  public:
-  explicit MojoRendererService(
-      mojo::InterfaceRequest<mojo::MediaRenderer> request);
-  ~MojoRendererService() override;
+  // |cdm_context_provider| can be used to find the CdmContext to support
+  // encrypted media. If null, encrypted media is not supported.
+  MojoRendererService(CdmContextProvider* cdm_context_provider,
+                      mojo::InterfaceRequest<mojo::MediaRenderer> request);
+  ~MojoRendererService() final;
 
   // mojo::MediaRenderer implementation.
   void Initialize(mojo::MediaRendererClientPtr client,
                   mojo::DemuxerStreamPtr audio,
                   mojo::DemuxerStreamPtr video,
-                  const mojo::Closure& callback) override;
-  void Flush(const mojo::Closure& callback) override;
-  void StartPlayingFrom(int64_t time_delta_usec) override;
-  void SetPlaybackRate(double playback_rate) override;
-  void SetVolume(float volume) override;
+                  const mojo::Closure& callback) final;
+  void Flush(const mojo::Closure& callback) final;
+  void StartPlayingFrom(int64_t time_delta_usec) final;
+  void SetPlaybackRate(double playback_rate) final;
+  void SetVolume(float volume) final;
+  void SetCdm(int32_t cdm_id, const mojo::Callback<void(bool)>& callback) final;
 
  private:
   enum State {
@@ -88,7 +92,12 @@ class MEDIA_EXPORT MojoRendererService
   // Callback executed once Flush() completes.
   void OnFlushCompleted(const mojo::Closure& callback);
 
+  // Callback executed once SetCdm() completes.
+  void OnCdmAttached(const mojo::Callback<void(bool)>& callback, bool success);
+
   mojo::StrongBinding<mojo::MediaRenderer> binding_;
+
+  CdmContextProvider* cdm_context_provider_;
 
   State state_;
 

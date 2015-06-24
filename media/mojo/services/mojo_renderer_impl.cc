@@ -81,8 +81,16 @@ void MojoRendererImpl::SetCdm(CdmContext* cdm_context,
                               const CdmAttachedCB& cdm_attached_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  cdm_attached_cb.Run(false);
+
+  int32_t cdm_id = cdm_context->GetCdmId();
+  if (cdm_id == CdmContext::kInvalidCdmId) {
+    DVLOG(2) << "MojoRendererImpl only works with remote CDMs but the CDM ID "
+                "is invalid.";
+    cdm_attached_cb.Run(false);
+    return;
+  }
+
+  remote_media_renderer_->SetCdm(cdm_id, cdm_attached_cb);
 }
 
 void MojoRendererImpl::Flush(const base::Closure& flush_cb) {

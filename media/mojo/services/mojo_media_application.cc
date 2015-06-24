@@ -56,7 +56,7 @@ void MojoMediaApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::MediaRenderer> request) {
   // The created object is owned by the pipe.
-  new MojoRendererService(request.Pass());
+  new MojoRendererService(&cdm_service_context_, request.Pass());
 }
 
 }  // namespace media

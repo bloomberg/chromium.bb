@@ -29,6 +29,10 @@ interface MediaRenderer {
 
   // Sets the output volume. The default volume should be 1.
   SetVolume(float volume);
+
+  // Attaches the CDM associated with |cdm_id| to the renderer service,
+  // executing the callback with whether the CDM was successfully attached.
+  SetCdm(int32 cdm_id) => (bool success);
 };
 
 interface MediaRendererClient {

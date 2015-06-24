@@ -11,6 +11,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_log.h"
 #include "media/base/video_renderer.h"
@@ -27,8 +28,10 @@ namespace media {
 const int kTimeUpdateIntervalMs = 50;
 
 MojoRendererService::MojoRendererService(
+    CdmContextProvider* cdm_context_provider,
     mojo::InterfaceRequest<mojo::MediaRenderer> request)
     : binding_(this, request.Pass()),
+      cdm_context_provider_(cdm_context_provider),
       state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
       weak_factory_(this) {
@@ -105,6 +108,25 @@ void MojoRendererService::SetVolume(float volume) {
   renderer_->SetVolume(volume);
 }
 
+void MojoRendererService::SetCdm(int32_t cdm_id,
+                                 const mojo::Callback<void(bool)>& callback) {
+  if (!cdm_context_provider_) {
+    LOG(ERROR) << "CDM context provider not available.";
+    callback.Run(false);
+    return;
+  }
+
+  CdmContext* cdm_context = cdm_context_provider_->GetCdmContext(cdm_id);
+  if (!cdm_context) {
+    LOG(ERROR) << "CDM context not found: " << cdm_id;
+    callback.Run(false);
+    return;
+  }
+
+  renderer_->SetCdm(cdm_context, base::Bind(&MojoRendererService::OnCdmAttached,
+                                            weak_this_, callback));
+}
+
 void MojoRendererService::OnStreamReady(const mojo::Closure& callback) {
   DCHECK_EQ(state_, STATE_INITIALIZING);
 
@@ -165,7 +187,7 @@ void MojoRendererService::SchedulePeriodicMediaTimeUpdates() {
 
 void MojoRendererService::OnBufferingStateChanged(
     BufferingState new_buffering_state) {
-  DVLOG(2) << __FUNCTION__ << "(" << new_buffering_state << ") ";
+  DVLOG(2) << __FUNCTION__ << "(" << new_buffering_state << ")";
   client_->OnBufferingStateChange(
       static_cast<mojo::BufferingState>(new_buffering_state));
 }
@@ -177,7 +199,7 @@ void MojoRendererService::OnRendererEnded() {
 }
 
 void MojoRendererService::OnError(PipelineStatus error) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__ << "(" << error << ")";
   state_ = STATE_ERROR;
   client_->OnError();
 }
@@ -187,6 +209,13 @@ void MojoRendererService::OnFlushCompleted(const mojo::Closure& callback) {
   DCHECK_EQ(state_, STATE_FLUSHING);
   state_ = STATE_PLAYING;
   callback.Run();
+}
+
+void MojoRendererService::OnCdmAttached(
+    const mojo::Callback<void(bool)>& callback,
+    bool success) {
+  DVLOG(1) << __FUNCTION__ << "(" << success << ")";
+  callback.Run(success);
 }
 
 }  // namespace media
