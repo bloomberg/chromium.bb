@@ -32,6 +32,11 @@ source_set("app") {
     "hard_error_handler_win.cc",
     "hard_error_handler_win.h",
   ]
+
+  if (is_android) {
+    libs = [ "log" ]
+  }
+
   if (is_android || is_linux) {
     # Want these files on both Linux and Android.
     set_sources_assignment_filter([])
