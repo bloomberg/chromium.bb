@@ -68,6 +68,9 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   }
 
   void LoseContext() {
+    // CreateFakeOutputSurface happens on a different thread, so lock context3d_
+    // to make sure we don't set it to null after recreating it there.
+    base::AutoLock lock(context3d_lock_);
     // For sanity-checking tests, they should only call this when the
     // context is not lost.
     CHECK(context3d_);
@@ -88,6 +91,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     }
 
     scoped_ptr<TestWebGraphicsContext3D> context3d = CreateContext3d();
+    base::AutoLock lock(context3d_lock_);
     context3d_ = context3d.get();
 
     if (context_should_support_io_surface_) {
@@ -145,7 +149,11 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   void ExpectCreateToFail() { ++times_to_expect_create_failed_; }
 
  protected:
+  // Protects use of context3d_ so LoseContext and CreateFakeOutputSurface
+  // can both use it on different threads.
+  base::Lock context3d_lock_;
   TestWebGraphicsContext3D* context3d_;
+
   int times_to_fail_create_;
   int times_to_lose_during_commit_;
   int times_to_lose_during_draw_;
