@@ -2527,11 +2527,17 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusTest, TouchFocusesEmbedder) {
   EXPECT_TRUE(other_focusable_view->HasFocus());
   EXPECT_FALSE(aura_webview->HasFocus());
 
+  // Compute location of guest within embedder so we can more accurately
+  // target our touch event.
+  gfx::Rect guest_rect = GetGuestWebContents()->GetContainerBounds();
+  gfx::Point embedder_origin =
+      GetEmbedderWebContents()->GetContainerBounds().origin();
+  guest_rect.Offset(-embedder_origin.x(), -embedder_origin.y());
+
   // Generate and send synthetic touch event.
-  // TODO(wjmaclean): This is fragile ... if anyone alters the location/size
-  // of the webview in accept_touch_events then this may miss its target.
   FocusWaiter waiter(aura_webview);
-  content::SimulateTouchPressAt(GetEmbedderWebContents(), gfx::Point(10, 10));
+  content::SimulateTouchPressAt(GetEmbedderWebContents(),
+                                guest_rect.CenterPoint());
 
   // Wait for the TouchStart to propagate and restore focus. Test times out
   // on failure.
