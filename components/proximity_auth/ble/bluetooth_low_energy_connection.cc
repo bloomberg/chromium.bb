@@ -166,6 +166,18 @@ void BluetoothLowEnergyConnection::SendMessageImpl(
   }
 }
 
+// Changes in the GATT connection with the remote device should be observed
+// here. If the GATT connection is dropped, we should call Disconnect() anyway,
+// so the object can notify its observers put itself in the right state.
+void BluetoothLowEnergyConnection::DeviceChanged(BluetoothAdapter* adapter,
+                                                 BluetoothDevice* device) {
+  if (device && device->GetAddress() == GetRemoteDeviceAddress() &&
+      !device->IsConnected()) {
+    VLOG(1) << "GATT connection dropped " << GetRemoteDeviceAddress();
+    Disconnect();
+  }
+}
+
 void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {
   if (device && device->GetAddress() == GetRemoteDeviceAddress()) {
@@ -245,8 +257,8 @@ scoped_ptr<WireMessage> BluetoothLowEnergyConnection::DeserializeWireMessage(
 }
 
 void BluetoothLowEnergyConnection::CompleteConnection() {
-  VLOG(1) << "Connection completed\n"
-          << "Time elapsed: " << base::TimeTicks::Now() - start_time_;
+  VLOG(1) << "Connection completed. Time elapsed: "
+          << base::TimeTicks::Now() - start_time_;
   SetSubStatus(SubStatus::CONNECTED);
 }
 

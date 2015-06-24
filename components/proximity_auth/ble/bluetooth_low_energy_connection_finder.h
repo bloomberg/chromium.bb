@@ -16,6 +16,7 @@
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/connection_observer.h"
+#include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -113,6 +114,9 @@ class BluetoothLowEnergyConnectionFinder
   // observers.
   void CompleteConnection();
 
+  // Restarts the discovery session after creating |connection_| fails.
+  void RestartDiscoverySessionWhenReady();
+
   // The uuid of the service it looks for to establish a GattConnection.
   device::BluetoothUUID remote_service_uuid_;
 
@@ -128,9 +132,12 @@ class BluetoothLowEnergyConnectionFinder
   // The discovery session associated to this object.
   scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
-  // True if a connection was established to a remote device that has the
-  // service |remote_service_uuid|.
+  // True if a connection was established with a paired remote device that has
+  // the service |remote_service_uuid_|.
   bool connected_;
+
+  // The remote device |gatt_connection_| was created with.
+  RemoteDevice remote_device_;
 
   // The GATT connection with |remote_device|.
   scoped_ptr<device::BluetoothGattConnection> gatt_connection_;

@@ -51,6 +51,9 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   void OnFocusedUserChanged(const std::string& user_id) override;
 
   // proximity_auth::ConnectionObserver:
+  void OnConnectionStatusChanged(Connection* connection,
+                                 Connection::Status old_status,
+                                 Connection::Status new_status) override;
   void OnMessageReceived(const Connection& connection,
                          const WireMessage& message) override;
 

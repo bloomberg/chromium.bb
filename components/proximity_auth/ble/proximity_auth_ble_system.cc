@@ -178,8 +178,14 @@ void ProximityAuthBleSystem::OnScreenDidUnlock(
   if (screen_type == ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     GetUnlockKeys();
 
-  if (connection_)
+  if (connection_) {
+    // Note: it's important to remove the observer before calling
+    // |Disconnect()|, otherwise |OnConnectedStatusChanged()| will be called
+    // from |connection_| and a new instance for |connection_finder_| will be
+    // created.
+    connection_->RemoveObserver(this);
     connection_->Disconnect();
+  }
 
   connection_.reset();
   connection_finder_.reset();
@@ -216,6 +222,24 @@ void ProximityAuthBleSystem::OnConnectionFound(
       is_polling_screen_state_ = true;
       StartPollingScreenState();
     }
+  }
+}
+
+void ProximityAuthBleSystem::OnConnectionStatusChanged(
+    Connection* connection,
+    Connection::Status old_status,
+    Connection::Status new_status) {
+  if (old_status == Connection::CONNECTED &&
+      new_status == Connection::DISCONNECTED) {
+    StopPollingScreenState();
+
+    connection_->RemoveObserver(this);
+    connection_.reset();
+
+    connection_finder_.reset(CreateConnectionFinder());
+    connection_finder_->Find(
+        base::Bind(&ProximityAuthBleSystem::OnConnectionFound,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

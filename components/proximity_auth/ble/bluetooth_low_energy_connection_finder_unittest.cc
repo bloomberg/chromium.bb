@@ -148,8 +148,10 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
     discovery_callback.Run(discovery_session.Pass());
 
     // Cleaning up
-    EXPECT_CALL(*discovery_session_alias, Stop(_, _)).Times(AtLeast(1));
-    EXPECT_CALL(*adapter_, RemoveObserver(_));
+    EXPECT_CALL(*discovery_session_alias, Stop(_, _))
+        .Times(AtLeast(1))
+        .WillRepeatedly(SaveArg<0>(&last_stop_discovery_session_callback_));
+    EXPECT_CALL(*adapter_, RemoveObserver(_)).Times(AtLeast(1));
   }
 
   // Prepare |device_| with |uuid|.
@@ -175,6 +177,7 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
     EXPECT_CALL(*device_, CreateGattConnection(_, _)).Times(0);
   }
 
+  base::Closure last_stop_discovery_session_callback_;
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
   ConnectionFinder::ConnectionCallback connection_callback_;
   scoped_ptr<device::MockBluetoothDevice> device_;
@@ -339,10 +342,65 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   gatt_connection_callback.Run(make_scoped_ptr(
       new NiceMock<device::MockBluetoothGattConnection>(kBluetoothAddress)));
   run_loop.RunUntilIdle();
-  ASSERT_FALSE(last_found_connection_);
+  EXPECT_FALSE(last_found_connection_);
   connection->SetStatus(Connection::IN_PROGRESS);
   connection->SetStatus(Connection::CONNECTED);
-  ASSERT_FALSE(!last_found_connection_);
+  EXPECT_TRUE(last_found_connection_);
+}
+
+TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
+       Find_ConnectionFails_RestartDiscoveryAndConnectionSucceeds) {
+  StrictMock<MockBluetoothLowEnergyConnectionFinder> connection_finder;
+
+  // Starting discovery
+  FindAndExpectStartDiscovery(connection_finder);
+
+  // Finding and creating a GATT connection to the right device
+  device::BluetoothDevice::GattConnectionCallback gatt_connection_callback;
+  PrepareForNewRightDevice(kServiceUUID, gatt_connection_callback);
+  connection_finder.DeviceAdded(adapter_.get(), device_.get());
+
+  // Trying to create a connection
+  MockConnection* connection = connection_finder.ExpectCreateConnection();
+  ASSERT_FALSE(gatt_connection_callback.is_null());
+  base::RunLoop run_loop;
+  gatt_connection_callback.Run(make_scoped_ptr(
+      new NiceMock<device::MockBluetoothGattConnection>(kBluetoothAddress)));
+  run_loop.RunUntilIdle();
+  ASSERT_FALSE(last_found_connection_);
+  connection->SetStatus(Connection::IN_PROGRESS);
+
+  ASSERT_FALSE(last_stop_discovery_session_callback_.is_null());
+  last_stop_discovery_session_callback_.Run();
+
+  // Connection fails
+  device::BluetoothAdapter::DiscoverySessionCallback discovery_callback;
+  std::vector<const device::BluetoothDevice*> devices;
+  ON_CALL(*adapter_, GetDevices()).WillByDefault(Return(devices));
+  EXPECT_CALL(*adapter_, StartDiscoverySessionWithFilterRaw(_, _, _))
+      .WillOnce(SaveArg<1>(&discovery_callback));
+  connection->SetStatus(Connection::DISCONNECTED);
+
+  scoped_ptr<device::MockBluetoothDiscoverySession> discovery_session(
+      new NiceMock<device::MockBluetoothDiscoverySession>());
+  ASSERT_FALSE(discovery_callback.is_null());
+  discovery_callback.Run(discovery_session.Pass());
+
+  // Finding and creating a GATT connection to the right device
+  PrepareForNewRightDevice(kServiceUUID, gatt_connection_callback);
+  connection_finder.DeviceAdded(adapter_.get(), device_.get());
+
+  // Creating a connection
+  connection = connection_finder.ExpectCreateConnection();
+  ASSERT_FALSE(gatt_connection_callback.is_null());
+  base::RunLoop other_run_loop;
+  gatt_connection_callback.Run(make_scoped_ptr(
+      new NiceMock<device::MockBluetoothGattConnection>(kBluetoothAddress)));
+  other_run_loop.RunUntilIdle();
+  EXPECT_FALSE(last_found_connection_);
+  connection->SetStatus(Connection::IN_PROGRESS);
+  connection->SetStatus(Connection::CONNECTED);
+  EXPECT_TRUE(last_found_connection_);
 }
 
 }  // namespace proximity_auth

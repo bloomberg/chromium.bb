@@ -112,6 +112,8 @@ class BluetoothLowEnergyConnection : public Connection,
       bool* is_incomplete_message) override;
 
   // device::BluetoothAdapter::Observer
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
   void GattCharacteristicValueChanged(
