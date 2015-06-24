@@ -362,14 +362,14 @@ short Range::compareBoundaryPoints(unsigned how, const Range* sourceRange, Excep
     }
 
     switch (how) {
-        case START_TO_START:
-            return compareBoundaryPoints(m_start, sourceRange->m_start, exceptionState);
-        case START_TO_END:
-            return compareBoundaryPoints(m_end, sourceRange->m_start, exceptionState);
-        case END_TO_END:
-            return compareBoundaryPoints(m_end, sourceRange->m_end, exceptionState);
-        case END_TO_START:
-            return compareBoundaryPoints(m_start, sourceRange->m_end, exceptionState);
+    case START_TO_START:
+        return compareBoundaryPoints(m_start, sourceRange->m_start, exceptionState);
+    case START_TO_END:
+        return compareBoundaryPoints(m_end, sourceRange->m_start, exceptionState);
+    case END_TO_END:
+        return compareBoundaryPoints(m_end, sourceRange->m_end, exceptionState);
+    case END_TO_START:
+        return compareBoundaryPoints(m_start, sourceRange->m_end, exceptionState);
     }
 
     ASSERT_NOT_REACHED();
@@ -655,8 +655,9 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
             if (fragment) {
                 result = fragment;
                 result->appendChild(c.release(), exceptionState);
-            } else
+            } else {
                 result = c.release();
+            }
         }
         if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS)
             toCharacterData(container)->deleteData(startOffset, endOffset - startOffset, exceptionState);
@@ -669,8 +670,9 @@ PassRefPtrWillBeRawPtr<Node> Range::processContentsBetweenOffsets(ActionType act
             if (fragment) {
                 result = fragment;
                 result->appendChild(c.release(), exceptionState);
-            } else
+            } else {
                 result = c.release();
+            }
         }
         if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS) {
             ProcessingInstruction* pi = toProcessingInstruction(container);
@@ -987,30 +989,30 @@ void Range::detach()
 Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionState) const
 {
     switch (n->nodeType()) {
-        case Node::DOCUMENT_TYPE_NODE:
-            exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
+    case Node::DOCUMENT_TYPE_NODE:
+        exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
+        return nullptr;
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+    case Node::TEXT_NODE:
+        if (static_cast<unsigned>(offset) > toCharacterData(n)->length())
+            exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to the node's length (" + String::number(toCharacterData(n)->length()) + ").");
+        return nullptr;
+    case Node::PROCESSING_INSTRUCTION_NODE:
+        if (static_cast<unsigned>(offset) > toProcessingInstruction(n)->data().length())
+            exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to than the node's length (" + String::number(toProcessingInstruction(n)->data().length()) + ").");
+        return nullptr;
+    case Node::ATTRIBUTE_NODE:
+    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::DOCUMENT_NODE:
+    case Node::ELEMENT_NODE: {
+        if (!offset)
             return nullptr;
-        case Node::CDATA_SECTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::TEXT_NODE:
-            if (static_cast<unsigned>(offset) > toCharacterData(n)->length())
-                exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to the node's length (" + String::number(toCharacterData(n)->length()) + ").");
-            return nullptr;
-        case Node::PROCESSING_INSTRUCTION_NODE:
-            if (static_cast<unsigned>(offset) > toProcessingInstruction(n)->data().length())
-                exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than or equal to than the node's length (" + String::number(toProcessingInstruction(n)->data().length()) + ").");
-            return nullptr;
-        case Node::ATTRIBUTE_NODE:
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::DOCUMENT_NODE:
-        case Node::ELEMENT_NODE: {
-            if (!offset)
-                return nullptr;
-            Node* childBefore = NodeTraversal::childAt(*n, offset - 1);
-            if (!childBefore)
-                exceptionState.throwDOMException(IndexSizeError, "There is no child at offset " + String::number(offset) + ".");
-            return childBefore;
-        }
+        Node* childBefore = NodeTraversal::childAt(*n, offset - 1);
+        if (!childBefore)
+            exceptionState.throwDOMException(IndexSizeError, "There is no child at offset " + String::number(offset) + ".");
+        return childBefore;
+    }
     }
     ASSERT_NOT_REACHED();
     return nullptr;
@@ -1034,18 +1036,18 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
     }
 
     switch (n->nodeType()) {
-        case Node::ATTRIBUTE_NODE:
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::DOCUMENT_NODE:
-            exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
-            return;
-        case Node::CDATA_SECTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::DOCUMENT_TYPE_NODE:
-        case Node::ELEMENT_NODE:
-        case Node::PROCESSING_INSTRUCTION_NODE:
-        case Node::TEXT_NODE:
-            break;
+    case Node::ATTRIBUTE_NODE:
+    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::DOCUMENT_NODE:
+        exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
+        return;
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+    case Node::DOCUMENT_TYPE_NODE:
+    case Node::ELEMENT_NODE:
+    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::TEXT_NODE:
+        break;
     }
 
     Node* root = n;
@@ -1053,18 +1055,18 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
         root = parent;
 
     switch (root->nodeType()) {
-        case Node::ATTRIBUTE_NODE:
-        case Node::DOCUMENT_NODE:
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::ELEMENT_NODE:
-            break;
-        case Node::CDATA_SECTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::DOCUMENT_TYPE_NODE:
-        case Node::PROCESSING_INSTRUCTION_NODE:
-        case Node::TEXT_NODE:
-            exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
-            return;
+    case Node::ATTRIBUTE_NODE:
+    case Node::DOCUMENT_NODE:
+    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::ELEMENT_NODE:
+        break;
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+    case Node::DOCUMENT_TYPE_NODE:
+    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::TEXT_NODE:
+        exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
+        return;
     }
 }
 
@@ -1118,34 +1120,34 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
     // node.
     for (ContainerNode* anc = refNode->parentNode(); anc; anc = anc->parentNode()) {
         switch (anc->nodeType()) {
-            case Node::ATTRIBUTE_NODE:
-            case Node::CDATA_SECTION_NODE:
-            case Node::COMMENT_NODE:
-            case Node::DOCUMENT_FRAGMENT_NODE:
-            case Node::DOCUMENT_NODE:
-            case Node::ELEMENT_NODE:
-            case Node::PROCESSING_INSTRUCTION_NODE:
-            case Node::TEXT_NODE:
-                break;
-            case Node::DOCUMENT_TYPE_NODE:
-                exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided has an ancestor of type '" + anc->nodeName() + "'.");
-                return;
-        }
-    }
-
-    switch (refNode->nodeType()) {
+        case Node::ATTRIBUTE_NODE:
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
-        case Node::DOCUMENT_TYPE_NODE:
+        case Node::DOCUMENT_FRAGMENT_NODE:
+        case Node::DOCUMENT_NODE:
         case Node::ELEMENT_NODE:
         case Node::PROCESSING_INSTRUCTION_NODE:
         case Node::TEXT_NODE:
             break;
-        case Node::ATTRIBUTE_NODE:
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::DOCUMENT_NODE:
-            exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
+        case Node::DOCUMENT_TYPE_NODE:
+            exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided has an ancestor of type '" + anc->nodeName() + "'.");
             return;
+        }
+    }
+
+    switch (refNode->nodeType()) {
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+    case Node::DOCUMENT_TYPE_NODE:
+    case Node::ELEMENT_NODE:
+    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::TEXT_NODE:
+        break;
+    case Node::ATTRIBUTE_NODE:
+    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::DOCUMENT_NODE:
+        exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
+        return;
     }
 
     if (m_ownerDocument != refNode->document())
@@ -1244,18 +1246,18 @@ void Range::surroundContents(PassRefPtrWillBeRawPtr<Node> passNewParent, Excepti
     // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType, Notation,
     // Document, or DocumentFragment node.
     switch (newParent->nodeType()) {
-        case Node::ATTRIBUTE_NODE:
-        case Node::DOCUMENT_FRAGMENT_NODE:
-        case Node::DOCUMENT_NODE:
-        case Node::DOCUMENT_TYPE_NODE:
-            exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + newParent->nodeName() + "'.");
-            return;
-        case Node::CDATA_SECTION_NODE:
-        case Node::COMMENT_NODE:
-        case Node::ELEMENT_NODE:
-        case Node::PROCESSING_INSTRUCTION_NODE:
-        case Node::TEXT_NODE:
-            break;
+    case Node::ATTRIBUTE_NODE:
+    case Node::DOCUMENT_FRAGMENT_NODE:
+    case Node::DOCUMENT_NODE:
+    case Node::DOCUMENT_TYPE_NODE:
+        exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + newParent->nodeName() + "'.");
+        return;
+    case Node::CDATA_SECTION_NODE:
+    case Node::COMMENT_NODE:
+    case Node::ELEMENT_NODE:
+    case Node::PROCESSING_INSTRUCTION_NODE:
+    case Node::TEXT_NODE:
+        break;
     }
 
     // Raise a HierarchyRequestError if m_start.container() doesn't accept children like newParent.
@@ -1634,8 +1636,9 @@ void Range::expand(const String& unit, ExceptionState& exceptionState)
     } else if (unit == "document") {
         start = startOfDocument(start);
         end = endOfDocument(end);
-    } else
+    } else {
         return;
+    }
     setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
     setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
 }

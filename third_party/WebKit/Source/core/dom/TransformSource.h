@@ -26,17 +26,17 @@
 
 namespace blink {
 
-    class TransformSource {
-        WTF_MAKE_NONCOPYABLE(TransformSource); WTF_MAKE_FAST_ALLOCATED(TransformSource);
-    public:
-        explicit TransformSource(xmlDocPtr source);
-        ~TransformSource();
+class TransformSource {
+    WTF_MAKE_NONCOPYABLE(TransformSource); WTF_MAKE_FAST_ALLOCATED(TransformSource);
+public:
+    explicit TransformSource(xmlDocPtr source);
+    ~TransformSource();
 
-        xmlDocPtr platformSource() const { return m_source; }
+    xmlDocPtr platformSource() const { return m_source; }
 
-    private:
-        xmlDocPtr m_source;
-    };
+private:
+    xmlDocPtr m_source;
+};
 
 } // namespace blink
 

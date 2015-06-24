@@ -77,17 +77,17 @@ Node* TreeWalker::firstChild(ExceptionState& exceptionState)
         if (exceptionState.hadException())
             return 0;
         switch (acceptNodeResult) {
-            case NodeFilter::FILTER_ACCEPT:
-                m_current = node.release();
-                return m_current.get();
-            case NodeFilter::FILTER_SKIP:
-                if (node->hasChildren()) {
-                    node = node->firstChild();
-                    continue;
-                }
-                break;
-            case NodeFilter::FILTER_REJECT:
-                break;
+        case NodeFilter::FILTER_ACCEPT:
+            m_current = node.release();
+            return m_current.get();
+        case NodeFilter::FILTER_SKIP:
+            if (node->hasChildren()) {
+                node = node->firstChild();
+                continue;
+            }
+            break;
+        case NodeFilter::FILTER_REJECT:
+            break;
         }
         do {
             if (node->nextSibling()) {
@@ -110,17 +110,17 @@ Node* TreeWalker::lastChild(ExceptionState& exceptionState)
         if (exceptionState.hadException())
             return 0;
         switch (acceptNodeResult) {
-            case NodeFilter::FILTER_ACCEPT:
-                m_current = node.release();
-                return m_current.get();
-            case NodeFilter::FILTER_SKIP:
-                if (node->lastChild()) {
-                    node = node->lastChild();
-                    continue;
-                }
-                break;
-            case NodeFilter::FILTER_REJECT:
-                break;
+        case NodeFilter::FILTER_ACCEPT:
+            m_current = node.release();
+            return m_current.get();
+        case NodeFilter::FILTER_SKIP:
+            if (node->lastChild()) {
+                node = node->lastChild();
+                continue;
+            }
+            break;
+        case NodeFilter::FILTER_REJECT:
+            break;
         }
         do {
             if (node->previousSibling()) {
@@ -147,18 +147,18 @@ Node* TreeWalker::previousSibling(ExceptionState& exceptionState)
             if (exceptionState.hadException())
                 return 0;
             switch (acceptNodeResult) {
-                case NodeFilter::FILTER_ACCEPT:
-                    m_current = sibling.release();
-                    return m_current.get();
-                case NodeFilter::FILTER_SKIP:
-                    if (sibling->lastChild()) {
-                        sibling = sibling->lastChild();
-                        node = sibling;
-                        continue;
-                    }
-                    break;
-                case NodeFilter::FILTER_REJECT:
-                    break;
+            case NodeFilter::FILTER_ACCEPT:
+                m_current = sibling.release();
+                return m_current.get();
+            case NodeFilter::FILTER_SKIP:
+                if (sibling->lastChild()) {
+                    sibling = sibling->lastChild();
+                    node = sibling;
+                    continue;
+                }
+                break;
+            case NodeFilter::FILTER_REJECT:
+                break;
             }
             sibling = sibling->previousSibling();
         }
@@ -184,18 +184,18 @@ Node* TreeWalker::nextSibling(ExceptionState& exceptionState)
             if (exceptionState.hadException())
                 return 0;
             switch (acceptNodeResult) {
-                case NodeFilter::FILTER_ACCEPT:
-                    m_current = sibling.release();
-                    return m_current.get();
-                case NodeFilter::FILTER_SKIP:
-                    if (sibling->hasChildren()) {
-                        sibling = sibling->firstChild();
-                        node = sibling;
-                        continue;
-                    }
-                    break;
-                case NodeFilter::FILTER_REJECT:
-                    break;
+            case NodeFilter::FILTER_ACCEPT:
+                m_current = sibling.release();
+                return m_current.get();
+            case NodeFilter::FILTER_SKIP:
+                if (sibling->hasChildren()) {
+                    sibling = sibling->firstChild();
+                    node = sibling;
+                    continue;
+                }
+                break;
+            case NodeFilter::FILTER_REJECT:
+                break;
             }
             sibling = sibling->nextSibling();
         }
