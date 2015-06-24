@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/chrome_style.h"
@@ -19,13 +20,16 @@
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/spinner_view.h"
+#include "chrome/browser/ui/cocoa/themed_window.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
 
 namespace {
 
@@ -47,8 +51,6 @@ const CGFloat kSpinnerToProgressTextGap = 8.0f;
 const CGFloat kYearToCvcGap = 12.0f;
 
 const SkColor kPermanentErrorTextColor = SK_ColorWHITE;
-// Material blue. TODO(bondd): share with Views version.
-const SkColor kProgressTextColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 // TODO(bondd): Unify colors with Views version and AutofillMessageView.
 const SkColor kShadingColor = SkColorSetRGB(0xf2, 0xf2, 0xf2);
 const SkColor kSubtleBorderColor = SkColorSetRGB(0xdf, 0xdf, 0xdf);
@@ -136,6 +138,10 @@ void CardUnmaskPromptViewBridge::OnConstrainedWindowClosed(
 
 CardUnmaskPromptController* CardUnmaskPromptViewBridge::GetController() {
   return controller_;
+}
+
+content::WebContents* CardUnmaskPromptViewBridge::GetWebContents() {
+  return web_contents_;
 }
 
 void CardUnmaskPromptViewBridge::PerformClose() {
@@ -653,8 +659,12 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [mainView addSubview:progressOverlayView_];
 
   progressOverlayLabel_.reset([constrained_window::CreateLabel() retain]);
-  [progressOverlayLabel_
-      setTextColor:gfx::SkColorToCalibratedNSColor(kProgressTextColor)];
+  NSView* webContentView = bridge_->GetWebContents()->GetNativeView();
+  ui::ThemeProvider* themeProvider = [[webContentView window] themeProvider];
+  DCHECK(themeProvider);
+  NSColor* throbberBlueColor = themeProvider->GetNSColor(
+      ThemeProperties::COLOR_THROBBER_SPINNING);
+  [progressOverlayLabel_ setTextColor:throbberBlueColor];
   [progressOverlayView_ addSubview:progressOverlayLabel_];
 
   progressOverlaySpinner_.reset([[SpinnerView alloc]

@@ -10,6 +10,8 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/theme_provider.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 const CGFloat kDegrees90               = (M_PI / 2);
@@ -25,7 +27,6 @@ const CGFloat kArcAnimationTime        = 1.333;
 const CGFloat kArcStartAngle           = kDegrees180;
 const CGFloat kArcEndAngle             = (kArcStartAngle + kDegrees270);
 const CGFloat kRotationTime            = 1.56863;
-const SkColor kBlue                    = SkColorSetRGB(0x42, 0x85, 0xf4);
 NSString* const kSpinnerAnimationName  = @"SpinnerAnimationName";
 NSString* const kRotationAnimationName = @"RotationAnimationName";
 }
@@ -116,7 +117,10 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   [shapeLayer_ setLineCap:kCALineCapRound];
   [shapeLayer_ setLineDashPattern:@[ @(kArcLength * scaleFactor) ]];
   [shapeLayer_ setFillColor:NULL];
-  CGColorRef blueColor = gfx::CGColorCreateFromSkColor(kBlue);
+  ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
+  SkColor throbberBlueColor = nativeTheme->GetSystemColor(
+      ui::NativeTheme::kColorId_ThrobberSpinningColor);
+  CGColorRef blueColor = gfx::CGColorCreateFromSkColor(throbberBlueColor);
   [shapeLayer_ setStrokeColor:blueColor];
   CGColorRelease(blueColor);
 

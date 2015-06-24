@@ -36,6 +36,8 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   CardUnmaskPromptController* GetController();
+  content::WebContents* GetWebContents();
+
   void PerformClose();
 
  private:
