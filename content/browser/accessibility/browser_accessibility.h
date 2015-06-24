@@ -283,6 +283,12 @@ class CONTENT_EXPORT BrowserAccessibility {
   // bounds offsets.
   BrowserAccessibility* GetParentForBoundsCalculation() const;
 
+  // If a bounding rectangle is empty, compute it based on the union of its
+  // children, since most accessibility APIs don't like elements with no
+  // bounds, but "virtual" elements in the accessibility tree that don't
+  // correspond to a layed-out element sometimes don't have bounds.
+  void FixEmptyBounds(gfx::Rect* bounds) const;
+
   // Convert the bounding rectangle of an element (which is relative to
   // its nearest scrollable ancestor) to local bounds (which are relative
   // to the top of the web accessibility tree).

@@ -188,6 +188,7 @@ BrowserAccessibility::GetHtmlAttributes() const {
 
 gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
   gfx::Rect bounds = GetLocation();
+  FixEmptyBounds(&bounds);
   return ElementBoundsToLocalBounds(bounds);
 }
 
@@ -693,6 +694,32 @@ BrowserAccessibility* BrowserAccessibility::GetParentForBoundsCalculation()
     return NULL;
 
   return manager_->delegate()->AccessibilityGetParentFrame();
+}
+
+void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const
+{
+  if (bounds->width() > 0 && bounds->height() > 0)
+    return;
+
+  for (size_t i = 0; i < InternalChildCount(); ++i) {
+    // Compute the bounds of each child - this calls FixEmptyBounds
+    // recursively if necessary.
+    BrowserAccessibility* child = InternalGetChild(i);
+    gfx::Rect child_bounds = child->GetLocalBoundsRect();
+
+    // Ignore children that don't have valid bounds themselves.
+    if (child_bounds.width() == 0 || child_bounds.height() == 0)
+      continue;
+
+    // For the first valid child, just set the bounds to that child's bounds.
+    if (bounds->width() == 0 || bounds->height() == 0) {
+      *bounds = child_bounds;
+      continue;
+    }
+
+    // Union each additional child's bounds.
+    bounds->Union(child_bounds);
+  }
 }
 
 gfx::Rect BrowserAccessibility::ElementBoundsToLocalBounds(gfx::Rect bounds)
