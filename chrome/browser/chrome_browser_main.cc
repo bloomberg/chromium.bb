@@ -151,6 +151,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/dev_tools_discovery_provider_android.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
+#include "ui/base/resource/resource_bundle_android.h"
 #else
 #include "chrome/browser/devtools/chrome_devtools_discovery_provider.h"
 #include "chrome/browser/feedback/feedback_profile_observer.h"
@@ -925,13 +926,17 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
   browser_process_->SetApplicationLocale(loaded_locale);
 
-  base::FilePath resources_pack_path;
-  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   {
     TRACE_EVENT0("startup",
         "ChromeBrowserMainParts::PreCreateThreadsImpl:AddDataPack");
+    base::FilePath resources_pack_path;
+    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+#if defined(OS_ANDROID)
+    ui::LoadMainAndroidPackFile("assets/resources.pak", resources_pack_path);
+#else
     ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);
+#endif  // defined(OS_ANDROID)
   }
 #endif  // defined(OS_MACOSX)
 

@@ -146,7 +146,11 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   std::map<int, base::MemoryMappedFile::Region> regions;
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
-      *cmd_line, child_process_id, files_to_register.get());
+      *cmd_line, child_process_id, files_to_register.get()
+#if defined(OS_ANDROID)
+      , &regions
+#endif
+      );
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   base::PlatformFile natives_pf =
       gin::V8Initializer::GetOpenNativesFileForChildProcesses(

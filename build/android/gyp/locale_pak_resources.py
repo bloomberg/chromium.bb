@@ -6,7 +6,7 @@
 """Creates a resources.zip for locale .pak files.
 
 Places the locale.pak files into appropriate resource configs
-(e.g. en-GB.pak -> res/raw-en/en_gb.pak). Also generates a locale_paks
+(e.g. en-GB.pak -> res/raw-en/en_gb.lpak). Also generates a locale_paks
 TypedArray so that resource files can be enumerated at runtime.
 """
 
@@ -26,6 +26,14 @@ _CHROME_TO_ANDROID_LOCALE_MAP = {
     'id': 'in',
     'fil': 'tl',
 }
+
+
+def ToResourceFileName(name):
+  """Returns the resource-compatible file name for the given file."""
+  # Resources file names must consist of [a-z0-9_.].
+  # Changes extension to .lpak so that compression can be toggled separately for
+  # locale pak files vs other pak files.
+  return name.replace('-', '_').replace('.pak', '.lpak').lower()
 
 
 def CreateLocalePaksXml(names):
@@ -61,13 +69,12 @@ def main():
     build_utils.WriteDepfile(options.depfile, deps)
 
   with zipfile.ZipFile(options.resources_zip, 'w', zipfile.ZIP_STORED) as out:
-    # e.g. "en" -> ["en_gb.pak"]
+    # e.g. "en" -> ["en_gb.lpak"]
     lang_to_locale_map = collections.defaultdict(list)
     for src_path in sources:
       basename = os.path.basename(src_path)
       name = os.path.splitext(basename)[0]
-      # Resources file names must consist of [a-z0-9_.].
-      res_compatible_name = basename.replace('-', '_').lower()
+      res_name = ToResourceFileName(basename)
       if name == 'en-US':
         dest_dir = 'raw'
       else:
@@ -76,16 +83,16 @@ def main():
         android_locale = _CHROME_TO_ANDROID_LOCALE_MAP.get(name, name)
         lang = android_locale[0:2]
         dest_dir = 'raw-' + lang
-        lang_to_locale_map[lang].append(res_compatible_name)
-      out.write(src_path, os.path.join(dest_dir, res_compatible_name))
+        lang_to_locale_map[lang].append(res_name)
+      out.write(src_path, os.path.join(dest_dir, res_name))
 
     # Create a String Arrays resource so ResourceExtractor can enumerate files.
     def WriteValuesFile(lang, names):
       dest_dir = 'values'
       if lang:
         dest_dir += '-' + lang
-      # Always extract en-US.pak since it's the fallback.
-      xml = CreateLocalePaksXml(names + ['en_us.pak'])
+      # Always extract en-US.lpak since it's the fallback.
+      xml = CreateLocalePaksXml(names + ['en_us.lpak'])
       out.writestr(os.path.join(dest_dir, 'locale-paks.xml'), xml)
 
     for lang, names in lang_to_locale_map.iteritems():

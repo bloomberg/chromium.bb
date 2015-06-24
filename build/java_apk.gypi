@@ -89,8 +89,9 @@
     'additional_res_packages': [],
     'additional_bundled_libs%': [],
     'is_test_apk%': 0,
-    # Allow icu data and v8 snapshots to be loaded directly from the .apk.
-    'extensions_to_not_compress%': 'dat,bin',
+    # Allow icu data, v8 snapshots, and pak files to be loaded directly from the .apk.
+    # Note: These are actually suffix matches, not necessarily extensions.
+    'extensions_to_not_compress%': '.dat,.bin,.pak',
     'resource_input_paths': [],
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',

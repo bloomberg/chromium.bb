@@ -15,9 +15,6 @@ import org.chromium.base.ResourceExtractor;
  */
 public class ContentBrowserTestsApplication extends BaseChromiumApplication {
 
-    private static final String[] MANDATORY_PAK_FILES = new String[] {
-        "content_shell.pak",
-    };
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 
     @Override
@@ -27,7 +24,7 @@ public class ContentBrowserTestsApplication extends BaseChromiumApplication {
     }
 
     public static void initializeApplicationParameters(Context context) {
-        ResourceExtractor.setMandatoryPaksToExtract(0, MANDATORY_PAK_FILES);
+        ResourceExtractor.setMandatoryPaksToExtract(0);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 

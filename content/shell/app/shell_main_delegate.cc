@@ -49,6 +49,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/apk_assets.h"
 #include "base/posix/global_descriptors.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
@@ -291,38 +292,46 @@ void ShellMainDelegate::ZygoteForked() {
 
 void ShellMainDelegate::InitializeResourceBundle() {
 #if defined(OS_ANDROID)
-  // In the Android case, the renderer runs with a different UID and can never
-  // access the file system.  So we are passed a file descriptor to the
-  // ResourceBundle pak at launch time.
-  int pak_fd =
-      base::GlobalDescriptors::GetInstance()->MaybeGet(kShellPakDescriptor);
+  // On Android, the renderer runs with a different UID and can never access
+  // the file system. Use the file descriptor passed in at launch time.
+  auto* global_descriptors = base::GlobalDescriptors::GetInstance();
+  int pak_fd = global_descriptors->MaybeGet(kShellPakDescriptor);
+  base::MemoryMappedFile::Region pak_region;
   if (pak_fd >= 0) {
-    // This is clearly wrong. See crbug.com/330930
-    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        base::File(pak_fd), base::MemoryMappedFile::Region::kWholeFile);
-    ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-        base::File(pak_fd), ui::SCALE_FACTOR_100P);
-    return;
+    pak_region = global_descriptors->GetRegion(kShellPakDescriptor);
+  } else {
+    pak_fd =
+        base::android::OpenApkAsset("assets/content_shell.pak", &pak_region);
+    // Loaded from disk for browsertests.
+    if (pak_fd < 0) {
+      base::FilePath pak_file;
+      bool r = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file);
+      DCHECK(r);
+      pak_file = pak_file.Append(FILE_PATH_LITERAL("paks"));
+      pak_file = pak_file.Append(FILE_PATH_LITERAL("content_shell.pak"));
+      int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+      pak_fd = base::File(pak_file, flags).TakePlatformFile();
+      pak_region = base::MemoryMappedFile::Region::kWholeFile;
+    }
+    global_descriptors->Set(kShellPakDescriptor, pak_fd, pak_region);
   }
-#endif
-
-  base::FilePath pak_file;
+  DCHECK_GE(pak_fd, 0);
+  // This is clearly wrong. See crbug.com/330930
+  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
+                                                          pak_region);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+      base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
+#else  // defined(OS_ANDROID)
 #if defined(OS_MACOSX)
-  pak_file = GetResourcesPakFilePath();
+  base::FilePath pak_file = GetResourcesPakFilePath();
 #else
-  base::FilePath pak_dir;
-
-#if defined(OS_ANDROID)
-  bool got_path = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir);
-  DCHECK(got_path);
-  pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
-#else
-  PathService::Get(base::DIR_MODULE, &pak_dir);
-#endif
-
-  pak_file = pak_dir.Append(FILE_PATH_LITERAL("content_shell.pak"));
-#endif
+  base::FilePath pak_file;
+  bool r = PathService::Get(base::DIR_MODULE, &pak_file);
+  DCHECK(r);
+  pak_file = pak_file.Append(FILE_PATH_LITERAL("content_shell.pak"));
+#endif  // defined(OS_MACOSX)
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+#endif  // defined(OS_ANDROID)
 }
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {

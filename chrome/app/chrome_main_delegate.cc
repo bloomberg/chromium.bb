@@ -743,22 +743,22 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // The renderer sandbox prevents us from accessing our .pak files directly.
     // Therefore file descriptors to the .pak files that we need are passed in
     // at process creation time.
-    int locale_pak_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
-        kAndroidLocalePakDescriptor);
-    CHECK(locale_pak_fd != -1);
-    ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        base::File(locale_pak_fd), base::MemoryMappedFile::Region::kWholeFile);
+    auto global_descriptors = base::GlobalDescriptors::GetInstance();
+    int pak_fd = global_descriptors->Get(kAndroidLocalePakDescriptor);
+    base::MemoryMappedFile::Region pak_region =
+        global_descriptors->GetRegion(kAndroidLocalePakDescriptor);
+    ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
+                                                        pak_region);
 
     int extra_pak_keys[] = {
       kAndroidChrome100PercentPakDescriptor,
       kAndroidUIResourcesPakDescriptor,
     };
     for (size_t i = 0; i < arraysize(extra_pak_keys); ++i) {
-      int pak_fd =
-          base::GlobalDescriptors::GetInstance()->MaybeGet(extra_pak_keys[i]);
-      CHECK(pak_fd != -1);
-      ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-          base::File(pak_fd), ui::SCALE_FACTOR_100P);
+      pak_fd = global_descriptors->Get(extra_pak_keys[i]);
+      pak_region = global_descriptors->GetRegion(extra_pak_keys[i]);
+      ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+          base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
     }
 
     base::i18n::SetICUDefaultLocale(locale);

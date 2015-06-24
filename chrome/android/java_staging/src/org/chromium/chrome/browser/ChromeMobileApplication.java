@@ -131,10 +131,6 @@ public class ChromeMobileApplication extends ChromiumApplication {
         }
     }
 
-    private static final String[] CHROME_MANDATORY_PAKS = {
-        "resources.pak",
-        "chrome_100_percent.pak",
-    };
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static final String DEV_TOOLS_SERVER_SOCKET_PREFIX = "chrome";
     private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
@@ -202,7 +198,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
     protected void initializeLibraryDependencies() {
         // The ResourceExtractor is only needed by the browser process, but this will have no
         // impact on the renderer process construction.
-        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks, CHROME_MANDATORY_PAKS);
+        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

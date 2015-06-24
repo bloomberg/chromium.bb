@@ -29,10 +29,6 @@ import java.util.ArrayList;
 public class ChromeShellApplication extends ChromiumApplication {
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromeshell";
-    private static final String[] CHROME_MANDATORY_PAKS = {
-        "resources.pak",
-        "chrome_100_percent.pak",
-    };
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/chrome-shell-command-line";
 
     private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
@@ -62,7 +58,7 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks, CHROME_MANDATORY_PAKS);
+        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

@@ -168,6 +168,7 @@
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
 #include "components/service_tab_launcher/browser/android/service_tab_launcher.h"
+#include "ui/base/resource/resource_bundle_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
@@ -2273,37 +2274,27 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   }
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_ANDROID)
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    FileDescriptorInfo* mappings) {
-#if defined(OS_ANDROID)
-  base::FilePath data_path;
-  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &data_path);
-  DCHECK(!data_path.empty());
+    FileDescriptorInfo* mappings,
+    std::map<int, base::MemoryMappedFile::Region>* regions) {
+  int fd = ui::GetMainAndroidPackFd(
+      &(*regions)[kAndroidUIResourcesPakDescriptor]);
+  mappings->Share(kAndroidUIResourcesPakDescriptor, fd);
+
+  fd = ui::GetCommonResourcesPackFd(
+      &(*regions)[kAndroidChrome100PercentPakDescriptor]);
+  mappings->Share(kAndroidChrome100PercentPakDescriptor, fd);
 
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  base::FilePath chrome_resources_pak =
-      data_path.AppendASCII("chrome_100_percent.pak");
-  base::File file(chrome_resources_pak, flags);
-  DCHECK(file.IsValid());
-  mappings->Transfer(kAndroidChrome100PercentPakDescriptor,
-                     base::ScopedFD(file.TakePlatformFile()));
-
   const std::string locale = GetApplicationLocale();
   base::FilePath locale_pak = ResourceBundle::GetSharedInstance().
       GetLocaleFilePath(locale, false);
-  file.Initialize(locale_pak, flags);
+  base::File file(locale_pak, flags);
   DCHECK(file.IsValid());
   mappings->Transfer(kAndroidLocalePakDescriptor,
-                     base::ScopedFD(file.TakePlatformFile()));
-
-  base::FilePath resources_pack_path;
-  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-  file.Initialize(resources_pack_path, flags);
-  DCHECK(file.IsValid());
-  mappings->Transfer(kAndroidUIResourcesPakDescriptor,
                      base::ScopedFD(file.TakePlatformFile()));
 
   if (breakpad::IsCrashReporterEnabled()) {
@@ -2321,14 +2312,18 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   base::FilePath app_data_path;
   PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path);
   DCHECK(!app_data_path.empty());
-#else
+}
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+    const base::CommandLine& command_line,
+    int child_process_id,
+    FileDescriptorInfo* mappings) {
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
-#endif  // defined(OS_ANDROID)
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {

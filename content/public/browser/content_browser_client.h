@@ -616,14 +616,20 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to record |metric| for a specific |url|.
   virtual void RecordURLMetric(const std::string& metric, const GURL& url) {}
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
+#if defined(OS_ANDROID)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      FileDescriptorInfo* mappings) {}
-#endif
+      content::FileDescriptorInfo* mappings,
+      std::map<int, base::MemoryMappedFile::Region>* regions) {}
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+  virtual void GetAdditionalMappedFilesForChildProcess(
+      const base::CommandLine& command_line,
+      int child_process_id,
+      content::FileDescriptorInfo* mappings) {}
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   // Returns the name of the dll that contains cursors and other resources.

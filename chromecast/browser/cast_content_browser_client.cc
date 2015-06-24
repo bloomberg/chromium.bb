@@ -332,21 +332,18 @@ bool CastContentBrowserClient::CanCreateWindow(
   return false;
 }
 
+#if defined(OS_ANDROID)
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    content::FileDescriptorInfo* mappings) {
-#if defined(OS_ANDROID)
-  const int flags_open_read = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  base::FilePath pak_file_path;
-  CHECK(PathService::Get(FILE_CAST_PAK, &pak_file_path));
-  base::File pak_file(pak_file_path, flags_open_read);
-  if (!pak_file.IsValid()) {
-    NOTREACHED() << "Failed to open file when creating renderer process: "
-                 << "cast_shell.pak";
-  }
-  mappings->Transfer(kAndroidPakDescriptor,
-                     base::ScopedFD(pak_file.TakePlatformFile()));
+    content::FileDescriptorInfo* mappings,
+    std::map<int, base::MemoryMappedFile::Region>* regions) {
+  mappings->Share(
+      kAndroidPakDescriptor,
+      base::GlobalDescriptors::GetInstance()->Get(kAndroidPakDescriptor));
+  regions->insert(std::make_pair(
+      kAndroidPakDescriptor, base::GlobalDescriptors::GetInstance()->GetRegion(
+                                 kAndroidPakDescriptor)));
 
   if (breakpad::IsCrashReporterEnabled()) {
     base::File minidump_file(
@@ -360,13 +357,18 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                          base::ScopedFD(minidump_file.TakePlatformFile()));
     }
   }
+}
 #else
+void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+    const base::CommandLine& command_line,
+    int child_process_id,
+    content::FileDescriptorInfo* mappings) {
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
-#endif  // defined(OS_ANDROID)
 }
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) && defined(VIDEO_HOLE)
 content::ExternalVideoSurfaceContainer*

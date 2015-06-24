@@ -1689,8 +1689,10 @@ template("android_apk") {
     if (defined(invoker.extensions_to_not_compress)) {
       extensions_to_not_compress = invoker.extensions_to_not_compress
     } else {
-      # Allow icu data and v8 snapshots to be loaded directly from the .apk.
-      extensions_to_not_compress = "dat,bin"
+      # Allow icu data, v8 snapshots, and pak files to be loaded directly from
+      # the .apk.
+      # Note: These are actually suffix matches, not necessarily extensions.
+      extensions_to_not_compress = ".dat,.bin,.pak"
     }
 
     version_code = _version_code

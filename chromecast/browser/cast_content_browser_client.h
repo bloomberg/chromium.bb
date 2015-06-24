@@ -116,10 +116,18 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       int opener_render_view_id,
       int opener_render_frame_id,
       bool* no_javascript_access) override;
+#if defined(OS_ANDROID)
+  void GetAdditionalMappedFilesForChildProcess(
+      const base::CommandLine& command_line,
+      int child_process_id,
+      content::FileDescriptorInfo* mappings,
+      std::map<int, base::MemoryMappedFile::Region>* regions) override;
+#else
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       content::FileDescriptorInfo* mappings) override;
+#endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID) && defined(VIDEO_HOLE)
   content::ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(

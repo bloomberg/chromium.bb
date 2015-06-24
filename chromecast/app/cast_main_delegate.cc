@@ -23,6 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/apk_assets.h"
 #include "chromecast/app/android/crash_handler.h"
 #else
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
@@ -127,17 +128,31 @@ void CastMainDelegate::ZygoteForked() {
 #endif  // !defined(OS_ANDROID)
 
 void CastMainDelegate::InitializeResourceBundle() {
+  base::FilePath pak_file;
+  CHECK(PathService::Get(FILE_CAST_PAK, &pak_file));
 #if defined(OS_ANDROID)
   // On Android, the renderer runs with a different UID and can never access
   // the file system. Use the file descriptor passed in at launch time.
-  int pak_fd =
-      base::GlobalDescriptors::GetInstance()->MaybeGet(kAndroidPakDescriptor);
+  auto global_descriptors = base::GlobalDescriptors::GetInstance();
+  int pak_fd = global_descriptors->MaybeGet(kAndroidPakDescriptor);
+  base::MemoryMappedFile::Region pak_region;
   if (pak_fd >= 0) {
-    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        base::File(pak_fd), base::MemoryMappedFile::Region::kWholeFile);
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-        base::File(pak_fd), ui::SCALE_FACTOR_100P);
+    pak_region = global_descriptors->GetRegion(kAndroidPakDescriptor);
+    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
+                                                            pak_region);
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+        base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
     return;
+  } else {
+    pak_fd = base::android::OpenApkAsset("assets/cast_shell.pak", &pak_region);
+    // Loaded from disk for browsertests.
+    if (pak_fd < 0) {
+      int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+      pak_fd = base::File(pak_file, flags).TakePlatformFile();
+      pak_region = base::MemoryMappedFile::Region::kWholeFile;
+    }
+    DCHECK_GE(pak_fd, 0);
+    global_descriptors->Set(kAndroidPakDescriptor, pak_fd, pak_region);
   }
 #endif  // defined(OS_ANDROID)
 
@@ -149,11 +164,14 @@ void CastMainDelegate::InitializeResourceBundle() {
       resource_delegate_.get(),
       ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
-  base::FilePath pak_file;
-  CHECK(PathService::Get(FILE_CAST_PAK, &pak_file));
+#if defined(OS_ANDROID)
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+      base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
+#else
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file,
       ui::SCALE_FACTOR_NONE);
+#endif  // defined(OS_ANDROID)
 }
 
 content::ContentBrowserClient* CastMainDelegate::CreateContentBrowserClient() {

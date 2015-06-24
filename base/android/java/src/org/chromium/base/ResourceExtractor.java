@@ -48,6 +48,7 @@ public class ResourceExtractor {
      * Applies the reverse mapping done by locale_pak_resources.py.
      */
     private static String toChromeLocaleName(String srcFileName) {
+        srcFileName = srcFileName.replace(".lpak", ".pak");
         String[] parts = srcFileName.split("_");
         if (parts.length > 1) {
             int dotIdx = parts[1].indexOf('.');
