@@ -46,6 +46,3 @@
 /tests/subversion_config/servers
 /tests/svn/
 /tests/svnrepo/
-
-# Ignore virtualenv created during bootstrapping.
-/ENV
