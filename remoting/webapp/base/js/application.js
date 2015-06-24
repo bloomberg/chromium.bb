@@ -27,7 +27,7 @@ remoting.Application = function() {
   // Create global factories.
   remoting.ClientPlugin.factory = new remoting.DefaultClientPluginFactory();
 
-  /** @private {base.WindowMessageDispatcher} */
+  /** @protected {base.WindowMessageDispatcher} */
   this.windowMessageDispatcher_ = new base.WindowMessageDispatcher();
 };
 
