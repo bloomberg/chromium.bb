@@ -186,6 +186,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	uint64_t *chunk_array;
 	struct drm_amdgpu_cs_chunk *chunks;
 	struct drm_amdgpu_cs_chunk_data *chunk_data;
+	struct drm_amdgpu_cs_chunk_dep *dependencies = NULL;
 	uint32_t i, size;
 	int r = 0;
 
@@ -196,10 +197,12 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	if (ibs_request->number_of_ibs > AMDGPU_CS_MAX_IBS_PER_SUBMIT)
 		return -EINVAL;
 
-	size = ibs_request->number_of_ibs + 1;
+	size = ibs_request->number_of_ibs + 2;
 
 	chunk_array = alloca(sizeof(uint64_t) * size);
 	chunks = alloca(sizeof(struct drm_amdgpu_cs_chunk) * size);
+
+	size = ibs_request->number_of_ibs + 1;
 	chunk_data = alloca(sizeof(struct drm_amdgpu_cs_chunk_data) * size);
 
 	memset(&cs, 0, sizeof(cs));
@@ -247,6 +250,34 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		chunk_data[i].fence_data.offset *= sizeof(uint64_t);
 	}
 
+	if (ibs_request->number_of_dependencies) {
+		dependencies = malloc(sizeof(struct drm_amdgpu_cs_chunk_dep) *
+			ibs_request->number_of_dependencies);
+		if (!dependencies) {
+			r = -ENOMEM;
+			goto error_unlock;
+		}
+
+		for (i = 0; i < ibs_request->number_of_dependencies; ++i) {
+			struct amdgpu_cs_dep_info *info = &ibs_request->dependencies[i];
+			struct drm_amdgpu_cs_chunk_dep *dep = &dependencies[i];
+			dep->ip_type = info->ip_type;
+			dep->ip_instance = info->ip_instance;
+			dep->ring = info->ring;
+			dep->ctx_id = info->context->id;
+			dep->handle = info->fence;
+		}
+
+		i = cs.in.num_chunks++;
+
+		/* dependencies chunk */
+		chunk_array[i] = (uint64_t)(uintptr_t)&chunks[i];
+		chunks[i].chunk_id = AMDGPU_CHUNK_ID_DEPENDENCIES;
+		chunks[i].length_dw = sizeof(struct drm_amdgpu_cs_chunk_dep) / 4
+			* ibs_request->number_of_dependencies;
+		chunks[i].chunk_data = (uint64_t)(uintptr_t)dependencies;
+	}
+
 	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CS,
 				&cs, sizeof(cs));
 	if (r)
@@ -256,6 +287,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 
 error_unlock:
 	pthread_mutex_unlock(&context->sequence_mutex);
+	free(dependencies);
 	return r;
 }
 

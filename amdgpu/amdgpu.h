@@ -252,6 +252,30 @@ struct amdgpu_gds_resource_info {
 };
 
 /**
+ * Structure describing CS dependency
+ *
+ * \sa amdgpu_cs_request, amdgpu_cs_submit()
+ *
+*/
+struct amdgpu_cs_dep_info {
+	/** Context to which the fence belongs */
+	amdgpu_context_handle	context;
+
+	/** To which HW IP type the fence belongs */
+	uint32_t		ip_type;
+
+	/** IP instance index if there are several IPs of the same type. */
+	uint32_t		ip_instance;
+
+	/** Ring index of the HW IP */
+	uint32_t		ring;
+
+	/** Specify fence for which we need to check
+	 * submission status.*/
+	uint64_t		fence;
+};
+
+/**
  * Structure describing IB
  *
  * \sa amdgpu_cs_request, amdgpu_cs_submit()
@@ -300,6 +324,18 @@ struct amdgpu_cs_request {
 	 * List handle with resources used by this request.
 	 */
 	amdgpu_bo_list_handle resources;
+
+	/**
+	 * Number of dependencies this Command submission needs to
+	 * wait for before starting execution.
+	 */
+	uint32_t number_of_dependencies;
+
+	/**
+	 * Array of dependencies which need to be met before
+	 * execution can start.
+	 */
+	struct amdgpu_cs_dep_info *dependencies;
 
 	/** Number of IBs to submit in the field ibs. */
 	uint32_t number_of_ibs;
