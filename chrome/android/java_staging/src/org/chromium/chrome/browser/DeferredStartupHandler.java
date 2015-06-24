@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.ThreadUtils;
@@ -35,6 +36,7 @@ public class DeferredStartupHandler {
     private static final String MODERATE_BINDING_LOW_REDUCE_RATIO_PARAM = "low_reduce_ratio";
     private static final String MODERATE_BINDING_HIGH_REDUCE_RATIO_PARAM = "high_reduce_ratio";
     private static final String MODERATE_BINDING_ENABLED_PARAM = "enabled";
+    private static final String MODERATE_BINDING_SWITCH_PREFIX = "moderate-binding-";
     private static final float DEFAULT_MODERATE_BINDING_REDUCE_RATIO = 0.25f;
 
     private static DeferredStartupHandler sDeferredStartupHandler;
@@ -138,15 +140,22 @@ public class DeferredStartupHandler {
         }
     }
 
+    private static String getModerateBindingConfigValue(String param) {
+        String switchName = MODERATE_BINDING_SWITCH_PREFIX + param;
+        if (CommandLine.getInstance().hasSwitch(switchName)) {
+            return CommandLine.getInstance().getSwitchValue(switchName);
+        }
+        return VariationsAssociatedData.getVariationParamValue(MODERATE_BINDING_TRIAL_NAME, param);
+    }
+
     private static void startModerateBindingManagementIfNeeded(Context context) {
-        String enabledValue = VariationsAssociatedData.getVariationParamValue(
-                MODERATE_BINDING_TRIAL_NAME, MODERATE_BINDING_ENABLED_PARAM);
+        String enabledValue = getModerateBindingConfigValue(MODERATE_BINDING_ENABLED_PARAM);
         if (!Boolean.parseBoolean(enabledValue)) return;
 
-        String lowReduceRatioValue = VariationsAssociatedData.getVariationParamValue(
-                MODERATE_BINDING_TRIAL_NAME, MODERATE_BINDING_LOW_REDUCE_RATIO_PARAM);
-        String highReduceRatioValue = VariationsAssociatedData.getVariationParamValue(
-                MODERATE_BINDING_TRIAL_NAME, MODERATE_BINDING_HIGH_REDUCE_RATIO_PARAM);
+        String lowReduceRatioValue =
+                getModerateBindingConfigValue(MODERATE_BINDING_LOW_REDUCE_RATIO_PARAM);
+        String highReduceRatioValue =
+                getModerateBindingConfigValue(MODERATE_BINDING_HIGH_REDUCE_RATIO_PARAM);
         float lowReduceRatio =
                 parseFloat(lowReduceRatioValue, DEFAULT_MODERATE_BINDING_REDUCE_RATIO);
         float highReduceRatio =
