@@ -136,6 +136,10 @@ void PepperWebPluginImpl::destroy() {
 
 v8::Local<v8::Object> PepperWebPluginImpl::v8ScriptableObject(
       v8::Isolate* isolate) {
+  // Re-entrancy may cause JS to try to execute script on the plugin before it
+  // is fully initialized. See e.g. crbug.com/503401.
+  if (!instance_.get())
+    return v8::Local<v8::Object>();
   // Call through the plugin to get its instance object. The plugin should pass
   // us a reference which we release in destroy().
   if (instance_object_.type == PP_VARTYPE_UNDEFINED)
