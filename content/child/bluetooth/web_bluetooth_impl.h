@@ -27,6 +27,7 @@ class CONTENT_EXPORT WebBluetoothImpl
 
   // blink::WebBluetooth interface:
   void requestDevice(
+      const blink::WebRequestDeviceOptions& options,
       blink::WebBluetoothRequestDeviceCallbacks* callbacks) override;
   void connectGATT(const blink::WebString& device_instance_id,
       blink::WebBluetoothConnectGATTCallbacks* callbacks) override;

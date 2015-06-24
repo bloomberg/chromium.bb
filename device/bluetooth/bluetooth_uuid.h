@@ -8,6 +8,11 @@
 #include <string>
 
 #include "device/bluetooth/bluetooth_export.h"
+#include "ipc/ipc_param_traits.h"
+
+namespace base {
+class PickleIterator;
+}  // namespace base
 
 namespace device {
 
@@ -96,5 +101,20 @@ void DEVICE_BLUETOOTH_EXPORT
 PrintTo(const BluetoothUUID& uuid, std::ostream* out);
 
 }  // namespace device
+
+namespace IPC {
+
+class Message;
+
+// Tell the IPC system how to serialize and deserialize a BluetoothUUID.
+template <>
+struct DEVICE_BLUETOOTH_EXPORT ParamTraits<device::BluetoothUUID> {
+  typedef device::BluetoothUUID param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+}  // namespace IPC
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_

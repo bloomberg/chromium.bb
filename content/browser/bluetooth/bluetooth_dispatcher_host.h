@@ -13,7 +13,13 @@
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 
+namespace device {
+class BluetoothUUID;
+}
+
 namespace content {
+
+struct BluetoothScanFilter;
 
 // Dispatches and sends bluetooth related messages sent to/from a child
 // process BluetoothDispatcher from/to the main browser process.
@@ -46,12 +52,18 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   friend class base::DeleteHelper<BluetoothDispatcherHost>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
+  struct DiscoverySessionOptions;
+
   // Set |adapter_| to a BluetoothAdapter instance and register observers,
   // releasing references to previous |adapter_|.
   void set_adapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // IPC Handlers, see definitions in bluetooth_messages.h.
-  void OnRequestDevice(int thread_id, int request_id);
+  void OnRequestDevice(
+      int thread_id,
+      int request_id,
+      const std::vector<content::BluetoothScanFilter>& filters,
+      const std::vector<device::BluetoothUUID>& optional_services);
   void OnConnectGATT(int thread_id, int request_id,
                      const std::string& device_instance_id);
   void OnGetPrimaryService(int thread_id,
@@ -70,6 +82,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnDiscoverySessionStarted(
       int thread_id,
       int request_id,
+      scoped_ptr<DiscoverySessionOptions> options,
       scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
   void OnDiscoverySessionStartedError(int thread_id, int request_id);
 
@@ -77,10 +90,13 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void StopDiscoverySession(
       int thread_id,
       int request_id,
+      scoped_ptr<DiscoverySessionOptions> options,
       scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
 
   // Callbacks for BluetoothDiscoverySession::Stop.
-  void OnDiscoverySessionStopped(int thread_id, int request_id);
+  void OnDiscoverySessionStopped(int thread_id,
+                                 int request_id,
+                                 scoped_ptr<DiscoverySessionOptions> options);
   void OnDiscoverySessionStoppedError(int thread_id, int request_id);
 
   // Callbacks for BluetoothDevice::CreateGattConnection.

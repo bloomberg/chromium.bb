@@ -81,6 +81,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "content/common/bluetooth/bluetooth_device.h"
 #include "content/common/bluetooth/bluetooth_error.h"
+#include "content/common/bluetooth/bluetooth_scan_filter.h"
 
 #define IPC_MESSAGE_START BluetoothMsgStart
 
@@ -102,6 +103,10 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::BluetoothError,
                           content::BluetoothError::ENUM_MAX_VALUE)
+
+IPC_STRUCT_TRAITS_BEGIN(content::BluetoothScanFilter)
+IPC_STRUCT_TRAITS_MEMBER(services)
+IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
@@ -179,9 +184,11 @@ IPC_MESSAGE_CONTROL4(BluetoothMsg_ReadCharacteristicValueError,
 //   This work is deferred to simplify initial prototype patches.
 //   The Bluetooth feature, and the BluetoothDispatcherHost are behind
 //   the --enable-experimental-web-platform-features flag.
-IPC_MESSAGE_CONTROL2(BluetoothHostMsg_RequestDevice,
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_RequestDevice,
                      int /* thread_id */,
-                     int /* request_id */)
+                     int /* request_id */,
+                     std::vector<content::BluetoothScanFilter>,
+                     std::vector<device::BluetoothUUID> /* optional_services */)
 
 // Connects to a bluetooth device.
 IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ConnectGATT,

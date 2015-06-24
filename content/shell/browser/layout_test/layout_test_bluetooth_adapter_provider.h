@@ -26,23 +26,49 @@ class LayoutTestBluetoothAdapterProvider {
  private:
   // Returns "EmptyAdapter" fake BluetoothAdapter with the following
   // characteristics:
-  //  - |StartDiscoverySession| runs the first argument with |DiscoverySession|
+  //  - |StartDiscoverySessionWithFilter| runs the success callback with
+  //  |DiscoverySession|
   //    as argument.
   //  - |GetDevices| returns an empty list of devices.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetEmptyAdapter();
 
+  // Returns a fake BluetoothAdapter that asserts that its
+  // StartDiscoverySessionWithFilter() method is called with a filter consisting
+  // of the standard battery, heart rate, and glucose services.
+  //  - |StartDiscoverySessionWithFilter(correct arguments)| runs the success
+  //    callback with |DiscoverySession| as the argument. With incorrect
+  //    arguments, it runs the failure callback.
+  //  - |GetDevices| returns a device with a Battery service.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetScanFilterCheckingAdapter();
+
   // Returns "SingleEmptyDeviceAdapter" fake BluetoothAdapter with the following
   // characteristics:
-  //  - |StartDiscoverySession| runs the first argument with |DiscoverySession|
+  //  - |StartDiscoverySessionWithFilter| runs the success callback with
+  //  |DiscoverySession|
   //    as argument.
   //  - |GetDevices| returns a list with an |EmptyDevice|.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetSingleEmptyDeviceAdapter();
 
+  // Returns "MultiDeviceAdapter", a fake BluetoothAdapter with the following
+  // characteristics:
+  //  - |StartDiscoverySessionWithFilter| runs the success callback with
+  //  |DiscoverySession|
+  //    as argument.
+  //  - |GetDevices| returns a list with 2 devices:
+  //    - GetUUIDs() returns a Heart Rate Service,
+  //      and GetName() returns "Heart Rate Device".
+  //    - GetUUIDs() returns a Glucose Service,
+  //      and GetName() returns "Glucose Device".
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetMultiDeviceAdapter();
+
   // Returns "ConnectableDeviceAdapter" fake BluetoothAdapter with the
   // following characteristics:
-  //  - |StartDiscoverySession| runs the first argument with |DiscoverySession|
+  //  - |StartDiscoverySessionWithFilter| runs the success callback with
+  //  |DiscoverySession|
   //    as argument.
   //  - |GetDevices| returns a list with a |ConnectableDevice|.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
@@ -50,14 +76,15 @@ class LayoutTestBluetoothAdapterProvider {
 
   // Returns "UnconnectableDeviceAdapter" fake BluetoothAdapter with the
   // following characteristics:
-  //  - |StartDiscoverySession| runs the first argument with |DiscoverySession|
+  //  - |StartDiscoverySessionWithFilter| runs the success callback with
+  //  |DiscoverySession|
   //    as argument.
   //  - |GetDevices| returns a list with an |UnconnectableDevice|.
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetUnconnectableDeviceAdapter();
 
   // Returns a fake |DiscoverySession| with the following characteristics:
-  //  - |Stop| runs the first argument.
+  //  - |Stop| runs the success callback.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDiscoverySession>>
   GetDiscoverySession();
 
@@ -77,7 +104,8 @@ class LayoutTestBluetoothAdapterProvider {
   //    "Empty Mock Device Name", and a "Reconnection Address" characteristic
   //    which can't be read.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
-  GetEmptyDevice(device::MockBluetoothAdapter* adapter);
+  GetEmptyDevice(device::MockBluetoothAdapter* adapter,
+                 const std::string& device_name = "Empty Mock Device");
 
   // Returns a fake |ConnectableDevice| with the same characteristics as
   // |EmptyDevice| except:

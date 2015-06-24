@@ -17,8 +17,9 @@ WebBluetoothImpl::~WebBluetoothImpl() {
 }
 
 void WebBluetoothImpl::requestDevice(
+    const blink::WebRequestDeviceOptions& options,
     blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
-  GetDispatcher()->requestDevice(callbacks);
+  GetDispatcher()->requestDevice(options, callbacks);
 }
 
 void WebBluetoothImpl::connectGATT(const blink::WebString& device_instance_id,

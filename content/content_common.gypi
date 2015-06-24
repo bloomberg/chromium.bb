@@ -182,6 +182,8 @@
       'common/bluetooth/bluetooth_device.h',
       'common/bluetooth/bluetooth_error.h',
       'common/bluetooth/bluetooth_messages.h',
+      'common/bluetooth/bluetooth_scan_filter.cc',
+      'common/bluetooth/bluetooth_scan_filter.h',
       'common/browser_plugin/browser_plugin_constants.cc',
       'common/browser_plugin/browser_plugin_constants.h',
       'common/browser_plugin/browser_plugin_messages.h',

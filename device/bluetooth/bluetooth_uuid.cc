@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "ipc/ipc_message.h"
 
 namespace device {
 
@@ -93,3 +94,27 @@ void PrintTo(const BluetoothUUID& uuid, std::ostream* out) {
 }
 
 }  // namespace device
+
+void IPC::ParamTraits<device::BluetoothUUID>::Write(Message* m,
+                                                    const param_type& p) {
+  m->WriteString(p.canonical_value());
+}
+
+bool IPC::ParamTraits<device::BluetoothUUID>::Read(const Message* m,
+                                                   base::PickleIterator* iter,
+                                                   param_type* r) {
+  std::string value;
+  if (!iter->ReadString(&value))
+    return false;
+  *r = device::BluetoothUUID(value);
+  // If the format isn't 128-bit, .value() would return a different answer than
+  // .canonical_value(). Then if browser-side code accidentally checks .value()
+  // against a 128-bit string literal, a hostile renderer could use the 16- or
+  // 32-bit format and evade the check.
+  return r->format() == device::BluetoothUUID::kFormat128Bit;
+}
+
+void IPC::ParamTraits<device::BluetoothUUID>::Log(const param_type& p,
+                                                  std::string* l) {
+  l->append(p.canonical_value());
+}

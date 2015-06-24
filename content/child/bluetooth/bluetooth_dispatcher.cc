@@ -10,11 +10,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTService.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
 
 using blink::WebBluetoothConnectGATTCallbacks;
 using blink::WebBluetoothDevice;
@@ -24,6 +26,8 @@ using blink::WebBluetoothGATTRemoteServer;
 using blink::WebBluetoothGATTService;
 using blink::WebBluetoothReadValueCallbacks;
 using blink::WebBluetoothRequestDeviceCallbacks;
+using blink::WebBluetoothScanFilter;
+using blink::WebRequestDeviceOptions;
 using blink::WebString;
 using blink::WebVector;
 
@@ -165,9 +169,28 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void BluetoothDispatcher::requestDevice(
+    const WebRequestDeviceOptions& options,
     blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
   int request_id = pending_requests_.Add(callbacks);
-  Send(new BluetoothHostMsg_RequestDevice(CurrentWorkerId(), request_id));
+
+  // Convert |options| to its IPC form.
+  std::vector<content::BluetoothScanFilter> filters(options.filters.size());
+  for (size_t i = 0; i < options.filters.size(); ++i) {
+    const WebBluetoothScanFilter& web_filter = options.filters[i];
+    BluetoothScanFilter& filter = filters[i];
+    filter.services.reserve(web_filter.services.size());
+    for (const WebString& service : web_filter.services) {
+      filter.services.push_back(device::BluetoothUUID(service.utf8()));
+    }
+  }
+  std::vector<device::BluetoothUUID> optional_services;
+  optional_services.reserve(options.optionalServices.size());
+  for (const WebString& optional_service : options.optionalServices) {
+    optional_services.push_back(device::BluetoothUUID(optional_service.utf8()));
+  }
+
+  Send(new BluetoothHostMsg_RequestDevice(CurrentWorkerId(), request_id,
+                                          filters, optional_services));
 }
 
 void BluetoothDispatcher::connectGATT(

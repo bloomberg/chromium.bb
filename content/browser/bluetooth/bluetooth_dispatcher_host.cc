@@ -25,6 +25,7 @@ using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
 using device::BluetoothGattCharacteristic;
 using device::BluetoothGattService;
+using device::BluetoothUUID;
 
 namespace {
 
@@ -59,6 +60,33 @@ const char kDeviceNoLongerInRange[] = "Bluetooth Device is no longer in range.";
 const char kServiceNoLongerExists[] = "GATT Service no longer exists.";
 const char kCharacteristicNoLongerExits[] =
     "GATT Characteristic no longer exists";
+
+// Defined at
+// https://webbluetoothcg.github.io/web-bluetooth/#dfn-matches-a-filter
+bool MatchesFilter(const std::set<BluetoothUUID>& device_uuids,
+                   const content::BluetoothScanFilter& filter) {
+  if (filter.services.empty())
+    return false;
+  for (const BluetoothUUID& service : filter.services) {
+    if (!ContainsKey(device_uuids, service)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool MatchesFilters(const device::BluetoothDevice& device,
+                    const std::vector<content::BluetoothScanFilter>& filters) {
+  const std::vector<BluetoothUUID>& device_uuid_list = device.GetUUIDs();
+  const std::set<BluetoothUUID> device_uuids(device_uuid_list.begin(),
+                                             device_uuid_list.end());
+  for (const content::BluetoothScanFilter& filter : filters) {
+    if (MatchesFilter(device_uuids, filter)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 void AddToHistogram(BluetoothGATTError error) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.GATTErrors", static_cast<int>(error),
@@ -179,6 +207,15 @@ BluetoothDispatcherHost::~BluetoothDispatcherHost() {
   set_adapter(scoped_refptr<device::BluetoothAdapter>());
 }
 
+struct BluetoothDispatcherHost::DiscoverySessionOptions {
+  DiscoverySessionOptions(const std::vector<BluetoothScanFilter>& filters,
+                          const std::vector<BluetoothUUID>& optional_services)
+      : filters(filters), optional_services(optional_services) {}
+
+  std::vector<BluetoothScanFilter> filters;
+  std::vector<BluetoothUUID> optional_services;
+};
+
 void BluetoothDispatcherHost::set_adapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -189,15 +226,36 @@ void BluetoothDispatcherHost::set_adapter(
     adapter_->AddObserver(this);
 }
 
-void BluetoothDispatcherHost::OnRequestDevice(int thread_id, int request_id) {
+static scoped_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
+    const std::vector<BluetoothScanFilter>& filters) {
+  std::set<BluetoothUUID> services;
+  for (const BluetoothScanFilter& filter : filters) {
+    services.insert(filter.services.begin(), filter.services.end());
+  }
+  scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
+      new device::BluetoothDiscoveryFilter(
+          device::BluetoothDiscoveryFilter::TRANSPORT_DUAL));
+  for (const BluetoothUUID& service : services) {
+    discovery_filter->AddUUID(service);
+  }
+  return discovery_filter.Pass();
+}
+
+void BluetoothDispatcherHost::OnRequestDevice(
+    int thread_id,
+    int request_id,
+    const std::vector<BluetoothScanFilter>& filters,
+    const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(scheib): Filter devices by services: crbug.com/440594
   // TODO(scheib): Device selection UI: crbug.com/436280
   // TODO(scheib): Utilize BluetoothAdapter::Observer::DeviceAdded/Removed.
   if (adapter_.get()) {
-    adapter_->StartDiscoverySession(
+    adapter_->StartDiscoverySessionWithFilter(
+        ComputeScanFilter(filters),
         base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStarted,
-                   weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+                   weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                   base::Passed(make_scoped_ptr(new DiscoverySessionOptions(
+                       filters, optional_services)))),
         base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStartedError,
                    weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
   } else {
@@ -377,13 +435,14 @@ void BluetoothDispatcherHost::OnReadValue(
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
     int thread_id,
     int request_id,
+    scoped_ptr<DiscoverySessionOptions> options,
     scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&BluetoothDispatcherHost::StopDiscoverySession,
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
-                 base::Passed(&discovery_session)),
+                 base::Passed(&options), base::Passed(&discovery_session)),
       base::TimeDelta::FromSeconds(current_delay_time_));
 }
 
@@ -399,38 +458,43 @@ void BluetoothDispatcherHost::OnDiscoverySessionStartedError(int thread_id,
 void BluetoothDispatcherHost::StopDiscoverySession(
     int thread_id,
     int request_id,
+    scoped_ptr<DiscoverySessionOptions> options,
     scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   discovery_session->Stop(
       base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStopped,
-                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
+                 base::Passed(&options)),
       base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStoppedError,
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
-void BluetoothDispatcherHost::OnDiscoverySessionStopped(int thread_id,
-                                                        int request_id) {
+void BluetoothDispatcherHost::OnDiscoverySessionStopped(
+    int thread_id,
+    int request_id,
+    scoped_ptr<DiscoverySessionOptions> options) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  if (devices.begin() == devices.end()) {
-    Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, BluetoothError::NOT_FOUND, kNoDevicesFound));
-  } else {
-    device::BluetoothDevice* device = *devices.begin();
-    content::BluetoothDevice device_ipc(
-        device->GetAddress(),         // instance_id
-        device->GetName(),            // name
-        device->GetBluetoothClass(),  // device_class
-        device->GetVendorIDSource(),  // vendor_id_source
-        device->GetVendorID(),        // vendor_id
-        device->GetProductID(),       // product_id
-        device->GetDeviceID(),        // product_version
-        device->IsPaired(),           // paired
-        content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
-            device->GetUUIDs()));  // uuids
-    Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
-                                               device_ipc));
+  for (device::BluetoothDevice* device : devices) {
+    if (MatchesFilters(*device, options->filters)) {
+      content::BluetoothDevice device_ipc(
+          device->GetAddress(),         // instance_id
+          device->GetName(),            // name
+          device->GetBluetoothClass(),  // device_class
+          device->GetVendorIDSource(),  // vendor_id_source
+          device->GetVendorID(),        // vendor_id
+          device->GetProductID(),       // product_id
+          device->GetDeviceID(),        // product_version
+          device->IsPaired(),           // paired
+          content::BluetoothDevice::UUIDsFromBluetoothUUIDs(
+              device->GetUUIDs()));  // uuids
+      Send(new BluetoothMsg_RequestDeviceSuccess(thread_id, request_id,
+                                                 device_ipc));
+      return;
+    }
   }
+  Send(new BluetoothMsg_RequestDeviceError(
+      thread_id, request_id, BluetoothError::NOT_FOUND, kNoDevicesFound));
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStoppedError(int thread_id,
