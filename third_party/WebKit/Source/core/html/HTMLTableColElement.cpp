@@ -61,8 +61,8 @@ void HTMLTableColElement::collectStyleForPresentationAttribute(const QualifiedNa
 void HTMLTableColElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == spanAttr) {
-        int newSpan = 0;
-        if (value.isEmpty() || !parseHTMLInteger(value, newSpan) || newSpan < 1) {
+        unsigned newSpan = 0;
+        if (value.isEmpty() || !parseHTMLNonNegativeInteger(value, newSpan) || newSpan < 1) {
             // If the value of span is not a valid non-negative integer greater than zero,
             // set it to 1.
             newSpan = 1;
@@ -93,9 +93,9 @@ const StylePropertySet* HTMLTableColElement::additionalPresentationAttributeStyl
     return nullptr;
 }
 
-void HTMLTableColElement::setSpan(int n)
+void HTMLTableColElement::setSpan(unsigned n)
 {
-    setIntegralAttribute(spanAttr, n);
+    setUnsignedIntegralAttribute(spanAttr, n);
 }
 
 const AtomicString& HTMLTableColElement::width() const

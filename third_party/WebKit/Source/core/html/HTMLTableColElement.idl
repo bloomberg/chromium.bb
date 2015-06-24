@@ -22,8 +22,7 @@
 // https://html.spec.whatwg.org/#the-col-element
 
 interface HTMLTableColElement : HTMLElement {
-    // TODO(philipj): span should be unsigned long.
-    attribute long span;
+    attribute unsigned long span;
 
     // obsolete attributes
     // https://html.spec.whatwg.org/#HTMLTableColElement-partial

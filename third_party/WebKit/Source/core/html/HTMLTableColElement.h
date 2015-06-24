@@ -35,8 +35,8 @@ class HTMLTableColElement final : public HTMLTablePartElement {
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement);
 
-    int span() const { return m_span; }
-    void setSpan(int);
+    unsigned span() const { return m_span; }
+    void setSpan(unsigned);
 
     const AtomicString& width() const;
 
@@ -48,7 +48,7 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     virtual const StylePropertySet* additionalPresentationAttributeStyle() override;
 
-    int m_span;
+    unsigned m_span;
 };
 
 inline bool isHTMLTableColElement(const HTMLElement& element)
