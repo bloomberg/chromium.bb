@@ -54,6 +54,8 @@ namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 namespace ShowPermissionPromptForDelegatedInstall =
     api::webstore_private::ShowPermissionPromptForDelegatedInstall;
+namespace ShowPermissionPromptForDelegatedBundleInstall =
+    api::webstore_private::ShowPermissionPromptForDelegatedBundleInstall;
 
 namespace {
 
@@ -388,13 +390,12 @@ ExtensionFunction::ResponseValue
 WebstorePrivateBeginInstallWithManifest3Function::RunExtraForResponse() {
   InstallTracker* tracker = InstallTracker::Get(browser_context());
   DCHECK(tracker);
-  if (util::IsExtensionInstalledPermanently(params().details.id,
-                                            browser_context()) ||
-      tracker->GetActiveInstall(params().details.id)) {
+  if (util::IsExtensionInstalledPermanently(details().id, browser_context()) ||
+      tracker->GetActiveInstall(details().id)) {
     return BuildResponse(api::webstore_private::RESULT_ALREADY_INSTALLED,
                          kAlreadyInstalledError);
   }
-  ActiveInstallData install_data(params().details.id);
+  ActiveInstallData install_data(details().id);
   scoped_active_install_.reset(new ScopedActiveInstall(tracker, install_data));
   return ExtensionFunction::ResponseValue();
 }
@@ -406,18 +407,18 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceedHook() {
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
           chrome_details_.GetProfile(),
-          params().details.id,
+          details().id,
           PassParsedManifest(),
           false));
-  approval->use_app_installed_bubble = params().details.app_install_bubble;
-  approval->enable_launcher = params().details.enable_launcher;
+  approval->use_app_installed_bubble = details().app_install_bubble;
+  approval->enable_launcher = details().enable_launcher;
   // If we are enabling the launcher, we should not show the app list in order
   // to train the user to open it themselves at least once.
-  approval->skip_post_install_ui = params().details.enable_launcher;
+  approval->skip_post_install_ui = details().enable_launcher;
   approval->dummy_extension = dummy_extension();
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon());
-  if (params().details.authuser)
-    approval->authuser = *params().details.authuser;
+  if (details().authuser)
+    approval->authuser = *details().authuser;
   g_pending_approvals.Get().PushApproval(approval.Pass());
 
   DCHECK(scoped_active_install_.get());
@@ -584,7 +585,7 @@ WebstorePrivateShowPermissionPromptForDelegatedInstallFunction::
 void WebstorePrivateShowPermissionPromptForDelegatedInstallFunction::ShowPrompt(
     ExtensionInstallPrompt* install_prompt) {
   install_prompt->ConfirmPermissionsForDelegatedInstall(
-      this, dummy_extension().get(), params().details.delegated_user, &icon());
+      this, dummy_extension().get(), details().delegated_user, &icon());
 }
 
 scoped_ptr<base::ListValue>
@@ -593,15 +594,20 @@ WebstorePrivateShowPermissionPromptForDelegatedInstallFunction::CreateResults(
   return ShowPermissionPromptForDelegatedInstall::Results::Create(result);
 }
 
-WebstorePrivateInstallBundleFunction::WebstorePrivateInstallBundleFunction()
+template<typename Params>
+WebstorePrivateFunctionWithBundle<Params>::WebstorePrivateFunctionWithBundle()
   : chrome_details_(this) {
 }
 
-WebstorePrivateInstallBundleFunction::~WebstorePrivateInstallBundleFunction() {
+template<typename Params>
+WebstorePrivateFunctionWithBundle<Params>::
+    ~WebstorePrivateFunctionWithBundle() {
 }
 
-ExtensionFunction::ResponseAction WebstorePrivateInstallBundleFunction::Run() {
-  params_ = InstallBundle::Params::Create(*args_);
+template<typename Params>
+ExtensionFunction::ResponseAction
+WebstorePrivateFunctionWithBundle<Params>::Run() {
+  params_ = Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
   if (params_->contents.empty())
@@ -622,7 +628,7 @@ ExtensionFunction::ResponseAction WebstorePrivateInstallBundleFunction::Run() {
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&WebstorePrivateInstallBundleFunction::OnFetchComplete,
+        base::Bind(&WebstorePrivateFunctionWithBundle::OnFetchComplete,
                    this, GURL(), nullptr));
   }
 
@@ -633,22 +639,13 @@ ExtensionFunction::ResponseAction WebstorePrivateInstallBundleFunction::Run() {
   return RespondLater();
 }
 
-void WebstorePrivateInstallBundleFunction::OnFetchComplete(
+template<typename Params>
+void WebstorePrivateFunctionWithBundle<Params>::OnFetchComplete(
     const GURL& url, const SkBitmap* bitmap) {
-  InstallTracker* tracker = InstallTracker::Get(browser_context());
-  DCHECK(tracker);
-
-  std::string authuser;
-  if (params_->details.authuser)
-    authuser = *params_->details.authuser;
-
   BundleInstaller::ItemList items;
   for (const auto& entry : params_->contents) {
-    // Skip already-installed items.
-    if (util::IsExtensionInstalledPermanently(entry->id, browser_context()) ||
-        tracker->GetActiveInstall(entry->id)) {
+    if (ShouldSkipItem(entry->id))
       continue;
-    }
     BundleInstaller::Item item;
     item.id = entry->id;
     item.manifest = entry->manifest;
@@ -662,20 +659,20 @@ void WebstorePrivateInstallBundleFunction::OnFetchComplete(
     Release();  // Matches the AddRef in Run.
     return;
   }
+
   bundle_.reset(new BundleInstaller(chrome_details_.GetCurrentBrowser(),
                                     params_->details.localized_name,
-                                    bitmap ? *bitmap : SkBitmap(), authuser,
-                                    items));
+                                    bitmap ? *bitmap : SkBitmap(),
+                                    auth_user_, delegated_user_, items));
 
-  // The bundle installer will call us back via OnInstallApproval.
   bundle_->PromptForApproval(
-      base::Bind(&WebstorePrivateInstallBundleFunction::OnInstallApproval,
-                 this));
+      base::Bind(&WebstorePrivateFunctionWithBundle::OnInstallApproval, this));
 
   Release();  // Matches the AddRef in Run.
 }
 
-void WebstorePrivateInstallBundleFunction::OnInstallApproval(
+template<typename Params>
+void WebstorePrivateFunctionWithBundle<Params>::OnInstallApproval(
     BundleInstaller::ApprovalState state) {
   if (state != BundleInstaller::APPROVED) {
     Respond(Error(state == BundleInstaller::USER_CANCELED
@@ -684,14 +681,61 @@ void WebstorePrivateInstallBundleFunction::OnInstallApproval(
     return;
   }
 
+  OnInstallApprovalHook();
+}
+
+WebstorePrivateInstallBundleFunction::WebstorePrivateInstallBundleFunction() {
+}
+
+WebstorePrivateInstallBundleFunction::~WebstorePrivateInstallBundleFunction() {
+}
+
+void WebstorePrivateInstallBundleFunction::ProcessParams() {
+  if (details().authuser)
+    set_auth_user(*details().authuser);
+}
+
+bool WebstorePrivateInstallBundleFunction::ShouldSkipItem(
+    const std::string& id) const {
+  // Skip already-installed items.
+  return util::IsExtensionInstalledPermanently(id, browser_context()) ||
+         InstallTracker::Get(browser_context())->GetActiveInstall(id);
+}
+
+void WebstorePrivateInstallBundleFunction::OnInstallApprovalHook() {
   // The bundle installer will call us back via OnInstallComplete.
-  bundle_->CompleteInstall(
-      chrome_details_.GetAssociatedWebContents(),
+  bundle()->CompleteInstall(
+      GetSenderWebContents(),
       base::Bind(&WebstorePrivateInstallBundleFunction::OnInstallComplete,
                  this));
 }
 
 void WebstorePrivateInstallBundleFunction::OnInstallComplete() {
+  Respond(NoArguments());
+}
+
+WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction::
+    WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction() {
+}
+
+WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction::
+    ~WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction() {
+}
+
+void WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction::
+    ProcessParams() {
+  set_delegated_user(details().delegated_user);
+}
+
+bool WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction::
+    ShouldSkipItem(const std::string& id) const {
+  // For delegated installs, don't skip any items (we don't know if any are
+  // installed already).
+  return false;
+}
+
+void WebstorePrivateShowPermissionPromptForDelegatedBundleInstallFunction::
+    OnInstallApprovalHook() {
   Respond(NoArguments());
 }
 

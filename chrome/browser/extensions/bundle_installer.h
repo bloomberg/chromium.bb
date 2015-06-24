@@ -83,9 +83,10 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   typedef std::vector<Item> ItemList;
 
   BundleInstaller(Browser* browser,
-                  const std::string& name,
+                  const std::string& localized_name,
                   const SkBitmap& icon,
                   const std::string& authuser,
+                  const std::string& delegated_username,
                   const ItemList& items);
   ~BundleInstaller() override;
 
@@ -192,6 +193,10 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   // The authuser query parameter value which should be used with CRX download
   // requests. May be empty.
   std::string authuser_;
+
+  // The display name of the user for which this install happens, in the case
+  // of delegated installs. Empty for regular installs.
+  std::string delegated_username_;
 
   // The desktop type of the browser.
   chrome::HostDesktopType host_desktop_type_;
