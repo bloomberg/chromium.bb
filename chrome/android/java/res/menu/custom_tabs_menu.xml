@@ -22,7 +22,8 @@
         <item android:id="@+id/find_in_page_id"
             android:title="@string/menu_find_in_page"
             android:orderInCategory="2" />
+        <!-- Title is intentionally left blank in xml and will be set in java. -->
         <item android:id="@+id/open_in_chrome_id"
-            android:title="@string/menu_open_in_chrome"
+            android:title=""
             android:orderInCategory="2" />
 </menu>
