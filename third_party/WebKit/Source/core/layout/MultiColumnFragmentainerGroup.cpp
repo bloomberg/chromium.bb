@@ -113,7 +113,7 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
     if (m_columnHeight == oldColumnHeight)
         return false; // No change. We're done.
 
-    m_minSpaceShortage = LayoutFlowThread::maxLogicalHeight();
+    m_minSpaceShortage = LayoutUnit::max();
     return true; // Need another pass.
 }
 
@@ -337,7 +337,7 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
     LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
     const ComputedStyle& multicolStyle = multicolBlock->styleRef();
     LayoutUnit availableHeight = m_columnSet.multiColumnFlowThread()->columnHeightAvailable();
-    LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutFlowThread::maxLogicalHeight();
+    LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutUnit::max();
     if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {
         LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(MaxSize, multicolStyle.logicalMaxHeight(), -1);
         if (logicalMaxHeight != -1 && maxColumnHeight > logicalMaxHeight)
@@ -433,8 +433,8 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
     // amount of space shortage found during layout.
 
     ASSERT(m_minSpaceShortage > 0); // We should never _shrink_ the height!
-    ASSERT(m_minSpaceShortage != LayoutFlowThread::maxLogicalHeight()); // If this happens, we probably have a bug.
-    if (m_minSpaceShortage == LayoutFlowThread::maxLogicalHeight())
+    ASSERT(m_minSpaceShortage != LayoutUnit::max()); // If this happens, we probably have a bug.
+    if (m_minSpaceShortage == LayoutUnit::max())
         return m_columnHeight; // So bail out rather than looping infinitely.
 
     return m_columnHeight + m_minSpaceShortage;
