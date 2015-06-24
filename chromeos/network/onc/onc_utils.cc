@@ -182,16 +182,16 @@ void ExpandField(const std::string& fieldname,
 
   std::string login_id;
   if (substitution.GetSubstitute(substitutes::kLoginIDField, &login_id)) {
-    ReplaceSubstringsAfterOffset(&user_string, 0,
-                                 substitutes::kLoginIDField,
-                                 login_id);
+    base::ReplaceSubstringsAfterOffset(&user_string, 0,
+                                       substitutes::kLoginIDField,
+                                       login_id);
   }
 
   std::string email;
   if (substitution.GetSubstitute(substitutes::kEmailField, &email)) {
-    ReplaceSubstringsAfterOffset(&user_string, 0,
-                                 substitutes::kEmailField,
-                                 email);
+    base::ReplaceSubstringsAfterOffset(&user_string, 0,
+                                       substitutes::kEmailField,
+                                       email);
   }
 
   onc_object->SetStringWithoutPathExpansion(fieldname, user_string);

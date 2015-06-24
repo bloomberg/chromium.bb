@@ -339,9 +339,9 @@ void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
     std::string stylesheet = ResourceBundle::GetSharedInstance()
                                  .GetRawDataResource(resource_id)
                                  .as_string();
-    ReplaceFirstSubstringAfterOffset(
+    base::ReplaceFirstSubstringAfterOffset(
         &stylesheet, 0, "$FONTFAMILY", system_font_family_);
-    ReplaceFirstSubstringAfterOffset(
+    base::ReplaceFirstSubstringAfterOffset(
         &stylesheet, 0, "$FONTSIZE", system_font_size_);
 
     // Blink doesn't let us define an additional user agent stylesheet, so

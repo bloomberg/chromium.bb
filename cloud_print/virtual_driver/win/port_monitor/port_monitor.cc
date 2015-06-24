@@ -268,15 +268,16 @@ bool LaunchPrintCommandFromTemplate(const base::string16& command_template,
                                     const base::string16& job_title) {
   base::string16 command_string(command_template);
   // Substitude the place holder with the document path wrapped in quotes.
-  ReplaceFirstSubstringAfterOffset(
+  base::ReplaceFirstSubstringAfterOffset(
       &command_string, 0, kDocumentPathPlaceHolder,
       EscapeCommandLineArg(xps_path.value()));
   // Substitude the place holder with the document type wrapped in quotes.
-  ReplaceFirstSubstringAfterOffset(&command_string, 0, kDocumentTypePlaceHolder,
-                                   kXpsMimeType);
+  base::ReplaceFirstSubstringAfterOffset(
+      &command_string, 0, kDocumentTypePlaceHolder, kXpsMimeType);
   // Substitude the place holder with the job title wrapped in quotes.
-  ReplaceFirstSubstringAfterOffset(&command_string, 0, kJobTitlePlaceHolder,
-                                   EscapeCommandLineArg(job_title));
+  base::ReplaceFirstSubstringAfterOffset(
+      &command_string, 0, kJobTitlePlaceHolder,
+      EscapeCommandLineArg(job_title));
 
   base::CommandLine command = base::CommandLine::FromString(command_string);
 

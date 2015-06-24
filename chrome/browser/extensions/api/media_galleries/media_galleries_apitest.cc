@@ -365,10 +365,10 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     base::FilePath in_both_jpg = iphoto_data_root.AppendASCII("InBoth.jpg");
     ASSERT_TRUE(base::CopyFile(test_jpg_path, first_only_jpg));
     ASSERT_TRUE(base::CopyFile(test_jpg_path, in_both_jpg));
-    ReplaceFirstSubstringAfterOffset(
-        &xml_contents, 0, std::string("$path1"), first_only_jpg.value());
-    ReplaceFirstSubstringAfterOffset(
-        &xml_contents, 0, std::string("$path2"), in_both_jpg.value());
+    base::ReplaceFirstSubstringAfterOffset(
+        &xml_contents, 0, "$path1", first_only_jpg.value());
+    base::ReplaceFirstSubstringAfterOffset(
+        &xml_contents, 0, "$path2", in_both_jpg.value());
 
     base::FilePath album_xml = iphoto_data_root.AppendASCII("AlbumData.xml");
     ASSERT_NE(-1, base::WriteFile(album_xml,

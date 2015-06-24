@@ -214,7 +214,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
       case ATTRIBUTE_VALUE:
         // Convert " to &quot;
         utf8_string = text;
-        ReplaceSubstringsAfterOffset(&utf8_string, 0, "\"", "&quot;");
+        base::ReplaceSubstringsAfterOffset(&utf8_string, 0, "\"", "&quot;");
         break;
 
       case CONTENT:

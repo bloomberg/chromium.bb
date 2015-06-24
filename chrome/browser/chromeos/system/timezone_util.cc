@@ -65,7 +65,7 @@ base::string16 GetExemplarCity(const icu::TimeZone& zone) {
   zone_id.toUTF8String(zone_id_str);
 
   // Resource keys for timezones use ':' in place of '/'.
-  ReplaceSubstringsAfterOffset(&zone_id_str, 0, "/", ":");
+  base::ReplaceSubstringsAfterOffset(&zone_id_str, 0, "/", ":");
   scoped_ptr<UResourceBundle, UResClose> zone_item(
       ures_getByKey(zone_strings, zone_id_str.c_str(), NULL, &status));
   icu::UnicodeString city;
@@ -76,7 +76,7 @@ base::string16 GetExemplarCity(const icu::TimeZone& zone) {
   }
 
   // Fallback case in case of failure.
-  ReplaceSubstringsAfterOffset(&zone_id_str, 0, ":", "/");
+  base::ReplaceSubstringsAfterOffset(&zone_id_str, 0, ":", "/");
   // Take the last component of a timezone id (e.g. 'Baz' in 'Foo/Bar/Baz').
   // Depending on timezones, keeping all but the 1st component
   // (e.g. Bar/Baz) may be better, but our current list does not have
@@ -85,7 +85,7 @@ base::string16 GetExemplarCity(const icu::TimeZone& zone) {
   if (slash_pos != std::string::npos && slash_pos < zone_id_str.size())
     zone_id_str.erase(0, slash_pos + 1);
   // zone id has '_' in place of ' '.
-  ReplaceSubstringsAfterOffset(&zone_id_str, 0, "_", " ");
+  base::ReplaceSubstringsAfterOffset(&zone_id_str, 0, "_", " ");
   return base::ASCIIToUTF16(zone_id_str);
 }
 

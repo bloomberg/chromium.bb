@@ -41,7 +41,8 @@ base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
   // spaces are substituted.
   base::string16 newline = multiline ? base::ASCIIToUTF16("\n")
                                      : base::ASCIIToUTF16(" ");
-  ReplaceSubstringsAfterOffset(&message, 0, base::ASCIIToUTF16("\\n"), newline);
+  base::ReplaceSubstringsAfterOffset(
+      &message, 0, base::ASCIIToUTF16("\\n"), newline);
   return message;
 }
 

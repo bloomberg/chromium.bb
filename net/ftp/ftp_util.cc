@@ -108,12 +108,13 @@ std::string FtpUtil::VMSPathToUnix(const std::string& vms_path) {
   std::string result(vms_path);
   if (vms_path[0] == '[') {
     // It's a relative path.
-    ReplaceFirstSubstringAfterOffset(&result, 0, "[.", std::string());
+    base::ReplaceFirstSubstringAfterOffset(
+        &result, 0, "[.", base::StringPiece());
   } else {
     // It's an absolute path.
     result.insert(0, "/");
-    ReplaceSubstringsAfterOffset(&result, 0, ":[000000]", "/");
-    ReplaceSubstringsAfterOffset(&result, 0, ":[", "/");
+    base::ReplaceSubstringsAfterOffset(&result, 0, ":[000000]", "/");
+    base::ReplaceSubstringsAfterOffset(&result, 0, ":[", "/");
   }
   std::replace(result.begin(), result.end(), '.', '/');
   std::replace(result.begin(), result.end(), ']', '/');

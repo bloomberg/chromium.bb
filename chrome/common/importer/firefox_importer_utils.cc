@@ -33,7 +33,7 @@ base::FilePath GetProfilePath(const base::DictionaryValue& root,
     return base::FilePath();
 
 #if defined(OS_WIN)
-  ReplaceSubstringsAfterOffset(
+  base::ReplaceSubstringsAfterOffset(
       &path16, 0, base::ASCIIToUTF16("/"), base::ASCIIToUTF16("\\"));
 #endif
   base::FilePath path = base::FilePath::FromUTF16Unsafe(path16);
@@ -136,7 +136,7 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
       profile_path.AppendASCII("compatibility.ini");
   std::string content;
   base::ReadFileToString(compatibility_file, &content);
-  ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
+  base::ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
   std::vector<std::string> lines;
   base::SplitString(content, '\n', &lines);
 

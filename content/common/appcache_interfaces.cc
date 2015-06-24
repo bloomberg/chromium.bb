@@ -104,7 +104,7 @@ bool AppCacheNamespace::IsMatch(const GURL& url) const {
     // as wildcards which we don't want here, we only do '*'s.
     std::string pattern = namespace_url.spec();
     if (namespace_url.has_query())
-      ReplaceSubstringsAfterOffset(&pattern, 0, "?", "\\?");
+      base::ReplaceSubstringsAfterOffset(&pattern, 0, "?", "\\?");
     return MatchPattern(url.spec(), pattern);
   }
   return base::StartsWithASCII(url.spec(), namespace_url.spec(), true);

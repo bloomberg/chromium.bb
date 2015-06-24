@@ -35,7 +35,7 @@ using api::manifest_types::ChromeSettingsOverrides;
 
 std::string SubstituteInstallParam(std::string str,
                                    const std::string& install_parameter) {
-  ReplaceSubstringsAfterOffset(&str, 0, "__PARAM__", install_parameter);
+  base::ReplaceSubstringsAfterOffset(&str, 0, "__PARAM__", install_parameter);
   return str;
 }
 

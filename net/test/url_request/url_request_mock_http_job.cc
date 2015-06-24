@@ -189,9 +189,10 @@ void URLRequestMockHTTPJob::Start() {
 void URLRequestMockHTTPJob::SetHeadersAndStart(const std::string& raw_headers) {
   raw_headers_ = raw_headers;
   // Handle CRLF line-endings.
-  ReplaceSubstringsAfterOffset(&raw_headers_, 0, "\r\n", "\n");
+  base::ReplaceSubstringsAfterOffset(&raw_headers_, 0, "\r\n", "\n");
   // ParseRawHeaders expects \0 to end each header line.
-  ReplaceSubstringsAfterOffset(&raw_headers_, 0, "\n", std::string("\0", 1));
+  base::ReplaceSubstringsAfterOffset(
+      &raw_headers_, 0, "\n", base::StringPiece("\0", 1));
   URLRequestFileJob::Start();
 }
 

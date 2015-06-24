@@ -174,10 +174,10 @@ void AwContentRendererClient::GetNavigationErrorStrings(
       contents = AwResource::GetNoDomainPageContent();
     } else {
       contents = AwResource::GetLoadErrorPageContent();
-      ReplaceSubstringsAfterOffset(&contents, 0, "%e", err);
+      base::ReplaceSubstringsAfterOffset(&contents, 0, "%e", err);
     }
 
-    ReplaceSubstringsAfterOffset(&contents, 0, "%s",
+    base::ReplaceSubstringsAfterOffset(&contents, 0, "%s",
         net::EscapeForHTML(error_url.possibly_invalid_spec()));
     *error_html = contents;
   }

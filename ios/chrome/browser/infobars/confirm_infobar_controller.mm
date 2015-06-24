@@ -115,7 +115,7 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
                                        confirmInfobarDelegate_->GetLinkText())
                                tag:ConfirmInfoBarUITags::TITLE_LINK]);
     base::string16 messageText = confirmInfobarDelegate_->GetMessageText();
-    ReplaceFirstSubstringAfterOffset(
+    base::ReplaceFirstSubstringAfterOffset(
         &messageText, 0, confirmInfobarDelegate_->GetLinkText(), msgLink);
 
     [view addLabel:base::SysUTF16ToNSString(messageText)

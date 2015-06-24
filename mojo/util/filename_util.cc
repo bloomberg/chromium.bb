@@ -38,22 +38,22 @@ GURL FilePathToFileURL(const base::FilePath& path) {
 
   // This must be the first substitution since others will introduce percents as
   // the escape character
-  ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("%"),
-                               FILE_PATH_LITERAL("%25"));
+  base::ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("%"),
+                                     FILE_PATH_LITERAL("%25"));
 
   // A semicolon is supposed to be some kind of separator according to RFC 2396.
-  ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL(";"),
-                               FILE_PATH_LITERAL("%3B"));
+  base::ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL(";"),
+                                     FILE_PATH_LITERAL("%3B"));
 
-  ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("#"),
-                               FILE_PATH_LITERAL("%23"));
+  base::ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("#"),
+                                     FILE_PATH_LITERAL("%23"));
 
-  ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("?"),
-                               FILE_PATH_LITERAL("%3F"));
+  base::ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("?"),
+                                     FILE_PATH_LITERAL("%3F"));
 
 #if defined(OS_POSIX)
-  ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("\\"),
-                               FILE_PATH_LITERAL("%5C"));
+  base::ReplaceSubstringsAfterOffset(&url_string, 0, FILE_PATH_LITERAL("\\"),
+                                     FILE_PATH_LITERAL("%5C"));
 #endif
 
   return GURL(url_string);

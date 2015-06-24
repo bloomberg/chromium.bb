@@ -64,7 +64,8 @@ ContentMainParams* g_params;
 
 std::string RemoveAnyPrePrefixes(const std::string& test_name) {
   std::string result(test_name);
-  ReplaceSubstringsAfterOffset(&result, 0, kPreTestPrefix, std::string());
+  base::ReplaceSubstringsAfterOffset(
+      &result, 0, kPreTestPrefix, base::StringPiece());
   return result;
 }
 

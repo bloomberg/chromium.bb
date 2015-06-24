@@ -682,7 +682,7 @@ void RepairChromeIfBroken(const InstallationState& original_state,
 
   // Replace --uninstall with --do-not-launch-chrome to cause chrome to
   // self-repair.
-  ReplaceFirstSubstringAfterOffset(
+  base::ReplaceFirstSubstringAfterOffset(
       &setup_args, 0, base::UTF8ToUTF16(installer::switches::kUninstall),
       base::UTF8ToUTF16(installer::switches::kDoNotLaunchChrome));
   base::CommandLine setup_command(base::CommandLine::NO_PROGRAM);

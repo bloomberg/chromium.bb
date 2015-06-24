@@ -122,7 +122,7 @@ TEST_F(PrivetV3SessionTest, InitError) {
 
 TEST_F(PrivetV3SessionTest, VersionError) {
   std::string response(kInfoResponse);
-  ReplaceFirstSubstringAfterOffset(&response, 0, "3.0", "4.1");
+  base::ReplaceFirstSubstringAfterOffset(&response, 0, "3.0", "4.1");
 
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SESSIONERROR, _))
       .Times(1);
@@ -136,7 +136,7 @@ TEST_F(PrivetV3SessionTest, VersionError) {
 
 TEST_F(PrivetV3SessionTest, ModeError) {
   std::string response(kInfoResponse);
-  ReplaceFirstSubstringAfterOffset(&response, 0, "mode", "mode_");
+  base::ReplaceFirstSubstringAfterOffset(&response, 0, "mode", "mode_");
 
   EXPECT_CALL(*this, OnInitializedMock(Result::STATUS_SESSIONERROR, _))
       .Times(1);

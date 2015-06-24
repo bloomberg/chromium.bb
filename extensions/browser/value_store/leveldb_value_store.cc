@@ -435,7 +435,8 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::ToValueStoreError(
   std::string message = status.ToString();
   // The message may contain |db_path_|, which may be considered sensitive
   // data, and those strings are passed to the extension, so strip it out.
-  ReplaceSubstringsAfterOffset(&message, 0u, db_path_.AsUTF8Unsafe(), "...");
+  base::ReplaceSubstringsAfterOffset(
+      &message, 0u, db_path_.AsUTF8Unsafe(), "...");
 
   return Error::Create(CORRUPTION, message, key.Pass());
 }

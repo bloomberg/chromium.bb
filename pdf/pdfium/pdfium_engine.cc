@@ -499,7 +499,7 @@ void FormatStringWithHyphens(base::string16* text) {
   // Adobe Reader also get rid of trailing spaces right before a CRLF.
   static const base::char16 kSpaceCrCn[] = {L' ', L'\r', L'\n', L'\0'};
   static const base::char16 kCrCn[] = {L'\r', L'\n', L'\0'};
-  ReplaceSubstringsAfterOffset(text, 0, kSpaceCrCn, kCrCn);
+  base::ReplaceSubstringsAfterOffset(text, 0, kSpaceCrCn, kCrCn);
 }
 
 // Replace CR/LF with just LF on POSIX.

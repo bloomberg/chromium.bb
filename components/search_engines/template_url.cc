@@ -352,12 +352,12 @@ base::string16 TemplateURLRef::DisplayURL(
   ParseIfNecessary(search_terms_data);
   std::string result(GetURL());
   if (valid_ && !replacements_.empty()) {
-    ReplaceSubstringsAfterOffset(&result, 0,
-                                 kSearchTermsParameterFull,
-                                 kDisplaySearchTerms);
-    ReplaceSubstringsAfterOffset(&result, 0,
-                                 kGoogleUnescapedSearchTermsParameterFull,
-                                 kDisplayUnescapedSearchTerms);
+    base::ReplaceSubstringsAfterOffset(&result, 0,
+                                       kSearchTermsParameterFull,
+                                       kDisplaySearchTerms);
+    base::ReplaceSubstringsAfterOffset(&result, 0,
+                                       kGoogleUnescapedSearchTermsParameterFull,
+                                       kDisplayUnescapedSearchTerms);
   }
   return base::UTF8ToUTF16(result);
 }
@@ -366,12 +366,12 @@ base::string16 TemplateURLRef::DisplayURL(
 std::string TemplateURLRef::DisplayURLToURLRef(
     const base::string16& display_url) {
   std::string result = base::UTF16ToUTF8(display_url);
-  ReplaceSubstringsAfterOffset(&result, 0,
-                               kDisplaySearchTerms,
-                               kSearchTermsParameterFull);
-  ReplaceSubstringsAfterOffset(&result, 0,
-                               kDisplayUnescapedSearchTerms,
-                               kGoogleUnescapedSearchTermsParameterFull);
+  base::ReplaceSubstringsAfterOffset(&result, 0,
+                                     kDisplaySearchTerms,
+                                     kSearchTermsParameterFull);
+  base::ReplaceSubstringsAfterOffset(&result, 0,
+                                     kDisplayUnescapedSearchTerms,
+                                     kGoogleUnescapedSearchTermsParameterFull);
   return result;
 }
 
@@ -777,10 +777,12 @@ void TemplateURLRef::ParseIfNecessary(
 void TemplateURLRef::ParseHostAndSearchTermKey(
     const SearchTermsData& search_terms_data) const {
   std::string url_string(GetURL());
-  ReplaceSubstringsAfterOffset(&url_string, 0, "{google:baseURL}",
-                               search_terms_data.GoogleBaseURLValue());
-  ReplaceSubstringsAfterOffset(&url_string, 0, "{google:baseSuggestURL}",
-                               search_terms_data.GoogleBaseSuggestURLValue());
+  base::ReplaceSubstringsAfterOffset(
+      &url_string, 0, "{google:baseURL}",
+      search_terms_data.GoogleBaseURLValue());
+  base::ReplaceSubstringsAfterOffset(
+      &url_string, 0, "{google:baseSuggestURL}",
+      search_terms_data.GoogleBaseSuggestURLValue());
 
   search_term_key_.clear();
   search_term_position_in_path_ = std::string::npos;

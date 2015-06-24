@@ -180,7 +180,7 @@ bool IsAdobeReaderUpToDate() {
   for (int i = 1; i <= 9; ++i) {
     std::string from = base::StringPrintf(".0%d", i);
     std::string to = base::StringPrintf(".%d", i);
-    ReplaceSubstringsAfterOffset(&reader_version, 0, from, to);
+    base::ReplaceSubstringsAfterOffset(&reader_version, 0, from, to);
   }
   base::Version file_version(reader_version);
   return file_version.IsValid() && !file_version.IsOlderThan(kSecureVersion);

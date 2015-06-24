@@ -372,7 +372,7 @@ std::string JSONSchemaValidator::GetJSONSchemaType(const base::Value* value) {
 std::string JSONSchemaValidator::FormatErrorMessage(const std::string& format,
                                                     const std::string& s1) {
   std::string ret_val = format;
-  ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
+  base::ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
   return ret_val;
 }
 
@@ -381,8 +381,8 @@ std::string JSONSchemaValidator::FormatErrorMessage(const std::string& format,
                                                     const std::string& s1,
                                                     const std::string& s2) {
   std::string ret_val = format;
-  ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
-  ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s2);
+  base::ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
+  base::ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s2);
   return ret_val;
 }
 

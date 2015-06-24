@@ -75,8 +75,8 @@ bool IsForCurrentPlatform(const std::string& key) {
 std::string StripCurrentPlatform(const std::string& key) {
   DCHECK(IsForCurrentPlatform(key));
   std::string result = key;
-  ReplaceFirstSubstringAfterOffset(&result, 0, Command::CommandPlatform() + ":",
-                                   "");
+  base::ReplaceFirstSubstringAfterOffset(
+      &result, 0, Command::CommandPlatform() + ":", base::StringPiece());
   return result;
 }
 

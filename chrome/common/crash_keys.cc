@@ -260,7 +260,8 @@ size_t RegisterChromeCrashKeys() {
 void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid) {
   std::string stripped_guid(metrics_client_guid);
   // Remove all instance of '-' char from the GUID. So BCD-WXY becomes BCDWXY.
-  ReplaceSubstringsAfterOffset(&stripped_guid, 0, "-", "");
+  base::ReplaceSubstringsAfterOffset(
+      &stripped_guid, 0, "-", base::StringPiece());
   if (stripped_guid.empty())
     return;
 

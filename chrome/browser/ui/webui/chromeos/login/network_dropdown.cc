@@ -89,7 +89,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
     base::DictionaryValue* item = new base::DictionaryValue();
     item->SetInteger("id", id);
     base::string16 label = model->GetLabelAt(i);
-    ReplaceSubstringsAfterOffset(&label, 0, base::ASCIIToUTF16("&&"),
+    base::ReplaceSubstringsAfterOffset(&label, 0, base::ASCIIToUTF16("&&"),
                                  base::ASCIIToUTF16("&"));
     item->SetString("label", label);
     gfx::Image icon;

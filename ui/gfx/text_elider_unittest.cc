@@ -783,7 +783,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
                                  cases[i].wrap_behavior,
                                  &lines));
     std::string expected_output(cases[i].output);
-    ReplaceSubstringsAfterOffset(&expected_output, 0, "...", kEllipsis);
+    base::ReplaceSubstringsAfterOffset(&expected_output, 0, "...", kEllipsis);
     const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
     EXPECT_EQ(expected_output, result) << "Case " << i << " failed!";
   }

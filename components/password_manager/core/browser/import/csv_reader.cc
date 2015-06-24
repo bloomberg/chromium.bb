@@ -80,7 +80,7 @@ bool CSVParser::ParseNextCSVRow(std::vector<std::string>* fields) {
       field.remove_suffix(1);
     }
     std::string field_copy(field.as_string());
-    ReplaceSubstringsAfterOffset(&field_copy, 0, "\"\"", "\"");
+    base::ReplaceSubstringsAfterOffset(&field_copy, 0, "\"\"", "\"");
     fields->push_back(field_copy);
   } while (!remaining_row_piece.empty());
 
@@ -105,7 +105,7 @@ bool ReadCSV(base::StringPiece csv,
 
   // Normalize EOL sequences so that we uniformly use a single LF character.
   std::string normalized_csv(csv.as_string());
-  ReplaceSubstringsAfterOffset(&normalized_csv, 0, "\r\n", "\n");
+  base::ReplaceSubstringsAfterOffset(&normalized_csv, 0, "\r\n", "\n");
 
   // Read header row.
   CSVParser parser(normalized_csv);

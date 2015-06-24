@@ -424,8 +424,9 @@ TEST_F(TemplateURLTest, ReplaceSearchTerms) {
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
     ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
     std::string expected_result = test_data[i].expected_result;
-    ReplaceSubstringsAfterOffset(&expected_result, 0, "{language}",
-                                 search_terms_data_.GetApplicationLocale());
+    base::ReplaceSubstringsAfterOffset(
+        &expected_result, 0, "{language}",
+        search_terms_data_.GetApplicationLocale());
     GURL result(url.url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("X")),
         search_terms_data_));

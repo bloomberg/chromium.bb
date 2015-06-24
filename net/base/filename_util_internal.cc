@@ -41,8 +41,10 @@ void SanitizeGeneratedFileName(base::FilePath::StringType* filename,
   if (filename->empty())
     return;
   // Replace any path information by changing path separators.
-  ReplaceSubstringsAfterOffset(filename, 0, FILE_PATH_LITERAL("/"), kReplace);
-  ReplaceSubstringsAfterOffset(filename, 0, FILE_PATH_LITERAL("\\"), kReplace);
+  base::ReplaceSubstringsAfterOffset(
+      filename, 0, FILE_PATH_LITERAL("/"), kReplace);
+  base::ReplaceSubstringsAfterOffset(
+      filename, 0, FILE_PATH_LITERAL("\\"), kReplace);
 }
 
 // Returns the filename determined from the last component of the path portion

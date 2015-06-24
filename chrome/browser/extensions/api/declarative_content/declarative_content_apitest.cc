@@ -126,8 +126,9 @@ void DeclarativeContentApiTest::CheckIncognito(IncognitoMode mode,
                                                bool is_enabled_in_incognito) {
   std::string manifest = kDeclarativeContentManifest;
   if (mode == SPLIT) {
-    ReplaceSubstringsAfterOffset(&manifest, 0, "\"incognito\": \"spanning\"",
-                                 "\"incognito\": \"split\"");
+    base::ReplaceSubstringsAfterOffset(
+        &manifest, 0, "\"incognito\": \"spanning\"",
+        "\"incognito\": \"split\"");
     ASSERT_NE(kDeclarativeContentManifest, manifest);
   }
   ext_dir_.WriteManifest(manifest);
@@ -633,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                        ShowPageActionWithoutPageAction) {
   std::string manifest_without_page_action = kDeclarativeContentManifest;
-  ReplaceSubstringsAfterOffset(
+  base::ReplaceSubstringsAfterOffset(
       &manifest_without_page_action, 0, "\"page_action\": {},", "");
   ASSERT_NE(kDeclarativeContentManifest, manifest_without_page_action);
   ext_dir_.WriteManifest(manifest_without_page_action);

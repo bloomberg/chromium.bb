@@ -131,7 +131,7 @@ void InitContentHandlers(shell::ApplicationManager* manager,
   //     (to embed a comma into a string escape it using "\,")
   // Whatever takes 'parameters' and constructs a CommandLine is failing to
   // un-escape the commas, we need to move this fix to that file.
-  ReplaceSubstringsAfterOffset(&handlers_spec, 0, "\\,", ",");
+  base::ReplaceSubstringsAfterOffset(&handlers_spec, 0, "\\,", ",");
 #endif
 
   std::vector<std::string> parts;

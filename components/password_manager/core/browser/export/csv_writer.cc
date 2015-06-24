@@ -42,7 +42,7 @@ void CSVFormatter::AppendValue(const std::string& raw_value) {
   if (raw_value.find_first_of("\r\n\",") != std::string::npos) {
     output_->push_back('\"');
     output_->append(raw_value);
-    ReplaceSubstringsAfterOffset(
+    base::ReplaceSubstringsAfterOffset(
         output_, output_->size() - raw_value.size(), "\"", "\"\"");
     output_->push_back('\"');
   } else {

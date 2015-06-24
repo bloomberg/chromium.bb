@@ -370,7 +370,7 @@ bool Setup::SaveArgsToFile() {
 #if defined(OS_WIN)
   // Use Windows lineendings for this file since it will often open in
   // Notepad which can't handle Unix ones.
-  ReplaceSubstringsAfterOffset(&contents, 0, "\n", "\r\n");
+  base::ReplaceSubstringsAfterOffset(&contents, 0, "\n", "\r\n");
 #endif
   if (base::WriteFile(build_arg_file, contents.c_str(),
       static_cast<int>(contents.size())) == -1) {

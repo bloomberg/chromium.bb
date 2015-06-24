@@ -141,12 +141,14 @@ void FakeCWS::SetUpdateCheckContent(const std::string& update_check_file,
       test_data_dir.AppendASCII(update_check_file.c_str());
   ASSERT_TRUE(base::ReadFileToString(update_file, update_check_content));
 
-  ReplaceSubstringsAfterOffset(update_check_content, 0, "$AppId", app_id);
-  ReplaceSubstringsAfterOffset(
+  base::ReplaceSubstringsAfterOffset(update_check_content, 0, "$AppId", app_id);
+  base::ReplaceSubstringsAfterOffset(
       update_check_content, 0, "$CrxDownloadUrl", crx_download_url.spec());
-  ReplaceSubstringsAfterOffset(update_check_content, 0, "$FP", crx_fp);
-  ReplaceSubstringsAfterOffset(update_check_content, 0, "$Size", crx_size);
-  ReplaceSubstringsAfterOffset(update_check_content, 0, "$Version", version);
+  base::ReplaceSubstringsAfterOffset(update_check_content, 0, "$FP", crx_fp);
+  base::ReplaceSubstringsAfterOffset(update_check_content, 0,
+                                     "$Size", crx_size);
+  base::ReplaceSubstringsAfterOffset(update_check_content, 0,
+                                     "$Version", version);
 }
 
 scoped_ptr<HttpResponse> FakeCWS::HandleRequest(const HttpRequest& request) {

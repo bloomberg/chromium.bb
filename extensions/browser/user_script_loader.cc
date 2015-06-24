@@ -87,12 +87,12 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
       std::string value;
       if (GetDeclarationValue(line, kIncludeDeclaration, &value)) {
         // We escape some characters that MatchPattern() considers special.
-        ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
-        ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+        base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
+        base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
         script->add_glob(value);
       } else if (GetDeclarationValue(line, kExcludeDeclaration, &value)) {
-        ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
-        ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+        base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
+        base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
         script->add_exclude_glob(value);
       } else if (GetDeclarationValue(line, kNamespaceDeclaration, &value)) {
         script->set_name_space(value);

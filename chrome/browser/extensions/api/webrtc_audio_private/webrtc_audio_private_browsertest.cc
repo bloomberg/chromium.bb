@@ -396,7 +396,8 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   // The "externally connectable" extension permission doesn't seem to
   // like when we use 127.0.0.1 as the host, but using localhost works.
   std::string url_spec = url.spec();
-  ReplaceFirstSubstringAfterOffset(&url_spec, 0, "127.0.0.1", "localhost");
+  base::ReplaceFirstSubstringAfterOffset(
+      &url_spec, 0, "127.0.0.1", "localhost");
   GURL localhost_url(url_spec);
   ui_test_utils::NavigateToURL(browser(), localhost_url);
 

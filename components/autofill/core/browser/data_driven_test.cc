@@ -18,7 +18,7 @@ bool ReadFile(const base::FilePath& file, std::string* content) {
   if (!base::ReadFileToString(file, content))
     return false;
 
-  ReplaceSubstringsAfterOffset(content, 0, "\r\n", "\n");
+  base::ReplaceSubstringsAfterOffset(content, 0, "\r\n", "\n");
   return true;
 }
 

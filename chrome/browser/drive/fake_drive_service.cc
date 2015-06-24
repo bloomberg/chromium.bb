@@ -273,11 +273,11 @@ void FakeDriveService::AddApp(const std::string& app_id,
   }
 
   std::string app_json = app_json_template_;
-  ReplaceSubstringsAfterOffset(&app_json, 0, "$AppId", app_id);
-  ReplaceSubstringsAfterOffset(&app_json, 0, "$AppName", app_name);
-  ReplaceSubstringsAfterOffset(&app_json, 0, "$ProductId", product_id);
-  ReplaceSubstringsAfterOffset(&app_json, 0, "$CreateUrl", create_url);
-  ReplaceSubstringsAfterOffset(
+  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$AppId", app_id);
+  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$AppName", app_name);
+  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$ProductId", product_id);
+  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$CreateUrl", create_url);
+  base::ReplaceSubstringsAfterOffset(
       &app_json, 0, "$Removable", is_removable ? "true" : "false");
 
   JSONStringValueDeserializer json(app_json);

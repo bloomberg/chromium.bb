@@ -211,7 +211,7 @@ bool RunEditor(const base::FilePath& file_to_edit) {
   // but quoting and escaping internal quotes should handle 99.999% of all
   // cases.
   std::string escaped_name = file_to_edit.value();
-  ReplaceSubstringsAfterOffset(&escaped_name, 0, "\"", "\\\"");
+  base::ReplaceSubstringsAfterOffset(&escaped_name, 0, "\"", "\\\"");
   cmd.append(escaped_name);
   cmd.push_back('"');
 
@@ -250,7 +250,8 @@ int EditArgsFile(const std::string& build_dir) {
 #if defined(OS_WIN)
       // Use Windows lineendings for this file since it will often open in
       // Notepad which can't handle Unix ones.
-      ReplaceSubstringsAfterOffset(&argfile_default_contents, 0, "\n", "\r\n");
+      base::ReplaceSubstringsAfterOffset(
+          &argfile_default_contents, 0, "\n", "\r\n");
 #endif
       base::CreateDirectory(arg_file.DirName());
       base::WriteFile(arg_file, argfile_default_contents.c_str(),

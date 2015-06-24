@@ -507,7 +507,7 @@ TEST(URLFixerTest, FixupRelativeFile) {
   // test file in the subdir with different slashes and escaping.
   base::FilePath::StringType relative_file_str = sub_dir.value() +
       FILE_PATH_LITERAL("/") + sub_file.value();
-  ReplaceSubstringsAfterOffset(&relative_file_str, 0,
+  base::ReplaceSubstringsAfterOffset(&relative_file_str, 0,
       FILE_PATH_LITERAL(" "), FILE_PATH_LITERAL("%20"));
   EXPECT_TRUE(IsMatchingFileURL(
       url_fixer::FixupRelativeFile(temp_dir_.path(),

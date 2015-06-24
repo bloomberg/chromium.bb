@@ -273,7 +273,8 @@ void URLRequestSlowDownloadJob::GetResponseInfoConst(
   }
 
   // ParseRawHeaders expects \0 to end each header line.
-  ReplaceSubstringsAfterOffset(&raw_headers, 0, "\n", std::string("\0", 1));
+  base::ReplaceSubstringsAfterOffset(
+      &raw_headers, 0, "\n", base::StringPiece("\0", 1));
   info->headers = new HttpResponseHeaders(raw_headers);
 }
 

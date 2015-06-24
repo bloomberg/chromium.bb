@@ -172,7 +172,8 @@ base::string16 MenuItem::TitleWithReplacement(const base::string16& selection,
   base::string16 result = base::UTF8ToUTF16(title_);
   // TODO(asargent) - Change this to properly handle %% escaping so you can
   // put "%s" in titles that won't get substituted.
-  ReplaceSubstringsAfterOffset(&result, 0, base::ASCIIToUTF16("%s"), selection);
+  base::ReplaceSubstringsAfterOffset(
+      &result, 0, base::ASCIIToUTF16("%s"), selection);
 
   if (result.length() > max_length)
     result = gfx::TruncateString(result, max_length, gfx::WORD_BREAK);

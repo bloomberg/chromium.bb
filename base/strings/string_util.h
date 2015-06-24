@@ -417,28 +417,18 @@ inline bool IsUnicodeWhitespace(wchar_t c) {
 // FormatBytes instead; remove this.
 BASE_EXPORT string16 FormatBytesUnlocalized(int64 bytes);
 
-}  // namespace base
-
-#if defined(OS_WIN)
-#include "base/strings/string_util_win.h"
-#elif defined(OS_POSIX)
-#include "base/strings/string_util_posix.h"
-#else
-#error Define string operations appropriately for your platform
-#endif
-
 // Starting at |start_offset| (usually 0), replace the first instance of
 // |find_this| with |replace_with|.
 BASE_EXPORT void ReplaceFirstSubstringAfterOffset(
     base::string16* str,
     size_t start_offset,
-    const base::string16& find_this,
-    const base::string16& replace_with);
+    StringPiece16 find_this,
+    StringPiece16 replace_with);
 BASE_EXPORT void ReplaceFirstSubstringAfterOffset(
     std::string* str,
     size_t start_offset,
-    const std::string& find_this,
-    const std::string& replace_with);
+    StringPiece find_this,
+    StringPiece replace_with);
 
 // Starting at |start_offset| (usually 0), look through |str| and replace all
 // instances of |find_this| with |replace_with|.
@@ -449,12 +439,23 @@ BASE_EXPORT void ReplaceFirstSubstringAfterOffset(
 BASE_EXPORT void ReplaceSubstringsAfterOffset(
     base::string16* str,
     size_t start_offset,
-    const base::string16& find_this,
-    const base::string16& replace_with);
-BASE_EXPORT void ReplaceSubstringsAfterOffset(std::string* str,
-                                              size_t start_offset,
-                                              const std::string& find_this,
-                                              const std::string& replace_with);
+    StringPiece16 find_this,
+    StringPiece16 replace_with);
+BASE_EXPORT void ReplaceSubstringsAfterOffset(
+    std::string* str,
+    size_t start_offset,
+    StringPiece find_this,
+    StringPiece replace_with);
+
+}  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
+#elif defined(OS_POSIX)
+#include "base/strings/string_util_posix.h"
+#else
+#error Define string operations appropriately for your platform
+#endif
 
 // Reserves enough memory in |str| to accommodate |length_with_null| characters,
 // sets the size of |str| to |length_with_null - 1| characters, and returns a

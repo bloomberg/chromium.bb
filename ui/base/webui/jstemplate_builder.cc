@@ -27,7 +27,7 @@ void AppendJsonHtml(const base::DictionaryValue* json, std::string* output) {
 
   // </ confuses the HTML parser because it could be a </script> tag.  So we
   // replace </ with <\/.  The extra \ will be ignored by the JS engine.
-  ReplaceSubstringsAfterOffset(&javascript_string, 0, "</", "<\\/");
+  base::ReplaceSubstringsAfterOffset(&javascript_string, 0, "</", "<\\/");
 
   output->append("<script>");
   output->append(javascript_string);

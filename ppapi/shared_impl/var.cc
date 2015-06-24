@@ -45,9 +45,8 @@ std::string Var::PPVarToLogString(PP_Var var) {
       else
         result = string->value();
 
-      std::string null;
-      null.push_back(0);
-      ReplaceSubstringsAfterOffset(&result, 0, null, "\\0");
+      base::ReplaceSubstringsAfterOffset(
+          &result, 0, base::StringPiece("\0", 1), "\\0");
       return result;
     }
     case PP_VARTYPE_OBJECT:

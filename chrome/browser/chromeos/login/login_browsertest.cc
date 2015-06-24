@@ -144,8 +144,8 @@ class LoginTest : public chromeos::LoginManagerTest {
           "document.getElementsByName('password')[0].value = '$Password';"
           "document.getElementById('submit-button').click();"
         "})();";
-    ReplaceSubstringsAfterOffset(&js, 0, "$Email", user_email);
-    ReplaceSubstringsAfterOffset(&js, 0, "$Password", password);
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$Email", user_email);
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$Password", password);
     ExecuteJsInGaiaAuthFrame(js);
   }
 
@@ -178,7 +178,7 @@ class LoginTest : public chromeos::LoginManagerTest {
         "})";
     ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
     std::string set_email = email_input + ".value = '$Email'";
-    ReplaceSubstringsAfterOffset(&set_email, 0, "$Email", user_email);
+    base::ReplaceSubstringsAfterOffset(&set_email, 0, "$Email", user_email);
     ASSERT_TRUE(content::ExecuteScript(web_contents(), set_email));
     ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                        email_next_button + ".fire('tap')"));
@@ -188,7 +188,7 @@ class LoginTest : public chromeos::LoginManagerTest {
     } while (message != "\"switchToPassword\"");
 
     std::string set_password = password_input + ".value = '$Password'";
-    ReplaceSubstringsAfterOffset(&set_password, 0, "$Password", password);
+    base::ReplaceSubstringsAfterOffset(&set_password, 0, "$Password", password);
     ASSERT_TRUE(content::ExecuteScript(web_contents(), set_password));
     ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                        password_next_button + ".fire('tap')"));

@@ -35,7 +35,7 @@ void SplitDicLine(const std::string& line, std::vector<std::string>* output) {
   // Everything before the slash index is the first term. We also need to
   // convert all escaped slashes ("\/" sequences) to regular slashes.
   std::string word = line.substr(0, slash_index);
-  ReplaceSubstringsAfterOffset(&word, 0, "\\/", "/");
+  base::ReplaceSubstringsAfterOffset(&word, 0, "\\/", "/");
   output->push_back(word);
 
   // Everything (if anything) after the slash is the second.

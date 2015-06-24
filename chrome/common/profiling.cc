@@ -58,7 +58,7 @@ std::string GetProfileName() {
         command_line.GetSwitchValueASCII(switches::kProcessType);
     std::string type = process_type.empty() ?
         std::string("browser") : std::string(process_type);
-    ReplaceSubstringsAfterOffset(&profile_name, 0, "{type}", type.c_str());
+    base::ReplaceSubstringsAfterOffset(&profile_name, 0, "{type}", type);
   }
   return profile_name;
 }

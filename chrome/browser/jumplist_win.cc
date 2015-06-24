@@ -108,7 +108,8 @@ bool UpdateTaskCategory(
   if (incognito_availability != IncognitoModePrefs::FORCED) {
     scoped_refptr<ShellLinkItem> chrome = CreateShellLink();
     base::string16 chrome_title = l10n_util::GetStringUTF16(IDS_NEW_WINDOW);
-    ReplaceSubstringsAfterOffset(&chrome_title, 0, L"&", L"");
+    base::ReplaceSubstringsAfterOffset(
+        &chrome_title, 0, L"&", base::StringPiece16());
     chrome->set_title(chrome_title);
     chrome->set_icon(chrome_path.value(), 0);
     items.push_back(chrome);
@@ -122,7 +123,8 @@ bool UpdateTaskCategory(
     incognito->GetCommandLine()->AppendSwitch(switches::kIncognito);
     base::string16 incognito_title =
         l10n_util::GetStringUTF16(IDS_NEW_INCOGNITO_WINDOW);
-    ReplaceSubstringsAfterOffset(&incognito_title, 0, L"&", L"");
+    base::ReplaceSubstringsAfterOffset(
+        &incognito_title, 0, L"&", base::StringPiece16());
     incognito->set_title(incognito_title);
     incognito->set_icon(chrome_path.value(), 0);
     items.push_back(incognito);

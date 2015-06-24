@@ -92,6 +92,6 @@ void IframeSource::SendJSWithOrigin(
   base::StringPiece template_js =
       ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
   std::string response(template_js.as_string());
-  ReplaceFirstSubstringAfterOffset(&response, 0, "{{ORIGIN}}", origin);
+  base::ReplaceFirstSubstringAfterOffset(&response, 0, "{{ORIGIN}}", origin);
   callback.Run(base::RefCountedString::TakeString(&response));
 }

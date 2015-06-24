@@ -329,8 +329,8 @@ void URLPattern::SetPath(const std::string& path) {
   spec_.clear();
   path_ = path;
   path_escaped_ = path_;
-  ReplaceSubstringsAfterOffset(&path_escaped_, 0, "\\", "\\\\");
-  ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
+  base::ReplaceSubstringsAfterOffset(&path_escaped_, 0, "\\", "\\\\");
+  base::ReplaceSubstringsAfterOffset(&path_escaped_, 0, "?", "\\?");
 }
 
 bool URLPattern::SetPort(const std::string& port) {

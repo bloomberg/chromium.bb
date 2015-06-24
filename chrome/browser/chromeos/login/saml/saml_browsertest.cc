@@ -255,9 +255,11 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
     const std::string& relay_state,
     const std::string& next_path) {
   std::string response_html = html_template;
-  ReplaceSubstringsAfterOffset(&response_html, 0, "$RelayState", relay_state);
-  ReplaceSubstringsAfterOffset(&response_html, 0, "$Post", next_path);
-  ReplaceSubstringsAfterOffset(
+  base::ReplaceSubstringsAfterOffset(
+      &response_html, 0, "$RelayState", relay_state);
+  base::ReplaceSubstringsAfterOffset(
+      &response_html, 0, "$Post", next_path);
+  base::ReplaceSubstringsAfterOffset(
       &response_html, 0, "$Refresh", refresh_url_.spec());
 
   scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
@@ -375,7 +377,8 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
     std::string js =
         "$('confirm-password-input').value='$Password';"
         "$('confirm-password').onConfirmPassword_();";
-    ReplaceSubstringsAfterOffset(&js, 0, "$Password", password_to_confirm);
+    base::ReplaceSubstringsAfterOffset(
+        &js, 0, "$Password", password_to_confirm);
     ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
   }
 
@@ -422,7 +425,7 @@ IN_PROC_BROWSER_TEST_P(SamlTest, SamlUI) {
   JsExpect("$('gaia-signin').classList.contains('full-width')");
   JsExpect("!$('saml-notice-container').hidden");
   std::string js = "$('saml-notice-message').textContent.indexOf('$Host') > -1";
-  ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
   JsExpect(js);
   if (!use_webview()) {
     JsExpect("!$('cancel-add-user-button').hidden");
@@ -685,7 +688,7 @@ IN_PROC_BROWSER_TEST_P(SamlTest, NoticeUpdatedOnRedirect) {
       "      'authDomainChange',"
       "      processEventsAndSendIfHostFound);"
       "}";
-  ReplaceSubstringsAfterOffset(&js, 0, "$Host", kAdditionalIdPHost);
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kAdditionalIdPHost);
   bool dummy;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       GetLoginUI()->GetWebContents(), js, &dummy));

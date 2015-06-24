@@ -283,8 +283,8 @@ void OobeBaseTest::SetSignFormField(const std::string& field_id,
       "var e = new Event('input');"
       "document.getElementById('$FieldId').dispatchEvent(e);"
       "})();";
-  ReplaceSubstringsAfterOffset(&js, 0, "$FieldId", field_id);
-  ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", field_value);
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldId", field_id);
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", field_value);
   ExecuteJsInSigninFrame(js);
 }
 

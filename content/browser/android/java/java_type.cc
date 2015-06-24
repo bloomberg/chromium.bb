@@ -5,7 +5,7 @@
 #include "content/browser/android/java/java_type.h"
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"  // For ReplaceSubstringsAfterOffset
+#include "base/strings/string_util.h"
 
 namespace content {
 namespace {
@@ -53,7 +53,8 @@ scoped_ptr<JavaType> CreateFromArrayComponentTypeName(
       } else {
         result->type = JavaType::TypeObject;
         result->class_jni_name = type_name.substr(1, type_name.length() - 2);
-        ReplaceSubstringsAfterOffset(&result->class_jni_name, 0, ".", "/");
+        base::ReplaceSubstringsAfterOffset(
+            &result->class_jni_name, 0, ".", "/");
       }
       break;
     default:
@@ -120,7 +121,7 @@ JavaType JavaType::CreateFromBinaryName(const std::string& binary_name) {
   } else {
     result.type = JavaType::TypeObject;
     result.class_jni_name = binary_name;
-    ReplaceSubstringsAfterOffset(&result.class_jni_name, 0, ".", "/");
+    base::ReplaceSubstringsAfterOffset(&result.class_jni_name, 0, ".", "/");
   }
   return result;
 }

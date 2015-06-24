@@ -38,7 +38,7 @@ class BoundedLabelTest : public testing::Test {
     const char kPeriods[] = "...";
     const char kEllipses[] = "\xE2\x80\xA6";
     std::string result = string;
-    ReplaceSubstringsAfterOffset(&result, 0, kPeriods, kEllipses);
+    base::ReplaceSubstringsAfterOffset(&result, 0, kPeriods, kEllipses);
     return base::UTF8ToUTF16(result);
   }
 

@@ -490,7 +490,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     return false;
 
 #if defined(OS_WIN)  // Fix up Windows shortcuts.
-  ReplaceSubstringsAfterOffset(&url_string, 0, "\\x", "%");
+  base::ReplaceSubstringsAfterOffset(&url_string, 0, "\\x", "%");
 #endif
   GURL url(url_string);
 

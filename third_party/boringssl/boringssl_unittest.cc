@@ -32,7 +32,7 @@ void TestProcess(const std::string& name,
   std::string output;
   EXPECT_TRUE(base::GetAppOutput(cmd, &output));
   // Account for Windows line endings.
-  ReplaceSubstringsAfterOffset(&output, 0, "\r\n", "\n");
+  base::ReplaceSubstringsAfterOffset(&output, 0, "\r\n", "\n");
 
   const bool ok = output.size() >= 5 &&
                   memcmp("PASS\n", &output[output.size() - 5], 5) == 0 &&
