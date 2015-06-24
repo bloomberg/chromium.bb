@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/guid.h"
 #include "base/i18n/number_formatting.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
@@ -75,8 +77,9 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
 
 // TCM: 3728323
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2ETestAdd) {
-  const base::string16 kHistoryUrl(
-      ASCIIToUTF16("http://www.add-one-history.google.com/"));
+  // Use a randomized URL to prevent test collisions.
+  const base::string16 kHistoryUrl = ASCIIToUTF16(base::StringPrintf(
+      "http://www.add-history.google.com/%s", base::GenerateGUID().c_str()));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   unsigned long initial_count = GetTypedUrlsFromClient(0).size();
@@ -161,10 +164,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
 }
 
 // TCM: 3705291
-// crbug.com/503646: Disabled as E2ETest.
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenDelete) {
-  const base::string16 kHistoryUrl(
-      ASCIIToUTF16("http://www.add-one-history.google.com/"));
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2ETestAddThenDelete) {
+  // Use a randomized URL to prevent test collisions.
+  const base::string16 kHistoryUrl = ASCIIToUTF16(base::StringPrintf(
+      "http://www.add-history.google.com/%s", base::GenerateGUID().c_str()));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   unsigned long initial_count = GetTypedUrlsFromClient(0).size();
