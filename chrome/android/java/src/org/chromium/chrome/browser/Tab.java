@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurity;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.SadTabViewFactory;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
@@ -75,7 +76,6 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
@@ -92,21 +92,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  *    turn sets the native pointer for Tab.  For destruction, subclasses in Java must clear
  *    their own native pointer reference, but Tab#destroy() will handle deleting the native
  *    object.
- *
- * Notes on {@link Tab#getId()}:
- *
- *    Tabs are all generated using a static {@link AtomicInteger} which means they are unique across
- *  all {@link Activity}s running in the same {@link android.app.Application} process.  Calling
- *  {@link Tab#incrementIdCounterTo(int)} will ensure new {@link Tab}s get ids greater than or equal
- *  to the parameter passed to that method.  This should be used when doing things like loading
- *  persisted {@link Tab}s from disk on process start to ensure all new {@link Tab}s don't have id
- *  collision.
- *    Some {@link Activity}s will not call this because they do not persist state, which means those
- *  ids can potentially conflict with the ones restored from persisted state depending on which
- *  {@link Activity} runs first on process start.  If {@link Tab}s are ever shared across
- *  {@link Activity}s or mixed with {@link Tab}s from other {@link Activity}s conflicts can occur
- *  unless special care is taken to make sure {@link Tab#incrementIdCounterTo(int)} is called with
- *  the correct value across all affected {@link Activity}s.
  */
 public class Tab implements ViewGroup.OnHierarchyChangeListener,
         View.OnSystemUiVisibilityChangeListener {
@@ -127,9 +112,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /** Used for logging. */
     private static final String TAG = "Tab";
-
-    /** Used for automatically generating tab ids. */
-    private static final AtomicInteger sIdCounter = new AtomicInteger();
 
     private long mNativeTabAndroid;
 
@@ -771,7 +753,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // We need a valid Activity Context to build the ContentView with.
         assert context == null || context instanceof Activity;
 
-        mId = generateValidId(id);
+        mId = TabIdManager.getInstance().generateValidId(id);
         mParentId = parentId;
         mIncognito = incognito;
         // TODO(dtrainor): Only store application context here.
@@ -2357,19 +2339,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Validates {@code id} and increments the internal counter to make sure future ids don't
-     * collide.
-     * @param id The current id.  Maybe {@link #INVALID_TAB_ID}.
-     * @return   A new id if {@code id} was {@link #INVALID_TAB_ID}, or {@code id}.
-     */
-    public static int generateValidId(int id) {
-        if (id == INVALID_TAB_ID) id = generateNextId();
-        incrementIdCounterTo(id + 1);
-
-        return id;
-    }
-
-    /**
      * Restores a tab either frozen or from state.
      * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
      */
@@ -2573,13 +2542,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         return mPreviousFullscreenOverdrawBottomHeight;
     }
 
-    /**
-     * @return An unused id.
-     */
-    private static int generateNextId() {
-        return sIdCounter.getAndIncrement();
-    }
-
     private void pushNativePageStateToNavigationEntry() {
         assert mNativeTabAndroid != 0 && getNativePage() != null;
         nativeSetActiveNavigationEntryTitleForUrl(mNativeTabAndroid, getNativePage().getUrl(),
@@ -2741,22 +2703,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public void setCoveredByChildActivity(boolean isCoveredByChildActivity) {
         // Empty implementation, only used by subclasses.
-    }
-
-    /**
-     * Ensures the counter is at least as high as the specified value.  The counter should always
-     * point to an unused ID (which will be handed out next time a request comes in).  Exposed so
-     * that anything externally loading tabs and ids can set enforce new tabs start at the correct
-     * id.
-     * TODO(aurimas): Investigate reducing the visiblity of this method.
-     * @param id The minimum id we should hand out to the next new tab.
-     */
-    public static void incrementIdCounterTo(int id) {
-        int diff = id - sIdCounter.get();
-        if (diff <= 0) return;
-        // It's possible idCounter has been incremented between the get above and the add below
-        // but that's OK, because in the worst case we'll overly increment idCounter.
-        sIdCounter.addAndGet(diff);
     }
 
     /**

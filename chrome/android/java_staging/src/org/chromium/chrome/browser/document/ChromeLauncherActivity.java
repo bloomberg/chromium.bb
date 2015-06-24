@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
@@ -300,7 +301,7 @@ public class ChromeLauncherActivity extends Activity
         // Increment the Tab ID counter at this point since this Activity may not appear in
         // getAppTasks() when DocumentTabModelSelector is initialized.  This can potentially happen
         // when Chrome is launched via the GSA/e200 search box and they relinquish their task.
-        Tab.incrementIdCounterTo(getTaskId() + 1);
+        TabIdManager.getInstance().incrementIdCounterTo(getTaskId() + 1);
 
         // Handle MAIN Intent actions, usually fired when the user starts Chrome via the launcher.
         // Some launchers start Chrome by firing a VIEW Intent with an empty URL (crbug.com/459349);

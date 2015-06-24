@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.tab.ChromeTab;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -133,8 +134,8 @@ public class CustomTab extends ChromeTab {
      */
     public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid,
             long sessionId, String url, String referrer, int parentTabId) {
-        super(Tab.generateValidId(Tab.INVALID_TAB_ID), activity, false, windowAndroid,
-                TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
+        super(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID), activity, false,
+                windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(activity.getApplication());
         WebContents webContents = customTabsConnection.takePrerenderedUrl(sessionId, url, referrer);

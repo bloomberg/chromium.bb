@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.PendingDocumentData;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -145,7 +146,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
         int biggestId = getLargestTaskIdFromRecents();
         biggestId = getMaxTabId(mRegularTabModel, biggestId);
         biggestId = getMaxTabId(mIncognitoTabModel, biggestId);
-        Tab.incrementIdCounterTo(biggestId + 1);
+        TabIdManager.getInstance().incrementIdCounterTo(biggestId + 1);
     }
 
     private int getMaxTabId(DocumentTabModel tabModel, int min) {
@@ -224,7 +225,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
      * @return ID to use for the new Tab.
      */
     public int generateValidTabId() {
-        return Tab.generateValidId(Tab.INVALID_TAB_ID);
+        return TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
     }
 
     /**

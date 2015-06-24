@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -302,7 +303,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      */
     public void loadState() {
         int nextId = mTabSaver.loadState();
-        if (nextId >= 0) Tab.incrementIdCounterTo(nextId);
+        if (nextId >= 0) TabIdManager.getInstance().incrementIdCounterTo(nextId);
     }
 
     /**

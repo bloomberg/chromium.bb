@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.OnTabStateReadCallback;
@@ -78,7 +79,7 @@ public class DocumentMigrationHelper {
         @Override
         public void onDetailsRead(int index, int id, String url, boolean isStandardActiveIndex,
                 boolean isIncognitoActiveIndex) {
-            Tab.incrementIdCounterTo(id + 1);
+            TabIdManager.getInstance().incrementIdCounterTo(id + 1);
             if (!isStandardActiveIndex) return;
             // If the current tab read is the active standard tab, set the last used
             // tab pref with the id, so that when document mode starts we show that

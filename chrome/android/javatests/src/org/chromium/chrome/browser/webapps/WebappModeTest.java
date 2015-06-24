@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.webapps;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
@@ -19,6 +21,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
@@ -140,6 +143,42 @@ public class WebappModeTest extends MultiActivityTestBase {
             }
         }));
         assertTrue(isNumberOfRunningActivitiesCorrect(2));
+    }
+
+    /**
+     * Tests that the WebappActivity actually gets a legitimate Tab ID instead of 0.
+     */
+    @MediumTest
+    public void testWebappTabIdsProperlyAssigned() throws Exception {
+        Context context = getInstrumentation().getTargetContext();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(TabIdManager.PREF_NEXT_ID, 11684);
+        editor.apply();
+
+        // Start the WebappActivity.  We can't use ActivityUtils.waitForActivity() because
+        // of the way WebappActivity is instanced on pre-L devices.
+        fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+                return lastActivity instanceof WebappActivity
+                        && lastActivity.findViewById(android.R.id.content).hasWindowFocus();
+            }
+        }));
+        assertTrue(isNumberOfRunningActivitiesCorrect(1));
+        final WebappActivity webappActivity =
+                (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return webappActivity.getActivityTab() != null;
+            }
+        }));
+
+        assertEquals("Wrong Tab ID was used", 11684, webappActivity.getActivityTab().getId());
     }
 
     /**
