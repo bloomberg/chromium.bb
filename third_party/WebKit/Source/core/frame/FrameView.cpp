@@ -1491,7 +1491,7 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scr
 {
     m_maintainScrollPositionAnchor = nullptr;
 
-    DoublePoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
+    DoublePoint newScrollPosition = clampScrollPosition(scrollPoint);
     if (newScrollPosition == scrollPositionDouble())
         return;
 
@@ -3198,12 +3198,12 @@ int FrameView::scrollSize(ScrollbarOrientation orientation) const
 
 void FrameView::setScrollOffset(const IntPoint& offset, ScrollType)
 {
-    scrollTo(DoublePoint(adjustScrollPositionWithinRange(offset)));
+    scrollTo(clampScrollPosition(offset));
 }
 
 void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType)
 {
-    scrollTo(adjustScrollPositionWithinRange(offset));
+    scrollTo(clampScrollPosition(offset));
 }
 
 void FrameView::windowResizerRectChanged()
@@ -3438,9 +3438,7 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
 
 void FrameView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
 {
-    DoublePoint adjustedScrollPosition = DoublePoint(offset);
-
-    adjustedScrollPosition = adjustScrollPositionWithinRange(adjustedScrollPosition);
+    DoublePoint adjustedScrollPosition = clampScrollPosition(DoublePoint(offset));
 
     if (adjustedScrollPosition != scrollPositionDouble() || scrollOriginChanged()) {
         ScrollableArea::setScrollPosition(adjustedScrollPosition, ProgrammaticScroll);

@@ -163,7 +163,7 @@ void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollType s
         behavior = scrollBehaviorStyle();
 
     if (scrollType == CompositorScroll)
-        scrollPositionChanged(adjustScrollPositionWithinRange(position), CompositorScroll);
+        scrollPositionChanged(clampScrollPosition(position), CompositorScroll);
     else if (scrollType == ProgrammaticScroll)
         programmaticScrollHelper(position, behavior);
     else if (scrollType == UserScroll)
@@ -304,20 +304,6 @@ ScrollResult ScrollableArea::handleWheel(const PlatformWheelEvent& wheelEvent)
 
     cancelProgrammaticScrollAnimation();
     return scrollAnimator()->handleWheelEvent(wheelEvent);
-}
-
-IntPoint ScrollableArea::adjustScrollPositionWithinRange(const IntPoint& scrollPoint) const
-{
-    IntPoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPosition());
-    newScrollPosition = newScrollPosition.expandedTo(minimumScrollPosition());
-    return newScrollPosition;
-}
-
-DoublePoint ScrollableArea::adjustScrollPositionWithinRange(const DoublePoint& scrollPoint) const
-{
-    DoublePoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPositionDouble());
-    newScrollPosition = newScrollPosition.expandedTo(minimumScrollPositionDouble());
-    return newScrollPosition;
 }
 
 // NOTE: Only called from Internals for testing.

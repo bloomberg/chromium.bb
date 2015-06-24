@@ -93,10 +93,6 @@ public:
 
     virtual ScrollResult handleWheel(const PlatformWheelEvent&);
 
-    // Adjust the passed in scroll position to keep it between the minimum and maximum positions.
-    IntPoint adjustScrollPositionWithinRange(const IntPoint&) const;
-    DoublePoint adjustScrollPositionWithinRange(const DoublePoint&) const;
-
     bool inLiveResize() const { return m_inLiveResize; }
     void willStartLiveResize();
     void willEndLiveResize();

@@ -116,7 +116,7 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
             locationDelta.setY(-event.deltaY());
     }
 
-    DoublePoint targetPosition = visualViewport().adjustScrollPositionWithinRange(
+    DoublePoint targetPosition = visualViewport().clampScrollPosition(
         visualViewport().scrollPositionDouble() + toDoubleSize(locationDelta));
     visualViewport().setScrollPosition(targetPosition, UserScroll);
 
@@ -190,7 +190,7 @@ void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType sc
     if (delta.isZero())
         return;
 
-    DoublePoint targetPosition = layoutViewport().adjustScrollPositionWithinRange(layoutViewport().scrollAnimator()->currentPosition() + delta);
+    DoublePoint targetPosition = layoutViewport().clampScrollPosition(layoutViewport().scrollAnimator()->currentPosition() + delta);
     layoutViewport().setScrollPosition(targetPosition, scrollType);
 
     DoubleSize applied = scrollOffsetFromScrollAnimators() - oldPosition;
@@ -199,7 +199,7 @@ void RootFrameViewport::setScrollOffset(const DoublePoint& offset, ScrollType sc
     if (delta.isZero())
         return;
 
-    targetPosition = visualViewport().adjustScrollPositionWithinRange(visualViewport().scrollAnimator()->currentPosition() + delta);
+    targetPosition = visualViewport().clampScrollPosition(visualViewport().scrollAnimator()->currentPosition() + delta);
     visualViewport().setScrollPosition(targetPosition, scrollType);
 }
 

@@ -183,7 +183,7 @@ void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint
 
     moveToEncloseRect(outerRect, innerRect);
 
-    outerRect.setLocation(m_rootFrameView->adjustScrollPositionWithinRange(outerRect.location()));
+    outerRect.setLocation(m_rootFrameView->clampScrollPosition(outerRect.location()));
 
     moveIntoRect(innerRect, outerRect);
 

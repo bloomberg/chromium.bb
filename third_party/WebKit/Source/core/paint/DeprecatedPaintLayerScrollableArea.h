@@ -223,6 +223,8 @@ private:
 
     void computeScrollDimensions();
 
+    // TODO(bokan): This method hides the base class version and is subtly different.
+    // Should be unified.
     DoubleSize clampScrollOffset(const DoubleSize&) const;
 
     virtual void setScrollOffset(const IntPoint&, ScrollType) override;
