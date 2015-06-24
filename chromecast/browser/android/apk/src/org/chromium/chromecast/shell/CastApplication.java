@@ -10,7 +10,6 @@ import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ResourceExtractor;
 import org.chromium.content.app.ContentApplication;
 
 /**
@@ -34,7 +33,6 @@ public class CastApplication extends ContentApplication {
     }
 
     public static void initializeApplicationParameters(Context context) {
-        ResourceExtractor.setMandatoryPaksToExtract(0);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 

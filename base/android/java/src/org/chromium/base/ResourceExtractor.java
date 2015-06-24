@@ -41,8 +41,8 @@ public class ResourceExtractor {
     private static final String V8_NATIVES_DATA_FILENAME = "natives_blob.bin";
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
 
-    private static String[] sMandatoryPaks = null;
-    private static int sLocalePaksResId = -1;
+    private static String[] sMandatoryPaks = new String[0];
+    private static int sLocalePaksResId = 0;
 
     /**
      * Applies the reverse mapping done by locale_pak_resources.py.
@@ -291,7 +291,6 @@ public class ResourceExtractor {
      * @param paths The list of paths to be extracted.
      */
     public static void setMandatoryPaksToExtract(int localePaksResId, String... paths) {
-        // TODO(agrieve): Remove the need to call this once all files are loaded from the apk.
         assert (sInstance == null || sInstance.mExtractTask == null)
                 : "Must be called before startExtractingResources is called";
         sLocalePaksResId = localePaksResId;
@@ -304,26 +303,6 @@ public class ResourceExtractor {
             paths = new String[0];
         }
         setMandatoryPaksToExtract(0, paths);
-    }
-
-    /**
-     * Marks all the 'pak' resources, packaged as assets, for extraction during
-     * running the tests.
-     */
-    @VisibleForTesting
-    public void setExtractAllPaksAndV8SnapshotForTesting() {
-        List<String> pakAndSnapshotFileAssets = new ArrayList<String>();
-        AssetManager manager = mContext.getResources().getAssets();
-        try {
-            String[] files = manager.list("");
-            for (String file : files) {
-                if (file.endsWith(".pak")) pakAndSnapshotFileAssets.add(file);
-            }
-        } catch (IOException e) {
-            Log.w(LOGTAG, "Exception while accessing assets: " + e.getMessage(), e);
-        }
-        setMandatoryPaksToExtract(0, pakAndSnapshotFileAssets.toArray(
-                new String[pakAndSnapshotFileAssets.size()]));
     }
 
     private ResourceExtractor(Context context) {
@@ -454,8 +433,6 @@ public class ResourceExtractor {
      * Pak extraction not necessarily required by the embedder.
      */
     private static boolean shouldSkipPakExtraction() {
-        assert (sLocalePaksResId != -1 && sMandatoryPaks != null)
-            : "setMandatoryPaksToExtract() must be called before startExtractingResources()";
         return sMandatoryPaks.length == 0 && sLocalePaksResId == 0;
     }
 }

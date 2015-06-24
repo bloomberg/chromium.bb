@@ -8,7 +8,6 @@ import android.content.Context;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ResourceExtractor;
 
 /**
  * A basic content browser tests {@link android.app.Application}.
@@ -24,7 +23,6 @@ public class ContentBrowserTestsApplication extends BaseChromiumApplication {
     }
 
     public static void initializeApplicationParameters(Context context) {
-        ResourceExtractor.setMandatoryPaksToExtract(0);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
     }
 

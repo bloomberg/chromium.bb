@@ -6,7 +6,6 @@ package org.chromium.content_shell_apk;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ResourceExtractor;
 import org.chromium.content.app.ContentApplication;
 
 /**
@@ -25,7 +24,6 @@ public class ContentShellApplication extends ContentApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceExtractor.setMandatoryPaksToExtract(0);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

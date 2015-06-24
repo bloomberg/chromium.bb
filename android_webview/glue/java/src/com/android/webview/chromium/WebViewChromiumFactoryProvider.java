@@ -41,7 +41,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.PathService;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -229,10 +228,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         if (mStarted) {
             return;
         }
-
-        // We don't need to extract any paks because for WebView, they are
-        // in the system image.
-        ResourceExtractor.setMandatoryPaksToExtract(0);
 
         try {
             LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
