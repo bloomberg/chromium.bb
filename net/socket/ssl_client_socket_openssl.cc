@@ -1111,17 +1111,9 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
 
   start_cert_verification_time_ = base::TimeTicks::Now();
 
-  int flags = 0;
-  if (ssl_config_.rev_checking_enabled)
-    flags |= CertVerifier::VERIFY_REV_CHECKING_ENABLED;
-  if (ssl_config_.verify_ev_cert)
-    flags |= CertVerifier::VERIFY_EV_CERT;
-  if (ssl_config_.cert_io_enabled)
-    flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
-  if (ssl_config_.rev_checking_required_local_anchors)
-    flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
   return cert_verifier_->Verify(
-      server_cert_.get(), host_and_port_.host(), ocsp_response, flags,
+      server_cert_.get(), host_and_port_.host(), ocsp_response,
+      ssl_config_.GetCertVerifyFlags(),
       // TODO(davidben): Route the CRLSet through SSLConfig so
       // SSLClientSocket doesn't depend on SSLConfigService.
       SSLConfigService::GetCRLSet().get(), &server_cert_verify_result_,

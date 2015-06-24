@@ -51,6 +51,11 @@ struct NET_EXPORT SSLConfig {
   bool IsAllowedBadCert(const base::StringPiece& der_cert,
                         CertStatus* cert_status) const;
 
+  // Returns the set of flags to use for certificate verification, which is a
+  // bitwise OR of CertVerifier::VerifyFlags that represent this SSLConfig's
+  // configuration.
+  int GetCertVerifyFlags() const;
+
   // rev_checking_enabled is true if online certificate revocation checking is
   // enabled (i.e. OCSP and CRL fetching).
   //

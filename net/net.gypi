@@ -1721,6 +1721,7 @@
       'ssl/ssl_client_auth_cache_unittest.cc',
       'ssl/ssl_client_session_cache_openssl_unittest.cc',
       'ssl/ssl_config_service_unittest.cc',
+      'ssl/ssl_config_unittest.cc',
       'ssl/ssl_connection_status_flags_unittest.cc',
       'test/embedded_test_server/embedded_test_server_unittest.cc',
       'test/embedded_test_server/http_request_unittest.cc',

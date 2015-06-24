@@ -840,19 +840,10 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       secure_quic = using_ssl_;
       ssl_config = &server_ssl_config_;
     }
-    // TODO(rtenneti): Move the cert_verify_flags code into SSLConfig class.
-    int flags = 0;
-    if (ssl_config->rev_checking_enabled)
-      flags |= CertVerifier::VERIFY_REV_CHECKING_ENABLED;
-    if (ssl_config->verify_ev_cert)
-      flags |= CertVerifier::VERIFY_EV_CERT;
-    if (ssl_config->cert_io_enabled)
-      flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
-    if (ssl_config->rev_checking_required_local_anchors)
-      flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
     int rv = quic_request_.Request(
-        destination, secure_quic, request_info_.privacy_mode, flags,
-        origin_host, request_info_.method, net_log_, io_callback_);
+        destination, secure_quic, request_info_.privacy_mode,
+        ssl_config->GetCertVerifyFlags(), origin_host, request_info_.method,
+        net_log_, io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;
     } else {

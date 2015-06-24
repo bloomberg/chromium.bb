@@ -4,6 +4,7 @@
 
 #include "net/ssl/ssl_config.h"
 
+#include "net/cert/cert_verifier.h"
 #include "net/socket/ssl_client_socket.h"
 
 namespace net {
@@ -56,6 +57,19 @@ bool SSLConfig::IsAllowedBadCert(const base::StringPiece& der_cert,
     }
   }
   return false;
+}
+
+int SSLConfig::GetCertVerifyFlags() const {
+  int flags = 0;
+  if (rev_checking_enabled)
+    flags |= CertVerifier::VERIFY_REV_CHECKING_ENABLED;
+  if (verify_ev_cert)
+    flags |= CertVerifier::VERIFY_EV_CERT;
+  if (cert_io_enabled)
+    flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
+  if (rev_checking_required_local_anchors)
+    flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
+  return flags;
 }
 
 }  // namespace net
