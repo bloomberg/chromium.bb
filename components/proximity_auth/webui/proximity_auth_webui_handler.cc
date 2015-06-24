@@ -30,8 +30,9 @@ scoped_ptr<base::DictionaryValue> LogMessageToDictionary(
     const LogBuffer::LogMessage& log_message) {
   scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
   dictionary->SetString(kLogMessageTextKey, log_message.text);
-  dictionary->SetString(kLogMessageTimeKey,
-                        base::TimeFormatTimeOfDay(log_message.time));
+  dictionary->SetString(
+      kLogMessageTimeKey,
+      base::TimeFormatTimeOfDayWithMilliseconds(log_message.time));
   dictionary->SetString(kLogMessageFileKey, log_message.file);
   dictionary->SetInteger(kLogMessageLineKey, log_message.line);
   dictionary->SetInteger(kLogMessageSeverityKey,

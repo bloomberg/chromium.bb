@@ -37,9 +37,11 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
   string16 clock24h(ASCIIToUTF16("15:42"));
   string16 clock12h_pm(ASCIIToUTF16("3:42 PM"));
   string16 clock12h(ASCIIToUTF16("3:42"));
+  string16 clock24h_millis(ASCIIToUTF16("15:42:07.000"));
 
   // The default is 12h clock.
   EXPECT_EQ(clock12h_pm, TimeFormatTimeOfDay(time));
+  EXPECT_EQ(clock24h_millis, TimeFormatTimeOfDayWithMilliseconds(time));
   EXPECT_EQ(k12HourClock, GetHourClockType());
   // k{Keep,Drop}AmPm should not affect for 24h clock.
   EXPECT_EQ(clock24h,
@@ -70,9 +72,11 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
   string16 clock24h(ASCIIToUTF16("15:42"));
   string16 clock12h_pm(ASCIIToUTF16("3:42 pm"));
   string16 clock12h(ASCIIToUTF16("3:42"));
+  string16 clock24h_millis(ASCIIToUTF16("15:42:07.000"));
 
   // The default is 24h clock.
   EXPECT_EQ(clock24h, TimeFormatTimeOfDay(time));
+  EXPECT_EQ(clock24h_millis, TimeFormatTimeOfDayWithMilliseconds(time));
   EXPECT_EQ(k24HourClock, GetHourClockType());
   // k{Keep,Drop}AmPm should not affect for 24h clock.
   EXPECT_EQ(clock24h,
