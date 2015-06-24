@@ -30,6 +30,8 @@ public:
     // clear the previous dumps.
     void clearProcessDumpForCurrentGC();
 
+    WebProcessMemoryDump* currentProcessMemoryDump() { return m_currentProcessMemoryDump.get(); }
+
 private:
     BlinkGCMemoryDumpProvider();
 

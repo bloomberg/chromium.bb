@@ -642,6 +642,11 @@ public:
     void promptlyFreed(size_t gcInfoIndex);
 
 private:
+    enum SnapshotType {
+        HeapSnapshot,
+        FreelistSnapshot
+    };
+
     ThreadState();
     ~ThreadState();
 
@@ -689,7 +694,7 @@ private:
     void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers();
 
-    void takeSnapshot();
+    void takeSnapshot(SnapshotType);
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList();
 #endif

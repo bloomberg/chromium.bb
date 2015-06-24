@@ -43,6 +43,7 @@
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMemoryAllocatorDump.h"
+#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Assertions.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/LeakAnnotations.h"
@@ -568,6 +569,15 @@ bool NormalPageHeap::pagesToBeSweptContains(Address address)
     return false;
 }
 #endif
+
+void NormalPageHeap::takeFreelistSnapshot(const String& dumpName)
+{
+    if (m_freeList.takeSnapshot(dumpName) && m_firstUnsweptPage) {
+        WebMemoryAllocatorDump* bucketsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/buckets");
+        WebMemoryAllocatorDump* pagesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/pages");
+        BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->AddOwnershipEdge(pagesDump->guid(), bucketsDump->guid());
+    }
+}
 
 #if ENABLE(GC_PROFILING)
 void NormalPageHeap::snapshotFreeList(TracedValue& json)
@@ -1127,6 +1137,26 @@ int FreeList::bucketIndexForSize(size_t size)
     return index;
 }
 
+bool FreeList::takeSnapshot(const String& dumpBaseName)
+{
+    bool didDumpBucketStats = false;
+    for (size_t i = 0; i < blinkPageSizeLog2; ++i) {
+        size_t entryCount = 0;
+        size_t freeSize = 0;
+        for (FreeListEntry* entry = m_freeLists[i]; entry; entry = entry->next()) {
+            ++entryCount;
+            freeSize += entry->size();
+        }
+
+        String dumpName = dumpBaseName + String::format("/buckets/bucket_%lu", static_cast<unsigned long>(1 << i));
+        WebMemoryAllocatorDump* bucketDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
+        bucketDump->AddScalar("freelist_entry_count", "objects", entryCount);
+        bucketDump->AddScalar("free_size", "bytes", freeSize);
+        didDumpBucketStats = true;
+    }
+    return didDumpBucketStats;
+}
+
 #if ENABLE(GC_PROFILING)
 void FreeList::getFreeSizeStats(PerBucketFreeListStats bucketStats[], size_t& totalFreeSize) const
 {
@@ -1460,7 +1490,7 @@ void NormalPage::markOrphaned()
 
 void NormalPage::takeSnapshot(String dumpName, size_t pageIndex)
 {
-    dumpName.append(String::format("/page_%lu", static_cast<unsigned long>(pageIndex)));
+    dumpName.append(String::format("/pages/page_%lu", static_cast<unsigned long>(pageIndex)));
     WebMemoryAllocatorDump* pageDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
 
     HeapObjectHeader* header = nullptr;
@@ -1669,7 +1699,7 @@ void LargeObjectPage::markOrphaned()
 
 void LargeObjectPage::takeSnapshot(String dumpName, size_t pageIndex)
 {
-    dumpName.append(String::format("/page_%lu", static_cast<unsigned long>(pageIndex)));
+    dumpName.append(String::format("/pages/page_%lu", static_cast<unsigned long>(pageIndex)));
     WebMemoryAllocatorDump* pageDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
 
     size_t liveSize = 0;

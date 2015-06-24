@@ -958,10 +958,12 @@ void ThreadState::postGC(GCType gcType)
     } else if (gcType == GCWithoutSweep) {
         setGCState(LazySweepScheduled);
     } else {
-        takeSnapshot();
+        takeSnapshot(SnapshotType::HeapSnapshot);
 
         // This unmarks all marked objects and marks all unmarked objects dead.
         makeConsistentForMutator();
+
+        takeSnapshot(SnapshotType::FreelistSnapshot);
 
         // Force setting NoGCScheduled to circumvent checkThread()
         // in setGCState().
@@ -1374,7 +1376,7 @@ void ThreadState::promptlyFreed(size_t gcInfoIndex)
     m_likelyToBePromptlyFreed[entryIndex] += 3;
 }
 
-void ThreadState::takeSnapshot()
+void ThreadState::takeSnapshot(SnapshotType type)
 {
     ASSERT(isInGC());
 
@@ -1384,7 +1386,16 @@ void ThreadState::takeSnapshot()
         numberOfHeapsReported++;                                                                               \
         String allocatorBaseName;                                                                              \
         allocatorBaseName = String::format("blink_gc/thread_%lu/heaps/" #HeapType, (unsigned long)(m_thread)); \
-        m_heaps[HeapType##HeapIndex]->takeSnapshot(allocatorBaseName);                                         \
+        switch (type) {                                                                                        \
+        case SnapshotType::HeapSnapshot:                                                                       \
+            m_heaps[HeapType##HeapIndex]->takeSnapshot(allocatorBaseName);                                     \
+            break;                                                                                             \
+        case SnapshotType::FreelistSnapshot:                                                                   \
+            m_heaps[HeapType##HeapIndex]->takeFreelistSnapshot(allocatorBaseName);                             \
+            break;                                                                                             \
+        default:                                                                                               \
+            ASSERT_NOT_REACHED();                                                                              \
+        }                                                                                                      \
     }
 
     SNAPSHOT_HEAP(NormalPage1);

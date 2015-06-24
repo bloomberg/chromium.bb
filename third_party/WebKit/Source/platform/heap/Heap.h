@@ -656,6 +656,9 @@ public:
     // All FreeListEntries in the given bucket, n, have size >= 2^n.
     static int bucketIndexForSize(size_t);
 
+    // Returns true if the freelist snapshot is captured.
+    bool takeSnapshot(const String& dumpBaseName);
+
 #if ENABLE(GC_PROFILING)
     struct PerBucketFreeListStats {
         size_t entryCount;
@@ -693,6 +696,7 @@ public:
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     BasePage* findPageFromAddress(Address);
 #endif
+    virtual void takeFreelistSnapshot(const String& dumpBaseName) { };
 #if ENABLE(GC_PROFILING)
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
     virtual void snapshotFreeList(TracedValue&) { };
@@ -752,6 +756,7 @@ public:
     virtual bool isConsistentForGC() override;
     bool pagesToBeSweptContains(Address);
 #endif
+    void takeFreelistSnapshot(const String& dumpBaseName) override;
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList(TracedValue&) override;
 #endif
