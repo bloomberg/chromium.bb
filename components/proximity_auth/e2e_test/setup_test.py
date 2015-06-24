@@ -14,6 +14,7 @@ Usage:
                        --password PASSWORD
                        [--app_path APP_PATH]
                        [--ssh_port SSH_PORT]
+                       [--cryptauth_staging_url STAGING_URL]
   If |--app_path| is provided, then a copy of the Smart Lock app on the local
   machine will be used instead of the app on the ChromeOS device.
 """
@@ -60,6 +61,7 @@ def ParseArgs():
   parser.add_argument('--password', required=True)
   parser.add_argument('--ssh_port', type=int)
   parser.add_argument('--app_path', type=directory)
+  parser.add_argument('--cryptauth_staging_url', type=str)
   args = parser.parse_args()
   return args
 
@@ -143,6 +145,10 @@ def RunSetupTest(args):
     logger.info('Opening Smart Lock settings...')
     settings = chromeos.GetSmartLockSettings()
     assert(not settings.is_smart_lock_enabled)
+
+    if args.cryptauth_staging_url is not None:
+      chromeos.SetCryptAuthStaging(args.cryptauth_staging_url)
+
     logger.info('Starting Smart Lock setup flow...')
     app = settings.StartSetupAndReturnApp()
 

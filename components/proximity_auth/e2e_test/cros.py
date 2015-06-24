@@ -24,7 +24,6 @@ from telemetry.core.platform import cros_interface
 
 logger = logging.getLogger('proximity_auth.%s' % __name__)
 
-
 class AccountPickerScreen(object):
   """ Wrapper for the ChromeOS account picker screen.
 
@@ -347,7 +346,7 @@ class ChromeOS(object):
       password: The password of the account to test.
       ssh_port: The ssh port to connect to.
     """
-    self._remote_address = remote_address;
+    self._remote_address = remote_address
     self._username = username
     self._password = password
     self._ssh_port = ssh_port
@@ -522,6 +521,20 @@ class ChromeOS(object):
             'document.getElementById("pairing-button") != null'), 10)
       return SmartLockApp(app_page, self)
     return None
+
+  def SetCryptAuthStaging(self, cryptauth_staging_url):
+    logger.info('Setting CryptAuth to Staging')
+    try:
+      self._background_page.ExecuteJavaScript(
+              'var key = app.CryptAuthClient.GOOGLE_API_URL_OVERRIDE_;'
+              'var __complete = false;'
+              'chrome.storage.local.set({key: "%s"}, function() {'
+              '    __complete = true;'
+              '});' % cryptauth_staging_url)
+      util.WaitFor(lambda: self._background_page.EvaluateJavaScript(
+              '__complete == true'), 10)
+    except exceptions.TimeoutException:
+      logger.error('Failed to override CryptAuth to staging url.')
 
   def RunBtmon(self):
     """ Runs the btmon command.
