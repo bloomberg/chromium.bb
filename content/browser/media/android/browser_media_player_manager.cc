@@ -630,6 +630,7 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
       (*it)->DeleteOnCorrectThread();
       players_.weak_erase(it);
       audio_monitor_->RemovePlayer(render_frame_host_, player_id);
+      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
       break;
     }
   }
