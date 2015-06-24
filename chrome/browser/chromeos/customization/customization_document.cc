@@ -64,6 +64,7 @@ const char kDefaultWallpaperAttr[] = "default_wallpaper";
 const char kDefaultAppsAttr[] = "default_apps";
 const char kLocalizedContent[] = "localized_content";
 const char kDefaultAppsFolderName[] = "default_apps_folder_name";
+const char kIdAttr[] = "id";
 
 const char kAcceptedManifestVersion[] = "1.0";
 
@@ -662,27 +663,12 @@ bool ServicesCustomizationDocument::GetDefaultWallpaperUrl(
   return true;
 }
 
-bool ServicesCustomizationDocument::GetDefaultApps(
-    std::vector<std::string>* ids) const {
-  ids->clear();
+scoped_ptr<base::DictionaryValue>
+ServicesCustomizationDocument::GetDefaultApps() const {
   if (!IsReady())
-    return false;
+    return scoped_ptr<base::DictionaryValue>();
 
-  base::ListValue* apps_list = NULL;
-  if (!root_->GetList(kDefaultAppsAttr, &apps_list))
-    return false;
-
-  for (size_t i = 0; i < apps_list->GetSize(); ++i) {
-    std::string app_id;
-    if (apps_list->GetString(i, &app_id)) {
-      ids->push_back(app_id);
-    } else {
-      LOG(ERROR) << "Wrong format of default application list";
-      return false;
-    }
-  }
-
-  return true;
+  return GetDefaultAppsInProviderFormat(*root_);
 }
 
 std::string ServicesCustomizationDocument::GetOemAppsFolderName(
@@ -701,16 +687,29 @@ ServicesCustomizationDocument::GetDefaultAppsInProviderFormat(
   if (root.GetList(kDefaultAppsAttr, &apps_list)) {
     for (size_t i = 0; i < apps_list->GetSize(); ++i) {
       std::string app_id;
+      const base::DictionaryValue* app_entry = nullptr;
+      scoped_ptr<base::DictionaryValue> entry;
       if (apps_list->GetString(i, &app_id)) {
-        base::DictionaryValue* entry = new base::DictionaryValue;
-        entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                         extension_urls::GetWebstoreUpdateUrl().spec());
-        prefs->Set(app_id, entry);
+        entry.reset(new base::DictionaryValue());
+      } else if (apps_list->GetDictionary(i, &app_entry)) {
+        if (!app_entry->GetString(kIdAttr, &app_id)) {
+          LOG(ERROR) << "Wrong format of default application list";
+          prefs->Clear();
+          break;
+        }
+        entry = app_entry->CreateDeepCopy();
+        entry->Remove(kIdAttr, nullptr);
       } else {
         LOG(ERROR) << "Wrong format of default application list";
         prefs->Clear();
         break;
       }
+      if (!entry->HasKey(
+              extensions::ExternalProviderImpl::kExternalUpdateUrl)) {
+        entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                         extension_urls::GetWebstoreUpdateUrl().spec());
+      }
+      prefs->Set(app_id, entry.Pass());
     }
   }
 

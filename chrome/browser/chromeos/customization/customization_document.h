@@ -171,7 +171,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   bool GetDefaultWallpaperUrl(GURL* out_url) const;
 
   // Returns list of default apps.
-  bool GetDefaultApps(std::vector<std::string>* ids) const;
+  scoped_ptr<base::DictionaryValue> GetDefaultApps() const;
 
   // Creates an extensions::ExternalLoader that will provide OEM default apps.
   // Cache of OEM default apps stored in profile preferences.

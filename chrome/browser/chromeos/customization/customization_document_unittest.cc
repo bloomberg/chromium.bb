@@ -80,7 +80,10 @@ const char kGoodServicesManifest[] =
     "  \"version\": \"1.0\","
     "  \"default_apps\": [\n"
     "    \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n"
-    "    \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"\n"
+    "    {\n"
+    "      \"id\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n"
+    "      \"do_not_install_for_enterprise\": true\n"
+    "    }\n"
     "  ],\n"
     "  \"localized_content\": {\n"
     "    \"en-US\": {\n"
@@ -314,12 +317,24 @@ TEST_F(ServicesCustomizationDocumentTest, Basic) {
   EXPECT_FALSE(doc->GetDefaultWallpaperUrl(&wallpaper_url));
   EXPECT_EQ("", wallpaper_url.spec());
 
-  std::vector<std::string> default_apps;
-  EXPECT_TRUE(doc->GetDefaultApps(&default_apps));
-  ASSERT_EQ(default_apps.size(), 2u);
+  scoped_ptr<base::DictionaryValue> default_apps(doc->GetDefaultApps());
+  ASSERT_TRUE(default_apps);
+  EXPECT_EQ(default_apps->size(), 2u);
 
-  EXPECT_EQ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", default_apps[0]);
-  EXPECT_EQ("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", default_apps[1]);
+  const base::DictionaryValue* app_entry = nullptr;
+  ASSERT_TRUE(default_apps->GetDictionary("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                                          &app_entry));
+  EXPECT_EQ(app_entry->size(), 1u);
+  EXPECT_TRUE(
+      app_entry->HasKey(extensions::ExternalProviderImpl::kExternalUpdateUrl));
+
+  ASSERT_TRUE(default_apps->GetDictionary("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                                          &app_entry));
+  EXPECT_EQ(app_entry->size(), 2u);
+  EXPECT_TRUE(
+      app_entry->HasKey(extensions::ExternalProviderImpl::kExternalUpdateUrl));
+  EXPECT_TRUE(app_entry->HasKey(
+      extensions::ExternalProviderImpl::kDoNotInstallForEnterprise));
 
   EXPECT_EQ("EN-US OEM Name", doc->GetOemAppsFolderName("en-US"));
   EXPECT_EQ("EN OEM Name", doc->GetOemAppsFolderName("en"));
