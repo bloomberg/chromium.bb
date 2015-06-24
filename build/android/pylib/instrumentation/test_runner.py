@@ -343,6 +343,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     try:
       self.TestSetup(test)
 
+      try:
+        self.device.GoHome()
+      except device_errors.CommandTimeoutError:
+        logging.exception('Failed to focus the launcher.')
+
       time_ms = lambda: int(time.time() * 1000)
       start_ms = time_ms()
       raw_output = self._RunTest(test, timeout)

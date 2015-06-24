@@ -1099,13 +1099,88 @@ class DeviceUtilsBroadcastIntentTest(DeviceUtilsTest):
 
 class DeviceUtilsGoHomeTest(DeviceUtilsTest):
 
-  def testGoHome(self):
-    with self.assertCall(
-        self.call.adb.Shell('am start -W -a android.intent.action.MAIN '
-                            '-c android.intent.category.HOME'),
-        'Starting: Intent { act=android.intent.action.MAIN }\r\n'):
+  def testGoHome_popupsExist(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['am', 'start', '-W', '-a', 'android.intent.action.MAIN',
+            '-c', 'android.intent.category.HOME'], check_return=True),
+         'Starting: Intent { act=android.intent.action.MAIN }\r\n'''),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '66'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '4'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True),
+         ['mCurrentFocus Launcher'])):
       self.device.GoHome()
 
+  def testGoHome_willRetry(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['am', 'start', '-W', '-a', 'android.intent.action.MAIN',
+            '-c', 'android.intent.category.HOME'], check_return=True),
+         'Starting: Intent { act=android.intent.action.MAIN }\r\n'''),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '66'], check_return=True,)),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '4'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '66'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['input', 'keyevent', '4'], check_return=True)),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True),
+         self.TimeoutError())):
+      with self.assertRaises(device_errors.CommandTimeoutError):
+        self.device.GoHome()
+
+  def testGoHome_alreadyFocused(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True),
+        ['mCurrentFocus Launcher']):
+      self.device.GoHome()
+
+  def testGoHome_alreadyFocusedAlternateCase(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True),
+        [' mCurrentFocus .launcher/.']):
+      self.device.GoHome()
+
+  def testGoHome_obtainsFocusAfterGoingHome(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['am', 'start', '-W', '-a', 'android.intent.action.MAIN',
+            '-c', 'android.intent.category.HOME'], check_return=True),
+         'Starting: Intent { act=android.intent.action.MAIN }\r\n'''),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'window', 'windows'], check_return=True,
+            large_output=True),
+         ['mCurrentFocus Launcher'])):
+      self.device.GoHome()
 
 class DeviceUtilsForceStopTest(DeviceUtilsTest):
 

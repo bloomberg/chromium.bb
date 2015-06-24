@@ -26,6 +26,7 @@ import pylib.android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import device_signal
+from pylib.constants import keyevent
 from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_blacklist
@@ -136,6 +137,8 @@ class DeviceUtils(object):
 
   _MAX_ADB_COMMAND_LENGTH = 512
   _MAX_ADB_OUTPUT_LENGTH = 32768
+  _LAUNCHER_FOCUSED_RE = re.compile(
+      '\s*mCurrentFocus.*(Launcher|launcher).*')
   _VALID_SHELL_VARIABLE = re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$')
 
   # Property in /data/local.prop that controls Java assertions.
@@ -820,7 +823,10 @@ class DeviceUtils(object):
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GoHome(self, timeout=None, retries=None):
-    """Return to the home screen.
+    """Return to the home screen and obtain launcher focus.
+
+    This command launches the home screen and attempts to obtain
+    launcher focus until the timeout is reached.
 
     Args:
       timeout: timeout in seconds
@@ -830,10 +836,29 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
+    def is_launcher_focused():
+      output = self.RunShellCommand(['dumpsys', 'window', 'windows'],
+                                    check_return=True, large_output=True)
+      return any(self._LAUNCHER_FOCUSED_RE.match(l) for l in output)
+
+    def dismiss_popups():
+      # There is a dialog present; attempt to get rid of it.
+      # Not all dialogs can be dismissed with back.
+      self.SendKeyEvent(keyevent.KEYCODE_ENTER)
+      self.SendKeyEvent(keyevent.KEYCODE_BACK)
+      return is_launcher_focused()
+
+    # If Home is already focused, return early to avoid unnecessary work.
+    if is_launcher_focused():
+      return
+
     self.StartActivity(
         intent.Intent(action='android.intent.action.MAIN',
                       category='android.intent.category.HOME'),
         blocking=True)
+
+    if not is_launcher_focused():
+      timeout_retry.WaitFor(dismiss_popups, wait_period=1)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def ForceStop(self, package, timeout=None, retries=None):
