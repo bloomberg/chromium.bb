@@ -3471,6 +3471,7 @@ interface Navigator
     getter product
     getter productSub
     getter serviceWorker
+    getter services
     getter storageQuota
     getter userAgent
     getter vendor
@@ -5235,6 +5236,17 @@ interface Selection
     method setBaseAndExtent
     method setPosition
     method toString
+interface ServicePortCollection
+    getter onclose
+    getter onconnect
+    getter onmessage
+    method connect
+    method constructor
+    method match
+    method matchAll
+    setter onclose
+    setter onconnect
+    setter onmessage
 interface ServiceWorker
     getter onerror
     getter onstatechange

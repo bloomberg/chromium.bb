@@ -18,6 +18,7 @@ modules/mediastream/MediaStreamTrack
 modules/mediastream/RTCDTMFSender
 modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
+modules/navigatorconnect/ServicePortCollection
 modules/netinfo/NetworkInformation
 modules/notifications/Notification
 modules/permissions/PermissionStatus

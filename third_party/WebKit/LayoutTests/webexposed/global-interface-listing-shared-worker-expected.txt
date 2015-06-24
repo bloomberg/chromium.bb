@@ -673,6 +673,17 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method json
 [Worker]     method text
+[Worker] interface ServicePortCollection
+[Worker]     getter onclose
+[Worker]     getter onconnect
+[Worker]     getter onmessage
+[Worker]     method connect
+[Worker]     method constructor
+[Worker]     method match
+[Worker]     method matchAll
+[Worker]     setter onclose
+[Worker]     setter onconnect
+[Worker]     setter onmessage
 [Worker] interface ServiceWorkerRegistration
 [Worker]     getter geofencing
 [Worker]     getter onupdatefound
@@ -945,6 +956,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
+[Worker]     getter services
 [Worker]     getter userAgent
 [Worker]     getter webkitPersistentStorage
 [Worker]     getter webkitTemporaryStorage
