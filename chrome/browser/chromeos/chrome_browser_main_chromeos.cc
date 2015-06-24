@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/accessibility/spoken_feedback_event_rewriter.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
@@ -653,6 +654,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   keyboard_event_rewriters_.reset(new EventRewriterController());
   keyboard_event_rewriters_->AddEventRewriter(
       scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
+  keyboard_event_rewriters_->AddEventRewriter(
+      scoped_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter(nullptr)));
   keyboard_event_rewriters_->AddEventRewriter(scoped_ptr<ui::EventRewriter>(
       new EventRewriter(ash::Shell::GetInstance()->sticky_keys_controller())));
   keyboard_event_rewriters_->Init();
