@@ -496,7 +496,6 @@
       'resources/icon_cross.webp',
       'resources/icon_disconnect.webp',
       'resources/icon_fullscreen.webp',
-      'resources/icon_help.webp',
       'resources/icon_host.webp',
       'resources/icon_maximize_restore.webp',
       'resources/icon_minimize.webp',

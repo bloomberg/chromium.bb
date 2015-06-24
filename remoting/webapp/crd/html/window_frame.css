@@ -122,9 +122,11 @@ html.apps-v2 .window-body {
   border-right: none;
 }
 
-/* The Disconnect and options buttons are only displayed when connected. */
-body:not(.connected) .window-disconnect,
-body:not(.connected) .window-options {
+/*
+ * Some UI (the Disconnect button and some menu items) are only displayed when
+ * connected.
+ */
+body:not(.connected) .connected-only {
   display: none;
 }
 

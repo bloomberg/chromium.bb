@@ -1113,9 +1113,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Text shown while a background operation is in progress." name="IDS_WORKING">
         Working…
       </message>
-      <message desc="Menu option to open a new connection." name="IDS_NEW_CONNECTION">
-        New connection
-      </message>
       <message desc="Menu option to toggle the visibility of connection statistics." name="IDS_TOGGLE_STATS">
         Show statistics
       </message>

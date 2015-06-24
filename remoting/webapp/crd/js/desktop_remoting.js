@@ -108,16 +108,8 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
   document.getElementById('access-mode-button').addEventListener(
       'click', this.connectIt2Me_.bind(this), false);
 
-  var homeFeedback = new remoting.MenuButton(
-      document.getElementById('help-feedback-main'));
-  var toolbarFeedback = new remoting.MenuButton(
-      document.getElementById('help-feedback-toolbar'));
   remoting.manageHelpAndFeedback(
       document.getElementById('title-bar'));
-  remoting.manageHelpAndFeedback(
-      document.getElementById('help-feedback-toolbar'));
-  remoting.manageHelpAndFeedback(
-      document.getElementById('help-feedback-main'));
 
   remoting.showOrHideIT2MeUi();
   remoting.showOrHideMe2MeUi();

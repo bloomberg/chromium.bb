@@ -85,11 +85,6 @@ button.menu-button-activator.active {
   opacity: 0.5;
 }
 
-#help-feedback-toolbar {
-  margin-left: 8px;
-  margin-top: 4px;
-}
-
 .menu-button-click-trap {
   position: fixed;
   top: 0;
