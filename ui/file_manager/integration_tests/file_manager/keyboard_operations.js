@@ -5,6 +5,16 @@
 'use strict';
 
 /**
+ * Constants for interacting with the directory tree on the LHS of Files.
+ * When we are not in guest mode, we fill Google Drive with the basic entry set
+ * which causes an extra tree-item to be added.
+ */
+var PHOTOS_FOLDER;
+var PHOTOS_FOLDER_GUEST = '#tree-item-autogen-id-6';
+var PHOTOS_FOLDER_DOWNLOADS = '#tree-item-autogen-id-7';
+var PHOTOS_FOLDER_DRIVE = '#tree-item-autogen-id-8';
+
+/**
  * Waits until a dialog with an OK button is shown and accepts it.
  *
  * @param {string} windowId Target window ID.
@@ -68,8 +78,9 @@ function keyboardCopy(path, callback) {
 /**
  * Tests deleting a file and and waits until the file lists changes.
  * @param {string} path Directory path to be tested.
+ * @param {string} treeItem The Downloads or Drive tree item selector.
  */
-function keyboardDelete(path) {
+function keyboardDelete(path, treeItem) {
   // Returns true if |fileList| contains |filename|.
   var isFilePresent = function(filename, fileList) {
     for (var i = 0; i < fileList.length; i++) {
@@ -92,6 +103,15 @@ function keyboardDelete(path) {
       appId = inAppId;
       fileListBefore = inFileListBefore;
       chrome.test.assertTrue(isFilePresent(filename, fileListBefore));
+      this.next();
+    },
+    function() {
+      expandRoot(appId, treeItem).then(this.next);
+    },
+    function(){
+      remoteCall.waitForElement(appId, '#detail-table').then(this.next);
+    },
+    function(){
       remoteCall.callRemoteTestUtil(
           'deleteFile', appId, [filename], this.next);
     },
@@ -99,6 +119,10 @@ function keyboardDelete(path) {
     function(result) {
       chrome.test.assertTrue(result);
       waitAndAcceptDialog(appId).then(this.next);
+    },
+    function() {
+      // Check that the directory appears in the LHS tree
+      remoteCall.waitForElement(appId, PHOTOS_FOLDER).then(this.next);
     },
     // Wait for a file list change.
     function() {
@@ -126,6 +150,13 @@ function keyboardDelete(path) {
     // Verify the result.
     function(fileList) {
       chrome.test.assertFalse(isFilePresent(directoryName, fileList));
+      this.next();
+    },
+    function() {
+      // Check that the directory is removed from the LHS tree
+      remoteCall.waitForElementLost(appId, PHOTOS_FOLDER).then(this.next);
+    },
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -261,7 +292,11 @@ testcase.keyboardCopyDownloads = function() {
 };
 
 testcase.keyboardDeleteDownloads = function() {
-  keyboardDelete(RootPath.DOWNLOADS);
+  if (chrome.extension.inIncognitoContext)
+    PHOTOS_FOLDER = PHOTOS_FOLDER_GUEST;
+  else
+    PHOTOS_FOLDER = PHOTOS_FOLDER_DOWNLOADS;
+  keyboardDelete(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
 };
 
 testcase.keyboardCopyDrive = function() {
@@ -269,7 +304,8 @@ testcase.keyboardCopyDrive = function() {
 };
 
 testcase.keyboardDeleteDrive = function() {
-  keyboardDelete(RootPath.DRIVE);
+  PHOTOS_FOLDER = PHOTOS_FOLDER_DRIVE;
+  keyboardDelete(RootPath.DRIVE, TREEITEM_DRIVE);
 };
 
 testcase.createNewFolderAndCheckFocus = function() {
