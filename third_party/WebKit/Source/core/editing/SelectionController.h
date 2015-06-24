@@ -74,7 +74,7 @@ private:
     template <typename Strategy>
     void updateSelectionForMouseDragAlgorithm(const HitTestResult&, Node*, const LayoutPoint&, const IntPoint&);
 
-    enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };
+    enum class AppendTrailingWhitespace { ShouldAppend, DontAppend };
     void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
     void selectClosestMisspellingFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
     void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
@@ -85,8 +85,8 @@ private:
     RawPtrWillBeMember<LocalFrame> const m_frame;
     bool m_mouseDownMayStartSelect;
     bool m_mouseDownWasSingleClickInSelection;
-    enum SelectionInitiationState { HaveNotStartedSelection, PlacedCaret, ExtendedSelection };
-    SelectionInitiationState m_selectionInitiationState;
+    enum class SelectionState { HaveNotStartedSelection, PlacedCaret, ExtendedSelection };
+    SelectionState m_selectionState;
 };
 
 } // namespace blink

@@ -55,7 +55,7 @@ SelectionController::SelectionController(LocalFrame& frame)
     : m_frame(&frame)
     , m_mouseDownMayStartSelect(false)
     , m_mouseDownWasSingleClickInSelection(false)
-    , m_selectionInitiationState(HaveNotStartedSelection)
+    , m_selectionState(SelectionState::HaveNotStartedSelection)
 {
 }
 
@@ -117,10 +117,10 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node
         return false;
 
     if (selection.isRange()) {
-        m_selectionInitiationState = ExtendedSelection;
+        m_selectionState = SelectionState::ExtendedSelection;
     } else {
         granularity = CharacterGranularity;
-        m_selectionInitiationState = PlacedCaret;
+        m_selectionState = SelectionState::PlacedCaret;
     }
 
     m_frame->selection().setNonDirectionalSelectionIfNeeded(selection, granularity);
@@ -140,7 +140,7 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
             expandSelectionUsingGranularity(newSelection, WordGranularity);
         }
 
-        if (appendTrailingWhitespace == ShouldAppendTrailingWhitespace && newSelection.isRange())
+        if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
             newSelection.appendTrailingWhitespace();
 
         updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
@@ -165,7 +165,7 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(const HitTes
             }
         }
 
-        if (appendTrailingWhitespace == ShouldAppendTrailingWhitespace && newSelection.isRange())
+        if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
             newSelection.appendTrailingWhitespace();
 
         updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
@@ -176,7 +176,7 @@ void SelectionController::selectClosestWordFromMouseEvent(const MouseEventWithHi
 {
     if (m_mouseDownMayStartSelect) {
         selectClosestWordFromHitTestResult(result.hitTestResult(),
-            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
+            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend);
     }
 }
 
@@ -184,7 +184,7 @@ void SelectionController::selectClosestMisspellingFromMouseEvent(const MouseEven
 {
     if (m_mouseDownMayStartSelect) {
         selectClosestMisspellingFromHitTestResult(result.hitTestResult(),
-            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
+            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend);
     }
 }
 
@@ -219,7 +219,7 @@ bool SelectionController::handleMousePressEventDoubleClick(const MouseEventWithH
         // selectClosestWordFromMouseEvent, but do set
         // m_beganSelectingText to prevent handleMouseReleaseEvent
         // from setting caret selection.
-        m_selectionInitiationState = ExtendedSelection;
+        m_selectionState = SelectionState::ExtendedSelection;
     } else {
         selectClosestWordFromMouseEvent(event);
     }
@@ -353,7 +353,7 @@ void SelectionController::handleMousePressEvent(const MouseEventWithHitTestResul
 
 void SelectionController::handleMouseDraggedEvent(const MouseEventWithHitTestResults& event, const IntPoint& mouseDownPos, const LayoutPoint& dragStartPos, Node* mousePressNode, const IntPoint& lastKnownMousePosition)
 {
-    if (m_selectionInitiationState != ExtendedSelection) {
+    if (m_selectionState != SelectionState::ExtendedSelection) {
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
         HitTestResult result(request, mouseDownPos);
         m_frame->document()->layoutView()->hitTest(result);
@@ -418,12 +418,12 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         }
     }
 
-    if (m_selectionInitiationState == HaveNotStartedSelection && !dispatchSelectStart(target))
+    if (m_selectionState == SelectionState::HaveNotStartedSelection && !dispatchSelectStart(target))
         return;
 
-    if (m_selectionInitiationState != ExtendedSelection) {
+    if (m_selectionState != SelectionState::ExtendedSelection) {
         // Always extend selection here because it's caused by a mouse drag
-        m_selectionInitiationState = ExtendedSelection;
+        m_selectionState = SelectionState::ExtendedSelection;
         newSelection = VisibleSelection(targetPosition);
     }
 
@@ -468,7 +468,7 @@ bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestRes
     // press and it's not a context menu click.  We do this so when clicking
     // on the selection, the selection goes away.  However, if we are
     // editing, place the caret.
-    if (m_mouseDownWasSingleClickInSelection && m_selectionInitiationState != ExtendedSelection
+    if (m_mouseDownWasSingleClickInSelection && m_selectionState != SelectionState::ExtendedSelection
         && dragStartPos == event.event().position()
         && m_frame->selection().isRange()
         && event.event().button() != RightButton) {
@@ -545,7 +545,7 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
             || innerNode->canStartSelection()
 #endif
             )) {
-            selectClosestWordFromHitTestResult(hitTestResult, DontAppendTrailingWhitespace);
+            selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend);
             if (m_frame->selection().isRange())
                 return true;
         }
@@ -587,7 +587,7 @@ void SelectionController::passMousePressEventToSubframe(const MouseEventWithHitT
 
 void SelectionController::initializeSelectionState()
 {
-    m_selectionInitiationState = HaveNotStartedSelection;
+    m_selectionState = SelectionState::HaveNotStartedSelection;
 }
 
 void SelectionController::setMouseDownMayStartSelect(bool mayStartSelect)
