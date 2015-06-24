@@ -510,13 +510,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     else if (m_actualAttributes.alpha && !m_actualAttributes.premultipliedAlpha && premultiplyAlpha)
         unpackPremultiplyAlphaNeeded = GL_TRUE;
 
-    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, unpackUnpremultiplyAlphaNeeded);
-    context->pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, unpackPremultiplyAlphaNeeded);
-    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, flipY);
     context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, internalFormat, destType, flipY, unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);
-    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, GL_FALSE);
-    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, GL_FALSE);
-    context->pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, GL_FALSE);
 
     context->deleteTexture(sourceTexture);
 
