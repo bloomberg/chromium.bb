@@ -63,7 +63,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
                 == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
     }
 
-    static CaptureFormat[] getDeviceSupportedFormats(int id) {
+    static VideoCaptureFormat[] getDeviceSupportedFormats(int id) {
         android.hardware.Camera camera;
         try {
             camera = android.hardware.Camera.open(id);
@@ -76,7 +76,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
             return null;
         }
 
-        ArrayList<CaptureFormat> formatList = new ArrayList<CaptureFormat>();
+        ArrayList<VideoCaptureFormat> formatList = new ArrayList<VideoCaptureFormat>();
         // getSupportedPreview{Formats,FpsRange,PreviewSizes}() returns Lists
         // with at least one element, but when the camera is in bad state, they
         // can return null pointers; in that case we use a 0 entry, so we can
@@ -113,7 +113,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
                     supportedSizes.add(camera.new Size(0, 0));
                 }
                 for (android.hardware.Camera.Size size : supportedSizes) {
-                    formatList.add(new CaptureFormat(size.width,
+                    formatList.add(new VideoCaptureFormat(size.width,
                                                      size.height,
                                                      (fpsRange[1] + 999) / 1000,
                                                      pixelFormat));
@@ -121,7 +121,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
             }
         }
         camera.release();
-        return formatList.toArray(new CaptureFormat[formatList.size()]);
+        return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
     VideoCaptureAndroid(Context context,
@@ -136,7 +136,7 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
             int height,
             int frameRate,
             android.hardware.Camera.Parameters cameraParameters) {
-        mCaptureFormat = new CaptureFormat(
+        mCaptureFormat = new VideoCaptureFormat(
                 width, height, frameRate, BuggyDeviceHack.getImageFormat());
     }
 

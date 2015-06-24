@@ -8,8 +8,6 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
-import java.lang.Runnable;
-
 /**
  * Implementations of various static methods, and also a home for static
  * data structures that are meant to be shared between all webviews.

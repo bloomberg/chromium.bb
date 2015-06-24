@@ -80,16 +80,16 @@ public class VideoCaptureTango extends VideoCaptureCamera {
         return CAM_PARAMS[index].mName;
     }
 
-    static CaptureFormat[] getDeviceSupportedFormats(int id) {
-        ArrayList<CaptureFormat> formatList = new ArrayList<CaptureFormat>();
+    static VideoCaptureFormat[] getDeviceSupportedFormats(int id) {
+        ArrayList<VideoCaptureFormat> formatList = new ArrayList<VideoCaptureFormat>();
         if (id == DEPTH_CAMERA_ID) {
-            formatList.add(new CaptureFormat(320, 180, 5, ImageFormat.YV12));
+            formatList.add(new VideoCaptureFormat(320, 180, 5, ImageFormat.YV12));
         } else if (id == FISHEYE_CAMERA_ID) {
-            formatList.add(new CaptureFormat(640, 480, 30, ImageFormat.YV12));
+            formatList.add(new VideoCaptureFormat(640, 480, 30, ImageFormat.YV12));
         } else if (id == FOURMP_CAMERA_ID) {
-            formatList.add(new CaptureFormat(1280, 720, 20, ImageFormat.YV12));
+            formatList.add(new VideoCaptureFormat(1280, 720, 20, ImageFormat.YV12));
         }
-        return formatList.toArray(new CaptureFormat[formatList.size()]);
+        return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
     VideoCaptureTango(Context context,
@@ -106,7 +106,7 @@ public class VideoCaptureTango extends VideoCaptureCamera {
             int height,
             int frameRate,
             android.hardware.Camera.Parameters cameraParameters) {
-        mCaptureFormat = new CaptureFormat(CAM_PARAMS[mTangoCameraId].mWidth,
+        mCaptureFormat = new VideoCaptureFormat(CAM_PARAMS[mTangoCameraId].mWidth,
                                            CAM_PARAMS[mTangoCameraId].mHeight,
                                            frameRate,
                                            ImageFormat.YV12);

@@ -333,7 +333,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 + ((facing == CameraCharacteristics.LENS_FACING_FRONT) ? "front" : "back");
     }
 
-    static VideoCapture.CaptureFormat[] getDeviceSupportedFormats(Context appContext, int id) {
+    static VideoCaptureFormat[] getDeviceSupportedFormats(Context appContext, int id) {
         final CameraCharacteristics cameraCharacteristics =
                 getCameraCharacteristics(appContext, id);
         if (cameraCharacteristics == null) return null;
@@ -345,8 +345,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final boolean minFrameDurationAvailable = Arrays.asList(capabilities).contains(
                 CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR);
 
-        ArrayList<VideoCapture.CaptureFormat> formatList =
-                new ArrayList<VideoCapture.CaptureFormat>();
+        ArrayList<VideoCaptureFormat> formatList =
+                new ArrayList<VideoCaptureFormat>();
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         final int[] formats = streamMap.getOutputFormats();
@@ -365,13 +365,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     // Hint: perhaps using SCALER_AVAILABLE_PROCESSED_MIN_DURATIONS.
                     minFrameRate = 0.0;
                 }
-                formatList.add(new VideoCapture.CaptureFormat(size.getWidth(),
+                formatList.add(new VideoCaptureFormat(size.getWidth(),
                                                               size.getHeight(),
                                                               (int) minFrameRate,
                                                               0));
             }
         }
-        return formatList.toArray(new VideoCapture.CaptureFormat[formatList.size()]);
+        return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
     }
 
     VideoCaptureCamera2(Context context,
@@ -388,7 +388,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             return false;
         }
         // |mCaptureFormat| is also used to configure the ImageReader.
-        mCaptureFormat = new CaptureFormat(width, height, frameRate, ImageFormat.YUV_420_888);
+        mCaptureFormat = new VideoCaptureFormat(width, height, frameRate, ImageFormat.YUV_420_888);
         int expectedFrameSize = mCaptureFormat.mWidth * mCaptureFormat.mHeight
                 * ImageFormat.getBitsPerPixel(mCaptureFormat.mPixelFormat) / 8;
         mCapturedData = new byte[expectedFrameSize];

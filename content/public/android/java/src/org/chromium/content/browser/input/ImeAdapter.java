@@ -27,8 +27,6 @@ import org.chromium.blink_public.web.WebTextInputFlags;
 import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.picker.InputDialogContainer;
 
-import java.lang.CharSequence;
-
 /**
  * Adapts and plumbs android IME service onto the chrome text input API.
  * ImeAdapter provides an interface in both ways native <-> java:

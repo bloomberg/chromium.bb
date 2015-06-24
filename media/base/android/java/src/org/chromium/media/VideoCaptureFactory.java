@@ -11,9 +11,6 @@ import android.os.Build;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
-// Needed for jni_generator.py to guess correctly the origin of
-// VideoCapture.CaptureFormat.
-import org.chromium.media.VideoCapture;
 
 /**
  * This class implements a factory of Android Video Capture objects for Chrome.
@@ -139,7 +136,7 @@ class VideoCaptureFactory {
     }
 
     @CalledByNative
-    static VideoCapture.CaptureFormat[] getDeviceSupportedFormats(Context appContext, int id) {
+    static VideoCaptureFormat[] getDeviceSupportedFormats(Context appContext, int id) {
         if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(appContext, id)) {
             return VideoCaptureCamera2.getDeviceSupportedFormats(appContext, id);
         }
@@ -150,22 +147,22 @@ class VideoCaptureFactory {
     }
 
     @CalledByNative
-    static int getCaptureFormatWidth(VideoCapture.CaptureFormat format) {
+    static int getCaptureFormatWidth(VideoCaptureFormat format) {
         return format.getWidth();
     }
 
     @CalledByNative
-    static int getCaptureFormatHeight(VideoCapture.CaptureFormat format) {
+    static int getCaptureFormatHeight(VideoCaptureFormat format) {
         return format.getHeight();
     }
 
     @CalledByNative
-    static int getCaptureFormatFramerate(VideoCapture.CaptureFormat format) {
+    static int getCaptureFormatFramerate(VideoCaptureFormat format) {
         return format.getFramerate();
     }
 
     @CalledByNative
-    static int getCaptureFormatPixelFormat(VideoCapture.CaptureFormat format) {
+    static int getCaptureFormatPixelFormat(VideoCaptureFormat format) {
         return format.getPixelFormat();
     }
 }

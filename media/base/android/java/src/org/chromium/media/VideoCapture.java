@@ -20,37 +20,6 @@ import org.chromium.base.JNINamespace;
 @JNINamespace("media")
 public abstract class VideoCapture {
 
-    protected static class CaptureFormat {
-        int mWidth;
-        int mHeight;
-        final int mFramerate;
-        final int mPixelFormat;
-
-        public CaptureFormat(
-                int width, int height, int framerate, int pixelformat) {
-            mWidth = width;
-            mHeight = height;
-            mFramerate = framerate;
-            mPixelFormat = pixelformat;
-        }
-
-        public int getWidth() {
-            return mWidth;
-        }
-
-        public int getHeight() {
-            return mHeight;
-        }
-
-        public int getFramerate() {
-            return mFramerate;
-        }
-
-        public int getPixelFormat() {
-            return mPixelFormat;
-        }
-    }
-
     // The angle (0, 90, 180, 270) that the image needs to be rotated to show in
     // the display's native orientation.
     protected int mCameraNativeOrientation;
@@ -58,7 +27,7 @@ public abstract class VideoCapture {
     // individual implementations.
     protected boolean mInvertDeviceOrientationReadings;
 
-    protected CaptureFormat mCaptureFormat = null;
+    protected VideoCaptureFormat mCaptureFormat = null;
     protected final Context mContext;
     protected final int mId;
     // Native callback context variable.
