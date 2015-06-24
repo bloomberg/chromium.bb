@@ -95,6 +95,7 @@ class FreePagePool;
 class NormalPageHeap;
 class OrphanedPagePool;
 class PageMemory;
+class WebProcessMemoryDump;
 
 #if ENABLE(GC_PROFILING)
 class TracedValue;
@@ -401,6 +402,8 @@ public:
     // the stack.
     virtual void checkAndMarkPointer(Visitor*, Address) = 0;
     virtual void markOrphaned();
+
+    virtual void takeSnapshot(String dumpBaseName, size_t pageIndex) = 0;
 #if ENABLE(GC_PROFILING)
     virtual const GCInfo* findGCInfo(Address) = 0;
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*) = 0;
@@ -481,6 +484,8 @@ public:
 #endif
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
+
+    void takeSnapshot(String dumpBaseName, size_t pageIndex) override;
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
@@ -545,6 +550,7 @@ public:
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
 
+    void takeSnapshot(String dumpBaseName, size_t pageIndex) override;
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
