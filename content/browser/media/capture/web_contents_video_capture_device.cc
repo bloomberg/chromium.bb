@@ -201,7 +201,9 @@ void RenderVideoFrame(const SkBitmap& input,
 // also executes copying of the backing store on the UI BrowserThread.
 class WebContentsCaptureMachine : public media::VideoCaptureMachine {
  public:
-  WebContentsCaptureMachine(int render_process_id, int main_render_frame_id);
+  WebContentsCaptureMachine(int render_process_id,
+                            int main_render_frame_id,
+                            bool enable_auto_throttling);
   ~WebContentsCaptureMachine() override;
 
   // VideoCaptureMachine overrides.
@@ -475,12 +477,21 @@ void VideoFrameDeliveryLog::ChronicleFrameDelivery(base::TimeTicks frame_time) {
   }
 }
 
-WebContentsCaptureMachine::WebContentsCaptureMachine(int render_process_id,
-                                                     int main_render_frame_id)
+WebContentsCaptureMachine::WebContentsCaptureMachine(
+    int render_process_id,
+    int main_render_frame_id,
+    bool enable_auto_throttling)
     : initial_render_process_id_(render_process_id),
       initial_main_render_frame_id_(main_render_frame_id),
       tracker_(new WebContentsTracker(true)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // TODO(miu): Use |enable_auto_throttling| to enable/disable the automatic
+  // video resolution changes based on resource utilization.
+  // http://crbug.com/156767.
+  DVLOG(1) << "Created WebContentsCaptureMachine for "
+           << render_process_id << ':' << main_render_frame_id
+           << (enable_auto_throttling ? " with auto-throttling enabled" : "");
+}
 
 WebContentsCaptureMachine::~WebContentsCaptureMachine() {}
 
@@ -747,10 +758,14 @@ void WebContentsCaptureMachine::UpdateCaptureSize() {
 }  // namespace
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
-    int render_process_id, int main_render_frame_id)
+    int render_process_id,
+    int main_render_frame_id,
+    bool enable_auto_throttling)
     : core_(new media::ScreenCaptureDeviceCore(
           scoped_ptr<media::VideoCaptureMachine>(new WebContentsCaptureMachine(
-              render_process_id, main_render_frame_id)))) {}
+              render_process_id,
+              main_render_frame_id,
+              enable_auto_throttling)))) {}
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
   DVLOG(2) << "WebContentsVideoCaptureDevice@" << this << " destroying.";
@@ -768,7 +783,9 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
   }
 
   return new WebContentsVideoCaptureDevice(
-      render_process_id, main_render_frame_id);
+      render_process_id,
+      main_render_frame_id,
+      WebContentsCaptureUtil::IsAutoThrottlingOptionSet(device_id));
 }
 
 void WebContentsVideoCaptureDevice::AllocateAndStart(

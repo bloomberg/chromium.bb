@@ -21,6 +21,10 @@ class CONTENT_EXPORT WebContentsCaptureUtil {
   static bool ExtractTabCaptureTarget(const std::string& device_id,
                                       int* render_process_id,
                                       int* main_render_frame_id);
+
+  // Parses the media stream request |device_id| and returns true if both 1) the
+  // format is valid, and 2) the throttling option is set to auto.
+  static bool IsAutoThrottlingOptionSet(const std::string& device_id);
 };
 
 }  // namespace content

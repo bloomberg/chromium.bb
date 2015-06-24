@@ -48,6 +48,10 @@ const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId";
 const char kMediaStreamSourceTab[] = "tab";
 
+// Tab Capture-specific video constraint to enable automatic resolution/rate
+// throttling mode in the capture pipeline.
+const char kEnableAutoThrottlingKey[] = "enableAutoThrottling";
+
 }  // namespace
 
 // Whitelisted extensions that do not check for a browser action grant because
@@ -115,9 +119,25 @@ bool TabCaptureCaptureFunction::RunSync() {
 
     constraints.push_back(params->options.audio_constraints.get());
   }
+
+  bool enable_auto_throttling = false;
   if (has_video) {
-    if (!params->options.video_constraints.get())
+    if (params->options.video_constraints.get()) {
+      // Check for the Tab Capture-specific video constraint for enabling
+      // automatic resolution/rate throttling mode in the capture pipeline.  See
+      // implementation comments for content::WebContentsVideoCaptureDevice.
+      base::DictionaryValue& props =
+          params->options.video_constraints->mandatory.additional_properties;
+      if (!props.GetBooleanWithoutPathExpansion(
+              kEnableAutoThrottlingKey, &enable_auto_throttling)) {
+        enable_auto_throttling = false;
+      }
+      // Remove the key from the properties to avoid an "unrecognized
+      // constraint" error in the renderer.
+      props.RemoveWithoutPathExpansion(kEnableAutoThrottlingKey, nullptr);
+    } else {
       params->options.video_constraints.reset(new MediaStreamConstraint);
+    }
 
     constraints.push_back(params->options.video_constraints.get());
   }
@@ -127,9 +147,10 @@ bool TabCaptureCaptureFunction::RunSync() {
   // TODO(miu): We should instead use a "randomly generated device ID" scheme,
   // like that employed by the desktop capture API.  http://crbug.com/163100
   const std::string device_id = base::StringPrintf(
-      "web-contents-media-stream://%i:%i",
+      "web-contents-media-stream://%i:%i%s",
       main_frame->GetProcess()->GetID(),
-      main_frame->GetRoutingID());
+      main_frame->GetRoutingID(),
+      enable_auto_throttling ? "?throttling=auto" : "");
 
   // Append chrome specific tab constraints.
   for (std::vector<MediaStreamConstraint*>::iterator it = constraints.begin();

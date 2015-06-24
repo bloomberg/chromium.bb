@@ -40,7 +40,9 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
 
  private:
   WebContentsVideoCaptureDevice(
-      int render_process_id, int main_render_frame_id);
+      int render_process_id,
+      int main_render_frame_id,
+      bool enable_auto_throttling);
 
   const scoped_ptr<media::ScreenCaptureDeviceCore> core_;
 
