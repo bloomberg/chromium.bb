@@ -87,14 +87,16 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     return false;
   }
 
-  void SetUpOnMainThread() override {
+  void Attach() {
     agent_host_ = DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
     agent_host_->AttachClient(this);
   }
 
   void TearDownOnMainThread() override {
-    agent_host_->DetachClient();
-    agent_host_ = NULL;
+    if (agent_host_) {
+      agent_host_->DetachClient();
+      agent_host_ = nullptr;
+    }
   }
 
   scoped_ptr<base::DictionaryValue> result_;
@@ -148,6 +150,7 @@ class SyntheticKeyEventTest : public DevToolsProtocolTest {
 
 IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKeyIdentifier) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
   ASSERT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
       "function handleKeyEvent(event) {"
@@ -201,6 +204,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 #endif
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, MAYBE_CaptureScreenshot) {
   shell()->LoadURL(GURL("about:blank"));
+  Attach();
   EXPECT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
       "document.body.style.background = '#123456'"));
@@ -218,39 +222,12 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, MAYBE_CaptureScreenshot) {
   EXPECT_TRUE(std::abs(0x56-(int)SkColorGetB(color)) <= 1);
 }
 
-class SyntheticGestureTest : public DevToolsProtocolTest {
-#if !defined(OS_ANDROID)
- protected:
-  void SetUpOnMainThread() override {
-    DevToolsProtocolTest::SetUpOnMainThread();
-
-    scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-    params->SetInteger("width", 384);
-    params->SetInteger("height", 640);
-    params->SetDouble("deviceScaleFactor", 2.0);
-    params->SetBoolean("mobile", true);
-    params->SetBoolean("fitWindow", false);
-    params->SetBoolean("textAutosizing", true);
-    SendCommand("Page.setDeviceMetricsOverride", params.Pass());
-
-    params.reset(new base::DictionaryValue());
-    params->SetBoolean("enabled", true);
-    params->SetString("configuration", "mobile");
-    SendCommand("Page.setTouchEmulationEnabled", params.Pass());
-  }
-#endif
-};
-
 #if defined(OS_ANDROID)
-// crbug.com/469947
-#define MAYBE_SynthesizePinchGesture DISABLED_SynthesizePinchGesture
-#else
-// crbug.com/460128
-#define MAYBE_SynthesizePinchGesture DISABLED_SynthesizePinchGesture
-#endif
-IN_PROC_BROWSER_TEST_F(SyntheticGestureTest, MAYBE_SynthesizePinchGesture) {
+// Disabled, see http://crbug.com/469947.
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizePinchGesture) {
   GURL test_url = GetTestUrl("devtools", "synthetic_gesture_tests.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
 
   int old_width;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -281,15 +258,10 @@ IN_PROC_BROWSER_TEST_F(SyntheticGestureTest, MAYBE_SynthesizePinchGesture) {
   ASSERT_DOUBLE_EQ(2.0, static_cast<double>(old_height) / new_height);
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_SynthesizeScrollGesture SynthesizeScrollGesture
-#else
-// crbug.com/460128
-#define MAYBE_SynthesizeScrollGesture DISABLED_SynthesizeScrollGesture
-#endif
-IN_PROC_BROWSER_TEST_F(SyntheticGestureTest, MAYBE_SynthesizeScrollGesture) {
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SynthesizeScrollGesture) {
   GURL test_url = GetTestUrl("devtools", "synthetic_gesture_tests.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
 
   int scroll_top;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -310,15 +282,10 @@ IN_PROC_BROWSER_TEST_F(SyntheticGestureTest, MAYBE_SynthesizeScrollGesture) {
   ASSERT_EQ(100, scroll_top);
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_SynthesizeTapGesture SynthesizeTapGesture
-#else
-// crbug.com/460128
-#define MAYBE_SynthesizeTapGesture DISABLED_SynthesizeTapGesture
-#endif
-IN_PROC_BROWSER_TEST_F(SyntheticGestureTest, MAYBE_SynthesizeTapGesture) {
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SynthesizeTapGesture) {
   GURL test_url = GetTestUrl("devtools", "synthetic_gesture_tests.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
 
   int scroll_top;
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -341,11 +308,13 @@ IN_PROC_BROWSER_TEST_F(SyntheticGestureTest, MAYBE_SynthesizeTapGesture) {
       "domAutomationController.send(document.body.scrollTop)", &scroll_top));
   ASSERT_GT(scroll_top, 0);
 }
+#endif  // defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
   ASSERT_TRUE(test_server()->Start());
   GURL test_url = test_server()->GetURL("files/devtools/navigation.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  Attach();
   SendCommand("Page.enable", nullptr, false);
 
   scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
