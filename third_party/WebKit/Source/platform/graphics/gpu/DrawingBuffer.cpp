@@ -299,7 +299,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
             m_context->discardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
         }
     } else {
-        m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, GL_RGBA, GL_UNSIGNED_BYTE);
+        m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, GL_RGBA, GL_UNSIGNED_BYTE, GL_FALSE, GL_FALSE, GL_FALSE);
     }
 
     restoreFramebufferBindings();
@@ -503,20 +503,20 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     context->waitSyncPoint(mailbox.syncPoint);
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
 
-    bool unpackPremultiplyAlphaNeeded = false;
-    bool unpackUnpremultiplyAlphaNeeded = false;
+    GLboolean unpackPremultiplyAlphaNeeded = GL_FALSE;
+    GLboolean unpackUnpremultiplyAlphaNeeded = GL_FALSE;
     if (m_actualAttributes.alpha && m_actualAttributes.premultipliedAlpha && !premultiplyAlpha)
-        unpackUnpremultiplyAlphaNeeded = true;
+        unpackUnpremultiplyAlphaNeeded = GL_TRUE;
     else if (m_actualAttributes.alpha && !m_actualAttributes.premultipliedAlpha && premultiplyAlpha)
-        unpackPremultiplyAlphaNeeded = true;
+        unpackPremultiplyAlphaNeeded = GL_TRUE;
 
     context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, unpackUnpremultiplyAlphaNeeded);
     context->pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, unpackPremultiplyAlphaNeeded);
     context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, flipY);
-    context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, internalFormat, destType);
-    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, false);
-    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
-    context->pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, false);
+    context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, internalFormat, destType, flipY, unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);
+    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, GL_FALSE);
+    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, GL_FALSE);
+    context->pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, GL_FALSE);
 
     context->deleteTexture(sourceTexture);
 

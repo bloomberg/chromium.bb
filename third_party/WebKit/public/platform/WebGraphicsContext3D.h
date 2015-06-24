@@ -397,10 +397,12 @@ public:
 
     // GL_CHROMIUM_copy_texture
     virtual void copyTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
-        WGC3Duint destId, WGC3Denum internalFormat, WGC3Denum destType) { }
+        WGC3Duint destId, WGC3Denum internalFormat, WGC3Denum destType,
+        WGC3Dboolean unpackFlipY, WGC3Dboolean unpackPremultiplyAlpha, WGC3Dboolean unpackUnmultiplyAlpha) { }
     virtual void copySubTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
         WGC3Duint destId, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint x,
-        WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
+        WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height,
+        WGC3Dboolean unpackFlipY, WGC3Dboolean unpackPremultiplyAlpha, WGC3Dboolean unpackUnmultiplyAlpha) { }
 
     // GL_CHROMIUM_shallow_flush
     virtual void shallowFlushCHROMIUM() { }
