@@ -42,7 +42,12 @@ struct IntToStringT {
   template <typename INT2, typename UINT2>
   struct ToUnsignedT<INT2, UINT2, true> {
     static UINT2 ToUnsigned(INT2 value) {
-      return static_cast<UINT2>(value < 0 ? -value : value);
+      if (value >= 0) {
+        return value;
+      } else {
+        // Avoid integer overflow when negating INT_MIN.
+        return static_cast<UINT2>(-(value + 1)) + 1;
+      }
     }
   };
 
