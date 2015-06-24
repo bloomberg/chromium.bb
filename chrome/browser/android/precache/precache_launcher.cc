@@ -13,13 +13,11 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/precache/precache_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/precache/content/precache_manager.h"
-#include "components/precache/content/precache_manager_factory.h"
 #include "jni/PrecacheLauncher_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -48,12 +46,6 @@ PrecacheManager* GetPrecacheManager(Profile* profile) {
   return precache_manager;
 }
 
-bool IsSyncTabsEnabled(Profile* profile) {
-  ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile);
-  return sync->CanSyncStart() &&
-         sync->GetPreferredDataTypes().Has(syncer::PROXY_TABS);
-}
-
 }  // namespace
 
 PrecacheLauncher::PrecacheLauncher(JNIEnv* env, jobject obj)
@@ -68,12 +60,13 @@ void PrecacheLauncher::Destroy(JNIEnv* env, jobject obj) {
 void PrecacheLauncher::Start(JNIEnv* env, jobject obj) {
   // TODO(bengr): Add integration tests for the whole feature.
   Profile* profile = GetProfile();
-  PrecacheManager* precache_manager = GetPrecacheManager(profile);
 
+  PrecacheManager* precache_manager = GetPrecacheManager(profile);
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
 
-  if (hs == nullptr || !IsSyncTabsEnabled(profile)) {
+  if (precache_manager == nullptr || hs == nullptr ||
+      !precache_manager->IsPrecachingAllowed()) {
     Java_PrecacheLauncher_onPrecacheCompletedCallback(
         env, weak_java_precache_launcher_.get(env).obj());
     return;

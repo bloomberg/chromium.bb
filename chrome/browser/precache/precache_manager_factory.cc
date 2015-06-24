@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/precache/content/precache_manager_factory.h"
+#include "chrome/browser/precache/precache_manager_factory.h"
 
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/precache/content/precache_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -24,13 +25,19 @@ PrecacheManagerFactory* PrecacheManagerFactory::GetInstance() {
 
 PrecacheManagerFactory::PrecacheManagerFactory()
     : BrowserContextKeyedServiceFactory(
-          "PrecacheManager", BrowserContextDependencyManager::GetInstance()) {}
+          "PrecacheManager",
+          BrowserContextDependencyManager::GetInstance()) {
+}
 
-PrecacheManagerFactory::~PrecacheManagerFactory() {}
+PrecacheManagerFactory::~PrecacheManagerFactory() {
+}
 
 KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
-  return new PrecacheManager(browser_context);
+  return new PrecacheManager(
+      browser_context,
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+          browser_context));
 }
 
 }  // namespace precache

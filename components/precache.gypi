@@ -21,8 +21,6 @@
         # Note: sources list duplicated in GN build.
         'precache/content/precache_manager.cc',
         'precache/content/precache_manager.h',
-        'precache/content/precache_manager_factory.cc',
-        'precache/content/precache_manager_factory.h',
       ],
     },
     {

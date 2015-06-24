@@ -54,8 +54,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/precache/precache_manager_factory.h"
 #include "components/precache/content/precache_manager.h"
-#include "components/precache/content/precache_manager_factory.h"
 #endif
 
 #if defined(OS_CHROMEOS)

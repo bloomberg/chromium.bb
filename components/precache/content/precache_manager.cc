@@ -15,11 +15,10 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
-#include "components/user_prefs/user_prefs.h"
+#include "components/sync_driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,8 +41,11 @@ int NumTopHosts() {
   return kNumTopHosts;
 }
 
-PrecacheManager::PrecacheManager(content::BrowserContext* browser_context)
+PrecacheManager::PrecacheManager(
+    content::BrowserContext* browser_context,
+    const sync_driver::SyncService* const sync_service)
     : browser_context_(browser_context),
+      sync_service_(sync_service),
       precache_database_(new PrecacheDatabase()),
       is_precaching_(false) {
   base::FilePath db_path(browser_context_->GetPath().Append(
@@ -66,9 +68,9 @@ bool PrecacheManager::IsPrecachingEnabled() {
 }
 
 bool PrecacheManager::IsPrecachingAllowed() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
-      data_reduction_proxy::prefs::kDataReductionProxyEnabled);
+  return sync_service_ &&
+         sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS) &&
+         !sync_service_->GetEncryptedDataTypes().Has(syncer::SESSIONS);
 }
 
 void PrecacheManager::StartPrecaching(

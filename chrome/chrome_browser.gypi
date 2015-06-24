@@ -646,6 +646,8 @@
       'browser/platform_util_internal.h',
       'browser/platform_util_mac.mm',
       'browser/platform_util_win.cc',
+      'browser/precache/precache_manager_factory.cc',
+      'browser/precache/precache_manager_factory.h',
       'browser/pref_service_flags_storage.cc',
       'browser/pref_service_flags_storage.h',
       'browser/prefetch/prefetch.cc',

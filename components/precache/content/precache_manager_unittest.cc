@@ -124,9 +124,10 @@ class TestPrecacheCompletionCallback {
 class PrecacheManagerTest : public testing::Test {
  public:
   PrecacheManagerTest()
-      : precache_manager_(&browser_context_),
-        factory_(NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                                  base::Unretained(&url_callback_))) {}
+      : precache_manager_(&browser_context_, nullptr /* sync_service */),
+        factory_(nullptr,
+                 base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
+                            base::Unretained(&url_callback_))) {}
 
  protected:
   void SetUp() override {

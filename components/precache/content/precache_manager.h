@@ -32,6 +32,10 @@ namespace history {
 class HistoryService;
 }
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace precache {
 
 class PrecacheDatabase;
@@ -52,7 +56,8 @@ class PrecacheManager : public KeyedService,
  public:
   typedef base::Closure PrecacheCompletionCallback;
 
-  explicit PrecacheManager(content::BrowserContext* browser_context);
+  PrecacheManager(content::BrowserContext* browser_context,
+                  const sync_driver::SyncService* const sync_service);
   ~PrecacheManager() override;
 
   // Returns true if precaching is enabled as part of a field trial or by the
@@ -93,7 +98,11 @@ class PrecacheManager : public KeyedService,
   void OnHostsReceived(const history::TopHostsList& host_counts);
 
   // The browser context that owns this PrecacheManager.
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
+
+  // The sync service corresponding to the browser context. Used to determine
+  // whether precache can run. May be null.
+  const sync_driver::SyncService* const sync_service_;
 
   // The PrecacheFetcher used to precache resources. Should only be used on the
   // UI thread.
@@ -105,7 +114,7 @@ class PrecacheManager : public KeyedService,
 
   // The PrecacheDatabase for tracking precache metrics. Should only be used on
   // the DB thread.
-  scoped_refptr<PrecacheDatabase> precache_database_;
+  const scoped_refptr<PrecacheDatabase> precache_database_;
 
   // Flag indicating whether or not precaching is currently in progress.
   bool is_precaching_;

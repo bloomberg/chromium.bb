@@ -6,8 +6,6 @@ static_library("content") {
   sources = [
     "precache_manager.cc",
     "precache_manager.h",
-    "precache_manager_factory.cc",
-    "precache_manager_factory.h",
   ]
 
   configs += [ "//components/precache/core:precache_config" ]
