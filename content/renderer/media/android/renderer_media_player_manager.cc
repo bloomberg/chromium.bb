@@ -243,10 +243,6 @@ void RendererMediaPlayerManager::EnterFullscreen(int player_id) {
   Send(new MediaPlayerHostMsg_EnterFullscreen(routing_id(), player_id));
 }
 
-void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
-  Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
-}
-
 void RendererMediaPlayerManager::SetCdm(int player_id, int cdm_id) {
   if (cdm_id == media::CdmContext::kInvalidCdmId) {
     NOTREACHED();

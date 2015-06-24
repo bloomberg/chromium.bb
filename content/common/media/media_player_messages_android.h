@@ -246,9 +246,6 @@ IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetPoster,
 // Requests the player to enter fullscreen.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen, int /* player_id */)
 
-// Requests the player to exit fullscreen.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen, int /* player_id */)
-
 // Play the media on a remote device, if possible.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlayback,
                     int /* demuxer_client_id */)

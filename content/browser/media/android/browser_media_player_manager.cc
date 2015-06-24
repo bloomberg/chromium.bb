@@ -522,15 +522,6 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   video_view_.reset();
 }
 
-void BrowserMediaPlayerManager::OnExitFullscreen(int player_id) {
-  if (fullscreen_player_id_ == player_id) {
-    MediaPlayerAndroid* player = GetPlayer(player_id);
-    if (player)
-      player->SetVideoSurface(gfx::ScopedJavaSurface());
-    video_view_->OnExitFullscreen();
-  }
-}
-
 void BrowserMediaPlayerManager::OnInitialize(
     const MediaPlayerHostMsg_Initialize_Params& media_player_params) {
   DCHECK(media_player_params.type != MEDIA_PLAYER_TYPE_MEDIA_SOURCE ||

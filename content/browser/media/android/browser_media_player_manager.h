@@ -118,7 +118,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Message handlers.
   virtual void OnEnterFullscreen(int player_id);
-  virtual void OnExitFullscreen(int player_id);
   virtual void OnInitialize(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params);
   virtual void OnStart(int player_id);

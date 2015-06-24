@@ -76,9 +76,6 @@ bool MediaWebContentsObserver::OnMediaPlayerMessageReceived(
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_EnterFullscreen,
                         GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnEnterFullscreen)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_ExitFullscreen,
-                        GetMediaPlayerManager(render_frame_host),
-                        BrowserMediaPlayerManager::OnExitFullscreen)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Initialize,
                         GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnInitialize)
