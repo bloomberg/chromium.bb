@@ -863,6 +863,22 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociationsOptimistic(
           context->IncrementSyncItemsDeleted(num);
           continue;
         }
+      } else {
+        // Existing sync node isn't associated. This is unexpected during
+        // optimistic association unless there the previous association failed
+        // to
+        // persist extern IDs (that might be the case because persisting
+        // external
+        // IDs is delayed).
+        // Report this error only once per session.
+        static bool g_unmatched_unassociated_node_reported = false;
+        if (!g_unmatched_unassociated_node_reported) {
+          g_unmatched_unassociated_node_reported = true;
+          unrecoverable_error_handler_->CreateAndUploadError(
+              FROM_HERE,
+              "Unassociated sync node detected during optimistic association",
+              model_type());
+        }
       }
 
       syncer::SyncError error;
