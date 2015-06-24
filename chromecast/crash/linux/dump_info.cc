@@ -125,7 +125,7 @@ bool DumpInfo::ParseEntry(const std::string& entry) {
 }
 
 bool DumpInfo::SetDumpTimeFromString(const std::string& timestr) {
-  struct tm tm;
+  struct tm tm = {0};
   char* text = strptime(timestr.c_str(), kDumpTimeFormat, &tm);
   dump_time_ = mktime(&tm);
   if (!text || dump_time_ < 0) {

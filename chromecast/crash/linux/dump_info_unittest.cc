@@ -26,7 +26,7 @@ TEST(DumpInfoTest, BadTimeStringIsNotValid) {
 
 TEST(DumpInfoTest, AllRequiredFieldsIsValid) {
   DumpInfo info("name|2001-11-12 18:31:01|dump_string|123456789|logfile.log");
-  struct tm tm = {};
+  struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
   tm.tm_min = 31;
@@ -50,11 +50,8 @@ TEST(DumpInfoTest, EmptyProcessNameIsValid) {
 }
 
 TEST(DumpInfoTest, SomeRequiredFieldsEmptyIsValid) {
-  // TODO(slan): This test is failing non-deterministically (time result is
-  // occasionally off by an hour - has something to do with DST). It is a
-  // concurrency issue with mktime. Investigate.
   DumpInfo info("name|2001-11-12 18:31:01|||");
-  struct tm tm = {};
+  struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
   tm.tm_min = 31;
@@ -76,7 +73,7 @@ TEST(DumpInfoTest, AllOptionalFieldsIsValid) {
   DumpInfo info(
       "name|2001-11-12 18:31:01|dump_string|123456789|logfile.log|"
       "suffix|previous_app|current_app|last_app|RELEASE|BUILD_NUMBER");
-  struct tm tm = {};
+  struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
   tm.tm_min = 31;
@@ -103,7 +100,7 @@ TEST(DumpInfoTest, SomeOptionalFieldsIsValid) {
   DumpInfo info(
       "name|2001-11-12 18:31:01|dump_string|123456789|logfile.log|"
       "suffix|previous_app");
-  struct tm tm = {};
+  struct tm tm = {0};
   tm.tm_isdst = 0;
   tm.tm_sec = 1;
   tm.tm_min = 31;
