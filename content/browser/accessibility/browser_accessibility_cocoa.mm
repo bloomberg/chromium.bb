@@ -1383,9 +1383,9 @@ bool InitializeAccessibilityTreeSearch(
       return [NSNumber numberWithInt:static_cast<int>(line_breaks.size())];
     }
     if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
-      std::string value = browserAccessibility_->GetStringAttribute(
+      base::string16 value = browserAccessibility_->GetString16Attribute(
           ui::AX_ATTR_VALUE);
-      return base::SysUTF8ToNSString(value.substr(selStart, selLength));
+      return base::SysUTF16ToNSString(value.substr(selStart, selLength));
     }
     if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
       return [NSValue valueWithRange:NSMakeRange(selStart, selLength)];
@@ -1411,9 +1411,9 @@ bool InitializeAccessibilityTreeSearch(
   if ([attribute isEqualToString:
       NSAccessibilityStringForRangeParameterizedAttribute]) {
     NSRange range = [(NSValue*)parameter rangeValue];
-    std::string value = browserAccessibility_->GetStringAttribute(
+    base::string16 value = browserAccessibility_->GetString16Attribute(
         ui::AX_ATTR_VALUE);
-    return base::SysUTF8ToNSString(value.substr(range.location, range.length));
+    return base::SysUTF16ToNSString(value.substr(range.location, range.length));
   }
 
   if ([attribute isEqualToString:
