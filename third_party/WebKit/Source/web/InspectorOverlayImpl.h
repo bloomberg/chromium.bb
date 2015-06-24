@@ -127,7 +127,7 @@ private:
     int m_suspendCount;
     bool m_updating;
     RawPtrWillBeMember<InspectorOverlay::Listener> m_listener;
-    OwnPtr<LayoutEditor> m_layoutEditor;
+    OwnPtrWillBeMember<LayoutEditor> m_layoutEditor;
 };
 
 } // namespace blink

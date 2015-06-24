@@ -150,6 +150,7 @@ DEFINE_TRACE(InspectorOverlayImpl)
     visitor->trace(m_overlayPage);
     visitor->trace(m_overlayHost);
     visitor->trace(m_listener);
+    visitor->trace(m_layoutEditor);
     InspectorOverlay::trace(visitor);
 }
 

@@ -5,6 +5,7 @@
 #ifndef LayoutEditor_h
 #define LayoutEditor_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -13,18 +14,23 @@ namespace blink {
 class JSONObject;
 class Node;
 
-class LayoutEditor final {
+class LayoutEditor final : public NoBaseWillBeGarbageCollected<LayoutEditor> {
 public:
-    static PassOwnPtr<LayoutEditor> create(Node* node)
+    static PassOwnPtrWillBeRawPtr<LayoutEditor> create(Node* node)
     {
-        return adoptPtr(new LayoutEditor(node));
+        return adoptPtrWillBeNoop(new LayoutEditor(node));
     }
     PassRefPtr<JSONObject> buildJSONInfo() const;
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_node);
+    }
 
 private:
     explicit LayoutEditor(Node*);
 
-    RefPtr<Node> m_node;
+    RefPtrWillBeMember<Node> m_node;
 };
 
 } // namespace blink
