@@ -369,6 +369,15 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
     m_client->didDownloadData(dataLength);
 }
 
+void DocumentThreadableLoader::didReceiveResourceTiming(Resource* resource, const ResourceTimingInfo& info)
+{
+    ASSERT(m_client);
+    ASSERT_UNUSED(resource, resource == this->resource());
+    ASSERT(m_async);
+
+    m_client->didReceiveResourceTiming(info);
+}
+
 void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(resource, resource == this->resource());

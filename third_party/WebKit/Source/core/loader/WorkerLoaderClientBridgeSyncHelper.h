@@ -31,7 +31,7 @@
 #ifndef WorkerLoaderClientBridgeSyncHelper_h
 #define WorkerLoaderClientBridgeSyncHelper_h
 
-#include "core/loader/ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoaderClientWrapper.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -48,7 +48,7 @@ namespace blink {
 // data so that they can be run on the worker thread later (by run()).
 class WorkerLoaderClientBridgeSyncHelper : public ThreadableLoaderClient {
 public:
-    static PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> create(ThreadableLoaderClient&, PassOwnPtr<WebWaitableEvent>);
+    static PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> create(ThreadableLoaderClientWrapper*, PassOwnPtr<WebWaitableEvent>);
     virtual ~WorkerLoaderClientBridgeSyncHelper();
 
     // Called on the worker context thread.
@@ -64,12 +64,13 @@ public:
     virtual void didFail(const ResourceError&) override;
     virtual void didFailAccessControlCheck(const ResourceError&) override;
     virtual void didFailRedirectCheck() override;
+    virtual void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
 private:
-    WorkerLoaderClientBridgeSyncHelper(ThreadableLoaderClient&, PassOwnPtr<WebWaitableEvent>);
+    WorkerLoaderClientBridgeSyncHelper(ThreadableLoaderClientWrapper*, PassOwnPtr<WebWaitableEvent>);
 
     bool m_done;
-    ThreadableLoaderClient& m_client;
+    RefPtr<ThreadableLoaderClientWrapper> m_client;
     OwnPtr<WebWaitableEvent> m_event;
     Vector<Vector<char>*> m_receivedData;
     Vector<OwnPtr<Closure>> m_clientTasks;

@@ -57,6 +57,7 @@ public:
     virtual void didFail(const ResourceError&) override;
     virtual void didFailAccessControlCheck(const ResourceError&) override;
     virtual void didFailRedirectCheck() override;
+    virtual void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
 private:
     WorkerLoaderClientBridge(PassRefPtr<ThreadableLoaderClientWrapper>, PassRefPtr<WorkerLoaderProxy>);

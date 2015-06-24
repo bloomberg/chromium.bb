@@ -14,5 +14,4 @@ include_rules = [
     "!core/layout/LayoutObject.h",
     "!core/svg/graphics/SVGImage.h",
     "!core/svg/graphics/SVGImageForContainer.h",
-    "!core/timing/ResourceTimingInfo.h",
 ]

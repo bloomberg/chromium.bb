@@ -2038,7 +2038,6 @@
             'timing/PerformanceTiming.h',
             'timing/PerformanceUserTiming.cpp',
             'timing/PerformanceUserTiming.h',
-            'timing/ResourceTimingInfo.h',
             'timing/SharedWorkerPerformance.cpp',
             'timing/WorkerGlobalScopePerformance.cpp',
             'timing/WorkerGlobalScopePerformance.h',

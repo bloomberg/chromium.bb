@@ -38,7 +38,7 @@
 #include "core/timing/PerformanceRenderTiming.h"
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
-#include "core/timing/ResourceTimingInfo.h"
+#include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 

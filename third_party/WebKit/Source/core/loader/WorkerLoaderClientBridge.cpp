@@ -37,6 +37,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/network/ResourceTimingInfo.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include <limits>
@@ -155,6 +156,18 @@ static void workerGlobalScopeDidFailRedirectCheck(PassRefPtr<ThreadableLoaderCli
 void WorkerLoaderClientBridge::didFailRedirectCheck()
 {
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidFailRedirectCheck, m_workerClientWrapper));
+}
+
+static void workerGlobalScopeReportResourceTiming(PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper, PassOwnPtr<CrossThreadResourceTimingInfoData> timingData, ExecutionContext* context)
+{
+    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    OwnPtr<ResourceTimingInfo> info(ResourceTimingInfo::adopt(timingData));
+    workerClientWrapper->didReceiveResourceTiming(*info);
+}
+
+void WorkerLoaderClientBridge::didReceiveResourceTiming(const ResourceTimingInfo& info)
+{
+    m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeReportResourceTiming, m_workerClientWrapper, info));
 }
 
 WorkerLoaderClientBridge::WorkerLoaderClientBridge(PassRefPtr<ThreadableLoaderClientWrapper> clientWrapper, PassRefPtr<WorkerLoaderProxy> loaderProxy)

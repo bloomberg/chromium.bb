@@ -202,6 +202,13 @@ void RawResource::didDownloadData(int dataLength)
         c->dataDownloaded(this, dataLength);
 }
 
+void RawResource::reportResourceTimingToClients(const ResourceTimingInfo& info)
+{
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
+        c->didReceiveResourceTiming(this, info);
+}
+
 void RawResource::setDefersLoading(bool defers)
 {
     if (m_loader)

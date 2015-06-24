@@ -28,4 +28,22 @@ promise_test(function(test) {
       });
   }, 'User Timing');
 
+promise_test(function(test) {
+    return fetch('../../resources/dummy.txt')
+      .then(function(resp) {
+          return resp.text();
+        })
+      .then(function(t) {
+          var expectedResources = ['/resources/testharness.js', '/resources/dummy.txt'];
+          assert_equals(performance.getEntriesByType('resource').length, expectedResources.length);
+          for (var i = 0; i < expectedResources.length; i++) {
+              var entry = performance.getEntriesByType('resource')[i];
+              assert_true(entry.name.endsWith(expectedResources[i]));
+              assert_equals(entry.workerStart, 0);
+              assert_greater_than(entry.startTime, 0);
+              assert_greater_than(entry.responseEnd, entry.startTime);
+          }
+        });
+  }, 'Resource Timing');
+
 done();

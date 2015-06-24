@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/timing/PerformanceResourceTiming.h"
 
-#include "core/timing/ResourceTimingInfo.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/network/ResourceTimingInfo.h"
 
 namespace blink {
 

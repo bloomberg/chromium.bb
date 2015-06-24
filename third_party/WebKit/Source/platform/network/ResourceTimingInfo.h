@@ -31,18 +31,25 @@
 #ifndef ResourceTimingInfo_h
 #define ResourceTimingInfo_h
 
+#include "platform/CrossThreadCopier.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
 
-class ResourceTimingInfo {
+struct CrossThreadResourceTimingInfoData;
+
+class PLATFORM_EXPORT ResourceTimingInfo {
 public:
     static PassOwnPtr<ResourceTimingInfo> create(const AtomicString& type, const double time, bool isMainResource)
     {
         return adoptPtr(new ResourceTimingInfo(type, time, isMainResource));
     }
+    static PassOwnPtr<ResourceTimingInfo> adopt(PassOwnPtr<CrossThreadResourceTimingInfoData>);
+
+    // Gets a copy of the data suitable for passing to another thread.
+    PassOwnPtr<CrossThreadResourceTimingInfoData> copyData() const;
 
     double initialTime() const { return m_initialTime; }
     bool isMainResource() const { return m_isMainResource; }
@@ -88,6 +95,27 @@ private:
     ResourceResponse m_finalResponse;
     Vector<ResourceResponse> m_redirectChain;
     bool m_isMainResource;
+};
+
+struct CrossThreadResourceTimingInfoData {
+    WTF_MAKE_NONCOPYABLE(CrossThreadResourceTimingInfoData);
+    WTF_MAKE_FAST_ALLOCATED(CrossThreadResourceTimingInfoData);
+public:
+    CrossThreadResourceTimingInfoData() {}
+
+    String m_type;
+    String m_originalTimingAllowOrigin;
+    double m_initialTime;
+    double m_loadFinishTime;
+    OwnPtr<CrossThreadResourceRequestData> m_initialRequest;
+    OwnPtr<CrossThreadResourceResponseData> m_finalResponse;
+    Vector<OwnPtr<CrossThreadResourceResponseData>> m_redirectChain;
+    bool m_isMainResource;
+};
+
+template<> struct CrossThreadCopierBase<false, false, false, ResourceTimingInfo> {
+    typedef PassOwnPtr<CrossThreadResourceTimingInfoData> Type;
+    static Type copy(const ResourceTimingInfo& info) { return info.copyData(); }
 };
 
 } // namespace blink

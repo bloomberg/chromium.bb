@@ -80,6 +80,7 @@ private:
     void setSerializedCachedMetadata(const char*, size_t) override;
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
     void didDownloadData(int) override;
+    void reportResourceTimingToClients(const ResourceTimingInfo&) override;
 };
 
 #if ENABLE(SECURITY_ASSERT)
@@ -108,6 +109,7 @@ public:
     virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }
     virtual void updateRequest(Resource*, const ResourceRequest&) { }
     virtual void dataDownloaded(Resource*, int) { }
+    virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) { }
 };
 
 }

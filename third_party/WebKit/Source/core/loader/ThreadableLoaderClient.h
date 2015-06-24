@@ -42,6 +42,7 @@ namespace blink {
 
     class ResourceError;
     class ResourceResponse;
+    class ResourceTimingInfo;
 
     class CORE_EXPORT ThreadableLoaderClient {
         WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient);
@@ -56,6 +57,7 @@ namespace blink {
         virtual void didFail(const ResourceError&) { }
         virtual void didFailAccessControlCheck(const ResourceError& error) { didFail(error); }
         virtual void didFailRedirectCheck() { }
+        virtual void didReceiveResourceTiming(const ResourceTimingInfo&) { }
 
         virtual bool isDocumentThreadableLoaderClient() { return false; }
 

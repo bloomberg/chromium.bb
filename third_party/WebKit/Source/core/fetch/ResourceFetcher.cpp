@@ -35,13 +35,13 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/UniqueIdentifier.h"
-#include "core/timing/ResourceTimingInfo.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/ArchiveResourceCollection.h"
+#include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -468,8 +468,6 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& re
 
 void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource)
 {
-    if (resource->options().requestInitiatorContext != DocumentContext)
-        return;
     if (resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal)
         return;
 
@@ -812,7 +810,9 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
             OwnPtr<ResourceTimingInfo> info = it->value.release();
             m_resourceTimingInfoMap.remove(it);
             populateResourceTiming(info.get(), resource, false);
-            context().addResourceTiming(*info);
+            if (resource->options().requestInitiatorContext == DocumentContext)
+                context().addResourceTiming(*info);
+            resource->reportResourceTimingToClients(*info);
         }
     }
     context().dispatchDidFinishLoading(resource->identifier(), finishTime, encodedDataLength);

@@ -82,6 +82,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         void dataReceived(Resource*, const char* data, unsigned dataLength) override;
         void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
         void dataDownloaded(Resource*, int) override;
+        void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
 
         void cancelWithError(const ResourceError&);
 

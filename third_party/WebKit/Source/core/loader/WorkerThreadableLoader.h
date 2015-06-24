@@ -50,7 +50,7 @@ namespace blink {
     class WorkerLoaderProxy;
     struct CrossThreadResourceRequestData;
 
-    class WorkerThreadableLoader final : public ThreadableLoader {
+    class WorkerThreadableLoader final : public ThreadableLoader, private ThreadableLoaderClientWrapper::ResourceTimingClient {
         WTF_MAKE_FAST_ALLOCATED(WorkerThreadableLoader);
     public:
         static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
@@ -113,6 +113,7 @@ namespace blink {
             virtual void didFail(const ResourceError&) override;
             virtual void didFailAccessControlCheck(const ResourceError&) override;
             virtual void didFailRedirectCheck() override;
+            virtual void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
             // Only to be used on the main thread.
             RefPtr<ThreadableLoader> m_mainThreadLoader;
@@ -127,6 +128,8 @@ namespace blink {
         };
 
         WorkerThreadableLoader(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+
+        void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
         RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
         RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;

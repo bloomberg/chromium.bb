@@ -777,6 +777,8 @@
       'network/ResourceRequest.h',
       'network/ResourceResponse.cpp',
       'network/ResourceResponse.h',
+      'network/ResourceTimingInfo.cpp',
+      'network/ResourceTimingInfo.h',
       'network/WebSocketHandshakeRequest.cpp',
       'network/WebSocketHandshakeRequest.h',
       'network/WebSocketHandshakeResponse.cpp',

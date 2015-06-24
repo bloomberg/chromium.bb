@@ -47,6 +47,7 @@ class CachedMetadata;
 class ResourceClient;
 class ResourcePtrBase;
 class ResourceFetcher;
+class ResourceTimingInfo;
 class InspectorResource;
 class ResourceLoader;
 class SecurityOrigin;
@@ -195,6 +196,8 @@ public:
     virtual void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
     void setResponse(const ResourceResponse& response) { m_response = response; }
     const ResourceResponse& response() const { return m_response; }
+
+    virtual void reportResourceTimingToClients(const ResourceTimingInfo&) { }
 
     // Sets the serialized metadata retrieved from the platform's cache.
     virtual void setSerializedCachedMetadata(const char*, size_t);
