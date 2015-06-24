@@ -66,7 +66,7 @@ DEFINE_TRACE(SelectionController)
 
 static void setSelectionIfNeeded(FrameSelection& selection, const VisibleSelection& newSelection)
 {
-    if (selection.selection() != newSelection)
+    if (!VisibleSelection::InDOMTree::equalSelections(selection.selection(), newSelection))
         selection.setSelection(newSelection);
 }
 

@@ -42,7 +42,7 @@ TextInsertionBaseCommand::TextInsertionBaseCommand(Document& document)
 
 void TextInsertionBaseCommand::applyTextInsertionCommand(LocalFrame* frame, PassRefPtrWillBeRawPtr<TextInsertionBaseCommand> command, const VisibleSelection& selectionForInsertion, const VisibleSelection& endingSelection)
 {
-    bool changeSelection = selectionForInsertion != endingSelection;
+    bool changeSelection = !VisibleSelection::InDOMTree::equalSelections(selectionForInsertion, endingSelection);
     if (changeSelection) {
         command->setStartingSelection(selectionForInsertion);
         command->setEndingSelection(selectionForInsertion);

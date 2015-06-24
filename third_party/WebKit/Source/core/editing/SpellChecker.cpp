@@ -416,7 +416,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
     // If autocorrected word is non empty, replace the misspelled word by this word.
     if (!autocorrectedString.isEmpty()) {
         VisibleSelection newSelection(misspellingRange.get(), DOWNSTREAM);
-        if (newSelection != frame().selection().selection()) {
+        if (!VisibleSelection::InDOMTree::equalSelections(newSelection, frame().selection().selection())) {
             frame().selection().setSelection(newSelection);
         }
 
@@ -863,7 +863,7 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
 {
     VisiblePosition oldStart(oldSelection.visibleStart());
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
-    if (oldAdjacentWords  != newAdjacentWords) {
+    if (!VisibleSelection::InDOMTree::equalSelections(oldAdjacentWords, newAdjacentWords)) {
         if (isContinuousSpellCheckingEnabled() && isGrammarCheckingEnabled()) {
             VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
             markMisspellingsAndBadGrammar(oldAdjacentWords, true, selectedSentence);

@@ -256,7 +256,7 @@ void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<EditCo
 void CompositeEditCommand::applyCommandToComposite(PassRefPtrWillBeRawPtr<CompositeEditCommand> command, const VisibleSelection& selection)
 {
     command->setParent(this);
-    if (selection != command->endingSelection()) {
+    if (!VisibleSelection::InDOMTree::equalSelections(selection, command->endingSelection())) {
         command->setStartingSelection(selection);
         command->setEndingSelection(selection);
     }

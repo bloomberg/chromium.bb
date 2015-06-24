@@ -246,23 +246,6 @@ private:
     bool m_isDirectional : 1; // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
 };
 
-inline bool operator==(const VisibleSelection& a, const VisibleSelection& b)
-{
-    if (a.affinity() != b.affinity() || a.isDirectional() != b.isDirectional())
-        return false;
-
-    if (a.isNone())
-        return b.isNone();
-
-    return a.start() == b.start() && a.end() == b.end() && a.affinity() == b.affinity()
-        && a.isDirectional() == b.isDirectional() && a.base() == b.base() && a.extent() == b.extent();
-}
-
-inline bool operator!=(const VisibleSelection& a, const VisibleSelection& b)
-{
-    return !(a == b);
-}
-
 } // namespace blink
 
 #ifndef NDEBUG
