@@ -757,46 +757,6 @@ void LocalDOMWindow::blur()
 {
 }
 
-void LocalDOMWindow::close(ExecutionContext* context)
-{
-    if (!frame() || !frame()->isMainFrame())
-        return;
-
-    Page* page = frame()->page();
-    if (!page)
-        return;
-
-    if (context) {
-        ASSERT(isMainThread());
-        Document* activeDocument = toDocument(context);
-        if (!activeDocument)
-            return;
-
-        if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*frame()))
-            return;
-    }
-
-    Settings* settings = frame()->settings();
-    bool allowScriptsToCloseWindows = settings && settings->allowScriptsToCloseWindows();
-
-    if (!page->openedByDOM() && frame()->loader().client()->backForwardLength() > 1 && !allowScriptsToCloseWindows) {
-        frameConsole()->addMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Scripts may close only the windows that were opened by it."));
-        return;
-    }
-
-    if (!frame()->loader().shouldClose())
-        return;
-
-    InspectorInstrumentation::willCloseWindow(context);
-
-    page->chromeClient().closeWindowSoon();
-    // So as to make window.closed return the expected result
-    // after window.close(), separately record the to-be-closed
-    // state of this window. Scripts may access window.closed
-    // before the deferred close operation has gone ahead.
-    m_windowIsClosing = true;
-}
-
 void LocalDOMWindow::print()
 {
     if (!frame())

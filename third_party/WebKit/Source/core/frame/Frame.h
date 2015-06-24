@@ -81,6 +81,7 @@ public:
     virtual void detach(FrameDetachType);
     void detachChildren();
     virtual void disconnectOwnerElement();
+    virtual bool shouldClose() = 0;
 
     FrameClient* client() const;
 

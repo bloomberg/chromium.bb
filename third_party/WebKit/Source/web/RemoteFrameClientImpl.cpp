@@ -110,6 +110,15 @@ void RemoteFrameClientImpl::reload(FrameLoadType loadType, ClientRedirectPolicy 
         m_webFrame->client()->reload(loadType == FrameLoadTypeReloadFromOrigin, clientRedirectPolicy == ClientRedirect);
 }
 
+unsigned RemoteFrameClientImpl::backForwardLength()
+{
+    // TODO(creis,japhet): This method should return the real value for the
+    // session history length. For now, return static value for the initial
+    // navigation and the subsequent one moving the frame out-of-process.
+    // See https://crbug.com/501116.
+    return 2;
+}
+
 // FIXME: Remove this code once we have input routing in the browser
 // process. See http://crbug.com/339659.
 void RemoteFrameClientImpl::forwardInputEvent(Event* event)

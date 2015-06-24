@@ -121,7 +121,6 @@ public:
     DOMSelection* getSelection() override;
     void focus(ExecutionContext*) override;
     void blur() override;
-    void close(ExecutionContext*) override;
     void print() override;
     void stop() override;
     void alert(const String& message = String()) override;

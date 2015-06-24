@@ -332,7 +332,8 @@ void WebRemoteFrameImpl::loadHTMLString(
 
 void WebRemoteFrameImpl::stopLoading()
 {
-    ASSERT_NOT_REACHED();
+    // TODO(dcheng,japhet): Calling this method should stop loads
+    // in all subframes, both remote and local.
 }
 
 WebDataSource* WebRemoteFrameImpl::provisionalDataSource() const

@@ -220,11 +220,6 @@ void RemoteDOMWindow::blur()
     // FIXME: Implement.
 }
 
-void RemoteDOMWindow::close(ExecutionContext* override)
-{
-    // FIXME: Implement.
-}
-
 void RemoteDOMWindow::print()
 {
     ASSERT_NOT_REACHED();

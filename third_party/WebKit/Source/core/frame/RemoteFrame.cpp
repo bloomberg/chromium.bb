@@ -120,6 +120,13 @@ void RemoteFrame::disconnectOwnerElement()
     Frame::disconnectOwnerElement();
 }
 
+bool RemoteFrame::shouldClose()
+{
+    // TODO(nasko): Implement running the beforeunload handler in the actual
+    // LocalFrame running in a different process and getting back a real result.
+    return true;
+}
+
 void RemoteFrame::forwardInputEvent(Event* event)
 {
     remoteFrameClient()->forwardInputEvent(event);

@@ -350,6 +350,13 @@ void LocalFrame::disconnectOwnerElement()
     Frame::disconnectOwnerElement();
 }
 
+bool LocalFrame::shouldClose()
+{
+    // TODO(dcheng): This should be fixed to dispatch beforeunload events to
+    // both local and remote frames.
+    return m_loader.shouldClose();
+}
+
 void LocalFrame::willDetachFrameHost()
 {
     LocalFrameLifecycleNotifier::notifyWillDetachFrameHost();

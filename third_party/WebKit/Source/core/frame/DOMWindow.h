@@ -133,7 +133,7 @@ public:
 
     virtual void focus(ExecutionContext*) = 0;
     virtual void blur() = 0;
-    virtual void close(ExecutionContext*) = 0;
+    void close(ExecutionContext*);
     virtual void print() = 0;
     virtual void stop() = 0;
 

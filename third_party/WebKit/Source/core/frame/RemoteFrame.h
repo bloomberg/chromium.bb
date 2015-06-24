@@ -38,6 +38,7 @@ public:
     void printNavigationErrorMessage(const Frame&, const char* reason) override { }
     void disconnectOwnerElement() override;
     bool prepareForCommit() override;
+    bool shouldClose() override;
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.

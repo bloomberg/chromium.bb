@@ -7374,6 +7374,55 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame)
     reset();
 }
 
+class RemoteWindowCloseClient : public FrameTestHelpers::TestWebViewClient {
+public:
+    RemoteWindowCloseClient()
+        : m_closed(false)
+    {
+    }
+
+    void closeWidgetSoon() override
+    {
+        m_closed = true;
+    }
+
+    bool closed() const { return m_closed; }
+
+private:
+    bool m_closed;
+};
+
+TEST_F(WebFrameTest, WindowOpenRemoteClose)
+{
+    FrameTestHelpers::WebViewHelper mainWebView;
+    mainWebView.initialize(true);
+
+    // Create a remote window that will be closed later in the test.
+    RemoteWindowCloseClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient frameClient;
+    WebRemoteFrame* webRemoteFrame = frameClient.frame();
+
+    WebView* view = WebView::create(&viewClient);
+    view->setMainFrame(webRemoteFrame);
+    view->mainFrame()->setOpener(mainWebView.webView()->mainFrame());
+    webRemoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://127.0.0.1"));
+
+    LocalFrame* localFrame = toLocalFrame(toCoreFrame(mainWebView.webView()->mainFrame()));
+    RemoteFrame* remoteFrame = toRemoteFrame(toCoreFrame(frameClient.frame()));
+
+    // Attempt to close the window, which should fail as it isn't opened
+    // by a script.
+    remoteFrame->domWindow()->close(localFrame->document());
+    EXPECT_FALSE(viewClient.closed());
+
+    // Marking it as opened by a script should now allow it to be closed.
+    remoteFrame->page()->setOpenedByDOM();
+    remoteFrame->domWindow()->close(localFrame->document());
+    EXPECT_TRUE(viewClient.closed());
+
+    view->close();
+}
+
 class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit CommitTypeWebFrameClient()

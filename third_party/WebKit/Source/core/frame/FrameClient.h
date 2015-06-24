@@ -34,6 +34,8 @@ public:
     virtual Frame* firstChild() const = 0;
     virtual Frame* lastChild() const = 0;
 
+    virtual unsigned backForwardLength() = 0;
+
     // Returns true if the embedder intercepted the postMessage call
     virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* /*target*/, MessageEvent*, LocalFrame* /*sourceFrame*/) const { return false; }
 
