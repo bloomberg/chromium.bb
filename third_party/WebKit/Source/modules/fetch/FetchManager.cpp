@@ -43,7 +43,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    void didReceiveData(const char*, unsigned) override;
     void didFinishLoading(unsigned long, double) override;
     void didFail(const ResourceError&) override;
     void didFailAccessControlCheck(const ResourceError&) override;
@@ -54,33 +53,6 @@ public:
     void dispose();
 
 private:
-    class Canceller : public BodyStreamBuffer::Canceller {
-    public:
-        explicit Canceller(Loader* loader) : m_loader(loader) { }
-        void cancel() override
-        {
-            if (m_loader)
-                m_loader->cancel();
-        }
-
-#if !ENABLE(OILPAN)
-        // FIXME: This function should go away once Oilpan is shipped.
-        void disconnect() { m_loader = nullptr; }
-#endif
-
-        DEFINE_INLINE_VIRTUAL_TRACE()
-        {
-            visitor->trace(m_loader);
-            BodyStreamBuffer::Canceller::trace(visitor);
-        }
-
-    private:
-        // |m_loader| is a raw ptr in non-oilpan circumstance to avoid
-        // circular reference. It will be cleared when the loader is destructed.
-        RawPtrWillBeMember<Loader> m_loader;
-    };
-
-
     Loader(ExecutionContext*, FetchManager*, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, FetchRequestData*);
 
     void performBasicFetch();
@@ -92,11 +64,7 @@ private:
     RawPtrWillBeMember<FetchManager> m_fetchManager;
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     PersistentWillBeMember<FetchRequestData> m_request;
-    PersistentWillBeMember<BodyStreamBuffer> m_responseBuffer;
     RefPtr<ThreadableLoader> m_loader;
-    // Hold as a member in order to call |disconnect|. This member can be
-    // eliminated once Oilpan is shipped.
-    PersistentWillBeMember<Canceller> m_canceller;
     bool m_failed;
     bool m_finished;
 };
@@ -106,7 +74,6 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_fetchManager(fetchManager)
     , m_resolver(resolver)
     , m_request(request)
-    , m_canceller(new Canceller(this))
     , m_failed(false)
     , m_finished(false)
 {
@@ -115,10 +82,6 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
 FetchManager::Loader::~Loader()
 {
     ASSERT(!m_loader);
-#if !ENABLE(OILPAN)
-    // FIXME: This should go away once Oilpan is shipped.
-    m_canceller->disconnect();
-#endif
 }
 
 DEFINE_TRACE(FetchManager::Loader)
@@ -126,15 +89,12 @@ DEFINE_TRACE(FetchManager::Loader)
     visitor->trace(m_fetchManager);
     visitor->trace(m_resolver);
     visitor->trace(m_request);
-    visitor->trace(m_responseBuffer);
-    visitor->trace(m_canceller);
     ContextLifecycleObserver::trace(visitor);
 }
 
 void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    // FIXME: Use |handle|.
-    ASSERT_UNUSED(handle, !handle);
+    ASSERT(handle);
     // Recompute the tainting if the request was redirected to a different
     // origin.
     if (!SecurityOrigin::create(response.url())->isSameSchemeHostPort(m_request->origin().get())) {
@@ -151,8 +111,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             break;
         }
     }
-    m_responseBuffer = new BodyStreamBuffer(m_canceller);
-    FetchResponseData* responseData = FetchResponseData::createWithBuffer(m_responseBuffer);
+    FetchResponseData* responseData = FetchResponseData::createWithBuffer(BodyStreamBuffer::create(handle, "Failed to fetch"));
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
     for (auto& it : response.httpHeaderFields())
@@ -178,17 +137,9 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
     m_resolver.clear();
 }
 
-void FetchManager::Loader::didReceiveData(const char* data, unsigned size)
-{
-    m_responseBuffer->write(DOMArrayBuffer::create(data, size));
-}
-
 void FetchManager::Loader::didFinishLoading(unsigned long, double)
 {
-    ASSERT(m_responseBuffer);
     ASSERT(!m_failed);
-    m_responseBuffer->close();
-    m_responseBuffer.clear();
     m_finished = true;
     notifyFinished();
 }
@@ -312,10 +263,6 @@ void FetchManager::Loader::cancel()
         m_loader->cancel();
         m_loader.clear();
     }
-    if (m_responseBuffer) {
-        m_responseBuffer->close();
-        m_responseBuffer.clear();
-    }
     if (m_resolver) {
         // Note: In the current implementation this branch is never taken
         // because this function can be called only through the body stream.
@@ -382,6 +329,8 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
         }
     }
 
+    request.setUseStreamOnResponse(true);
+
     // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
     // is none, and `Referer`/|HTTPRequest|'s referrer, serialized and utf-8
     // encoded, otherwise, to HTTPRequest's header list.
@@ -438,10 +387,7 @@ void FetchManager::Loader::failed(const String& message)
     m_failed = true;
     if (!message.isEmpty())
         executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
-    if (m_responseBuffer) {
-        m_responseBuffer->error(DOMException::create(NetworkError, "Failed to fetch"));
-        m_responseBuffer.clear();
-    } else if (m_resolver) {
+    if (m_resolver) {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         ScriptState* state = m_resolver->scriptState();
