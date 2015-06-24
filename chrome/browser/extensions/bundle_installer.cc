@@ -62,20 +62,22 @@ scoped_refptr<Extension> CreateDummyExtension(
   return extension;
 }
 
-// Holds the message IDs for BundleInstaller::GetHeadingTextFor.
-const int kHeadingIds[3][4] = {
-  {
-    0,
-    IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_EXTENSIONS,
-    IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_APPS,
-    IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_EXTENSION_APPS
-  },
-  {
-    0,
-    IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS,
-    IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_APPS,
-    IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSION_APPS
-  }
+const int kHeadingIdsInstallPrompt[] = {
+  IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_EXTENSIONS,
+  IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_APPS,
+  IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_TITLE_EXTENSION_APPS
+};
+
+const int kHeadingIdsDelegatedInstallPrompt[] = {
+  IDS_EXTENSION_BUNDLE_DELEGATED_INSTALL_PROMPT_TITLE_EXTENSIONS,
+  IDS_EXTENSION_BUNDLE_DELEGATED_INSTALL_PROMPT_TITLE_APPS,
+  IDS_EXTENSION_BUNDLE_DELEGATED_INSTALL_PROMPT_TITLE_EXTENSION_APPS
+};
+
+const int kHeadingIdsInstalledBubble[] = {
+  IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS,
+  IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_APPS,
+  IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSION_APPS
 };
 
 }  // namespace
@@ -100,12 +102,14 @@ BundleInstaller::BundleInstaller(Browser* browser,
                                  const std::string& name,
                                  const SkBitmap& icon,
                                  const std::string& authuser,
+                                 const std::string& delegated_username,
                                  const BundleInstaller::ItemList& items)
     : approved_(false),
       browser_(browser),
       name_(name),
       icon_(icon),
       authuser_(authuser),
+      delegated_username_(delegated_username),
       host_desktop_type_(browser->host_desktop_type()),
       profile_(browser->profile()) {
   BrowserList::AddObserver(this);
@@ -200,27 +204,30 @@ base::string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
   }
 
   size_t total = CountItemsWithState(state);
+  if (total == 0)
+    return base::string16();
+
   size_t apps = std::count_if(
       dummy_extensions_.begin(), dummy_extensions_.end(),
       [] (const scoped_refptr<const Extension>& ext) { return ext->is_app(); });
 
   bool has_apps = apps > 0;
   bool has_extensions = apps < total;
-  size_t index = (has_extensions << 0) + (has_apps << 1);
+  size_t index = (has_extensions << 0) + (has_apps << 1) - 1;
 
-  CHECK_LT(static_cast<size_t>(state), arraysize(kHeadingIds));
-  CHECK_LT(index, arraysize(kHeadingIds[state]));
-
-  int msg_id = kHeadingIds[state][index];
-  if (!msg_id)
-    return base::string16();
-
-  // Only the "pending" message (in the confirmation prompt) contains the
-  // bundle name.
-  if (state == Item::STATE_PENDING)
-    return l10n_util::GetStringFUTF16(msg_id, base::UTF8ToUTF16(name_));
-
-  return l10n_util::GetStringUTF16(msg_id);
+  if (state == Item::STATE_PENDING) {
+    if (!delegated_username_.empty()) {
+      return l10n_util::GetStringFUTF16(
+          kHeadingIdsDelegatedInstallPrompt[index], base::UTF8ToUTF16(name_),
+          base::UTF8ToUTF16(delegated_username_));
+    } else {
+      return l10n_util::GetStringFUTF16(kHeadingIdsInstallPrompt[index],
+                                        base::UTF8ToUTF16(name_));
+    }
+  } else {
+    return l10n_util::GetStringFUTF16(kHeadingIdsInstalledBubble[index],
+                                      base::UTF8ToUTF16(name_));
+  }
 }
 
 void BundleInstaller::ParseManifests() {
@@ -277,7 +284,12 @@ void BundleInstaller::ShowPrompt() {
     if (browser)
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     install_ui_.reset(new ExtensionInstallPrompt(web_contents));
-    install_ui_->ConfirmBundleInstall(this, &icon_, permissions.get());
+    if (delegated_username_.empty()) {
+      install_ui_->ConfirmBundleInstall(this, &icon_, permissions.get());
+    } else {
+      install_ui_->ConfirmPermissionsForDelegatedBundleInstall(
+          this, delegated_username_, &icon_, permissions.get());
+    }
   }
 }
 

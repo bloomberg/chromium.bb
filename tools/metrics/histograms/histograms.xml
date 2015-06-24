@@ -54830,6 +54830,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1057" label="HID_GETUSERSELECTEDDEVICES"/>
   <int value="1058"
       label="FILESYSTEMPROVIDERINTERNAL_GETACTIONSREQUESTEDSUCCESS"/>
+  <int value="1059"
+      label="WEBSTOREPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDBUNDLEINSTALL"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -96,7 +96,9 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
                                   int column_set_id) const;
 
   bool is_bundle_install() const {
-    return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
+    return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT ||
+           prompt_->type() ==
+               ExtensionInstallPrompt::DELEGATED_BUNDLE_PERMISSIONS_PROMPT;
   }
 
   bool is_external_install() const {

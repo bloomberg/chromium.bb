@@ -76,6 +76,7 @@ static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_REMOTE_INSTALL_PROMPT_TITLE,
     IDS_EXTENSION_REPAIR_PROMPT_TITLE,
     IDS_EXTENSION_DELEGATED_INSTALL_PROMPT_TITLE,
+    0,  // Heading for delegated bundle installs depends on the bundle contents.
 };
 static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -88,6 +89,7 @@ static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     // file/device access, and is only shown if such permissions exist; see
     // ShouldDisplayRevokeButton().
     ui::DIALOG_BUTTON_CANCEL,
+    ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -105,6 +107,7 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     0,  // Remote installs use different strings for extensions/apps.
     0,  // Repairs use different strings for extensions/apps.
     0,  // Delegated installs use different strings for extensions/apps/themes.
+    IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_CANCEL,
@@ -114,6 +117,7 @@ static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON,
     IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON,
     IDS_CLOSE,
+    IDS_CANCEL,
     IDS_CANCEL,
     IDS_CANCEL,
     IDS_CANCEL,
@@ -132,6 +136,7 @@ static const int
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
         IDS_EXTENSION_PROMPT_CAN_ACCESS,
         IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
+        IDS_EXTENSION_PROMPT_THESE_WILL_HAVE_ACCESS_TO,
 };
 
 // Returns bitmap for the default icon with size equal to the default icon's
@@ -219,6 +224,8 @@ std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
       return "REPAIR_PROMPT";
     case ExtensionInstallPrompt::DELEGATED_PERMISSIONS_PROMPT:
       return "DELEGATED_PERMISSIONS_PROMPT";
+    case ExtensionInstallPrompt::DELEGATED_BUNDLE_PERMISSIONS_PROMPT:
+      return "DELEGATED_BUNDLE_PERMISSIONS_PROMPT";
     case ExtensionInstallPrompt::UNSET_PROMPT_TYPE:
     case ExtensionInstallPrompt::NUM_PROMPT_TYPES:
       break;
@@ -305,7 +312,8 @@ void ExtensionInstallPrompt::Prompt::SetWebstoreData(
 
 base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
   int id = kTitleIds[type_];
-  if (type_ == BUNDLE_INSTALL_PROMPT) {
+  if (type_ == BUNDLE_INSTALL_PROMPT ||
+      type_ == DELEGATED_BUNDLE_PERMISSIONS_PROMPT) {
     return bundle_->GetHeadingTextFor(BundleInstaller::Item::STATE_PENDING);
   }
   if (type_ == DELEGATED_PERMISSIONS_PROMPT) {
@@ -635,6 +643,22 @@ void ExtensionInstallPrompt::ConfirmBundleInstall(
   ShowConfirmation();
 }
 
+void ExtensionInstallPrompt::ConfirmPermissionsForDelegatedBundleInstall(
+    extensions::BundleInstaller* bundle,
+    const std::string& delegated_username,
+    const SkBitmap* icon,
+    const extensions::PermissionSet* permissions) {
+  DCHECK(ui_loop_ == base::MessageLoop::current());
+  bundle_ = bundle;
+  delegated_username_ = delegated_username;
+  custom_permissions_ = permissions;
+  delegate_ = bundle;
+  prompt_ = new Prompt(DELEGATED_BUNDLE_PERMISSIONS_PROMPT);
+
+  SetIcon(icon);
+  ShowConfirmation();
+}
+
 void ExtensionInstallPrompt::ConfirmStandaloneInstall(
     Delegate* delegate,
     const Extension* extension,
@@ -843,7 +867,8 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         extension_->permissions_data()->active_permissions();
     // For delegated installs, all optional permissions are pre-approved by the
     // person who triggers the install, so add them to the list.
-    if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT) {
+    if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT ||
+        prompt_->type() == DELEGATED_BUNDLE_PERMISSIONS_PROMPT) {
       scoped_refptr<const PermissionSet> optional_permissions =
           extensions::PermissionsParser::GetOptionalPermissions(extension_);
       permissions_to_display = PermissionSet::CreateUnion(
@@ -887,10 +912,10 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case REPAIR_PROMPT:
     case DELEGATED_PERMISSIONS_PROMPT: {
       prompt_->set_extension(extension_);
-      prompt_->set_delegated_username(delegated_username_);
       break;
     }
-    case BUNDLE_INSTALL_PROMPT: {
+    case BUNDLE_INSTALL_PROMPT:
+    case DELEGATED_BUNDLE_PERMISSIONS_PROMPT: {
       prompt_->set_bundle(bundle_);
       break;
     }
@@ -898,6 +923,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
       NOTREACHED() << "Unknown message";
       return;
   }
+  prompt_->set_delegated_username(delegated_username_);
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   g_last_prompt_type_for_tests = prompt_->type();
