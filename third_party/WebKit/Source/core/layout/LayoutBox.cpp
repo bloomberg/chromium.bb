@@ -2130,15 +2130,12 @@ bool LayoutBox::autoWidthShouldFitContent() const
 
 void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection, const LayoutBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd, Length marginStartLength, Length marginEndLength) const
 {
+    // First assert that we're not calling this method on box types that don't support margins.
+    ASSERT(!isTableCell());
+    ASSERT(!isTableRow());
+    ASSERT(!isTableSection());
+    ASSERT(!isLayoutTableCol());
     if (flowDirection == BlockDirection || isFloating() || isInline()) {
-        if (isTableCell() && flowDirection == BlockDirection) {
-            // FIXME: Not right if we allow cells to have different directionality than the table. If we do allow this, though,
-            // we may just do it with an extra anonymous block inside the cell.
-            marginStart = 0;
-            marginEnd = 0;
-            return;
-        }
-
         // Margins are calculated with respect to the logical width of
         // the containing block (8.3)
         // Inline blocks/tables and floats don't have their margins increased.

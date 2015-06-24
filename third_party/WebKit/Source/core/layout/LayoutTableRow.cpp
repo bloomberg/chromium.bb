@@ -167,10 +167,8 @@ void LayoutTableRow::layout()
         SubtreeLayoutScope layouter(*cell);
         if (!cell->needsLayout())
             cell->markForPaginationRelayoutIfNeeded(layouter);
-        if (cell->needsLayout()) {
-            cell->computeAndSetBlockDirectionMargins(table());
+        if (cell->needsLayout())
             cell->layout();
-        }
     }
 
     m_overflow.clear();
