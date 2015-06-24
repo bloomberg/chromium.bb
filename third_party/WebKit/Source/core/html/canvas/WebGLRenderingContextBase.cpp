@@ -221,28 +221,31 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
 
 namespace {
 
+    // ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
+    // a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
+    // for reading, during which the bindings could be changed and need to be recovered.
     class ScopedDrawingBufferBinder {
         STACK_ALLOCATED();
     public:
         ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
             : m_drawingBuffer(drawingBuffer)
-            , m_framebufferBinding(framebufferBinding)
+            , m_readFramebufferBinding(framebufferBinding)
         {
             // Commit DrawingBuffer if needed (e.g., for multisampling)
-            if (!m_framebufferBinding && m_drawingBuffer)
+            if (!m_readFramebufferBinding && m_drawingBuffer)
                 m_drawingBuffer->commit();
         }
 
         ~ScopedDrawingBufferBinder()
         {
             // Restore DrawingBuffer if needed
-            if (!m_framebufferBinding && m_drawingBuffer)
-                m_drawingBuffer->bind();
+            if (!m_readFramebufferBinding && m_drawingBuffer)
+                m_drawingBuffer->restoreFramebufferBindings();
         }
 
     private:
         DrawingBuffer* m_drawingBuffer;
-        RawPtrWillBeMember<WebGLFramebuffer> m_framebufferBinding;
+        RawPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
     };
 
     GLint clamp(GLint value, GLint min, GLint max)
@@ -651,7 +654,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
     m_drawingBuffer = buffer.release();
 
-    drawingBuffer()->bind();
+    drawingBuffer()->bind(GL_FRAMEBUFFER);
     setupFlags();
 }
 
@@ -912,8 +915,7 @@ WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposit
     drawingBuffer()->clearFramebuffers(clearMask);
 
     restoreStateAfterClear();
-    if (m_framebufferBinding)
-        webContext()->bindFramebuffer(GL_FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));
+    drawingBuffer()->restoreFramebufferBindings();
     drawingBuffer()->setBufferClearNeeded(false);
 
     return combinedClear ? CombinedClear : JustClear;
@@ -1018,8 +1020,7 @@ void WebGLRenderingContextBase::reshape(int width, int height)
 
     webContext()->bindTexture(GL_TEXTURE_2D, objectOrZero(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
     webContext()->bindRenderbuffer(GL_RENDERBUFFER, objectOrZero(m_renderbufferBinding.get()));
-    if (m_framebufferBinding)
-        webContext()->bindFramebuffer(GL_FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));
+    drawingBuffer()->restoreFramebufferBindings();
 }
 
 int WebGLRenderingContextBase::drawingBufferWidth() const
@@ -1370,7 +1371,9 @@ bool WebGLRenderingContextBase::validateFramebufferTarget(GLenum target)
 
 WebGLFramebuffer* WebGLRenderingContextBase::getFramebufferBinding(GLenum target)
 {
-    return m_framebufferBinding.get();
+    if (target == GL_FRAMEBUFFER)
+        return m_framebufferBinding.get();
+    return nullptr;
 }
 
 GLenum WebGLRenderingContextBase::checkFramebufferStatus(GLenum target)
@@ -1381,10 +1384,11 @@ GLenum WebGLRenderingContextBase::checkFramebufferStatus(GLenum target)
         synthesizeGLError(GL_INVALID_ENUM, "checkFramebufferStatus", "invalid target");
         return 0;
     }
-    if (!getFramebufferBinding(target) || !getFramebufferBinding(target)->object())
+    WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
+    if (!framebufferBinding || !framebufferBinding->object())
         return GL_FRAMEBUFFER_COMPLETE;
     const char* reason = "framebuffer incomplete";
-    GLenum result = m_framebufferBinding->checkStatus(&reason);
+    GLenum result = framebufferBinding->checkStatus(&reason);
     if (result != GL_FRAMEBUFFER_COMPLETE) {
         emitGLWarning("checkFramebufferStatus", reason);
         return result;
@@ -1563,12 +1567,14 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webContext(), &reason)) {
+    GLenum framebufferTarget = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(framebufferTarget);
+    if (readFramebufferBinding && !readFramebufferBinding->onAccess(webContext(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexImage2D", reason);
         return;
     }
     clearIfComposited();
-    ScopedDrawingBufferBinder binder(drawingBuffer(), m_framebufferBinding.get());
+    ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
     // FIXME: if the framebuffer is not complete, none of the below should be executed.
     tex->setLevelInfo(target, level, internalformat, width, height, 1, GL_UNSIGNED_BYTE);
@@ -1606,12 +1612,14 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webContext(), &reason)) {
+    GLenum framebufferTarget = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(framebufferTarget);
+    if (readFramebufferBinding && !readFramebufferBinding->onAccess(webContext(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexSubImage2D", reason);
         return;
     }
     clearIfComposited();
-    ScopedDrawingBufferBinder binder(drawingBuffer(), m_framebufferBinding.get());
+    ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
 }
 
@@ -1731,9 +1739,9 @@ void WebGLRenderingContextBase::deleteFramebuffer(WebGLFramebuffer* framebuffer)
         return;
     if (framebuffer == m_framebufferBinding) {
         m_framebufferBinding = nullptr;
-        drawingBuffer()->setFramebufferBinding(0);
-        // Have to call bindFramebuffer here to bind back to internal fbo.
-        drawingBuffer()->bind();
+        drawingBuffer()->setFramebufferBinding(GL_FRAMEBUFFER, 0);
+        // Have to call drawingBuffer()->bind() here to bind back to internal fbo.
+        drawingBuffer()->bind(GL_FRAMEBUFFER);
     }
 }
 
@@ -1751,7 +1759,9 @@ void WebGLRenderingContextBase::deleteRenderbuffer(WebGLRenderbuffer* renderbuff
     if (renderbuffer == m_renderbufferBinding)
         m_renderbufferBinding = nullptr;
     if (m_framebufferBinding)
-        m_framebufferBinding->removeAttachmentFromBoundFramebuffer(renderbuffer);
+        m_framebufferBinding->removeAttachmentFromBoundFramebuffer(GL_FRAMEBUFFER, renderbuffer);
+    if (getFramebufferBinding(GL_READ_FRAMEBUFFER))
+        getFramebufferBinding(GL_READ_FRAMEBUFFER)->removeAttachmentFromBoundFramebuffer(GL_READ_FRAMEBUFFER, renderbuffer);
 }
 
 void WebGLRenderingContextBase::deleteShader(WebGLShader* shader)
@@ -1788,7 +1798,9 @@ void WebGLRenderingContextBase::deleteTexture(WebGLTexture* texture)
         }
     }
     if (m_framebufferBinding)
-        m_framebufferBinding->removeAttachmentFromBoundFramebuffer(texture);
+        m_framebufferBinding->removeAttachmentFromBoundFramebuffer(GL_FRAMEBUFFER, texture);
+    if (getFramebufferBinding(GL_READ_FRAMEBUFFER))
+        getFramebufferBinding(GL_READ_FRAMEBUFFER)->removeAttachmentFromBoundFramebuffer(GL_READ_FRAMEBUFFER, texture);
 
     // If the deleted was bound to the the current maximum index, trace backwards to find the new max texture index
     if (m_onePlusMaxNonDefaultTextureUnit == static_cast<unsigned long>(maxBoundTextureIndex + 1)) {
@@ -2008,7 +2020,8 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(GLenum target, GLenum at
     // Don't allow the default framebuffer to be mutated; all current
     // implementations use an FBO internally in place of the default
     // FBO.
-    if (!m_framebufferBinding || !m_framebufferBinding->object()) {
+    WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
+    if (!framebufferBinding || !framebufferBinding->object()) {
         synthesizeGLError(GL_INVALID_OPERATION, "framebufferRenderbuffer", "no framebuffer bound");
         return;
     }
@@ -2031,7 +2044,7 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(GLenum target, GLenum at
     default:
         webContext()->framebufferRenderbuffer(target, attachment, renderbuffertarget, bufferObject);
     }
-    m_framebufferBinding->setAttachmentForBoundFramebuffer(attachment, buffer);
+    framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, buffer);
     applyStencilTest();
 }
 
@@ -2053,7 +2066,8 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target, GLenum attac
     // Don't allow the default framebuffer to be mutated; all current
     // implementations use an FBO internally in place of the default
     // FBO.
-    if (!m_framebufferBinding || !m_framebufferBinding->object()) {
+    WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
+    if (!framebufferBinding || !framebufferBinding->object()) {
         synthesizeGLError(GL_INVALID_OPERATION, "framebufferTexture2D", "no framebuffer bound");
         return;
     }
@@ -2072,7 +2086,7 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target, GLenum attac
     default:
         webContext()->framebufferTexture2D(target, attachment, textarget, textureObject, level);
     }
-    m_framebufferBinding->setAttachmentForBoundFramebuffer(attachment, textarget, texture, level);
+    framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level);
     applyStencilTest();
 }
 
@@ -3326,7 +3340,9 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webContext(), &reason)) {
+    GLenum target = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(target);
+    if (readFramebufferBinding && !readFramebufferBinding->onAccess(webContext(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
         return;
     }
@@ -3347,14 +3363,14 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
     void* data = pixels->baseAddress();
 
     {
-        ScopedDrawingBufferBinder binder(drawingBuffer(), m_framebufferBinding.get());
+        ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
         webContext()->readPixels(x, y, width, height, format, type, data);
     }
 
 #if OS(MACOSX)
     // FIXME: remove this section when GL driver bug on Mac is fixed, i.e.,
     // when alpha is off, readPixels should set alpha to 255 instead of 0.
-    if (!m_framebufferBinding && !drawingBuffer()->getActualAttributes().alpha) {
+    if (!readFramebufferBinding && !drawingBuffer()->getActualAttributes().alpha) {
         unsigned char* pixels = reinterpret_cast<unsigned char*>(data);
         for (GLsizei iy = 0; iy < height; ++iy) {
             for (GLsizei ix = 0; ix < width; ++ix) {
@@ -4634,7 +4650,7 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
 
     // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
     drawingBuffer()->setTexture2DBinding(0);
-    drawingBuffer()->setFramebufferBinding(0);
+    drawingBuffer()->setFramebufferBinding(GL_FRAMEBUFFER, 0);
 
     detachAndRemoveAllObjects();
 
@@ -5947,7 +5963,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
 
     m_drawingBuffer = buffer.release();
 
-    drawingBuffer()->bind();
+    drawingBuffer()->bind(GL_FRAMEBUFFER);
     m_lostContextErrors.clear();
     m_contextLostMode = NotLostContext;
     m_autoRecoveryMethod = Manual;
@@ -6118,7 +6134,7 @@ void WebGLRenderingContextBase::setFramebuffer(GLenum target, WebGLFramebuffer* 
         m_framebufferBinding = buffer;
         applyStencilTest();
     }
-    drawingBuffer()->setFramebufferBinding(objectOrZero(m_framebufferBinding.get()));
+    drawingBuffer()->setFramebufferBinding(target, objectOrZero(getFramebufferBinding(target)));
 
     if (!buffer) {
         // Instead of binding fb 0, bind the drawing buffer.

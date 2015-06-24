@@ -107,7 +107,7 @@ public:
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
     static IntSize adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize);
     bool reset(const IntSize&);
-    void bind(GLenum target = GL_FRAMEBUFFER);
+    void bind(GLenum target);
     IntSize size() const { return m_size; }
 
     // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound.
@@ -124,7 +124,23 @@ public:
 
     // The DrawingBuffer needs to track the currently bound framebuffer so it
     // restore the binding when needed.
-    void setFramebufferBinding(Platform3DObject fbo) { m_framebufferBinding = fbo; }
+    void setFramebufferBinding(GLenum target, Platform3DObject fbo)
+    {
+        switch (target) {
+        case GL_FRAMEBUFFER:
+            m_drawFramebufferBinding = fbo;
+            m_readFramebufferBinding = fbo;
+            break;
+        case GL_DRAW_FRAMEBUFFER:
+            m_drawFramebufferBinding = fbo;
+            break;
+        case GL_READ_FRAMEBUFFER:
+            m_readFramebufferBinding = fbo;
+            break;
+        default:
+            ASSERT(0);
+        }
+    }
 
     // Track the currently active texture unit. Texture unit 0 is used as host for a scratch
     // texture.
@@ -166,6 +182,10 @@ public:
     int sampleCount() const { return m_sampleCount; }
     bool explicitResolveOfMultisampleData() const { return m_multisampleMode == ExplicitResolve; };
 
+    // Bind to m_drawFramebufferBinding or m_readFramebufferBinding if it's not 0.
+    // Otherwise, bind to the default FBO.
+    void restoreFramebufferBindings();
+
 protected: // For unittests
     DrawingBuffer(
         PassOwnPtr<WebGraphicsContext3D>,
@@ -187,9 +207,6 @@ private:
     bool resizeFramebuffer(const IntSize&);
     bool resizeMultisampleFramebuffer(const IntSize&);
     void resizeDepthStencil(const IntSize&);
-
-    // Bind to the m_framebufferBinding if it's not 0. Otherwise, bind to the default FBO.
-    void restoreFramebufferBinding();
 
     void clearPlatformLayer();
 
@@ -226,7 +243,8 @@ private:
     PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled;
     Platform3DObject m_texture2DBinding;
-    Platform3DObject m_framebufferBinding;
+    Platform3DObject m_drawFramebufferBinding;
+    Platform3DObject m_readFramebufferBinding;
     GLenum m_activeTextureUnit;
 
     OwnPtr<WebGraphicsContext3D> m_context;

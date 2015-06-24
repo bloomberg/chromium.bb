@@ -1568,6 +1568,31 @@ void WebGL2RenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer
     setFramebuffer(target, buffer);
 }
 
+void WebGL2RenderingContextBase::deleteFramebuffer(WebGLFramebuffer* framebuffer)
+{
+    if (!deleteObject(framebuffer))
+        return;
+    GLenum target = 0;
+    if (framebuffer == m_framebufferBinding) {
+        if (framebuffer == m_readFramebufferBinding) {
+            target = GL_FRAMEBUFFER;
+            m_framebufferBinding = nullptr;
+            m_readFramebufferBinding = nullptr;
+        } else {
+            target = GL_DRAW_FRAMEBUFFER;
+            m_framebufferBinding = nullptr;
+        }
+    } else if (framebuffer == m_readFramebufferBinding) {
+        target = GL_READ_FRAMEBUFFER;
+        m_readFramebufferBinding = nullptr;
+    }
+    if (target) {
+        drawingBuffer()->setFramebufferBinding(target, 0);
+        // Have to call drawingBuffer()->bind() here to bind back to internal fbo.
+        drawingBuffer()->bind(target);
+    }
+}
+
 ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, GLenum pname)
 {
     if (isContextLost())
@@ -2089,6 +2114,21 @@ void WebGL2RenderingContextBase::removeBoundBuffer(WebGLBuffer* buffer)
         m_boundUniformBuffer = nullptr;
 
     WebGLRenderingContextBase::removeBoundBuffer(buffer);
+}
+
+void WebGL2RenderingContextBase::restoreCurrentFramebuffer()
+{
+    bindFramebuffer(GL_DRAW_FRAMEBUFFER, m_framebufferBinding.get());
+    bindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding.get());
+}
+
+GLenum WebGL2RenderingContextBase::boundFramebufferColorFormat()
+{
+    if (m_readFramebufferBinding && m_readFramebufferBinding->object())
+        return m_readFramebufferBinding->colorBufferFormat();
+    if (m_requestedAttributes.alpha())
+        return GL_RGBA;
+    return GL_RGB;
 }
 
 } // namespace blink

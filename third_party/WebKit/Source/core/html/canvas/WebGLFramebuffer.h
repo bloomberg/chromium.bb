@@ -55,8 +55,8 @@ public:
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool valid() const = 0;
         virtual void onDetached(WebGraphicsContext3D*) = 0;
-        virtual void attach(WebGraphicsContext3D*, GLenum attachment) = 0;
-        virtual void unattach(WebGraphicsContext3D*, GLenum attachment) = 0;
+        virtual void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) = 0;
+        virtual void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) = 0;
 
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -70,12 +70,12 @@ public:
 
     Platform3DObject object() const { return m_object; }
 
-    void setAttachmentForBoundFramebuffer(GLenum attachment, GLenum texTarget, WebGLTexture*, GLint level);
-    void setAttachmentForBoundFramebuffer(GLenum attachment, WebGLRenderbuffer*);
+    void setAttachmentForBoundFramebuffer(GLenum target, GLenum attachment, GLenum texTarget, WebGLTexture*, GLint level);
+    void setAttachmentForBoundFramebuffer(GLenum target, GLenum attachment, WebGLRenderbuffer*);
     // If an object is attached to the currently bound framebuffer, remove it.
-    void removeAttachmentFromBoundFramebuffer(WebGLSharedObject*);
+    void removeAttachmentFromBoundFramebuffer(GLenum target, WebGLSharedObject*);
     // If a given attachment point for the currently bound framebuffer is not null, remove the attached object.
-    void removeAttachmentFromBoundFramebuffer(GLenum);
+    void removeAttachmentFromBoundFramebuffer(GLenum target, GLenum attachment);
     WebGLSharedObject* getAttachmentObject(GLenum) const;
 
     GLenum colorBufferFormat() const;
@@ -112,14 +112,14 @@ protected:
     void deleteObjectImpl(WebGraphicsContext3D*) override;
 
 private:
-    WebGLAttachment* getAttachment(GLenum) const;
+    WebGLAttachment* getAttachment(GLenum attachment) const;
     bool isAttachmentComplete(WebGLAttachment* attachedObject, GLenum attachment, const char** reason) const;
 
     // Check if the framebuffer is currently bound.
-    bool isBound() const;
+    bool isBound(GLenum target) const;
 
     // attach 'attachment' at 'attachmentPoint'.
-    void attach(GLenum attachment, GLenum attachmentPoint);
+    void attach(GLenum target, GLenum attachment, GLenum attachmentPoint);
 
     // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
     void drawBuffersIfNecessary(bool force);

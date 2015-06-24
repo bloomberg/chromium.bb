@@ -162,9 +162,11 @@ public:
     /* WebGLRenderingContextBase overrides */
     void initializeNewContext() override;
     void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
+    void deleteFramebuffer(WebGLFramebuffer*) override;
     ScriptValue getParameter(ScriptState*, GLenum pname) override;
     ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;
     ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname) override;
+    void restoreCurrentFramebuffer() override;
 
     EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
@@ -198,6 +200,7 @@ protected:
     WebGLFramebuffer* getFramebufferBinding(GLenum target) override;
     GLint getMaxTextureLevelForTarget(GLenum target) override;
     void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName) override;
+    GLenum boundFramebufferColorFormat() override;
 
     WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target) override;
 

@@ -165,7 +165,7 @@ public:
     void cullFace(GLenum mode);
 
     void deleteBuffer(WebGLBuffer*);
-    void deleteFramebuffer(WebGLFramebuffer*);
+    virtual void deleteFramebuffer(WebGLFramebuffer*);
     void deleteProgram(WebGLProgram*);
     void deleteRenderbuffer(WebGLRenderbuffer*);
     void deleteShader(WebGLShader*);
@@ -776,7 +776,7 @@ protected:
     bool isTexInternalFormatColorBufferCombinationValid(GLenum texInternalFormat, GLenum colorBufferFormat);
 
     // Helper function to get the bound framebuffer's color buffer format.
-    GLenum boundFramebufferColorFormat();
+    virtual GLenum boundFramebufferColorFormat();
 
     // Helper function to verify limits on the length of uniform and attribute locations.
     bool validateLocationLength(const char* functionName, const String&);
@@ -988,7 +988,7 @@ protected:
     void setBackDrawBuffer(GLenum);
     void setFramebuffer(GLenum, WebGLFramebuffer*);
 
-    void restoreCurrentFramebuffer();
+    virtual void restoreCurrentFramebuffer();
     void restoreCurrentTexture2D();
 
     virtual void multisamplingChanged(bool) override;

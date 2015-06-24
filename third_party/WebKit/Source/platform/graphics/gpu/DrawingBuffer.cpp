@@ -135,7 +135,8 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
-    , m_framebufferBinding(0)
+    , m_drawFramebufferBinding(0)
+    , m_readFramebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
     , m_context(context)
     , m_extensionsUtil(extensionsUtil)
@@ -301,7 +302,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId, GL_RGBA, GL_UNSIGNED_BYTE);
     }
 
-    restoreFramebufferBinding();
+    restoreFramebufferBindings();
     m_contentsChanged = false;
 
     m_context->produceTextureDirectCHROMIUM(frontColorBufferMailbox->textureInfo.textureId, GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
@@ -477,7 +478,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     if (m_contentsChanged) {
         if (m_multisampleMode != None) {
             commit();
-            restoreFramebufferBinding();
+            restoreFramebufferBindings();
         }
         m_context->flush();
     }
@@ -817,13 +818,28 @@ void DrawingBuffer::commit()
     m_contentsChangeCommitted = true;
 }
 
-void DrawingBuffer::restoreFramebufferBinding()
+void DrawingBuffer::restoreFramebufferBindings()
 {
-    if (!m_framebufferBinding) {
-        bind();
+    if (m_drawFramebufferBinding && m_readFramebufferBinding) {
+        if (m_drawFramebufferBinding == m_readFramebufferBinding) {
+            m_context->bindFramebuffer(GL_FRAMEBUFFER, m_readFramebufferBinding);
+        } else {
+            m_context->bindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding);
+            m_context->bindFramebuffer(GL_DRAW_FRAMEBUFFER, m_drawFramebufferBinding);
+        }
         return;
     }
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_framebufferBinding);
+    if (!m_drawFramebufferBinding && !m_readFramebufferBinding) {
+        bind(GL_FRAMEBUFFER);
+        return;
+    }
+    if (!m_drawFramebufferBinding) {
+        bind(GL_DRAW_FRAMEBUFFER);
+        m_context->bindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding);
+    } else {
+        bind(GL_READ_FRAMEBUFFER);
+        m_context->bindFramebuffer(GL_DRAW_FRAMEBUFFER, m_drawFramebufferBinding);
+    }
 }
 
 bool DrawingBuffer::multisample() const
@@ -833,7 +849,10 @@ bool DrawingBuffer::multisample() const
 
 void DrawingBuffer::bind(GLenum target)
 {
-    m_context->bindFramebuffer(target, m_multisampleFBO ? m_multisampleFBO : m_fbo);
+    if (target != GL_READ_FRAMEBUFFER)
+        m_context->bindFramebuffer(target, m_multisampleFBO ? m_multisampleFBO : m_fbo);
+    else
+        m_context->bindFramebuffer(target, m_fbo);
 }
 
 void DrawingBuffer::setPackAlignment(GLint param)
@@ -877,7 +896,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
         m_context->deleteFramebuffer(fbo);
     }
 
-    restoreFramebufferBinding();
+    restoreFramebufferBindings();
 
     pixels.transfer(contents);
     return true;
