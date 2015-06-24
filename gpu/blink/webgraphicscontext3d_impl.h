@@ -524,7 +524,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                            blink::WebGLId source_id,
                            blink::WebGLId dest_id,
                            blink::WGC3Denum internal_format,
-                           blink::WGC3Denum dest_type) override;
+                           blink::WGC3Denum dest_type);
 
   void copySubTextureCHROMIUM(blink::WGC3Denum target,
                               blink::WebGLId source_id,
@@ -534,7 +534,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                               blink::WGC3Dint x,
                               blink::WGC3Dint y,
                               blink::WGC3Dsizei width,
-                              blink::WGC3Dsizei height) override;
+                              blink::WGC3Dsizei height);
 
   void copyTextureCHROMIUM(
       blink::WGC3Denum target,
