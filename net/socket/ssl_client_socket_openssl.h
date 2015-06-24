@@ -29,6 +29,7 @@ typedef struct bio_st BIO;
 // <openssl/evp.h>
 typedef struct evp_pkey_st EVP_PKEY;
 // <openssl/ssl.h>
+typedef struct ssl_session_st SSL_SESSION;
 typedef struct ssl_st SSL;
 // <openssl/x509.h>
 typedef struct x509_st X509;
@@ -174,10 +175,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // safe to cache and will be cached.
   void MaybeCacheSession();
 
-  // Callback from the SSL layer when the internal state machine progresses. It
-  // is used to listen for when the handshake completes entirely; |Connect| may
-  // return early if false starting.
-  void InfoCallback(int type, int val);
+  // Called from the SSL layer whenever a new session is established.
+  int NewSessionCallback(SSL_SESSION* session);
 
   // Adds the SignedCertificateTimestamps from ct_verify_result_ to |ssl_info|.
   // SCTs are held in three separate vectors in ct_verify_result, each
@@ -293,8 +292,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   scoped_ptr<crypto::ECPrivateKey> channel_id_key_;
   // True if a channel ID was sent.
   bool channel_id_sent_;
-  // True if the initial handshake has completed.
-  bool handshake_completed_;
+  // True if the current session was newly-established, but the certificate had
+  // not yet been verified externally, so it cannot be inserted into the cache
+  // until later.
+  bool session_pending_;
   // True if the initial handshake's certificate has been verified.
   bool certificate_verified_;
   // The request handle for |channel_id_service_|.

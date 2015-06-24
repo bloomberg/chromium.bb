@@ -186,12 +186,12 @@ class SSLClientSocketOpenSSL::SSLContext {
     SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
                                      NULL);
     ssl_ctx_->tlsext_channel_id_enabled_new = 1;
-    SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
 
     // Disable the internal session cache. Session caching is handled
     // externally (i.e. by SSLClientSessionCacheOpenSSL).
     SSL_CTX_set_session_cache_mode(
         ssl_ctx_.get(), SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_NO_INTERNAL);
+    SSL_CTX_sess_set_new_cb(ssl_ctx_.get(), NewSessionCallback);
 
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string ssl_keylog_file;
@@ -231,9 +231,9 @@ class SSLClientSocketOpenSSL::SSLContext {
     return socket->SelectNextProtoCallback(out, outlen, in, inlen);
   }
 
-  static void InfoCallback(const SSL* ssl, int type, int val) {
+  static int NewSessionCallback(SSL* ssl, SSL_SESSION* session) {
     SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    socket->InfoCallback(type, val);
+    return socket->NewSessionCallback(session);
   }
 
   // This is the index used with SSL_get_ex_data to retrieve the owner
@@ -369,7 +369,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
       channel_id_sent_(false),
-      handshake_completed_(false),
+      session_pending_(false),
       certificate_verified_(false),
       ssl_failure_state_(SSL_FAILURE_NONE),
       transport_security_state_(context.transport_security_state),
@@ -512,7 +512,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   npn_proto_.clear();
 
   channel_id_sent_ = false;
-  handshake_completed_ = false;
+  session_pending_ = false;
   certificate_verified_ = false;
   channel_id_request_.Cancel();
   ssl_failure_state_ = SSL_FAILURE_NONE;
@@ -1839,25 +1839,29 @@ long SSLClientSocketOpenSSL::BIOCallback(
 }
 
 void SSLClientSocketOpenSSL::MaybeCacheSession() {
-  // Only cache the session once both the handshake has completed and the
-  // certificate has been verified.
-  if (!handshake_completed_ || !certificate_verified_ ||
-      SSL_session_reused(ssl_)) {
+  // Only cache the session once both a new session has been established and the
+  // certificate has been verified. Due to False Start, these events may happen
+  // in either order.
+  if (!session_pending_ || !certificate_verified_)
     return;
-  }
 
   SSLContext::GetInstance()->session_cache()->Insert(GetSessionCacheKey(),
                                                      SSL_get_session(ssl_));
+  session_pending_ = false;
 }
 
-void SSLClientSocketOpenSSL::InfoCallback(int type, int val) {
-  // Note that SSL_CB_HANDSHAKE_DONE may be signaled multiple times if the
-  // socket renegotiates.
-  if (type != SSL_CB_HANDSHAKE_DONE || handshake_completed_)
-    return;
+int SSLClientSocketOpenSSL::NewSessionCallback(SSL_SESSION* session) {
+  DCHECK_EQ(session, SSL_get_session(ssl_));
 
-  handshake_completed_ = true;
+  // Only sessions from the initial handshake get cached. Note this callback may
+  // be signaled on abbreviated handshakes if the ticket was renewed.
+  session_pending_ = true;
   MaybeCacheSession();
+
+  // OpenSSL passes a reference to |session|, but the session cache does not
+  // take this reference, so release it.
+  SSL_SESSION_free(session);
+  return 1;
 }
 
 void SSLClientSocketOpenSSL::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
