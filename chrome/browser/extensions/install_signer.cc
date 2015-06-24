@@ -108,7 +108,7 @@ bool ValidateExpireDateFormat(const std::string& input) {
     if (i == 4 ||  i == 7) {
       if (input[i] != '-')
         return false;
-    } else if (!IsAsciiDigit(input[i])) {
+    } else if (!base::IsAsciiDigit(input[i])) {
       return false;
     }
   }

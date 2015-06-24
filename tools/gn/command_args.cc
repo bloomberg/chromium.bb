@@ -37,7 +37,7 @@ const char kSwitchShort[] = "short";
 bool DoesLineBeginWithComment(const base::StringPiece& line) {
   // Skip whitespace.
   size_t i = 0;
-  while (i < line.size() && IsAsciiWhitespace(line[i]))
+  while (i < line.size() && base::IsAsciiWhitespace(line[i]))
     i++;
 
   return i < line.size() && line[i] == '#';

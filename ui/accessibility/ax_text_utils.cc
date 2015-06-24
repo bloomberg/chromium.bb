@@ -62,7 +62,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         NOTREACHED();  // These are handled above.
         break;
       case WORD_BOUNDARY:
-        if (IsWhitespace(text[pos]))
+        if (base::IsUnicodeWhitespace(text[pos]))
           return result;
         break;
       case PARAGRAPH_BOUNDARY:
@@ -71,7 +71,8 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         break;
       case SENTENCE_BOUNDARY:
         if ((text[pos] == '.' || text[pos] == '!' || text[pos] == '?') &&
-            (pos == text_size - 1 || IsWhitespace(text[pos + 1]))) {
+            (pos == text_size - 1 ||
+             base::IsUnicodeWhitespace(text[pos + 1]))) {
           return result;
         }
         break;

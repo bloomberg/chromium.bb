@@ -54,7 +54,7 @@ bool HasOrdinalNumber(const base::FilePath::StringType& filename) {
 
   for (base::FilePath::StringType::size_type i = l_paren_index + 1;
        i != r_paren_index; ++i) {
-    if (!IsAsciiDigit(filename[i]))
+    if (!base::IsAsciiDigit(filename[i]))
       return false;
   }
 

@@ -63,13 +63,13 @@ bool IsValidEncodingString(const std::string& input_encoding) {
   if (input_encoding.empty())
     return false;
 
-  if (!IsAsciiAlpha(input_encoding[0]))
+  if (!base::IsAsciiAlpha(input_encoding[0]))
     return false;
 
   for (size_t i = 1, max = input_encoding.size(); i < max; ++i) {
     char c = input_encoding[i];
-    if (!IsAsciiAlpha(c) && !IsAsciiDigit(c) && c != '.' && c != '_' &&
-        c != '-') {
+    if (!base::IsAsciiAlpha(c) && !base::IsAsciiDigit(c) &&
+        c != '.' && c != '_' && c != '-') {
       return false;
     }
   }

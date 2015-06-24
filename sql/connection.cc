@@ -812,7 +812,7 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
     // sqlite3_exec() does this, presumably to avoid spinning the parser for
     // trailing whitespace.
     // TODO(shess): Audit to see if this can become a DCHECK.
-    while (IsAsciiWhitespace(*sql)) {
+    while (base::IsAsciiWhitespace(*sql)) {
       sql++;
     }
 

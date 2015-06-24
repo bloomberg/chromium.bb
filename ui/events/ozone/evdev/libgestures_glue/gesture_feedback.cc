@@ -100,7 +100,7 @@ std::string GetCurrentTimeForLogging() {
 std::string GetCanonicalDeviceName(const std::string& name) {
   std::string ret(name);
   for (size_t i = 0; i < ret.size(); ++i)
-    if (!IsAsciiAlpha(ret[i]))
+    if (!base::IsAsciiAlpha(ret[i]))
       ret[i] = '_';
   return ret;
 }

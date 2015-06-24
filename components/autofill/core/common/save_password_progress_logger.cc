@@ -35,7 +35,8 @@ std::string ScrubURL(const GURL& url) {
 // Returns true for all characters which we don't want to see in the logged IDs
 // or names of HTML elements.
 bool IsUnwantedInElementID(char c) {
-  return !(c == '_' || c == '-' || IsAsciiAlpha(c) || IsAsciiDigit(c));
+  return !(c == '_' || c == '-' ||
+           base::IsAsciiAlpha(c) || base::IsAsciiDigit(c));
 }
 
 // The UTF-8 version of SavePasswordProgressLogger::ScrubElementID.

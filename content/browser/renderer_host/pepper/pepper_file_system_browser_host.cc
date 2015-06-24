@@ -498,8 +498,8 @@ std::string PepperFileSystemBrowserHost::GeneratePluginId(
   // Verify |output| contains only alphabets, digits, or "._-".
   for (std::string::const_iterator it = output.begin(); it != output.end();
        ++it) {
-    if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it) && *it != '.' && *it != '_' &&
-        *it != '-') {
+    if (!base::IsAsciiAlpha(*it) && !base::IsAsciiDigit(*it) &&
+        *it != '.' && *it != '_' && *it != '-') {
       LOG(WARNING) << "Failed to generate a plugin id.";
       return std::string();
     }

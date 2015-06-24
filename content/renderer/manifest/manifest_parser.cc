@@ -26,7 +26,7 @@ bool IsValidIconWidthOrHeight(const std::string& str) {
   if (str.empty() || str[0] == '0')
     return false;
   for (size_t i = 0; i < str.size(); ++i)
-    if (!IsAsciiDigit(str[i]))
+    if (!base::IsAsciiDigit(str[i]))
       return false;
   return true;
 }

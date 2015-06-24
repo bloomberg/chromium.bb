@@ -39,7 +39,7 @@ bool HistoryProvider::PreventInlineAutocomplete(
     const AutocompleteInput& input) {
   return input.prevent_inline_autocomplete() ||
       (!input.text().empty() &&
-       IsWhitespace(input.text()[input.text().length() - 1]));
+       base::IsUnicodeWhitespace(input.text()[input.text().length() - 1]));
 }
 
 HistoryProvider::HistoryProvider(AutocompleteProvider::Type type,

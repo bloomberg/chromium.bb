@@ -341,7 +341,7 @@ void SetExplicitlyAllowedPorts(const std::string& allowed_ports) {
   // Overflow is still possible for evil user inputs.
   for (size_t i = 0; i <= size; ++i) {
     // The string should be composed of only digits and commas.
-    if (i != size && !IsAsciiDigit(allowed_ports[i]) &&
+    if (i != size && !base::IsAsciiDigit(allowed_ports[i]) &&
         (allowed_ports[i] != kComma))
       return;
     if (i == size || allowed_ports[i] == kComma) {

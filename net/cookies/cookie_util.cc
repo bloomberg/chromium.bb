@@ -118,7 +118,7 @@ base::Time ParseCookieTime(const std::string& time_string) {
   while (tokenizer.GetNext()) {
     const std::string token = tokenizer.token();
     DCHECK(!token.empty());
-    bool numerical = IsAsciiDigit(token[0]);
+    bool numerical = base::IsAsciiDigit(token[0]);
 
     // String field
     if (!numerical) {

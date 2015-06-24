@@ -42,7 +42,8 @@ base::string16 OmniboxView::SanitizeTextForPaste(const base::string16& text) {
   // TODO(shess): It may also make sense to ignore leading or
   // trailing whitespace when making this determination.
   for (size_t i = 0; i < text.size(); ++i) {
-    if (IsWhitespace(text[i]) && text[i] != '\n' && text[i] != '\r') {
+    if (base::IsUnicodeWhitespace(text[i]) &&
+        text[i] != '\n' && text[i] != '\r') {
       const base::string16 collapsed = base::CollapseWhitespace(text, false);
       // If the user is pasting all-whitespace, paste a single space
       // rather than nothing, since pasting nothing feels broken.

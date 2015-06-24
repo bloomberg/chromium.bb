@@ -18,7 +18,7 @@ namespace {
 // The function checks for '\0' for string termination.
 int HexDigitsPrefix(const char* buf, int num_digits) {
   for (int i = 0; i < num_digits; i++) {
-    if (!IsHexDigit(buf[i]))
+    if (!base::IsHexDigit(buf[i]))
       return 0;  // This also detects end of string as '\0' is not xdigit.
   }
   return 1;

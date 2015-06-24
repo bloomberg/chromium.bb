@@ -17,7 +17,8 @@ bool IsPathNameValid(const std::string& name) {
     return false;
 
   for (auto c : name) {
-    if (!IsAsciiAlpha(c) && !IsAsciiDigit(c) && c != '_' && c != '.')
+    if (!base::IsAsciiAlpha(c) && !base::IsAsciiDigit(c) &&
+        c != '_' && c != '.')
       return false;
   }
   return true;

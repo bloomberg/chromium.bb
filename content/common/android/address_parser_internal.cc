@@ -84,7 +84,7 @@ bool HouseNumberParser::IsPreDelimiter(base::char16 character) {
 }
 
 bool HouseNumberParser::IsPostDelimiter(base::char16 character) {
-  return IsWhitespace(character) || strchr(",\"'", character);
+  return base::IsUnicodeWhitespace(character) || strchr(",\"'", character);
 }
 
 void HouseNumberParser::RestartOnNextDelimiter() {
@@ -144,7 +144,7 @@ bool HouseNumberParser::Parse(
     }
 
     // More digits. There should be no more after a letter was found.
-    if (IsAsciiDigit(*it_)) {
+    if (base::IsAsciiDigit(*it_)) {
       if (num_digits_ >= kMaxHouseDigits) {
         RestartOnNextDelimiter();
       } else {
@@ -154,7 +154,7 @@ bool HouseNumberParser::Parse(
       continue;
     }
 
-    if (IsAsciiAlpha(*it_)) {
+    if (base::IsAsciiAlpha(*it_)) {
       // Handle special case 'one'.
       if (result_chars_ == 0) {
         if (it_ + 3 <= end_ && base::LowerCaseEqualsASCII(it_, it_ + 3, "one"))
@@ -168,7 +168,7 @@ bool HouseNumberParser::Parse(
       DCHECK_GT(result_chars_, 0U);
       DCHECK(it_ != begin_);
       base::char16 previous = SafePreviousChar(it_, begin_);
-      if (IsAsciiDigit(previous)) {
+      if (base::IsAsciiDigit(previous)) {
         // Check cases like '12A'.
         base::char16 next = SafeNextChar(it_, end_);
         if (IsPostDelimiter(next)) {
@@ -177,7 +177,7 @@ bool HouseNumberParser::Parse(
         }
 
         // Handle cases like 12a, 1st, 2nd, 3rd, 7th.
-        if (IsAsciiAlpha(next)) {
+        if (base::IsAsciiAlpha(next)) {
           base::char16 last_digit = previous;
           base::char16 first_letter = base::ToLowerASCII(*it_);
           base::char16 second_letter = base::ToLowerASCII(next);
@@ -350,7 +350,7 @@ bool FindStateStartingInWord(WordList* words,
 
   const Word& first_word = words->at(state_first_word);
   int length = first_word.end - first_word.begin;
-  if (length < 2 || !IsAsciiAlpha(*first_word.begin))
+  if (length < 2 || !base::IsAsciiAlpha(*first_word.begin))
     return false;
 
   // No state names start with x, y, z.
@@ -362,7 +362,7 @@ bool FindStateStartingInWord(WordList* words,
   int first_index = first_letter - 'a';
 
   // Look for two-letter state names.
-  if (length == 2 && IsAsciiAlpha(*(first_word.begin + 1))) {
+  if (length == 2 && base::IsAsciiAlpha(*(first_word.begin + 1))) {
     base::char16 second_letter = base::ToLowerASCII(*(first_word.begin + 1));
     DCHECK(second_letter >= 'a');
 
@@ -425,7 +425,7 @@ bool IsZipValid(const Word& word, size_t state_index) {
 
   for (base::string16::const_iterator it = word.begin; it != word.end; ++it) {
     size_t pos = it - word.begin;
-    if (IsAsciiDigit(*it) || (*it == '-' && pos == kZipDigits))
+    if (base::IsAsciiDigit(*it) || (*it == '-' && pos == kZipDigits))
       continue;
     return false;
   }
@@ -503,8 +503,8 @@ bool IsZipValidForState(const Word& word, size_t state_index) {
 
   // Zip numeric value for the first two characters.
   DCHECK(word.begin != word.end);
-  DCHECK(IsAsciiDigit(*word.begin));
-  DCHECK(IsAsciiDigit(*(word.begin + 1)));
+  DCHECK(base::IsAsciiDigit(*word.begin));
+  DCHECK(base::IsAsciiDigit(*(word.begin + 1)));
   int zip_prefix = (*word.begin - '0') * 10 + (*(word.begin + 1) - '0');
 
   if ((zip_prefix >= zip_range[state_index].low &&
@@ -599,7 +599,7 @@ bool IsValidLocationName(const Word& word) {
       location_names_accumulative[arraysize(location_names_accumulative) - 1],
       static_cast<int>(arraysize(location_names)));
 
-  if (!IsAsciiAlpha(*word.begin))
+  if (!base::IsAsciiAlpha(*word.begin))
     return false;
 
   // No location names start with y, z.

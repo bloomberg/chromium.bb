@@ -100,7 +100,7 @@ bool DoesBeginWindowsDriveLetter(const base::StringPiece& path) {
     return false;
 
   // Check drive letter.
-  if (!IsAsciiAlpha(path[0]))
+  if (!base::IsAsciiAlpha(path[0]))
     return false;
 
   if (!IsSlash(path[2]))

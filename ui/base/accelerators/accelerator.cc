@@ -228,7 +228,7 @@ base::string16 Accelerator::GetShortcutText() const {
   base::string16 shortcut_rtl;
   bool adjust_shortcut_for_rtl = false;
   if (base::i18n::IsRTL() && shortcut.length() == 1 &&
-      !IsAsciiAlpha(shortcut[0]) && !IsAsciiDigit(shortcut[0])) {
+      !base::IsAsciiAlpha(shortcut[0]) && !base::IsAsciiDigit(shortcut[0])) {
     adjust_shortcut_for_rtl = true;
     shortcut_rtl.assign(shortcut);
   }

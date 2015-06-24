@@ -334,7 +334,7 @@ STR CollapseWhitespaceT(const STR& text,
 
   int chars_written = 0;
   for (typename STR::const_iterator i(text.begin()); i != text.end(); ++i) {
-    if (IsWhitespace(*i)) {
+    if (IsUnicodeWhitespace(*i)) {
       if (!in_whitespace) {
         // Reduce all whitespace sequences to a single space.
         in_whitespace = true;
@@ -617,7 +617,16 @@ bool EndsWith(const string16& str,
                     CompareCase::SENSITIVE);
 }
 
-}  // namespace base
+char HexDigitToInt(wchar_t c) {
+  DCHECK(IsHexDigit(c));
+  if (c >= '0' && c <= '9')
+    return static_cast<char>(c - '0');
+  if (c >= 'A' && c <= 'F')
+    return static_cast<char>(c - 'A' + 10);
+  if (c >= 'a' && c <= 'f')
+    return static_cast<char>(c - 'a' + 10);
+  return 0;
+}
 
 static const char* const kByteStringsUnlocalized[] = {
   " B",
@@ -647,8 +656,10 @@ string16 FormatBytesUnlocalized(int64 bytes) {
                    kByteStringsUnlocalized[dimension]);
   }
 
-  return base::ASCIIToUTF16(buf);
+  return ASCIIToUTF16(buf);
 }
+
+}  // namespace base
 
 // Runs in O(n) time in the length of |str|.
 template<class StringType>

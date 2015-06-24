@@ -31,7 +31,7 @@ const int32 kExtendedASCIIStart = 0x80;
 // optimization avoids about 2/3rds of string memory copies. The constructor
 // takes ownership of the input string. The real root value is Swap()ed into
 // the new instance.
-class DictionaryHiddenRootValue : public base::DictionaryValue {
+class DictionaryHiddenRootValue : public DictionaryValue {
  public:
   DictionaryHiddenRootValue(std::string* json, Value* root) : json_(json) {
     DCHECK(root->IsType(Value::TYPE_DICTIONARY));
@@ -43,7 +43,7 @@ class DictionaryHiddenRootValue : public base::DictionaryValue {
 
     // First deep copy to convert JSONStringValue to std::string and swap that
     // copy with |other|, which contains the new contents of |this|.
-    scoped_ptr<base::DictionaryValue> copy(DeepCopy());
+    scoped_ptr<DictionaryValue> copy(DeepCopy());
     copy->Swap(other);
 
     // Then erase the contents of the current dictionary and swap in the
@@ -81,7 +81,7 @@ class DictionaryHiddenRootValue : public base::DictionaryValue {
   DISALLOW_COPY_AND_ASSIGN(DictionaryHiddenRootValue);
 };
 
-class ListHiddenRootValue : public base::ListValue {
+class ListHiddenRootValue : public ListValue {
  public:
   ListHiddenRootValue(std::string* json, Value* root) : json_(json) {
     DCHECK(root->IsType(Value::TYPE_LIST));
@@ -93,7 +93,7 @@ class ListHiddenRootValue : public base::ListValue {
 
     // First deep copy to convert JSONStringValue to std::string and swap that
     // copy with |other|, which contains the new contents of |this|.
-    scoped_ptr<base::ListValue> copy(DeepCopy());
+    scoped_ptr<ListValue> copy(DeepCopy());
     copy->Swap(other);
 
     // Then erase the contents of the current list and swap in the new contents,
@@ -130,14 +130,14 @@ class ListHiddenRootValue : public base::ListValue {
 // A variant on StringValue that uses StringPiece instead of copying the string
 // into the Value. This can only be stored in a child of hidden root (above),
 // otherwise the referenced string will not be guaranteed to outlive it.
-class JSONStringValue : public base::Value {
+class JSONStringValue : public Value {
  public:
-  explicit JSONStringValue(const base::StringPiece& piece)
+  explicit JSONStringValue(const StringPiece& piece)
       : Value(TYPE_STRING),
         string_piece_(piece) {
   }
 
-  // Overridden from base::Value:
+  // Overridden from Value:
   bool GetAsString(std::string* out_value) const override {
     string_piece_.CopyToString(out_value);
     return true;
@@ -157,7 +157,7 @@ class JSONStringValue : public base::Value {
 
  private:
   // The location in the original input stream.
-  base::StringPiece string_piece_;
+  StringPiece string_piece_;
 
   DISALLOW_COPY_AND_ASSIGN(JSONStringValue);
 };
@@ -872,7 +872,7 @@ Value* JSONParser::ConsumeNumber() {
     return new FundamentalValue(num_int);
 
   double num_double;
-  if (base::StringToDouble(num_string.as_string(), &num_double) &&
+  if (StringToDouble(num_string.as_string(), &num_double) &&
       std::isfinite(num_double)) {
     return new FundamentalValue(num_double);
   }

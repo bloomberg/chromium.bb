@@ -610,7 +610,7 @@ std::string GetDirectoryListingEntry(const base::string16& name,
   // Negative size means unknown or not applicable (e.g. directory).
   base::string16 size_string;
   if (size >= 0)
-    size_string = FormatBytesUnlocalized(size);
+    size_string = base::FormatBytesUnlocalized(size);
   base::EscapeJSONString(size_string, true, &result);
 
   result.append(",");

@@ -194,7 +194,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   // For a URL like "http://www.washingtonmutual.com", this means
   // typing "w" will inline "ashington..." instead of "ww.washington...".
   if (!url_matches.empty() && (terms_vector.size() == 1) &&
-      !IsWhitespace(*lower_string.rbegin())) {
+      !base::IsUnicodeWhitespace(*lower_string.rbegin())) {
     const base::string16 gurl_spec = base::UTF8ToUTF16(gurl.spec());
     const URLPrefix* best_inlineable_prefix =
         URLPrefix::BestURLPrefix(gurl_spec, terms_vector[0]);

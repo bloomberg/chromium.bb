@@ -132,7 +132,7 @@ LabelPattern LabelPattern::GetPattern(const SourceDir& current_dir,
       return LabelPattern();
     }
     if (str.size() > 3 && str[2] == ':' && IsSlash(str[3]) &&
-        IsAsciiAlpha(str[1])) {
+        base::IsAsciiAlpha(str[1])) {
       // Skip over the drive letter colon.
       offset = 3;
     }

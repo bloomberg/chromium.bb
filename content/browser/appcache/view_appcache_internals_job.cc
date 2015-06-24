@@ -129,7 +129,7 @@ void EmitAppCacheInfo(const GURL& base_url,
   out->append("<ul>");
   EmitListItem(
       kSize,
-      base::UTF16ToUTF8(FormatBytesUnlocalized(info->size)),
+      base::UTF16ToUTF8(base::FormatBytesUnlocalized(info->size)),
       out);
   EmitListItem(
       kCreationTime,
@@ -242,7 +242,7 @@ void EmitAppCacheResourceInfoVector(
                                       iter->url, iter->response_id,
                                       group_id),
                   false, false, out);
-    EmitTableData(base::UTF16ToUTF8(FormatBytesUnlocalized(iter->size)),
+    EmitTableData(base::UTF16ToUTF8(base::FormatBytesUnlocalized(iter->size)),
                   true, false, out);
     out->append("</tr>\n");
   }

@@ -73,8 +73,8 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
 
   // Generate profile_id from sanitized basenames.
   for (size_t i = 0; i < basenames.length(); ++i) {
-    if (IsAsciiAlpha(basenames[i]) ||
-        IsAsciiDigit(basenames[i]) ||
+    if (base::IsAsciiAlpha(basenames[i]) ||
+        base::IsAsciiDigit(basenames[i]) ||
         basenames[i] == L'.')
       profile_id += basenames[i];
   }

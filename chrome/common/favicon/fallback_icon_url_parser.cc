@@ -26,9 +26,10 @@ bool IsHexColorString(const std::string& color_str) {
   const size_t* end = kValidHexColorSizes + arraysize(kValidHexColorSizes);
   if (std::find(kValidHexColorSizes, end, len) == end)
     return false;
-  for (auto ch : color_str)
-    if (!IsHexDigit(ch))
+  for (auto ch : color_str) {
+    if (!base::IsHexDigit(ch))
       return false;
+  }
   return true;
 }
 

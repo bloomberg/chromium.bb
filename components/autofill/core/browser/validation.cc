@@ -88,7 +88,7 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   for (base::string16::reverse_iterator iter = number.rbegin();
        iter != number.rend();
        ++iter) {
-    if (!IsAsciiDigit(*iter))
+    if (!base::IsAsciiDigit(*iter))
       return false;
 
     int digit = *iter - '0';
@@ -111,7 +111,7 @@ bool IsValidCreditCardSecurityCode(const base::string16& text) {
   for (base::string16::const_iterator iter = text.begin();
        iter != text.end();
        ++iter) {
-    if (!IsAsciiDigit(*iter))
+    if (!base::IsAsciiDigit(*iter))
       return false;
   }
   return true;

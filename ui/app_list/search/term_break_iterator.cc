@@ -54,7 +54,7 @@ const base::string16 TermBreakIterator::GetCurrentTerm() const {
 }
 
 TermBreakIterator::State TermBreakIterator::GetNewState(base::char16 ch) {
-  if (IsAsciiDigit(ch) || ch == '.' || ch == ',')
+  if (base::IsAsciiDigit(ch) || ch == '.' || ch == ',')
     return STATE_NUMBER;
 
   const bool is_upper = !!u_isUUppercase(ch);

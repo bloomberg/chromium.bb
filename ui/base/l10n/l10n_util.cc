@@ -614,7 +614,7 @@ bool IsValidLocaleSyntax(const std::string& locale) {
   // underscore.
   for (size_t i = 0; i < prefix.size(); i++) {
     char ch = prefix[i];
-    if (!IsAsciiAlpha(ch) && !IsAsciiDigit(ch) && ch != '_')
+    if (!base::IsAsciiAlpha(ch) && !base::IsAsciiDigit(ch) && ch != '_')
       return false;
   }
 
@@ -627,7 +627,7 @@ bool IsValidLocaleSyntax(const std::string& locale) {
         return false;
       break;
     }
-    if (!IsAsciiAlpha(ch))
+    if (!base::IsAsciiAlpha(ch))
       return false;
   }
 

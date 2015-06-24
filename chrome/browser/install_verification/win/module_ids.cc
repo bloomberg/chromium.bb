@@ -54,7 +54,7 @@ void ParseAdditionalModuleID(
 
   for (base::StringPiece::const_iterator it = digest_piece.begin();
        it != digest_piece.end(); ++it) {
-    if (!IsHexDigit(*it))
+    if (!base::IsHexDigit(*it))
       return;  // Second token has invalid characters.
   }
 

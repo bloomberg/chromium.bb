@@ -170,7 +170,7 @@ static bool SanitizeSessionId(const blink::WebString& session_id,
     return false;
 
   for (const char c : *sanitized_session_id) {
-    if (!IsAsciiAlpha(c) && !IsAsciiDigit(c))
+    if (!base::IsAsciiAlpha(c) && !base::IsAsciiDigit(c))
       return false;
   }
 

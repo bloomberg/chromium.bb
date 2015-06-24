@@ -19,8 +19,8 @@ bool IsSafeSuffix(const base::string16& suffix) {
   for (base::string16::const_iterator it = suffix.begin();
       it < suffix.end(); ++it) {
     base::char16 c = *it;
-    if (!(IsAsciiAlpha(c) || IsAsciiDigit(c) ||
-              c == '-' || c == '.' || c == '_')) {
+    if (!(base::IsAsciiAlpha(c) || base::IsAsciiDigit(c) ||
+          c == '-' || c == '.' || c == '_')) {
       return false;
     }
     if (c == '.' && prev_c == '.')

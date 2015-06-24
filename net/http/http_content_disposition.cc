@@ -34,11 +34,11 @@ bool DecodeQEncoding(const std::string& input, std::string* output) {
       temp.push_back(' ');
     } else if (*it == '=') {
       if ((input.end() - it < 3) ||
-          !IsHexDigit(static_cast<unsigned char>(*(it + 1))) ||
-          !IsHexDigit(static_cast<unsigned char>(*(it + 2))))
+          !base::IsHexDigit(static_cast<unsigned char>(*(it + 1))) ||
+          !base::IsHexDigit(static_cast<unsigned char>(*(it + 2))))
         return false;
-      unsigned char ch = HexDigitToInt(*(it + 1)) * 16 +
-                         HexDigitToInt(*(it + 2));
+      unsigned char ch =
+          base::HexDigitToInt(*(it + 1)) * 16 + base::HexDigitToInt(*(it + 2));
       temp.push_back(static_cast<char>(ch));
       ++it;
       ++it;

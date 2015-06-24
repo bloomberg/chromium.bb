@@ -324,7 +324,7 @@ bool IsValidLanguageCode(const std::string& code) {
 
   for (std::string::const_iterator it = main_code.begin();
        it != main_code.end(); ++it) {
-    if (!IsAsciiAlpha(*it))
+    if (!base::IsAsciiAlpha(*it))
       return false;
   }
 
@@ -338,7 +338,7 @@ bool IsValidLanguageCode(const std::string& code) {
 
   for (std::string::const_iterator it = sub_code.begin();
        it != sub_code.end(); ++it) {
-    if (!IsAsciiAlpha(*it))
+    if (!base::IsAsciiAlpha(*it))
       return false;
   }
 

@@ -105,7 +105,7 @@ bool Resolve(const SourceDir& current_dir,
       return false;
     }
     if (input.size() > 3 && input[2] == ':' && IsSlash(input[3]) &&
-        IsAsciiAlpha(input[1])) {
+        base::IsAsciiAlpha(input[1])) {
       // Skip over the drive letter colon.
       offset = 3;
     }

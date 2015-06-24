@@ -32,7 +32,8 @@ bool VerifyInstanceID(const std::string& str) {
 
   // Checks if it is URL-safe base64 encoded.
   for (auto ch : str) {
-    if (!IsAsciiAlpha(ch) && !IsAsciiDigit(ch) && ch != '_' && ch != '-')
+    if (!base::IsAsciiAlpha(ch) && !base::IsAsciiDigit(ch) &&
+        ch != '_' && ch != '-')
       return false;
   }
   return true;

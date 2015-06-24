@@ -281,7 +281,8 @@ bool MessageBundle::IsValidName(const std::string& name) {
   std::string::const_iterator it = name.begin();
   for (; it != name.end(); ++it) {
     // Allow only ascii 0-9, a-z, A-Z, and _ in the name.
-    if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it) && *it != '_' && *it != '@')
+    if (!base::IsAsciiAlpha(*it) && !base::IsAsciiDigit(*it) && *it != '_' &&
+        *it != '@')
       return false;
   }
 

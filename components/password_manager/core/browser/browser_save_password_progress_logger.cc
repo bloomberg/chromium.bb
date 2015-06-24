@@ -17,7 +17,7 @@ namespace {
 // Replaces all non-digits in |str| by spaces.
 std::string ScrubNonDigit(std::string str) {
   std::replace_if(str.begin(), str.end(),
-                  [](char c) { return !IsAsciiDigit(c); }, ' ');
+                  [](char c) { return !base::IsAsciiDigit(c); }, ' ');
   return str;
 }
 

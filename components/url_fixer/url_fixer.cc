@@ -343,7 +343,7 @@ bool HasPort(const std::string& original_text,
 
   // Scan the range to see if it is entirely digits.
   for (size_t i = port_start; i < port_end; ++i) {
-    if (!IsAsciiDigit(original_text[i]))
+    if (!base::IsAsciiDigit(original_text[i]))
       return false;
   }
 
@@ -467,7 +467,8 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
   // We need to add a scheme in order for ParseStandardURL to be happy.
   // Find the first non-whitespace character.
   std::string::iterator first_nonwhite = text->begin();
-  while ((first_nonwhite != text->end()) && IsWhitespace(*first_nonwhite))
+  while ((first_nonwhite != text->end()) &&
+         base::IsUnicodeWhitespace(*first_nonwhite))
     ++first_nonwhite;
 
   // Construct the text to parse by inserting the scheme.

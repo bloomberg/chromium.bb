@@ -1466,7 +1466,7 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
     return false;
   size_t space_position = caret_position - 1;
   if (!IsSpaceCharForAcceptingKeyword(new_text[space_position]) ||
-      IsWhitespace(new_text[space_position - 1]) ||
+      base::IsUnicodeWhitespace(new_text[space_position - 1]) ||
       new_text.compare(0, space_position, old_text, 0, space_position) ||
       !new_text.compare(space_position, new_text.length() - space_position,
                         old_text, space_position,

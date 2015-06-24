@@ -495,7 +495,7 @@ void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
 // equal to the specified level."
 static bool IsValidH264BaselineProfile(const std::string& profile_str) {
   return (profile_str.size() == 4 && profile_str[0] == '4' &&
-          profile_str[1] == '2' && IsHexDigit(profile_str[2]) &&
+          profile_str[1] == '2' && base::IsHexDigit(profile_str[2]) &&
           profile_str[3] == '0');
 }
 

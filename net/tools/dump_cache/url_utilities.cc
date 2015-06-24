@@ -87,7 +87,7 @@ std::string UrlUtilities::Unescape(const std::string& escaped_url) {
         ++iter;
         break;
       case ESCAPE1:
-        if (IsHexDigit(c)) {
+        if (base::IsHexDigit(c)) {
           escape_text.push_back(c);
           state = ESCAPE2;
           ++iter;
@@ -98,7 +98,7 @@ std::string UrlUtilities::Unescape(const std::string& escaped_url) {
         }
         break;
       case ESCAPE2:
-        if (IsHexDigit(c)) {
+        if (base::IsHexDigit(c)) {
           escape_text.push_back(c);
           bool ok = base::HexStringToInt(escape_text, &escape_value);
           DCHECK(ok);

@@ -90,7 +90,7 @@ base::FilePath::StringType StripOrdinalNumber(
 
   for (base::FilePath::StringType::size_type i = l_paren_index + 1;
        i != r_paren_index; ++i) {
-    if (!IsAsciiDigit(pure_file_name[i]))
+    if (!base::IsAsciiDigit(pure_file_name[i]))
       return pure_file_name;
   }
 

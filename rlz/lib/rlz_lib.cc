@@ -58,7 +58,7 @@ bool IsAccessPointSupported(rlz_lib::AccessPoint point) {
 // We will be more liberal and allow some additional chars, but not url meta
 // chars.
 bool IsGoodRlzChar(const char ch) {
-  if (IsAsciiAlpha(ch) || IsAsciiDigit(ch))
+  if (base::IsAsciiAlpha(ch) || base::IsAsciiDigit(ch))
     return true;
 
   switch (ch) {

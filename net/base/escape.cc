@@ -52,7 +52,7 @@ std::string Escape(const std::string& text,
     if (use_plus && ' ' == c) {
       escaped.push_back('+');
     } else if (keep_escaped && '%' == c && i + 2 < text.length() &&
-               IsHexDigit(text[i + 1]) && IsHexDigit(text[i + 2])) {
+               base::IsHexDigit(text[i + 1]) && base::IsHexDigit(text[i + 2])) {
       escaped.push_back('%');
     } else if (charmap.Contains(c)) {
       escaped.push_back('%');
@@ -118,9 +118,9 @@ bool UnescapeUnsignedCharAtIndex(const STR& escaped_text,
       static_cast<typename STR::value_type>(escaped_text[index + 1]));
   const typename STR::value_type least_sig_digit(
       static_cast<typename STR::value_type>(escaped_text[index + 2]));
-  if (IsHexDigit(most_sig_digit) && IsHexDigit(least_sig_digit)) {
-    *value = HexDigitToInt(most_sig_digit) * 16 +
-        HexDigitToInt(least_sig_digit);
+  if (base::IsHexDigit(most_sig_digit) && base::IsHexDigit(least_sig_digit)) {
+    *value = base::HexDigitToInt(most_sig_digit) * 16 +
+             base::HexDigitToInt(least_sig_digit);
     return true;
   }
   return false;

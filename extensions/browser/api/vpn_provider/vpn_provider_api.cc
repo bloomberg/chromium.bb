@@ -32,7 +32,7 @@ bool CheckIPCIDRSanity(const std::string& value, bool cidr, bool ipv6) {
   int counter = 0;
 
   for (const auto& elem : value) {
-    if (IsAsciiDigit(elem)) {
+    if (base::IsAsciiDigit(elem)) {
       counter++;
       continue;
     }
@@ -53,7 +53,7 @@ bool CheckIPCIDRSanity(const std::string& value, bool cidr, bool ipv6) {
       if (!colon)
         return false;
       colon--;
-    } else if (!hex_allowed || !IsHexDigit(elem)) {
+    } else if (!hex_allowed || !base::IsHexDigit(elem)) {
       return false;
     } else {
       counter++;

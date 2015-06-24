@@ -265,7 +265,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     EXPECT_EQ(icu::UnicodeString(is_directory ? "1" : "0"),
               match.group(3, status));
     if (size >= 0) {
-      icu::UnicodeString size_string(FormatBytesUnlocalized(size).c_str());
+      icu::UnicodeString size_string(
+          base::FormatBytesUnlocalized(size).c_str());
       EXPECT_EQ(size_string, match.group(4, status));
     }
 

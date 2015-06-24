@@ -171,8 +171,8 @@ std::string UdevDecodeString(const std::string& encoded) {
   for (size_t i = 0; i < size; ++i) {
     char c = encoded[i];
     if ((i + 3 < size) && c == '\\' && encoded[i + 1] == 'x') {
-      c = (HexDigitToInt(encoded[i + 2]) << 4) +
-          HexDigitToInt(encoded[i + 3]);
+      c = (base::HexDigitToInt(encoded[i + 2]) << 4) +
+          base::HexDigitToInt(encoded[i + 3]);
       i += 3;
     }
     decoded.push_back(c);

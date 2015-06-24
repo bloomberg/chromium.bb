@@ -20,7 +20,7 @@ bool IsProviderValid(const base::string16& provider) {
     return false;
   for (base::string16::const_iterator it = provider.begin();
        it != provider.end(); ++it) {
-    if (!IsAsciiAlpha(*it) && !IsAsciiDigit(*it))
+    if (!base::IsAsciiAlpha(*it) && !base::IsAsciiDigit(*it))
       return false;
   }
   return true;

@@ -405,7 +405,7 @@ static bool SniffForHTML(const char* content,
   const char* const end = content + size;
   const char* pos;
   for (pos = content; pos < end; ++pos) {
-    if (!IsAsciiWhitespace(*pos))
+    if (!base::IsAsciiWhitespace(*pos))
       break;
   }
   static base::HistogramBase* counter(NULL);

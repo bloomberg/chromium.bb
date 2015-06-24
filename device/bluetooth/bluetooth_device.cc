@@ -241,7 +241,7 @@ std::string BluetoothDevice::CanonicalizeAddress(const std::string& address) {
 
       canonicalized[i] = ':';
     } else {
-      if (!IsHexDigit(canonicalized[i]))
+      if (!base::IsHexDigit(canonicalized[i]))
         return std::string();
 
       canonicalized[i] = base::ToUpperASCII(canonicalized[i]);

@@ -25,7 +25,7 @@ bool IsValidNonEmptyHexString(const std::string& input) {
   if (count == 0 || (count % 2) != 0)
     return false;
   for (const char& c : input)
-    if (!IsHexDigit<char>(c))
+    if (!base::IsHexDigit<char>(c))
       return false;
   return true;
 }

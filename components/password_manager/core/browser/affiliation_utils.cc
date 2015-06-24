@@ -43,7 +43,7 @@ base::StringPiece ComponentString(const std::string& uri,
 bool ContainsOnlyAlphanumericAnd(const base::StringPiece& input,
                                  const base::StringPiece& other_characters) {
   for (char c : input) {
-    if (!IsAsciiAlpha(c) && !IsAsciiDigit(c) &&
+    if (!base::IsAsciiAlpha(c) && !base::IsAsciiDigit(c) &&
         other_characters.find(c) == base::StringPiece::npos)
       return false;
   }

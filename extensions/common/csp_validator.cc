@@ -83,7 +83,7 @@ bool isNonWildcardTLD(const std::string& url,
     // ":123456" or ":****" as valid, but that does not matter because the
     // relaxing CSP directive will just be ignored by Blink.
     for (size_t i = start_of_port + 1; i < end_of_host; ++i) {
-      is_valid_port = IsAsciiDigit(url[i]) || url[i] == '*';
+      is_valid_port = base::IsAsciiDigit(url[i]) || url[i] == '*';
       if (!is_valid_port)
         break;
     }

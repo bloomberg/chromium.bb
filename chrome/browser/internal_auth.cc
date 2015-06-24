@@ -112,7 +112,7 @@ bool IsVarSane(const std::string& var) {
       var.size() <= kStringLengthLimit &&
       base::IsStringASCII(var) &&
       var.find_first_not_of(kAllowedChars) == std::string::npos &&
-      !IsAsciiDigit(var[0]);
+      !base::IsAsciiDigit(var[0]);
 }
 
 bool IsValueSane(const std::string& value) {
@@ -448,7 +448,7 @@ bool InternalAuthVerification::VerifyPassport(
 void InternalAuthVerification::ChangeKey(const std::string& key) {
   base::AutoLock alk(g_verification_service_lock.Get());
   g_verification_service.Get().ChangeKey(key);
-};
+}
 
 // static
 int InternalAuthVerification::get_verification_window_ticks() {

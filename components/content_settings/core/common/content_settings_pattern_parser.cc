@@ -152,7 +152,7 @@ void PatternParser::Parse(const std::string& pattern_spec,
     } else {
       // Check if the port string represents a valid port.
       for (size_t i = 0; i < port.size(); ++i) {
-        if (!IsAsciiDigit(port[i])) {
+        if (!base::IsAsciiDigit(port[i])) {
           builder->Invalid();
           return;
         }

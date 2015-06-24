@@ -131,10 +131,10 @@ template<int BASE, typename CHAR> bool CharToDigit(CHAR c, uint8* digit) {
   return BaseCharToDigit<CHAR, BASE, BASE <= 10>::Convert(c, digit);
 }
 
-// There is an IsWhitespace for wchars defined in string_util.h, but it is
-// locale independent, whereas the functions we are replacing were
-// locale-dependent. TBD what is desired, but for the moment let's not introduce
-// a change in behaviour.
+// There is an IsUnicodeWhitespace for wchars defined in string_util.h, but it
+// is locale independent, whereas the functions we are replacing were
+// locale-dependent. TBD what is desired, but for the moment let's not
+// introduce a change in behaviour.
 template<typename CHAR> class WhitespaceHelper {
 };
 

@@ -39,7 +39,7 @@ bool Hasher::IsHash(const std::string& maybe_hash) {
     return false;
   for (std::string::const_iterator it = maybe_hash.begin();
        it != maybe_hash.end(); ++it) {
-    if (!IsHexDigit(*it))
+    if (!base::IsHexDigit(*it))
       return false;
   }
   return true;

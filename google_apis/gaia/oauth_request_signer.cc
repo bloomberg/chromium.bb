@@ -322,7 +322,7 @@ bool OAuthRequestSigner::Decode(const std::string& text,
       DCHECK(low >= 0 || low < kHexBase);
 
       char decoded = static_cast<char>(high * kHexBase + low);
-      DCHECK(!(IsAsciiAlpha(decoded) || IsAsciiDigit(decoded)));
+      DCHECK(!(base::IsAsciiAlpha(decoded) || base::IsAsciiDigit(decoded)));
       DCHECK(!(decoded && strchr("-._~", decoded)));
       accumulator += decoded;
     } else {
@@ -340,7 +340,7 @@ std::string OAuthRequestSigner::Encode(const std::string& text) {
   std::string::const_iterator limit;
   for (limit = text.end(), cursor = text.begin(); cursor != limit; ++cursor) {
     char character = *cursor;
-    if (IsAsciiAlpha(character) || IsAsciiDigit(character)) {
+    if (base::IsAsciiAlpha(character) || base::IsAsciiDigit(character)) {
       result += character;
     } else {
       switch (character) {
