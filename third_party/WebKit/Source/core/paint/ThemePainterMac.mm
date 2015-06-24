@@ -168,11 +168,6 @@ bool ThemePainterMac::paintMenuList(LayoutObject* o, const PaintInfo& paintInfo,
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, m_layoutTheme.popupButtonMargins(), zoomLevel);
 
     LocalCurrentGraphicsContext localContext(paintInfo.context, &paintInfo.rect, ThemeMac::inflateRectForFocusRing(inflatedRect));
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-
-    // On Leopard, the cell will draw outside of the given rect, so we have to
-    // clip to the rect.
-    paintInfo.context->clip(inflatedRect);
 
     if (zoomLevel != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomLevel);
