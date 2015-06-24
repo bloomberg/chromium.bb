@@ -772,9 +772,6 @@ void View::Paint(const ui::PaintContext& parent_context) {
     is_invalidated = context.IsRectInvalid(GetLocalBounds());
   }
 
-  if (!is_invalidated && context.ShouldEarlyOutOfPaintingWhenValid())
-    return;
-
   TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
   // If the view is backed by a layer, it should paint with itself as the origin
@@ -805,8 +802,6 @@ void View::Paint(const ui::PaintContext& parent_context) {
   if (is_invalidated || !paint_cache_.UseCache(context)) {
     ui::PaintRecorder recorder(context, &paint_cache_);
     gfx::Canvas* canvas = recorder.canvas();
-    // TODO(danakj): This is not needed with impl-side/slimming paint.
-    gfx::ScopedCanvas scoped_canvas(canvas);
 
     // If the View we are about to paint requested the canvas to be flipped, we
     // should change the transform appropriately.

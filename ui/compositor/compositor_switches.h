@@ -11,7 +11,6 @@ namespace switches {
 
 COMPOSITOR_EXPORT extern const char kEnableHardwareOverlays[];
 COMPOSITOR_EXPORT extern const char kEnablePixelOutputInTests[];
-COMPOSITOR_EXPORT extern const char kUIDisableSlimmingPaint[];
 COMPOSITOR_EXPORT extern const char kUIDisableThreadedCompositing[];
 COMPOSITOR_EXPORT extern const char kUIEnableCompositorAnimationTimelines[];
 COMPOSITOR_EXPORT extern const char kUIEnableZeroCopy[];
@@ -23,7 +22,6 @@ namespace ui {
 
 bool IsUIZeroCopyEnabled();
 bool IsUIOneCopyEnabled();
-bool IsUISlimmingPaintEnabled();
 
 }  // namespace ui
 

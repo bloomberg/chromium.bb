@@ -29,10 +29,6 @@ class COMPOSITOR_EXPORT PaintContext {
  public:
   // Construct a PaintContext that may only re-paint the area in the
   // |invalidation|.
-  PaintContext(gfx::Canvas* canvas, const gfx::Rect& invalidation);
-
-  // Construct a PaintContext that may only re-paint the area in the
-  // |invalidation|.
   PaintContext(cc::DisplayItemList* list,
                float device_scale_factor,
                const gfx::Rect& bounds,
@@ -52,11 +48,6 @@ class COMPOSITOR_EXPORT PaintContext {
   // When true, IsRectInvalid() can be called, otherwise its result would be
   // invalid.
   bool CanCheckInvalid() const { return !invalidation_.IsEmpty(); }
-
-  // When true, if a thing is not invalidated it does not need to paint itself.
-  // When false, everything should provide an output when painting regardless of
-  // being invalidated in order to remain visible.
-  bool ShouldEarlyOutOfPaintingWhenValid() const { return !!canvas_; }
 
   // When true, the |bounds| touches an invalidated area, so should be
   // re-painted. When false, re-painting can be skipped. Bounds should be in
@@ -88,7 +79,6 @@ class COMPOSITOR_EXPORT PaintContext {
   // cache contents.
   friend class PaintCache;
 
-  gfx::Canvas* canvas_;
   cc::DisplayItemList* list_;
   scoped_ptr<SkPictureRecorder> owned_recorder_;
   // A pointer to the |owned_recorder_| in this PaintContext, or in another one

@@ -39,12 +39,11 @@ class COMPOSITOR_EXPORT PaintRecorder {
   ~PaintRecorder();
 
   // Gets a gfx::Canvas for painting into.
-  gfx::Canvas* canvas() { return canvas_; }
+  gfx::Canvas* canvas() { return &canvas_; }
 
  private:
   const PaintContext& context_;
-  gfx::Canvas owned_canvas_;
-  gfx::Canvas* canvas_;
+  gfx::Canvas canvas_;
   PaintCache* cache_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);

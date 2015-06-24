@@ -9,24 +9,11 @@
 
 namespace ui {
 
-PaintContext::PaintContext(gfx::Canvas* canvas, const gfx::Rect& invalidation)
-    : canvas_(canvas),
-      list_(nullptr),
-      device_scale_factor_(canvas->image_scale()),
-      bounds_(invalidation),
-      invalidation_(invalidation) {
-#if DCHECK_IS_ON()
-  root_visited_ = nullptr;
-  inside_paint_recorder_ = false;
-#endif
-}
-
 PaintContext::PaintContext(cc::DisplayItemList* list,
                            float device_scale_factor,
                            const gfx::Rect& bounds,
                            const gfx::Rect& invalidation)
-    : canvas_(nullptr),
-      list_(list),
+    : list_(list),
       owned_recorder_(new SkPictureRecorder),
       recorder_(owned_recorder_.get()),
       device_scale_factor_(device_scale_factor),
@@ -40,8 +27,7 @@ PaintContext::PaintContext(cc::DisplayItemList* list,
 
 PaintContext::PaintContext(const PaintContext& other,
                            const gfx::Vector2d& offset)
-    : canvas_(other.canvas_),
-      list_(other.list_),
+    : list_(other.list_),
       owned_recorder_(nullptr),
       recorder_(other.recorder_),
       device_scale_factor_(other.device_scale_factor_),
@@ -56,8 +42,7 @@ PaintContext::PaintContext(const PaintContext& other,
 
 PaintContext::PaintContext(const PaintContext& other,
                            CloneWithoutInvalidation c)
-    : canvas_(other.canvas_),
-      list_(other.list_),
+    : list_(other.list_),
       owned_recorder_(nullptr),
       recorder_(other.recorder_),
       device_scale_factor_(other.device_scale_factor_),

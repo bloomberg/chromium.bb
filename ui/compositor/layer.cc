@@ -753,12 +753,8 @@ void Layer::PaintContents(
     SkCanvas* sk_canvas,
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
-  TRACE_EVENT1("ui", "Layer::PaintContents", "name", name_);
-  ClearDamagedRects();
-  if (delegate_) {
-    gfx::Canvas canvas(sk_canvas, device_scale_factor_);
-    delegate_->OnPaintLayer(PaintContext(&canvas, clip));
-  }
+  // The old non-slimming paint path is not used in ui::Compositor.
+  NOTREACHED();
 }
 
 scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(

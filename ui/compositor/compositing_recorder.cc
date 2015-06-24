@@ -17,25 +17,17 @@ CompositingRecorder::CompositingRecorder(const PaintContext& context,
   if (!saved_)
     return;
 
-  if (context_.canvas_) {
-    context_.canvas_->SaveLayerAlpha(alpha);
-  } else {
-    auto* item =
-        context_.list_->CreateAndAppendItem<cc::CompositingDisplayItem>();
-    item->SetNew(alpha, SkXfermode::kSrcOver_Mode, nullptr /* no bounds */,
-                 skia::RefPtr<SkColorFilter>());
-  }
+  auto* item =
+      context_.list_->CreateAndAppendItem<cc::CompositingDisplayItem>();
+  item->SetNew(alpha, SkXfermode::kSrcOver_Mode, nullptr /* no bounds */,
+               skia::RefPtr<SkColorFilter>());
 }
 
 CompositingRecorder::~CompositingRecorder() {
   if (!saved_)
     return;
 
-  if (context_.canvas_) {
-    context_.canvas_->Restore();
-  } else {
-    context_.list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>();
-  }
+  context_.list_->CreateAndAppendItem<cc::EndCompositingDisplayItem>();
 }
 
 }  // namespace ui
