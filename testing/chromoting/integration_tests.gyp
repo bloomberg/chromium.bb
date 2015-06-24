@@ -7,6 +7,15 @@
     ['archive_chromoting_tests==1', {
       'targets': [
         {
+          'target_name': 'app_remoting_integration_tests_run',
+          'includes': [
+            './dependencies.gypi',
+          ],
+          'sources': [
+            'app_remoting_integration_tests.isolate',
+          ],
+        },  # target_name: 'app_remoting_integration_tests_run'
+        {
           'target_name': 'chromoting_integration_tests_run',
           'includes': [
             './dependencies.gypi',
@@ -25,15 +34,6 @@
             'multi_machine_example/example_task.isolate',
           ],
         },  # target_name: 'chromoting_multi_machine_example_test'
-        {
-          'target_name': 'app_remoting_integration_tests_run',
-          'includes': [
-            './dependencies.gypi',
-          ],
-          'sources': [
-            'app_remoting_integration_tests.isolate',
-          ],
-        },  # target_name: 'app_remoting_integration_tests_run'
       ],
     }],
   ],

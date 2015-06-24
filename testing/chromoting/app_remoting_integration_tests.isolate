@@ -6,14 +6,26 @@
     ['OS=="linux"', {
       'variables': {
         'command': [
+          '../xvfb.py',
+          '<(PRODUCT_DIR)',
           '<(PRODUCT_DIR)/ar_test_driver',
           '--username=appremotingtestdriver_chromium_01@lgtestuser.com',
           '--environment=staging',
           '--refresh-token-file=../../remoting/tools/internal/refresh_tokens.json',
+          '--verbosity=2',
         ],
         'files': [
+          '../xvfb.py',
+          '../test_env.py',
           '<(PRODUCT_DIR)/ar_test_driver',
           '../../remoting/tools/internal/refresh_tokens.json',
+        ],
+      },
+    }],
+    ['OS=="linux" and use_ozone==0', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
     }],
