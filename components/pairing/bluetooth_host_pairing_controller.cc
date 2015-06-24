@@ -64,6 +64,7 @@ BluetoothHostPairingController::BluetoothHostPairingController()
 }
 
 BluetoothHostPairingController::~BluetoothHostPairingController() {
+  Reset();
   if (adapter_.get()) {
     if (adapter_->IsDiscoverable()) {
       adapter_->SetDiscoverable(false, base::Closure(), base::Closure());
