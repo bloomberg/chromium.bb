@@ -542,12 +542,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidPause(blink::WebMediaPlayer* player) override;
   void PlayerGone(blink::WebMediaPlayer* player) override;
 
-  // TODO(nasko): Make all tests in RenderViewImplTest friends and then move
-  // this back to private member.
-  void OnNavigate(const CommonNavigationParams& common_params,
-                  const StartNavigationParams& start_params,
-                  const RequestNavigationParams& request_params);
-
   // Make this frame show an empty, unscriptable page.
   // TODO(nasko): Remove this method once swapped out state is no longer used.
   void NavigateToSwappedOutURL();
@@ -570,8 +564,8 @@ class CONTENT_EXPORT RenderFrameImpl
  private:
   friend class RenderFrameImplTest;
   friend class RenderFrameObserver;
-  friend class RenderViewImplTest;
   friend class RendererAccessibilityTest;
+  friend class TestRenderFrame;
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
@@ -618,6 +612,9 @@ class CONTENT_EXPORT RenderFrameImpl
   //
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
+  void OnNavigate(const CommonNavigationParams& common_params,
+                  const StartNavigationParams& start_params,
+                  const RequestNavigationParams& request_params);
   void OnBeforeUnload();
   void OnSwapOut(int proxy_routing_id,
                  bool is_loading,

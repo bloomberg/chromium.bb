@@ -153,6 +153,8 @@
       'test/test_navigation_url_loader.h',
       'test/test_navigation_url_loader_factory.cc',
       'test/test_navigation_url_loader_factory.h',
+      'test/test_render_frame.cc',
+      'test/test_render_frame.h',
       'test/test_render_frame_host.cc',
       'test/test_render_frame_host.h',
       'test/test_render_frame_host_factory.cc',

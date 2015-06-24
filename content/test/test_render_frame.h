@@ -1,0 +1,46 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_TEST_TEST_RENDER_FRAME_H_
+#define CONTENT_TEST_TEST_RENDER_FRAME_H_
+
+#include "content/renderer/render_frame_impl.h"
+
+namespace content {
+
+class RenderViewImpl;
+struct CommonNavigationParams;
+struct RequestNavigationParams;
+struct StartNavigationParams;
+
+// A test class to use in RenderViewTests.
+class TestRenderFrame : public RenderFrameImpl {
+ public:
+  static RenderFrameImpl* CreateTestRenderFrame(RenderViewImpl* render_view,
+                                                int32 routing_id);
+  ~TestRenderFrame() override;
+
+  void Navigate(const CommonNavigationParams& common_params,
+                const StartNavigationParams& start_params,
+                const RequestNavigationParams& request_params);
+  void SwapOut(int proxy_routing_id,
+               bool is_loading,
+               const FrameReplicationState& replicated_frame_state);
+  void SetEditableSelectionOffsets(int start, int end);
+  void ExtendSelectionAndDelete(int before, int after);
+  void Unselect();
+  void SetAccessibilityMode(AccessibilityMode new_mode);
+  void SetCompositionFromExistingText(
+      int start,
+      int end,
+      const std::vector<blink::WebCompositionUnderline>& underlines);
+
+ private:
+  TestRenderFrame(RenderViewImpl* render_view, int32 routing_id);
+  DISALLOW_COPY_AND_ASSIGN(TestRenderFrame);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_TEST_TEST_RENDER_FRAME_H_
