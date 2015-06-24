@@ -64,8 +64,8 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyToChromeVox(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(command_name));
 
-  scoped_ptr<extensions::Event> extension_event(
-      new extensions::Event("commands.onCommand", args.Pass()));
+  scoped_ptr<extensions::Event> extension_event(new extensions::Event(
+      extensions::events::UNKNOWN, "commands.onCommand", args.Pass()));
   extension_event->restrict_to_browser_context = context;
 
   event_router->DispatchEventToExtension(extension_misc::kChromeVoxExtensionId,
