@@ -27,10 +27,9 @@
 
 namespace blink {
 
-short NodeFilter::acceptNode(Node* node, ExceptionState& exceptionState) const
+unsigned NodeFilter::acceptNode(Node* node, ExceptionState& exceptionState) const
 {
-    // cast to short silences "enumeral and non-enumeral types in return" warning
-    return m_condition ? m_condition->acceptNode(node, exceptionState) : static_cast<short>(FILTER_ACCEPT);
+    return m_condition ? m_condition->acceptNode(node, exceptionState) : FILTER_ACCEPT;
 }
 
 DEFINE_TRACE(NodeFilter)

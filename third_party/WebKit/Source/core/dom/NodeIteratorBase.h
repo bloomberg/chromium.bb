@@ -45,7 +45,7 @@ public:
 
 protected:
     NodeIteratorBase(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
-    short acceptNode(Node*, ExceptionState&) const;
+    unsigned acceptNode(Node*, ExceptionState&) const;
 
 private:
     RefPtrWillBeMember<Node> m_root;

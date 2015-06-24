@@ -77,7 +77,7 @@ public:
         return adoptRefWillBeNoop(new NodeFilter());
     }
 
-    short acceptNode(Node*, ExceptionState&) const;
+    unsigned acceptNode(Node*, ExceptionState&) const;
 
     void setCondition(PassRefPtrWillBeRawPtr<NodeFilterCondition> condition)
     {

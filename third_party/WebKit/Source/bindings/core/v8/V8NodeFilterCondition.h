@@ -69,7 +69,7 @@ public:
 
     virtual ~V8NodeFilterCondition();
 
-    virtual short acceptNode(Node*, ExceptionState&) const override;
+    virtual unsigned acceptNode(Node*, ExceptionState&) const override;
 
 private:
     // As the value |filter| is maintained by V8GC, the |owner| which references

@@ -40,7 +40,7 @@ NodeIteratorBase::NodeIteratorBase(PassRefPtrWillBeRawPtr<Node> rootNode, unsign
 {
 }
 
-short NodeIteratorBase::acceptNode(Node* node, ExceptionState& exceptionState) const
+unsigned NodeIteratorBase::acceptNode(Node* node, ExceptionState& exceptionState) const
 {
     // The bit twiddling here is done to map DOM node types, which are given as integers from
     // 1 through 14, to whatToShow bit masks.

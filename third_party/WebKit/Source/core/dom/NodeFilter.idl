@@ -26,10 +26,9 @@
     WillBeGarbageCollected,
 ] interface NodeFilter {
     // Constants for acceptNode()
-    // FIXME: acceptNode()'s return type and these constants should be unsigned short.
-    const short FILTER_ACCEPT = 1;
-    const short FILTER_REJECT = 2;
-    const short FILTER_SKIP = 3;
+    const unsigned short FILTER_ACCEPT = 1;
+    const unsigned short FILTER_REJECT = 2;
+    const unsigned short FILTER_SKIP = 3;
 
     // Constants for whatToShow
     const unsigned long SHOW_ALL = 0xFFFFFFFF;
@@ -47,5 +46,5 @@
     const unsigned long SHOW_NOTATION = 0x800; // historical
 
     // FIXME: The node argument should not be optional.
-    [RaisesException] short acceptNode([Default=Undefined] optional Node node);
+    [RaisesException] unsigned short acceptNode([Default=Undefined] optional Node node);
 };

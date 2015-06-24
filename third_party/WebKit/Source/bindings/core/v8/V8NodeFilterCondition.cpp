@@ -57,7 +57,7 @@ V8NodeFilterCondition::~V8NodeFilterCondition()
 {
 }
 
-short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionState) const
+unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionState) const
 {
     v8::Isolate* isolate = m_scriptState->isolate();
     ASSERT(!m_scriptState->context().IsEmpty());
@@ -106,12 +106,12 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
 
     ASSERT(!result.IsEmpty());
 
-    int32_t int32Value;
-    if (!v8Call(result->Int32Value(m_scriptState->context()), int32Value, exceptionCatcher)) {
+    uint32_t uint32Value;
+    if (!v8Call(result->Uint32Value(m_scriptState->context()), uint32Value, exceptionCatcher)) {
         exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
         return NodeFilter::FILTER_REJECT;
     }
-    return int32Value;
+    return uint32Value;
 }
 
 void V8NodeFilterCondition::setWeakCallback(const v8::WeakCallbackInfo<V8NodeFilterCondition>& data)
