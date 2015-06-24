@@ -85,7 +85,8 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     // within a DrawingRecorder.
     Optional<DrawingRecorder> drawingRecorder;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled() && paintInfo.phase != PaintPhaseTextClip) {
-        LayoutRect paintRect(m_inlineTextBox.logicalRectToPhysicalRect(logicalVisualOverflow));
+        LayoutRect paintRect(logicalVisualOverflow);
+        m_inlineTextBox.logicalRectToPhysicalRect(paintRect);
         if (paintInfo.phase != PaintPhaseSelection && (haveSelection || containsComposition || paintsMarkerHighlights(m_inlineTextBox.layoutObject())))
             paintRect.unite(m_inlineTextBox.localSelectionRect(m_inlineTextBox.start(), m_inlineTextBox.start() + m_inlineTextBox.len()));
         paintRect.moveBy(adjustedPaintOffset);

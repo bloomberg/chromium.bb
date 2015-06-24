@@ -279,7 +279,7 @@ public:
     // Converts from a rect in the logical space of the InlineBox to one in the physical space
     // of the containing block. The logical space of an InlineBox may be transposed for vertical text and
     // flipped for right-to-left text.
-    LayoutRect logicalRectToPhysicalRect(const LayoutRect&);
+    void logicalRectToPhysicalRect(LayoutRect&);
 
     void flipForWritingMode(FloatRect&);
     FloatPoint flipForWritingMode(const FloatPoint&);

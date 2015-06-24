@@ -341,14 +341,16 @@ LayoutPoint InlineBox::logicalPositionToPhysicalPoint(const LayoutPoint& point, 
     return LayoutPoint(block.size().width() - size.width() - point.x(), point.y());
 }
 
-LayoutRect InlineBox::logicalRectToPhysicalRect(const LayoutRect& current)
+void InlineBox::logicalRectToPhysicalRect(LayoutRect& current)
 {
-    LayoutRect retval = current;
+    if (isHorizontal() && !layoutObject().hasFlippedBlocksWritingMode())
+        return;
+
     if (!isHorizontal()) {
-        retval = retval.transposedRect();
+        current = current.transposedRect();
     }
-    retval.setLocation(logicalPositionToPhysicalPoint(retval.location(), retval.size()));
-    return retval;
+    current.setLocation(logicalPositionToPhysicalPoint(current.location(), current.size()));
+    return;
 }
 
 void InlineBox::flipForWritingMode(FloatRect& rect)

@@ -29,7 +29,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
     if (haveSelection)
         paintRect.unite(LayoutRect(m_ellipsisBox.selectionRect()));
-    paintRect = m_ellipsisBox.logicalRectToPhysicalRect(paintRect);
+    m_ellipsisBox.logicalRectToPhysicalRect(paintRect);
     paintRect.moveBy(paintOffset);
 
     GraphicsContext* context = paintInfo.context;
