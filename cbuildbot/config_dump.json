@@ -8463,6 +8463,210 @@
             "-chrome_internal"
         ]
     },
+    "guado_moblab-chrome-pfq": {
+        "_template": "chrome-pfq",
+        "boards": [
+            "guado_moblab"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "name": "guado_moblab-chrome-pfq",
+        "vm_tests": []
+    },
+    "guado_moblab-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "guado_moblab"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "guado_moblab-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "guado_moblab-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "guado_moblab-compile-only-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "guado_moblab-full": {
+        "_template": "full",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false,
+        "name": "guado_moblab-full",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "guado_moblab-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "guado_moblab-no-vmtest-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "guado_moblab-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "guado_moblab"
+        ],
+        "description": "Commit Queue (internal)",
+        "image_test": false,
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "guado_moblab-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "guado_moblab-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "guado_moblab"
+        ],
+        "name": "guado_moblab-payloads"
+    },
+    "guado_moblab-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "guado_moblab-pre-cq",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "guado_moblab-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "afdo_use": false,
+        "boards": [
+            "guado_moblab"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
+        ],
+        "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
+        "name": "guado_moblab-release",
+        "paygen_skip_delta_payloads": true,
+        "paygen_skip_testing": true,
+        "signer_tests": false,
+        "vm_tests": []
+    },
+    "guado_moblab-release-afdo": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "guado_moblab"
+        ],
+        "child_configs": [
+            {
+                "_template": "release-afdo-generate",
+                "boards": [
+                    "guado_moblab"
+                ],
+                "grouped": true,
+                "image_test": false,
+                "name": "guado_moblab-release-afdo-generate",
+                "vm_tests": []
+            },
+            {
+                "_template": "release-afdo-use",
+                "boards": [
+                    "guado_moblab"
+                ],
+                "grouped": true,
+                "image_test": false,
+                "name": "guado_moblab-release-afdo-use",
+                "vm_tests": []
+            }
+        ],
+        "image_test": false,
+        "name": "guado_moblab-release-afdo",
+        "vm_tests": []
+    },
+    "guado_moblab-release-afdo-generate": {
+        "_template": "release-afdo-generate",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false,
+        "name": "guado_moblab-release-afdo-generate",
+        "vm_tests": []
+    },
+    "guado_moblab-release-afdo-use": {
+        "_template": "release-afdo-use",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false,
+        "name": "guado_moblab-release-afdo-use",
+        "vm_tests": []
+    },
+    "guado_moblab-tot-chrome-pfq-informational": {
+        "_template": "chrome-pfq-informational",
+        "boards": [
+            "guado_moblab"
+        ],
+        "manifest": "official.xml",
+        "name": "guado_moblab-tot-chrome-pfq-informational",
+        "vm_tests": []
+    },
+    "guado_moblab-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "guado_moblab"
+        ],
+        "name": "guado_moblab-tot-chromium-pfq-informational",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "heli-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [

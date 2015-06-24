@@ -422,6 +422,7 @@ _x86_internal_release_boards = frozenset([
     'glimmer',
     'gnawty',
     'guado',
+    'guado_moblab',
     'heli',
     'jecht',
     'kip',
@@ -552,6 +553,7 @@ _brillo_boards = frozenset([
 _moblab_boards = frozenset([
     'stumpy_moblab',
     'panther_moblab',
+    'guado_moblab',
 ])
 
 _minimal_profile_boards = frozenset([
@@ -662,6 +664,7 @@ _waterfall_config_map = {
         'rush_ryu-release',
         'smaug-release',
         'lakitu-release',
+        'guado_moblab-release',
 
         # Experimental PFQs.
         'peach_pit-chrome-pfq',
@@ -2177,6 +2180,28 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'panther_moblab-release',
       _base_configs['panther_moblab'],
+      images=['base', 'recovery', 'test'],
+      paygen_skip_delta_payloads=True,
+      # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
+      paygen_skip_testing=True,
+      important=False,
+      afdo_use=False,
+      signer_tests=False,
+      hw_tests=[
+          config_lib.HWTestConfig(
+              constants.HWTEST_BVT_SUITE, blocking=True,
+              warn_only=True, num=1
+          ),
+          config_lib.HWTestConfig(
+              constants.HWTEST_AU_SUITE, blocking=True,
+              warn_only=True, num=1
+          ),
+      ],
+  )
+
+  site_config.AddConfig(
+      _release, 'guado_moblab-release',
+      _base_configs['guado_moblab'],
       images=['base', 'recovery', 'test'],
       paygen_skip_delta_payloads=True,
       # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
