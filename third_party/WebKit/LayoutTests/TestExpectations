@@ -194,6 +194,9 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
+crbug.com/496713 fast/text/international/rtl-negative-letter-spacing.html [ NeedsRebaseline ]
+crbug.com/496713 virtual/antialiasedtext/fast/text/international/rtl-negative-letter-spacing.html [ NeedsRebaseline ]
+
 crbug.com/484953 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-004.html [ Failure ]
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-006.html [ Failure ]
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-008.html [ Failure ]

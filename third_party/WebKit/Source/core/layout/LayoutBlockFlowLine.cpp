@@ -398,7 +398,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
         int lastEndOffset = run->m_start;
         for (size_t i = 0, size = wordMeasurements.size(); i < size && lastEndOffset < run->m_stop; ++i) {
             const WordMeasurement& wordMeasurement = wordMeasurements[i];
-            if (wordMeasurement.width <=0 || wordMeasurement.startOffset == wordMeasurement.endOffset)
+            if (wordMeasurement.startOffset == wordMeasurement.endOffset)
                 continue;
             if (wordMeasurement.layoutText != layoutText || wordMeasurement.startOffset != lastEndOffset || wordMeasurement.endOffset > run->m_stop)
                 continue;
@@ -421,15 +421,23 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
                     fallbackFonts.add(*it);
             }
         }
-        if (measuredWidth && lastEndOffset != run->m_stop) {
+        if (lastEndOffset != run->m_stop) {
             // If we don't have enough cached data, we'll measure the run again.
-            measuredWidth = 0;
+            canUseSimpleFontCodePath = false;
             fallbackFonts.clear();
         }
     }
 
-    if (!measuredWidth)
+    // Don't put this into 'else' part of the above 'if' because canUseSimpleFontCodePath may be modified in the 'if' block.
+    if (!canUseSimpleFontCodePath)
         measuredWidth = layoutText->width(run->m_start, run->m_stop - run->m_start, xPos, run->direction(), lineInfo.isFirstLine(), &fallbackFonts, &glyphBounds);
+
+    // Negative word-spacing and/or letter-spacing may cause some glyphs to overflow the left boundary and result
+    // negative measured width. Reset measured width to 0 and adjust glyph bounds accordingly to cover the overflow.
+    if (measuredWidth < 0) {
+        glyphBounds.move(measuredWidth, 0);
+        measuredWidth = 0;
+    }
 
     glyphOverflow.setFromBounds(glyphBounds, font.fontMetrics().floatAscent(), font.fontMetrics().floatDescent(), measuredWidth);
 
