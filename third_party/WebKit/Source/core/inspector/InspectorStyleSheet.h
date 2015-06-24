@@ -137,8 +137,8 @@ public:
     PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> buildObjectForStyleSheetInfo();
     PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*, PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> >);
 
-    PassRefPtr<TypeBuilder::CSS::SourceRange> ruleHeaderSourceRange(const CSSRule*);
-    PassRefPtr<TypeBuilder::CSS::SourceRange> mediaQueryExpValueSourceRange(const CSSRule*, size_t mediaQueryIndex, size_t mediaQueryExpIndex);
+    PassRefPtr<TypeBuilder::CSS::SourceRange> ruleHeaderSourceRange(CSSRule*);
+    PassRefPtr<TypeBuilder::CSS::SourceRange> mediaQueryExpValueSourceRange(CSSRule*, size_t mediaQueryIndex, size_t mediaQueryExpIndex);
 
     bool isInlineStyle() override { return false; }
     const CSSRuleVector& flatRules();
@@ -148,24 +148,25 @@ protected:
 
 private:
     InspectorStyleSheet(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
-    unsigned ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange&);
-    bool findRuleByHeaderRange(const SourceRange&, CSSRule**, CSSRuleSourceData**);
-    bool findRuleByBodyRange(const SourceRange&, CSSRule**, CSSRuleSourceData**);
+    unsigned ruleIndexBySourceRange(CSSMediaRule* parentMediaRule, const SourceRange&);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByHeaderRange(const SourceRange&);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByBodyRange(const SourceRange&);
+    RefPtrWillBeRawPtr<CSSRule> ruleForSourceData(CSSRuleSourceData*);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceDataForRule(CSSRule*);
     CSSStyleRule* insertCSSOMRuleInStyleSheet(const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
     String sourceMapURL();
     String sourceURL();
-    void ensureFlatRules();
+    void collectFlatRules();
     bool resourceStyleSheetText(String* result);
     bool inlineStyleSheetText(String* result);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > selectorsFromSource(const CSSRuleSourceData*, const String&);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector>> selectorsFromSource(CSSRuleSourceData*, const String&);
     PassRefPtr<TypeBuilder::CSS::SelectorList> buildObjectForSelectorList(CSSStyleRule*);
     String url();
     bool hasSourceURL();
     bool startsAtZero();
 
-    unsigned indexOf(CSSStyleDeclaration*);
     void replaceText(const SourceRange&, const String& text, SourceRange* newRange, String* oldText);
     void innerSetText(const String& newText, bool markAsLocallyModified);
     Element* ownerStyleElement();
