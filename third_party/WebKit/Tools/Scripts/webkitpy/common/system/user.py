@@ -37,6 +37,7 @@ import sys
 import webbrowser
 
 from webkitpy.common.system.executive import Executive
+from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.platforminfo import PlatformInfo
 
 
@@ -50,7 +51,7 @@ class User(object):
     def __init__(self, platforminfo=None):
         # We cannot get the PlatformInfo object from a SystemHost because
         # User is part of SystemHost itself.
-        self._platforminfo = platforminfo or PlatformInfo(sys, platform, Executive())
+        self._platforminfo = platforminfo or PlatformInfo(sys, platform, FileSystem(), Executive())
 
     # FIXME: These are @classmethods because bugzilla.py doesn't have a Tool object (thus no User instance).
     @classmethod

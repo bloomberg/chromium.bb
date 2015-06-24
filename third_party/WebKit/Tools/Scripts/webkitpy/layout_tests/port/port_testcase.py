@@ -40,6 +40,7 @@ import unittest
 from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.platforminfo_mock import MockPlatformInfo
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.layout_tests.models import test_run_results
@@ -418,36 +419,23 @@ class PortTestCase(unittest.TestCase):
         self.assertEqual(result_directories, expected_directories)
 
     def _assert_config_file_for_platform(self, port, platform, config_file):
-        self.assertEqual(port._apache_config_file_name_for_platform(platform), config_file)
+        port.host.platform = MockPlatformInfo(os_name=platform)
+        self.assertEqual(port._apache_config_file_name_for_platform(), config_file)
 
-    def test_linux_distro_detection(self):
-        port = TestWebKitPort()
-        self.assertFalse(port._is_redhat_based())
-        self.assertFalse(port._is_debian_based())
-
-        port._filesystem = MockFileSystem({'/etc/redhat-release': ''})
-        self.assertTrue(port._is_redhat_based())
-        self.assertFalse(port._is_debian_based())
-
-        port._filesystem = MockFileSystem({'/etc/debian_version': ''})
-        self.assertFalse(port._is_redhat_based())
-        self.assertTrue(port._is_debian_based())
+    def _assert_config_file_for_linux_distribution(self, port, distribution, config_file):
+        port.host.platform = MockPlatformInfo(os_name='linux', linux_distribution=distribution)
+        self.assertEqual(port._apache_config_file_name_for_platform(), config_file)
 
     def test_apache_config_file_name_for_platform(self):
         port = TestWebKitPort()
         self._assert_config_file_for_platform(port, 'cygwin', 'cygwin-httpd.conf')
 
         port._apache_version = lambda: '2.2'
-        self._assert_config_file_for_platform(port, 'linux2', 'apache2-httpd-2.2.conf')
-        self._assert_config_file_for_platform(port, 'linux3', 'apache2-httpd-2.2.conf')
-
-        port._is_redhat_based = lambda: True
-        self._assert_config_file_for_platform(port, 'linux2', 'fedora-httpd-2.2.conf')
-
-        port = TestWebKitPort()
-        port._is_debian_based = lambda: True
-        port._apache_version = lambda: '2.2'
-        self._assert_config_file_for_platform(port, 'linux2', 'debian-httpd-2.2.conf')
+        self._assert_config_file_for_platform(port, 'linux', 'apache2-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'arch', 'arch-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'debian', 'debian-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'slackware', 'apache2-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'redhat', 'redhat-httpd-2.2.conf')
 
         self._assert_config_file_for_platform(port, 'mac', 'apache2-httpd-2.2.conf')
         self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd-2.2.conf')  # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
@@ -466,8 +454,8 @@ class PortTestCase(unittest.TestCase):
         finally:
             os.environ = saved_environ.copy()
 
-        # Mock out _apache_config_file_name_for_platform to ignore the passed sys.platform value.
-        port._apache_config_file_name_for_platform = lambda platform: 'httpd.conf'
+        # Mock out _apache_config_file_name_for_platform to avoid mocking platform info
+        port._apache_config_file_name_for_platform = lambda: 'httpd.conf'
         self.assertEqual(port.path_to_apache_config_file(), '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/httpd.conf')
 
         # Check that even if we mock out _apache_config_file_name, the environment variable takes precedence.

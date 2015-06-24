@@ -32,6 +32,8 @@ import unittest
 
 from webkitpy.common.system.executive import Executive
 from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
+from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.platforminfo import PlatformInfo
 
 
@@ -67,17 +69,20 @@ def fake_executive(output=None):
 
 
 class TestPlatformInfo(unittest.TestCase):
-    def make_info(self, sys_module=None, platform_module=None, executive=None):
-        return PlatformInfo(sys_module or fake_sys(), platform_module or fake_platform(), executive or fake_executive())
+    def make_info(self, sys_module=None, platform_module=None, filesystem_module=None, executive=None):
+        return PlatformInfo(sys_module or fake_sys(), platform_module or fake_platform(), filesystem_module or MockFileSystem(), executive or fake_executive())
 
     def test_real_code(self):
         # This test makes sure the real (unmocked) code actually works.
-        info = PlatformInfo(sys, platform, Executive())
+        info = PlatformInfo(sys, platform, FileSystem(), Executive())
         self.assertNotEquals(info.os_name, '')
         self.assertNotEquals(info.os_version, '')
         self.assertNotEquals(info.display_name(), '')
         self.assertTrue(info.is_mac() or info.is_win() or info.is_linux() or info.is_freebsd())
         self.assertIsNotNone(info.terminal_width())
+
+        if info.is_linux():
+            self.assertIsNotNone(info.linux_distribution())
 
         if info.is_mac():
             self.assertTrue(info.total_bytes_memory() > 0)
@@ -154,6 +159,19 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.0.1234')).os_version, 'vista')
         self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('5.1.1234')).os_version, 'xp')
 
+    def _assert_file_implies_linux_distribution(self, file, distribution):
+        info = self.make_info(sys_module=fake_sys('linux2'), filesystem_module=MockFileSystem({file: ''}))
+        self.assertEqual(info.linux_distribution(), distribution)
+
+    def test_linux_distro_detection(self):
+        self._assert_file_implies_linux_distribution('/etc/arch-release', 'arch')
+        self._assert_file_implies_linux_distribution('/etc/debian_version', 'debian')
+        self._assert_file_implies_linux_distribution('/etc/redhat-release', 'redhat')
+        self._assert_file_implies_linux_distribution('/etc/mock-release', 'unknown')
+
+        info = self.make_info(fake_sys('cygwin'), executive=fake_executive('6.1.7600'))
+        self.assertIsNone(info.linux_distribution())
+
     def test_display_name(self):
         info = self.make_info(fake_sys('darwin'))
         self.assertNotEquals(info.display_name(), '')
@@ -168,7 +186,7 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertNotEquals(info.display_name(), '')
 
     def test_total_bytes_memory(self):
-        info = self.make_info(fake_sys('darwin'), fake_platform('10.6.3'), fake_executive('1234'))
+        info = self.make_info(fake_sys('darwin'), fake_platform('10.6.3'), executive=fake_executive('1234'))
         self.assertEqual(info.total_bytes_memory(), 1234)
 
         info = self.make_info(fake_sys('win32', tuple([6, 1, 7600])))

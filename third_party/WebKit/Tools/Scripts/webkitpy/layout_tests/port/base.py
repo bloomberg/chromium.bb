@@ -1441,7 +1441,7 @@ class Port(object):
                 raise IOError('%s was not found on the system' % config_file_from_env)
             return config_file_from_env
 
-        config_file_name = self._apache_config_file_name_for_platform(sys.platform)
+        config_file_name = self._apache_config_file_name_for_platform()
         return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
 
     #
@@ -1451,27 +1451,20 @@ class Port(object):
     # or any of its subclasses.
     #
 
-    # FIXME: This belongs on some platform abstraction instead of Port.
-    def _is_redhat_based(self):
-        return self._filesystem.exists('/etc/redhat-release')
-
-    def _is_debian_based(self):
-        return self._filesystem.exists('/etc/debian_version')
-
     def _apache_version(self):
         config = self._executive.run_command([self.path_to_apache(), '-v'])
         return re.sub(r'(?:.|\n)*Server version: Apache/(\d+\.\d+)(?:.|\n)*', r'\1', config)
 
-    # We pass sys_platform into this method to make it easy to unit test.
-    def _apache_config_file_name_for_platform(self, sys_platform):
-        if sys_platform == 'cygwin':
+    def _apache_config_file_name_for_platform(self):
+        if self.host.platform.is_cygwin():
             return 'cygwin-httpd.conf'  # CYGWIN is the only platform to still use Apache 1.3.
-        if sys_platform.startswith('linux'):
-            if self._is_redhat_based():
-                return 'fedora-httpd-' + self._apache_version() + '.conf'
-            if self._is_debian_based():
-                return 'debian-httpd-' + self._apache_version() + '.conf'
-        # All platforms use apache2 except for CYGWIN (and Mac OS X Tiger and prior, which we no longer support).
+        if self.host.platform.is_linux():
+            distribution = self.host.platform.linux_distribution()
+
+            custom_configuration_distributions = ['arch', 'debian', 'redhat']
+            if distribution in custom_configuration_distributions:
+                return "%s-httpd-%s.conf" % (distribution, self._apache_version())
+
         return 'apache2-httpd-' + self._apache_version() + '.conf'
 
     def _path_to_driver(self, configuration=None):

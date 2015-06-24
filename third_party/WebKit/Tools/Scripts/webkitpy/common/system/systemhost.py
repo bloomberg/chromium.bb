@@ -39,7 +39,7 @@ class SystemHost(object):
         self.executive = executive.Executive()
         self.filesystem = filesystem.FileSystem()
         self.user = user.User()
-        self.platform = platforminfo.PlatformInfo(sys, platform, self.executive)
+        self.platform = platforminfo.PlatformInfo(sys, platform, self.filesystem, self.executive)
         self.workspace = workspace.Workspace(self.filesystem, self.executive)
         self.stdin = sys.stdin
         self.stdout = sys.stdout

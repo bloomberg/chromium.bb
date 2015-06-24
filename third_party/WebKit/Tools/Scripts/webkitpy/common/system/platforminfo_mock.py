@@ -28,9 +28,10 @@
 
 
 class MockPlatformInfo(object):
-    def __init__(self, os_name='mac', os_version='snowleopard', is_highdpi=False):
+    def __init__(self, os_name='mac', os_version='snowleopard', linux_distribution=None, is_highdpi=False):
         self.os_name = os_name
         self.os_version = os_version
+        self._linux_distribution = linux_distribution
         self._is_highdpi = is_highdpi
 
     def is_mac(self):
@@ -53,6 +54,9 @@ class MockPlatformInfo(object):
 
     def display_name(self):
         return "MockPlatform 1.0"
+
+    def linux_distribution(self):
+        return self._linux_distribution if self.is_linux() else None
 
     def total_bytes_memory(self):
         return 3 * 1024 * 1024 * 1024  # 3GB is a reasonable amount of ram to mock.

@@ -43,8 +43,9 @@ class PlatformInfo(object):
     newer than one known to the code.
     """
 
-    def __init__(self, sys_module, platform_module, executive):
+    def __init__(self, sys_module, platform_module, filesystem_module, executive):
         self._executive = executive
+        self._filesystem = filesystem_module
         self._platform_module = platform_module
         self.os_name = self._determine_os_name(sys_module.platform)
         if self.os_name == 'linux':
@@ -118,6 +119,19 @@ class PlatformInfo(object):
                 return columns
         except:
             return sys.maxint
+
+    def linux_distribution(self):
+        if not self.is_linux():
+            return None
+
+        if self._filesystem.exists('/etc/redhat-release'):
+            return 'redhat'
+        if self._filesystem.exists('/etc/debian_version'):
+            return 'debian'
+        if self._filesystem.exists('/etc/arch-release'):
+            return 'arch'
+
+        return 'unknown'
 
     def _determine_os_name(self, sys_platform):
         if sys_platform == 'darwin':
