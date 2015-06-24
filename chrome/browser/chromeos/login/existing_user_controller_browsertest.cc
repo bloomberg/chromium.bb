@@ -151,6 +151,10 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
         new ExistingUserController(mock_login_display_host_.get()));
     ASSERT_EQ(existing_user_controller(), existing_user_controller_.get());
     existing_user_controller_->Init(user_manager::UserList());
+
+    chromeos::test::UserSessionManagerTestApi session_manager_test_api(
+        chromeos::UserSessionManager::GetInstance());
+    session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
   }
 
   void TearDownOnMainThread() override {

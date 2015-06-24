@@ -28,6 +28,7 @@ class GURL;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
+class TokenHandleFetcher;
 
 namespace net {
 class URLRequestContextGetter;
@@ -367,11 +368,12 @@ class UserSessionManager
       const locale_util::LanguageSwitchResult& result);
 
   // Callback invoked when |token_handle_util_| has finished.
-  void OnTokenHandleObtained(const user_manager::UserID& id,
-                             TokenHandleUtil::TokenHandleStatus status);
+  void OnTokenHandleObtained(const user_manager::UserID& id, bool success);
 
   // Returns |true| if token handles should be used on this device.
   bool TokenHandlesEnabled();
+
+  void CreateTokenUtilIfMissing();
 
   // Test API methods.
 
@@ -384,6 +386,9 @@ class UserSessionManager
   void set_should_launch_browser_in_tests(bool should_launch_browser) {
     should_launch_browser_ = should_launch_browser;
   }
+
+  // Controls whether token handle fetching is enabled (used in tests).
+  void SetShouldObtainHandleInTests(bool should_obtain_handles);
 
   // The user pods display type for histogram.
   enum UserPodsDisplay {
@@ -458,7 +463,11 @@ class UserSessionManager
   bool running_easy_unlock_key_ops_;
   base::Closure easy_unlock_key_ops_finished_callback_;
 
+  // Whether should fetch token handles, tests may override this value.
+  bool should_obtain_handles_;
+
   scoped_ptr<TokenHandleUtil> token_handle_util_;
+  scoped_ptr<TokenHandleFetcher> token_handle_fetcher_;
 
   // Whether should launch browser, tests may override this value.
   bool should_launch_browser_;

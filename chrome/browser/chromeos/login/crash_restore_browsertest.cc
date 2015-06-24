@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -124,6 +125,10 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
     UserSessionRestoreObserver restore_observer;
     restore_observer.Wait();
   }
+
+  chromeos::test::UserSessionManagerTestApi session_manager_test_api(
+      chromeos::UserSessionManager::GetInstance());
+  session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
   DCHECK(UserSessionManager::GetInstance()->UserSessionsRestored());
 

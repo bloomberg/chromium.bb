@@ -10,6 +10,8 @@
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -130,6 +132,11 @@ void OobeBaseTest::SetUpOnMainThread() {
   js_checker_.set_web_contents(LoginDisplayHostImpl::default_host()
                                    ->GetWebUILoginView()
                                    ->GetWebContents());
+
+  test::UserSessionManagerTestApi session_manager_test_api(
+      UserSessionManager::GetInstance());
+  session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
+
   ExtensionApiTest::SetUpOnMainThread();
 }
 

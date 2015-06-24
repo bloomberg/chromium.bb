@@ -22,5 +22,10 @@ void UserSessionManagerTestApi::SetShouldLaunchBrowserInTests(
   session_manager_->set_should_launch_browser_in_tests(should_launch_browser);
 }
 
+void UserSessionManagerTestApi::SetShouldObtainTokenHandleInTests(
+    bool should_obtain_handle) {
+  session_manager_->SetShouldObtainHandleInTests(should_obtain_handle);
+}
+
 }  // namespace test
 }  // namespace chromeos

@@ -66,6 +66,7 @@ void LoginManagerTest::SetUpOnMainThread() {
       UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldLaunchBrowserInTests(
       should_launch_browser_);
+  session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 }
 
 bool LoginManagerTest::SetUpUserDataDirectory() {

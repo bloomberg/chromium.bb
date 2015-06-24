@@ -54,18 +54,15 @@ class TokenHandleUtil {
   void CheckToken(const user_manager::UserID& user_id,
                   const TokenValidationCallback& callback);
 
-  // Given the OAuth |access_token| attempt to obtain token handle and store it
-  // for |user_id|.
-  void GetTokenHandle(const user_manager::UserID& user_id,
-                      const std::string& access_token,
-                      const TokenValidationCallback& callback);
+  // Given the token |handle| store it for |user_id|.
+  void StoreTokenHandle(const user_manager::UserID& user_id,
+                        const std::string& handle);
 
  private:
   // Associates GaiaOAuthClient::Delegate with User ID and Token.
   class TokenDelegate : public gaia::GaiaOAuthClient::Delegate {
    public:
     TokenDelegate(const base::WeakPtr<TokenHandleUtil>& owner,
-                  bool obtain,
                   const user_manager::UserID& user_id,
                   const std::string& token,
                   const TokenValidationCallback& callback);
@@ -78,7 +75,6 @@ class TokenHandleUtil {
 
    private:
     base::WeakPtr<TokenHandleUtil> owner_;
-    bool obtain_;
     user_manager::UserID user_id_;
     std::string token_;
     TokenValidationCallback callback_;
@@ -88,8 +84,6 @@ class TokenHandleUtil {
 
   void OnValidationComplete(const std::string& token);
   void OnObtainTokenComplete(const user_manager::UserID& id);
-  void StoreTokenHandle(const user_manager::UserID& user_id,
-                        const std::string& handle);
 
   // UserManager that stores corresponding user data.
   user_manager::UserManager* user_manager_;

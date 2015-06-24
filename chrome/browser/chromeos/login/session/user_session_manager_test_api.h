@@ -24,6 +24,9 @@ class UserSessionManagerTestApi {
   // (used in tests).
   void SetShouldLaunchBrowserInTests(bool should_launch_browser);
 
+  // Controls whether token handle fetching is enabled (used in tests).
+  void SetShouldObtainTokenHandleInTests(bool should_obtain_handle);
+
  private:
   UserSessionManager* session_manager_;  // not owned
 

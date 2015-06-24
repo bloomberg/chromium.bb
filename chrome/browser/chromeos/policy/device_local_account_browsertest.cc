@@ -44,6 +44,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -526,6 +528,10 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         chromeos::WizardController::default_controller();
     ASSERT_TRUE(wizard_controller);
     wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+
+    chromeos::test::UserSessionManagerTestApi session_manager_test_api(
+        chromeos::UserSessionManager::GetInstance());
+    session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
   }
 
   void TearDownOnMainThread() override {

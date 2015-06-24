@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
+#include "chrome/browser/chromeos/login/signin/token_handle_fetcher.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -333,6 +334,7 @@ UserSessionManager::UserSessionManager()
       session_restore_strategy_(
           OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN),
       running_easy_unlock_key_ops_(false),
+      should_obtain_handles_(true),
       should_launch_browser_(true),
       waiting_for_child_account_status_(false),
       weak_factory_(this) {
@@ -348,6 +350,14 @@ UserSessionManager::~UserSessionManager() {
   if (user_manager::UserManager::IsInitialized())
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+}
+
+void UserSessionManager::SetShouldObtainHandleInTests(
+    bool should_obtain_handles) {
+  should_obtain_handles_ = should_obtain_handles;
+  if (!should_obtain_handles_) {
+    token_handle_fetcher_.reset();
+  }
 }
 
 void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
@@ -1086,6 +1096,18 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   UpdateEasyUnlockKeys(user_context_);
   user_context_.ClearSecrets();
+  if (TokenHandlesEnabled()) {
+    CreateTokenUtilIfMissing();
+    if (token_handle_util_->ShouldObtainHandle(user->GetUserID())) {
+      if (!token_handle_fetcher_.get()) {
+        token_handle_fetcher_.reset(new TokenHandleFetcher(
+            token_handle_util_.get(), user->GetUserID()));
+        token_handle_fetcher_->BackfillToken(
+            profile, base::Bind(&UserSessionManager::OnTokenHandleObtained,
+                                weak_factory_.GetWeakPtr()));
+      }
+    }
+  }
 
   // Now that profile is ready, proceed to either alternative login flows or
   // launch browser.
@@ -1664,29 +1686,28 @@ void UserSessionManager::SendUserPodsMetrics() {
 
 void UserSessionManager::OnOAuth2TokensFetched(UserContext context) {
   if (StartupUtils::IsWebviewSigninEnabled() && TokenHandlesEnabled()) {
-    if (!token_handle_util_.get()) {
-      token_handle_util_.reset(
-          new TokenHandleUtil(user_manager::UserManager::Get()));
-    }
+    CreateTokenUtilIfMissing();
     if (token_handle_util_->ShouldObtainHandle(context.GetUserID())) {
-      token_handle_util_->GetTokenHandle(
-          context.GetUserID(), context.GetAccessToken(),
+      token_handle_fetcher_.reset(new TokenHandleFetcher(
+          token_handle_util_.get(), context.GetUserID()));
+      token_handle_fetcher_->FillForNewUser(
+          context.GetAccessToken(),
           base::Bind(&UserSessionManager::OnTokenHandleObtained,
                      weak_factory_.GetWeakPtr()));
     }
   }
 }
 
-void UserSessionManager::OnTokenHandleObtained(
-    const user_manager::UserID& id,
-    TokenHandleUtil::TokenHandleStatus status) {
-  if (status != TokenHandleUtil::VALID) {
+void UserSessionManager::OnTokenHandleObtained(const user_manager::UserID& id,
+                                               bool success) {
+  if (!success)
     LOG(ERROR) << "OAuth2 token handle fetch failed.";
-    return;
-  }
+  token_handle_fetcher_.reset();
 }
 
 bool UserSessionManager::TokenHandlesEnabled() {
+  if (!should_obtain_handles_)
+    return false;
   bool ephemeral_users_enabled = false;
   bool show_names_on_signin = true;
   auto cros_settings = CrosSettings::Get();
@@ -1698,7 +1719,14 @@ bool UserSessionManager::TokenHandlesEnabled() {
 }
 
 void UserSessionManager::Shutdown() {
+  token_handle_fetcher_.reset();
   token_handle_util_.reset();
+}
+
+void UserSessionManager::CreateTokenUtilIfMissing() {
+  if (!token_handle_util_.get())
+    token_handle_util_.reset(
+        new TokenHandleUtil(user_manager::UserManager::Get()));
 }
 
 }  // namespace chromeos

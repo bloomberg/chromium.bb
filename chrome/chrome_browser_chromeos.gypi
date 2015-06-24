@@ -621,6 +621,8 @@
         'browser/chromeos/login/signin/oauth2_token_fetcher.h',
         'browser/chromeos/login/signin/oauth2_token_initializer.cc',
         'browser/chromeos/login/signin/oauth2_token_initializer.h',
+        'browser/chromeos/login/signin/token_handle_fetcher.cc',
+        'browser/chromeos/login/signin/token_handle_fetcher.h',
         'browser/chromeos/login/signin/token_handle_util.cc',
         'browser/chromeos/login/signin/token_handle_util.h',
         'browser/chromeos/login/signin_screen_controller.cc',
