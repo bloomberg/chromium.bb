@@ -29,8 +29,32 @@ WebGLQuery::~WebGLQuery()
 
 WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
+    , m_target(0)
 {
     setObject(ctx->webContext()->createQueryEXT());
+}
+
+void WebGLQuery::setTarget(GLenum target)
+{
+    ASSERT(object());
+    ASSERT(isCompatibleTarget(target));
+    m_target = target;
+}
+
+bool WebGLQuery::isCompatibleTarget(GLenum target)
+{
+    if (!m_target)
+        return true;
+
+    switch (target) {
+    // The SAMPLES_PASSED targets are interchangable.
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
+        return m_target == GL_ANY_SAMPLES_PASSED || m_target == GL_ANY_SAMPLES_PASSED_CONSERVATIVE;
+    // Otherwise target is finalized the first time beginQuery() is called.
+    default:
+        return m_target == target;
+    }
 }
 
 void WebGLQuery::deleteObjectImpl(WebGraphicsContext3D* context3d)

@@ -19,6 +19,10 @@ public:
 
     static PassRefPtrWillBeRawPtr<WebGLQuery> create(WebGL2RenderingContextBase*);
 
+    void setTarget(GLenum);
+    GLenum getTarget() const { return m_target; }
+    bool isCompatibleTarget(GLenum);
+
 protected:
     explicit WebGLQuery(WebGL2RenderingContextBase*);
 
@@ -26,6 +30,8 @@ protected:
 
 private:
     bool isQuery() const override { return true; }
+
+    GLenum m_target;
 };
 
 } // namespace blink

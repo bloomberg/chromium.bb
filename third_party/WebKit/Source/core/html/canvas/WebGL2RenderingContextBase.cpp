@@ -55,6 +55,9 @@ WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
     m_boundPixelUnpackBuffer = nullptr;
     m_boundTransformFeedbackBuffer = nullptr;
     m_boundUniformBuffer = nullptr;
+
+    m_currentBooleanOcclusionQuery = nullptr;
+    m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
 }
 
 void WebGL2RenderingContextBase::initializeNewContext()
@@ -70,6 +73,9 @@ void WebGL2RenderingContextBase::initializeNewContext()
     m_boundPixelUnpackBuffer = nullptr;
     m_boundTransformFeedbackBuffer = nullptr;
     m_boundUniformBuffer = nullptr;
+
+    m_currentBooleanOcclusionQuery = nullptr;
+    m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
 
     m_max3DTextureSize = 0;
     webContext()->getIntegerv(GL_MAX_3D_TEXTURE_SIZE, &m_max3DTextureSize);
@@ -1043,6 +1049,16 @@ PassRefPtrWillBeRawPtr<WebGLQuery> WebGL2RenderingContextBase::createQuery()
 
 void WebGL2RenderingContextBase::deleteQuery(WebGLQuery* query)
 {
+    if (m_currentBooleanOcclusionQuery == query) {
+        webContext()->endQueryEXT(m_currentBooleanOcclusionQuery->getTarget());
+        m_currentBooleanOcclusionQuery = nullptr;
+    }
+
+    if (m_currentTransformFeedbackPrimitivesWrittenQuery == query) {
+        webContext()->endQueryEXT(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
+        m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
+    }
+
     deleteObject(query);
 }
 
@@ -1056,8 +1072,45 @@ GLboolean WebGL2RenderingContextBase::isQuery(WebGLQuery* query)
 
 void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query)
 {
-    if (isContextLost() || !validateWebGLObject("beginQuery", query))
+    bool deleted;
+    if (!checkObjectToBeBound("beginQuery", query, deleted))
         return;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "beginQuery", "attempted to begin a deleted query object");
+        return;
+    }
+
+    if (!query->isCompatibleTarget(target)) {
+        synthesizeGLError(GL_INVALID_OPERATION, "beginQuery", "query type does not match target");
+        return;
+    }
+
+    switch (target) {
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
+        {
+            if (m_currentBooleanOcclusionQuery) {
+                synthesizeGLError(GL_INVALID_OPERATION, "beginQuery", "a query is already active for target");
+                return;
+            }
+            m_currentBooleanOcclusionQuery = query;
+        }
+        break;
+    case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
+        {
+            if (m_currentTransformFeedbackPrimitivesWrittenQuery) {
+                synthesizeGLError(GL_INVALID_OPERATION, "beginQuery", "a query is already active for target");
+                return;
+            }
+            m_currentTransformFeedbackPrimitivesWrittenQuery = query;
+        }
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "beginQuery", "invalid target");
+        return;
+    }
+
+    query->setTarget(target);
 
     webContext()->beginQueryEXT(target, query->object());
 }
@@ -1067,6 +1120,33 @@ void WebGL2RenderingContextBase::endQuery(GLenum target)
     if (isContextLost())
         return;
 
+    switch (target) {
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
+        {
+            if (m_currentBooleanOcclusionQuery && m_currentBooleanOcclusionQuery->getTarget() == target) {
+                m_currentBooleanOcclusionQuery = nullptr;
+            } else {
+                synthesizeGLError(GL_INVALID_OPERATION, "endQuery", "target query is not active");
+                return;
+            }
+        }
+        break;
+    case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
+        {
+            if (m_currentTransformFeedbackPrimitivesWrittenQuery) {
+                m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
+            } else {
+                synthesizeGLError(GL_INVALID_OPERATION, "endQuery", "target query is not active");
+                return;
+            }
+        }
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "endQuery", "invalid target");
+        return;
+    }
+
     webContext()->endQueryEXT(target);
 }
 
@@ -1075,7 +1155,23 @@ PassRefPtrWillBeRawPtr<WebGLQuery> WebGL2RenderingContextBase::getQuery(GLenum t
     if (isContextLost())
         return nullptr;
 
-    notImplemented();
+    if (pname != GL_CURRENT_QUERY) {
+        synthesizeGLError(GL_INVALID_ENUM, "getQuery", "invalid parameter name");
+        return nullptr;
+    }
+
+    switch (target) {
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
+        if (m_currentBooleanOcclusionQuery && m_currentBooleanOcclusionQuery->getTarget() == target)
+            return PassRefPtrWillBeRawPtr<WebGLQuery>(m_currentBooleanOcclusionQuery.get());
+        break;
+    case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
+        return PassRefPtrWillBeRawPtr<WebGLQuery>(m_currentTransformFeedbackPrimitivesWrittenQuery.get());
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "getQuery", "invalid target");
+        return nullptr;
+    }
     return nullptr;
 }
 
@@ -1985,6 +2081,8 @@ DEFINE_TRACE(WebGL2RenderingContextBase)
     visitor->trace(m_boundPixelUnpackBuffer);
     visitor->trace(m_boundTransformFeedbackBuffer);
     visitor->trace(m_boundUniformBuffer);
+    visitor->trace(m_currentBooleanOcclusionQuery);
+    visitor->trace(m_currentTransformFeedbackPrimitivesWrittenQuery);
     WebGLRenderingContextBase::trace(visitor);
 }
 

@@ -217,6 +217,9 @@ protected:
     RefPtrWillBeMember<WebGLBuffer> m_boundPixelUnpackBuffer;
     RefPtrWillBeMember<WebGLBuffer> m_boundTransformFeedbackBuffer;
     RefPtrWillBeMember<WebGLBuffer> m_boundUniformBuffer;
+
+    RefPtrWillBeMember<WebGLQuery> m_currentBooleanOcclusionQuery;
+    RefPtrWillBeMember<WebGLQuery> m_currentTransformFeedbackPrimitivesWrittenQuery;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,
