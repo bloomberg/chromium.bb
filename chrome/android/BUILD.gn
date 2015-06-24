@@ -121,6 +121,7 @@ android_library("chrome_java") {
     "//base:base_java",
     "//net/android:net_java",
     "//components/bookmarks/common/android:bookmarks_java",
+    "//components/dom_distiller/android:dom_distiller_content_java",
     "//components/dom_distiller/android:dom_distiller_core_java",
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/invalidation:java",
@@ -130,16 +131,19 @@ android_library("chrome_java") {
     "//components/variations/android:variations_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//content/public/android:content_java",
+    "//media/base/android:media_java",
     "//printing:printing_java",
     "//sync/android:sync_java",
     "//third_party/android_data_chart:android_data_chart_java",
     "//third_party/android_media:android_media_java",
     "//third_party/android_protobuf:protobuf_nano_javalib",
-    "//third_party/android_tools:android_gcm_java",
     "//third_party/android_swipe_refresh:android_swipe_refresh_java",
+    "//third_party/android_tools:android_gcm_java",
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
+    "//third_party/android_tools:android_support_v7_mediarouter_resources",
+    "//third_party/android_tools:android_support_v7_recyclerview_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
@@ -153,6 +157,7 @@ android_library("chrome_java") {
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
     ":chrome_version_srcjar",
+    ":custom_tabs_service_aidl",
     ":resource_id_javagen",
     "//chrome:page_info_connection_type_javagen",
     "//chrome:content_setting_javagen",
@@ -261,9 +266,9 @@ android_resources("chrome_shell_resources") {
 android_library("chrome_shell_java") {
   testonly = true
   deps = [
-    ":chrome_shell_resources",
     ":chrome_java",
     ":chrome_java_resources",
+    ":chrome_shell_resources",
     "//base:base_java",
     "//content/public/android:content_java",
     "//components/dom_distiller/android:dom_distiller_content_java",
@@ -591,52 +596,17 @@ zip("chrome_version_srcjar") {
 
 #GYP: //chrome/android/chrome_apk.gyp:custom_tabs_service_aidl
 android_aidl("custom_tabs_service_aidl") {
-  import_include = "java_staging/src/org/chromium/chrome/browser/customtabs"
+  import_include = "java/src/org/chromium/chrome/browser/customtabs"
   interface_file =
-      "java_staging/src/org/chromium/chrome/browser/customtabs/common.aidl"
+      "java/src/org/chromium/chrome/browser/customtabs/common.aidl"
   sources = [
-    "java_staging/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl",
-    "java_staging/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl",
+    "java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl",
+    "java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl",
   ]
 }
 
-# GYP: //chrome/android/chrome_apk.gyp:chrome_staging_java
-android_library("chrome_staging_java") {
-  DEPRECATED_java_in_dir = "java_staging/src"
-
-  deps = [
-    "//base:base_java",
-    "//net/android:net_java",
-    "//chrome/android:chrome_java",
-    "//chrome/android:chrome_java_resources",
-    "//chrome/android:document_tab_model_info_proto_java",
-    "//components/bookmarks/common/android:bookmarks_java",
-    "//components/dom_distiller/android:dom_distiller_content_java",
-    "//components/dom_distiller/android:dom_distiller_core_java",
-    "//components/invalidation:java",
-    "//components/navigation_interception/android:navigation_interception_java",
-    "//components/service_tab_launcher:service_tab_launcher_java",
-    "//components/variations/android:variations_java",
-    "//components/web_contents_delegate_android:web_contents_delegate_android_java",
-    "//content/public/android:content_java",
-    "//media/base/android:media_java",
-    "//printing:printing_java",
-    "//sync/android:sync_java",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
-    "//third_party/android_tools:android_gcm_java",
-    "//third_party/android_tools:android_support_v13_java",
-    "//third_party/android_tools:android_support_v7_appcompat_java",
-    "//third_party/android_tools:android_support_v7_mediarouter_java",
-    "//third_party/android_tools:android_support_v7_mediarouter_resources",
-    "//third_party/android_tools:android_support_v7_recyclerview_java",
-    "//third_party/cacheinvalidation:cacheinvalidation_javalib",
-    "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
-    "//third_party/jsr-305:jsr_305_javalib",
-    "//ui/android:ui_java",
-    "//ui/android:ui_java_resources",
-    google_play_services_library,
-  ]
-  srcjar_deps = [ ":custom_tabs_service_aidl" ]
+# TODO(newt): delete this once all references are gone.
+group("chrome_staging_java") {
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_staging_test_java
@@ -645,7 +615,6 @@ android_library("chrome_staging_test_java") {
   DEPRECATED_java_in_dir = "javatests/src"
 
   deps = [
-    "//chrome/android:chrome_staging_java",
     "//chrome/test/android:chrome_staging_test_support_java",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -756,8 +725,8 @@ android_apk("chrome_public_apk") {
   asset_location = chrome_public_apk_assets_dir
 
   deps = [
+    ":chrome_java",
     ":chrome_java_resources",
-    ":chrome_staging_java",
     ":chrome_public",
     ":chrome_public_apk_assets",
     ":chrome_public_apk_manifest",

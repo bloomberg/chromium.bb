@@ -7,7 +7,6 @@ package org.chromium.components.navigation_interception;
 import android.text.TextUtils;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
  * Navigation parameters container used to keep parameters for navigation interception.
@@ -17,8 +16,6 @@ public class NavigationParams {
     public final String url;
 
     /** The referrer URL for the navigation. */
-    // TODO(mariakhomenko): remove suppression once ChromeTab moves to java/ from java_staging/
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public final String referrer;
 
     /** True if the the navigation method is "POST". */

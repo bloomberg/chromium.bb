@@ -12,7 +12,6 @@
     'manifest_package': 'org.chromium.chrome',
     'chrome_public_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_apk_manifest/AndroidManifest.xml',
     'chrome_public_test_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_test_apk_manifest/AndroidManifest.xml',
-    'chrome_java_dir': 'java_staging',
     'chrome_java_tests_dir': 'javatests',
     'chrome_java_test_support_dir': '../test/android/javatests_staging',
     'chrome_native_sources_dir': '../browser/android/',
@@ -34,41 +33,9 @@
       'type': 'none',
     },
     {
-      # GN: //chrome/android:chrome_staging_java
+      # TODO(newt): delete this once all references are gone.
       'target_name': 'chrome_staging_java',
       'type': 'none',
-      'variables': {
-        'java_in_dir': '<(chrome_java_dir)',
-      },
-      'dependencies': [
-        'custom_tabs_service_aidl',
-        '<(DEPTH)/base/base.gyp:base_java',
-        '<(DEPTH)/chrome/chrome.gyp:chrome_java',
-        '<(DEPTH)/chrome/chrome.gyp:document_tab_model_info_proto_java',
-        '<(DEPTH)/components/components.gyp:app_restrictions_resources',
-        '<(DEPTH)/components/components.gyp:navigation_interception_java',
-        '<(DEPTH)/components/components.gyp:service_tab_launcher',
-        '<(DEPTH)/components/components.gyp:web_contents_delegate_android_java',
-        '<(DEPTH)/content/content.gyp:content_java',
-        '<(DEPTH)/media/media.gyp:media_java',
-        '<(DEPTH)/net/net.gyp:net_java',
-        '<(DEPTH)/third_party/android_protobuf/android_protobuf.gyp:protobuf_nano_javalib',
-        '<(DEPTH)/third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
-        '<(DEPTH)/third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
-        '<(DEPTH)/third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
-        '<(DEPTH)/third_party/android_tools/android_tools.gyp:android_support_v7_recyclerview_javalib',
-        '<(DEPTH)/third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
-        '<(DEPTH)/third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
-        '<(DEPTH)/ui/android/ui_android.gyp:ui_java',
-      ],
-      'conditions': [
-        ['configuration_policy != 1', {
-          'dependencies!': [
-            '<(DEPTH)/components/components.gyp:app_restrictions_resources',
-          ],
-        }],
-      ],
-      'includes': [ '../../build/java.gypi' ],
     },
     {
       # GN: //chrome/test/android:chrome_staging_test_support_java
@@ -78,7 +45,6 @@
           'java_in_dir': '<(chrome_java_test_support_dir)',
       },
       'dependencies': [
-        'chrome_staging_java',
         '<(DEPTH)/base/base.gyp:base_java',
         '<(DEPTH)/base/base.gyp:base_java_test_support',
         '<(DEPTH)/chrome/chrome.gyp:chrome_java',
@@ -95,12 +61,12 @@
       'target_name': 'custom_tabs_service_aidl',
       'type': 'none',
       'variables': {
-        'aidl_interface_file': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/common.aidl',
-        'aidl_import_include': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs',
+        'aidl_interface_file': 'java/src/org/chromium/chrome/browser/customtabs/common.aidl',
+        'aidl_import_include': 'java/src/org/chromium/chrome/browser/customtabs',
       },
       'sources': [
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl',
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl',
+        'java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl',
+        'java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl',
       ],
       'includes': [ '../../build/java_aidl.gypi' ],
     },
@@ -194,7 +160,7 @@
         'android_manifest_path': '<(chrome_public_apk_manifest)',
         'apk_name': 'ChromePublic',
         'native_lib_target': 'libchrome_public',
-        'java_in_dir': '<(chrome_java_dir)',
+        'java_in_dir': 'java',
         'conditions': [
           # Only attempt loading the library from the APK for 64 bit devices
           # until the number of 32 bit devices which don't support this
@@ -208,7 +174,7 @@
       'dependencies': [
         'chrome_android_paks_copy',
         'chrome_public_template_resources',
-        'chrome_staging_java',
+        '../chrome.gyp:chrome_java',
       ],
       'includes': [ 'chrome_apk.gypi' ],
     },
@@ -253,7 +219,6 @@
         'java_in_dir': '<(chrome_java_tests_dir)',
       },
       'dependencies': [
-        'chrome_staging_java',
         'chrome_staging_test_support_java',
         '<(DEPTH)/base/base.gyp:base_java',
         '<(DEPTH)/base/base.gyp:base_java_test_support',

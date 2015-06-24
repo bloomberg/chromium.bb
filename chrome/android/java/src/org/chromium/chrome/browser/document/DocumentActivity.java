@@ -474,7 +474,9 @@ public class DocumentActivity extends ChromeActivity {
             loadUrlParams.setIntentReceivedTimestamp(getOnCreateTimestampUptimeMs());
         }
 
-        IntentHandler.addReferrerAndHeaders(loadUrlParams, intent, this);
+        if (intent != null) {
+            IntentHandler.addReferrerAndHeaders(loadUrlParams, intent, this);
+        }
 
         if (pendingData != null) {
             if (pendingData.postData != null) {

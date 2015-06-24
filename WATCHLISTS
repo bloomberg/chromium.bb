@@ -270,7 +270,7 @@
                   'chrome/common/custom_handlers/',
     },
     'custom_tabs': {
-      'filepath': 'chrome/android/java_staging/src/org/chromium/chrome/browser/customtabs/|'\
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/customtabs/',
     },
     'deep_memory_profiler': {
@@ -338,7 +338,7 @@
                   '|components/enhanced_bookmarks/'
     },
     'enhanced_bookmarks_android': {
-      'filepath': 'chrome/android/java_staging/src/org/chromium/'\
+      'filepath': 'chrome/android/java/src/org/chromium/'\
                     'chrome/browser/enhancedbookmarks/|'\
                   'chrome/android/java/res/layout/eb*.xml'
     },

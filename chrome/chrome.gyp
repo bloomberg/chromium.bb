@@ -589,6 +589,8 @@
             'resource_id_java',
             'tab_load_status_java',
             '../base/base.gyp:base',
+            '../chrome/android/chrome_apk.gyp:custom_tabs_service_aidl',
+            '../components/components.gyp:app_restrictions_resources',
             '../components/components.gyp:bookmarks_java',
             '../components/components.gyp:dom_distiller_core_java',
             '../components/components.gyp:enhanced_bookmarks_java_enums_srcjar',
@@ -605,11 +607,15 @@
             '../sync/sync.gyp:sync_java',
             '../third_party/android_data_chart/android_data_chart.gyp:android_data_chart_java',
             '../third_party/android_media/android_media.gyp:android_media_java',
+            '../third_party/android_protobuf/android_protobuf.gyp:protobuf_nano_javalib',
             '../third_party/android_swipe_refresh/android_swipe_refresh.gyp:android_swipe_refresh_java',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
+            '../third_party/android_tools/android_tools.gyp:android_support_v7_recyclerview_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
             '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
+            '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
+            '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
             '../ui/android/ui_android.gyp:ui_java',
           ],
           'variables': {
@@ -629,6 +635,13 @@
               '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(SHARED_INTERMEDIATE_DIR)/chrome" app/generated_resources.grd)',
             ],
           },
+          'conditions': [
+            ['configuration_policy != 1', {
+              'dependencies!': [
+                '../components/components.gyp:app_restrictions_resources',
+              ],
+            }],
+          ],
           'includes': [
             '../build/java.gypi',
           ],
