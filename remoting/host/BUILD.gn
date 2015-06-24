@@ -10,6 +10,30 @@ import("//remoting/remoting_srcs.gni")
 import("//remoting/remoting_version.gni")
 import("//remoting/tools/build/remoting_localize.gni")
 
+# GYP version: remoting/remoting_host:remoting_host_credits
+action("credits") {
+  about_credits_file = "$target_gen_dir/CREDITS.txt"
+  script = "//tools/licenses.py"
+
+  inputs = [
+    "installer/credits.tmpl",
+    "installer/credits_entry.tmpl",
+  ]
+
+  outputs = [
+    about_credits_file,
+  ]
+
+  args = [
+    "credits",
+    rebase_path(about_credits_file, root_build_dir),
+    "--file-template",
+    rebase_path("installer/credits.tmpl", root_build_dir),
+    "--entry-template",
+    rebase_path("installer/credits_entry.tmpl", root_build_dir),
+  ]
+}
+
 if (is_mac) {  # TODO(GYP) Mac build of remoting host.
   group("host") {
   }
@@ -433,6 +457,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
         deps = [
           ":remoting_me2me_host_static",
+          ":credits",
         ]
       }
     }
