@@ -182,6 +182,8 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
 
 void DataReductionProxySettings::SetLoFiModeActiveOnMainFrame(
     bool lo_fi_mode_active) {
+  if (prefs_ && lo_fi_mode_active)
+    prefs_->SetBoolean(prefs::kLoFiWasUsedThisSession, true);
   lo_fi_load_image_requested_ = false;
   lo_fi_mode_active_ = lo_fi_mode_active;
   if (!register_synthetic_field_trial_.is_null()) {

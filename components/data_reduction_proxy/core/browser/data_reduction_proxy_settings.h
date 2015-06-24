@@ -243,6 +243,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
                            TestLoFiImplicitOptOutConsecutiveSessions);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestLoFiImplicitOptOutHistograms);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestLoFiSessionStateHistograms);
 
   // Override of DataReductionProxyService::Observer.
   void OnServiceInitialized() override;

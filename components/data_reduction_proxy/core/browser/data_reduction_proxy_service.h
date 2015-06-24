@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -136,6 +137,22 @@ class DataReductionProxyService
   base::WeakPtr<DataReductionProxyService> GetWeakPtr();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestLoFiSessionStateHistograms);
+
+  // Values of the UMA DataReductionProxy.LoFi.SessionState histogram.
+  // This enum must remain synchronized with DataReductionProxyLoFiSessionState
+  // in metrics/histograms/histograms.xml.
+  enum LoFiSessionState {
+    LO_FI_SESSION_STATE_USED = 0,
+    LO_FI_SESSION_STATE_NOT_USED,
+    LO_FI_SESSION_STATE_OPTED_OUT,
+    LO_FI_SESSION_STATE_INDEX_BOUNDARY,
+  };
+
+  // Records UMA for Lo-Fi session state.
+  void RecordLoFiSessionState(LoFiSessionState state);
+
   net::URLRequestContextGetter* url_request_context_getter_;
 
   // Tracks compression statistics to be displayed to the user.

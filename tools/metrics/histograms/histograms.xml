@@ -4791,6 +4791,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.LoFi.SessionState"
+    enum="DataReductionProxyLoFiSessionState">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Tracks Lo-Fi usage at the granularity of browser sessions. Counts for each
+    session if Lo-Fi was used or not. In the case where Lo-Fi was not used,
+    records if it was because the network quality was always good or because the
+    user had implicitly opted out. The session where a user permanently opts out
+    is counted in the Lo-Fi used bucket.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.LoFi.UIAction"
     enum="DataReductionProxyLoFiUIAction">
   <owner>bengr@chromium.org</owner>
@@ -51828,6 +51841,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Lo-Fi disabled for the remainder of the session"/>
   <int value="1" label="Lo-Fi disabled until next opt out epoch"/>
   <int value="2" label="Next implict opt out epoch, Lo-Fi re-enabled"/>
+</enum>
+
+<enum name="DataReductionProxyLoFiSessionState" type="int">
+  <int value="0" label="Lo-Fi was used"/>
+  <int value="1"
+      label="Lo-Fi was not used because the network quality was always good"/>
+  <int value="2"
+      label="Lo-Fi was not used because the user implicitly opted out"/>
 </enum>
 
 <enum name="DataReductionProxyLoFiUIAction" type="int">

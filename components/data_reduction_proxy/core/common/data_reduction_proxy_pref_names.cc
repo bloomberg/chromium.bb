@@ -107,6 +107,10 @@ const char kLoFiLoadImagesPerSession[] =
 const char kLoFiConsecutiveSessionDisables[] =
     "data_reduction_lo_fi.consecutive_session_disables";
 
+// A boolean pref specifying whether Lo-Fi was used this session.
+const char kLoFiWasUsedThisSession[] =
+    "data_reduction_lo_fi.was_used_this_session";
+
 // Pref to store the retrieval time of the last simulated Data Reduction Proxy
 // configuration. This is part of an experiment to see how many bytes are lost
 // if the Data Reduction Proxy is not used due to configuration being expired

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -157,6 +158,21 @@ void DataReductionProxyService::InitializeLoFiPrefs() {
                                                 "consecutive_session_disables",
                                                 3, 0);
 
+    // Record if Lo-Fi was used during the last session. Do not record if Lo-Fi
+    // was enabled as a result of a command-line flag.
+    if (params::IsLoFiAlwaysOnViaFlags() ||
+        params::IsLoFiCellularOnlyViaFlags() ||
+        params::IsLoFiDisabledViaFlags()) {
+      // Don't record the session state.
+    } else if (prefs_->GetBoolean(prefs::kLoFiWasUsedThisSession)) {
+      RecordLoFiSessionState(LO_FI_SESSION_STATE_USED);
+    } else if (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
+               lo_fi_consecutive_session_disables) {
+      RecordLoFiSessionState(LO_FI_SESSION_STATE_OPTED_OUT);
+    } else {
+      RecordLoFiSessionState(LO_FI_SESSION_STATE_NOT_USED);
+    }
+
     if (prefs_->GetInteger(prefs::kLoFiImplicitOptOutEpoch) <
         lo_fi_implicit_opt_out_epoch) {
       // We have a new implicit opt out epoch, reset the consecutive session
@@ -182,7 +198,13 @@ void DataReductionProxyService::InitializeLoFiPrefs() {
       prefs_->SetInteger(prefs::kLoFiConsecutiveSessionDisables, 0);
     }
     prefs_->SetInteger(prefs::kLoFiLoadImagesPerSession, 0);
+    prefs_->SetBoolean(prefs::kLoFiWasUsedThisSession, false);
   }
+}
+
+void DataReductionProxyService::RecordLoFiSessionState(LoFiSessionState state) {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.LoFi.SessionState", state,
+                            LO_FI_SESSION_STATE_INDEX_BOUNDARY);
 }
 
 void DataReductionProxyService::SetInt64Pref(const std::string& pref_path,
