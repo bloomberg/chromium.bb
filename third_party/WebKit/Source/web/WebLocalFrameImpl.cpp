@@ -2183,4 +2183,11 @@ WebFrameWidgetImpl* WebLocalFrameImpl::frameWidget() const
     return m_frameWidget;
 }
 
+WebSandboxFlags WebLocalFrameImpl::effectiveSandboxFlags() const
+{
+    if (!frame())
+        return WebSandboxFlags::None;
+    return static_cast<WebSandboxFlags>(frame()->loader().effectiveSandboxFlags());
+}
+
 } // namespace blink

@@ -251,6 +251,7 @@ public:
     virtual void setCommittedFirstRealLoad() override;
     virtual void sendOrientationChangeEvent() override;
     virtual void willShowInstallBannerPrompt(int requestId, const WebVector<WebString>& platforms, WebAppBannerPromptReply*) override;
+    virtual WebSandboxFlags effectiveSandboxFlags() const override;
     void requestRunTask(WebSuspendableTask*) const override;
 
     void willBeDetached();
