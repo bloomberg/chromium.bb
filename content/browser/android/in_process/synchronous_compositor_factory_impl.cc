@@ -14,6 +14,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
@@ -211,6 +212,10 @@ SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
                          attributes, nullptr,
                          gpu::GLInProcessContextSharedMemoryLimits(), true);
   return holder.command_buffer.release();
+}
+
+gpu::GPUInfo SynchronousCompositorFactoryImpl::GetGPUInfo() const {
+  return content::GpuDataManager::GetInstance()->GetGPUInfo();
 }
 
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {

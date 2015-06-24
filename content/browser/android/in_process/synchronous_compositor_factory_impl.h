@@ -47,6 +47,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*
   CreateOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) override;
+  gpu::GPUInfo GetGPUInfo() const override;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;

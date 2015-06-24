@@ -629,6 +629,13 @@ bool RendererBlinkPlatformImpl::databaseSetFileSize(
 }
 
 bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
+#if defined(OS_ANDROID)
+  if (SynchronousCompositorFactory* factory =
+          SynchronousCompositorFactory::GetInstance()) {
+    return factory->GetGPUInfo().SupportsAccelerated2dCanvas();
+  }
+#endif
+
   RenderThreadImpl* thread = RenderThreadImpl::current();
   GpuChannelHost* host = thread->EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);

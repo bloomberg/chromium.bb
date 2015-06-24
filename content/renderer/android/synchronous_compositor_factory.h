@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/config/gpu_info.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace base {
@@ -66,6 +67,7 @@ class SynchronousCompositorFactory {
   virtual gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl*
       CreateOffscreenGraphicsContext3D(
           const blink::WebGraphicsContext3D::Attributes& attributes) = 0;
+  virtual gpu::GPUInfo GetGPUInfo() const = 0;
 
  protected:
   SynchronousCompositorFactory() {}

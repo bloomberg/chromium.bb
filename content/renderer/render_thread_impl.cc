@@ -1259,6 +1259,18 @@ scoped_refptr<media::GpuVideoAcceleratorFactories>
 RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+#if defined(OS_ANDROID)
+  if (SynchronousCompositorFactory::GetInstance()) {
+    if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
+      DLOG(WARNING) << "Accelerated video decoding is not explicitly disabled, "
+                       "but is not supported by in-process rendering";
+    }
+    return NULL;
+  }
+#endif
+
   scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
@@ -1282,7 +1294,6 @@ RenderThreadImpl::GetGpuFactories() {
         GPU_VIDEO_ACCELERATOR_CONTEXT);
   }
   if (gpu_va_context_provider_.get()) {
-    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
     bool enable_video_accelerator =
         !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
     std::string image_texture_target_string =
