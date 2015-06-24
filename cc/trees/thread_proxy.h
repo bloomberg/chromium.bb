@@ -29,7 +29,6 @@ class BeginFrameSource;
 class ContextProvider;
 class InputHandlerClient;
 class LayerTreeHost;
-class PrioritizedResourceManager;
 class Scheduler;
 class ScopedThreadProxy;
 
@@ -53,7 +52,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
     BeginFrameArgs begin_frame_args;
     scoped_ptr<ScrollAndScaleSet> scroll_info;
     size_t memory_allocation_limit_bytes;
-    int memory_allocation_priority_cutoff;
     bool evicted_ui_resources;
   };
 

@@ -55,8 +55,6 @@ class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
-class PrioritizedResource;
-class PrioritizedResourceManager;
 class PropertyTrees;
 class Region;
 class RenderingStatsInstrumentation;

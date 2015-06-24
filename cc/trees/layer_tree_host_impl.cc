@@ -60,7 +60,6 @@
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/memory_history.h"
-#include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -157,6 +156,16 @@ size_t GetMaxStagingResourceCount() {
   return 32;
 }
 
+size_t GetDefaultMemoryAllocationLimit() {
+  // TODO(ccameron): (http://crbug.com/137094) This 64MB default is a straggler
+  // from the old texture manager and is just to give us a default memory
+  // allocation before we get a callback from the GPU memory manager. We
+  // should probaby either:
+  // - wait for the callback before rendering anything instead
+  // - push this into the GPU memory manager somehow.
+  return 64 * 1024 * 1024;
+}
+
 }  // namespace
 
 LayerTreeHostImpl::FrameData::FrameData() : has_no_damage(false) {
@@ -207,7 +216,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       settings_(settings),
       visible_(true),
       cached_managed_memory_policy_(
-          PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
+          GetDefaultMemoryAllocationLimit(),
           gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
           ManagedMemoryPolicy::kDefaultNumResourcesLimit),
       pinch_gesture_active_(false),
@@ -1983,11 +1992,6 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
 
 size_t LayerTreeHostImpl::memory_allocation_limit_bytes() const {
   return ActualManagedMemoryPolicy().bytes_limit_when_visible;
-}
-
-int LayerTreeHostImpl::memory_allocation_priority_cutoff() const {
-  return ManagedMemoryPolicy::PriorityCutoffToValue(
-      ActualManagedMemoryPolicy().priority_cutoff_when_visible);
 }
 
 void LayerTreeHostImpl::ReleaseTreeResources() {

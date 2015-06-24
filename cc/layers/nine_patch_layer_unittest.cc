@@ -4,7 +4,6 @@
 
 #include "cc/layers/nine_patch_layer.h"
 
-#include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/test/fake_layer_tree_host.h"

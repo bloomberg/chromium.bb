@@ -12,7 +12,6 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/resources/prioritized_resource_manager.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"

@@ -5,7 +5,6 @@
 #include "cc/output/managed_memory_policy.h"
 
 #include "base/logging.h"
-#include "cc/resources/priority_calculator.h"
 
 namespace cc {
 
@@ -40,23 +39,6 @@ bool ManagedMemoryPolicy::operator==(const ManagedMemoryPolicy& other) const {
 
 bool ManagedMemoryPolicy::operator!=(const ManagedMemoryPolicy& other) const {
   return !(*this == other);
-}
-
-// static
-int ManagedMemoryPolicy::PriorityCutoffToValue(
-    MemoryAllocation::PriorityCutoff priority_cutoff) {
-  switch (priority_cutoff) {
-    case MemoryAllocation::CUTOFF_ALLOW_NOTHING:
-      return PriorityCalculator::AllowNothingCutoff();
-    case MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY:
-      return PriorityCalculator::AllowVisibleOnlyCutoff();
-    case MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE:
-      return PriorityCalculator::AllowVisibleAndNearbyCutoff();
-    case MemoryAllocation::CUTOFF_ALLOW_EVERYTHING:
-      return PriorityCalculator::AllowEverythingCutoff();
-  }
-  NOTREACHED();
-  return PriorityCalculator::AllowNothingCutoff();
 }
 
 // static

@@ -19,7 +19,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/resources/prioritized_resource_manager.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/scheduler.h"
@@ -653,8 +652,6 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
       impl().layer_tree_host_impl->ProcessScrollDeltas();
   begin_main_frame_state->memory_allocation_limit_bytes =
       impl().layer_tree_host_impl->memory_allocation_limit_bytes();
-  begin_main_frame_state->memory_allocation_priority_cutoff =
-      impl().layer_tree_host_impl->memory_allocation_priority_cutoff();
   begin_main_frame_state->evicted_ui_resources =
       impl().layer_tree_host_impl->EvictedUIResourcesExist();
   // TODO(vmpstr): This needs to be fixed if
@@ -1145,7 +1142,6 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
 
 ThreadProxy::BeginMainFrameAndCommitState::BeginMainFrameAndCommitState()
     : memory_allocation_limit_bytes(0),
-      memory_allocation_priority_cutoff(0),
       evicted_ui_resources(false) {}
 
 ThreadProxy::BeginMainFrameAndCommitState::~BeginMainFrameAndCommitState() {}

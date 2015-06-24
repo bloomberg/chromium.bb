@@ -5,7 +5,6 @@
 #include "cc/layers/nine_patch_layer.h"
 
 #include "cc/layers/nine_patch_layer_impl.h"
-#include "cc/resources/prioritized_resource.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/trees/layer_tree_host.h"

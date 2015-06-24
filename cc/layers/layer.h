@@ -63,7 +63,6 @@ class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
 class LayerTreeSettings;
-class PriorityCalculator;
 class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
 class ScrollbarLayerInterface;
@@ -396,9 +395,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
-
-  // Set the priority of all desired textures in this layer.
-  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc) {}
 
   bool AddAnimation(scoped_ptr<Animation> animation);
   void PauseAnimation(int animation_id, double time_offset);

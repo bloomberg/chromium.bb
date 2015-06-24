@@ -29,8 +29,6 @@ struct CC_EXPORT ManagedMemoryPolicy {
   gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_visible;
   size_t num_resources_limit;
 
-  static int PriorityCutoffToValue(
-      gpu::MemoryAllocation::PriorityCutoff priority_cutoff);
   static TileMemoryLimitPolicy PriorityCutoffToTileMemoryLimitPolicy(
       gpu::MemoryAllocation::PriorityCutoff priority_cutoff);
 };
