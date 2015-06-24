@@ -9,12 +9,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.SalientImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
 
@@ -280,20 +278,6 @@ public class EnhancedBookmarksModel {
      */
     public String getBookmarkTitle(BookmarkId bookmarkId) {
         return mBookmarksBridge.getBookmarkById(bookmarkId).getTitle();
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#salientImageForUrl(String, SalientImageCallback)
-     */
-    public boolean salientImageForUrl(String url, SalientImageCallback callback) {
-        return mEnhancedBookmarksBridge.salientImageForUrl(url, callback);
-    }
-
-    /**
-     * @see EnhancedBookmarksBridge#fetchImageForTab(WebContents)
-     */
-    public void fetchImageForTab(WebContents webContents) {
-        mEnhancedBookmarksBridge.fetchImageForTab(webContents);
     }
 
     /**

@@ -27,11 +27,6 @@
           '<(SHARED_INTERMEDIATE_DIR)/components/chrome_apps/chrome_apps_resources.pak',
         ],
       }],
-      ['OS == "android"', {
-        'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.pak',
-        ]
-      }],
       ['OS != "ios"', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',

@@ -17,10 +17,10 @@
         android:orientation="horizontal"
         android:padding="8dp" >
 
-        <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSalientImageView
-            android:id="@+id/bookamrk_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <ImageView
+            android:id="@+id/bookmark_image"
+            android:layout_width="@dimen/enhanced_bookmark_item_icon_size"
+            android:layout_height="@dimen/enhanced_bookmark_item_icon_size"
             android:layout_margin="8dp"
             android:layout_gravity="start|center"
             android:scaleType="center"
@@ -40,14 +40,6 @@
                 android:singleLine="true"
                 android:textColor="#d9000000"
                 android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/url"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:textColor="#8c000000"
-                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/folder_title"

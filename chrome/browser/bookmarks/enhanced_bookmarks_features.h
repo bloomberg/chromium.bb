@@ -11,12 +11,6 @@
 
 class PrefService;
 
-#if defined(OS_ANDROID)
-// Returns true if enhanced bookmark salient image prefetching is enabled.
-// This can be controlled by field trial.
-bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs);
-#endif  // defined(OS_ANDROID)
-
 // Returns true if enhanced bookmarks is enabled.
 bool IsEnhancedBookmarksEnabled();
 

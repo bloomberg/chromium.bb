@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.enhancedbookmarks;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
-import android.net.Uri;
+import android.graphics.drawable.BitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
 
@@ -22,6 +26,10 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItemsAdapter.BookmarkGrid;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -32,14 +40,19 @@ import java.util.List;
  * A view that shows a bookmark's title, screenshot, URL, etc, shown in the enhanced bookmarks UI.
  */
 public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmarkUIObserver,
-        BookmarkGrid {
+        BookmarkGrid, LargeIconCallback {
 
-    private EnhancedBookmarkSalientImageView mSalientImageView;
+    private ImageView mIconImageView;
     private TintedImageButton mMoreIcon;
     private TextView mFolderTitleView;
     private TextView mTitleView;
-    private TextView mUrlView;
     private EnhancedBookmarkItemHighlightView mHighlightView;
+    private String mUrl;
+    private RoundedIconGenerator mIconGenerator;
+    private LargeIconBridge mLargeIconBridge;
+    private int mMinIconSize;
+    private int mDisplayedIconSize;
+    private int mCornerRadius;
 
     private BookmarkId mBookmarkId;
     private EnhancedBookmarkDelegate mDelegate;
@@ -51,18 +64,29 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
      */
     public EnhancedBookmarkItem(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mCornerRadius = getResources().getDimensionPixelSize(
+                R.dimen.enhanced_bookmark_item_corner_radius);
+        mMinIconSize = (int) getResources().getDimension(
+                R.dimen.enhanced_bookmark_item_min_icon_size);
+        mDisplayedIconSize = getResources().getDimensionPixelSize(
+                R.dimen.enhanced_bookmark_item_icon_size);
+        int textSize = getResources().getDimensionPixelSize(
+                R.dimen.enhnaced_bookmark_item_icon_text_size);
+        int iconColor = getResources().getColor(R.color.enhanced_bookmark_icon_background_color);
+        mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
+                mCornerRadius, iconColor, textSize);
+        mLargeIconBridge = new LargeIconBridge();
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mSalientImageView = (EnhancedBookmarkSalientImageView) findViewById(R.id.bookamrk_image);
+        mIconImageView = (ImageView) findViewById(R.id.bookmark_image);
         mMoreIcon = (TintedImageButton) findViewById(R.id.more);
         mMoreIcon.setOnClickListener(this);
         mMoreIcon.setColorFilterMode(PorterDuff.Mode.SRC.MULTIPLY);
         mFolderTitleView = (TextView) findViewById(R.id.folder_title);
         mTitleView = (TextView) findViewById(R.id.title);
-        mUrlView = (TextView) findViewById(R.id.url);
         mHighlightView = (EnhancedBookmarkItemHighlightView) findViewById(R.id.highlight);
     }
 
@@ -172,7 +196,6 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
         mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
 
         mTitleView.setText(bookmarkItem.getTitle());
-        mUrlView.setText(Uri.parse(bookmarkItem.getUrl()).getHost());
 
         mFolderTitleView.setVisibility(View.INVISIBLE);
         BookmarkId parentId = bookmarkItem.getParentId();
@@ -186,8 +209,23 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
             }
         }
 
-        mSalientImageView.load(mDelegate.getModel(), bookmarkItem.getUrl(),
-                EnhancedBookmarkUtils.generateBackgroundColor(bookmarkItem));
+        mUrl = bookmarkItem.getUrl();
+        mLargeIconBridge.getLargeIconForUrl(Profile.getLastUsedProfile(), mUrl, mMinIconSize, this);
+    }
+
+    @Override
+    public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
+        if (icon == null) {
+            mIconGenerator.setBackgroundColor(fallbackColor);
+            icon = mIconGenerator.generateIconForUrl(mUrl);
+            mIconImageView.setImageDrawable(new BitmapDrawable(getResources(), icon));
+        } else {
+            RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
+                    getResources(),
+                    Bitmap.createScaledBitmap(icon, mDisplayedIconSize, mDisplayedIconSize, true));
+            roundedIcon.setCornerRadius(mCornerRadius);
+            mIconImageView.setImageDrawable(roundedIcon);
+        }
     }
 
     @Override

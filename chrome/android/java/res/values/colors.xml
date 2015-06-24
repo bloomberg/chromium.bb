@@ -143,6 +143,7 @@
     <color name="enhanced_bookmark_drawer_selected_color">#4281F4</color>
     <color name="enhanced_bookmark_drawer_selected_background_color">#F0F0F0</color>
     <color name="enhanced_bookmark_list_item_highlight_color">#804281f4</color>
+    <color name="enhanced_bookmark_icon_background_color">#ff787878</color>
 
     <!-- Opt out promo -->
     <color name="opt_out_text_color">#646464</color>

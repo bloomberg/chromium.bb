@@ -4,60 +4,29 @@
 
 package org.chromium.chrome.browser.enhanced_bookmarks;
 
-import android.app.ActivityManager;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.util.LruCache;
-import android.util.Pair;
-
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.content_public.browser.WebContents;
-
-import java.lang.ref.WeakReference;
 
 /**
  * Access gate to C++ side enhanced bookmarks functionalities.
  */
 @JNINamespace("enhanced_bookmarks::android")
 public final class EnhancedBookmarksBridge {
-    private static WeakReference<LruCache<String, Pair<String, Bitmap>>> sLruCache;
-    private static final int SALIENT_IMAGE_MAX_CACHE_SIZE = 32 * 1024 * 1024; // 32MB
 
     private long mNativeEnhancedBookmarksBridge;
-    private LruCache<String, Pair<String, Bitmap>> mSalientImageCache;
-
-    /**
-     * Interface for getting result back from SalientImageForUrl function.
-     */
-    public interface SalientImageCallback {
-        /**
-         * Callback method for fetching salient image.
-         * @param image Salient image. This can be null if the image cannot be found.
-         * @param imageUrl Url of the image. Note this is not the same as the url of the website
-         *            containing the image.
-         */
-        @CalledByNative("SalientImageCallback")
-        void onSalientImageReady(Bitmap image, String imageUrl);
-    }
 
     /**
      * Creates a new enhanced bridge using the given profile.
      */
     public EnhancedBookmarksBridge(Profile profile) {
         mNativeEnhancedBookmarksBridge = nativeInit(profile);
-        mSalientImageCache = getImageCache();
     }
 
     public void destroy() {
         assert mNativeEnhancedBookmarksBridge != 0;
         nativeDestroy(mNativeEnhancedBookmarksBridge);
         mNativeEnhancedBookmarksBridge = 0;
-
-        mSalientImageCache = null;
     }
 
     /**
@@ -92,71 +61,6 @@ public final class EnhancedBookmarksBridge {
         nativeMoveBookmark(mNativeEnhancedBookmarksBridge, bookmarkId, newParentId);
     }
 
-    /**
-     * Request bookmark salient image for the given URL. Please refer to
-     * |BookmarkImageService::SalientImageForUrl|.
-     * @return True if this method is executed synchronously. False if
-     *         {@link SalientImageCallback#onSalientImageReady(Bitmap, String)} is called later
-     *         (asynchronously).
-     */
-    public boolean salientImageForUrl(final String url, final SalientImageCallback callback) {
-        assert callback != null;
-        SalientImageCallback callbackWrapper = callback;
-
-        if (mSalientImageCache != null) {
-            Pair<String, Bitmap> cached = mSalientImageCache.get(url);
-            if (cached != null) {
-                callback.onSalientImageReady(cached.second, cached.first);
-                return true;
-            }
-
-            callbackWrapper = new SalientImageCallback() {
-                @Override
-                public void onSalientImageReady(Bitmap image, String imageUrl) {
-                    if (mNativeEnhancedBookmarksBridge == 0) return;
-
-                    if (image != null) {
-                        mSalientImageCache.put(url, new Pair<String, Bitmap>(imageUrl, image));
-                    }
-                    callback.onSalientImageReady(image, imageUrl);
-                }
-            };
-        }
-
-        nativeSalientImageForUrl(mNativeEnhancedBookmarksBridge, url, callbackWrapper);
-        return false;
-    }
-
-    /**
-     * Parses the web content of a tab, and stores salient images to local database.
-     * @param webContents Contents of the tab that the user is currently in.
-     */
-    public void fetchImageForTab(WebContents webContents) {
-        nativeFetchImageForTab(mNativeEnhancedBookmarksBridge, webContents);
-    }
-
-    /**
-     * @return Return the cache if it is stored in the static weak reference, or create a new empty
-     *         one if the reference is empty.
-     */
-    private static LruCache<String, Pair<String, Bitmap>> getImageCache() {
-        ActivityManager activityManager = ((ActivityManager) ApplicationStatus
-                .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
-        int maxSize = Math.min(activityManager.getMemoryClass() / 4 * 1024 * 1024,
-                SALIENT_IMAGE_MAX_CACHE_SIZE);
-        LruCache<String, Pair<String, Bitmap>> cache = sLruCache == null ? null : sLruCache.get();
-        if (cache == null) {
-            cache = new LruCache<String, Pair<String, Bitmap>>(maxSize) {
-                @Override
-                protected int sizeOf(String key, Pair<String, Bitmap> urlImage) {
-                    return urlImage.first.length() + urlImage.second.getByteCount();
-                }
-            };
-            sLruCache = new WeakReference<LruCache<String, Pair<String, Bitmap>>>(cache);
-        }
-        return cache;
-    }
-
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeEnhancedBookmarksBridge);
     private native BookmarkId nativeAddFolder(long nativeEnhancedBookmarksBridge, BookmarkId parent,
@@ -165,8 +69,4 @@ public final class EnhancedBookmarksBridge {
             BookmarkId bookmarkId, BookmarkId newParentId);
     private native BookmarkId nativeAddBookmark(long nativeEnhancedBookmarksBridge,
             BookmarkId parent, int index, String title, String url);
-    private native void nativeSalientImageForUrl(long nativeEnhancedBookmarksBridge,
-            String url, SalientImageCallback callback);
-    private native void nativeFetchImageForTab(long nativeEnhancedBookmarksBridge,
-            WebContents webContents);
 }

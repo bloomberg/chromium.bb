@@ -64,7 +64,6 @@ public class EnhancedBookmarkUtils {
         // TODO(ianwen): remove activity from argument list.
         final BookmarkId enhancedId = bookmarkModel.addBookmark(bookmarkModel.getDefaultFolder(),
                 0, tab.getTitle(), tab.getUrl());
-        bookmarkModel.fetchImageForTab(tab.getWebContents());
 
         Pair<EnhancedBookmarksModel, BookmarkId> pair = Pair.create(bookmarkModel, enhancedId);
 

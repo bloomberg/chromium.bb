@@ -22,13 +22,6 @@ class EnhancedBookmarksBridge {
   EnhancedBookmarksBridge(JNIEnv* env, jobject obj, Profile* profile);
   void Destroy(JNIEnv*, jobject);
 
-  void SalientImageForUrl(JNIEnv* env,
-                          jobject obj,
-                          jstring j_url,
-                          jobject j_callback);
-
-  void FetchImageForTab(JNIEnv* env, jobject obj, jobject j_web_contents);
-
   base::android::ScopedJavaLocalRef<jobject> AddFolder(JNIEnv* env,
                                                        jobject obj,
                                                        jobject j_parent_id_obj,
@@ -53,7 +46,6 @@ class EnhancedBookmarksBridge {
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   EnhancedBookmarkModel* enhanced_bookmark_model_;         // weak
-  BookmarkImageServiceAndroid* bookmark_image_service_;    // weak
   Profile* profile_;                       // weak
   DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarksBridge);
 };
