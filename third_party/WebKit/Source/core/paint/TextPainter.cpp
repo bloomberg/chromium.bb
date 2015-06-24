@@ -10,6 +10,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/paint/BoxPainter.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
@@ -135,13 +136,8 @@ TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, co
         textStyle.shadow = style.textShadow();
 
         // Adjust text color when printing with a white background.
-        bool forceBackgroundToWhite = false;
-        if (isPrinting) {
-            if (style.printColorAdjust() == PrintColorAdjustEconomy)
-                forceBackgroundToWhite = true;
-            if (layoutObject.document().settings() && layoutObject.document().settings()->shouldPrintBackgrounds())
-                forceBackgroundToWhite = false;
-        }
+        ASSERT(layoutObject.document().printing() == isPrinting);
+        bool forceBackgroundToWhite = BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(style, layoutObject.document());
         if (forceBackgroundToWhite) {
             textStyle.fillColor = textColorForWhiteBackground(textStyle.fillColor);
             textStyle.strokeColor = textColorForWhiteBackground(textStyle.strokeColor);

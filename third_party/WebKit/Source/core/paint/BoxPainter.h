@@ -43,6 +43,7 @@ public:
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const ComputedStyle&, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static bool shouldAntialiasLines(GraphicsContext*);
     static bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& clipRect);
+    static bool shouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle&, const Document&);
 
 private:
     void paintBackground(const PaintInfo&, const LayoutRect&, const Color& backgroundColor, BackgroundBleedAvoidance = BackgroundBleedNone);

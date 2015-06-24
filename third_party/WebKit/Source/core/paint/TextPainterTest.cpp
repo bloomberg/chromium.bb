@@ -100,6 +100,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_NoAdjustmentNee
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
     document().settings()->setShouldPrintBackgrounds(false);
+    document().setPrinting(true);
     document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
@@ -116,6 +117,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, "rgb(220, 220, 255)");
     document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
     document().settings()->setShouldPrintBackgrounds(false);
+    document().setPrinting(true);
     document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(

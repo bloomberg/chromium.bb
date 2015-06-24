@@ -56,11 +56,21 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     bool paintsBaseBackground = isMainFrame && !frameView.isTransparent();
     bool shouldClearCanvas = paintsBaseBackground && (document.settings() && document.settings()->shouldClearDocumentBackground());
     Color baseBackgroundColor = paintsBaseBackground ? frameView.baseBackgroundColor() : Color();
+    Color rootBackgroundColor = m_layoutView.style()->visitedDependentColor(CSSPropertyBackgroundColor);
     const LayoutObject* rootObject = document.documentElement() ? document.documentElement()->layoutObject() : nullptr;
 
     LayoutObjectDrawingRecorder recorder(context, m_layoutView, DisplayItem::BoxDecorationBackground, documentRect);
     if (recorder.canUseCachedDrawing())
         return;
+
+    // Special handling for print economy mode.
+    bool forceBackgroundToWhite = BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(m_layoutView.styleRef(), document);
+    if (forceBackgroundToWhite) {
+        // If for any reason the view background is not transparent, paint white instead, otherwise keep transparent as is.
+        if (paintsBaseBackground || rootBackgroundColor.alpha() || m_layoutView.style()->backgroundLayers().image())
+            context.fillRect(documentRect, Color::white, SkXfermode::kSrc_Mode);
+        return;
+    }
 
     // Compute the enclosing rect of the view, in root element space.
     //
@@ -100,7 +110,6 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     BoxPainter::FillLayerOcclusionOutputList reversedPaintList;
     bool shouldDrawBackgroundInSeparateBuffer = BoxPainter(m_layoutView).calculateFillLayerOcclusionCulling(reversedPaintList, m_layoutView.style()->backgroundLayers());
     ASSERT(reversedPaintList.size());
-    Color rootBackgroundColor = m_layoutView.style()->visitedDependentColor(CSSPropertyBackgroundColor);
 
     // If the root background color is opaque, isolation group can be skipped because the canvas
     // will be cleared by root background color.

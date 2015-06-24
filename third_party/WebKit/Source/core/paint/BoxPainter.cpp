@@ -312,13 +312,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     Color bgColor = color;
     StyleImage* bgImage = bgLayer.image();
 
-    bool forceBackgroundToWhite = false;
-    if (obj.document().printing()) {
-        if (obj.style()->printColorAdjust() == PrintColorAdjustEconomy)
-            forceBackgroundToWhite = true;
-        if (obj.document().settings() && obj.document().settings()->shouldPrintBackgrounds())
-            forceBackgroundToWhite = false;
-    }
+    bool forceBackgroundToWhite = shouldForceWhiteBackgroundForPrintEconomy(obj.styleRef(), obj.document());
 
     // When printing backgrounds is disabled or using economy mode,
     // change existing background colors and images to a solid white background.
@@ -1053,6 +1047,12 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
             context->drawInnerShadow(border, shadowColor, flooredIntSize(shadowOffset), shadowBlur, shadowSpread, clippedEdges);
         }
     }
+}
+
+bool BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle& style, const Document& document)
+{
+    return document.printing() && style.printColorAdjust() == PrintColorAdjustEconomy
+        && (!document.settings() || !document.settings()->shouldPrintBackgrounds());
 }
 
 } // namespace blink
