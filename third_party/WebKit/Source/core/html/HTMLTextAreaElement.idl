@@ -24,8 +24,7 @@
 interface HTMLTextAreaElement : HTMLElement {
     // attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
-    // TODO(philipj): cols and rows should be unsigned long.
-    attribute long cols;
+    attribute unsigned long cols;
     [Reflect] attribute DOMString dirName;
     [Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
@@ -36,7 +35,7 @@ interface HTMLTextAreaElement : HTMLElement {
     [Reflect] attribute DOMString placeholder;
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
-    attribute long rows;
+    attribute unsigned long rows;
     [Reflect] attribute DOMString wrap;
 
     readonly attribute DOMString type;

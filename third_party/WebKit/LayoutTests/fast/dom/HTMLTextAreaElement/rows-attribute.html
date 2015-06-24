@@ -42,8 +42,8 @@ shouldBe('rowsAttributeEffect(arabicIndicDigitOne)', '2');
 shouldBe('rowsAttributeEffect("2" + arabicIndicDigitOne)', '2');
 
 shouldBe('rowsAttributeEffect("2147483647")', '2147483647');
-shouldBe('rowsAttributeEffect("2147483648")', '2');
-shouldBe('rowsAttributeEffect("4294967295")', '2');
+shouldBe('rowsAttributeEffect("2147483648")', '2147483648');
+shouldBe('rowsAttributeEffect("4294967295")', '4294967295');
 shouldBe('rowsAttributeEffect("4294967296")', '2');
 </script>
 </body>

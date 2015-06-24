@@ -37,8 +37,8 @@ class CORE_EXPORT HTMLTextAreaElement final : public HTMLTextFormControlElement 
 public:
     static PassRefPtrWillBeRawPtr<HTMLTextAreaElement> create(Document&, HTMLFormElement*);
 
-    int cols() const { return m_cols; }
-    int rows() const { return m_rows; }
+    unsigned cols() const { return m_cols; }
+    unsigned rows() const { return m_rows; }
 
     bool shouldWrapText() const { return m_wrap != NoWrap; }
 
@@ -62,8 +62,8 @@ public:
     virtual bool tooShort() const override;
     bool isValidValue(const String&) const;
 
-    void setCols(int);
-    void setRows(int);
+    void setCols(unsigned);
+    void setRows(unsigned);
 
 private:
     HTMLTextAreaElement(Document&, HTMLFormElement*);
@@ -136,8 +136,8 @@ private:
     bool tooLong(const String*, NeedsToCheckDirtyFlag) const;
     bool tooShort(const String*, NeedsToCheckDirtyFlag) const;
 
-    int m_rows;
-    int m_cols;
+    unsigned m_rows;
+    unsigned m_cols;
     WrapMethod m_wrap;
     mutable String m_value;
     mutable bool m_isDirty;
