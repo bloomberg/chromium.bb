@@ -1684,10 +1684,13 @@ TEST(PartitionAllocTest, PurgeDiscardable)
 {
     TestSetup();
 
+    // Free the second of two 4096 byte allocations and then purge.
     {
         void* ptr1 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
         char* ptr2 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
         partitionFreeGeneric(genericAllocator.root(), ptr2);
+        PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr1));
+        EXPECT_EQ(2u, page->numUnprovisionedSlots);
         {
             MockPartitionStatsDumper mockStatsDumperGeneric;
             partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
@@ -1704,8 +1707,33 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         CheckPageInCore(ptr2 - kPointerOffset, true);
         partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDiscardUnusedSystemPages);
         CheckPageInCore(ptr2 - kPointerOffset, false);
+        EXPECT_EQ(3u, page->numUnprovisionedSlots);
 
         partitionFreeGeneric(genericAllocator.root(), ptr1);
+    }
+    // Free the first of two 4096 byte allocations and then purge.
+    {
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        partitionFreeGeneric(genericAllocator.root(), ptr1);
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kSystemPageSize);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_EQ(0u, stats->decommittableBytes);
+            EXPECT_EQ(kSystemPageSize, stats->discardableBytes);
+            EXPECT_EQ(kSystemPageSize, stats->activeBytes);
+            EXPECT_EQ(2 * kSystemPageSize, stats->residentBytes);
+        }
+        CheckPageInCore(ptr1 - kPointerOffset, true);
+        partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDiscardUnusedSystemPages);
+        CheckPageInCore(ptr1 - kPointerOffset, false);
+
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
     }
     {
         char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), 9216 - kExtraAllocSize));
@@ -1773,6 +1801,104 @@ TEST(PartitionAllocTest, PurgeDiscardable)
         CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 63), false);
 
         partitionFreeGeneric(genericAllocator.root(), ptr1);
+    }
+    // This sub-test tests truncation of the provisioned slots in a trickier
+    // case where the freelist is rewritten.
+    partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
+    {
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        ptr1[0] = 'A';
+        ptr1[kSystemPageSize] = 'A';
+        ptr1[kSystemPageSize * 2] = 'A';
+        ptr1[kSystemPageSize * 3] = 'A';
+        PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr1));
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
+        partitionFreeGeneric(genericAllocator.root(), ptr4);
+        partitionFreeGeneric(genericAllocator.root(), ptr1);
+        EXPECT_EQ(0u, page->numUnprovisionedSlots);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kSystemPageSize);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_EQ(0u, stats->decommittableBytes);
+            EXPECT_EQ(2 * kSystemPageSize, stats->discardableBytes);
+            EXPECT_EQ(kSystemPageSize, stats->activeBytes);
+            EXPECT_EQ(4 * kSystemPageSize, stats->residentBytes);
+        }
+        CheckPageInCore(ptr1 - kPointerOffset, true);
+        CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
+        partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDiscardUnusedSystemPages);
+        EXPECT_EQ(1u, page->numUnprovisionedSlots);
+        CheckPageInCore(ptr1 - kPointerOffset, true);
+        CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, false);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
+
+        // Let's check we didn't brick the freelist.
+        void* ptr1b = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        EXPECT_EQ(ptr1, ptr1b);
+        void* ptr2b = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        EXPECT_EQ(ptr2, ptr2b);
+        EXPECT_FALSE(page->freelistHead);
+
+        partitionFreeGeneric(genericAllocator.root(), ptr1);
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
+        partitionFreeGeneric(genericAllocator.root(), ptr3);
+    }
+    // This sub-test is similar, but tests a double-truncation.
+    partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDecommitEmptyPages);
+    {
+        char* ptr1 = reinterpret_cast<char*>(partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize));
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        void* ptr3 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        void* ptr4 = partitionAllocGeneric(genericAllocator.root(), kSystemPageSize - kExtraAllocSize);
+        ptr1[0] = 'A';
+        ptr1[kSystemPageSize] = 'A';
+        ptr1[kSystemPageSize * 2] = 'A';
+        ptr1[kSystemPageSize * 3] = 'A';
+        PartitionPage* page = partitionPointerToPage(partitionCookieFreePointerAdjust(ptr1));
+        partitionFreeGeneric(genericAllocator.root(), ptr4);
+        partitionFreeGeneric(genericAllocator.root(), ptr3);
+        EXPECT_EQ(0u, page->numUnprovisionedSlots);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            const PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(kSystemPageSize);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_EQ(0u, stats->decommittableBytes);
+            EXPECT_EQ(2 * kSystemPageSize, stats->discardableBytes);
+            EXPECT_EQ(2 * kSystemPageSize, stats->activeBytes);
+            EXPECT_EQ(4 * kSystemPageSize, stats->residentBytes);
+        }
+        CheckPageInCore(ptr1 - kPointerOffset, true);
+        CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), true);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), true);
+        partitionPurgeMemoryGeneric(genericAllocator.root(), PartitionPurgeDiscardUnusedSystemPages);
+        EXPECT_EQ(2u, page->numUnprovisionedSlots);
+        CheckPageInCore(ptr1 - kPointerOffset, true);
+        CheckPageInCore(ptr1 - kPointerOffset + kSystemPageSize, true);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 2), false);
+        CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 3), false);
+
+        EXPECT_FALSE(page->freelistHead);
+
+        partitionFreeGeneric(genericAllocator.root(), ptr1);
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
     }
 
     TestShutdown();

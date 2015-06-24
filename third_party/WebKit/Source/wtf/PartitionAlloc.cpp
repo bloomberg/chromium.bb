@@ -1080,10 +1080,11 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
 #endif
 }
 
-static size_t partitionPurgePage(const PartitionPage* page, bool discard)
+static size_t partitionPurgePage(PartitionPage* page, bool discard)
 {
     const PartitionBucket* bucket = page->bucket;
-    if (bucket->slotSize < kSystemPageSize || !page->numAllocatedSlots)
+    size_t slotSize = bucket->slotSize;
+    if (slotSize < kSystemPageSize || !page->numAllocatedSlots)
         return 0;
 
     size_t bucketNumSlots = partitionBucketSlots(bucket);
@@ -1103,16 +1104,18 @@ static size_t partitionPurgePage(const PartitionPage* page, bool discard)
 
     const size_t maxSlotCount = (kPartitionPageSize * kMaxPartitionPagesPerSlotSpan) / kSystemPageSize;
     ASSERT(bucketNumSlots <= maxSlotCount);
+    ASSERT(page->numUnprovisionedSlots < bucketNumSlots);
+    size_t numSlots = bucketNumSlots - page->numUnprovisionedSlots;
     char slotUsage[maxSlotCount];
     size_t lastSlot = static_cast<size_t>(-1);
-    memset(slotUsage, 1, sizeof(slotUsage));
+    memset(slotUsage, 1, numSlots);
     char* ptr = reinterpret_cast<char*>(partitionPageToPointer(page));
     PartitionFreelistEntry* entry = page->freelistHead;
     // First, walk the freelist for this page and make a bitmap of which slots
     // are not in use.
     while (entry) {
-        size_t slotIndex = (reinterpret_cast<char*>(entry) - ptr) / bucket->slotSize;
-        ASSERT(slotIndex < bucketNumSlots);
+        size_t slotIndex = (reinterpret_cast<char*>(entry) - ptr) / slotSize;
+        ASSERT(slotIndex < numSlots);
         slotUsage[slotIndex] = 0;
         entry = partitionFreelistMask(entry->next);
         // If we have a slot where the masked freelist entry is 0, we can
@@ -1123,21 +1126,68 @@ static size_t partitionPurgePage(const PartitionPage* page, bool discard)
         if (!partitionFreelistMask(entry))
             lastSlot = slotIndex;
     }
+
+    // If the slot(s) at the end of the slot span are not in used, we can
+    // truncate them entirely and rewrite the freelist.
+    size_t truncatedSlots = 0;
+    while (!slotUsage[numSlots - 1]) {
+        truncatedSlots++;
+        numSlots--;
+        ASSERT(numSlots);
+    }
+    // First, do the work of calculating the discardable bytes. Don't actually
+    // discard anything unless the discard flag was passed in.
+    char* beginPtr = nullptr;
+    char* endPtr = nullptr;
+    size_t unprovisionedBytes = 0;
+    if (truncatedSlots) {
+        beginPtr = ptr + (numSlots * slotSize);
+        endPtr = beginPtr + (slotSize * truncatedSlots);
+        beginPtr = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(beginPtr)));
+        // We round the end pointer here up and not down because we're at the
+        // end of a slot span, so we "own" all the way up the page boundary.
+        endPtr = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(endPtr)));
+        ASSERT(endPtr <= ptr + partitionBucketBytes(bucket));
+        if (beginPtr < endPtr) {
+            unprovisionedBytes = endPtr - beginPtr;
+            discardableBytes += unprovisionedBytes;
+        }
+    }
+    if (unprovisionedBytes && discard) {
+        ASSERT(truncatedSlots > 0);
+        size_t numNewEntries = 0;
+        page->numUnprovisionedSlots += truncatedSlots;
+        // Rewrite the freelist.
+        PartitionFreelistEntry** entryPtr = &page->freelistHead;
+        for (size_t slotIndex = 0; slotIndex < numSlots; ++slotIndex) {
+            if (slotUsage[slotIndex])
+                continue;
+            PartitionFreelistEntry* entry = reinterpret_cast<PartitionFreelistEntry*>(ptr + (slotSize * slotIndex));
+            *entryPtr = partitionFreelistMask(entry);
+            entryPtr = reinterpret_cast<PartitionFreelistEntry**>(entry);
+            numNewEntries++;
+        }
+        // Terminate the freelist chain.
+        *entryPtr = nullptr;
+        // The freelist head is stored unmasked.
+        page->freelistHead = partitionFreelistMask(page->freelistHead);
+        ASSERT(numNewEntries == numSlots - page->numAllocatedSlots);
+        // Discard the memory.
+        discardSystemPages(beginPtr, unprovisionedBytes);
+    }
+
     // Next, walk the slots and for any not in use, consider where the system
     // page boundaries occur. We can release any system pages back to the
     // system as long as we don't interfere with a freelist pointer or an
     // adjacent slot.
-    // TODO(cevans): I think we can "truncate" the page, i.e. increase the
-    // value of page->numUnprovisionedSlots and rewrite(!) the freelist, if
-    // we find that to be a win too.
-    for (size_t i = 0; i < bucketNumSlots; ++i) {
+    for (size_t i = 0; i < numSlots; ++i) {
         if (slotUsage[i])
             continue;
         // The first address we can safely discard is just after the freelist
         // pointer. There's one quirk: if the freelist pointer is actually a
         // null, we can discard that pointer value too.
-        char* beginPtr = ptr + (i * bucket->slotSize);
-        char* endPtr = beginPtr + bucket->slotSize;
+        char* beginPtr = ptr + (i * slotSize);
+        char* endPtr = beginPtr + slotSize;
         if (i != lastSlot)
             beginPtr += sizeof(PartitionFreelistEntry);
         beginPtr = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(beginPtr)));
@@ -1152,10 +1202,10 @@ static size_t partitionPurgePage(const PartitionPage* page, bool discard)
     return discardableBytes;
 }
 
-static void partitionPurgeBucket(const PartitionBucket* bucket)
+static void partitionPurgeBucket(PartitionBucket* bucket)
 {
     if (bucket->activePagesHead != &PartitionRootGeneric::gSeedPage) {
-        for (const PartitionPage* page = bucket->activePagesHead; page; page = page->nextPage) {
+        for (PartitionPage* page = bucket->activePagesHead; page; page = page->nextPage) {
             ASSERT(page != &PartitionRootGeneric::gSeedPage);
             (void) partitionPurgePage(page, true);
         }
@@ -1179,7 +1229,7 @@ void partitionPurgeMemoryGeneric(PartitionRootGeneric* root, int flags)
         partitionDecommitEmptyPages(root);
     if (flags & PartitionPurgeDiscardUnusedSystemPages) {
         for (size_t i = 0; i < kGenericNumBuckets; ++i) {
-            const PartitionBucket* bucket = &root->buckets[i];
+            PartitionBucket* bucket = &root->buckets[i];
             if (bucket->slotSize >= kSystemPageSize)
                 partitionPurgeBucket(bucket);
         }
@@ -1196,7 +1246,7 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
         return;
     }
 
-    statsOut->discardableBytes += partitionPurgePage(page, false);
+    statsOut->discardableBytes += partitionPurgePage(const_cast<PartitionPage*>(page), false);
 
     size_t rawSize = partitionPageGetRawSize(const_cast<PartitionPage*>(page));
     if (rawSize)
