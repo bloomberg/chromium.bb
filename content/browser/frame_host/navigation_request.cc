@@ -100,7 +100,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount()),
-      request_body, true, &entry));
+      request_body, true, &frame_entry, &entry));
   return navigation_request.Pass();
 }
 
@@ -124,7 +124,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   request_params.current_history_list_length = current_history_list_length;
   scoped_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
-                            request_params, body, false, nullptr));
+                            request_params, body, false, nullptr, nullptr));
   return navigation_request.Pass();
 }
 
@@ -135,6 +135,7 @@ NavigationRequest::NavigationRequest(
     const RequestNavigationParams& request_params,
     scoped_refptr<ResourceRequestBody> body,
     bool browser_initiated,
+    const FrameNavigationEntry* frame_entry,
     const NavigationEntryImpl* entry)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
@@ -145,9 +146,12 @@ NavigationRequest::NavigationRequest(
       restore_type_(NavigationEntryImpl::RESTORE_NONE),
       is_view_source_(false),
       bindings_(NavigationEntryImpl::kInvalidBindings) {
-  if (entry) {
+  DCHECK_IMPLIES(browser_initiated, entry != nullptr && frame_entry != nullptr);
+  if (browser_initiated) {
+    // TODO(clamy): use the FrameNavigationEntry for the source SiteInstance
+    // once it has been moved from the NavigationEntry.
     source_site_instance_ = entry->source_site_instance();
-    dest_site_instance_ = entry->site_instance();
+    dest_site_instance_ = frame_entry->site_instance();
     restore_type_ = entry->restore_type();
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();

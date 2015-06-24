@@ -130,6 +130,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     const RequestNavigationParams& request_params,
                     scoped_refptr<ResourceRequestBody> body,
                     bool browser_initiated,
+                    const FrameNavigationEntry* frame_navigation_entry,
                     const NavigationEntryImpl* navitation_entry);
 
   // NavigationURLLoaderDelegate implementation.
