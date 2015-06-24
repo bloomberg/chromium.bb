@@ -1432,7 +1432,7 @@ void DeprecatedPaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
 void DeprecatedPaintLayer::updateStackingNode()
 {
     if (requiresStackingNode())
-        m_stackingNode = adoptPtr(new DeprecatedPaintLayerStackingNode(this));
+        m_stackingNode = adoptPtr(new DeprecatedPaintLayerStackingNode(*layoutObject()));
     else
         m_stackingNode = nullptr;
 }
@@ -1604,12 +1604,6 @@ Node* DeprecatedPaintLayer::enclosingElement() const
     }
     ASSERT_NOT_REACHED();
     return 0;
-}
-
-bool DeprecatedPaintLayer::isInTopLayer() const
-{
-    Node* node = layoutObject()->node();
-    return node && node->isElementNode() && toElement(node)->isInTopLayer();
 }
 
 // Compute the z-offset of the point in the transformState.
