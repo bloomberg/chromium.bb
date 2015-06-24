@@ -21,6 +21,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace dbus {
+class FileDescriptor;
+}
+
 namespace device {
 
 class UsbDeviceHandleImpl;
@@ -78,7 +82,10 @@ class UsbDeviceImpl : public UsbDevice {
 
  private:
 #if defined(OS_CHROMEOS)
-  void OnPathRequestComplete(const OpenCallback& callback, bool success);
+  void OnOpenRequestComplete(const OpenCallback& callback,
+                             dbus::FileDescriptor fd);
+  void OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
+                                  const OpenCallback& callback);
 #endif
   void OpenOnBlockingThread(const OpenCallback& callback);
   void Opened(PlatformUsbDeviceHandle platform_handle,

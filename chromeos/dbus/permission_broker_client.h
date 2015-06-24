@@ -11,10 +11,7 @@
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-
-namespace dbus {
-class FileDescriptor;
-}
+#include "dbus/file_descriptor.h"
 
 namespace chromeos {
 
@@ -31,6 +28,9 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   // RequestUsbAccess methods. Its boolean parameter represents the result of
   // the operation that it was submitted alongside.
   typedef base::Callback<void(bool)> ResultCallback;
+
+  // An OpenPathCallback callback is run when an OpenPath request is completed.
+  typedef base::Callback<void(dbus::FileDescriptor)> OpenPathCallback;
 
   ~PermissionBrokerClient() override;
 
@@ -52,6 +52,11 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
   virtual void RequestPathAccess(const std::string& path,
                                  int interface_id,
                                  const ResultCallback& callback) = 0;
+
+  // OpenPath requests that the permission broker open the device node
+  // identified by |path| and return the resulting file descriptor.
+  virtual void OpenPath(const std::string& path,
+                        const OpenPathCallback& callback) = 0;
 
   // Requests the |port| be opened on the firewall for incoming TCP/IP
   // connections received on |interface| (an empty string indicates all

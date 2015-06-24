@@ -47,7 +47,10 @@ source_set("usb") {
     deps += [ "//device/udev_linux" ]
   }
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [
+      "//chromeos",
+      "//dbus",
+    ]
   }
 }
 

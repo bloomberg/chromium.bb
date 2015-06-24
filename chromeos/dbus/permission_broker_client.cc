@@ -12,6 +12,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using permission_broker::kCheckPathAccess;
+using permission_broker::kOpenPath;
 using permission_broker::kPermissionBrokerInterface;
 using permission_broker::kPermissionBrokerServiceName;
 using permission_broker::kPermissionBrokerServicePath;
@@ -49,6 +50,17 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&PermissionBrokerClientImpl::OnResponse,
                                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void OpenPath(const std::string& path,
+                const OpenPathCallback& callback) override {
+    dbus::MethodCall method_call(kPermissionBrokerInterface, kOpenPath);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(path);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&PermissionBrokerClientImpl::OnOpenPathResponse,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void RequestTcpPortAccess(uint16 port,
@@ -127,6 +139,20 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     if (!reader.PopBool(&result))
       LOG(WARNING) << "Could not parse response: " << response->ToString();
     callback.Run(result);
+  }
+
+  void OnOpenPathResponse(const OpenPathCallback& callback,
+                          dbus::Response* response) {
+    dbus::FileDescriptor fd;
+    if (response) {
+      dbus::MessageReader reader(response);
+      if (!reader.PopFileDescriptor(&fd))
+        LOG(WARNING) << "Could not parse response: " << response->ToString();
+    } else {
+      LOG(WARNING) << "Access request method call failed.";
+    }
+
+    callback.Run(fd.Pass());
   }
 
   dbus::ObjectProxy* proxy_;

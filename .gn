@@ -44,7 +44,8 @@ check_targets = [
   "//crypto/*",
   "//data/*",
   "//dbus/*",
-  "//device/*",
+
+  #"//device/*",  # Ran into http://crbug.com/500761 adding dbus dependency
 
   #"//extensions/*",  # Lots of errors.
   #"//gin/*",  # Easy.

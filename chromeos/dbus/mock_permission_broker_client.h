@@ -26,6 +26,8 @@ class MockPermissionBrokerClient : public PermissionBrokerClient {
                void(const std::string& path,
                     int interface_id,
                     const ResultCallback& callback));
+  MOCK_METHOD2(OpenPath,
+               void(const std::string& path, const OpenPathCallback& callback));
   MOCK_METHOD4(RequestTcpPortAccess,
                void(uint16 port,
                     const std::string& interface,
