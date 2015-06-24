@@ -30,6 +30,9 @@ void SetJobLevel(const base::CommandLine& cmd_line,
 // Closes handles that are opened at process creation and initialization.
 void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy);
 
+// Add AppContainer policy for |sid| on supported OS.
+void AddAppContainerPolicy(sandbox::TargetPolicy* policy, const wchar_t* sid);
+
 bool InitBrokerServices(sandbox::BrokerServices* broker_services);
 
 bool InitTargetServices(sandbox::TargetServices* target_services);

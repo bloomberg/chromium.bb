@@ -640,6 +640,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // policy.
   virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
                                 bool* success) {}
+
+  // Returns the AppContainer SID for the specified sandboxed process type, or
+  // empty string if this sandboxed process type does not support living inside
+  // an AppContainer.
+  virtual base::string16 GetAppContainerSidForSandboxType(
+      int sandbox_type) const;
 #endif
 
 #if defined(VIDEO_HOLE)

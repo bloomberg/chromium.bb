@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/network_change_notifier.h"
@@ -77,6 +78,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
   base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
+
+  SandboxType GetSandboxType() override {
+    return SANDBOX_TYPE_PPAPI;
+  }
 
  private:
 #if defined(OS_POSIX)

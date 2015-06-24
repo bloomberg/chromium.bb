@@ -284,7 +284,7 @@ source_set("nacl_common") {
     "common/nacl_process_type.h",
     "common/nacl_renderer_messages.cc",
     "common/nacl_renderer_messages.h",
-    "common/nacl_sandbox_type_mac.h",
+    "common/nacl_sandbox_type.h",
     "common/nacl_types.cc",
     "common/nacl_types.h",
     "common/nacl_types_param_traits.cc",

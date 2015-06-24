@@ -84,6 +84,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
@@ -124,6 +125,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/sandbox_type.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -2328,6 +2330,54 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #if defined(OS_WIN)
 const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {
   return chrome::kBrowserResourcesDll;
+}
+
+base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
+    int sandbox_type) const {
+  base::string16 sid;
+
+#if defined(GOOGLE_CHROME_BUILD)
+  const chrome::VersionInfo::Channel channel =
+      chrome::VersionInfo::GetChannel();
+
+  // It's possible to have a SxS installation running at the same time as a
+  // non-SxS so isolate them from each other.
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    sid.assign(
+        L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+        L"924012150-");
+  } else {
+    sid.assign(
+        L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+        L"924012149-");
+  }
+#else
+  sid.assign(
+      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+      L"924012148-");
+#endif
+
+  // TODO(wfh): Add support for more process types here. crbug.com/499523
+  switch (sandbox_type) {
+    case content::SANDBOX_TYPE_RENDERER:
+      return sid + L"129201922";
+    case content::SANDBOX_TYPE_UTILITY:
+      return base::string16();
+    case content::SANDBOX_TYPE_GPU:
+      return base::string16();
+    case content::SANDBOX_TYPE_PPAPI:
+      return base::string16();
+#if !defined(DISABLE_NACL)
+    case PROCESS_TYPE_NACL_LOADER:
+      return base::string16();
+    case PROCESS_TYPE_NACL_BROKER:
+      return base::string16();
+#endif
+  }
+
+  // Should never reach here.
+  CHECK(0);
+  return base::string16();
 }
 
 void ChromeContentBrowserClient::PreSpawnRenderer(

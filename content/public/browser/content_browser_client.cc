@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/common/sandbox_type.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -334,6 +335,16 @@ void ContentBrowserClient::OpenURL(
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return nullptr;
+}
+
+base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
+    int sandbox_type) const {
+  // Embedders should override this method and return different SIDs for each
+  // sandbox type. Note: All content level tests will run child processes in the
+  // same AppContainer.
+  return base::string16(
+      L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+      L"924012148-129201922");
 }
 #endif
 

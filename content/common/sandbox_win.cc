@@ -575,6 +575,17 @@ void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
   policy->AddKernelObjectToClose(L"Section", object_path.data());
 }
 
+void AddAppContainerPolicy(sandbox::TargetPolicy* policy, const wchar_t* sid) {
+  if (base::win::GetVersion() == base::win::VERSION_WIN8 ||
+      base::win::GetVersion() == base::win::VERSION_WIN8_1) {
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    if (!command_line.HasSwitch(switches::kDisableAppContainer)) {
+      policy->SetLowBox(sid);
+    }
+  }
+}
+
 bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   // TODO(abarth): DCHECK(CalledOnValidThread());
   //               See <http://b/1287166>.

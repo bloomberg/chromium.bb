@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "content/common/content_export.h"
-#include "content/public/common/sandbox_type_mac.h"
+#include "content/public/common/sandbox_type.h"
 
 namespace base {
 class FilePath;

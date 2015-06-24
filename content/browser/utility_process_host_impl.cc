@@ -27,6 +27,7 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -68,6 +69,10 @@ class UtilitySandboxedProcessLauncherDelegate
   base::EnvironmentMap GetEnvironment() override { return env_; }
   base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
+
+  SandboxType GetSandboxType() override {
+    return SANDBOX_TYPE_UTILITY;
+  }
 
  private:
   base::FilePath exposed_dir_;

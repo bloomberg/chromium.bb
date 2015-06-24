@@ -23,12 +23,10 @@ bool SandboxedProcessLauncherDelegate::ShouldUseZygote() {
 base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
   return base::EnvironmentMap();
 }
+#endif
 
-#if defined(OS_MACOSX)
 SandboxType SandboxedProcessLauncherDelegate::GetSandboxType() {
   return SANDBOX_TYPE_INVALID;
 }
-#endif
 
-#endif
 }  // namespace content

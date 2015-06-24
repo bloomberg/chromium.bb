@@ -44,13 +44,12 @@
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#elif defined(OS_MACOSX)
-#include "components/nacl/common/nacl_sandbox_type_mac.h"
 #endif
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
+#include "components/nacl/common/nacl_sandbox_type.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)

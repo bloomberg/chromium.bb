@@ -348,23 +348,11 @@ class RendererSandboxedProcessLauncherDelegate
   void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
     AddBaseHandleClosePolicy(policy);
 
-    if (base::win::GetVersion() == base::win::VERSION_WIN8 ||
-        base::win::GetVersion() == base::win::VERSION_WIN8_1) {
-      const base::CommandLine& command_line =
-          *base::CommandLine::ForCurrentProcess();
-      if (!command_line.HasSwitch(switches::kDisableAppContainer)) {
-        // TODO(shrikant): Check if these constants should be different across
-        // various versions of Chromium code base or could be same.
-        // If there should be different SID per channel then move this code
-        // in chrome rather than content and assign SID based on
-        // VersionInfo::GetChannel().
-        const wchar_t kAppContainerSid[] =
-            L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
-            L"924012148-129201922";
-
-        policy->SetLowBox(kAppContainerSid);
-      }
-    }
+    const base::string16& sid =
+        GetContentClient()->browser()->GetAppContainerSidForSandboxType(
+            GetSandboxType());
+    if (!sid.empty())
+      AddAppContainerPolicy(policy, sid.c_str());
 
     GetContentClient()->browser()->PreSpawnRenderer(policy, success);
   }
@@ -379,6 +367,10 @@ class RendererSandboxedProcessLauncherDelegate
   }
   base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
+
+  SandboxType GetSandboxType() override {
+    return SANDBOX_TYPE_RENDERER;
+  }
 
  private:
 #if defined(OS_POSIX)

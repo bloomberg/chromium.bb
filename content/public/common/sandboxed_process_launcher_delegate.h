@@ -9,10 +9,7 @@
 #include "base/files/scoped_file.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"
-
-#if defined(OS_MACOSX)
-#include "content/public/common/sandbox_type_mac.h"
-#endif
+#include "content/public/common/sandbox_type.h"
 
 namespace base {
 class FilePath;
@@ -65,14 +62,11 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
 
   // Return the file descriptor for the IPC channel.
   virtual base::ScopedFD TakeIpcFd() = 0;
+#endif
 
-#if defined(OS_MACOSX)
-  // Gets the Mac SandboxType to enforce on the process. Return
-  // SANDBOX_TYPE_INVALID for no sandbox policy.
+  // Returns the SandboxType to enforce on the process, or SANDBOX_TYPE_INVALID
+  // for no sandbox policy.
   virtual SandboxType GetSandboxType();
-#endif
-
-#endif
 };
 
 }  // namespace content

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_MAC_H_
-#define COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_MAC_H_
+#ifndef COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_H_
+#define COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_H_
 
-#include "content/public/common/sandbox_type_mac.h"
+#include "content/public/common/sandbox_type.h"
 
 enum NaClSandboxType {
   NACL_SANDBOX_TYPE_FIRST_TYPE = content::SANDBOX_TYPE_AFTER_LAST_TYPE,
@@ -13,4 +13,4 @@ enum NaClSandboxType {
   NACL_SANDBOX_TYPE_NACL_LOADER = NACL_SANDBOX_TYPE_FIRST_TYPE,
 };
 
-#endif  // COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_MAC_H_
+#endif  // COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_H_

@@ -35,6 +35,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
@@ -264,6 +265,10 @@ class GpuSandboxedProcessLauncherDelegate
 
   base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
+
+  SandboxType GetSandboxType() override {
+    return SANDBOX_TYPE_GPU;
+  }
 
  private:
 #if defined(OS_WIN)

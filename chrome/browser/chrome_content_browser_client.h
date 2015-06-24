@@ -255,6 +255,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if defined(OS_WIN)
   const wchar_t* GetResourceDllName() override;
   void PreSpawnRenderer(sandbox::TargetPolicy* policy, bool* success) override;
+  base::string16 GetAppContainerSidForSandboxType(
+      int sandbox_type) const override;
 #endif
   void OverrideRenderFrameMojoServices(
       content::ServiceRegistry* registry,

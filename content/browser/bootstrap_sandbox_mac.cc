@@ -11,7 +11,7 @@
 #include "content/common/sandbox_init_mac.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/common/sandbox_type_mac.h"
+#include "content/public/common/sandbox_type.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
 
 namespace content {
