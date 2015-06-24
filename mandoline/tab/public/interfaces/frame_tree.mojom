@@ -37,12 +37,12 @@ interface FrameTreeServer {
 };
 
 interface FrameTreeClient {
-  // Called once per client. |frames| gives the contents of the tree.
-  OnConnect(FrameTreeServer server, array<FrameData> frames);
+  // Called once per client. |frame_data| gives the contents of the tree.
+  OnConnect(FrameTreeServer server, array<FrameData> frame_data);
 
   // Called when a new frame is added to the tree. This is not called on the
   // originator of the change.
-  OnFrameAdded(FrameData frame);
+  OnFrameAdded(FrameData frame_data);
 
   // Called when a frame is removed from the tree. This is not called on the
   // originator of the change.

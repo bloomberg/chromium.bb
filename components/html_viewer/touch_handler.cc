@@ -5,7 +5,7 @@
 #include "components/html_viewer/touch_handler.h"
 
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -31,8 +31,8 @@ void SetPropertiesFromEvent(const mojo::Event& event,
 
 }  // namespace
 
-TouchHandler::TouchHandler(blink::WebView* web_view)
-    : web_view_(web_view),
+TouchHandler::TouchHandler(blink::WebWidget* web_widget)
+    : web_widget_(web_widget),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this) {
@@ -61,7 +61,7 @@ void TouchHandler::OnGestureEvent(const ui::GestureEventData& gesture) {
       web_gesture.modifiers == blink::WebInputEvent::ShiftKey) {
     web_gesture.modifiers = 0;
   }
-  web_view_->handleInputEvent(web_gesture);
+  web_widget_->handleInputEvent(web_gesture);
 }
 
 bool TouchHandler::UpdateMotionEvent(const mojo::Event& event) {
@@ -163,7 +163,7 @@ void TouchHandler::SendMotionEventToGestureProvider() {
   blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
       *current_motion_event_, result.did_generate_scroll);
   gesture_provider_.OnTouchEventAck(web_event.uniqueTouchEventId,
-                                    web_view_->handleInputEvent(web_event));
+                                    web_widget_->handleInputEvent(web_event));
 }
 
 void TouchHandler::PostProcessMotionEvent(const mojo::Event& event) {

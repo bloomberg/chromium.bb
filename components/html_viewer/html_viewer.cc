@@ -78,10 +78,12 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
     std::set<HTMLDocument*> documents(documents_);
     for (HTMLDocument* doc : documents)
       doc->Destroy();
+    DCHECK(documents_.empty());
 
     std::set<HTMLDocumentOOPIF*> documents2(documents2_);
     for (HTMLDocumentOOPIF* doc : documents2)
       doc->Destroy();
+    DCHECK(documents2_.empty());
   }
 
   // Callback from the quit closure. We key off this rather than

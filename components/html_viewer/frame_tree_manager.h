@@ -6,24 +6,106 @@
 #define COMPONENTS_HTML_VIEWER_FRAME_TREE_MANAGER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "mojo/application/public/cpp/lazy_interface_ptr.h"
+#include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebNavigationPolicy.h"
+
+namespace blink {
+class WebFrame;
+class WebFrameClient;
+class WebLocalFrame;
+class WebRemoteFrameClient;
+class WebView;
+}
+
+namespace gfx {
+class Size;
+}
+
+namespace mojo {
+class ApplicationConnection;
+class ApplicationImpl;
+class View;
+}
 
 namespace html_viewer {
 
-// FrameTreeManager is the FrameTreeClient implementation for an HTMLDocument.
-// It keeps the blink frame tree in sync with that of the FrameTreeServer.
-// TODO(sky): make it actually do this.
+class Frame;
+class FrameTreeManagerDelegate;
+class Setup;
+
+// FrameTreeManager is responsible for managing the frames that comprise a
+// document. Some of the frames may be remote. FrameTreeManager updates its
+// state in response to changes from the FrameTreeServer, as well as changes
+// from the underlying frames. The frame tree has at least one local frame
+// that is backed by a mojo::View.
 class FrameTreeManager : public mandoline::FrameTreeClient {
  public:
-  FrameTreeManager();
+  FrameTreeManager(Setup* setup,
+                   mojo::ApplicationImpl* app,
+                   mojo::ApplicationConnection* app_connection,
+                   uint32_t local_frame_id,
+                   mandoline::FrameTreeServerPtr server);
   ~FrameTreeManager() override;
 
+  void Init(mojo::View* local_view,
+            mojo::Array<mandoline::FrameDataPtr> frame_data);
+
+  void set_delegate(FrameTreeManagerDelegate* delegate) {
+    delegate_ = delegate;
+  }
+
+  Setup* setup() { return setup_; }
+  mojo::ApplicationImpl* app() { return app_; }
+
+  // Returns the Frame/WebFrame that is rendering to the supplied view.
+  // TODO(sky): we need to support more than one local frame.
+  Frame* GetLocalFrame();
+  blink::WebLocalFrame* GetLocalWebFrame();
+
  private:
+  friend class Frame;
+
+  // Recursively calls Init() on |frame| and it's children.
+  void InitFrames(mojo::View* local_view, Frame* frame);
+
+  // Returns the navigation policy for the specified frame.
+  blink::WebNavigationPolicy DecidePolicyForNavigation(
+      Frame* frame,
+      const blink::WebFrameClient::NavigationPolicyInfo& info);
+
+  // Invoked when a Frame finishes loading.
+  void OnFrameDidFinishLoad(Frame* frame);
+
+  // Invoked when a Frame navigates.
+  void OnFrameDidNavigateLocally(Frame* frame, const std::string& url);
+
+  // Invoked when a Frame is destroye.
+  void OnFrameDestroyed(Frame* frame);
+
   // mandoline::FrameTreeClient:
   void OnConnect(mandoline::FrameTreeServerPtr server,
-                 mojo::Array<mandoline::FrameDataPtr> frames) override;
-  void OnFrameAdded(mandoline::FrameDataPtr frame) override;
+                 mojo::Array<mandoline::FrameDataPtr> frame_data) override;
+  void OnFrameAdded(mandoline::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t frame_id) override;
+
+  Setup* setup_;
+
+  mojo::ApplicationImpl* app_;
+
+  FrameTreeManagerDelegate* delegate_;
+
+  // Frame id of the frame we're rendering to.
+  const uint32_t local_frame_id_;
+
+  mandoline::FrameTreeServerPtr server_;
+
+  mojo::LazyInterfacePtr<mojo::NavigatorHost> navigator_host_;
+
+  Frame* root_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeManager);
 };

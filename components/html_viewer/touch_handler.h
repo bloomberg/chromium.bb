@@ -9,7 +9,7 @@
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
 namespace blink {
-class WebView;
+class WebWidget;
 }
 
 namespace mojo {
@@ -27,7 +27,7 @@ namespace html_viewer {
 // FilteredGestureProvider.
 class TouchHandler : public ui::GestureProviderClient {
  public:
-  explicit TouchHandler(blink::WebView* web_view);
+  explicit TouchHandler(blink::WebWidget* web_widget);
   ~TouchHandler() override;
 
   void OnTouchEvent(const mojo::Event& event);
@@ -46,7 +46,7 @@ class TouchHandler : public ui::GestureProviderClient {
   // GestureProvider.
   void PostProcessMotionEvent(const mojo::Event& event);
 
-  blink::WebView* web_view_;
+  blink::WebWidget* web_widget_;
 
   ui::FilteredGestureProvider gesture_provider_;
 
