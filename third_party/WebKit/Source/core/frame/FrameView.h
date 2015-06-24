@@ -316,7 +316,6 @@ public:
 
     // Override scrollbar notifications to update the AXObject cache.
     virtual void didAddScrollbar(Scrollbar*, ScrollbarOrientation) override;
-    virtual void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) override;
 
     // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
     // passed around the FrameView layout methods can be true while this returns

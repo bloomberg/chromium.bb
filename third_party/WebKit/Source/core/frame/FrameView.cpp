@@ -3014,15 +3014,6 @@ void FrameView::didAddScrollbar(Scrollbar* scrollbar, ScrollbarOrientation orien
         cache->handleScrollbarUpdate(this);
 }
 
-void FrameView::willRemoveScrollbar(Scrollbar* scrollbar, ScrollbarOrientation orientation)
-{
-    ScrollableArea::willRemoveScrollbar(scrollbar, orientation);
-    if (AXObjectCache* cache = axObjectCache()) {
-        cache->remove(scrollbar);
-        cache->handleScrollbarUpdate(this);
-    }
-}
-
 void FrameView::setTopControlsViewportAdjustment(float adjustment)
 {
     m_topControlsViewportAdjustment = adjustment;
@@ -3065,12 +3056,16 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar)
         m_horizontalScrollbar->styleChanged();
     } else {
         willRemoveScrollbar(m_horizontalScrollbar.get(), HorizontalScrollbar);
+        if (AXObjectCache* cache = axObjectCache())
+            cache->remove(m_horizontalScrollbar.get());
         // If the scrollbar has been marked as overlapping the window resizer,
         // then its removal should reduce the count.
         if (m_horizontalScrollbar->overlapsResizer())
             adjustScrollbarsAvoidingResizerCount(-1);
         removeChild(m_horizontalScrollbar.get());
         m_horizontalScrollbar = nullptr;
+        if (AXObjectCache* cache = axObjectCache())
+            cache->handleScrollbarUpdate(this);
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -3089,12 +3084,16 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
         m_verticalScrollbar->styleChanged();
     } else {
         willRemoveScrollbar(m_verticalScrollbar.get(), VerticalScrollbar);
+        if (AXObjectCache* cache = axObjectCache())
+            cache->remove(m_verticalScrollbar.get());
         // If the scrollbar has been marked as overlapping the window resizer,
         // then its removal should reduce the count.
         if (m_verticalScrollbar->overlapsResizer())
             adjustScrollbarsAvoidingResizerCount(-1);
         removeChild(m_verticalScrollbar.get());
         m_verticalScrollbar = nullptr;
+        if (AXObjectCache* cache = axObjectCache())
+            cache->handleScrollbarUpdate(this);
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
