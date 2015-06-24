@@ -67,9 +67,11 @@ public:
     static PLATFORM_EXPORT IntRect inflateRectForAA(const IntRect&);
 
     // Inflate an IntRect to account for its focus ring. This is only used when
-    // BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING is defined (otherwise, the focus ring's
+    // drawWithFrameDrawsFocusRing() returns true (otherwise, the focus ring's
     // bounds could be accurately computed with -[NSCell focusRingMaskBoundsForFrame:inView:]).
     static PLATFORM_EXPORT IntRect inflateRectForFocusRing(const IntRect&);
+
+    static PLATFORM_EXPORT bool drawWithFrameDrawsFocusRing();
 };
 
 } // namespace blink

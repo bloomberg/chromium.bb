@@ -25,11 +25,13 @@
 
 #import "platform/mac/WebCoreNSCellExtras.h"
 
-#if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
+@interface NSCell (LionSDKDeclarations)
+- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
+@end
 
 @implementation NSCell (WebCoreFocusRingDrawing)
 
-- (void)_web_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
+- (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
     CGContextRef cgContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     CGContextSaveGState(cgContext);
@@ -41,5 +43,3 @@
 }
 
 @end
-
-#endif // !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
