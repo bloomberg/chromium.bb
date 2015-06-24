@@ -146,8 +146,13 @@ function maybeGenHeader(testFixture) {
   }
   print('#include "url/gurl.h"');
   print('#include "testing/gtest/include/gtest/gtest.h"');
-  if (testFixture && this[testFixture].prototype.testGenCppIncludes)
-    this[testFixture].prototype.testGenCppIncludes();
+  // Add includes specified by test fixture.
+  if (testFixture) {
+    if (this[testFixture].prototype.testGenCppIncludes)
+      this[testFixture].prototype.testGenCppIncludes();
+    if (this[testFixture].prototype.commandLineSwitches)
+      print('#include "base/command_line.h"');
+  }
   print();
 }
 
@@ -340,7 +345,24 @@ function TEST_F(testFixture, testFunction, testBody) {
       resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps));
 
   if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
-    print('typedef ' + typedefCppFixture + ' ' + testFixture + ';');
+    var switches = this[testFixture].prototype.commandLineSwitches;
+    if (!switches || !switches.length || typedefCppFixture == 'V8UnitTest') {
+      print('typedef ' + typedefCppFixture + ' ' + testFixture + ';');
+    } else {
+      // Make the testFixture a class inheriting from the base fixture.
+      print('class ' + testFixture + ' : public ' + typedefCppFixture + ' {');
+      print(' private:');
+      // Override SetUpCommandLine and add each switch.
+      print('  void');
+      print('  SetUpCommandLine(base::CommandLine* command_line) override {');
+      for (var i = 0; i < switches.length; i++) {
+        print('    command_line->AppendSwitchASCII(');
+        print('        "' + switches[i].switchName + '",');
+        print('        "' + (switches[i].switchValue || '') + '");');
+      }
+      print('  }');
+      print('};');
+    }
     typedeffedCppFixtures[testFixture] = typedefCppFixture;
   }
 
