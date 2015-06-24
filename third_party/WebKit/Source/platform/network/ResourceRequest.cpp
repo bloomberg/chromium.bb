@@ -224,11 +224,6 @@ void ResourceRequest::setHTTPReferrer(const Referrer& referrer)
     m_didSetHTTPReferrer = true;
 }
 
-void ResourceRequest::clearHTTPAuthorization()
-{
-    m_httpHeaderFields.remove("Authorization");
-}
-
 void ResourceRequest::clearHTTPReferrer()
 {
     m_httpHeaderFields.remove("Referer");
@@ -423,16 +418,6 @@ bool ResourceRequest::hasCacheValidatorFields() const
     return !m_httpHeaderFields.get(lastModifiedHeader).isEmpty() || !m_httpHeaderFields.get(eTagHeader).isEmpty();
 }
 
-double ResourceRequest::defaultTimeoutInterval()
-{
-    return s_defaultTimeoutInterval;
-}
-
-void ResourceRequest::setDefaultTimeoutInterval(double timeoutInterval)
-{
-    s_defaultTimeoutInterval = timeoutInterval;
-}
-
 void ResourceRequest::initialize(const KURL& url)
 {
     m_url = url;
@@ -466,15 +451,6 @@ void ResourceRequest::initialize(const KURL& url)
     m_originatesFromReservedIPRange = false;
     m_inputPerfMetricReportPolicy = InputToLoadPerfMetricReportPolicy::NoReport;
     m_followedRedirect = false;
-}
-
-// This is used by the loader to control the number of issued parallel load requests.
-unsigned initializeMaximumHTTPConnectionCountPerHost()
-{
-    // The chromium network stack already handles limiting the number of
-    // parallel requests per host, so there's no need to do it here.  Therefore,
-    // this is set to a high value that should never be hit in practice.
-    return 10000;
 }
 
 } // namespace blink

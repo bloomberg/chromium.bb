@@ -116,8 +116,6 @@ public:
     void addHTTPHeaderFields(const HTTPHeaderMap& headerFields);
     void clearHTTPHeaderField(const AtomicString& name);
 
-    void clearHTTPAuthorization();
-
     const AtomicString& httpContentType() const { return httpHeaderField("Content-Type");  }
     void setHTTPContentType(const AtomicString& httpContentType) { setHTTPHeaderField("Content-Type", httpContentType); }
 
@@ -214,9 +212,6 @@ public:
     bool cacheControlContainsNoCache() const;
     bool cacheControlContainsNoStore() const;
     bool hasCacheValidatorFields() const;
-
-    static double defaultTimeoutInterval(); // May return 0 when using platform default.
-    static void setDefaultTimeoutInterval(double);
 
     static bool compare(const ResourceRequest&, const ResourceRequest&);
 
@@ -323,8 +318,6 @@ public:
     InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
     bool m_followedRedirect;
 };
-
-unsigned initializeMaximumHTTPConnectionCountPerHost();
 
 } // namespace blink
 
