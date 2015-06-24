@@ -1218,25 +1218,29 @@ TEST_F(DataReductionProxyConfigTest, LoFiStatusTransition) {
   }
 }
 
-// Overrides net::NetworkQualityEstimator::GetPeakEstimate() for testing
-// purposes.
+// Overrides net::NetworkQualityEstimator for testing.
 class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   TestNetworkQualityEstimator() : rtt_(base::TimeDelta()), kbps_(0) {}
 
   ~TestNetworkQualityEstimator() override {}
 
-  net::NetworkQuality GetPeakEstimate() const override {
-    return net::NetworkQuality(rtt_, kbps_);
+  bool GetEstimate(net::NetworkQuality* median) const override {
+    // |median| must not be null.
+    *median = net::NetworkQuality(rtt_, kbps_);
+    return true;
   }
 
   void SetRtt(base::TimeDelta rtt) { rtt_ = rtt; }
 
-  void SetKbps(uint64_t kbps) { kbps_ = kbps; }
+  void SetKbps(int32_t kbps) { kbps_ = kbps; }
 
  private:
+  // RTT of the network.
   base::TimeDelta rtt_;
-  uint64_t kbps_;
+
+  // Downstream throughput of the network.
+  int32_t kbps_;
 };
 
 TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {

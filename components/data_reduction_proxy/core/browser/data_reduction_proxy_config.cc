@@ -399,9 +399,10 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
 
   network_quality_last_updated_ = base::TimeTicks::Now();
 
-  // TODO(tbansal): Set |network_prohibitively_slow| based on medians.
-  net::NetworkQuality network_quality =
-      network_quality_estimator->GetPeakEstimate();
+  net::NetworkQuality network_quality;
+
+  if (!network_quality_estimator->GetEstimate(&network_quality))
+    return false;
 
   // Network is prohibitvely slow if either the downlink bandwidth is too low
   // or the RTT is too high.

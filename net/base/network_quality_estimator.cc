@@ -4,8 +4,12 @@
 
 #include "net/base/network_quality_estimator.h"
 
+#include <float.h>
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -19,6 +23,13 @@ namespace {
 
 // Maximum number of observations that can be held in the ObservationBuffer.
 const size_t kMaximumObservationsBufferSize = 500;
+
+// Half life (in seconds) for computing time weighted percentiles.
+// Every |kHalfLifeSeconds|, the weight of all observations reduces by half.
+// Lowering the half life would reduce the weight of older values faster.
+// TODO(tbansal): |kHalfLifeSeconds| should be configured through field trial
+// in the NetworkQualityEstimator constructor.
+const int kHalfLifeSeconds = 60;
 
 }  // namespace
 
@@ -39,6 +50,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       peak_kbps_since_last_connection_change_(0) {
   static_assert(kMinRequestDurationMicroseconds > 0,
                 "Minimum request duration must be > 0");
+  static_assert(kHalfLifeSeconds > 0, "Half life duration must be > 0");
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
 
@@ -88,7 +100,6 @@ void NetworkQualityEstimator::NotifyDataReceived(
     // headers were received.
     base::TimeDelta observed_rtt = headers_received_time - request_start_time;
     DCHECK_GE(observed_rtt, base::TimeDelta());
-
     if (observed_rtt < fastest_rtt_since_last_connection_change_)
       fastest_rtt_since_last_connection_change_ = observed_rtt;
 
@@ -111,7 +122,7 @@ void NetworkQualityEstimator::NotifyDataReceived(
                     since_request_start.InSecondsF();
     DCHECK_GE(kbps_f, 0.0);
 
-    // Check overflow errors. This may happen if the kbpsF is more than
+    // Check overflow errors. This may happen if the kbps_f is more than
     // 2 * 10^9 (= 2000 Gbps).
     if (kbps_f >= std::numeric_limits<int32_t>::max())
       kbps_f = std::numeric_limits<int32_t>::max() - 1;
@@ -230,6 +241,15 @@ NetworkQuality NetworkQualityEstimator::GetPeakEstimate() const {
                         peak_kbps_since_last_connection_change_);
 }
 
+bool NetworkQualityEstimator::GetEstimate(NetworkQuality* median) const {
+  if (kbps_observations_.Size() == 0 || rtt_msec_observations_.Size() == 0) {
+    *median = NetworkQuality();
+    return false;
+  }
+  *median = GetEstimate(50);
+  return true;
+}
+
 size_t NetworkQualityEstimator::GetMaximumObservationBufferSizeForTests()
     const {
   return kMaximumObservationsBufferSize;
@@ -251,9 +271,12 @@ NetworkQualityEstimator::Observation::Observation(int32_t value,
 NetworkQualityEstimator::Observation::~Observation() {
 }
 
-NetworkQualityEstimator::ObservationBuffer::ObservationBuffer() {
+NetworkQualityEstimator::ObservationBuffer::ObservationBuffer()
+    : weight_multiplier_per_second_(exp(log(0.5) / kHalfLifeSeconds)) {
   static_assert(kMaximumObservationsBufferSize > 0U,
                 "Minimum size of observation buffer must be > 0");
+  DCHECK_GE(weight_multiplier_per_second_, 0.0);
+  DCHECK_LE(weight_multiplier_per_second_, 1.0);
 }
 
 NetworkQualityEstimator::ObservationBuffer::~ObservationBuffer() {
@@ -277,6 +300,79 @@ size_t NetworkQualityEstimator::ObservationBuffer::Size() const {
 void NetworkQualityEstimator::ObservationBuffer::Clear() {
   observations_.clear();
   DCHECK(observations_.empty());
+}
+
+NetworkQuality NetworkQualityEstimator::GetEstimate(int percentile) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GE(percentile, 0);
+  DCHECK_LE(percentile, 100);
+  DCHECK_GT(kbps_observations_.Size(), 0U);
+  DCHECK_GT(rtt_msec_observations_.Size(), 0U);
+
+  // RTT observations are sorted by duration from shortest to longest, thus
+  // a higher percentile RTT will have a longer RTT than a lower percentile.
+  // Throughput observations are sorted by kbps from slowest to fastest,
+  // thus a higher percentile throughput will be faster than a lower one.
+  return NetworkQuality(base::TimeDelta::FromMilliseconds(
+                            rtt_msec_observations_.GetPercentile(percentile)),
+                        kbps_observations_.GetPercentile(100 - percentile));
+}
+
+void NetworkQualityEstimator::ObservationBuffer::ComputeWeightedObservations(
+    std::vector<WeightedObservation>& weighted_observations,
+    double* total_weight) const {
+  weighted_observations.clear();
+  double total_weight_observations = 0.0;
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  for (const auto& observation : observations_) {
+    base::TimeDelta time_since_sample_taken = now - observation.timestamp;
+    double weight =
+        pow(weight_multiplier_per_second_, time_since_sample_taken.InSeconds());
+    weight = std::max(DBL_MIN, std::min(1.0, weight));
+
+    weighted_observations.push_back(
+        WeightedObservation(observation.value, weight));
+    total_weight_observations += weight;
+  }
+
+  // Sort the samples by value in ascending order.
+  std::sort(weighted_observations.begin(), weighted_observations.end());
+  *total_weight = total_weight_observations;
+}
+
+int32_t NetworkQualityEstimator::ObservationBuffer::GetPercentile(
+    int percentile) const {
+  DCHECK(!observations_.empty());
+
+  // Stores WeightedObservation in increasing order of value.
+  std::vector<WeightedObservation> weighted_observations;
+
+  // Total weight of all observations in |weighted_observations|.
+  double total_weight = 0.0;
+
+  ComputeWeightedObservations(weighted_observations, &total_weight);
+  DCHECK(!weighted_observations.empty());
+  DCHECK_GT(total_weight, 0.0);
+  DCHECK_EQ(observations_.size(), weighted_observations.size());
+
+  double desired_weight = percentile / 100.0 * total_weight;
+
+  double cumulative_weight_seen_so_far = 0.0;
+  for (const auto& weighted_observation : weighted_observations) {
+    cumulative_weight_seen_so_far += weighted_observation.weight;
+
+    // TODO(tbansal): Consider interpolating between observations.
+    if (cumulative_weight_seen_so_far >= desired_weight)
+      return weighted_observation.value;
+  }
+
+  // Computation may reach here due to floating point errors. This may happen
+  // if |percentile| was 100 (or close to 100), and |desired_weight| was
+  // slightly larger than |total_weight| (due to floating point errors).
+  // In this case, we return the highest |value| among all observations.
+  // This is same as value of the last observation in the sorted vector.
+  return weighted_observations.at(weighted_observations.size() - 1).value;
 }
 
 }  // namespace net

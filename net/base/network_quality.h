@@ -16,12 +16,15 @@ namespace net {
 // estimated by the NetworkQualityEstimator.
 class NET_EXPORT_PRIVATE NetworkQuality {
  public:
+  NetworkQuality();
   // |rtt| is the estimate of the round trip time.
   // |downstream_throughput_kbps| is the estimate of the downstream throughput.
   NetworkQuality(const base::TimeDelta& rtt,
                  int32_t downstream_throughput_kbps);
-
+  NetworkQuality(const NetworkQuality& other);
   ~NetworkQuality();
+
+  NetworkQuality& operator=(const NetworkQuality& other);
 
   // Returns the estimate of the round trip time.
   const base::TimeDelta& rtt() const { return rtt_; }
@@ -34,10 +37,10 @@ class NET_EXPORT_PRIVATE NetworkQuality {
 
  private:
   // Estimated round trip time.
-  const base::TimeDelta rtt_;
+  base::TimeDelta rtt_;
 
   // Estimated downstream throughput in Kbps.
-  const int32_t downstream_throughput_kbps_;
+  int32_t downstream_throughput_kbps_;
 };
 
 }  // namespace net

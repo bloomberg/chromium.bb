@@ -41,6 +41,14 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Virtualized for testing.
   virtual NetworkQuality GetPeakEstimate() const;
 
+  // Sets |median| to the estimate of median network quality. The estimated
+  // quality is computed using a weighted median algorithm that assigns higher
+  // weight to the recent observations. |median| must not be nullptr. Returns
+  // true only if an estimate of the network quality is available (enough
+  // observations must be available to make an estimate). Virtualized for
+  // testing.
+  virtual bool GetEstimate(NetworkQuality* median) const;
+
   // Notifies NetworkQualityEstimator that a response has been received.
   // |cumulative_prefilter_bytes_read| is the count of the bytes received prior
   // to applying filters (e.g. decompression, SDCH) from request creation time
@@ -57,6 +65,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
                            TestPeakKbpsFastestRTTUpdates);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestAddObservation);
   FRIEND_TEST_ALL_PREFIXES(URLRequestTestHTTP, NetworkQualityEstimator);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           PercentileSameTimestamps);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           PercentileDifferentTimestamps);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, ComputedPercentiles);
 
   // Records the round trip time or throughput observation, along with the time
   // the observation was made.
@@ -70,6 +83,32 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
     // Time when the observation was taken.
     const base::TimeTicks timestamp;
+  };
+
+  // Holds an observation and its weight.
+  struct WeightedObservation {
+    WeightedObservation(int32_t value, double weight)
+        : value(value), weight(weight) {}
+    WeightedObservation(const WeightedObservation& other)
+        : WeightedObservation(other.value, other.weight) {}
+
+    WeightedObservation& operator=(const WeightedObservation& other) {
+      value = other.value;
+      weight = other.weight;
+      return *this;
+    }
+
+    // Required for sorting the samples in the ascending order of values.
+    bool operator<(const WeightedObservation& other) const {
+      return (value < other.value);
+    }
+
+    // Value of the sample.
+    int32_t value;
+
+    // Weight of the sample. This is computed based on how much time has passed
+    // since the sample was taken.
+    double weight;
   };
 
   // Stores observations sorted by time.
@@ -89,12 +128,30 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // Clears the observations stored in this buffer.
     void Clear();
 
+    // Returns the |percentile| value of the observations in this buffer.
+    int32_t GetPercentile(int percentile) const;
+
    private:
     FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
+
+    // Computes the weighted observations and stores them in
+    // |weighted_observations| sorted by ascending |WeightedObservation.value|.
+    // Sets |total_weight| to the total weight of all observations. Should be
+    // called only when there is at least one observation in the buffer.
+    void ComputeWeightedObservations(
+        std::vector<WeightedObservation>& weighted_observations,
+        double* total_weight) const;
 
     // Holds observations sorted by time, with the oldest observation at the
     // front of the queue.
     std::deque<Observation> observations_;
+
+    // The factor by which the weight of an observation reduces every second.
+    // For example, if an observation is 6 seconds old, its weight would be:
+    //     weight_multiplier_per_second_ ^ 6
+    // Calculated from |kHalfLifeSeconds| by solving the following equation:
+    //     weight_multiplier_per_second_ ^ kHalfLifeSeconds = 0.5
+    const double weight_multiplier_per_second_;
 
     DISALLOW_COPY_AND_ASSIGN(ObservationBuffer);
   };
@@ -133,6 +190,14 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType type) override;
 
+  // Returns an estimate of network quality at the specified |percentile|.
+  // |percentile| must be between 0 and 100 (both inclusive) with higher
+  // percentiles indicating less performant networks. For example, if
+  // |percentile| is 90, then the network is expected to be faster than the
+  // returned estimate with 0.9 probability. Similarly, network is expected to
+  // be slower than the returned estimate with 0.1 probability.
+  NetworkQuality GetEstimate(int percentile) const;
+
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   const bool allow_localhost_requests_;
@@ -159,10 +224,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // 2) The transfer time includes at least one RTT while no bytes are read.
   int32_t peak_kbps_since_last_connection_change_;
 
-  // Buffer that holds Kbps observations.
+  // Buffer that holds Kbps observations sorted by timestamp.
   ObservationBuffer kbps_observations_;
 
-  // Buffer that holds RTT (in milliseconds) observations.
+  // Buffer that holds RTT (in milliseconds) observations sorted by timestamp.
   ObservationBuffer rtt_msec_observations_;
 
   base::ThreadChecker thread_checker_;
