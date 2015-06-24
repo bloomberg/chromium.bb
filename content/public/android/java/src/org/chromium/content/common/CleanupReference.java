@@ -7,8 +7,8 @@ package org.chromium.content.common;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 
@@ -31,7 +31,7 @@ import java.util.Set;
  * not be a visible difference in practice.
  */
 public class CleanupReference extends WeakReference<Object> {
-    private static final String TAG = "CleanupReference";
+    private static final String TAG = "cr.CleanupReference";
 
     private static final boolean DEBUG = false;  // Always check in as false!
 
@@ -95,11 +95,11 @@ public class CleanupReference extends WeakReference<Object> {
                             ref.runCleanupTaskInternal();
                             break;
                         default:
-                            Log.e(TAG, "Bad message=" + msg.what);
+                            Log.e(TAG, "Bad message=%d", msg.what);
                             break;
                     }
 
-                    if (DEBUG) Log.d(TAG, "will try and cleanup; max = " + sRefs.size());
+                    if (DEBUG) Log.d(TAG, "will try and cleanup; max = %d", sRefs.size());
 
                     synchronized (sCleanupMonitor) {
                         // Always run the cleanup loop here even when adding or removing refs, to

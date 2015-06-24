@@ -12,10 +12,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.VisibleForTesting;
 
@@ -33,7 +33,7 @@ import java.util.Map;
 @JNINamespace("content")
 class MediaResourceGetter {
 
-    private static final String TAG = "MediaResourceGetter";
+    private static final String TAG = "cr.MediaResourceGetter";
     private static final MediaMetadata EMPTY_METADATA = new MediaMetadata(0, 0, 0, false);
 
     private final MediaMetadataRetriever mRetriever = new MediaMetadataRetriever();
@@ -155,7 +155,7 @@ class MediaResourceGetter {
             try {
                 durationMillis = Integer.parseInt(durationString);
             } catch (NumberFormatException e) {
-                Log.w(TAG, "non-numeric duration: " + durationString);
+                Log.w(TAG, "non-numeric duration: %s", durationString);
                 return EMPTY_METADATA;
             }
 
@@ -174,7 +174,7 @@ class MediaResourceGetter {
                 try {
                     width = Integer.parseInt(widthString);
                 } catch (NumberFormatException e) {
-                    Log.w(TAG, "non-numeric width: " + widthString);
+                    Log.w(TAG, "non-numeric width: %s", widthString);
                     return EMPTY_METADATA;
                 }
 
@@ -187,15 +187,15 @@ class MediaResourceGetter {
                 try {
                     height = Integer.parseInt(heightString);
                 } catch (NumberFormatException e) {
-                    Log.w(TAG, "non-numeric height: " + heightString);
+                    Log.w(TAG, "non-numeric height: %s", heightString);
                     return EMPTY_METADATA;
                 }
             }
             MediaMetadata result = new MediaMetadata(durationMillis, width, height, true);
-            Log.d(TAG, "extracted valid metadata: " + result.toString());
+            Log.d(TAG, "extracted valid metadata: %s", result);
             return result;
         } catch (RuntimeException e) {
-            Log.e(TAG, "Unable to extract metadata: " + e.getMessage());
+            Log.e(TAG, "Unable to extract metadata: %s", e.getMessage());
             return EMPTY_METADATA;
         }
     }
@@ -206,7 +206,7 @@ class MediaResourceGetter {
         try {
             uri = URI.create(url);
         } catch (IllegalArgumentException  e) {
-            Log.e(TAG, "Cannot parse uri: " + e.getMessage());
+            Log.e(TAG, "Cannot parse uri: %s", e.getMessage());
             return false;
         }
         String scheme = uri.getScheme();
@@ -224,7 +224,7 @@ class MediaResourceGetter {
                 configure(file.getAbsolutePath());
                 return true;
             } catch (RuntimeException e) {
-                Log.e(TAG, "Error configuring data source: " + e.getMessage());
+                Log.e(TAG, "Error configuring data source: %s", e.getMessage());
                 return false;
             }
         }
@@ -248,7 +248,7 @@ class MediaResourceGetter {
             configure(url, headersMap);
             return true;
         } catch (RuntimeException e) {
-            Log.e(TAG, "Error configuring data source: " + e.getMessage());
+            Log.e(TAG, "Error configuring data source: %s", e.getMessage());
             return false;
         }
     }
@@ -312,7 +312,7 @@ class MediaResourceGetter {
         // Note that canonicalized directory paths always end with '/'.
         List<String> acceptablePaths = canonicalize(getRawAcceptableDirectories(context));
         acceptablePaths.add(getExternalStorageDirectory());
-        Log.d(TAG, "canonicalized file path: " + path);
+        Log.d(TAG, "canonicalized file path: %s", path);
         for (String acceptablePath : acceptablePaths) {
             if (path.startsWith(acceptablePath)) {
                 return true;
@@ -382,7 +382,7 @@ class MediaResourceGetter {
             try {
                 parcelFd.close();
             } catch (IOException e) {
-                Log.e(TAG, "Failed to close file descriptor: " + e);
+                Log.e(TAG, "Failed to close file descriptor: %s", e);
             }
         }
     }

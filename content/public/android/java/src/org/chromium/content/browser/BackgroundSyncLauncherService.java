@@ -25,7 +25,7 @@ import org.chromium.content.app.ContentApplication;
  * the browser when it goes online if the {@link BackgroundSyncLauncher} requested it.
  */
 public class BackgroundSyncLauncherService extends IntentService {
-    private static final String TAG = "BackgroundSyncLauncher";
+    private static final String TAG = "cr.BgSyncLauncher";
 
     /**
      * Receiver for network connection change broadcasts. If the device is online and the browser

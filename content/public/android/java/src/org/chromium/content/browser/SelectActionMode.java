@@ -4,15 +4,16 @@
 
 package org.chromium.content.browser;
 
-import android.util.Log;
 import android.view.ActionMode;
+
+import org.chromium.base.Log;
 
 /**
  * An ActionMode for in-page selection. This class wraps an ActionMode created
  * by the associated View, providing modified interaction with that ActionMode.
  */
 public class SelectActionMode {
-    private static final String TAG = "SelectActionMode";
+    private static final String TAG = "cr.SelectActionMode";
 
     protected final ActionMode mActionMode;
 

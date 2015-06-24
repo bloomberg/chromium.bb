@@ -8,17 +8,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 
 /**
  * Android implementation details for content::TimeZoneMonitorAndroid.
  */
 @JNINamespace("content")
 class TimeZoneMonitor {
-    private static final String TAG = "TimeZoneMonitor";
+    private static final String TAG = "cr.TimeZoneMonitor";
 
     private final Context mAppContext;
     private final IntentFilter mFilter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);

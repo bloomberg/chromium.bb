@@ -13,7 +13,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.Bundle;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class PepperPluginManager {
 
-    private static final String LOGTAG = "PepperPluginManager";
+    private static final String TAG = "cr.PepperPluginManager";
 
     /**
      * Service Action: A plugin wishes to be loaded in the ContentView must
@@ -98,7 +99,7 @@ public class PepperPluginManager {
             ServiceInfo serviceInfo = info.serviceInfo;
             if (serviceInfo == null || serviceInfo.metaData == null
                     || serviceInfo.packageName == null) {
-                Log.e(LOGTAG, "Can't get service information from " + info);
+                Log.e(TAG, "Can't get service information from %s", info);
                 continue;
             }
 
@@ -107,14 +108,14 @@ public class PepperPluginManager {
             try {
                 pkgInfo = pm.getPackageInfo(serviceInfo.packageName, 0);
             } catch (NameNotFoundException e) {
-                Log.e(LOGTAG, "Can't find plugin: " + serviceInfo.packageName);
+                Log.e(TAG, "Can't find plugin: %s", serviceInfo.packageName);
                 continue;
             }
             if (pkgInfo == null
                     || (pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
                 continue;
             }
-            Log.i(LOGTAG, "The given plugin package is preloaded: " + serviceInfo.packageName);
+            Log.i(TAG, "The given plugin package is preloaded: %s", serviceInfo.packageName);
 
             String plugin = getPluginDescription(serviceInfo.metaData);
             if (plugin == null) {

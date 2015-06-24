@@ -23,7 +23,7 @@ import org.chromium.base.Log;
  */
 @JNINamespace("content")
 public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
-    private static final String TAG = "MediaSession";
+    private static final String TAG = "cr.MediaSession";
 
     private Context mContext;
     private int mFocusType;
@@ -78,7 +78,7 @@ public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
                 nativeOnSuspend(mNativeMediaSession, false);
                 break;
             default:
-                Log.w(TAG, "onAudioFocusChange called with unexpected value " + focusChange);
+                Log.w(TAG, "onAudioFocusChange called with unexpected value %d", focusChange);
                 break;
         }
     }

@@ -7,8 +7,8 @@ package org.chromium.content.browser.crypto;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SecureRandomInitializer;
 import org.chromium.base.ThreadUtils;
@@ -50,7 +50,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 @ThreadSafe
 public class CipherFactory {
-    private static final String TAG = "CipherFactory";
+    private static final String TAG = "cr.CipherFactory";
     static final int NUM_BYTES = 16;
 
     static final String BUNDLE_IV = "org.chromium.content.browser.crypto.CipherFactory.IV";

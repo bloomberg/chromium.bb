@@ -11,11 +11,11 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
@@ -29,7 +29,7 @@ import java.util.Set;
 @JNINamespace("content")
 class DeviceSensors implements SensorEventListener {
 
-    private static final String TAG = "DeviceSensors";
+    private static final String TAG = "cr.DeviceSensors";
 
     // These fields are lazily initialized by getHandler().
     private Thread mThread;
@@ -135,7 +135,7 @@ class DeviceSensors implements SensorEventListener {
                     success = registerSensors(DEVICE_LIGHT_SENSORS, rateInMicroseconds, true);
                     break;
                 default:
-                    Log.e(TAG, "Unknown event type: " + eventType);
+                    Log.e(TAG, "Unknown event type: %d", eventType);
                     return false;
             }
             if (success) {
@@ -197,7 +197,7 @@ class DeviceSensors implements SensorEventListener {
                     }
                     break;
                 default:
-                    Log.e(TAG, "Unknown event type: " + eventType);
+                    Log.e(TAG, "Unknown event type: %d", eventType);
                     return;
             }
 

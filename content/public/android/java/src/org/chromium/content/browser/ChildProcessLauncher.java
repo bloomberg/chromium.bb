@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @JNINamespace("content")
 public class ChildProcessLauncher {
-    private static final String TAG = "ChildProcessLauncher";
+    private static final String TAG = "cr.ChildProcessLaunch";
 
     static final int CALLBACK_FOR_UNKNOWN_PROCESS = 0;
     static final int CALLBACK_FOR_GPU_PROCESS = 1;
@@ -88,8 +88,8 @@ public class ChildProcessLauncher {
                 mChildProcessConnections[slot] = new ChildProcessConnectionImpl(context, slot,
                         mInSandbox, deathCallback, mChildClass, chromiumLinkerParams,
                         alwaysInForeground);
-                Log.d(TAG, "Allocator allocated a connection, sandbox: " + mInSandbox
-                        + ", slot: " + slot);
+                Log.d(TAG, "Allocator allocated a connection, sandbox: %b, slot: %d", mInSandbox,
+                        slot);
                 return mChildProcessConnections[slot];
             }
         }
@@ -100,15 +100,15 @@ public class ChildProcessLauncher {
                 if (mChildProcessConnections[slot] != connection) {
                     int occupier = mChildProcessConnections[slot] == null
                             ? -1 : mChildProcessConnections[slot].getServiceNumber();
-                    Log.e(TAG, "Unable to find connection to free in slot: " + slot
-                            + " already occupied by service: " + occupier);
+                    Log.e(TAG, "Unable to find connection to free in slot: %d "
+                            + "already occupied by service: %d", slot, occupier);
                     assert false;
                 } else {
                     mChildProcessConnections[slot] = null;
                     assert !mFreeConnectionIndices.contains(slot);
                     mFreeConnectionIndices.add(slot);
-                    Log.d(TAG, "Allocator freed a connection, sandbox: " + mInSandbox
-                            + ", slot: " + slot);
+                    Log.d(TAG, "Allocator freed a connection, sandbox: %b, slot: %d", mInSandbox,
+                            slot);
                 }
             }
         }
@@ -579,8 +579,8 @@ public class ChildProcessLauncher {
                 }
             }
 
-            Log.d(TAG, "Setting up connection to process: slot="
-                    + allocatedConnection.getServiceNumber());
+            Log.d(TAG, "Setting up connection to process: slot=%d",
+                    allocatedConnection.getServiceNumber());
             triggerConnectionSetup(allocatedConnection, commandLine, childProcessId,
                     filesToBeMapped, callbackType, clientContext);
         } finally {
@@ -600,8 +600,8 @@ public class ChildProcessLauncher {
                 new ChildProcessConnection.ConnectionCallback() {
                     @Override
                     public void onConnected(int pid) {
-                        Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext
-                                + " callbackType=" + callbackType);
+                        Log.d(TAG, "on connect callback, pid=%d context=%d callbackType=%d",
+                                pid, clientContext, callbackType);
                         if (pid != NULL_PROCESS_HANDLE) {
                             sBindingManager.addNewConnection(pid, connection);
                             sServiceMap.put(pid, connection);
@@ -630,7 +630,7 @@ public class ChildProcessLauncher {
      */
     @CalledByNative
     static void stop(int pid) {
-        Log.d(TAG, "stopping child connection: pid=" + pid);
+        Log.d(TAG, "stopping child connection: pid=%d", pid);
         ChildProcessConnection connection = sServiceMap.remove(pid);
         if (connection == null) {
             logPidWarning(pid, "Tried to stop non-existent connection");
@@ -722,7 +722,7 @@ public class ChildProcessLauncher {
     static void logPidWarning(int pid, String message) {
         // This class is effectively a no-op in single process mode, so don't log warnings there.
         if (pid > 0 && !nativeIsSingleProcess()) {
-            Log.w(TAG, message + ", pid=" + pid);
+            Log.w(TAG, "%s, pid=%d", message, pid);
         }
     }
 

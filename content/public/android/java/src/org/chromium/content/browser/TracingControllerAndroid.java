@@ -10,11 +10,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Environment;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.content.R;
 
 import java.io.File;
@@ -42,7 +42,7 @@ import java.util.TimeZone;
 @JNINamespace("content")
 public class TracingControllerAndroid {
 
-    private static final String TAG = "TracingControllerAndroid";
+    private static final String TAG = "cr.TracingController";
 
     private static final String ACTION_START = "GPU_PROFILER_START";
     private static final String ACTION_STOP = "GPU_PROFILER_STOP";
@@ -296,7 +296,7 @@ public class TracingControllerAndroid {
             } else if (intent.getAction().endsWith(ACTION_LIST_CATEGORIES)) {
                 getCategoryGroups();
             } else {
-                Log.e(TAG, "Unexpected intent: " + intent);
+                Log.e(TAG, "Unexpected intent: %s", intent);
             }
         }
     }

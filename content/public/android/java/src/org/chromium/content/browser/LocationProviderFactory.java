@@ -10,8 +10,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
@@ -58,7 +58,7 @@ public class LocationProviderFactory {
             implements LocationListener, LocationProviderFactory.LocationProvider {
 
         // Log tag
-        private static final String TAG = "LocationProvider";
+        private static final String TAG = "cr.LocationProvider";
 
         private Context mContext;
         private LocationManager mLocationManager;

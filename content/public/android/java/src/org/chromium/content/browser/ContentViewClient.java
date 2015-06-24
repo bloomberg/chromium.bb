@@ -28,7 +28,7 @@ import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
  */
 public class ContentViewClient {
     // Tag used for logging.
-    private static final String TAG = "ContentViewClient";
+    private static final String TAG = "cr.ContentViewClient";
 
     public void onUpdateTitle(String title) {
     }
@@ -144,14 +144,14 @@ public class ContentViewClient {
         try {
             intent = Intent.parseUri(intentUrl, Intent.URI_INTENT_SCHEME);
         } catch (Exception ex) {
-            Log.w(TAG, "Bad URI " + intentUrl, ex);
+            Log.w(TAG, "Bad URI %s", intentUrl, ex);
             return;
         }
 
         try {
             context.startActivity(intent);
         } catch (ActivityNotFoundException ex) {
-            Log.w(TAG, "No application can handle " + intentUrl);
+            Log.w(TAG, "No application can handle %s", intentUrl);
         }
     }
 

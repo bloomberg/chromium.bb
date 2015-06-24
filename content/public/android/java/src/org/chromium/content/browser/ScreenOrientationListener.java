@@ -11,10 +11,10 @@ import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
 import android.os.Build;
-import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -196,7 +196,7 @@ public class ScreenOrientationListener {
 
     }
 
-    private static final String TAG = "ScreenOrientationListener";
+    private static final String TAG = "cr.ScreenOrientation";
 
     // List of observers to notify when the screen orientation changes.
     private final ObserverList<ScreenOrientationObserver> mObservers =

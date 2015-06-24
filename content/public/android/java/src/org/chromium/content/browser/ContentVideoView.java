@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Point;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -26,6 +25,7 @@ import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 
 /**
@@ -35,7 +35,7 @@ import org.chromium.base.ThreadUtils;
 public class ContentVideoView extends FrameLayout
         implements SurfaceHolder.Callback {
 
-    private static final String TAG = "ContentVideoView";
+    private static final String TAG = "cr.ContentVideoView";
 
     /* Do not change these values without updating their counterparts
      * in include/media/mediaplayer.h!
@@ -218,7 +218,7 @@ public class ContentVideoView extends FrameLayout
 
     @CalledByNative
     public void onMediaPlayerError(int errorType) {
-        Log.d(TAG, "OnMediaPlayerError: " + errorType);
+        Log.d(TAG, "OnMediaPlayerError: %d", errorType);
         if (mCurrentState == STATE_ERROR || mCurrentState == STATE_PLAYBACK_COMPLETED) {
             return;
         }
@@ -267,7 +267,7 @@ public class ContentVideoView extends FrameLayout
                     .setCancelable(false)
                     .show();
             } catch (RuntimeException e) {
-                Log.e(TAG, "Cannot show the alert dialog, error message: " + message, e);
+                Log.e(TAG, "Cannot show the alert dialog, error message: %s", message, e);
             }
         }
     }

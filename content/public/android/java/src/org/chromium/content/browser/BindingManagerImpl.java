@@ -49,7 +49,7 @@ class BindingManagerImpl implements BindingManager {
 
         @Override
         public void onTrimMemory(int level) {
-            Log.i(TAG, "onTrimMemory: level=" + level + ", size=" + size());
+            Log.i(TAG, "onTrimMemory: level=%d, size=%d", level, size());
             if (size() > 0) {
                 if (level <= TRIM_MEMORY_RUNNING_MODERATE) {
                     reduce(mLowReduceRatio);
@@ -63,7 +63,7 @@ class BindingManagerImpl implements BindingManager {
 
         @Override
         public void onLowMemory() {
-            Log.i(TAG, "onLowMemory: evict " + size() + " bindings");
+            Log.i(TAG, "onLowMemory: evict %d bindings", size());
             evictAll();
         }
 
@@ -74,7 +74,7 @@ class BindingManagerImpl implements BindingManager {
         private void reduce(float reduceRatio) {
             int oldSize = size();
             int newSize = (int) (oldSize * (1f - reduceRatio));
-            Log.i(TAG, "Reduce connections from " + oldSize + " to " + newSize);
+            Log.i(TAG, "Reduce connections from %d to %d", oldSize, newSize);
             if (newSize == 0) {
                 evictAll();
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -337,8 +337,7 @@ class BindingManagerImpl implements BindingManager {
         }
 
         if (managedConnection == null) {
-            Log.w(TAG, "Cannot setInForeground() - never saw a connection for the pid: "
-                    + Integer.toString(pid));
+            Log.w(TAG, "Cannot setInForeground() - never saw a connection for the pid: %d", pid);
             return;
         }
 
@@ -362,7 +361,7 @@ class BindingManagerImpl implements BindingManager {
 
         if (managedConnection == null) {
             Log.w(TAG, "Cannot call determinedVisibility() - never saw a connection for the pid: "
-                    + Integer.toString(pid));
+                    + "%d", pid);
             return;
         }
 
@@ -381,7 +380,7 @@ class BindingManagerImpl implements BindingManager {
             }
         }
         if (mModerateBindingPool != null) {
-            Log.i(TAG, "Release moderate connections: " + mModerateBindingPool.size());
+            Log.i(TAG, "Release moderate connections: %d", mModerateBindingPool.size());
             if (!mOnTesting) {
                 RecordHistogram.recordCountHistogram(
                         "Android.ModerateBindingCount", mModerateBindingPool.size());
@@ -432,8 +431,8 @@ class BindingManagerImpl implements BindingManager {
             Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {
         if (mIsLowMemoryDevice || mModerateBindingPool != null) return;
 
-        Log.i(TAG, "Moderate binding enabled: maxSize=" + maxSize + " lowReduceRatio="
-                        + lowReduceRatio + " highReduceRatio=" + highReduceRatio);
+        Log.i(TAG, "Moderate binding enabled: maxSize=%d lowReduceRatio=%f highReduceRatio=%f",
+                        maxSize, lowReduceRatio, highReduceRatio);
         mModerateBindingPool = new ModerateBindingPool(maxSize, lowReduceRatio, highReduceRatio);
         if (context != null) context.registerComponentCallbacks(mModerateBindingPool);
     }

@@ -184,7 +184,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 // Stash the status of the oom bindings, since stop() will release all bindings.
                 mWasOomProtected = isCurrentlyOomProtected();
                 mServiceDisconnected = true;
-                Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=" + mPid);
+                Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=%d", mPid);
                 stop();  // We don't want to auto-restart on crash. Let the browser do that.
                 mDeathCallback.onChildProcessDied(ChildProcessConnectionImpl.this);
                 // If we have a pending connection callback, we need to communicate the failure to
@@ -413,7 +413,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     public void addStrongBinding() {
         synchronized (mLock) {
             if (mService == null) {
-                Log.w(TAG, "The connection is not bound for " + mPid);
+                Log.w(TAG, "The connection is not bound for %d", mPid);
                 return;
             }
             if (mStrongBindingCount == 0) {
@@ -427,7 +427,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     public void removeStrongBinding() {
         synchronized (mLock) {
             if (mService == null) {
-                Log.w(TAG, "The connection is not bound for " + mPid);
+                Log.w(TAG, "The connection is not bound for %d", mPid);
                 return;
             }
             assert mStrongBindingCount > 0;
@@ -449,7 +449,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     public void addModerateBinding() {
         synchronized (mLock) {
             if (mService == null) {
-                Log.w(TAG, "The connection is not bound for " + mPid);
+                Log.w(TAG, "The connection is not bound for %d", mPid);
                 return;
             }
             mModerateBinding.bind(null);
@@ -460,7 +460,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     public void removeModerateBinding() {
         synchronized (mLock) {
             if (mService == null) {
-                Log.w(TAG, "The connection is not bound for " + mPid);
+                Log.w(TAG, "The connection is not bound for %d", mPid);
                 return;
             }
             mModerateBinding.unbind();

@@ -13,13 +13,13 @@ import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.Surface;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @JNINamespace("content")
 public class ChildProcessService extends Service {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
-    private static final String TAG = "ChildProcessService";
+    private static final String TAG = "cr.ChildProcessService";
     private IChildProcessCallback mCallback;
 
     // This is the native "Main" thread for the renderer / utility process.
@@ -116,7 +116,7 @@ public class ChildProcessService extends Service {
 
     @Override
     public void onCreate() {
-        Log.i(TAG, "Creating new ChildProcessService pid=" + Process.myPid());
+        Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
         if (sContext.get() != null) {
             throw new RuntimeException("Illegal child process reuse.");
         }
@@ -209,9 +209,9 @@ public class ChildProcessService extends Service {
                         nativeExitChildProcess();
                     }
                 } catch (InterruptedException e) {
-                    Log.w(TAG, MAIN_THREAD_NAME + " startup failed: " + e);
+                    Log.w(TAG, "%s startup failed: %s", MAIN_THREAD_NAME, e);
                 } catch (ProcessInitException e) {
-                    Log.w(TAG, MAIN_THREAD_NAME + " startup failed: " + e);
+                    Log.w(TAG, "%s startup failed: %s", MAIN_THREAD_NAME, e);
                 }
             }
         }, MAIN_THREAD_NAME);
@@ -221,7 +221,7 @@ public class ChildProcessService extends Service {
     @Override
     @SuppressFBWarnings("DM_EXIT")
     public void onDestroy() {
-        Log.i(TAG, "Destroying ChildProcessService pid=" + Process.myPid());
+        Log.i(TAG, "Destroying ChildProcessService pid=%d", Process.myPid());
         super.onDestroy();
         if (mActivitySemaphore.tryAcquire()) {
             // TODO(crbug.com/457406): This is a bit hacky, but there is no known better solution
@@ -295,13 +295,13 @@ public class ChildProcessService extends Service {
             surface = new Surface((SurfaceTexture) surfaceObject);
             needRelease = true;
         } else {
-            Log.e(TAG, "Not a valid surfaceObject: " + surfaceObject);
+            Log.e(TAG, "Not a valid surfaceObject: %s", surfaceObject);
             return;
         }
         try {
             mCallback.establishSurfacePeer(pid, surface, primaryID, secondaryID);
         } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call establishSurfaceTexturePeer: " + e);
+            Log.e(TAG, "Unable to call establishSurfaceTexturePeer: %s", e);
             return;
         } finally {
             if (needRelease) {
@@ -321,7 +321,7 @@ public class ChildProcessService extends Service {
         try {
             return mCallback.getViewSurface(surfaceId).getSurface();
         } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call establishSurfaceTexturePeer: " + e);
+            Log.e(TAG, "Unable to call establishSurfaceTexturePeer: %s", e);
             return null;
         }
     }
@@ -339,7 +339,7 @@ public class ChildProcessService extends Service {
         try {
             mCallback.registerSurfaceTextureSurface(surfaceTextureId, clientId, surface);
         } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call registerSurfaceTextureSurface: " + e);
+            Log.e(TAG, "Unable to call registerSurfaceTextureSurface: %s", e);
         }
         surface.release();
     }
@@ -355,7 +355,7 @@ public class ChildProcessService extends Service {
         try {
             mCallback.unregisterSurfaceTextureSurface(surfaceTextureId, clientId);
         } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call unregisterSurfaceTextureSurface: " + e);
+            Log.e(TAG, "Unable to call unregisterSurfaceTextureSurface: %s", e);
         }
     }
 
@@ -370,7 +370,7 @@ public class ChildProcessService extends Service {
         try {
             return mCallback.getSurfaceTextureSurface(surfaceTextureId).getSurface();
         } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call getSurfaceTextureSurface: " + e);
+            Log.e(TAG, "Unable to call getSurfaceTextureSurface: %s", e);
             return null;
         }
     }

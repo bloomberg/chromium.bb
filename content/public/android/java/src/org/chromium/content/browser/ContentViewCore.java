@@ -27,7 +27,6 @@ import android.provider.Browser;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.Pair;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -47,6 +46,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
@@ -101,7 +101,7 @@ public class ContentViewCore implements
         AccessibilityStateChangeListener, ScreenOrientationObserver,
         SystemCaptioningBridge.SystemCaptioningBridgeListener {
 
-    private static final String TAG = "ContentViewCore";
+    private static final String TAG = "cr.ContentViewCore";
 
     // Used to avoid enabling zooming in / out if resulting zooming will
     // produce little visible difference.
@@ -259,7 +259,7 @@ public class ContentViewCore implements
                             scaledWidth, (int) (height * scale), leftMargin, topMargin);
                 view.setLayoutParams(lp);
             } else {
-                Log.e(TAG, "Unknown layout " + containerView.getClass().getName());
+                Log.e(TAG, "Unknown layout %s", containerView.getClass().getName());
             }
         }
 

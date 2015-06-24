@@ -22,7 +22,6 @@ import android.graphics.Region.Op;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,6 +29,7 @@ import android.view.animation.Interpolator;
 import android.view.animation.OvershootInterpolator;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
 import org.chromium.content.R;
 
 /**
@@ -37,7 +37,7 @@ import org.chromium.content.R;
  * canvas and touch events to display the on-demand zoom magnifier.
  */
 class PopupZoomer extends View {
-    private static final String LOGTAG = "PopupZoomer";
+    private static final String TAG = "cr.PopupZoomer";
 
     // The padding between the edges of the view and the popup. Note that there is a mirror
     // constant in content/renderer/render_view_impl.cc which should be kept in sync if
@@ -134,7 +134,7 @@ class PopupZoomer extends View {
                 sOverlayCornerRadius = context.getResources().getDimension(
                         R.dimen.link_preview_overlay_radius);
             } catch (Resources.NotFoundException e) {
-                Log.w(LOGTAG, "No corner radius resource for PopupZoomer overlay found.");
+                Log.w(TAG, "No corner radius resource for PopupZoomer overlay found.");
                 sOverlayCornerRadius = 1.0f;
             }
         }
@@ -151,7 +151,7 @@ class PopupZoomer extends View {
                 sOverlayDrawable = ApiCompatibilityUtils.getDrawable(context.getResources(),
                         R.drawable.ondemand_overlay);
             } catch (Resources.NotFoundException e) {
-                Log.w(LOGTAG, "No drawable resource for PopupZoomer overlay found.");
+                Log.w(TAG, "No drawable resource for PopupZoomer overlay found.");
                 sOverlayDrawable = new ColorDrawable();
             }
             sOverlayPadding = new Rect();
