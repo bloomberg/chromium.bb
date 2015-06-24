@@ -184,6 +184,8 @@ def parse_args(args):
             action="store_false", help="Don't check to see if the build is up-to-date."),
         optparse.make_option("--child-processes",
             help="Number of drivers to run in parallel."),
+        optparse.make_option("--enable-wptserve", dest="enable_wptserve", action="store_true", default=False,
+            help="Enable running web-plaform-tests using WPTserve instead of Apache."),
         optparse.make_option("--disable-breakpad", action="store_true",
             help="Don't use breakpad to symbolize unexpected crashes."),
         optparse.make_option("--driver-logging", action="store_true",

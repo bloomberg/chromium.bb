@@ -72,6 +72,7 @@ class ServerBase(object):
 
         # Subclasses may override these fields.
         self._env = None
+        self._cwd = None
         self._stdout = self._executive.PIPE
         self._stderr = self._executive.PIPE
         self._process = None
@@ -162,8 +163,12 @@ class ServerBase(object):
 
     def _spawn_process(self):
         _log.debug('Starting %s server, cmd="%s"' % (self._name, self._start_cmd))
-        process = self._executive.popen(self._start_cmd, env=self._env, stdout=self._stdout, stderr=self._stderr)
-        pid = process.pid
+        self._process = self._executive.popen(self._start_cmd,
+                                              env=self._env,
+                                              cwd=self._cwd,
+                                              stdout=self._stdout,
+                                              stderr=self._stderr)
+        pid = self._process.pid
         self._filesystem.write_text_file(self._pid_file, str(pid))
         return pid
 

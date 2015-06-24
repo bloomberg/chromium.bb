@@ -223,9 +223,20 @@ class Driver(object):
 
     HTTP_DIR = "http/tests/"
     HTTP_LOCAL_DIR = "http/tests/local/"
+    WPT_DIR = "imported/web-platform-tests/"
 
     def is_http_test(self, test_name):
         return test_name.startswith(self.HTTP_DIR) and not test_name.startswith(self.HTTP_LOCAL_DIR)
+
+    def _should_treat_as_wpt_test(self, test_name):
+        return self._port.is_wpt_enabled() and self._port.is_wpt_test(test_name)
+
+    def _get_http_host_and_ports_for_test(self, test_name):
+        if self._should_treat_as_wpt_test(test_name):
+            # TODO(burnik): Read from config or args.
+            return ("web-platform.test", 8001, 8444)
+        else:
+            return ("127.0.0.1", 8000, 8443)
 
     def test_to_uri(self, test_name):
         """Convert a test name to a URI.
@@ -235,14 +246,22 @@ class Driver(object):
         their name (e.g. 'http/tests/security/mixedContent/test1.https.html') will
         be loaded over HTTPS; all other tests over HTTP.
         """
-        if not self.is_http_test(test_name):
+        is_wpt_test = self._should_treat_as_wpt_test(test_name)
+
+        if not self.is_http_test(test_name) and not is_wpt_test:
             return path.abspath_to_uri(self._port.host.platform, self._port.abspath_for_test(test_name))
 
-        relative_path = test_name[len(self.HTTP_DIR):]
+        if is_wpt_test:
+            test_dir_prefix = self.WPT_DIR
+        else:
+            test_dir_prefix = self.HTTP_DIR
+
+        relative_path = test_name[len(test_dir_prefix):]
+        hostname, insecure_port, secure_port = self._get_http_host_and_ports_for_test(test_name)
 
         if "/https/" in test_name or ".https." in test_name:
-            return "https://127.0.0.1:8443/" + relative_path
-        return "http://127.0.0.1:8000/" + relative_path
+            return "https://%s:%d/%s" % (hostname, secure_port, relative_path)
+        return "http://%s:%d/%s" % (hostname, insecure_port, relative_path)
 
     def uri_to_test(self, uri):
         """Return the base layout test name for a given URI.
@@ -252,15 +271,19 @@ class Driver(object):
         "fast/html/keygen.html".
 
         """
+
+        # This looks like a bit of a hack, since the uri is used instead of test name.
+        hostname, insecure_port, secure_port = self._get_http_host_and_ports_for_test(uri)
+
         if uri.startswith("file:///"):
             prefix = path.abspath_to_uri(self._port.host.platform, self._port.layout_tests_dir())
             if not prefix.endswith('/'):
                 prefix += '/'
             return uri[len(prefix):]
         if uri.startswith("http://"):
-            return uri.replace('http://127.0.0.1:8000/', self.HTTP_DIR)
+            return uri.replace('http://%s:%d/' % (hostname, insecure_port), self.HTTP_DIR)
         if uri.startswith("https://"):
-            return uri.replace('https://127.0.0.1:8443/', self.HTTP_DIR)
+            return uri.replace('https://%s:%d/' % (hostname, secure_port), self.HTTP_DIR)
         raise NotImplementedError('unknown url type: %s' % uri)
 
     def has_crashed(self):
@@ -388,7 +411,7 @@ class Driver(object):
         # FIXME: performance tests pass in full URLs instead of test names.
         if driver_input.test_name.startswith('http://') or driver_input.test_name.startswith('https://')  or driver_input.test_name == ('about:blank'):
             command = driver_input.test_name
-        elif self.is_http_test(driver_input.test_name):
+        elif self.is_http_test(driver_input.test_name) or self._should_treat_as_wpt_test(driver_input.test_name):
             command = self.test_to_uri(driver_input.test_name)
         else:
             command = self._port.abspath_for_test(driver_input.test_name)

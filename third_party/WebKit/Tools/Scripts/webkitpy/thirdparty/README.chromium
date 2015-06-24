@@ -1,9 +1,9 @@
 This directory contains sources from other projects.
 
-Code in this directory must document the license under which the source is being 
+Code in this directory must document the license under which the source is being
 used. If the source itself does not include a license header or file, create
 an entry in this file that refers to reliable documentation of the project's
-license terms on the web (and add a note pointing here in the README file in 
+license terms on the web (and add a note pointing here in the README file in
 that directory).
 
 Name: autopep8
@@ -67,3 +67,37 @@ Description: Used during presubmit checks and via lint-webkitpy and format-webki
     overlap between pep8 and pylint, but pep8 catches a bunch of stylistic
 	issues that pylint doesn't (e.g., warning about blank lines, various whitespace issues, etc.).
 Local Modifications: None
+
+Name: web-platform-tests - Test Suites for Web Platform specifications
+Short Name: wpt
+URL: https://github.com/w3c/web-platform-tests/
+Version: a4e187e1296cb981648202a0d7567aa81d869d91 (Also check wpt/WPTHeads)
+License: LICENSES FOR W3C TEST SUITES (http://www.w3.org/Consortium/Legal/2008/04-testsuite-copyright.html)
+License File: wpt/wpt/LICENSE
+Security Critical: no
+Description: Used to run all supported web-platform-tests as part of blink layout tests. The wpt/wpt
+             directory only contains the tools as opposed to LayoutTests/imported/web-platform-tests
+             which contains the tests. Also see wpt/README.chormium for more details on maintenance.
+Local Modifications: Removed all files except for those listed in wpt/WPTWhiteList.
+
+Name: wpt-tools - Tools for Web Platform Tests
+Short Name: wpt-tools
+URL: https://github.com/w3c/wpt-tools
+Version: 72c8068067c68dcaa0768c1d1f394738b4e60eb9 (Also check wpt/WPTHeads)
+License: W3C 3-clause BSD License (http://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
+License File: wpt/wpt/tools/LICENSE
+Security Critical: no
+Description: Used to run all supported web-platform-tests as part of blink layout tests.
+             Also see wpt/README.chormium for more details on maintenance.
+Local Modifications: Removed all files except for those listed in wpt/WPTWhiteList.
+
+Name: wptserve - Web server designed for use with web-platform-tests
+Short Name: wptserve
+URL: https://github.com/w3c/wptserve
+Version: 0cd3531e2d26c71de39431ebac62be18b2da8af3 (Also check wpt/WPTHeads)
+License: W3C 3-clause BSD License (http://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
+License File: wpt/wpt/tools/wptserve/LICENSE
+Security Critical: no
+Description: Used to run all supported web-platform-tests as part of blink layout tests.
+             Also see wpt/README.chormium for more details on maintenance.
+Local Modifications: Removed all files except for those listed in wpt/WPTWhiteList.

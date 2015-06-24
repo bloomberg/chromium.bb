@@ -65,6 +65,7 @@ from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.servers import apache_http
 from webkitpy.layout_tests.servers import pywebsocket
+from webkitpy.layout_tests.servers import wptserve
 
 _log = logging.getLogger(__name__)
 
@@ -188,6 +189,8 @@ class Port(object):
         self._helper = None
         self._http_server = None
         self._websocket_server = None
+        self._is_wpt_enabled = hasattr(options, 'enable_wptserve') and options.enable_wptserve
+        self._wpt_server = None
         self._image_differ = None
         self._server_process_constructor = server_process.ServerProcess  # overridable for testing
         self._http_lock = None  # FIXME: Why does this live on the port object?
@@ -1170,6 +1173,32 @@ class Port(object):
         server.start()
         self._websocket_server = server
 
+    def is_wpt_enabled(self):
+        """Used as feature flag for WPT Serve feature."""
+        return self._is_wpt_enabled
+
+    def is_wpt_test(self, test):
+        """Whether this test is part of a web-platform-tests which require wptserve servers."""
+        return "web-platform-tests" in test
+
+    def start_wptserve(self):
+        """Start a WPT web server. Raise an error if it can't start or is already running.
+
+        Ports can stub this out if they don't need a WPT web server to be running."""
+        assert not self._wpt_server, 'Already running an http server.'
+        assert self.is_wpt_enabled(), 'Cannot start server if WPT is not enabled.'
+
+        # We currently don't support any output mechanism for the WPT server.
+        server = wptserve.WPTServe(self, self.results_directory())
+        server.start()
+        self._wpt_server = server
+
+    def stop_wptserve(self):
+        """Shut down the WPT server if it is running. Do nothing if it isn't."""
+        if self._wpt_server:
+            self._wpt_server.stop()
+            self._wpt_server = None
+
     def http_server_supports_ipv6(self):
         # Apache < 2.4 on win32 does not support IPv6, nor does cygwin apache.
         if self.host.platform.is_cygwin() or self.host.platform.is_win():
@@ -1646,6 +1675,9 @@ class Port(object):
             return False
         if self._options.pixel_test_directories:
             return any(test_input.test_name.startswith(directory) for directory in self._options.pixel_test_directories)
+        # TODO(burnik): Make sure this is the right way to do it.
+        if self.is_wpt_enabled() and self.is_wpt_test(test_input.test_name):
+            return False
         return True
 
     def _modules_to_search_for_symbols(self):

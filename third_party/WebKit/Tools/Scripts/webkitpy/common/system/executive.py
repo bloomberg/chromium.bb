@@ -86,6 +86,7 @@ class ScriptError(Exception):
 class Executive(object):
     PIPE = subprocess.PIPE
     STDOUT = subprocess.STDOUT
+    DEVNULL = open(os.devnull, 'wb')
 
     def _should_close_fds(self):
         # We need to pass close_fds=True to work around Python bug #2320
@@ -423,7 +424,7 @@ class Executive(object):
         # The Windows implementation of Popen cannot handle unicode strings. :(
         return map(self._encode_argument_if_needed, string_args)
 
-    # The only required arugment to popen is named "args", the rest are optional keyword arguments.
+    # The only required argument to popen is named "args", the rest are optional keyword arguments.
     def popen(self, args, **kwargs):
         # FIXME: We should always be stringifying the args, but callers who pass shell=True
         # expect that the exact bytes passed will get passed to the shell (even if they're wrongly encoded).
