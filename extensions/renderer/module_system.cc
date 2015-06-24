@@ -90,9 +90,6 @@ class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
     }
     Fatal(context_, CreateExceptionString(try_catch) + "{" + stack_trace + "}");
   }
-
- private:
-  ScriptContext* context_;
 };
 
 }  // namespace
