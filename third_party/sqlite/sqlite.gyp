@@ -24,6 +24,10 @@
       # threads.  In theory Chromium should be able to turn this off for a
       # slight speed boost.
       'THREADSAFE',
+      # SQLite can spawn threads to sort in parallel if configured
+      # appropriately.  Chromium doesn't configure SQLite for that, and would
+      # prefer to control distribution to worker threads.
+      'SQLITE_MAX_WORKER_THREADS=0',
       # TODO(shess): Figure out why this is here.  Nobody references it
       # directly.
       '_HAS_EXCEPTIONS=0',
