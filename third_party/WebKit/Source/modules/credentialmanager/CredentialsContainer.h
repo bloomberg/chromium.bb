@@ -24,7 +24,7 @@ public:
     ScriptPromise request(ScriptState*, const Dictionary&);
     ScriptPromise notifySignedIn(ScriptState*, Credential* = 0);
     ScriptPromise notifyFailedSignIn(ScriptState*, Credential* = 0);
-    ScriptPromise notifySignedOut(ScriptState*);
+    ScriptPromise requireUserMediation(ScriptState*);
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 

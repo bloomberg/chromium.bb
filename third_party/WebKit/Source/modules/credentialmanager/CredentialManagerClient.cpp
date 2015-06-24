@@ -65,10 +65,13 @@ void CredentialManagerClient::dispatchSignedIn(const WebCredential& credential, 
     m_client->dispatchSignedIn(credential, callbacks);
 }
 
-void CredentialManagerClient::dispatchSignedOut(WebCredentialManagerClient::NotificationCallbacks* callbacks)
+void CredentialManagerClient::dispatchRequireUserMediation(WebCredentialManagerClient::NotificationCallbacks* callbacks)
 {
     if (!m_client)
         return;
+    m_client->dispatchRequireUserMediation(callbacks);
+
+    // TODO(mkwst): Drop this once the Chromium side is updated. https://crbug.com/494880
     m_client->dispatchSignedOut(callbacks);
 }
 

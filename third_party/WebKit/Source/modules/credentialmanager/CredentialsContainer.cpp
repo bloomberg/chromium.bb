@@ -148,14 +148,14 @@ ScriptPromise CredentialsContainer::notifyFailedSignIn(ScriptState* scriptState,
     return promise;
 }
 
-ScriptPromise CredentialsContainer::notifySignedOut(ScriptState* scriptState)
+ScriptPromise CredentialsContainer::requireUserMediation(ScriptState* scriptState)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (!checkBoilerplate(resolver))
         return promise;
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchSignedOut(new NotificationCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->executionContext())->dispatchRequireUserMediation(new NotificationCallbacks(resolver));
     return promise;
 }
 

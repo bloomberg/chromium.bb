@@ -637,8 +637,8 @@ interface CredentialsContainer
     method constructor
     method notifyFailedSignIn
     method notifySignedIn
-    method notifySignedOut
     method request
+    method requireUserMediation
 interface Crypto
     getter subtle
     method constructor
