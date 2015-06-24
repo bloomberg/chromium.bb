@@ -37,7 +37,7 @@ namespace blink {
 
 WebThreadSafeData::WebThreadSafeData(const char* data, size_t length)
 {
-    m_private = RawData::create().leakRef();
+    m_private = RawData::create();
     m_private->mutableData()->append(data, length);
 }
 
@@ -66,7 +66,7 @@ const char* WebThreadSafeData::data() const
 }
 
 WebThreadSafeData::WebThreadSafeData(const PassRefPtr<RawData>& data)
-    : m_private(data.leakRef())
+    : m_private(data)
 {
 }
 
