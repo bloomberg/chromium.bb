@@ -5,59 +5,12 @@
 #include "config.h"
 #include "core/dom/Position.h"
 
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/testing/CoreTestHelpers.h"
-#include "wtf/RefPtr.h"
-#include <gtest/gtest.h>
+#include "core/editing/EditingTestBase.h"
 
 namespace blink {
 
-class PositionTest : public ::testing::Test {
-protected:
-    void SetUp() override;
-
-    HTMLDocument& document() const;
-    void setBodyContent(const char*);
-    PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char*);
-
-private:
-    RefPtrWillBePersistent<HTMLDocument> m_document;
+class PositionTest : public EditingTestBase {
 };
-
-void PositionTest::SetUp()
-{
-    m_document = HTMLDocument::create();
-    RefPtrWillBeRawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*m_document);
-    html->appendChild(HTMLBodyElement::create(*m_document));
-    m_document->appendChild(html.release());
-}
-
-HTMLDocument& PositionTest::document() const
-{
-    return *m_document;
-}
-
-void PositionTest::setBodyContent(const char* bodyContent)
-{
-    document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
-}
-
-static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
-{
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
-    shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
-    return shadowRoot.release();
-}
-
-PassRefPtrWillBeRawPtr<ShadowRoot> PositionTest::setShadowContent(const char* shadowContent)
-{
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-    document().recalcDistribution();
-    return shadowRoot;
-}
 
 TEST_F(PositionTest, NodeAsRangeLastNodeNull)
 {
