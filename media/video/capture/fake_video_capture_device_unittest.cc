@@ -80,10 +80,13 @@ class MockClient : public VideoCaptureDevice::Client {
   }
 
   // Virtual methods for capturing using Client's Buffers.
-  scoped_ptr<Buffer> ReserveOutputBuffer(media::VideoPixelFormat format,
-                                         const gfx::Size& dimensions) {
-    EXPECT_TRUE(format == PIXEL_FORMAT_I420 ||
-                format == PIXEL_FORMAT_GPUMEMORYBUFFER);
+  scoped_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
+                                         media::VideoPixelFormat format,
+                                         media::VideoPixelStorage storage) {
+    EXPECT_TRUE((format == media::PIXEL_FORMAT_I420 &&
+                 storage == media::PIXEL_STORAGE_CPU) ||
+                (format == media::PIXEL_FORMAT_ARGB &&
+                 storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
     return make_scoped_ptr(

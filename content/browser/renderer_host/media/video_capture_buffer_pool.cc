@@ -10,53 +10,10 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/base/video_frame.h"
-
-using media::VideoFrame;
 
 namespace content {
 
 const int VideoCaptureBufferPool::kInvalidId = -1;
-
-VideoFrame::Format VideoPixelFormatToVideoFrameFormat(
-    media::VideoPixelFormat pixel_format) {
-  static struct {
-    media::VideoPixelFormat pixel_format;
-    VideoFrame::Format frame_format;
-  } const kVideoPixelFormatToVideoFrameFormat[] = {
-      {media::PIXEL_FORMAT_I420, VideoFrame::I420},
-      {media::PIXEL_FORMAT_TEXTURE, VideoFrame::ARGB},
-      {media::PIXEL_FORMAT_GPUMEMORYBUFFER, VideoFrame::ARGB},
-  };
-
-  for (const auto& format_pair : kVideoPixelFormatToVideoFrameFormat) {
-    if (format_pair.pixel_format == pixel_format)
-      return format_pair.frame_format;
-  }
-  LOG(ERROR) << "Unsupported VideoPixelFormat "
-             << media::VideoCaptureFormat::PixelFormatToString(pixel_format);
-  return VideoFrame::UNKNOWN;
-}
-
-VideoFrame::StorageType VideoPixelFormatToVideoFrameStorageType(
-    media::VideoPixelFormat pixel_format) {
-  static struct {
-    media::VideoPixelFormat pixel_format;
-    VideoFrame::StorageType storage_type;
-  } const kVideoPixelFormatToVideoFrameStorageType[] = {
-      {media::PIXEL_FORMAT_I420, VideoFrame::STORAGE_SHMEM},
-      {media::PIXEL_FORMAT_TEXTURE, VideoFrame::STORAGE_OPAQUE},
-      {media::PIXEL_FORMAT_GPUMEMORYBUFFER, VideoFrame::STORAGE_OPAQUE},
-  };
-
-  for (const auto& format_pair : kVideoPixelFormatToVideoFrameStorageType) {
-    if (format_pair.pixel_format == pixel_format)
-      return format_pair.storage_type;
-  }
-  LOG(ERROR) << "Unsupported VideoPixelFormat "
-             << media::VideoCaptureFormat::PixelFormatToString(pixel_format);
-  return VideoFrame::STORAGE_UNKNOWN;
-}
 
 // A simple holder of a memory-backed buffer and accesors to it.
 class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
@@ -124,8 +81,8 @@ class GpuMemoryBufferBufferHandle
 class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
  public:
   SharedMemTracker();
-  bool Init(VideoFrame::Format format,
-            media::VideoFrame::StorageType storage_type,
+  bool Init(media::VideoPixelFormat format,
+            media::VideoPixelStorage storage_type,
             const gfx::Size& dimensions) override;
 
   size_t mapped_size() const override { return shared_memory_.mapped_size(); }
@@ -150,8 +107,8 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
 class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
  public:
   GpuMemoryBufferTracker();
-  bool Init(VideoFrame::Format format,
-            media::VideoFrame::StorageType storage_type,
+  bool Init(media::VideoPixelFormat format,
+            media::VideoPixelStorage storage_type,
             const gfx::Size& dimensions) override;
   ~GpuMemoryBufferTracker() override;
 
@@ -175,24 +132,24 @@ VideoCaptureBufferPool::SharedMemTracker::SharedMemTracker() : Tracker() {
 }
 
 bool VideoCaptureBufferPool::SharedMemTracker::Init(
-    VideoFrame::Format format,
-    media::VideoFrame::StorageType storage_type,
+    media::VideoPixelFormat format,
+    media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions) {
   DVLOG(2) << "allocating ShMem of " << dimensions.ToString();
   set_pixel_format(format);
   set_storage_type(storage_type);
-  // Input |dimensions| can be 0x0 for trackers that do not require memory
-  // backing. The allocated size is calculated using VideoFrame methods since
-  // this will be the abstraction used to wrap the underlying data.
+  // |dimensions| can be 0x0 for trackers that do not require memory backing.
   set_pixel_count(dimensions.GetArea());
-  const size_t byte_count = VideoFrame::AllocationSize(format, dimensions);
+  const size_t byte_count =
+      media::VideoCaptureFormat(dimensions, 0.0f, format, storage_type)
+          .ImageAllocationSize();
   if (!byte_count)
     return true;
   return shared_memory_.CreateAndMapAnonymous(byte_count);
 }
 
 VideoCaptureBufferPool::GpuMemoryBufferTracker::GpuMemoryBufferTracker()
-    : Tracker(), gpu_memory_buffer_(nullptr) {}
+    : Tracker(), packed_size_(0u), gpu_memory_buffer_(nullptr) {}
 
 VideoCaptureBufferPool::GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
   if (gpu_memory_buffer_->IsMapped())
@@ -200,8 +157,8 @@ VideoCaptureBufferPool::GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
 }
 
 bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
-    VideoFrame::Format format,
-    media::VideoFrame::StorageType storage_type,
+    media::VideoPixelFormat format,
+    media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions) {
   DVLOG(2) << "allocating GMB for " << dimensions.ToString();
   // BrowserGpuMemoryBufferManager::current() may not be accessed on IO Thread.
@@ -210,6 +167,9 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
   set_pixel_format(format);
   set_storage_type(storage_type);
   set_pixel_count(dimensions.GetArea());
+  // |dimensions| can be 0x0 for trackers that do not require memory backing.
+  if (dimensions.GetArea() == 0u)
+    return true;
   gpu_memory_buffer_ =
       BrowserGpuMemoryBufferManager::current()->AllocateGpuMemoryBuffer(
           dimensions,
@@ -280,10 +240,12 @@ VideoCaptureBufferPool::GetBufferHandle(int buffer_id) {
 }
 
 int VideoCaptureBufferPool::ReserveForProducer(media::VideoPixelFormat format,
+                                               media::VideoPixelStorage storage,
                                                const gfx::Size& dimensions,
                                                int* buffer_id_to_drop) {
   base::AutoLock lock(lock_);
-  return ReserveForProducerInternal(format, dimensions, buffer_id_to_drop);
+  return ReserveForProducerInternal(format, storage, dimensions,
+                                    buffer_id_to_drop);
 }
 
 void VideoCaptureBufferPool::RelinquishProducerReservation(int buffer_id) {
@@ -341,20 +303,14 @@ double VideoCaptureBufferPool::GetBufferPoolUtilization() const {
 }
 
 int VideoCaptureBufferPool::ReserveForProducerInternal(
-    media::VideoPixelFormat format,
+    media::VideoPixelFormat pixel_format,
+    media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions,
     int* buffer_id_to_drop) {
-  DCHECK(format == media::PIXEL_FORMAT_I420 ||
-         format == media::PIXEL_FORMAT_TEXTURE ||
-         format == media::PIXEL_FORMAT_GPUMEMORYBUFFER );
   lock_.AssertAcquired();
   *buffer_id_to_drop = kInvalidId;
 
   const size_t size_in_pixels = dimensions.GetArea();
-  const media::VideoFrame::Format pixel_format =
-      VideoPixelFormatToVideoFrameFormat(format);
-  const media::VideoFrame::StorageType storage_type =
-      VideoPixelFormatToVideoFrameStorageType(format);
   // Look for a tracker that's allocated, big enough, and not in use. Track the
   // largest one that's not big enough, in case we have to reallocate a tracker.
   *buffer_id_to_drop = kInvalidId;
@@ -393,8 +349,8 @@ int VideoCaptureBufferPool::ReserveForProducerInternal(
   // Create the new tracker.
   const int buffer_id = next_buffer_id_++;
 
-  scoped_ptr<Tracker> tracker =
-      Tracker::CreateTracker(format == media::PIXEL_FORMAT_GPUMEMORYBUFFER);
+  scoped_ptr<Tracker> tracker = Tracker::CreateTracker(
+      storage_type == media::PIXEL_STORAGE_GPUMEMORYBUFFER);
   if (!tracker->Init(pixel_format, storage_type, dimensions)) {
     DLOG(ERROR) << "Error initializing Tracker";
     return kInvalidId;

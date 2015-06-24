@@ -44,6 +44,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
 
   void CaptureUsingOwnBuffers(base::TimeTicks expected_execution_time);
   void CaptureUsingClientBuffers(VideoPixelFormat pixel_format,
+                                 VideoPixelStorage pixel_storage,
                                  base::TimeTicks expected_execution_time);
   void BeepAndScheduleNextCapture(
       base::TimeTicks expected_execution_time,

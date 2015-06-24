@@ -316,8 +316,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   uint8 buffer_no = 1;
   ASSERT_EQ(0.0, device_->GetBufferPoolUtilization());
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer(
-      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                   capture_resolution));
+      device_->ReserveOutputBuffer(capture_resolution, media::PIXEL_FORMAT_I420,
+                                   media::PIXEL_STORAGE_CPU));
   ASSERT_TRUE(buffer.get());
   ASSERT_EQ(1.0 / kPoolSize, device_->GetBufferPoolUtilization());
   memset(buffer->data(), buffer_no++, buffer->size());
@@ -366,8 +366,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // case pretend that the Buffer pointer is held by the device for a long
   // delay. This shouldn't affect anything.
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer2 =
-      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                   capture_resolution);
+      device_->ReserveOutputBuffer(capture_resolution, media::PIXEL_FORMAT_I420,
+                                   media::PIXEL_STORAGE_CPU);
   ASSERT_TRUE(buffer2.get());
   memset(buffer2->data(), buffer_no++, buffer2->size());
   video_frame =
@@ -411,8 +411,9 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // Third, fourth, and fifth buffers. Pretend they all arrive at the same time.
   for (int i = 0; i < kPoolSize; i++) {
     scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer =
-        device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                     capture_resolution);
+        device_->ReserveOutputBuffer(capture_resolution,
+                                     media::PIXEL_FORMAT_I420,
+                                     media::PIXEL_STORAGE_CPU);
     ASSERT_TRUE(buffer.get());
     memset(buffer->data(), buffer_no++, buffer->size());
     video_frame =
@@ -421,8 +422,9 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                           base::TimeTicks());
   }
   // ReserveOutputBuffer ought to fail now, because the pool is depleted.
-  ASSERT_FALSE(device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                            capture_resolution).get());
+  ASSERT_FALSE(device_->ReserveOutputBuffer(capture_resolution,
+                                            media::PIXEL_FORMAT_I420,
+                                            media::PIXEL_STORAGE_CPU).get());
 
   // The new client needs to be told of 3 buffers; the old clients only 2.
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_2)).Times(kPoolSize);
@@ -456,8 +458,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   controller_->StopSession(300);
   // Queue up another buffer.
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer3 =
-      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                   capture_resolution);
+      device_->ReserveOutputBuffer(capture_resolution, media::PIXEL_FORMAT_I420,
+                                   media::PIXEL_STORAGE_CPU);
   ASSERT_TRUE(buffer3.get());
   memset(buffer3->data(), buffer_no++, buffer3->size());
   video_frame =
@@ -466,8 +468,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                         base::TimeTicks());
 
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer4 =
-      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                   capture_resolution);
+      device_->ReserveOutputBuffer(capture_resolution, media::PIXEL_FORMAT_I420,
+                                   media::PIXEL_STORAGE_CPU);
   {
     // Kill A2 via session close (posts a task to disconnect, but A2 must not
     // be sent either of these two buffers).
@@ -504,8 +506,9 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   for (int i = 0; i < shm_buffers; ++i) {
     scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer =
-        device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                     capture_resolution);
+        device_->ReserveOutputBuffer(capture_resolution,
+                                     media::PIXEL_FORMAT_I420,
+                                     media::PIXEL_STORAGE_CPU);
     ASSERT_TRUE(buffer.get());
     video_frame =
         WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
@@ -516,8 +519,9 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   std::vector<uint32> release_syncpoints(mailbox_buffers);
   for (int i = 0; i < mailbox_buffers; ++i) {
     scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer =
-        device_->ReserveOutputBuffer(media::PIXEL_FORMAT_TEXTURE,
-                                     capture_resolution);
+        device_->ReserveOutputBuffer(capture_resolution,
+                                     media::PIXEL_FORMAT_ARGB,
+                                     media::PIXEL_STORAGE_TEXTURE);
     ASSERT_TRUE(buffer.get());
 #if !defined(OS_ANDROID)
     mailbox_syncpoints[i] =
@@ -533,10 +537,13 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   // ReserveOutputBuffers ought to fail now regardless of buffer format, because
   // the pool is depleted.
-  ASSERT_FALSE(device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                            capture_resolution).get());
-  ASSERT_FALSE(device_->ReserveOutputBuffer(media::PIXEL_FORMAT_TEXTURE,
-                                            capture_resolution).get());
+  ASSERT_FALSE(device_->ReserveOutputBuffer(capture_resolution,
+                                            media::PIXEL_FORMAT_I420,
+                                            media::PIXEL_STORAGE_CPU).get());
+  ASSERT_FALSE(device_->ReserveOutputBuffer(capture_resolution,
+                                            media::PIXEL_FORMAT_ARGB,
+                                            media::PIXEL_STORAGE_TEXTURE)
+                    .get());
   EXPECT_CALL(*client_b_,
               DoI420BufferReady(client_b_route_2, capture_resolution))
       .Times(shm_buffers);
@@ -591,8 +598,8 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer(
-      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
-                                   capture_resolution));
+      device_->ReserveOutputBuffer(capture_resolution, media::PIXEL_FORMAT_I420,
+                                   media::PIXEL_STORAGE_CPU));
   ASSERT_TRUE(buffer.get());
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
@@ -627,7 +634,8 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
 
   const gfx::Size dims(320, 240);
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> buffer(
-      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420, dims));
+      device_->ReserveOutputBuffer(dims, media::PIXEL_FORMAT_I420,
+                                   media::PIXEL_STORAGE_CPU));
   ASSERT_TRUE(buffer.get());
 
   scoped_refptr<media::VideoFrame> video_frame =
@@ -663,8 +671,9 @@ TEST_F(VideoCaptureControllerTest, DataCaptureInEachVideoFormatInSequence) {
       << "Scratchpad is too small to hold the largest pixel format (ARGB).";
 
   const int kSessionId = 100;
-  // This Test skips PIXEL_FORMAT_TEXTURE and PIXEL_FORMAT_UNKNOWN.
-  for (int format = 0; format < media::PIXEL_FORMAT_TEXTURE; ++format) {
+  for (int format = 0; format < media::PIXEL_FORMAT_MAX; ++format) {
+    if (format == media::PIXEL_FORMAT_UNKNOWN)
+      continue;
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
         capture_resolution, 30, media::VideoPixelFormat(format));

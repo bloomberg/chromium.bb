@@ -22,18 +22,25 @@
 
 namespace content {
 
-static const media::VideoPixelFormat kCaptureFormats[] = {
-  media::PIXEL_FORMAT_I420,
-  media::PIXEL_FORMAT_TEXTURE,
+struct PixelFormatAndStorage {
+  media::VideoPixelFormat pixel_format;
+  media::VideoPixelStorage pixel_storage;
+};
+
+static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
+  { media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU },
+  { media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_CPU },
+  { media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_TEXTURE },
 #if !defined(OS_ANDROID)
-  media::PIXEL_FORMAT_GPUMEMORYBUFFER
+  { media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_GPUMEMORYBUFFER },
+  { media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_GPUMEMORYBUFFER },
 #endif
 };
 
 static const int kTestBufferPoolSize = 3;
 
 class VideoCaptureBufferPoolTest
-    : public testing::TestWithParam<media::VideoPixelFormat> {
+    : public testing::TestWithParam<PixelFormatAndStorage> {
  protected:
   // A GpuMemoryBuffer Mock to provide a trivial RGBA buffer as Map() backing.
   // We need to allocate on ctor and deallocate on dtor so that consecutive
@@ -139,15 +146,22 @@ class VideoCaptureBufferPoolTest
     expected_dropped_id_ = expected_dropped_id;
   }
 
-  scoped_ptr<Buffer> ReserveBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat pixel_format) {
+  scoped_ptr<Buffer> ReserveBuffer(
+      const gfx::Size& dimensions,
+      PixelFormatAndStorage format_and_storage) {
     // To verify that ReserveBuffer always sets |buffer_id_to_drop|,
     // initialize it to something different than the expected value.
     int buffer_id_to_drop = ~expected_dropped_id_;
-    DVLOG(1) << media::VideoCaptureFormat::PixelFormatToString(pixel_format)
+    DVLOG(1) << media::VideoCaptureFormat::PixelStorageToString(
+                    format_and_storage.pixel_storage)
+             << " " << media::VideoCaptureFormat::PixelFormatToString(
+                           format_and_storage.pixel_format)
              << " " << dimensions.ToString();
-    int buffer_id =
-        pool_->ReserveForProducer(pixel_format, dimensions, &buffer_id_to_drop);
+    const int buffer_id = pool_->ReserveForProducer(
+        format_and_storage.pixel_format,
+        format_and_storage.pixel_storage,
+        dimensions,
+        &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return scoped_ptr<Buffer>();
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
@@ -174,8 +188,10 @@ class VideoCaptureBufferPoolTest
 TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   const gfx::Size size_lo = gfx::Size(10, 10);
   const gfx::Size size_hi = gfx::Size(21, 33);
-  const media::VideoCaptureFormat format_lo(size_lo, 0.0, GetParam());
-  const media::VideoCaptureFormat format_hi(size_hi, 0.0, GetParam());
+  const media::VideoCaptureFormat format_lo(
+      size_lo, 0.0, GetParam().pixel_format, GetParam().pixel_storage);
+  const media::VideoCaptureFormat format_hi(
+      size_hi, 0.0, GetParam().pixel_format, GetParam().pixel_storage);
 
   // Reallocation won't happen for the first part of the test.
   ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
@@ -198,7 +214,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
 
   // Texture backed Frames cannot be manipulated via mapping.
-  if (GetParam() != media::PIXEL_FORMAT_TEXTURE) {
+  if (GetParam().pixel_storage != media::PIXEL_STORAGE_TEXTURE) {
     ASSERT_NE(nullptr, buffer1->data());
     ASSERT_NE(nullptr, buffer2->data());
     ASSERT_NE(nullptr, buffer3->data());
@@ -339,6 +355,6 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
 
 INSTANTIATE_TEST_CASE_P(,
                         VideoCaptureBufferPoolTest,
-                        testing::ValuesIn(kCaptureFormats));
+                        testing::ValuesIn(kCapturePixelFormatAndStorages));
 
 } // namespace content

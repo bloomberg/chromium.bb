@@ -324,7 +324,6 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
         DCHECK_EQ(1u, VideoFrame::NumPlanes(frame->format()));
-
       } else if (frame->format() == VideoFrame::I420) {
         const bool is_new_buffer =
             client->known_buffers.insert(buffer_id).second;
