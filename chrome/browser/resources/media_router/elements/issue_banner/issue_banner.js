@@ -4,16 +4,6 @@
 
 // This Polymer element is used to show information about issues related
 // to casting.
-(function() {
-
-/**
- * Maps an issue action type to the resource identifier of the text shown
- * in the action button.
- * @type {!Array<string>}
- */
-var issueActionTypeToButtonTextResource = [
-    'okButton', 'cancelButton', 'dismissButton', 'learnMoreButton'];
-
 Polymer({
   is: 'issue-banner',
 
@@ -25,6 +15,21 @@ Polymer({
     issue: {
       type: Object,
       value: null,
+      observer: 'updateActionButtonText_',
+    },
+
+    /**
+     * Maps an issue action type to the resource identifier of the text shown
+     * in the action button.
+     * This is a property of issue-banner because it is used in tests.
+     * @type {!Array<string>}
+     */
+    issueActionTypeToButtonTextResource_: {
+      type: Array,
+      value: function() {
+        return ['okButton', 'cancelButton', 'dismissButton',
+            'learnMoreButton'];
+      },
     },
 
     /**
@@ -33,10 +38,16 @@ Polymer({
      */
     defaultActionButtonText_: {
       type: String,
-      value: function() {
-        return this.issue == null ? '' : loadTimeData.getString(
-            issueActionTypeToButtonTextResource[this.issue.defaultActionType]);
-      },
+      value: '',
+    },
+
+    /**
+     * The text shown in the secondary action button.
+     * @private {string}
+     */
+    secondaryActionButtonText_: {
+      type: String,
+      value: '',
     },
   },
 
@@ -65,7 +76,7 @@ Polymer({
    * @private
    */
   computeOptionalActionHidden_: function(issue) {
-    return !issue || !issue.optActionText;
+    return !issue || !issue.secondaryActionType;
   },
 
   /**
@@ -99,7 +110,31 @@ Polymer({
    * @private
    */
   onClickOptAction_: function(event) {
-    this.fireIssueActionClick_(this.issue.optActionType);
+    this.fireIssueActionClick_(this.issue.secondaryActionType);
+  },
+
+  /**
+   * Called when |issue| is updated. This updates the default and secondary
+   * action button text.
+   *
+   * @private
+   */
+  updateActionButtonText_: function() {
+    var defaultText = '';
+    var secondaryText = '';
+    if (this.issue) {
+      defaultText = loadTimeData.getString(
+          this.issueActionTypeToButtonTextResource_[
+          this.issue.defaultActionType]);
+
+      if (this.issue.secondaryActionType) {
+        secondaryText = loadTimeData.getString(
+            this.issueActionTypeToButtonTextResource_[
+            this.issue.secondaryActionType]);
+      }
+    }
+
+    this.defaultActionButtonText_ = defaultText;
+    this.secondaryActionButtonText_ = secondaryText;
   },
 });
-})();

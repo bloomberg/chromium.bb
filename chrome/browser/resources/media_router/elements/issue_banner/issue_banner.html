@@ -15,7 +15,7 @@
       <div id="blocking-issue-buttons">
         <paper-button raised class="button" on-click="onClickOptAction_"
             hidden$="[[computeOptionalActionHidden_(issue)]]">
-          <span>[[issue.optActionText]]</span>
+          <span>[[secondaryActionButtonText_]]</span>
         </paper-button>
         <paper-button raised class="button action"
             on-click="onClickDefaultAction_">
@@ -31,7 +31,7 @@
       elsewhere once this is fixed. -->
       <span class="issue-action" on-click="onClickOptAction_"
           hidden$="[[computeOptionalActionHidden_(issue)]]">
-        <span>[[issue.optActionText]]</span>
+        <span>[[secondaryActionButtonText_]]</span>
       </span>
       <span class="issue-action" on-click="onClickDefaultAction_">
         <span>[[defaultActionButtonText_]]</span>
