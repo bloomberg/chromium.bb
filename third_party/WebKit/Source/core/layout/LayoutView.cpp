@@ -804,6 +804,8 @@ void LayoutView::commitPendingSelectionAlgorithm()
 
 void LayoutView::commitPendingSelection()
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return commitPendingSelectionAlgorithm<VisibleSelection::InComposedTree>();
     commitPendingSelectionAlgorithm<VisibleSelection::InDOMTree>();
 }
 

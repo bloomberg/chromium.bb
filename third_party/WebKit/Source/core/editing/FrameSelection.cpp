@@ -224,7 +224,16 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
 
 void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return setNonDirectionalSelectionIfNeededAlgorithm<VisibleSelection::InComposedTree>(passedNewSelection, granularity, endpointsAdjustmentMode);
     setNonDirectionalSelectionIfNeededAlgorithm<VisibleSelection::InDOMTree>(passedNewSelection, granularity, endpointsAdjustmentMode);
+}
+
+static bool areEquivalentSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
+{
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return VisibleSelection::InComposedTree::equalSelections(selection1, selection2);
+    return VisibleSelection::InDOMTree::equalSelections(selection1, selection2);
 }
 
 void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
@@ -248,6 +257,8 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // if document->frame() == m_frame we can get into an infinite loop
     if (s.base().anchorNode()) {
         Document& document = *s.base().document();
+        // TODO(hajimehoshi): validateSelection already checks if the selection
+        // is valid, thus we don't need this 'if' clause any more.
         if (document.frame() && document.frame() != m_frame && document != m_frame->document()) {
             RefPtrWillBeRawPtr<LocalFrame> guard(document.frame());
             document.frame()->selection().setSelection(s, options, align, granularity);
@@ -268,7 +279,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     if (shouldClearTypingStyle)
         clearTypingStyle();
 
-    if (m_selection == s) {
+    if (areEquivalentSelections(m_selection, s)) {
         // Even if selection was not changed, selection offsets may have been changed.
         m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
         notifyLayoutObjectOfSelectionChange(userTriggered);
@@ -294,6 +305,13 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     m_xPosForVerticalArrowNavigation = NoXPosForVerticalArrowNavigation();
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(userTriggered);
+    // If the selections are same in the DOM tree but not in the composed tree,
+    // don't fire events. For example, if the selection crosses shadow tree
+    // boundary, selection for the DOM tree is shrunk while that for the
+    // composed tree is not. Additionally, this case occurs in some edge cases.
+    // See also: editing/pasteboard/4076267-3.html
+    if (VisibleSelection::InDOMTree::equalSelections(oldSelection, m_selection))
+        return;
     m_frame->editor().respondToChangedSelection(oldSelection, options);
     if (userTriggered == UserTriggered) {
         ScrollAlignment alignment;
@@ -1336,6 +1354,8 @@ bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
 
 bool FrameSelection::contains(const LayoutPoint& point)
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return containsAlgorithm<VisibleSelection::InComposedTree>(point);
     return containsAlgorithm<VisibleSelection::InDOMTree>(point);
 }
 
@@ -1693,6 +1713,8 @@ String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIterato
 
 static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return extractSelectedTextAlgorithm<VisibleSelection::InComposedTree>(selection, behavior);
     return extractSelectedTextAlgorithm<VisibleSelection::InDOMTree>(selection, behavior);
 }
 
@@ -1709,7 +1731,9 @@ static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
 
 String FrameSelection::selectedHTMLForClipboard() const
 {
-    return extractSelectedHTMLAlgorithm<VisibleSelection::InDOMTree>(*this);
+    if (!RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return extractSelectedHTMLAlgorithm<VisibleSelection::InDOMTree>(*this);
+    return extractSelectedHTMLAlgorithm<VisibleSelection::InComposedTree>(*this);
 }
 
 String FrameSelection::selectedText() const

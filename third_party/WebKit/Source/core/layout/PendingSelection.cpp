@@ -69,6 +69,8 @@ bool PendingSelection::isInDocumentAlgorithm(const Document& document) const
 
 bool PendingSelection::isInDocument(const Document& document) const
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return isInDocumentAlgorithm<VisibleSelection::InComposedTree>(document);
     return isInDocumentAlgorithm<VisibleSelection::InDOMTree>(document);
 }
 
@@ -102,6 +104,8 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
 
 VisibleSelection PendingSelection::calcVisibleSelection() const
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return calcVisibleSelectionAlgorithm<VisibleSelection::InComposedTree>();
     return calcVisibleSelectionAlgorithm<VisibleSelection::InDOMTree>();
 }
 

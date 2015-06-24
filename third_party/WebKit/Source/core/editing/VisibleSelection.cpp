@@ -159,6 +159,11 @@ VisibleSelection VisibleSelection::selectionFromContentsOfNode(Node* node)
     return VisibleSelection(firstPositionInNode(node), lastPositionInNode(node), DOWNSTREAM);
 }
 
+SelectionType VisibleSelection::selectionTypeInComposedTree() const
+{
+    return selectionType(m_startInComposedTree, m_endInComposedTree);
+}
+
 void VisibleSelection::setBase(const Position& position)
 {
     Position oldBase = m_base;
@@ -347,6 +352,13 @@ bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)
     if (m_base != oldBase || m_extent != oldExtent || m_start != oldStart || m_end != oldEnd)
         didChange();
     return true;
+}
+
+bool VisibleSelection::expandUsingGranularityInComposedTree(TextGranularity granularity)
+{
+    m_base = toPositionInDOMTree(baseInComposedTree());
+    m_extent = toPositionInDOMTree(extentInComposedTree());
+    return expandUsingGranularity(granularity);
 }
 
 static PassRefPtrWillBeRawPtr<Range> makeSearchRange(const Position& pos)
@@ -599,6 +611,17 @@ SelectionType VisibleSelection::selectionType(const Position& start, const Posit
     return RangeSelection;
 }
 
+SelectionType VisibleSelection::selectionType(const PositionInComposedTree& start, const PositionInComposedTree& end)
+{
+    if (start.isNull()) {
+        ASSERT(end.isNull());
+        return NoSelection;
+    }
+    if (start == end || start.upstream() == end.upstream())
+        return CaretSelection;
+    return RangeSelection;
+}
+
 void VisibleSelection::updateSelectionType()
 {
     m_selectionType = selectionType(m_start, m_end);
@@ -771,6 +794,11 @@ void VisibleSelection::setWithoutValidation(const Position& base, const Position
     m_startInComposedTree = toPositionInComposedTree(m_start);
     m_endInComposedTree = toPositionInComposedTree(m_end);
     didChange();
+}
+
+void VisibleSelection::setWithoutValidation(const PositionInComposedTree& base, const PositionInComposedTree& extent)
+{
+    setWithoutValidation(toPositionInDOMTree(base), toPositionInDOMTree(extent));
 }
 
 static PositionInComposedTree adjustPositionInComposedTreeForStart(const PositionInComposedTree& position, Node* shadowHost)
@@ -1039,7 +1067,6 @@ PositionWithAffinity VisibleSelection::positionRespectingEditingBoundary(const L
     return targetNode->layoutObject()->positionForPoint(selectionEndPoint);
 }
 
-
 bool VisibleSelection::isContentEditable() const
 {
     return isEditablePosition(start());
@@ -1129,6 +1156,11 @@ void VisibleSelection::validatePositionsIfNeeded()
 bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
     return selection1 == selection2;
+}
+
+bool VisibleSelection::InComposedTree::equalSelections(const VisibleSelection& a, const VisibleSelection& b)
+{
+    return a.startInComposedTree() == b.startInComposedTree() && a.endInComposedTree() == b.endInComposedTree() && a.affinity() == b.affinity() && a.isBaseFirst() == b.isBaseFirst() && a.isDirectional() == b.isDirectional();
 }
 
 #ifndef NDEBUG

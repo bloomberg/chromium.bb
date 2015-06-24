@@ -96,11 +96,15 @@ VisibleSelection expandSelectionToRespectUserSelectAllAlgorithm(Node* targetNode
 
 static VisibleSelection expandSelectionToRespectUserSelectAll(Node* targetNode, const VisibleSelection& selection)
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return expandSelectionToRespectUserSelectAllAlgorithm<VisibleSelection::InComposedTree>(targetNode, selection);
     return expandSelectionToRespectUserSelectAllAlgorithm<VisibleSelection::InDOMTree>(targetNode, selection);
 }
 
 static bool expandSelectionUsingGranularity(VisibleSelection& selection, TextGranularity granularity)
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return selection.expandUsingGranularityInComposedTree(granularity);
     return selection.expandUsingGranularity(granularity);
 }
 
@@ -251,6 +255,8 @@ static int textDistance(const PositionType& start, const PositionType& end)
 
 bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return handleMousePressEventSingleClickAlgorithm<VisibleSelection::InComposedTree>(event);
     return handleMousePressEventSingleClickAlgorithm<VisibleSelection::InDOMTree>(event);
 }
 
@@ -374,6 +380,8 @@ void SelectionController::updateSelectionForMouseDrag(Node* mousePressNode, cons
 
 void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTestResult, Node* mousePressNode, const LayoutPoint& dragStartPos, const IntPoint& lastKnownMousePosition)
 {
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return updateSelectionForMouseDragAlgorithm<VisibleSelection::InComposedTree>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
     updateSelectionForMouseDragAlgorithm<VisibleSelection::InDOMTree>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
 }
 

@@ -53,6 +53,7 @@ public:
         static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extent(); }
         static PositionType selectionStart(const VisibleSelection& selection) { return selection.start(); }
         static PositionType selectionEnd(const VisibleSelection& selection) { return selection.end(); }
+        static SelectionType selectionType(const VisibleSelection& selection) { return selection.selectionType(); }
         static VisiblePosition selectionVisibleStart(const VisibleSelection& selection) { return selection.visibleStart(); }
         static VisiblePosition selectionVisibleEnd(const VisibleSelection& selection) { return selection.visibleEnd(); }
         static PositionType toPositionType(const Position& position) { return position; }
@@ -62,10 +63,22 @@ public:
     public:
         using PositionType = PositionInComposedTree;
 
+        static bool equalSelections(const VisibleSelection&, const VisibleSelection&);
+        static bool isRange(const VisibleSelection& selection) { return selectionType(selection) == RangeSelection; }
         static PositionType selectionBase(const VisibleSelection& selection) { return selection.baseInComposedTree(); }
         static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extentInComposedTree(); }
         static PositionType selectionStart(const VisibleSelection& selection) { return selection.startInComposedTree(); }
         static PositionType selectionEnd(const VisibleSelection& selection) { return selection.endInComposedTree(); }
+        static SelectionType selectionType(const VisibleSelection& selection) { return selection.selectionTypeInComposedTree(); }
+        static VisiblePosition selectionVisibleStart(const VisibleSelection& selection)
+        {
+            return VisiblePosition(selectionStart(selection), isRange(selection) ? DOWNSTREAM : selection.affinity());
+        }
+        static VisiblePosition selectionVisibleEnd(const VisibleSelection& selection)
+        {
+            return VisiblePosition(selectionEnd(selection), isRange(selection) ? UPSTREAM : selection.affinity());
+        }
+        static PositionType toPositionType(const Position& position) { return toPositionInComposedTree(position); }
     };
 
     VisibleSelection();
@@ -85,6 +98,7 @@ public:
     static VisibleSelection selectionFromContentsOfNode(Node*);
 
     SelectionType selectionType() const { return m_selectionType; }
+    SelectionType selectionTypeInComposedTree() const;
 
     void setAffinity(EAffinity affinity) { m_affinity = affinity; }
     EAffinity affinity() const { return m_affinity; }
@@ -117,6 +131,7 @@ public:
     bool isNonOrphanedRange() const { return isRange() && !start().isOrphan() && !end().isOrphan(); }
     bool isNonOrphanedCaretOrRange() const { return isCaretOrRange() && !start().isOrphan() && !end().isOrphan(); }
     static SelectionType selectionType(const Position& start, const Position& end);
+    static SelectionType selectionType(const PositionInComposedTree& start, const PositionInComposedTree& end);
 
     bool isBaseFirst() const { return m_baseIsFirst; }
     bool isDirectional() const { return m_isDirectional; }
@@ -125,6 +140,7 @@ public:
     void appendTrailingWhitespace();
 
     bool expandUsingGranularity(TextGranularity granularity);
+    bool expandUsingGranularityInComposedTree(TextGranularity);
 
     // We don't yet support multi-range selections, so we only ever have one range to return.
     PassRefPtrWillBeRawPtr<Range> firstRange() const;
@@ -152,6 +168,7 @@ public:
     PositionWithAffinity positionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
 
     void setWithoutValidation(const Position&, const Position&);
+    void setWithoutValidation(const PositionInComposedTree&, const PositionInComposedTree&);
 
     // Listener of VisibleSelection modification. didChangeVisibleSelection() will be invoked when base, extent, start
     // or end is moved to a different position.
