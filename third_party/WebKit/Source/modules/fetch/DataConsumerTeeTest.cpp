@@ -5,10 +5,9 @@
 #include "config.h"
 #include "modules/fetch/DataConsumerTee.h"
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
-#include "gin/public/isolate_holder.h"
+#include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -31,6 +30,7 @@ namespace blink {
 namespace {
 
 using Result = WebDataConsumerHandle::Result;
+using Thread = DataConsumerHandleTestUtil::Thread;
 const WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
 const Result kOk = WebDataConsumerHandle::Ok;
 const Result kShouldWait = WebDataConsumerHandle::ShouldWait;
@@ -268,57 +268,6 @@ private:
     RefPtr<Context> m_context;
 };
 
-class TestingThread final {
-public:
-    explicit TestingThread(const char* name)
-        : m_thread(WebThreadSupportingGC::create(name))
-        , m_waitableEvent(adoptPtr(Platform::current()->createWaitableEvent()))
-    {
-        m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&TestingThread::initialize, AllowCrossThreadAccess(this))));
-        m_waitableEvent->wait();
-    }
-
-    ~TestingThread()
-    {
-        m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&TestingThread::shutdown, AllowCrossThreadAccess(this))));
-        m_waitableEvent->wait();
-    }
-
-    WebThreadSupportingGC* thread() { return m_thread.get(); }
-    ExecutionContext* executionContext() { return m_executionContext.get(); }
-    ScriptState* scriptState() { return m_scriptState.get(); }
-    v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
-
-private:
-    void initialize()
-    {
-        m_isolateHolder = adoptPtr(new gin::IsolateHolder());
-        m_thread->initialize();
-        isolate()->Enter();
-        v8::HandleScope handleScope(isolate());
-        v8::Local<v8::Context> context = v8::Context::New(isolate());
-        m_scriptState = ScriptState::create(context, DOMWrapperWorld::create(isolate()));
-        m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
-        m_waitableEvent->signal();
-    }
-
-    void shutdown()
-    {
-        m_executionContext = nullptr;
-        m_scriptState = nullptr;
-        isolate()->Exit();
-        m_thread->shutdown();
-        m_isolateHolder = nullptr;
-        m_waitableEvent->signal();
-    }
-
-    OwnPtr<WebThreadSupportingGC> m_thread;
-    OwnPtr<WebWaitableEvent> m_waitableEvent;
-    RefPtrWillBePersistent<NullExecutionContext> m_executionContext;
-    OwnPtr<gin::IsolateHolder> m_isolateHolder;
-    RefPtr<ScriptState> m_scriptState;
-};
-
 class HandleReader : public WebDataConsumerHandle::Client {
 public:
     HandleReader() : m_finalResult(kOk) { }
@@ -326,7 +275,7 @@ public:
     // Need to wait for the event signal after this function is called.
     void start(PassOwnPtr<WebDataConsumerHandle> handle)
     {
-        m_thread = adoptPtr(new TestingThread("reading thread"));
+        m_thread = adoptPtr(new Thread("reading thread"));
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
         m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&HandleReader::obtainReader, AllowCrossThreadAccess(this), handle)));
     }
@@ -361,7 +310,7 @@ private:
         m_reader = handle->obtainReader(this);
     }
 
-    OwnPtr<TestingThread> m_thread;
+    OwnPtr<Thread> m_thread;
     OwnPtr<WebDataConsumerHandle::Reader> m_reader;
     String m_readString;
     Result m_finalResult;
@@ -375,7 +324,7 @@ public:
     // Need to wait for the event signal after this function is called.
     void start(PassOwnPtr<WebDataConsumerHandle> handle)
     {
-        m_thread = adoptPtr(new TestingThread("reading thread"));
+        m_thread = adoptPtr(new Thread("reading thread"));
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
         m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&HandleTwoPhaseReader::obtainReader, AllowCrossThreadAccess(this), handle)));
     }
@@ -413,7 +362,7 @@ private:
         m_reader = handle->obtainReader(this);
     }
 
-    OwnPtr<TestingThread> m_thread;
+    OwnPtr<Thread> m_thread;
     OwnPtr<WebDataConsumerHandle::Reader> m_reader;
     String m_readString;
     Result m_finalResult;
@@ -424,13 +373,13 @@ class TeeCreationThread {
 public:
     void run(PassOwnPtr<WebDataConsumerHandle> src, OwnPtr<WebDataConsumerHandle>* dest1, OwnPtr<WebDataConsumerHandle>* dest2)
     {
-        m_thread = adoptPtr(new TestingThread("src thread"));
+        m_thread = adoptPtr(new Thread("src thread", Thread::WithExecutionContext));
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
         m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&TeeCreationThread::runInternal, AllowCrossThreadAccess(this), src, AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2))));
         m_waitableEvent->wait();
     }
 
-    TestingThread* thread() { return m_thread.get(); }
+    Thread* thread() { return m_thread.get(); }
 
 private:
     void runInternal(PassOwnPtr<WebDataConsumerHandle> src, OwnPtr<WebDataConsumerHandle>* dest1, OwnPtr<WebDataConsumerHandle>* dest2)
@@ -439,7 +388,7 @@ private:
         m_waitableEvent->signal();
     }
 
-    OwnPtr<TestingThread> m_thread;
+    OwnPtr<Thread> m_thread;
     OwnPtr<WebWaitableEvent> m_waitableEvent;
 };
 
@@ -563,7 +512,7 @@ TEST(DataConsumerTeeTest, Error)
     EXPECT_EQ(kUnexpectedError, r2.finalResult());
 }
 
-void postStop(TestingThread* thread)
+void postStop(Thread* thread)
 {
     thread->executionContext()->stopActiveDOMObjects();
 }

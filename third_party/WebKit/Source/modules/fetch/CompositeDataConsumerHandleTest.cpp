@@ -56,14 +56,17 @@ public:
     {
         m_context = Context::create();
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
 
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-        m_waitableEvent->wait();
+        postTaskAndWait(updatingThread(), FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
+        postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
     }
 
 private:
+    void createHandle()
+    {
+        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
+        m_waitableEvent->signal();
+    }
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
@@ -86,14 +89,18 @@ public:
     {
         m_context = Context::create();
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
 
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-        m_waitableEvent->wait();
+        postTaskAndWait(updatingThread(), FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
+        postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
     }
 
 private:
+    void createHandle()
+    {
+        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
+        m_waitableEvent->signal();
+    }
+
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
@@ -117,14 +124,18 @@ public:
     {
         m_context = Context::create();
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
 
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-        m_waitableEvent->wait();
+        postTaskAndWait(updatingThread(), FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
+        postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
     }
 
 private:
+    void createHandle()
+    {
+        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
+        m_waitableEvent->signal();
+    }
+
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
@@ -149,14 +160,18 @@ public:
         m_context = Context::create();
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
         m_updateEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
 
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-        m_waitableEvent->wait();
+        postTaskAndWait(updatingThread(), FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
+        postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
     }
 
 private:
+    void createHandle()
+    {
+        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
+        m_waitableEvent->signal();
+    }
+
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);
@@ -190,14 +205,18 @@ public:
     {
         m_context = Context::create();
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
 
-        readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-        m_waitableEvent->wait();
+        postTaskAndWait(updatingThread(), FROM_HERE, new Task(threadSafeBind(&Self::createHandle, this)));
+        postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
     }
 
 private:
+    void createHandle()
+    {
+        m_handle = CompositeDataConsumerHandle::create(adoptPtr(new DataConsumerHandle("handle1", m_context)));
+        m_waitableEvent->signal();
+    }
+
     void obtainReader()
     {
         m_reader = m_handle->obtainReader(&m_client);

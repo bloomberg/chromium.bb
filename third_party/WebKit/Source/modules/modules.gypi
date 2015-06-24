@@ -1478,6 +1478,7 @@
       'compositorworker/CompositorWorkerManagerTest.cpp',
       'fetch/BodyStreamBufferTest.cpp',
       'fetch/CompositeDataConsumerHandleTest.cpp',
+      'fetch/DataConsumerHandleTestUtil.cpp',
       'fetch/DataConsumerHandleTestUtil.h',
       'fetch/DataConsumerHandleUtilTest.cpp',
       'fetch/DataConsumerTeeTest.cpp',

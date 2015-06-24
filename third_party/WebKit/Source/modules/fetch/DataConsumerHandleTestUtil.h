@@ -5,20 +5,24 @@
 #ifndef DataConsumerHandleTestUtil_h
 #define DataConsumerHandleTestUtil_h
 
+#include "bindings/core/v8/ScriptState.h"
+#include "core/testing/NullExecutionContext.h"
+#include "gin/public/isolate_holder.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/Locker.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <v8.h>
 
 namespace blink {
 
@@ -27,6 +31,41 @@ public:
     class NoopClient final : public WebDataConsumerHandle::Client {
     public:
         void didGetReadable() override { }
+    };
+
+    // Thread has a WebThreadSupportingGC. It initializes / shutdowns
+    // additional objects based on the given policy. The constructor and the
+    // destructor blocks during the setup and the teardown.
+    class Thread final {
+    public:
+        // Initialization policy of a thread.
+        enum InitializationPolicy {
+            // Only garbage collection is supported.
+            GarbageCollection,
+            // Creating an isolate in addition to GarbageCollection.
+            ScriptExecution,
+            // Creating an execution context in addition to ScriptExecution.
+            WithExecutionContext,
+        };
+
+        Thread(const char* name, InitializationPolicy = GarbageCollection);
+        ~Thread();
+
+        WebThreadSupportingGC* thread() { return m_thread.get(); }
+        ExecutionContext* executionContext() { return m_executionContext.get(); }
+        ScriptState* scriptState() { return m_scriptState.get(); }
+        v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
+
+    private:
+        void initialize();
+        void shutdown();
+
+        OwnPtr<WebThreadSupportingGC> m_thread;
+        const InitializationPolicy m_initializationPolicy;
+        OwnPtr<WebWaitableEvent> m_waitableEvent;
+        RefPtrWillBePersistent<NullExecutionContext> m_executionContext;
+        OwnPtr<gin::IsolateHolder> m_isolateHolder;
+        RefPtr<ScriptState> m_scriptState;
     };
 
     class ThreadingTestBase : public ThreadSafeRefCounted<ThreadingTestBase> {
@@ -50,26 +89,26 @@ public:
                 MutexLocker locker(m_loggingMutex);
                 return m_result;
             }
-            WebThread* readingThread() { return m_readingThread.get(); }
-            WebThread* updatingThread() { return m_updatingThread.get(); }
+            WebThreadSupportingGC* readingThread() { return m_readingThread->thread(); }
+            WebThreadSupportingGC* updatingThread() { return m_updatingThread->thread(); }
 
         private:
             Context()
-                : m_readingThread(adoptPtr(Platform::current()->createThread("reading thread")))
-                , m_updatingThread(adoptPtr(Platform::current()->createThread("updating thread")))
+                : m_readingThread(adoptPtr(new Thread("reading thread")))
+                , m_updatingThread(adoptPtr(new Thread("updating thread")))
             {
             }
             String currentThreadName()
             {
-                if (m_readingThread->isCurrentThread())
+                if (m_readingThread->thread()->isCurrentThread())
                     return "the reading thread";
-                if (m_updatingThread->isCurrentThread())
+                if (m_updatingThread->thread()->isCurrentThread())
                     return "the updating thread";
                 return "an unknown thread";
             }
 
-            OwnPtr<WebThread> m_readingThread;
-            OwnPtr<WebThread> m_updatingThread;
+            OwnPtr<Thread> m_readingThread;
+            OwnPtr<Thread> m_updatingThread;
             Mutex m_loggingMutex;
             String m_result;
         };
@@ -105,8 +144,13 @@ public:
         void resetReader() { m_reader = nullptr; }
         void signalDone() { m_waitableEvent->signal(); }
         const String& result() { return m_context->result(); }
-        WebThread* readingThread() { return m_context->readingThread(); }
-        WebThread* updatingThread() { return m_context->updatingThread(); }
+        WebThreadSupportingGC* readingThread() { return m_context->readingThread(); }
+        WebThreadSupportingGC* updatingThread() { return m_context->updatingThread(); }
+        void postTaskAndWait(WebThreadSupportingGC* thread, const WebTraceLocation& location, Task* task)
+        {
+            thread->postTask(location, task);
+            m_waitableEvent->wait();
+        }
 
     protected:
         RefPtr<Context> m_context;
@@ -124,9 +168,7 @@ public:
             m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
             m_handle = handle;
 
-            readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-            m_waitableEvent->wait();
+            postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
         }
 
     private:
@@ -152,9 +194,7 @@ public:
             m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
             m_handle = handle;
 
-            readingThread()->postTask(FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
-
-            m_waitableEvent->wait();
+            postTaskAndWait(readingThread(), FROM_HERE, new Task(threadSafeBind(&Self::obtainReader, this)));
         }
 
     private:
