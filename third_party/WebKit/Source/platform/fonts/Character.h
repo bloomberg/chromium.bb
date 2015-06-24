@@ -65,7 +65,7 @@ public:
     static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
     static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
 
-    static bool shouldIgnoreRotation(UChar32 character);
+    static bool isUprightInMixedVertical(UChar32 character);
 
     static bool treatAsSpace(UChar c)
     {

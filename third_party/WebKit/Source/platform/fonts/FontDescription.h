@@ -173,6 +173,7 @@ public:
     FontOrientation orientation() const { return static_cast<FontOrientation>(m_orientation); }
     bool isVerticalAnyUpright() const { return blink::isVerticalAnyUpright(orientation()); }
     bool isVerticalNonCJKUpright() const { return blink::isVerticalNonCJKUpright(orientation()); }
+    bool isVerticalUpright(UChar32 character) const { return blink::isVerticalUpright(orientation(), character); }
     bool isVerticalBaseline() const { return blink::isVerticalBaseline(orientation()); }
     FontWidthVariant widthVariant() const { return static_cast<FontWidthVariant>(m_widthVariant); }
     FontFeatureSettings* featureSettings() const { return m_featureSettings.get(); }

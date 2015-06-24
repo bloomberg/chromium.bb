@@ -165,83 +165,135 @@ CodePath Character::characterRangeCodePath(const UChar* characters, unsigned len
     return result;
 }
 
-bool Character::shouldIgnoreRotation(UChar32 character)
+bool Character::isUprightInMixedVertical(UChar32 character)
 {
+    // Fast path for common non-CJK
+    if (character < 0x000A7)
+        return false;
+
+    // Fast path for common CJK
+    if (isInRange(character, 0x02E80, 0x0A4CF))
+        return true;
+
+    if (isInRange(character, 0x0FF01, 0x0FFE7)) {
+        if (character <= 0x0FF0C || isInRange(character, 0x0FF0E, 0x0FF1B)
+            || isInRange(character, 0x0FF1F, 0x0FF60) || character >= 0x0FFE0)
+            return true;
+        return false;
+    }
+
+    // Fast path for medium-common non-CJK
     if (character == 0x000A7 || character == 0x000A9 || character == 0x000AE)
         return true;
-
-    if (character == 0x000B6 || character == 0x000BC || character == 0x000BD || character == 0x000BE)
+    if (character == 0x000B1 || character == 0x000BC || character == 0x000BD || character == 0x000BE)
         return true;
-
-    if (isInRange(character, 0x002E5, 0x002EB))
+    if (character == 0x000D7 || character == 0x000F7)
         return true;
+    if (character < 0x002EA)
+        return false;
 
-    if (isInRange(character, 0x01100, 0x011FF) || isInRange(character, 0x01401, 0x0167F) || isInRange(character, 0x018B0, 0x018FF))
-        return true;
-
-    if (character == 0x02016 || character == 0x02018 || character == 0x02019 || character == 0x02020 || character == 0x02021
-        || character == 0x2030 || character == 0x02031)
-        return true;
-
-    if (isInRange(character, 0x0203B, 0x0203D) || character == 0x02042 || character == 0x02044 || character == 0x02047
-        || character == 0x02048 || character == 0x02049 || character == 0x2051)
-        return true;
-
-    if (isInRange(character, 0x02065, 0x02069) || isInRange(character, 0x020DD, 0x020E0)
-        || isInRange(character, 0x020E2, 0x020E4) || isInRange(character, 0x02100, 0x02117)
-        || isInRange(character, 0x02119, 0x02131) || isInRange(character, 0x02133, 0x0213F))
-        return true;
-
-    if (isInRange(character, 0x02145, 0x0214A) || character == 0x0214C || character == 0x0214D
-        || isInRange(character, 0x0214F, 0x0218F))
-        return true;
-
-    if (isInRange(character, 0x02300, 0x02307) || isInRange(character, 0x0230C, 0x0231F)
-        || isInRange(character, 0x02322, 0x0232B) || isInRange(character, 0x0237D, 0x0239A)
-        || isInRange(character, 0x023B4, 0x023B6) || isInRange(character, 0x023BA, 0x023CF)
-        || isInRange(character, 0x023D1, 0x023DB) || isInRange(character, 0x023E2, 0x024FF))
-        return true;
-
-    if (isInRange(character, 0x025A0, 0x02619) || isInRange(character, 0x02620, 0x02767)
-        || isInRange(character, 0x02776, 0x02793) || isInRange(character, 0x02B12, 0x02B2F)
-        || isInRange(character, 0x02B4D, 0x02BFF) || isInRange(character, 0x02E80, 0x03007))
-        return true;
-
-    if (character == 0x03012 || character == 0x03013 || isInRange(character, 0x03020, 0x0302F)
-        || isInRange(character, 0x03031, 0x0309F) || isInRange(character, 0x030A1, 0x030FB)
-        || isInRange(character, 0x030FD, 0x0A4CF))
-        return true;
-
-    if (isInRange(character, 0x0A960, 0x0A97F)
-        || isInRange(character, 0x0AC00, 0x0D7FF) || isInRange(character, 0x0E000, 0x0FAFF))
-        return true;
-
-    if (isInRange(character, 0x0FE10, 0x0FE1F) || isInRange(character, 0x0FE30, 0x0FE48)
-        || isInRange(character, 0x0FE50, 0x0FE57) || isInRange(character, 0x0FE5F, 0x0FE62)
-        || isInRange(character, 0x0FE67, 0x0FE6F))
-        return true;
-
-    if (isInRange(character, 0x0FF01, 0x0FF07) || isInRange(character, 0x0FF0A, 0x0FF0C)
-        || isInRange(character, 0x0FF0E, 0x0FF19) || isInRange(character, 0x0FF1F, 0x0FF3A))
-        return true;
-
-    if (character == 0x0FF3C || character == 0x0FF3E)
-        return true;
-
-    if (isInRange(character, 0x0FF40, 0x0FF5A) || isInRange(character, 0x0FFE0, 0x0FFE2)
-        || isInRange(character, 0x0FFE4, 0x0FFE7) || isInRange(character, 0x0FFF0, 0x0FFF8)
-        || character == 0x0FFFD)
-        return true;
-
-    if (isInRange(character, 0x13000, 0x1342F) || isInRange(character, 0x1B000, 0x1B0FF)
-        || isInRange(character, 0x1D000, 0x1D1FF) || isInRange(character, 0x1D300, 0x1D37F)
-        || isInRange(character, 0x1F000, 0x1F64F) || isInRange(character, 0x1F680, 0x1F77F))
-        return true;
-
-    if (isInRange(character, 0x20000, 0x2FFFD) || isInRange(character, 0x30000, 0x3FFFD))
-        return true;
-
-    return false;
+    static const UChar32 uprightRanges[] = {
+        // Spacing Modifier Letters (Part of)
+        0x002EA, 0x002EB,
+        // Hangul Jamo
+        0x01100, 0x011FF,
+        // Unified Canadian Aboriginal Syllabics
+        0x01401, 0x0167F,
+        // Unified Canadian Aboriginal Syllabics Extended
+        0x018B0, 0x018FF,
+        // General Punctuation (Part of)
+        0x02016, 0x02016,
+        0x02020, 0x02021,
+        0x02030, 0x02031,
+        0x0203B, 0x0203C,
+        0x02042, 0x02042,
+        0x02047, 0x02049,
+        0x02051, 0x02051,
+        0x02065, 0x02069,
+        // Combining Diacritical Marks for Symbols (Part of)
+        0x020DD, 0x020E0,
+        0x020E2, 0x020E4,
+        // Letterlike Symbols (Part of)/Number Forms
+        0x02100, 0x02101,
+        0x02103, 0x02109,
+        0x0210F, 0x0210F,
+        0x02113, 0x02114,
+        0x02116, 0x02117,
+        0x0211E, 0x02123,
+        0x02125, 0x02125,
+        0x02127, 0x02127,
+        0x02129, 0x02129,
+        0x0212E, 0x0212E,
+        0x02135, 0x0213F,
+        0x02145, 0x0214A,
+        0x0214C, 0x0214D,
+        0x0214F, 0x0218F,
+        // Mathematical Operators (Part of)
+        0x0221E, 0x0221E,
+        0x02234, 0x02235,
+        // Miscellaneous Technical (Part of)
+        0x02300, 0x02307,
+        0x0230C, 0x0231F,
+        0x02324, 0x0232B,
+        0x0237D, 0x0239A,
+        0x023BE, 0x023CD,
+        0x023CF, 0x023CF,
+        0x023D1, 0x023DB,
+        0x023E2, 0x02422,
+        // Control Pictures (Part of)/Optical Character Recognition/Enclosed Alphanumerics
+        0x02424, 0x024FF,
+        // Geometric Shapes/Miscellaneous Symbols (Part of)
+        0x025A0, 0x02619,
+        0x02620, 0x02767,
+        0x02776, 0x02793,
+        // Miscellaneous Symbols and Arrows (Part of)
+        0x02B12, 0x02B2F,
+        0x02B50, 0x02B59,
+        0x02BB8, 0x02BFF,
+        // Hangul Jamo Extended-A
+        0x0A960, 0x0A97F,
+        // Hangul Syllables/Hangul Jamo Extended-B
+        0x0AC00, 0x0D7FF,
+        // Private Use Area/CJK Compatibility Ideographs
+        0x0E000, 0x0FAFF,
+        // Vertical Forms
+        0x0FE10, 0x0FE1F,
+        // CJK Compatibility Forms (Part of)
+        0x0FE30, 0x0FE48,
+        // Small Form Variants (Part of)
+        0x0FE50, 0x0FE57,
+        0x0FE59, 0x0FE62,
+        0x0FE67, 0x0FE6F,
+        // Specials (Part of)
+        0x0FFF0, 0x0FFF8,
+        0x0FFFC, 0x0FFFD,
+        // Meroitic Hieroglyphs
+        0x10980, 0x1099F,
+        // Siddham
+        0x11580, 0x115FF,
+        // Egyptian Hieroglyphs
+        0x13000, 0x1342F,
+        // Kana Supplement
+        0x1B000, 0x1B0FF,
+        // Byzantine Musical Symbols/Musical Symbols
+        0x1D000, 0x1D1FF,
+        // Tai Xuan Jing Symbols/Counting Rod Numerals
+        0x1D300, 0x1D37F,
+        // Mahjong Tiles/Domino Tiles/Playing Cards/Enclosed Alphanumeric Supplement
+        // Enclosed Ideographic Supplement/Enclosed Ideographic Supplement
+        // Emoticons/Ornamental Dingbats/Transport and Map Symbols/Alchemical Symbols
+        // Alchemical Symbols
+        0x1F000, 0x1F7FF,
+        // CJK Unified Ideographs Extension B/C/D
+        // CJK Compatibility Ideographs Supplement
+        0x20000, 0x2FFFD,
+        0x30000, 0x3FFFD,
+        // Supplementary Private Use Area-A
+        0xF0000, 0xFFFFD,
+        // Supplementary Private Use Area-B
+        0x100000, 0x10FFFD,
+    };
+    return valueInIntervalList(uprightRanges, character);
 }
 
 bool Character::isCJKIdeograph(UChar32 c)

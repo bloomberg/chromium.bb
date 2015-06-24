@@ -26,6 +26,8 @@
 #ifndef FontOrientation_h
 #define FontOrientation_h
 
+#include "platform/fonts/Character.h"
+
 namespace blink {
 
 enum class FontOrientation {
@@ -46,6 +48,11 @@ enum class FontOrientation {
 inline bool operator&(FontOrientation value, FontOrientation mask) { return static_cast<unsigned>(value) & static_cast<unsigned>(mask); }
 inline bool isVerticalAnyUpright(FontOrientation orientation) { return orientation & FontOrientation::AnyUprightMask; }
 inline bool isVerticalNonCJKUpright(FontOrientation orientation) { return orientation == FontOrientation::VerticalUpright; }
+inline bool isVerticalUpright(FontOrientation orientation, UChar32 character)
+{
+    return orientation == FontOrientation::VerticalUpright
+        || (orientation == FontOrientation::VerticalMixed && Character::isUprightInMixedVertical(character));
+}
 inline bool isVerticalBaseline(FontOrientation orientation) { return orientation != FontOrientation::Horizontal; }
 
 } // namespace blink
