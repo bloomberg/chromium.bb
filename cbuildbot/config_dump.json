@@ -23293,6 +23293,7 @@
     },
     "veyron_pinky-chromium-pfq": {
         "_template": "chromium-pfq",
+        "active_waterfall": "chromiumos",
         "boards": [
             "veyron_pinky"
         ],

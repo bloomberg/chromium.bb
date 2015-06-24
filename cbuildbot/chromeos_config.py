@@ -612,6 +612,9 @@ _waterfall_config_map = {
         'amd64-generic-asan',
         'x86-generic-asan',
 
+        # PFQ
+        'veyron_pinky-chromium-pfq',
+
         # Utility
         'chromiumos-sdk',
         'refresh-packages',
