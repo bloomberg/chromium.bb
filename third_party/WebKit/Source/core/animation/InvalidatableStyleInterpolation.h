@@ -32,9 +32,10 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        StyleInterpolation::trace(visitor);
         visitor->trace(m_cachedConversion);
+        visitor->trace(m_conversionCheckers);
         visitor->trace(m_cachedValue);
+        StyleInterpolation::trace(visitor);
     }
 
 private:
