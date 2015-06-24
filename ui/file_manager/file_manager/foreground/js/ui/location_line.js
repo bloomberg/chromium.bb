@@ -112,7 +112,10 @@ LocationLine.prototype.update_ = function(components) {
     var button = document.createElement('button');
     button.classList.add(
         'breadcrumb-path', 'entry-name', 'imitate-paper-button');
-    button.textContent = component.name;
+    var nameElement = document.createElement('div');
+    nameElement.classList.add('name');
+    nameElement.textContent = component.name;
+    button.appendChild(nameElement);
     button.addEventListener('click', this.onClick_.bind(this, i));
     newBreadcrumbs.appendChild(button);
 

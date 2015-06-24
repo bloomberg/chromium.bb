@@ -300,6 +300,10 @@ body.check-select button:hover {
   width: 32px;
 }
 
+.dialog-header .icon-button > paper-ripple {
+  color: black;
+}
+
 body.check-select .dialog-header button paper-ripple {
   color: rgb(90, 90, 90);
 }
@@ -341,6 +345,7 @@ body.check-select .dialog-header
   min-width: 0;
   outline: none;
   padding: 0;
+  position: relative;
   width: 32px;
 }
 
@@ -348,37 +353,49 @@ body.check-select .dialog-header
   margin: 8px;
 }
 
+.dialog-header button.icon-button > .icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 32px;
+  left: 0;
+  position: absolute;
+  width: 32px;
+  top: 0;
+}
+
 .dialog-header button.icon-button > files-toggle-ripple {
   height: 28px;
-  margin: 2px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
   width: 28px;
 }
 
-#search-button {
+#search-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/search_white.png) 1x,
       url(../images/files/ui/2x/search_white.png) 2x);
 }
 
-body.check-select #search-button {
+body.check-select #search-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/search.png) 1x,
       url(../images/files/ui/2x/search.png) 2x);
 }
 
-#share-button {
+#share-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/share_white.png) 1x,
       url(../images/files/ui/2x/share_white.png) 2x);
 }
 
-body.check-select #share-button {
+body.check-select #share-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/share.png) 1x,
       url(../images/files/ui/2x/share.png) 2x);
 }
 
-#delete-button {
+#delete-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/delete_white.png) 1x,
       url(../images/files/ui/2x/delete_white.png) 2x);
@@ -390,7 +407,7 @@ body.check-select #delete-button {
       url(../images/files/ui/2x/delete.png) 2x);
 }
 
-#view-button {
+#view-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/view_list_white.png) 1x,
       url(../images/files/ui/2x/view_list_white.png) 2x);
@@ -400,7 +417,7 @@ body.check-select #view-button {
   display: none;
 }
 
-#view-button.thumbnail {
+#view-button.thumbnail > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/view_thumbnail_white.png) 1x,
       url(../images/files/ui/2x/view_thumbnail_white.png) 2x);
@@ -410,7 +427,7 @@ body.check-select #view-button.thumbnail {
   display: none;
 }
 
-#sort-button {
+#sort-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/sorting_white.png) 1x,
       url(../images/files/ui/2x/sorting_white.png) 2x);
@@ -420,7 +437,7 @@ body.check-select #sort-button {
   display: none;
 }
 
-#gear-button {
+#gear-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/menu_white.png) 1x,
       url(../images/files/ui/2x/menu_white.png) 2x);
@@ -428,6 +445,39 @@ body.check-select #sort-button {
 
 body.check-select #gear-button {
   display: none;
+}
+
+.cloud-import-combo-button {
+  -webkit-margin-end: 4px;
+  -webkit-margin-start: 12px;
+  height: 32px;
+  position: relative;
+  width: 49px;
+}
+
+.cloud-import-combo-button > .buttons {
+  display: flex;
+  position: absolute;
+}
+
+.cloud-import-combo-button > .buttons > #cloud-import-button {
+  -webkit-margin-start: 0;
+}
+
+.cloud-import-combo-button > .buttons > #cloud-import-details-button {
+  -webkit-margin-end: 0;
+}
+
+.cloud-import-combo-button > .ripples {
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
+.cloud-import-combo-button > .ripples > files-toggle-ripple {
+  height: 28px;
+  margin: 2px auto;
+  width: 48px;
 }
 
 #cloud-import-details-button {
@@ -864,6 +914,10 @@ body.check-select .breadcrumbs {
   display: none;
 }
 
+.breadcrumbs button > paper-ripple {
+  color: black;
+}
+
 .breadcrumbs > [collapsed]::before {
   content: '...';
 }
@@ -893,6 +947,11 @@ body.check-select .breadcrumbs {
 
 .breadcrumbs .breadcrumb-path:active {
   color: inherit;
+}
+
+.breadcrumbs .breadcrumb-path > .name {
+  position: relative;
+  z-index: 1;
 }
 
 /* The final breadcrumb, representing the current directory. */

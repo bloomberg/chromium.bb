@@ -636,6 +636,10 @@ importer.TestCommandWidget.prototype.updateDetails = function(scan) {
 };
 
 /** @override */
+importer.TestCommandWidget.prototype.performMainButtonRippleAnimation =
+    function() {};
+
+/** @override */
 importer.TestCommandWidget.prototype.toggleDetails = function() {
   assertFalse(
       this.toggleDetailsResolver.settled,

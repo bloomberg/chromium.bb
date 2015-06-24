@@ -45,6 +45,8 @@ var FilesToggleRipple = Polymer({
    * @private
    */
   performActivateAnimation_: function() {
+    var borderRadius = Math.min(this.clientWidth, this.clientHeight) / 2;
+
     this.$.ripple.animate([
       {opacity: 0, offset: 0, easing: 'linear'},
       {opacity: 0.2, offset: 1}
@@ -70,12 +72,12 @@ var FilesToggleRipple = Polymer({
     ], 500);
     this.$.ripple.animate([
       {
-        'border-radius': '50%',
+        'border-radius': borderRadius + 'px',
         offset: 0,
         easing: 'linear'
       },
       {
-        'border-radius': '50%',
+        'border-radius': borderRadius + 'px',
         offset: 0.333,
         easing: 'cubic-bezier(0.109613342381, 0.32112094549, 0.2, 1.0)'
       },
@@ -93,6 +95,8 @@ var FilesToggleRipple = Polymer({
    * @private
    */
   performDeactivateAnimation_: function() {
+    var borderRadius = Math.min(this.clientWidth, this.clientHeight) / 2;
+
     this.$.ripple.animate([
       {opacity: 0.2, offset: 0, easing: 'linear'},
       {opacity: 0, offset: 1}
@@ -117,7 +121,7 @@ var FilesToggleRipple = Polymer({
         easing: 'cubic-bezier(0, 0, 0.2, 1)'
       },
       {
-        'border-radius': '50%',
+        'border-radius': borderRadius + 'px',
         offset: 1
       }
     ], 150);

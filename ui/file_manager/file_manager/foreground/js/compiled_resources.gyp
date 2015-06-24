@@ -156,6 +156,7 @@
           '../../../externs/html_menu_item_element.js',
           '../../../externs/launcher_search_provider.js',
           '../../../externs/webview_tag.js',
+          '../../../externs/paper_elements.js',
           '../../../externs/platform.js',
           '../../common/js/externs.js',
         ],

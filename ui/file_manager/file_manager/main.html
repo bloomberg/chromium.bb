@@ -231,15 +231,18 @@
               i18n-values="aria-label:SHARE_BUTTON_LABEL"
               visibleif="full-page">
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
+        <div class="icon"></div>
       </button>
       <button id="delete-button" class="icon-button" tabindex="11"
               i18n-values="aria-label:DELETE_BUTTON_LABEL"
               visibleif="full-page">
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
+        <div class="icon"></div>
       </button>
       <button id="search-button" class="icon-button" tabindex="12"
               i18n-values="aria-label:SEARCH_TEXT_LABEL">
         <files-toggle-ripple></files-toggle-ripple>
+        <div class="icon"></div>
       </button>
       <div id="search-box">
         <paper-input-container no-label-float>
@@ -248,37 +251,46 @@
           <span class="clear"></span>
         </paper-input-container>
       </div>
-      <button id="cloud-import-button"
-              class="icon-button manual-display"
-              tabindex="14"
-              i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
-              hidden>
-        <iron-icon icon="cloud-queue"></iron-icon>
-        <paper-ripple fit class="recenteringTouch"></paper-ripple>
-      </button>
-      <button id="cloud-import-details-button"
-              class="icon-button manual-display"
-              tabindex="-1"
-              i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
-              hidden>
-        <iron-icon icon="arrow-drop-down"></iron-icon>
-        <paper-ripple fit class="recenteringTouch"></paper-ripple>
-      </button>
+      <div id="cloud-import-combo-button"
+           class="cloud-import-combo-button"
+           hidden>
+        <div class="buttons">
+          <button id="cloud-import-button"
+                  class="icon-button manual-display"
+                  tabindex="14"
+                  i18n-values="aria-label:CLOUD_IMPORT_COMMAND">
+            <iron-icon icon="cloud-queue"></iron-icon>
+          </button>
+          <button id="cloud-import-details-button"
+                  class="icon-button manual-display"
+                  tabindex="-1"
+                  i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS">
+            <iron-icon icon="arrow-drop-down"></iron-icon>
+          </button>
+        </div>
+        <div class="ripples">
+          <paper-ripple></paper-ripple>
+          <files-toggle-ripple></files-toggle-ripple>
+        </div>
+      </div>
       <button id="view-button" class="icon-button" tabindex="15"
               i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL">
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
+        <div class="icon"></div>
       </button>
       <button id="sort-button" class="icon-button" tabindex="16"
               menu="#sort-menu"
               i18n-values="aria-label:SORT_BUTTON_TOOLTIP"
               aria-activedescendant="sort-menu">
         <files-toggle-ripple></files-toggle-ripple>
+        <div class="icon"></div>
       </button>
       <button id="gear-button" class="icon-button" tabindex="17"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu">
         <files-toggle-ripple></files-toggle-ripple>
+        <div class="icon"></div>
       </button>
     </div>
 
