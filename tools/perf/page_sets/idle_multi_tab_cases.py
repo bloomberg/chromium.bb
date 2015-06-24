@@ -4,11 +4,11 @@
 
 import os
 
-from telemetry.page import shared_page_state
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
 
-from page_sets import top_pages
 from page_sets import top_7_stress
+from page_sets import top_pages
 
 
 def _SpawnTab(action_runner):

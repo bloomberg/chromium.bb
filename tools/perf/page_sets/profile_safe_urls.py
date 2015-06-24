@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from profile_creators import profile_safe_url_list
-from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
 
 
 class ProfileSafeUrlPage(page_module.Page):

@@ -4,9 +4,9 @@
 
 import re
 
-from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
 
 
 def _CreateXpathFunction(xpath):

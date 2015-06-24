@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 from page_sets import android_screen_restoration_shared_state
 
-from telemetry.page import shared_page_state
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
+from telemetry.page import shared_page_state
 
 
 class KeyIdlePowerPage(page_module.Page):
