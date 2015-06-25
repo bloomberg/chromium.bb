@@ -190,6 +190,8 @@ void MirrorWindowController::UpdateWindow(
       mirroring_host_info_map_[display_info.id()] = host_info;
 
       aura::WindowTreeHost* host = host_info->ash_host->AsWindowTreeHost();
+      host->SetSharedInputMethod(
+          Shell::GetInstance()->display_controller()->input_method());
       host->window()->SetName(
           base::StringPrintf("MirrorRootWindow-%d", mirror_host_count++));
       host->compositor()->SetBackgroundColor(SK_ColorBLACK);

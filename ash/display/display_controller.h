@@ -150,6 +150,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // Sets the work area's |insets| to the display assigned to |window|.
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
+
+  ui::InputMethod* input_method() { return input_method_.get(); }
+
   // gfx::DisplayObserver overrides:
   void OnDisplayAdded(const gfx::Display& display) override;
   void OnDisplayRemoved(const gfx::Display& display) override;
