@@ -976,9 +976,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestAddAnimationAfterAnimating()
-      : num_swap_buffers_(0) {}
-
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
     layer_ = Layer::Create(layer_settings());
@@ -1005,23 +1002,22 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
   void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
     // After both animations have started, verify that they have valid
     // start times.
-    num_swap_buffers_++;
+    if (host_impl->active_tree()->source_frame_number() < 2)
+      return;
     AnimationRegistrar::AnimationControllerMap controllers_copy =
         host_impl->animation_registrar()
             ->active_animation_controllers_for_testing();
-    if (controllers_copy.size() == 2u) {
-      EndTest();
-      EXPECT_GE(num_swap_buffers_, 3);
-      for (auto& it : controllers_copy) {
-        int id = it.first;
-        if (id == host_impl->RootLayer()->id()) {
-          Animation* anim = it.second->GetAnimation(Animation::TRANSFORM);
-          EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
-        } else if (id == host_impl->RootLayer()->children()[0]->id()) {
-          Animation* anim = it.second->GetAnimation(Animation::OPACITY);
-          EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
-        }
+    EXPECT_EQ(2u, controllers_copy.size());
+    for (auto& it : controllers_copy) {
+      int id = it.first;
+      if (id == host_impl->RootLayer()->id()) {
+        Animation* anim = it.second->GetAnimation(Animation::TRANSFORM);
+        EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
+      } else if (id == host_impl->RootLayer()->children()[0]->id()) {
+        Animation* anim = it.second->GetAnimation(Animation::OPACITY);
+        EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
       }
+      EndTest();
     }
   }
 
@@ -1029,7 +1025,6 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
 
  private:
   scoped_refptr<Layer> layer_;
-  int num_swap_buffers_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
