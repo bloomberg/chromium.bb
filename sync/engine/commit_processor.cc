@@ -22,7 +22,7 @@ CommitProcessor::~CommitProcessor() {}
 void CommitProcessor::GatherCommitContributions(
     ModelTypeSet commit_types,
     size_t max_entries,
-    ContributionMap* contributions) {
+    Commit::ContributionMap* contributions) {
   size_t num_entries = 0;
   for (ModelTypeSet::Iterator it = commit_types.First();
        it.Good(); it.Inc()) {
@@ -39,7 +39,7 @@ void CommitProcessor::GatherCommitContributions(
         cm_it->second->GetContribution(spaces_remaining);
     if (contribution) {
       num_entries += contribution->GetNumEntries();
-      contributions->insert(std::make_pair(it.Get(), contribution.release()));
+      contributions->insert(it.Get(), contribution.Pass());
     }
     if (num_entries >= max_entries) {
       DCHECK_EQ(num_entries, max_entries)

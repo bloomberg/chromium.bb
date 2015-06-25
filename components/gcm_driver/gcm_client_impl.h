@@ -12,9 +12,10 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_stats_recorder_impl.h"
 #include "google_apis/gcm/base/mcs_message.h"
@@ -172,16 +173,18 @@ class GCMClientImpl
   // Collection of pending registration requests. Keys are RegistrationInfo
   // instance, while values are pending registration requests to obtain a
   // registration ID for requesting application.
-  typedef std::map<linked_ptr<RegistrationInfo>,
-                   RegistrationRequest*,
-                   RegistrationInfoComparer> PendingRegistrationRequests;
+  typedef base::ScopedPtrMap<linked_ptr<RegistrationInfo>,
+                             scoped_ptr<RegistrationRequest>,
+                             RegistrationInfoComparer>
+      PendingRegistrationRequests;
 
   // Collection of pending unregistration requests. Keys are RegistrationInfo
   // instance, while values are pending unregistration requests to disable the
   // registration ID currently assigned to the application.
-  typedef std::map<linked_ptr<RegistrationInfo>,
-                   UnregistrationRequest*,
-                   RegistrationInfoComparer> PendingUnregistrationRequests;
+  typedef base::ScopedPtrMap<linked_ptr<RegistrationInfo>,
+                             scoped_ptr<UnregistrationRequest>,
+                             RegistrationInfoComparer>
+      PendingUnregistrationRequests;
 
   friend class GCMClientImplTest;
   friend class GCMClientInstanceIDTest;
@@ -349,14 +352,10 @@ class GCMClientImpl
   // Currently pending registration requests. GCMClientImpl owns the
   // RegistrationRequests.
   PendingRegistrationRequests pending_registration_requests_;
-  STLValueDeleter<PendingRegistrationRequests>
-      pending_registration_requests_deleter_;
 
   // Currently pending unregistration requests. GCMClientImpl owns the
   // UnregistrationRequests.
   PendingUnregistrationRequests pending_unregistration_requests_;
-  STLValueDeleter<PendingUnregistrationRequests>
-      pending_unregistration_requests_deleter_;
 
   // G-services settings that were provided by MCS.
   GServicesSettings gservices_settings_;

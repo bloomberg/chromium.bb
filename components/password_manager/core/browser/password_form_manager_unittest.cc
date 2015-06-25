@@ -138,21 +138,22 @@ class TestPasswordManager : public PasswordManager {
                 const autofill::PasswordFormMap& best_matches,
                 const autofill::PasswordForm& preferred_match,
                 bool wait_for_username) const override {
-    best_matches_ = best_matches;
+    best_matches_ = &best_matches;
     wait_for_username_ = wait_for_username;
   }
 
   const autofill::PasswordFormMap& GetLatestBestMatches() {
-    return best_matches_;
+    return *best_matches_;
   }
 
   bool GetLatestWaitForUsername() { return wait_for_username_; }
 
  private:
+  // Points to a PasswordFormMap owned by PasswordFormManager.
   // Marked mutable to get around constness of Autofill().
   // TODO(vabr): This should be rewritten as a mock of PasswordManager, and the
   // interesting arguments should be saved via GMock actions instead.
-  mutable autofill::PasswordFormMap best_matches_;
+  mutable const autofill::PasswordFormMap* best_matches_;
   mutable bool wait_for_username_;
 };
 
@@ -221,10 +222,10 @@ class PasswordFormManagerTest : public testing::Test {
     if (result == RESULT_NO_MATCH)
       return;
 
-    PasswordForm* match = new PasswordForm(saved_match_);
-    // Heap-allocated form is owned by p.
-    p->best_matches_[match->username_value] = match;
-    p->preferred_match_ = match;
+    scoped_ptr<PasswordForm> match(new PasswordForm(saved_match_));
+    p->preferred_match_ = match.get();
+    base::string16 username = match->username_value;
+    p->best_matches_.insert(username, match.Pass());
   }
 
   void SanitizePossibleUsernames(PasswordFormManager* p, PasswordForm* form) {

@@ -5,13 +5,14 @@
 #include "components/gcm_driver/instance_id/instance_id_android.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace instance_id {
 
 // static
-InstanceID* InstanceID::Create(const std::string& app_id,
-                               gcm::GCMDriver* gcm_driver) {
-  return new InstanceIDAndroid(app_id);
+scoped_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
+                                          gcm::GCMDriver* gcm_driver) {
+  return make_scoped_ptr(new InstanceIDAndroid(app_id));
 }
 
 InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id)

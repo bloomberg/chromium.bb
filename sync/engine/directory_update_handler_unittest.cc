@@ -5,8 +5,9 @@
 #include "sync/engine/directory_update_handler.h"
 
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -456,27 +457,23 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
         passive_worker_(new FakeModelWorker(GROUP_PASSIVE)),
         bookmarks_emitter_(BOOKMARKS, &type_observers_),
         passwords_emitter_(PASSWORDS, &type_observers_),
-        articles_emitter_(ARTICLES, &type_observers_),
-        update_handler_map_deleter_(&update_handler_map_) {}
+        articles_emitter_(ARTICLES, &type_observers_) {}
 
   void SetUp() override {
     dir_maker_.SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
 
-    update_handler_map_.insert(std::make_pair(
+    update_handler_map_.insert(
         BOOKMARKS,
-        new DirectoryUpdateHandler(directory(), BOOKMARKS,
-                                   ui_worker_, &bookmarks_emitter_)));
-    update_handler_map_.insert(std::make_pair(
+        make_scoped_ptr(new DirectoryUpdateHandler(
+            directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_)));
+    update_handler_map_.insert(
         PASSWORDS,
-        new DirectoryUpdateHandler(directory(),
-                                   PASSWORDS,
-                                   password_worker_,
-                                   &passwords_emitter_)));
-    update_handler_map_.insert(std::make_pair(
-        ARTICLES,
-        new DirectoryUpdateHandler(
-            directory(), ARTICLES, ui_worker_, &articles_emitter_)));
+        make_scoped_ptr(new DirectoryUpdateHandler(
+            directory(), PASSWORDS, password_worker_, &passwords_emitter_)));
+    update_handler_map_.insert(
+        ARTICLES, make_scoped_ptr(new DirectoryUpdateHandler(
+                      directory(), ARTICLES, ui_worker_, &articles_emitter_)));
   }
 
   void TearDown() override { dir_maker_.TearDown(); }
@@ -495,15 +492,15 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
  protected:
   void ApplyBookmarkUpdates(sessions::StatusController* status) {
-    update_handler_map_[BOOKMARKS]->ApplyUpdates(status);
+    update_handler_map_.find(BOOKMARKS)->second->ApplyUpdates(status);
   }
 
   void ApplyPasswordUpdates(sessions::StatusController* status) {
-    update_handler_map_[PASSWORDS]->ApplyUpdates(status);
+    update_handler_map_.find(PASSWORDS)->second->ApplyUpdates(status);
   }
 
   void ApplyArticlesUpdates(sessions::StatusController* status) {
-    update_handler_map_[ARTICLES]->ApplyUpdates(status);
+    update_handler_map_.find(ARTICLES)->second->ApplyUpdates(status);
   }
 
   TestEntryFactory* entry_factory() {
@@ -515,8 +512,6 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   }
 
  private:
-  typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
-
   base::MessageLoop loop_;  // Needed to initialize the directory.
   TestDirectorySetterUpper dir_maker_;
   scoped_ptr<TestEntryFactory> entry_factory_;
@@ -530,8 +525,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   DirectoryTypeDebugInfoEmitter passwords_emitter_;
   DirectoryTypeDebugInfoEmitter articles_emitter_;
 
-  UpdateHandlerMap update_handler_map_;
-  STLValueDeleter<UpdateHandlerMap> update_handler_map_deleter_;
+  base::ScopedPtrMap<ModelType, scoped_ptr<UpdateHandler>> update_handler_map_;
 };
 
 namespace {

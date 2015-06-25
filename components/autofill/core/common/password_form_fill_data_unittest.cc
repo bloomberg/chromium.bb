@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/common/password_form_fill_data.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -109,7 +110,8 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   preferred_match.scheme = PasswordForm::SCHEME_HTML;
 
   // Create a match that matches exactly, so |original_signon_realm| is not set.
-  PasswordForm exact_match;
+  scoped_ptr<PasswordForm> scoped_exact_match(new PasswordForm);
+  PasswordForm& exact_match = *scoped_exact_match;
   exact_match.origin = GURL("https://foo.com/");
   exact_match.action = GURL("https://foo.com/login");
   exact_match.username_element = ASCIIToUTF16("username");
@@ -124,7 +126,8 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
 
   // Create a match that was matched using public suffix, so
   // |original_signon_realm| is set to where the result came from.
-  PasswordForm public_suffix_match;
+  scoped_ptr<PasswordForm> scoped_public_suffix_match(new PasswordForm);
+  PasswordForm& public_suffix_match = *scoped_public_suffix_match;
   public_suffix_match.origin = GURL("https://foo.com/");
   public_suffix_match.action = GURL("https://foo.com/login");
   public_suffix_match.username_element = ASCIIToUTF16("username");
@@ -140,8 +143,9 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
 
   // Add one exact match and one public suffix match.
   PasswordFormMap matches;
-  matches[exact_match.username_value] = &exact_match;
-  matches[public_suffix_match.username_value] = &public_suffix_match;
+  matches.insert(exact_match.username_value, scoped_exact_match.Pass());
+  matches.insert(public_suffix_match.username_value,
+                 scoped_public_suffix_match.Pass());
 
   PasswordFormFillData result;
   InitPasswordFormFillData(form_on_page,

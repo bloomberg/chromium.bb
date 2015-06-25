@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "sync/base/sync_export.h"
+#include "sync/engine/commit.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/sessions/model_type_registry.h"
@@ -31,8 +32,6 @@ class CommitContribution;
 // contains a type which was not previously registered.
 class SYNC_EXPORT_PRIVATE CommitProcessor {
  public:
-  typedef std::map<ModelType, CommitContribution*> ContributionMap;
-
   // Contructs a CommitProcessor from a map of CommitContributors.
   // The CommitProcessor does not own this map.
   explicit CommitProcessor(CommitContributorMap* commit_contributor_map);
@@ -44,10 +43,9 @@ class SYNC_EXPORT_PRIVATE CommitProcessor {
   // map, gather any entries queued for commit into CommitContributions.  The
   // total number of entries in all the returned CommitContributions shall not
   // exceed |max_entries|.
-  void GatherCommitContributions(
-      ModelTypeSet commit_types,
-      size_t max_entries,
-      ContributionMap* contributions);
+  void GatherCommitContributions(ModelTypeSet commit_types,
+                                 size_t max_entries,
+                                 Commit::ContributionMap* contributions);
 
  private:
   // A map of 'commit contributors', one for each enabled type.

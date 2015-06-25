@@ -302,9 +302,6 @@ GCMClientImpl::GCMClientImpl(scoped_ptr<GCMInternalsBuilder> internals_builder)
       clock_(internals_builder_->BuildClock()),
       gcm_store_reset_(false),
       url_request_context_getter_(NULL),
-      pending_registration_requests_deleter_(&pending_registration_requests_),
-      pending_unregistration_requests_deleter_(
-          &pending_unregistration_requests_),
       periodic_checkin_ptr_factory_(this),
       destroying_gcm_store_ptr_factory_(this),
       weak_ptr_factory_(this) {
@@ -839,8 +836,8 @@ void GCMClientImpl::ResetCache() {
   mcs_client_.reset();
   checkin_request_.reset();
   // Delete all of the pending registration and unregistration requests.
-  STLDeleteValues(&pending_registration_requests_);
-  STLDeleteValues(&pending_unregistration_requests_);
+  pending_registration_requests_.clear();
+  pending_unregistration_requests_.clear();
 }
 
 void GCMClientImpl::Register(
@@ -917,20 +914,16 @@ void GCMClientImpl::Register(
       device_checkin_info_.secret,
       registration_info->app_id);
 
-  RegistrationRequest* registration_request =
-      new RegistrationRequest(gservices_settings_.GetRegistrationURL(),
-                              request_info,
-                              request_handler.Pass(),
-                              GetGCMBackoffPolicy(),
-                              base::Bind(&GCMClientImpl::OnRegisterCompleted,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          registration_info),
-                              kMaxRegistrationRetries,
-                              url_request_context_getter_,
-                              &recorder_,
-                              source_to_record);
-  pending_registration_requests_[registration_info] = registration_request;
+  scoped_ptr<RegistrationRequest> registration_request(new RegistrationRequest(
+      gservices_settings_.GetRegistrationURL(), request_info,
+      request_handler.Pass(), GetGCMBackoffPolicy(),
+      base::Bind(&GCMClientImpl::OnRegisterCompleted,
+                 weak_ptr_factory_.GetWeakPtr(), registration_info),
+      kMaxRegistrationRetries, url_request_context_getter_, &recorder_,
+      source_to_record));
   registration_request->Start();
+  pending_registration_requests_.insert(registration_info,
+                                        registration_request.Pass());
 }
 
 void GCMClientImpl::OnRegisterCompleted(
@@ -940,7 +933,7 @@ void GCMClientImpl::OnRegisterCompleted(
   DCHECK(delegate_);
 
   Result result;
-  PendingRegistrationRequests::iterator iter =
+  PendingRegistrationRequests::const_iterator iter =
       pending_registration_requests_.find(registration_info);
   if (iter == pending_registration_requests_.end())
     result = UNKNOWN_ERROR;
@@ -968,10 +961,8 @@ void GCMClientImpl::OnRegisterCompleted(
       result == SUCCESS ? registration_id : std::string(),
       result);
 
-  if (iter != pending_registration_requests_.end()) {
-    delete iter->second;
+  if (iter != pending_registration_requests_.end())
     pending_registration_requests_.erase(iter);
-  }
 }
 
 void GCMClientImpl::Unregister(
@@ -1055,19 +1046,16 @@ void GCMClientImpl::Unregister(
       device_checkin_info_.secret,
       registration_info->app_id);
 
-  UnregistrationRequest* unregistration_request = new UnregistrationRequest(
-      gservices_settings_.GetRegistrationURL(),
-      request_info,
-      request_handler.Pass(),
-      GetGCMBackoffPolicy(),
-      base::Bind(&GCMClientImpl::OnUnregisterCompleted,
-                  weak_ptr_factory_.GetWeakPtr(),
-                  registration_info),
-      kMaxUnregistrationRetries,
-      url_request_context_getter_,
-      &recorder_);
-  pending_unregistration_requests_[registration_info] = unregistration_request;
+  scoped_ptr<UnregistrationRequest> unregistration_request(
+      new UnregistrationRequest(
+          gservices_settings_.GetRegistrationURL(), request_info,
+          request_handler.Pass(), GetGCMBackoffPolicy(),
+          base::Bind(&GCMClientImpl::OnUnregisterCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), registration_info),
+          kMaxUnregistrationRetries, url_request_context_getter_, &recorder_));
   unregistration_request->Start();
+  pending_unregistration_requests_.insert(registration_info,
+                                          unregistration_request.Pass());
 }
 
 void GCMClientImpl::OnUnregisterCompleted(
@@ -1091,13 +1079,7 @@ void GCMClientImpl::OnUnregisterCompleted(
   }
   delegate_->OnUnregisterFinished(registration_info, result);
 
-  PendingUnregistrationRequests::iterator iter =
-      pending_unregistration_requests_.find(registration_info);
-  if (iter == pending_unregistration_requests_.end())
-    return;
-
-  delete iter->second;
-  pending_unregistration_requests_.erase(iter);
+  pending_unregistration_requests_.erase(registration_info);
 }
 
 void GCMClientImpl::OnGCMStoreDestroyed(bool success) {

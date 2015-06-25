@@ -6,14 +6,13 @@
 #define MEDIA_MIDI_MIDI_MANAGER_ALSA_H_
 
 #include <alsa/asoundlib.h>
-#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -42,7 +41,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, ToMidiPortState);
 
   class AlsaCard;
-  typedef std::map<int, AlsaCard*> AlsaCardMap;
+  typedef base::ScopedPtrMap<int, scoped_ptr<AlsaCard>> AlsaCardMap;
 
   class MidiPort {
    public:
@@ -269,7 +268,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
     class Client {
      public:
-      typedef std::map<int, Port*> PortMap;
+      typedef base::ScopedPtrMap<int, scoped_ptr<Port>> PortMap;
 
       Client(const std::string& name, snd_seq_client_type_t type);
       ~Client();
@@ -285,15 +284,13 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
       const std::string name_;
       const snd_seq_client_type_t type_;
       PortMap ports_;
-      STLValueDeleter<PortMap> ports_deleter_;
 
       DISALLOW_COPY_AND_ASSIGN(Client);
     };
 
-    typedef std::map<int, Client*> ClientMap;
+    typedef base::ScopedPtrMap<int, scoped_ptr<Client>> ClientMap;
 
     ClientMap clients_;
-    STLValueDeleter<ClientMap> clients_deleter_;
 
     // This is the current number of clients we know about that have
     // cards. When this number matches alsa_card_midi_count_, we know
@@ -409,7 +406,6 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
   // Mapping from card to devices.
   AlsaCardMap alsa_cards_;
-  STLValueDeleter<AlsaCardMap> alsa_cards_deleter_;
 
   // This is the current count of midi devices across all cards we know
   // about. When this number matches card_client_count_ in AlsaSeqState,

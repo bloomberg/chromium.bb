@@ -46,7 +46,8 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
 void ManagePasswordsTest::SetupManagingPasswords() {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
-  map[kTestUsername] = test_form();
+  map.insert(kTestUsername,
+             make_scoped_ptr(new autofill::PasswordForm(*test_form())));
   GetController()->OnPasswordAutofilled(map);
 }
 
@@ -72,7 +73,8 @@ void ManagePasswordsTest::SetupBlackistedPassword() {
   test_form()->blacklisted_by_user = true;
   test_form()->username_value.clear();
   autofill::PasswordFormMap map;
-  map[test_form()->username_value] = test_form();
+  map.insert(test_form()->username_value,
+             make_scoped_ptr(new autofill::PasswordForm(*test_form())));
   GetController()->OnBlacklistBlockedAutofill(map);
 }
 
@@ -82,7 +84,8 @@ void ManagePasswordsTest::SetupChooseCredentials(
     const GURL& origin) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
-  map[kTestUsername] = test_form();
+  map.insert(kTestUsername,
+             make_scoped_ptr(new autofill::PasswordForm(*test_form())));
   GetController()->OnChooseCredentials(
       local_credentials.Pass(), federated_credentials.Pass(), origin,
       base::Bind(&ManagePasswordsTest::OnChooseCredential, this));

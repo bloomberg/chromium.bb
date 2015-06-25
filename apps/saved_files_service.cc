@@ -5,10 +5,11 @@
 #include "apps/saved_files_service.h"
 
 #include <algorithm>
+#include <map>
 
 #include "apps/saved_files_service_factory.h"
 #include "base/basictypes.h"
-#include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -177,9 +178,8 @@ class SavedFilesService::SavedFiles {
 
   // Contains all file entries that have been registered, keyed by ID. Owns
   // values.
-  base::hash_map<std::string, SavedFileEntry*> registered_file_entries_;
-  STLValueDeleter<base::hash_map<std::string, SavedFileEntry*> >
-      registered_file_entries_deleter_;
+  base::ScopedPtrHashMap<std::string, scoped_ptr<SavedFileEntry>>
+      registered_file_entries_;
 
   // The queue of file entries that have been retained, keyed by
   // sequence_number. Values are a subset of values in registered_file_entries_.
@@ -194,9 +194,7 @@ SavedFilesService* SavedFilesService::Get(Profile* profile) {
   return SavedFilesServiceFactory::GetForProfile(profile);
 }
 
-SavedFilesService::SavedFilesService(Profile* profile)
-    : extension_id_to_saved_files_deleter_(&extension_id_to_saved_files_),
-      profile_(profile) {
+SavedFilesService::SavedFilesService(Profile* profile) : profile_(profile) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllSources());
@@ -277,7 +275,7 @@ void SavedFilesService::ClearQueue(const extensions::Extension* extension) {
 
 SavedFilesService::SavedFiles* SavedFilesService::Get(
     const std::string& extension_id) const {
-  std::map<std::string, SavedFiles*>::const_iterator it =
+  base::ScopedPtrMap<std::string, scoped_ptr<SavedFiles>>::const_iterator it =
       extension_id_to_saved_files_.find(extension_id);
   if (it != extension_id_to_saved_files_.end())
     return it->second;
@@ -291,26 +289,20 @@ SavedFilesService::SavedFiles* SavedFilesService::GetOrInsert(
   if (saved_files)
     return saved_files;
 
-  saved_files = new SavedFiles(profile_, extension_id);
-  extension_id_to_saved_files_.insert(
-      std::make_pair(extension_id, saved_files));
+  scoped_ptr<SavedFiles> scoped_saved_files(
+      new SavedFiles(profile_, extension_id));
+  saved_files = scoped_saved_files.get();
+  extension_id_to_saved_files_.insert(extension_id, scoped_saved_files.Pass());
   return saved_files;
 }
 
 void SavedFilesService::Clear(const std::string& extension_id) {
-  std::map<std::string, SavedFiles*>::iterator it =
-      extension_id_to_saved_files_.find(extension_id);
-  if (it != extension_id_to_saved_files_.end()) {
-    delete it->second;
-    extension_id_to_saved_files_.erase(it);
-  }
+  extension_id_to_saved_files_.erase(extension_id);
 }
 
 SavedFilesService::SavedFiles::SavedFiles(Profile* profile,
                                           const std::string& extension_id)
-    : profile_(profile),
-      extension_id_(extension_id),
-      registered_file_entries_deleter_(&registered_file_entries_) {
+    : profile_(profile), extension_id_(extension_id) {
   LoadSavedFileEntriesFromPreferences();
 }
 
@@ -323,13 +315,12 @@ void SavedFilesService::SavedFiles::RegisterFileEntry(
   if (ContainsKey(registered_file_entries_, id))
     return;
 
-  registered_file_entries_.insert(
-      std::make_pair(id, new SavedFileEntry(id, file_path, is_directory, 0)));
+  registered_file_entries_.add(
+      id, make_scoped_ptr(new SavedFileEntry(id, file_path, is_directory, 0)));
 }
 
 void SavedFilesService::SavedFiles::EnqueueFileEntry(const std::string& id) {
-  base::hash_map<std::string, SavedFileEntry*>::iterator it =
-      registered_file_entries_.find(id);
+  auto it = registered_file_entries_.find(id);
   DCHECK(it != registered_file_entries_.end());
 
   SavedFileEntry* file_entry = it->second;
@@ -370,8 +361,7 @@ bool SavedFilesService::SavedFiles::IsRegistered(const std::string& id) const {
 
 const SavedFileEntry* SavedFilesService::SavedFiles::GetFileEntry(
     const std::string& id) const {
-  base::hash_map<std::string, SavedFileEntry*>::const_iterator it =
-      registered_file_entries_.find(id);
+  auto it = registered_file_entries_.find(id);
   if (it == registered_file_entries_.end())
     return NULL;
 
@@ -381,10 +371,8 @@ const SavedFileEntry* SavedFilesService::SavedFiles::GetFileEntry(
 std::vector<SavedFileEntry> SavedFilesService::SavedFiles::GetAllFileEntries()
     const {
   std::vector<SavedFileEntry> result;
-  for (base::hash_map<std::string, SavedFileEntry*>::const_iterator it =
-           registered_file_entries_.begin();
-       it != registered_file_entries_.end();
-       ++it) {
+  for (auto it = registered_file_entries_.begin();
+       it != registered_file_entries_.end(); ++it) {
     result.push_back(*it->second);
   }
   return result;
@@ -432,10 +420,11 @@ void SavedFilesService::SavedFiles::LoadSavedFileEntriesFromPreferences() {
   for (std::vector<SavedFileEntry>::iterator it = saved_entries.begin();
        it != saved_entries.end();
        ++it) {
-    SavedFileEntry* file_entry = new SavedFileEntry(*it);
-    registered_file_entries_.insert(std::make_pair(file_entry->id, file_entry));
+    scoped_ptr<SavedFileEntry> file_entry(new SavedFileEntry(*it));
+    const std::string& id = file_entry->id;
     saved_file_lru_.insert(
-        std::make_pair(file_entry->sequence_number, file_entry));
+        std::make_pair(file_entry->sequence_number, file_entry.get()));
+    registered_file_entries_.add(id, file_entry.Pass());
   }
 }
 

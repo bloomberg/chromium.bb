@@ -5,8 +5,9 @@
 #include "chromeos/dbus/shill_ipconfig_client.h"
 
 #include "base/bind.h"
+#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
@@ -57,33 +58,32 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
   void Init(dbus::Bus* bus) override { bus_ = bus; }
 
  private:
-  typedef std::map<std::string, ShillClientHelper*> HelperMap;
+  typedef base::ScopedPtrMap<std::string, scoped_ptr<ShillClientHelper>>
+      HelperMap;
 
   // Returns the corresponding ShillClientHelper for the profile.
   ShillClientHelper* GetHelper(const dbus::ObjectPath& ipconfig_path) {
-    HelperMap::iterator it = helpers_.find(ipconfig_path.value());
+    HelperMap::const_iterator it = helpers_.find(ipconfig_path.value());
     if (it != helpers_.end())
       return it->second;
 
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(shill::kFlimflamServiceName, ipconfig_path);
-    ShillClientHelper* helper = new ShillClientHelper(object_proxy);
+    scoped_ptr<ShillClientHelper> helper(new ShillClientHelper(object_proxy));
     helper->MonitorPropertyChanged(shill::kFlimflamIPConfigInterface);
-    helpers_.insert(HelperMap::value_type(ipconfig_path.value(), helper));
-    return helper;
+    ShillClientHelper* helper_ptr = helper.get();
+    helpers_.insert(ipconfig_path.value(), helper.Pass());
+    return helper_ptr;
   }
 
   dbus::Bus* bus_;
   HelperMap helpers_;
-  STLValueDeleter<HelperMap> helpers_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShillIPConfigClientImpl);
 };
 
-ShillIPConfigClientImpl::ShillIPConfigClientImpl()
-    : bus_(NULL),
-      helpers_deleter_(&helpers_) {
+ShillIPConfigClientImpl::ShillIPConfigClientImpl() : bus_(NULL) {
 }
 
 void ShillIPConfigClientImpl::GetProperties(

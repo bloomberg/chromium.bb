@@ -5,14 +5,14 @@
 #ifndef APPS_SAVED_FILES_SERVICE_H_
 #define APPS_SAVED_FILES_SERVICE_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/scoped_ptr_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/stl_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -127,9 +127,8 @@ class SavedFilesService : public KeyedService,
   static void SetLruSizeForTest(int size);
   static void ClearLruSizeForTest();
 
-  std::map<std::string, SavedFiles*> extension_id_to_saved_files_;
-  STLValueDeleter<std::map<std::string, SavedFiles*> >
-      extension_id_to_saved_files_deleter_;
+  base::ScopedPtrMap<std::string, scoped_ptr<SavedFiles>>
+      extension_id_to_saved_files_;
   content::NotificationRegistrar registrar_;
   Profile* profile_;
 

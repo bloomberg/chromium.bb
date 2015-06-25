@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -347,7 +346,6 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
       initialization_state_(NOT_INITIALIZED),
       tables_(PredictorDatabaseFactory::GetForProfile(profile)
                   ->resource_prefetch_tables()),
-      results_map_deleter_(&results_map_),
       history_service_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -424,12 +422,10 @@ void ResourcePrefetchPredictor::FinishedPrefetchForNavigation(
     ResourcePrefetcher::RequestVector* requests) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Result* result = new Result(key_type, requests);
+  scoped_ptr<Result> result(new Result(key_type, requests));
   // Add the results to the results map.
-  if (!results_map_.insert(std::make_pair(navigation_id, result)).second) {
+  if (!results_map_.insert(navigation_id, result.Pass()).second)
     DLOG(FATAL) << "Returning results for existing navigation.";
-    delete result;
-  }
 }
 
 void ResourcePrefetchPredictor::Shutdown() {
@@ -533,7 +529,7 @@ base::TimeDelta ResourcePrefetchPredictor::OnNavigationComplete(
   base::TimeDelta plt = base::TimeTicks::Now() - navigation_id.creation_time;
   ReportPageLoadTimeStats(plt);
   if (prefetch_manager_.get()) {
-    ResultsMap::iterator results_it = results_map_.find(navigation_id);
+    ResultsMap::const_iterator results_it = results_map_.find(navigation_id);
     bool have_prefetch_results = results_it != results_map_.end();
     UMA_HISTOGRAM_BOOLEAN("ResourcePrefetchPredictor.HavePrefetchResults",
                           have_prefetch_results);
@@ -746,11 +742,10 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
       ++it;
     }
   }
-  for (ResultsMap::iterator it = results_map_.begin();
+  for (ResultsMap::const_iterator it = results_map_.begin();
        it != results_map_.end();) {
     if (it->first.IsSameRenderer(navigation_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {
-      delete it->second;
       results_map_.erase(it++);
     } else {
       ++it;
@@ -857,11 +852,7 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
   }
 
   // Remove the navigation from the results map.
-  ResultsMap::iterator results_it = results_map_.find(navigation_id);
-  if (results_it != results_map_.end()) {
-    delete results_it->second;
-    results_map_.erase(results_it);
-  }
+  results_map_.erase(navigation_id);
 }
 
 void ResourcePrefetchPredictor::LearnNavigation(
@@ -1107,8 +1098,8 @@ void ResourcePrefetchPredictor::ReportAccuracyStats(
     ResourcePrefetcher::Request* req = *it;
 
     // Set the usage states if the resource was actually used.
-    std::map<GURL, bool>::iterator actual_it = actual_resources.find(
-        req->resource_url);
+    std::map<GURL, bool>::const_iterator actual_it =
+        actual_resources.find(req->resource_url);
     if (actual_it != actual_resources.end()) {
       if (actual_it->second) {
         req->usage_status =

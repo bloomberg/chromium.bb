@@ -17,8 +17,6 @@ ModelTypeSyncProxyImpl::ModelTypeSyncProxyImpl(ModelType type)
     : type_(type),
       is_preferred_(false),
       is_connected_(false),
-      entities_deleter_(&entities_),
-      pending_updates_map_deleter_(&pending_updates_map_),
       weak_ptr_factory_for_ui_(this),
       weak_ptr_factory_for_sync_(this) {
 }
@@ -107,11 +105,11 @@ void ModelTypeSyncProxyImpl::Put(const std::string& client_tag,
   const std::string client_tag_hash(
       syncable::GenerateSyncableHash(type_, client_tag));
 
-  EntityMap::iterator it = entities_.find(client_tag_hash);
+  EntityMap::const_iterator it = entities_.find(client_tag_hash);
   if (it == entities_.end()) {
     scoped_ptr<ModelTypeEntity> entity(ModelTypeEntity::NewLocalItem(
         client_tag, specifics, base::Time::Now()));
-    entities_.insert(std::make_pair(client_tag_hash, entity.release()));
+    entities_.insert(client_tag_hash, entity.Pass());
   } else {
     ModelTypeEntity* entity = it->second;
     entity->MakeLocalChange(specifics);
@@ -124,7 +122,7 @@ void ModelTypeSyncProxyImpl::Delete(const std::string& client_tag) {
   const std::string client_tag_hash(
       syncable::GenerateSyncableHash(type_, client_tag));
 
-  EntityMap::iterator it = entities_.find(client_tag_hash);
+  EntityMap::const_iterator it = entities_.find(client_tag_hash);
   if (it == entities_.end()) {
     // That's unusual, but not necessarily a bad thing.
     // Missing is as good as deleted as far as the model is concerned.
@@ -150,7 +148,7 @@ void ModelTypeSyncProxyImpl::FlushPendingCommitRequests() {
     return;
 
   // TODO(rlarocque): Do something smarter than iterate here.
-  for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     if (it->second->RequiresCommitRequest()) {
       CommitRequestData request;
@@ -175,7 +173,7 @@ void ModelTypeSyncProxyImpl::OnCommitCompleted(
     const CommitResponseData& response_data = *list_it;
     const std::string& client_tag_hash = response_data.client_tag_hash;
 
-    EntityMap::iterator it = entities_.find(client_tag_hash);
+    EntityMap::const_iterator it = entities_.find(client_tag_hash);
     if (it == entities_.end()) {
       NOTREACHED() << "Received commit response for missing item."
                    << " type: " << type_ << " client_tag: " << client_tag_hash;
@@ -204,15 +202,11 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
     const UpdateResponseData& response_data = *list_it;
     const std::string& client_tag_hash = response_data.client_tag_hash;
 
-    UpdateMap::iterator old_it = pending_updates_map_.find(client_tag_hash);
-    if (old_it != pending_updates_map_.end()) {
-      // If we're being asked to apply an update to this entity, this overrides
-      // the previous pending updates.
-      delete old_it->second;
-      pending_updates_map_.erase(old_it);
-    }
+    // If we're being asked to apply an update to this entity, this overrides
+    // the previous pending updates.
+    pending_updates_map_.erase(client_tag_hash);
 
-    EntityMap::iterator it = entities_.find(client_tag_hash);
+    EntityMap::const_iterator it = entities_.find(client_tag_hash);
     if (it == entities_.end()) {
       scoped_ptr<ModelTypeEntity> entity =
           ModelTypeEntity::FromServerUpdate(response_data.id,
@@ -224,7 +218,7 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
                                             response_data.ctime,
                                             response_data.mtime,
                                             response_data.encryption_key_name);
-      entities_.insert(std::make_pair(client_tag_hash, entity.release()));
+      entities_.insert(client_tag_hash, entity.Pass());
     } else {
       ModelTypeEntity* entity = it->second;
       entity->ApplyUpdateFromServer(response_data.response_version,
@@ -243,7 +237,7 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
       DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
                << response_data.encryption_key_name << " -> "
                << data_type_state_.encryption_key_name;
-      EntityMap::iterator it2 = entities_.find(client_tag_hash);
+      EntityMap::const_iterator it2 = entities_.find(client_tag_hash);
       it2->second->UpdateDesiredEncryptionKey(
           data_type_state_.encryption_key_name);
     }
@@ -256,23 +250,23 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
     const UpdateResponseData& update = *list_it;
     const std::string& client_tag_hash = update.client_tag_hash;
 
-    UpdateMap::iterator lookup_it = pending_updates_map_.find(client_tag_hash);
+    UpdateMap::const_iterator lookup_it =
+        pending_updates_map_.find(client_tag_hash);
     if (lookup_it == pending_updates_map_.end()) {
       pending_updates_map_.insert(
-          std::make_pair(client_tag_hash, new UpdateResponseData(update)));
+          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update)));
     } else if (lookup_it->second->response_version <= update.response_version) {
-      delete lookup_it->second;
       pending_updates_map_.erase(lookup_it);
       pending_updates_map_.insert(
-          std::make_pair(client_tag_hash, new UpdateResponseData(update)));
+          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update)));
     } else {
       // Received update is stale, do not overwrite existing.
     }
   }
 
   if (got_new_encryption_requirements) {
-    for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
-         ++it) {
+    for (EntityMap::const_iterator it = entities_.begin();
+         it != entities_.end(); ++it) {
       it->second->UpdateDesiredEncryptionKey(
           data_type_state_.encryption_key_name);
     }
@@ -296,18 +290,18 @@ UpdateResponseDataList ModelTypeSyncProxyImpl::GetPendingUpdates() {
 }
 
 void ModelTypeSyncProxyImpl::ClearTransientSyncState() {
-  for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     it->second->ClearTransientSyncState();
   }
 }
 
 void ModelTypeSyncProxyImpl::ClearSyncState() {
-  for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     it->second->ClearSyncState();
   }
-  STLDeleteValues(&pending_updates_map_);
+  pending_updates_map_.clear();
   data_type_state_ = DataTypeState();
 }
 

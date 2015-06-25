@@ -342,7 +342,7 @@ void PopupTimer::Reset() {
 // PopupTimersController
 
 PopupTimersController::PopupTimersController(MessageCenter* message_center)
-    : message_center_(message_center), popup_deleter_(&popup_timers_) {
+    : message_center_(message_center) {
   message_center_->AddObserver(this);
 }
 
@@ -352,17 +352,17 @@ PopupTimersController::~PopupTimersController() {
 
 void PopupTimersController::StartTimer(const std::string& id,
                                        const base::TimeDelta& timeout) {
-  PopupTimerCollection::iterator iter = popup_timers_.find(id);
+  PopupTimerCollection::const_iterator iter = popup_timers_.find(id);
   if (iter != popup_timers_.end()) {
     DCHECK(iter->second);
     iter->second->Start();
     return;
   }
 
-  PopupTimer* timer = new PopupTimer(id, timeout, AsWeakPtr());
+  scoped_ptr<PopupTimer> timer(new PopupTimer(id, timeout, AsWeakPtr()));
 
   timer->Start();
-  popup_timers_[id] = timer;
+  popup_timers_.insert(id, timer.Pass());
 }
 
 void PopupTimersController::StartAll() {
@@ -377,7 +377,7 @@ void PopupTimersController::ResetTimer(const std::string& id,
 }
 
 void PopupTimersController::PauseTimer(const std::string& id) {
-  PopupTimerCollection::iterator iter = popup_timers_.find(id);
+  PopupTimerCollection::const_iterator iter = popup_timers_.find(id);
   if (iter == popup_timers_.end())
     return;
   iter->second->Pause();
@@ -389,16 +389,11 @@ void PopupTimersController::PauseAll() {
 }
 
 void PopupTimersController::CancelTimer(const std::string& id) {
-  PopupTimerCollection::iterator iter = popup_timers_.find(id);
-  if (iter == popup_timers_.end())
-    return;
-
-  delete iter->second;
-  popup_timers_.erase(iter);
+  popup_timers_.erase(id);
 }
 
 void PopupTimersController::CancelAll() {
-  STLDeleteValues(&popup_timers_);
+  popup_timers_.clear();
 }
 
 void PopupTimersController::TimerFinished(const std::string& id) {

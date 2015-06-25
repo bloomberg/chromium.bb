@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.h"
@@ -75,12 +76,12 @@ TEST_F(ManagePasswordsBubbleBlacklistViewControllerTest,
 TEST_F(ManagePasswordsBubbleBlacklistViewControllerTest,
        ShouldDismissAndUnblacklistWhenUnblacklistClicked) {
   // Unblacklisting requires passwords to exist for the site.
-  autofill::PasswordForm form;
-  form.username_value = base::ASCIIToUTF16("username");
-  form.password_value = base::ASCIIToUTF16("password");
-  form.blacklisted_by_user = true;
+  scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm);
+  form->username_value = base::ASCIIToUTF16("username");
+  form->password_value = base::ASCIIToUTF16("password");
+  form->blacklisted_by_user = true;
   autofill::PasswordFormMap map;
-  map[base::ASCIIToUTF16("username")] = &form;
+  map.insert(base::ASCIIToUTF16("username"), form.Pass());
   ui_controller()->OnBlacklistBlockedAutofill(map);
 
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, ui_controller()->state());

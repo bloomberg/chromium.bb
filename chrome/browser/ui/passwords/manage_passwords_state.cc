@@ -14,12 +14,22 @@ using autofill::PasswordFormMap;
 
 namespace {
 
-// Converts the map with pointers or const pointers to the vector of const
-// pointers.
-template <typename T>
-std::vector<const T*> MapToVector(
-    const std::map<base::string16, T*>& map) {
-  std::vector<const autofill::PasswordForm*> ret;
+// Returns a vector containing the values of a map.
+template <typename Map>
+std::vector<typename Map::mapped_type> MapToVector(const Map& map) {
+  std::vector<typename Map::mapped_type> ret;
+  ret.reserve(map.size());
+  for (const auto& form_pair : map)
+    ret.push_back(form_pair.second);
+  return ret;
+}
+
+// Takes a ScopedPtrMap. Returns a vector of non-owned pointers to the elements
+// inside the scoped_ptrs.
+template <typename Map>
+std::vector<const typename Map::mapped_type::element_type*>
+ScopedPtrMapToVector(const Map& map) {
+  std::vector<const typename Map::mapped_type::element_type*> ret;
   ret.reserve(map.size());
   for (const auto& form_pair : map)
     ret.push_back(form_pair.second);
@@ -108,7 +118,7 @@ void ManagePasswordsState::OnPendingPassword(
       scoped_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = form_manager.Pass();
-  current_forms_weak_ = MapToVector(form_manager_->best_matches());
+  current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
   origin_ = form_manager_->pending_credentials().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }

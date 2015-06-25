@@ -8,6 +8,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
@@ -44,9 +45,9 @@ InstanceID::Result GCMClientResultToInstanceIDResult(
 }  // namespace
 
 // static
-InstanceID* InstanceID::Create(const std::string& app_id,
-                               gcm::GCMDriver* gcm_driver) {
-  return new InstanceIDImpl(app_id, gcm_driver);
+scoped_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
+                                          gcm::GCMDriver* gcm_driver) {
+  return make_scoped_ptr(new InstanceIDImpl(app_id, gcm_driver));
 }
 
 InstanceIDImpl::InstanceIDImpl(const std::string& app_id,

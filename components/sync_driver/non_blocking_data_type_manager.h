@@ -5,12 +5,10 @@
 #ifndef COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_MANAGER_H_
 #define COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_MANAGER_H_
 
-#include <map>
-
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace base {
@@ -66,16 +64,12 @@ class NonBlockingDataTypeManager {
   syncer::ModelTypeSet GetRegisteredTypes() const;
 
  private:
-  typedef
-      std::map<syncer::ModelType, NonBlockingDataTypeController*>
+  typedef base::ScopedPtrMap<syncer::ModelType,
+                             scoped_ptr<NonBlockingDataTypeController>>
       NonBlockingDataTypeControllerMap;
 
   // List of data type controllers for non-blocking types.
   NonBlockingDataTypeControllerMap non_blocking_data_type_controllers_;
-
-  // Deleter for elements of the non-blocking data types controller map.
-  STLValueDeleter<NonBlockingDataTypeControllerMap>
-      non_blocking_data_type_controllers_deleter_;
 };
 
 }  // namespace sync_driver

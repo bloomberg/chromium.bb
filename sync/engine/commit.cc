@@ -16,15 +16,13 @@
 
 namespace syncer {
 
-Commit::Commit(
-    const std::map<ModelType, CommitContribution*>& contributions,
-    const sync_pb::ClientToServerMessage& message,
-    ExtensionsActivity::Records extensions_activity_buffer)
-  : contributions_(contributions),
-    deleter_(&contributions_),
-    message_(message),
-    extensions_activity_buffer_(extensions_activity_buffer),
-    cleaned_up_(false) {
+Commit::Commit(ContributionMap contributions,
+               const sync_pb::ClientToServerMessage& message,
+               ExtensionsActivity::Records extensions_activity_buffer)
+    : contributions_(contributions.Pass()),
+      message_(message),
+      extensions_activity_buffer_(extensions_activity_buffer),
+      cleaned_up_(false) {
 }
 
 Commit::~Commit() {
@@ -59,7 +57,7 @@ Commit* Commit::Init(
 
   // Set extensions activity if bookmark commits are present.
   ExtensionsActivity::Records extensions_activity_buffer;
-  ContributionMap::iterator it = contributions.find(syncer::BOOKMARKS);
+  ContributionMap::const_iterator it = contributions.find(syncer::BOOKMARKS);
   if (it != contributions.end() && it->second->GetNumEntries() != 0) {
     commit_util::AddExtensionsActivityToMessage(
         extensions_activity,
@@ -73,13 +71,14 @@ Commit* Commit::Init(
       commit_message);
 
   // Finally, serialize all our contributions.
-  for (std::map<ModelType, CommitContribution*>::iterator it =
-           contributions.begin(); it != contributions.end(); ++it) {
+  for (std::map<ModelType, CommitContribution*>::const_iterator it =
+           contributions.begin();
+       it != contributions.end(); ++it) {
     it->second->AddToCommitMessage(&message);
   }
 
   // If we made it this far, then we've successfully prepared a commit message.
-  return new Commit(contributions, message, extensions_activity_buffer);
+  return new Commit(contributions.Pass(), message, extensions_activity_buffer);
 }
 
 SyncerError Commit::PostAndProcessResponse(
@@ -148,8 +147,8 @@ SyncerError Commit::PostAndProcessResponse(
 
   // Let the contributors process the responses to each of their requests.
   SyncerError processing_result = SYNCER_OK;
-  for (std::map<ModelType, CommitContribution*>::iterator it =
-       contributions_.begin(); it != contributions_.end(); ++it) {
+  for (ContributionMap::const_iterator it = contributions_.begin();
+       it != contributions_.end(); ++it) {
     TRACE_EVENT1("sync", "ProcessCommitResponse",
                  "type", ModelTypeToString(it->first));
     SyncerError type_result =
@@ -172,7 +171,7 @@ SyncerError Commit::PostAndProcessResponse(
 }
 
 void Commit::CleanUp() {
-  for (ContributionMap::iterator it = contributions_.begin();
+  for (ContributionMap::const_iterator it = contributions_.begin();
        it != contributions_.end(); ++it) {
     it->second->CleanUp();
   }

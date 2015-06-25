@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
@@ -86,15 +87,15 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
        ShouldShowAllPasswordItemsWhenPasswordsExistForSite) {
   // Add a few password entries.
   autofill::PasswordFormMap map;
-  autofill::PasswordForm form1;
-  form1.username_value = base::ASCIIToUTF16("username1");
-  form1.password_value = base::ASCIIToUTF16("password1");
-  map[base::ASCIIToUTF16("username1")] = &form1;
+  scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
+  form1->username_value = base::ASCIIToUTF16("username1");
+  form1->password_value = base::ASCIIToUTF16("password1");
+  map.insert(base::ASCIIToUTF16("username1"), form1.Pass());
 
-  autofill::PasswordForm form2;
-  form2.username_value = base::ASCIIToUTF16("username2");
-  form2.password_value = base::ASCIIToUTF16("password2");
-  map[base::ASCIIToUTF16("username2")] = &form2;
+  scoped_ptr<autofill::PasswordForm> form2(new autofill::PasswordForm);
+  form2->username_value = base::ASCIIToUTF16("username2");
+  form2->password_value = base::ASCIIToUTF16("password2");
+  map.insert(base::ASCIIToUTF16("username2"), form2.Pass());
 
   // Add the entries to the model.
   ui_controller()->OnPasswordAutofilled(map);

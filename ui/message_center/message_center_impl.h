@@ -8,9 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/message_center/message_center.h"
@@ -122,12 +123,10 @@ class MESSAGE_CENTER_EXPORT PopupTimersController
   // Weak, this class is owned by MessageCenterImpl.
   MessageCenter* message_center_;
 
-  // The PopupTimerCollection contains all the managed timers by their ID.  They
-  // are owned by this class, and deleted by |popup_deleter_| on destructon or
-  // when explicitly cancelled.
-  typedef std::map<std::string, PopupTimer*> PopupTimerCollection;
+  // The PopupTimerCollection contains all the managed timers by their ID.
+  typedef base::ScopedPtrMap<std::string, scoped_ptr<PopupTimer>>
+      PopupTimerCollection;
   PopupTimerCollection popup_timers_;
-  STLValueDeleter<PopupTimerCollection> popup_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTimersController);
 };

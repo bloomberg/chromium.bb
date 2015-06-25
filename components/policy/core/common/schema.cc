@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/json_schema/json_schema_validator.h"
@@ -247,8 +247,7 @@ class Schema::InternalStorage
 
   // Cache for CompileRegex(), will memorize return value of every call to
   // CompileRegex() and return results directly next time.
-  mutable std::map<std::string, re2::RE2*> regex_cache_;
-  STLValueDeleter<std::map<std::string, re2::RE2*> > regex_cache_deleter_;
+  mutable base::ScopedPtrMap<std::string, scoped_ptr<re2::RE2>> regex_cache_;
 
   SchemaData schema_data_;
   std::vector<std::string> strings_;
@@ -262,10 +261,11 @@ class Schema::InternalStorage
   DISALLOW_COPY_AND_ASSIGN(InternalStorage);
 };
 
-Schema::InternalStorage::InternalStorage()
-    : regex_cache_deleter_(&regex_cache_) {}
+Schema::InternalStorage::InternalStorage() {
+}
 
-Schema::InternalStorage::~InternalStorage() {}
+Schema::InternalStorage::~InternalStorage() {
+}
 
 // static
 scoped_refptr<const Schema::InternalStorage> Schema::InternalStorage::Wrap(
@@ -342,11 +342,13 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
 
 re2::RE2* Schema::InternalStorage::CompileRegex(
     const std::string& pattern) const {
-  std::map<std::string, re2::RE2*>::iterator it = regex_cache_.find(pattern);
+  base::ScopedPtrMap<std::string, scoped_ptr<re2::RE2>>::const_iterator it =
+      regex_cache_.find(pattern);
   if (it == regex_cache_.end()) {
-    re2::RE2* compiled = new re2::RE2(pattern);
-    regex_cache_[pattern] = compiled;
-    return compiled;
+    scoped_ptr<re2::RE2> compiled(new re2::RE2(pattern));
+    re2::RE2* compiled_ptr = compiled.get();
+    regex_cache_.insert(pattern, compiled.Pass());
+    return compiled_ptr;
   }
   return it->second;
 }

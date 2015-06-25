@@ -91,8 +91,7 @@ PasswordFormManager::PasswordFormManager(
     const base::WeakPtr<PasswordManagerDriver>& driver,
     const PasswordForm& observed_form,
     bool ssl_valid)
-    : best_matches_deleter_(&best_matches_),
-      observed_form_(CopyAndModifySSLValidity(observed_form, ssl_valid)),
+    : observed_form_(CopyAndModifySSLValidity(observed_form, ssl_valid)),
       provisionally_saved_form_(nullptr),
       other_possible_username_action_(
           PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES),
@@ -342,7 +341,7 @@ void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
 void PasswordFormManager::OnRequestDone(
     ScopedVector<PasswordForm> logins_result) {
   preferred_match_ = nullptr;
-  STLDeleteValues(&best_matches_);
+  best_matches_.clear();
   const size_t logins_result_size = logins_result.size();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -410,12 +409,19 @@ void PasswordFormManager::OnRequestDone(
     // If there is another best-score match for the same username, replace it.
     // TODO(vabr): Spare the replacing and keep the first instead of the last
     // candidate.
-    PasswordForm*& best_match = best_matches_[login->username_value];
-    if (best_match == preferred_match_)
+    const base::string16& username = login->username_value;
+    auto best_match_username = best_matches_.find(username);
+    if (best_match_username != best_matches_.end() &&
+        best_match_username->second == preferred_match_) {
       preferred_match_ = nullptr;
-    delete best_match;
+    }
     // Transfer ownership into the map.
-    best_match = login.release();
+    const PasswordForm* best_match = login.get();
+    // TODO(mgiuca): Directly assign to |best_match_username|, instead of doing
+    // a second map traversal. This will only be possible once we have C++11
+    // library support (then |best_matches_| can be a map of scoped_ptrs instead
+    // of a ScopedPtrMap).
+    best_matches_.set(username, login.Pass());
     if (best_match->preferred)
       preferred_match_ = best_match;
   }
@@ -427,11 +433,8 @@ void PasswordFormManager::OnRequestDone(
     // Take ownership of the PasswordForm from the ScopedVector.
     scoped_ptr<PasswordForm> protege(*it);
     *it = nullptr;
-
-    PasswordForm*& corresponding_best_match =
-        best_matches_[protege->username_value];
-    if (!corresponding_best_match)
-      corresponding_best_match = protege.release();
+    const base::string16& username = protege->username_value;
+    best_matches_.insert(username, protege.Pass());
   }
 
   client_->AutofillResultsComputed();
@@ -574,7 +577,7 @@ void PasswordFormManager::SanitizePossibleUsernames(PasswordForm* form) {
   // reasons. Also remove duplicates, both in other_possible_usernames and
   // between other_possible_usernames and username_value.
   std::set<base::string16> set;
-  for (std::vector<base::string16>::iterator it =
+  for (std::vector<base::string16>::const_iterator it =
            form->other_possible_usernames.begin();
        it != form->other_possible_usernames.end(); ++it) {
     if (!autofill::IsValidCreditCardNumber(*it) && !autofill::IsSSN(*it))
@@ -588,7 +591,7 @@ void PasswordFormManager::SanitizePossibleUsernames(PasswordForm* form) {
 void PasswordFormManager::UpdatePreferredLoginState(
     PasswordStore* password_store) {
   DCHECK(password_store);
-  PasswordFormMap::iterator iter;
+  PasswordFormMap::const_iterator iter;
   for (iter = best_matches_.begin(); iter != best_matches_.end(); iter++) {
     if (iter->second->username_value != pending_credentials_.username_value &&
         iter->second->preferred) {

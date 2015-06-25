@@ -20,9 +20,7 @@ const int kLauncherSearchProviderMaxResults = 6;
 }  // namespace
 
 LauncherSearchProvider::LauncherSearchProvider(Profile* profile)
-    : extension_results_deleter_(&extension_results_),
-      profile_(profile),
-      weak_ptr_factory_(this) {
+    : profile_(profile), weak_ptr_factory_(this) {
 }
 
 LauncherSearchProvider::~LauncherSearchProvider() {
@@ -45,7 +43,7 @@ void LauncherSearchProvider::Stop() {
   // Clear all search results of the previous query. Since results are
   // duplicated when being exported from the map, there are no external pointers
   // to |extension_results_|, so it is safe to clear the map.
-  STLDeleteValues(&extension_results_);
+  extension_results_.clear();
 
   Service* service = Service::Get(profile_);
 
@@ -60,15 +58,10 @@ void LauncherSearchProvider::SetSearchResults(
     ScopedVector<LauncherSearchResult> results) {
   DCHECK(Service::Get(profile_)->IsQueryRunning());
 
-  // If it already has the results of this extension, delete it first.
-  if (ContainsKey(extension_results_, extension_id)) {
-    delete extension_results_[extension_id];
-    extension_results_.erase(extension_id);
-  }
-
-  // Add this extension's results.
-  extension_results_.insert(std::make_pair(
-      extension_id, new ScopedVector<LauncherSearchResult>(results.Pass())));
+  // Add this extension's results (erasing any existing results).
+  extension_results_.set(
+      extension_id,
+      make_scoped_ptr(new ScopedVector<LauncherSearchResult>(results.Pass())));
 
   // Update results with other extension results.
   ClearResults();

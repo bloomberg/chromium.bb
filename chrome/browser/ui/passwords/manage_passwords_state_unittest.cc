@@ -324,7 +324,9 @@ TEST_F(ManagePasswordsStateTest, PasswordBlacklisted) {
 
 TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
   autofill::PasswordFormMap password_form_map;
-  password_form_map[test_local_form().username_value] = &test_local_form();
+  password_form_map.insert(
+      test_local_form().username_value,
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
   passwords_data().OnPasswordAutofilled(password_form_map);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(),
@@ -343,8 +345,9 @@ TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
   autofill::PasswordForm psl_matched_test_form = test_local_form();
   psl_matched_test_form.original_signon_realm = "http://pslmatched.example.com";
   autofill::PasswordFormMap password_form_map;
-  password_form_map[psl_matched_test_form.username_value] =
-      &psl_matched_test_form;
+  password_form_map.insert(
+      psl_matched_test_form.username_value,
+      make_scoped_ptr(new autofill::PasswordForm(psl_matched_test_form)));
   passwords_data().OnPasswordAutofilled(password_form_map);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(), IsEmpty());
@@ -355,41 +358,45 @@ TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
 }
 
 TEST_F(ManagePasswordsStateTest, BlacklistBlockedAutofill) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.origin = GURL("http://example.com/bad");
+  scoped_ptr<autofill::PasswordForm> blacklisted(new autofill::PasswordForm);
+  autofill::PasswordForm& blacklisted_ref = *blacklisted;
+  blacklisted_ref.blacklisted_by_user = true;
+  blacklisted_ref.origin = GURL("http://example.com/bad");
   autofill::PasswordFormMap password_form_map;
-  password_form_map[blacklisted.username_value] = &blacklisted;
-  password_form_map[test_local_form().username_value] = &test_local_form();
+  password_form_map.insert(blacklisted_ref.username_value, blacklisted.Pass());
+  scoped_ptr<autofill::PasswordForm> test_form(
+      new autofill::PasswordForm(test_local_form()));
+  autofill::PasswordForm* test_form_ptr = test_form.get();
+  password_form_map.insert(test_form_ptr->username_value, test_form.Pass());
   passwords_data().OnBlacklistBlockedAutofill(password_form_map);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(),
-              ElementsAre(Pointee(blacklisted), Pointee(test_local_form())));
+              ElementsAre(Pointee(blacklisted_ref), Pointee(*test_form_ptr)));
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
-  EXPECT_EQ(blacklisted.origin, passwords_data().origin());
+  EXPECT_EQ(blacklisted_ref.origin, passwords_data().origin());
 
-  // |passwords_data| should hold a separate copy of test_local_form().
-  EXPECT_THAT(passwords_data().GetCurrentForms(),
-              Not(Contains(&test_local_form())));
+  // |passwords_data| should hold a separate copy of test_form.
+  EXPECT_THAT(passwords_data().GetCurrentForms(), Not(Contains(test_form_ptr)));
   TestAllUpdates();
 }
 
 TEST_F(ManagePasswordsStateTest, Unblacklist) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.origin = test_local_form().origin;
+  scoped_ptr<autofill::PasswordForm> blacklisted(new autofill::PasswordForm);
+  autofill::PasswordForm& blacklisted_ref = *blacklisted;
+  blacklisted_ref.blacklisted_by_user = true;
+  blacklisted_ref.origin = test_local_form().origin;
   autofill::PasswordFormMap password_form_map;
-  password_form_map[blacklisted.username_value] = &blacklisted;
+  password_form_map.insert(blacklisted_ref.username_value, blacklisted.Pass());
   passwords_data().OnBlacklistBlockedAutofill(password_form_map);
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
 
   EXPECT_THAT(passwords_data().GetCurrentForms(),
-              ElementsAre(Pointee(blacklisted)));
+              ElementsAre(Pointee(blacklisted_ref)));
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
-  EXPECT_EQ(blacklisted.origin, passwords_data().origin());
+  EXPECT_EQ(blacklisted_ref.origin, passwords_data().origin());
   TestAllUpdates();
 }
 
@@ -557,7 +564,9 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveToBlacklisted) {
 
 TEST_F(ManagePasswordsStateTest, BackgroundAutofilledToBlacklisted) {
   autofill::PasswordFormMap password_form_map;
-  password_form_map[test_local_form().username_value] = &test_local_form();
+  password_form_map.insert(
+      test_local_form().username_value,
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
   passwords_data().OnPasswordAutofilled(password_form_map);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
 
@@ -588,25 +597,28 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledToBlacklisted) {
 
 TEST_F(ManagePasswordsStateTest, BlacklistedToAutofilled) {
   autofill::PasswordFormMap password_form_map;
-  password_form_map[test_local_form().username_value] = &test_local_form();
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.origin = GURL("http://example.com/bad");
-  password_form_map[blacklisted.username_value] = &blacklisted;
+  password_form_map.insert(
+      test_local_form().username_value,
+      make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
+  scoped_ptr<autofill::PasswordForm> blacklisted(new autofill::PasswordForm);
+  autofill::PasswordForm& blacklisted_ref = *blacklisted;
+  blacklisted_ref.blacklisted_by_user = true;
+  blacklisted_ref.origin = GURL("http://example.com/bad");
+  password_form_map.insert(blacklisted_ref.username_value, blacklisted.Pass());
   passwords_data().OnBlacklistBlockedAutofill(password_form_map);
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, passwords_data().state());
-  EXPECT_EQ(blacklisted.origin, passwords_data().origin());
+  EXPECT_EQ(blacklisted_ref.origin, passwords_data().origin());
 
   // Delete the blacklisted form.
   password_manager::PasswordStoreChangeList list;
   list.push_back(password_manager::PasswordStoreChange(
-      password_manager::PasswordStoreChange::REMOVE, blacklisted));
+      password_manager::PasswordStoreChange::REMOVE, blacklisted_ref));
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(test_local_form())));
   EXPECT_THAT(passwords_data().federated_credentials_forms(), IsEmpty());
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
-  EXPECT_EQ(blacklisted.origin, passwords_data().origin());
+  EXPECT_EQ(blacklisted_ref.origin, passwords_data().origin());
 }
 
 }  // namespace

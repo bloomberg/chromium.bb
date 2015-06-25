@@ -11,6 +11,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
@@ -158,10 +159,10 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void SetDefaultNudgeDelay(base::TimeDelta nudge_delay);
 
  private:
-  typedef std::map<ModelType, DataTypeTracker*> TypeTrackerMap;
+  typedef base::ScopedPtrMap<ModelType, scoped_ptr<DataTypeTracker>>
+      TypeTrackerMap;
 
   TypeTrackerMap type_trackers_;
-  STLValueDeleter<TypeTrackerMap> type_tracker_deleter_;
 
   // Tracks whether or not invalidations are currently enabled.
   bool invalidations_enabled_;

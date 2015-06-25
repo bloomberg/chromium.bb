@@ -5,8 +5,9 @@
 #ifndef SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_
 #define SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_IMPL_H_
 
+#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -89,8 +90,10 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   base::WeakPtr<ModelTypeSyncProxyImpl> AsWeakPtrForUI();
 
  private:
-  typedef std::map<std::string, ModelTypeEntity*> EntityMap;
-  typedef std::map<std::string, UpdateResponseData*> UpdateMap;
+  typedef base::ScopedPtrMap<std::string, scoped_ptr<ModelTypeEntity>>
+      EntityMap;
+  typedef base::ScopedPtrMap<std::string, scoped_ptr<UpdateResponseData>>
+      UpdateMap;
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
@@ -131,13 +134,11 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
 
   // The set of sync entities known to this object.
   EntityMap entities_;
-  STLValueDeleter<EntityMap> entities_deleter_;
 
   // A set of updates that can not be applied at this time.  These are never
   // used by the model.  They are kept here only so we can save and restore
   // them across restarts, and keep them in sync with our progress markers.
   UpdateMap pending_updates_map_;
-  STLValueDeleter<UpdateMap> pending_updates_map_deleter_;
 
   // We use two different WeakPtrFactories because we want the pointers they
   // issue to have different lifetimes.  When asked to disconnect from the sync

@@ -48,8 +48,7 @@ base::TimeDelta GetDefaultDelayForType(ModelType model_type,
 size_t NudgeTracker::kDefaultMaxPayloadsPerType = 10;
 
 NudgeTracker::NudgeTracker()
-    : type_tracker_deleter_(&type_trackers_),
-      invalidations_enabled_(false),
+    : invalidations_enabled_(false),
       invalidations_out_of_sync_(true),
       minimum_local_nudge_delay_(
           base::TimeDelta::FromMilliseconds(kDefaultNudgeDelayMilliseconds)),
@@ -61,7 +60,7 @@ NudgeTracker::NudgeTracker()
   // Default initialize all the type trackers.
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
-    type_trackers_.insert(std::make_pair(it.Get(), new DataTypeTracker()));
+    type_trackers_.insert(it.Get(), make_scoped_ptr(new DataTypeTracker()));
   }
 }
 
@@ -115,7 +114,7 @@ void NudgeTracker::RecordSuccessfulSyncCycle() {
   // A successful cycle while invalidations are enabled puts us back into sync.
   invalidations_out_of_sync_ = !invalidations_enabled_;
 
-  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     it->second->RecordSuccessfulSyncCycle();
   }
@@ -127,7 +126,8 @@ base::TimeDelta NudgeTracker::RecordLocalChange(ModelTypeSet types) {
       base::TimeDelta::FromMilliseconds(kDefaultShortPollIntervalSeconds);
   for (ModelTypeSet::Iterator type_it = types.First(); type_it.Good();
        type_it.Inc()) {
-    TypeTrackerMap::iterator tracker_it = type_trackers_.find(type_it.Get());
+    TypeTrackerMap::const_iterator tracker_it =
+        type_trackers_.find(type_it.Get());
     DCHECK(tracker_it != type_trackers_.end());
 
     // Only if the type tracker has a valid delay (non-zero) that is shorter
@@ -145,7 +145,7 @@ base::TimeDelta NudgeTracker::RecordLocalChange(ModelTypeSet types) {
 
 base::TimeDelta NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    TypeTrackerMap::iterator tracker_it = type_trackers_.find(it.Get());
+    TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(it.Get());
     DCHECK(tracker_it != type_trackers_.end());
     tracker_it->second->RecordLocalRefreshRequest();
   }
@@ -156,20 +156,20 @@ base::TimeDelta NudgeTracker::RecordRemoteInvalidation(
     syncer::ModelType type,
     scoped_ptr<InvalidationInterface> invalidation) {
   // Forward the invalidations to the proper recipient.
-  TypeTrackerMap::iterator tracker_it = type_trackers_.find(type);
+  TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
   DCHECK(tracker_it != type_trackers_.end());
   tracker_it->second->RecordRemoteInvalidation(invalidation.Pass());
   return remote_invalidation_nudge_delay_;
 }
 
 void NudgeTracker::RecordInitialSyncRequired(syncer::ModelType type) {
-  TypeTrackerMap::iterator tracker_it = type_trackers_.find(type);
+  TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
   DCHECK(tracker_it != type_trackers_.end());
   tracker_it->second->RecordInitialSyncRequired();
 }
 
 void NudgeTracker::RecordCommitConflict(syncer::ModelType type) {
-  TypeTrackerMap::iterator tracker_it = type_trackers_.find(type);
+  TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
   DCHECK(tracker_it != type_trackers_.end());
   tracker_it->second->RecordCommitConflict();
 }
@@ -188,13 +188,13 @@ void NudgeTracker::SetTypesThrottledUntil(
     base::TimeDelta length,
     base::TimeTicks now) {
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    TypeTrackerMap::iterator tracker_it = type_trackers_.find(it.Get());
+    TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(it.Get());
     tracker_it->second->ThrottleType(length, now);
   }
 }
 
 void NudgeTracker::UpdateTypeThrottlingState(base::TimeTicks now) {
-  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     it->second->UpdateThrottleState(now);
   }
@@ -369,7 +369,7 @@ void NudgeTracker::SetSyncCycleStartTime(base::TimeTicks now) {
 }
 
 void NudgeTracker::SetHintBufferSize(size_t size) {
-  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     it->second->UpdatePayloadBufferSize(size);
   }
@@ -387,7 +387,7 @@ void NudgeTracker::OnReceivedCustomNudgeDelays(
        ++iter) {
     ModelType type = iter->first;
     DCHECK(syncer::ProtocolTypes().Has(type));
-    TypeTrackerMap::iterator type_iter = type_trackers_.find(type);
+    TypeTrackerMap::const_iterator type_iter = type_trackers_.find(type);
     if (type_iter == type_trackers_.end())
       continue;
 

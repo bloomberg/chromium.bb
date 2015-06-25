@@ -34,12 +34,13 @@ class SYNC_EXPORT EntityTracker {
   ~EntityTracker();
 
   // Initialize a new entity based on an update response.
-  static EntityTracker* FromServerUpdate(const std::string& id_string,
-                                         const std::string& client_tag_hash,
-                                         int64 version);
+  static scoped_ptr<EntityTracker> FromServerUpdate(
+      const std::string& id_string,
+      const std::string& client_tag_hash,
+      int64 version);
 
   // Initialize a new entity based on a commit request.
-  static EntityTracker* FromCommitRequest(
+  static scoped_ptr<EntityTracker> FromCommitRequest(
       const std::string& id_string,
       const std::string& client_tag_hash,
       int64 sequence_number,

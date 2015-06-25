@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_PROVIDER_H_
 
+#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -37,13 +39,10 @@ class LauncherSearchProvider : public SearchProvider {
   // Dispatches |query| to LauncherSearchProvider service.
   void StartInternal(const base::string16& query);
 
-  // The search results of each extension. The STLValueDeleter will
-  // automatically free the vectors in this map, but elements that are
-  // individually erased or replaced must be manually deleted.
-  typedef std::map<extensions::ExtensionId, ScopedVector<LauncherSearchResult>*>
-      ExtensionResults;
-  ExtensionResults extension_results_;
-  STLValueDeleter<ExtensionResults> extension_results_deleter_;
+  // The search results of each extension.
+  base::ScopedPtrMap<extensions::ExtensionId,
+                     scoped_ptr<ScopedVector<LauncherSearchResult>>>
+      extension_results_;
 
   // A timer to delay query.
   base::OneShotTimer<LauncherSearchProvider> query_timer_;

@@ -30,7 +30,6 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
       type_sync_proxy_(type_sync_proxy.Pass()),
       cryptographer_(cryptographer.Pass()),
       nudge_handler_(nudge_handler),
-      entities_deleter_(&entities_),
       weak_ptr_factory_(this) {
   // Request an initial sync if it hasn't been completed yet.
   if (!data_type_state_.initial_sync_done) {
@@ -41,10 +40,10 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
            saved_pending_updates.begin();
        it != saved_pending_updates.end();
        ++it) {
-    EntityTracker* entity_tracker = EntityTracker::FromServerUpdate(
+    scoped_ptr<EntityTracker> entity_tracker = EntityTracker::FromServerUpdate(
         it->id, it->client_tag_hash, it->response_version);
     entity_tracker->ReceivePendingUpdate(*it);
-    entities_.insert(std::make_pair(it->client_tag_hash, entity_tracker));
+    entities_.insert(it->client_tag_hash, entity_tracker.Pass());
   }
 
   if (cryptographer_) {
@@ -128,11 +127,12 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
       EntityTracker* entity_tracker = NULL;
       EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
       if (map_it == entities_.end()) {
-        entity_tracker =
+        scoped_ptr<EntityTracker> scoped_entity_tracker =
             EntityTracker::FromServerUpdate(update_entity->id_string(),
                                             client_tag_hash,
                                             update_entity->version());
-        entities_.insert(std::make_pair(client_tag_hash, entity_tracker));
+        entity_tracker = scoped_entity_tracker.get();
+        entities_.insert(client_tag_hash, scoped_entity_tracker.Pass());
       } else {
         entity_tracker = map_it->second;
       }
@@ -273,19 +273,13 @@ void ModelTypeSyncWorkerImpl::StorePendingCommit(
     DCHECK_EQ(type_, GetModelTypeFromSpecifics(request.specifics));
   }
 
-  EntityMap::iterator map_it = entities_.find(request.client_tag_hash);
+  EntityMap::const_iterator map_it = entities_.find(request.client_tag_hash);
   if (map_it == entities_.end()) {
-    EntityTracker* entity =
-        EntityTracker::FromCommitRequest(request.id,
-                                         request.client_tag_hash,
-                                         request.sequence_number,
-                                         request.base_version,
-                                         request.ctime,
-                                         request.mtime,
-                                         request.non_unique_name,
-                                         request.deleted,
-                                         request.specifics);
-    entities_.insert(std::make_pair(request.client_tag_hash, entity));
+    scoped_ptr<EntityTracker> entity = EntityTracker::FromCommitRequest(
+        request.id, request.client_tag_hash, request.sequence_number,
+        request.base_version, request.ctime, request.mtime,
+        request.non_unique_name, request.deleted, request.specifics);
+    entities_.insert(request.client_tag_hash, entity.Pass());
   } else {
     EntityTracker* entity = map_it->second;
     entity->RequestCommit(request.id,
@@ -307,7 +301,7 @@ void ModelTypeSyncWorkerImpl::OnCommitResponse(
        response_it != response_list.end();
        ++response_it) {
     const std::string client_tag_hash = response_it->client_tag_hash;
-    EntityMap::iterator map_it = entities_.find(client_tag_hash);
+    EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
 
     // There's no way we could have committed an entry we know nothing about.
     if (map_it == entities_.end()) {

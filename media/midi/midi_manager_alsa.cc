@@ -145,8 +145,7 @@ void SetStringIfNonEmpty(base::DictionaryValue* value,
 }  // namespace
 
 MidiManagerAlsa::MidiManagerAlsa()
-    : alsa_cards_deleter_(&alsa_cards_),
-      udev_(device::udev_new()),
+    : udev_(device::udev_new()),
       send_thread_("MidiSendThread"),
       event_thread_("MidiEventThread") {
   // Initialize decoder.
@@ -587,8 +586,7 @@ uint32 MidiManagerAlsa::MidiPortState::Insert(scoped_ptr<MidiPort> port) {
   return web_port_index;
 }
 
-MidiManagerAlsa::AlsaSeqState::AlsaSeqState()
-    : clients_deleter_(&clients_), card_client_count_(0) {
+MidiManagerAlsa::AlsaSeqState::AlsaSeqState() : card_client_count_(0) {
 }
 
 MidiManagerAlsa::AlsaSeqState::~AlsaSeqState() = default;
@@ -597,7 +595,7 @@ void MidiManagerAlsa::AlsaSeqState::ClientStart(int client_id,
                                                 const std::string& client_name,
                                                 snd_seq_client_type_t type) {
   ClientExit(client_id);
-  clients_[client_id] = new Client(client_name, type);
+  clients_.insert(client_id, make_scoped_ptr(new Client(client_name, type)));
   if (IsCardClient(type, client_id))
     ++card_client_count_;
 }
@@ -611,7 +609,6 @@ void MidiManagerAlsa::AlsaSeqState::ClientExit(int client_id) {
   if (it != clients_.end()) {
     if (IsCardClient(it->second->type(), client_id))
       --card_client_count_;
-    delete it->second;
     clients_.erase(it);
   }
 }
@@ -728,23 +725,18 @@ MidiManagerAlsa::AlsaSeqState::Port::~Port() = default;
 
 MidiManagerAlsa::AlsaSeqState::Client::Client(const std::string& name,
                                               snd_seq_client_type_t type)
-    : name_(name), type_(type), ports_deleter_(&ports_) {
+    : name_(name), type_(type) {
 }
 
 MidiManagerAlsa::AlsaSeqState::Client::~Client() = default;
 
 void MidiManagerAlsa::AlsaSeqState::Client::AddPort(int addr,
                                                     scoped_ptr<Port> port) {
-  RemovePort(addr);
-  ports_[addr] = port.release();
+  ports_.set(addr, port.Pass());
 }
 
 void MidiManagerAlsa::AlsaSeqState::Client::RemovePort(int addr) {
-  auto it = ports_.find(addr);
-  if (it != ports_.end()) {
-    delete it->second;
-    ports_.erase(it);
-  }
+  ports_.erase(addr);
 }
 
 MidiManagerAlsa::AlsaSeqState::Client::PortMap::const_iterator
@@ -1129,9 +1121,12 @@ void MidiManagerAlsa::AddCard(udev_device* dev) {
   }
   snd_ctl_close(handle);
 
-  if (midi_count > 0)
-    alsa_cards_[number] = new AlsaCard(dev, name, longname, driver, midi_count);
-  alsa_card_midi_count_ += midi_count;
+  if (midi_count > 0) {
+    scoped_ptr<AlsaCard> card(
+        new AlsaCard(dev, name, longname, driver, midi_count));
+    alsa_cards_.insert(number, card.Pass());
+    alsa_card_midi_count_ += midi_count;
+  }
 }
 
 void MidiManagerAlsa::RemoveCard(int number) {
@@ -1140,7 +1135,6 @@ void MidiManagerAlsa::RemoveCard(int number) {
     return;
 
   alsa_card_midi_count_ -= it->second->midi_device_count();
-  delete it->second;
   alsa_cards_.erase(it);
 }
 

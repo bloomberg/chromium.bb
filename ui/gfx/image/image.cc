@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_png_rep.h"
@@ -340,12 +339,13 @@ class ImageRepCocoa : public ImageRep {
 class ImageStorage : public base::RefCounted<ImageStorage> {
  public:
   ImageStorage(Image::RepresentationType default_type)
-      : default_representation_type_(default_type),
+      : default_representation_type_(default_type)
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+        ,
         default_representation_color_space_(
-            base::mac::GetGenericRGBColorSpace()),
+            base::mac::GetGenericRGBColorSpace())
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-        representations_deleter_(&representations_) {
+  {
   }
 
   Image::RepresentationType default_representation_type() {
@@ -382,8 +382,6 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   // All the representations of an Image. Size will always be at least one, with
   // more for any converted representations.
   Image::RepresentationMap representations_;
-
-  STLValueDeleter<Image::RepresentationMap> representations_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageStorage);
 };
@@ -739,7 +737,8 @@ Image::RepresentationType Image::DefaultRepresentationType() const {
 internal::ImageRep* Image::GetRepresentation(
     RepresentationType rep_type, bool must_exist) const {
   CHECK(storage_.get());
-  RepresentationMap::iterator it = storage_->representations().find(rep_type);
+  RepresentationMap::const_iterator it =
+      storage_->representations().find(rep_type);
   if (it == storage_->representations().end()) {
     CHECK(!must_exist);
     return NULL;
@@ -750,7 +749,7 @@ internal::ImageRep* Image::GetRepresentation(
 void Image::AddRepresentation(scoped_ptr<internal::ImageRep> rep) const {
   CHECK(storage_.get());
   RepresentationType type = rep->type();
-  storage_->representations().insert(std::make_pair(type, rep.release()));
+  storage_->representations().insert(type, rep.Pass());
 }
 
 }  // namespace gfx
