@@ -16,6 +16,8 @@
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 
+#define CHECK_CTM_FOR_TRANSFORMED_IMAGEFILTER
+
 namespace blink {
 
 static GraphicsContext* beginRecordingContent(GraphicsContext* context, FilterData* filterData)
@@ -81,7 +83,7 @@ static void paintFilteredContent(LayoutObject& object, GraphicsContext* context,
     FilterEffect* lastEffect = filterData->builder->lastEffect();
     context->clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));
 
-#ifdef SK_SUPPORT_LEGACY_IMAGEFILTER_CTM
+#ifdef CHECK_CTM_FOR_TRANSFORMED_IMAGEFILTER
     // TODO: Remove this workaround once skew/rotation support is added in Skia
     // (https://code.google.com/p/skia/issues/detail?id=3288, crbug.com/446935).
     // If the CTM contains rotation or shearing, apply the filter to
