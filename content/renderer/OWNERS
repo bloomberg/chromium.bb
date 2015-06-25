@@ -1,6 +1,6 @@
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
-per-file *.sb=jeremy@chromium.org
+per-file *.sb=rsesek@chromium.org
 
 # DirectWrite specific changes
 per-file render_font_warmup_win.cc=scottmg@chromium.org

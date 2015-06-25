@@ -2,4 +2,4 @@ piman@chromium.org
 
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
-per-file *.sb=jeremy@chromium.org
+per-file *.sb=rsesek@chromium.org
