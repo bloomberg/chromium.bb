@@ -1101,6 +1101,9 @@ template("java_prebuilt") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
     if (defined(invoker.proguard_config)) {
       proguard_config = invoker.proguard_config
     }
@@ -1277,6 +1280,9 @@ template("android_java_prebuilt") {
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
     }
     if (defined(invoker.proguard_config)) {
       proguard_config = invoker.proguard_config

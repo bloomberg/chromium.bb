@@ -893,6 +893,9 @@ template("java_prebuilt_impl") {
     deps = [
       ":$process_jar_target_name",
     ]
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
     if (_supports_android) {
       deps += [ ":$dex_target_name" ]
     }
