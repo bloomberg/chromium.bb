@@ -98,4 +98,39 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithInactiveInsertionPoint)
     EXPECT_EQ(PositionInComposedTree(anchor, PositionInComposedTree::PositionIsAfterChildren), toPositionInComposedTree(positionInDOMTree(*anchor, 1)));
 }
 
+TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRoot)
+{
+    const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
+    const char* shadowContent = "<a><content select=#one></content></a>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+
+    EXPECT_EQ(positionInComposedTree(*host, 0), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 0)));
+    EXPECT_EQ(PositionInComposedTree(host, PositionInComposedTree::PositionIsAfterChildren), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 1)));
+}
+
+TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRootContainingSingleContent)
+{
+    const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
+    const char* shadowContent = "<content select=#one></content>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+
+    EXPECT_EQ(positionInComposedTree(*host, 0), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 0)));
+    EXPECT_EQ(PositionInComposedTree(host, PositionInComposedTree::PositionIsAfterChildren), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 1)));
+}
+
+TEST_F(PositionTest, ToPositionInComposedTreeWithEmptyShadowRoot)
+{
+    const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
+    const char* shadowContent = "";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+
+    EXPECT_EQ(PositionInComposedTree(host, PositionInComposedTree::PositionIsAfterChildren), toPositionInComposedTree(positionInDOMTree(*shadowRoot, 0)));
+}
+
 } // namespace blink

@@ -1411,11 +1411,17 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
         ASSERT(!isActiveInsertionPoint(*anchor));
         int offset = pos.computeOffsetInContainerNode();
         Node* child = NodeTraversal::childAt(*anchor, offset);
-        if (!child)
+        if (!child) {
+            if (anchor->isShadowRoot())
+                return PositionInComposedTree(anchor->shadowHost(), PositionInComposedTree::PositionIsAfterChildren);
             return PositionInComposedTree(anchor, PositionInComposedTree::PositionIsAfterChildren);
+        }
         child->updateDistribution();
-        if (isActiveInsertionPoint(*child))
+        if (isActiveInsertionPoint(*child)) {
+            if (anchor->isShadowRoot())
+                return PositionInComposedTree(anchor->shadowHost(), offset, PositionInComposedTree::PositionIsOffsetInAnchor);
             return PositionInComposedTree(anchor, offset, PositionInComposedTree::PositionIsOffsetInAnchor);
+        }
         return PositionInComposedTree(ComposedTreeTraversal::parent(*child), ComposedTreeTraversal::index(*child), PositionInComposedTree::PositionIsOffsetInAnchor);
     }
 
