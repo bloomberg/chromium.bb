@@ -5,6 +5,12 @@ Upstream cherry-picks:
   None
 
 Current patches:
+  autorename_* files are renamed copies of various files that would cause
+    base name collisions from mac libtool. These files are generated
+    by generate_gyp.py. https://chromium-review.googlesource.com/#/c/274543v/
+
+  Change libavcodec/internal.h ff_tlong define from while(0) to (void(0)).
+    This fixes "while loop has empty body" compile errors.
 
   Changes/additions to libavutil/x86/x86inc.asm
     https://chromium-review.googlesource.com/#/c/272274/
