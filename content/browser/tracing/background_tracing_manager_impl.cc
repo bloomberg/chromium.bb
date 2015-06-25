@@ -46,26 +46,6 @@ void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
 
 }  // namespace
 
-BackgroundTracingManagerImpl::TraceDataEndpointWrapper::
-    TraceDataEndpointWrapper(base::Callback<
-        void(scoped_refptr<base::RefCountedString>)> done_callback)
-    : done_callback_(done_callback) {
-}
-
-BackgroundTracingManagerImpl::TraceDataEndpointWrapper::
-    ~TraceDataEndpointWrapper() {
-}
-
-void BackgroundTracingManagerImpl::TraceDataEndpointWrapper::
-    ReceiveTraceFinalContents(const std::string& file_contents) {
-  std::string tmp = file_contents;
-  scoped_refptr<base::RefCountedString> contents_ptr =
-      base::RefCountedString::TakeString(&tmp);
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(done_callback_, contents_ptr));
-}
-
 BackgroundTracingManagerImpl::TracingTimer::TracingTimer(
     StartedFinalizingCallback callback) : callback_(callback) {
 }
@@ -106,9 +86,6 @@ BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
       is_tracing_(false),
       requires_anonymized_data_(true),
       trigger_handle_ids_(0) {
-  data_endpoint_wrapper_ = new TraceDataEndpointWrapper(
-      base::Bind(&BackgroundTracingManagerImpl::OnFinalizeStarted,
-                 base::Unretained(this)));
 }
 
 BackgroundTracingManagerImpl::~BackgroundTracingManagerImpl() {
@@ -384,7 +361,7 @@ void BackgroundTracingManagerImpl::EnableRecording(
 }
 
 void BackgroundTracingManagerImpl::OnFinalizeStarted(
-    scoped_refptr<base::RefCountedString> file_contents) {
+    base::RefCountedString* file_contents) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   RecordBackgroundTracingMetric(FINALIZATION_STARTED);
@@ -456,7 +433,9 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
   scoped_refptr<TracingControllerImpl::TraceDataSink> trace_data_sink;
   if (is_allowed_finalization) {
     trace_data_sink = content::TracingController::CreateCompressedStringSink(
-        data_endpoint_wrapper_);
+        content::TracingController::CreateCallbackEndpoint(
+            base::Bind(&BackgroundTracingManagerImpl::OnFinalizeStarted,
+                       base::Unretained(this))));
     RecordBackgroundTracingMetric(FINALIZATION_ALLOWED);
 
     if (auto metadata_dict = GenerateMetadataDict()) {
