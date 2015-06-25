@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('device-list', {
-  publish: {
+Polymer({
+  is: 'device-list',
+
+  properties: {
     /**
      * The label of the list to be displayed.
      * @type {string}
      */
-    label: 'Device List',
+    label: {
+      type: String,
+      value: 'Device List',
+    },
 
     /**
      * Info of the devices contained in the list.
      * @type {Array<DeviceInfo>}
      */
-    devices: null
-  },
-
-  /**
-   * Called when an instance is created.
-   */
-  created: function() {
-    this.devices = [];
+    devices: Array,
   },
 
   /**
@@ -30,7 +28,7 @@ Polymer('device-list', {
    * @private
    */
   prettifyReason_: function(reason) {
-    if (reason == null)
+    if (reason == null || reason == '')
       return '';
     var reasonWithSpaces = reason.replace(/([A-Z])/g, ' $1');
     return reasonWithSpaces[0].toUpperCase() + reasonWithSpaces.slice(1);
@@ -51,6 +49,28 @@ Polymer('device-list', {
         return 'device:bluetooth-searching';
       default:
         return 'device:bluetooth-disabled';
+    }
+  },
+
+  /**
+   * @param {DeviceInfo} device
+   * @return {string} The icon id to be shown for the unlock key state of the
+   *     device.
+   */
+  getIconForUnlockKey_: function(device) {
+    return 'hardware:phonelink' + (!device.unlockKey ? '-off' : '');
+  },
+
+  /**
+   * @param {Object} remoteState The remote state of the device.
+   * @return {string} The icon representing the state.
+   */
+  getIconForRemoteState_: function(remoteState) {
+    if (remoteState != null && remoteState.userPresent &&
+        remoteState.secureScreenLock && remoteState.trustAgent) {
+      return 'icons:lock-open';
+    } else {
+      return 'icons:lock-outline';
     }
   },
 

@@ -1,131 +1,134 @@
-<link href="chrome://resources/polymer/polymer/polymer.html" rel="import">
-<link href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html" rel="import">
-<link href="chrome://resources/polymer/paper-shadow/paper-shadow.html" rel="import">
-<link href="chrome://resources/polymer/core-tooltip/core-tooltip.html" rel="import">
-<link href="chrome://resources/polymer/core-icon/core-icon.html" rel="import">
-<link href="chrome://resources/polymer/core-icons/device-icons.html" rel="import">
-<link href="chrome://resources/polymer/core-icons/hardware-icons.html" rel="import">
-<link href="chrome://resources/polymer/core-icons/notification-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-material/paper-material.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
 
-<polymer-element name="device-list" layout vertical>
+<dom-module id="device-list">
+  <style>
+    .devices-label {
+      color: rgb(153, 153, 153);
+      font-size: 16px;
+      margin-top: 20px;
+      padding: 10px 22px;
+    }
+
+    paper-material {
+      background-color: white;
+    }
+
+    .item {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      height: 72px;
+    }
+
+    .name {
+      margin: 0 8px 2px 0;
+    }
+
+    .public-key {
+      color: #767676;
+      font-size: 13px;
+      height: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 300px;
+    }
+
+    .phone-lock {
+      height: 16px;
+      width: 16px;
+      vertical-align: top;
+    }
+
+    .end-icon {
+      margin: 0 14px;
+    }
+
+    paper-icon-button, iron-icon {
+      opacity: 0.25;
+    }
+
+    paper-icon-button:hover, iron-icon:hover {
+      opacity: 1;
+    }
+
+    .ineligibility-icons {
+      margin: 0 22px;
+    }
+
+    .ineligibility-icon {
+      color: orange;
+      opacity: 0.5;
+    }
+
+    iron-tooltip::shadow .iron-tooltip {
+      font-size: 14px;
+      line-height: 18px;
+      padding: 8px 16px;
+    }
+  </style>
+
   <template>
-    <style>
-      .devices-label {
-        color: rgb(153, 153, 153);
-        font-size: 16px;
-        margin-top: 20px;
-        padding: 10px 22px;
-      }
+    <div class="devices-label">[[label]]</div>
 
-      paper-shadow {
-        background-color: white;
-      }
-
-      .item {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-        height: 72px;
-      }
-
-      .name {
-        margin: 0 8px 2px 0;
-      }
-
-      .public-key {
-        color: #767676; 
-        font-size: 13px;
-        height: 16px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 300px;
-      }
-
-      .phone-lock {
-        height: 16px;
-        width: 16px;
-      }
-
-      .end-icon {
-        margin: 0 14px;
-      }
-
-      paper-icon-button, core-icon {
-        opacity: 0.25;
-      }
-
-      paper-icon-button:hover, core-icon:hover {
-        opacity: 1;
-      }
-
-      .ineligibility-icons {
-        margin: 0 22px;
-      }
-
-      .ineligibility-icon {
-        color: orange;
-        opacity: 0.5;
-      }
-
-      core-tooltip::shadow .core-tooltip {
-        font-size: 14px;
-        line-height: 18px;
-        padding: 8px 16px;
-      }
-    </style>
-
-    <div class="devices-label">{{label}}</div>
-
-    <paper-shadow>
-      <template repeat="{{device in devices}}">
-        <div class="item" layout horizontal center>
+    <paper-material>
+      <template is="dom-repeat" items="[[devices]]">
+        <div class="item layout horizontal center">
           <paper-icon-button class="end-icon"
-              icon="hardware:phonelink{{!device.unlockKey ? '-off' : ''}}">
+              icon="[[getIconForUnlockKey_(item)]]">
           </paper-icon-button>
 
           <div class="info">
-            <div layout horizontal>
-              <span class="name">{{device.friendlyDeviceName}}</span>
-              <core-tooltip position="top">
-                <core-icon icon="lock-open" class="phone-lock"
-                    hidden?="{{!device.remoteState}}">
-                </core-icon>
-                <div tip>
+            <div class="layout horizontal center">
+              <span class="name">[[item.friendlyDeviceName]]</span>
+              <core-tooltip position="top" hidden$="[[!item.remoteState]]">
+                <iron-icon icon="[[getIconForRemoteState_(item.remoteState)]]"
+                           class="phone-lock flex"></iron-icon>
+                <!--TODO(tengs): Reimplement the tooltip after it is ported to
+                                 Polymer 1.0-->
+                <div hidden>
                   <div>
                     User Present:
-                    {{ device.remoteState.userPresent  }}
+                    <span>[[item.remoteState.userPresent]]</span>
                   </div>
                   <div>
                     Secure Screen Lock:
-                    {{ device.remoteState.secureScreenLock }}
+                    <span>[[item.remoteState.secureScreenLock]]</span>
                   </div>
                   <div>
                     Trust Agent:
-                    {{ device.remoteState.trustAgent }}
+                    <span>[[item.remoteState.trustAgent]]</span>
                   </div>
                 </div>
               </core-tooltip>
             </div>
-            <div class="public-key">{{device.publicKey}}</div>
+            <div class="public-key">[[item.publicKey]]</div>
           </div>
 
-          <div flex></div>
+          <div class="flex"></div>
           <div class="ineligibility-icons"
-              hidden?="{{!device.ineligibilityReasons}}">
-            <template repeat="{{ reason in device.ineligibilityReasons }}">
-              <core-tooltip label="{{prettifyReason_(reason)}}" position=top>
-                <core-icon icon="{{ getIconForIneligibilityReason_(reason) }}"
+              hidden$="[[!item.ineligibilityReasons]]">
+            <template is="dom-repeat" items="[[item.ineligibilityReasons]]">
+              <core-tooltip label="[[prettifyReason_(item)]]" position="top">
+                <iron-icon icon="[[getIconForIneligibilityReason_(item)]]")
                     class="ineligibility-icon">
-                </core-icon>
+                </iron-icon>
               </core-tooltip>
             </template>
           </div>
           <paper-icon-button class="end-icon"
-              hidden?="{{!device.unlockKey}}"
-              icon="{{ getIconForConnection_(device.connectionStatus) }}">
+              icon="[[getIconForConnection_(item.connectionStatus)]]"
+              hidden$="{{!item.unlockKey}}">
           </paper-icon-button>
         </div>
       </template>
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="device-list.js"></script>
-</polymer-element>
+</dom-module>

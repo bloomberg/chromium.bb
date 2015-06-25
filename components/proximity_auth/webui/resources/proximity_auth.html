@@ -5,14 +5,15 @@
   <title>Proximity Auth Debug</title>
   <meta name="viewport"
         content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="proximity_auth.css">
-  <link rel="stylesheet" href="chrome://resources/css/roboto.css">
-  <link rel="import" href="content-panel.html">
-  <link rel="import" href="log-panel.html">
-  <script src='cryptauth_interface.js'></script>
+  <link href="proximity_auth.css" rel="stylesheet">
+  <link href="chrome://resources/css/roboto.css" rel="stylesheet">
+  <link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
+  <link href="content-panel.html" rel="import">
+  <link href="log-panel.html" rel="import">
+  <script src="cryptauth_interface.js"></script>
 </head>
-<body layout horizontal fullbleed>
-  <content-panel id="content" flex></content-panel>
+<body class="layout horizontal fullbleed">
+  <content-panel id="content" class="flex"></content-panel>
   <log-panel id="logs"></log-panel>
 </body>
 </html>

@@ -2,34 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('eligible-devices', {
-  /**
-   * List of devices that are eligible to be used as an unlock key.
-   * @type {Array<DeviceInfo>}
-   * @private
-   */
-  eligibleDevices_: null,
+Polymer({
+  is: 'eligible-devices',
 
-  /**
-   * List of devices that are ineligible to be used as an unlock key.
-   * @type {Array<DeviceInfo>}
-   * @private
-   */
-  ineligibleDevices_: null,
+  properties: {
+    /**
+     * List of devices that are eligible to be used as an unlock key.
+     * @type {Array<DeviceInfo>}
+     * @private
+     */
+    eligibleDevices_: Array,
 
-  /**
-   * Whether the findEligibleUnlockDevices request is in progress.
-   * @type {boolean}
-   * @private
-   */
-  requestInProgress_: false,
+    /**
+     * List of devices that are ineligible to be used as an unlock key.
+     * @type {Array<DeviceInfo>}
+     * @private
+     */
+    ineligibleDevices_: Array,
+
+    /**
+     * Whether the findEligibleUnlockDevices request is in progress.
+     * @type {boolean}
+     * @private
+     */
+    requestInProgress_: Boolean,
+  },
 
   /**
    * Called when this element is added to the DOM
    */
   attached: function() {
-    this.eligibleDevices_ = [];
-    this.ineligibleDevices_ = [];
     CryptAuthInterface.addObserver(this);
   },
 
@@ -50,8 +52,8 @@ Polymer('eligible-devices', {
 
   /**
    * Called when eligible devices are found.
-   * @param {Array.<EligibleDevice>} eligibleDevices
-   * @param {Array.<IneligibleDevice>} ineligibleDevices_
+   * @param {Array<EligibleDevice>} eligibleDevices
+   * @param {Array<IneligibleDevice>} ineligibleDevices_
    */
   onGotEligibleDevices: function(eligibleDevices, ineligibleDevices) {
     this.requestInProgress_ = false;

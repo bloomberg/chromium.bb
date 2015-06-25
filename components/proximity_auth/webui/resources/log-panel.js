@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('log-panel', {
-  publish: {
+Polymer({
+  is: 'log-panel',
+  properties: {
     /**
      * List of displayed logs.
      * @type {Array<{{
@@ -12,8 +13,12 @@ Polymer('log-panel', {
      *    source: string
      * }}>}
      */
-    logs: null,
+    logs: Array,
   },
+
+  observers: [
+    'logsChanged_(logs.*)',
+  ],
 
   /**
    * @type {boolean}
@@ -32,7 +37,7 @@ Polymer('log-panel', {
   /**
    * Called when the list of logs change.
    */
-  logsChanged: function(oldValue, newValue) {
+  logsChanged_: function() {
     if (this.isScrollAtBottom_)
       this.async(this.scrollToBottom_);
   },
@@ -64,12 +69,13 @@ Polymer('log-panel', {
   },
 
   /**
-   * @param {string} filename
-   * @return {string} The filename stripped of its preceeding path.
+   * @param {LogMessage} log
+   * @return {string} The filename stripped of its preceeding path concatenated
+   *     with the line number of the log.
    * @private
    */
-  stripPath_: function(filename) {
-    var directories = filename.split('/');
-    return directories[directories.length - 1];
+  computeFileAndLine_: function(log) {
+    var directories = log.file.split('/');
+    return directories[directories.length - 1] + ':' + log.line;
   },
 });

@@ -1,60 +1,70 @@
-<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
-<link rel="import" href="chrome://resources/polymer/paper-tabs/paper-tabs.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="device-list.html">
-<link rel="import" href="local-state.html">
-<link rel="import" href="eligible-devices.html">
+<link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-in-animation.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-out-animation.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-material/paper-material.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
+<link href="device-list.html" rel="import">
+<link href="eligible-devices.html" rel="import">
+<link href="local-state.html" rel="import">
 
-<polymer-element name="content-panel" layout vertical>
+<dom-module id="content-panel">
+  <style>
+    :host {
+      background-color: #ececec;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #pages {
+      overflow-y: auto;
+    }
+
+    paper-tabs {
+      background-color: rgb(3, 169, 244);
+      box-shadow: 0 3px 2px rgba(0, 0, 0, 0.2);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+    }
+
+    local-state,
+    eligible-devices,
+    device-list {
+      width: 80%;
+    }
+  </style>
+
   <template>
-    <style>
-      :host {
-        background-color: #ececec;
-      }
-
-      paper-tabs {
-        background-color: rgb(3, 169, 244);
-        box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.2);
-        color: #ffffff;
-        font-size: 14px;
-        font-weight: 500;
-        width: 100%;
-      }
-
-      local-state,
-      eligible-devices,
-      device-list {
-        width: 80%;
-      }
-    </style>
-
     <paper-tabs id="tabs" selected="{{selected_}}">
       <paper-tab>LOCAL STATE</paper-tab>
       <paper-tab>ELIGIBLE PHONES</paper-tab>
       <paper-tab>REACHABLE PHONES</paper-tab>
     </paper-tabs>
 
-    <core-animated-pages id='pages' selected="{{selected_}}"
-        transitions="cross-fade"
-        on-core-animated-pages-transition-prepare="{{preparePageTransition_}}"
-        flex>
-      <section layout vertical center>
-        <local-state id="local-state" flex self-center cross-fade>
-        </local-state>
-      </section>
+    <neon-animated-pages id="pages" selected="[[selected_]]"
+        entry-animation="fade-in-animation"
+        exit-animation="fade-out-animation"
+        on-selected-item-changed="onSelectedPageChanged_"
+        class="flex">
+      <neon-animatable class="layout vertical center">
+        <local-state id="local-state" class="flex"></local-state>
+      </neon-animatable>
 
-      <section layout vertical center>
-        <eligible-devices id='eligible-devices' flex self-center cross-fade>
+      <neon-animatable class="layout vertical center">
+        <eligible-devices id="eligible-devices" class="flex"></eligible-devices>
         </eligible-devices>
-      </section>
+      </neon-animatable>
 
-      <section layout vertical center>
+      <neon-animatable class="layout vertical center">
         <device-list
-            label="Reachable Phones" devices={{onlineDevices_}} cross-fade>
+            label="Reachable Phones" devices="[[onlineDevices_]]" class="flex">
         </device-list>
-      </section>
-    </core-animated-pages>
+      </neon-animatable>
+    </neon-animated-pages>
   </template>
   <script src="content-panel.js"></script>
-</polymer-element>
+</dom-module>

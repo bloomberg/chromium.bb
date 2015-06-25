@@ -125,11 +125,9 @@ void ProximityAuthWebUIHandler::OnLogBufferCleared() {
 
 void ProximityAuthWebUIHandler::GetLogMessages(const base::ListValue* args) {
   base::ListValue json_logs;
-  auto logs = LogBuffer::GetInstance()->logs();
-  std::transform(logs->begin(), logs->end(), json_logs.begin(),
-                 [](const LogBuffer::LogMessage& log) {
-                   return LogMessageToDictionary(log).release();
-                 });
+  for (const auto& log : *LogBuffer::GetInstance()->logs()) {
+    json_logs.Append(LogMessageToDictionary(log).release());
+  }
 
   web_ui()->CallJavascriptFunction("LogBufferInterface.onGotLogMessages",
                                    json_logs);
