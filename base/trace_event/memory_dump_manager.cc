@@ -389,6 +389,11 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   bool enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &enabled);
 
+  // Initialize the TraceLog for the current thread. This is to avoid that the
+  // TraceLog memory dump provider is registered lazily in the PostTask() below
+  // while the |lock_| is taken;
+  InitializeThreadLocalEventBufferIfSupported();
+
   AutoLock lock(lock_);
 
   // There is no point starting the tracing without a delegate.
