@@ -4476,6 +4476,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.ClientAppId" enum="ClientAppId">
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: AppId declared by the launching application in EXTRA_APPLICATION_ID
+    in a custom tab. This histogram is used as a means to count the total
+    instances of custom tabs created meanwhile binning them across launching
+    apps that have identified themselves.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.IntentToFirstCommitNavigationTime" units="ms">
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -17234,6 +17244,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     A multiwindow session is any period of time that Chrome was not used in full
     screen mode but together with some other application that is visible at the
     same time. This is only supported in a few Android models.
+  </summary>
+</histogram>
+
+<histogram name="MobileStartup.ToolbarFirstDrawTime" units="milliseconds">
+  <owner>yusufo@chromium.org</owner>
+  <summary>
+    Android: The time it takes from launch to the completion of first draw for
+    Toolbar. This excludes activity creation time spent in framework.
   </summary>
 </histogram>
 
@@ -50949,6 +50967,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Fixed Address Load Not Attempted"/>
 </enum>
 
+<enum name="ClientAppId" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Gmail"/>
+  <int value="2" label="Facebook"/>
+  <int value="3" label="Plus"/>
+  <int value="4" label="Twitter"/>
+  <int value="5" label="Chrome"/>
+  <int value="6" label="Hangouts"/>
+  <int value="7" label="Messenger"/>
+  <int value="8" label="News"/>
+  <int value="9" label="Line"/>
+  <int value="10" label="Whatsapp"/>
+  <int value="11" label="Gsa"/>
+</enum>
+
 <enum name="ClipboardAction" type="int">
   <int value="0" label="Write from non-Incognito"/>
   <int value="1" label="Write from Incognito"/>
@@ -69540,6 +69573,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="WriteFailure"
       label="failure rate of writing a certificate to the disk cache"/>
   <affected-histogram name="DiskBasedCertCache.CertIo"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ChromeActivityName" separator=".">
+  <suffix name="ChromeTabbedActivity"
+      label="Activity launched in TABBED mode on Android"/>
+  <suffix name="DocumentActivity"
+      label="Activity launched in DOCUMENT mode (Tabs and apps together) on
+             Android"/>
+  <suffix name="CustomTabActivity"
+      label="Activity launched with a CUSTOM TAB on Android"/>
+  <affected-histogram name="MobileStartup.ToolbarFirstDrawTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ChromeOS.MachineIdRegen.AgeSeconds">
