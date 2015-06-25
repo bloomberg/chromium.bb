@@ -42,8 +42,7 @@ class SafeBrowsingProtocolManagerHelper {
                                 const std::string& method,
                                 const std::string& client_name,
                                 const std::string& version,
-                                const std::string& additional_query,
-                                bool is_extended_reporting);
+                                const std::string& additional_query);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SafeBrowsingProtocolManagerHelper);

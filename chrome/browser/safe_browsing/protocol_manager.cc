@@ -725,8 +725,7 @@ void SafeBrowsingProtocolManager::UpdateFinished(bool success, bool back_off) {
 
 GURL SafeBrowsingProtocolManager::UpdateUrl() const {
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
-      url_prefix_, "downloads", client_name_, version_, additional_query_,
-      false);
+      url_prefix_, "downloads", client_name_, version_, additional_query_);
   return GURL(url);
 }
 
@@ -737,13 +736,13 @@ GURL SafeBrowsingProtocolManager::BackupUpdateUrl(
   DCHECK(!backup_url_prefixes_[backup_update_reason].empty());
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
       backup_url_prefixes_[backup_update_reason], "downloads", client_name_,
-      version_, additional_query_, false);
+      version_, additional_query_);
   return GURL(url);
 }
 
 GURL SafeBrowsingProtocolManager::GetHashUrl() const {
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
-      url_prefix_, "gethash", client_name_, version_, additional_query_, false);
+      url_prefix_, "gethash", client_name_, version_, additional_query_);
   return GURL(url);
 }
 

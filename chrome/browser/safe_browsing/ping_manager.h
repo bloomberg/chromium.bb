@@ -48,8 +48,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
                              const GURL& referrer_url,
                              bool is_subresource,
                              SBThreatType threat_type,
-                             const std::string& post_data,
-                             bool is_extended_reporting);
+                             const std::string& post_data);
 
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
   // malware reports. |report| is the serialized report.
@@ -77,12 +76,10 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
       const SafeBrowsingProtocolConfig& config);
 
   // Generates URL for reporting safe browsing hits for UMA users.
-  GURL SafeBrowsingHitUrl(const GURL& malicious_url,
-                          const GURL& page_url,
-                          const GURL& referrer_url,
-                          bool is_subresource,
-                          SBThreatType threat_type,
-                          bool is_extended_reporting) const;
+  GURL SafeBrowsingHitUrl(
+      const GURL& malicious_url, const GURL& page_url, const GURL& referrer_url,
+      bool is_subresource,
+      SBThreatType threat_type) const;
   // Generates URL for reporting malware details for users who opt-in.
   GURL MalwareDetailsUrl() const;
 

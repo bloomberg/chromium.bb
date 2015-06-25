@@ -100,11 +100,10 @@ void SafeBrowsingPingManager::ReportSafeBrowsingHit(
     const GURL& referrer_url,
     bool is_subresource,
     SBThreatType threat_type,
-    const std::string& post_data,
-    bool is_extended_reporting) {
-  GURL report_url =
-      SafeBrowsingHitUrl(malicious_url, page_url, referrer_url, is_subresource,
-                         threat_type, is_extended_reporting);
+    const std::string& post_data) {
+  GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
+                                       referrer_url, is_subresource,
+                                       threat_type);
   net::URLFetcher* report =
       net::URLFetcher::Create(
           report_url,
@@ -148,12 +147,9 @@ void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
-    const GURL& malicious_url,
-    const GURL& page_url,
-    const GURL& referrer_url,
-    bool is_subresource,
-    SBThreatType threat_type,
-    bool is_extended_reporting) const {
+    const GURL& malicious_url, const GURL& page_url,
+    const GURL& referrer_url, bool is_subresource,
+    SBThreatType threat_type) const {
   DCHECK(threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          threat_type == SB_THREAT_TYPE_URL_PHISHING ||
          threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
@@ -161,8 +157,7 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
   std::string url = SafeBrowsingProtocolManagerHelper::ComposeUrl(
-      url_prefix_, "report", client_name_, version_, std::string(),
-      is_extended_reporting);
+      url_prefix_, "report", client_name_, version_, std::string());
   std::string threat_list = "none";
   switch (threat_type) {
     case SB_THREAT_TYPE_URL_MALWARE:

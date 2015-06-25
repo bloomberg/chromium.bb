@@ -39,12 +39,9 @@ std::string SafeBrowsingProtocolManagerHelper::Version() {
 
 // static
 std::string SafeBrowsingProtocolManagerHelper::ComposeUrl(
-    const std::string& prefix,
-    const std::string& method,
-    const std::string& client_name,
-    const std::string& version,
-    const std::string& additional_query,
-    bool is_extended_reporting) {
+    const std::string& prefix, const std::string& method,
+    const std::string& client_name, const std::string& version,
+    const std::string& additional_query) {
   DCHECK(!prefix.empty() && !method.empty() &&
          !client_name.empty() && !version.empty());
   std::string url = base::StringPrintf("%s/%s?client=%s&appver=%s&pver=3.0",
@@ -59,11 +56,6 @@ std::string SafeBrowsingProtocolManagerHelper::ComposeUrl(
     DCHECK(url.find("?") != std::string::npos);
     url.append("&");
     url.append(additional_query);
-  }
-  if (is_extended_reporting) {
-    url.append("&ext=1");
-  } else {
-    url.append("&ext=0");
   }
   return url;
 }
