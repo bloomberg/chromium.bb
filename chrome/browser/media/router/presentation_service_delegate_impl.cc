@@ -623,8 +623,16 @@ void PresentationServiceDelegateImpl::ListenForSessionMessages(
     int render_process_id,
     int render_frame_id,
     const PresentationSessionMessageCallback& message_cb) {
-  // BUG=464205
-  NOTIMPLEMENTED();
+  const std::vector<MediaRoute::Id>& route_ids = frame_manager_->GetRouteIds(
+      RenderFrameHostId(render_process_id, render_frame_id));
+  if (route_ids.empty()) {
+    DVLOG(1) << "No media routes found";
+    message_cb.Run(
+        scoped_ptr<ScopedVector<content::PresentationSessionMessage>>());
+    return;
+  }
+
+  router_->ListenForRouteMessages(route_ids, message_cb);
 }
 
 void PresentationServiceDelegateImpl::SendMessage(
@@ -632,8 +640,21 @@ void PresentationServiceDelegateImpl::SendMessage(
     int render_frame_id,
     scoped_ptr<content::PresentationSessionMessage> message_request,
     const SendMessageCallback& send_message_cb) {
-  // BUG=464205
-  NOTIMPLEMENTED();
+  if (message_request->is_binary()) {
+    NOTIMPLEMENTED();
+    send_message_cb.Run(false);
+    return;
+  }
+  const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
+      RenderFrameHostId(render_process_id, render_frame_id),
+      message_request->presentation_id);
+  if (route_id.empty()) {
+    DVLOG(1) << "No active route for  " << message_request->presentation_id;
+    send_message_cb.Run(false);
+    return;
+  }
+  router_->SendRouteMessage(route_id, *(message_request->message),
+                            send_message_cb);
 }
 
 void PresentationServiceDelegateImpl::OnRouteCreated(const MediaRoute& route) {

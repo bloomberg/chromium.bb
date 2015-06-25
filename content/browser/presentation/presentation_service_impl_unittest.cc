@@ -661,7 +661,7 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
           base::Unretained(this)));
 
   base::RunLoop run_loop;
-  base::Closure send_message_cb;
+  base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
   EXPECT_CALL(mock_delegate_, SendMessageRawPtr(
       _, _, _, _))
@@ -680,7 +680,7 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
   EXPECT_EQ(message, *(test_message->message.get()));
   EXPECT_FALSE(test_message->data);
   delete test_message;
-  send_message_cb.Run();
+  send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }
 
@@ -704,7 +704,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
           base::Unretained(this)));
 
   base::RunLoop run_loop;
-  base::Closure send_message_cb;
+  base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
   EXPECT_CALL(mock_delegate_, SendMessageRawPtr(
       _, _, _, _))
@@ -725,7 +725,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
               kMaxPresentationSessionMessageSize);
   EXPECT_EQ(0, memcmp(buffer, &(*test_message->data.get())[0], sizeof(buffer)));
   delete test_message;
-  send_message_cb.Run();
+  send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }
 
@@ -752,7 +752,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
           base::Unretained(this)));
 
   base::RunLoop run_loop;
-  base::Closure send_message_cb;
+  base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
   EXPECT_CALL(mock_delegate_, SendMessageRawPtr(
       _, _, _, _))
@@ -763,7 +763,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
   run_loop.Run();
 
   EXPECT_FALSE(test_message);
-  send_message_cb.Run();
+  send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }
 
@@ -785,7 +785,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
                  base::Unretained(this)));
 
   base::RunLoop run_loop;
-  base::Closure send_message_cb;
+  base::Callback<void(bool)> send_message_cb;
   PresentationSessionMessage* test_message = nullptr;
   EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _))
       .WillOnce(DoAll(
@@ -805,7 +805,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
               kMaxPresentationSessionMessageSize);
   EXPECT_EQ(0, memcmp(buffer, &(*test_message->data.get())[0], sizeof(buffer)));
   delete test_message;
-  send_message_cb.Run();
+  send_message_cb.Run(true);
   SaveQuitClosureAndRunLoop();
 }
 

@@ -246,7 +246,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   void OnJoinSessionError(
       int request_session_id,
       const PresentationError& error);
-  void OnSendMessageCallback();
+  void OnSendMessageCallback(bool sent);
 
   // Passed to embedder's implementation of PresentationServiceDelegate for
   // later invocation when session messages arrive.

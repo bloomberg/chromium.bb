@@ -45,7 +45,7 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       base::Callback<void(const PresentationError&)>;
   using PresentationSessionMessageCallback = base::Callback<void(
       scoped_ptr<ScopedVector<PresentationSessionMessage>>)>;
-  using SendMessageCallback = base::Closure;
+  using SendMessageCallback = base::Callback<void(bool)>;
 
   virtual ~PresentationServiceDelegate() {}
 

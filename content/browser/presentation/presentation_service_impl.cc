@@ -405,11 +405,11 @@ void PresentationServiceImpl::SendSessionMessage(
                  weak_factory_.GetWeakPtr()));
 }
 
-void PresentationServiceImpl::OnSendMessageCallback() {
+void PresentationServiceImpl::OnSendMessageCallback(bool sent) {
   // It is possible that Reset() is invoked before receiving this callback.
   // So, always check send_message_callback_ for non-null.
   if (send_message_callback_) {
-    send_message_callback_->Run(true);
+    send_message_callback_->Run(sent);
     send_message_callback_.reset();
   }
 }
