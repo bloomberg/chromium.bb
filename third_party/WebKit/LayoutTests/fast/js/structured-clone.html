@@ -119,4 +119,90 @@ promise_test(function() {
     });
 }, 'Verify: "Add a new property..." (dense arrays)');
 
+promise_test(function() {
+    var orig = {
+        emptySet: new Set,
+        set: new Set([1, 2, 3]),
+        emptyMap: new Map,
+        map: new Map([[1, 2], [3, 4]]),
+    };
+    return structuredClone(orig).then(function(clone) {
+        assert_true(clone.emptySet instanceof Set, 'Clone should be a Set');
+        assert_true(clone.emptyMap instanceof Map, 'Clone should be a Map');
+        assert_true(clone.set instanceof Set, 'Clone should be a Set');
+        assert_true(clone.map instanceof Map, 'Clone should be a Map');
+        assert_equals(clone.emptySet.size, 0, 'Clone should be the same size');
+        assert_equals(clone.emptyMap.size, 0, 'Clone should be the same size');
+        assert_equals(clone.set.size, orig.set.size, 'Clone should be the same size');
+        assert_equals(clone.map.size, orig.map.size, 'Clone should be the same size');
+        assert_true(clone.set.has(1) && clone.set.has(2) && clone.set.has(3), 'Cloned set should have the same keys');
+        assert_true(clone.map.get(1) == 2 && clone.map.get(3) == 4, 'Cloned map should have the same keys and values');
+    });
+}, 'Maps and Sets are cloned');
+
+promise_test(function() {
+    var set = new Set;
+    set.add(set);
+    var map = new Map;
+    map.set(map, map);
+    var orig = { map: map, set: set };
+    return structuredClone(orig).then(function(clone) {
+        assert_true(clone.set instanceof Set, 'Clone should be a Set');
+        assert_true(clone.map instanceof Map, 'Clone should be a Map');
+        assert_equals(clone.set, Array.from(clone.set)[0], 'Recursive sets should preserve identity');
+        assert_equals(clone.map, Array.from(clone.map)[0][0], 'Recursive maps should preserve identity');
+        assert_equals(clone.map, Array.from(clone.map)[0][1], 'Recursive maps should preserve identity');
+    });
+}, 'Cloning Maps and Sets preserve cycles');
+
+promise_test(function() {
+    var set = new Set;
+    var map = new Map;
+    var setMutator = {
+        get val() {
+            set.add('mutated');
+            return 'setMutator';
+        }
+    }
+    var mapMutator = {
+        get val() {
+            map.set('mutated', true);
+            return 'mapMutator';
+        }
+    }
+    set.add(setMutator);
+    map.set('mapMutator', mapMutator);
+    var orig = { map: map, set: set };
+    return structuredClone(orig).then(function(clone) {
+        assert_true(clone.set instanceof Set, 'Clone should be a Set');
+        assert_true(clone.map instanceof Map, 'Clone should be a Map');
+        assert_equals(orig.set.size, 2, 'Original set should have been mutated');
+        assert_equals(orig.map.size, 2, 'Original map should have been mutated');
+        assert_equals(clone.set.size, 1, 'Cloned set should not reflect mutation');
+        assert_equals(clone.map.size, 1, 'Cloned map should not reflect mutation');
+        assert_equals(Array.from(clone.set)[0].val, 'setMutator', 'Cloned set should contain getter return value');
+        assert_equals(clone.map.get('mapMutator').val, 'mapMutator', 'Cloned map should contain getter return value');
+    });
+}, 'Cloned Maps and Sets do not reflect mutations that occur during cloning');
+
+promise_test(function() {
+    var map = new Map([['key', function(){}]]);
+    return structuredClone(map).then(function(clone) {
+        assert_unreached('Should have thrown an exception');
+    }).catch(function(ex) {
+        assert_true(ex instanceof DOMException, 'Should throw a DOMException');
+        assert_equals(ex.code, DOMException.DATA_CLONE_ERR, 'Should be a DataCloneError');
+    });
+}, 'Cloning Maps should fail if they contain non-cloneable things');
+
+promise_test(function() {
+    var set = new Set([function(){}]);
+    return structuredClone(set).then(function(clone) {
+        assert_unreached('Should have thrown an exception');
+    }).catch(function(ex) {
+        assert_true(ex instanceof DOMException, 'Should throw a DOMException');
+        assert_equals(ex.code, DOMException.DATA_CLONE_ERR, 'Should be a DataCloneError');
+    });
+}, 'Cloning Sets should fail if they contain non-cloneable things');
+
 </script>

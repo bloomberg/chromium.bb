@@ -143,6 +143,10 @@ public:
     void writeGenerateFreshObject();
     void writeGenerateFreshSparseArray(uint32_t length);
     void writeGenerateFreshDenseArray(uint32_t length);
+    void writeGenerateFreshMap();
+    void writeGenerateFreshSet();
+    void writeMap(uint32_t length);
+    void writeSet(uint32_t length);
 
 protected:
     void doWriteFile(const File&);
@@ -327,6 +331,28 @@ protected:
         virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
     };
 
+    template <typename T>
+    class CollectionState : public State<T> {
+    public:
+        CollectionState(v8::Local<T> collection, StateBase* next)
+            : State<T>(collection, next)
+            , m_entries(collection->AsArray())
+            , m_index(0)
+            , m_length(m_entries->Length())
+        {
+        }
+
+        virtual StateBase* advance(ScriptValueSerializer&) override;
+
+    private:
+        v8::Local<v8::Array> m_entries;
+        uint32_t m_index;
+        uint32_t m_length;
+    };
+
+    typedef CollectionState<v8::Map> MapState;
+    typedef CollectionState<v8::Set> SetState;
+
     // Functions used by serialization states.
     virtual StateBase* doSerializeValue(v8::Local<v8::Value>, StateBase* next);
 
@@ -337,6 +363,8 @@ private:
     StateBase* writeObject(uint32_t numProperties, StateBase*);
     StateBase* writeSparseArray(uint32_t numProperties, uint32_t length, StateBase*);
     StateBase* writeDenseArray(uint32_t numProperties, uint32_t length, StateBase*);
+
+    template <typename T> StateBase* writeCollection(uint32_t length, StateBase*);
 
     StateBase* push(StateBase* state)
     {
@@ -372,6 +400,8 @@ private:
 
     StateBase* startArrayState(v8::Local<v8::Array>, StateBase* next);
     StateBase* startObjectState(v8::Local<v8::Object>, StateBase* next);
+    StateBase* startMapState(v8::Local<v8::Map>, StateBase* next);
+    StateBase* startSetState(v8::Local<v8::Set>, StateBase* next);
 
     bool appendBlobInfo(const String& uuid, const String& type, unsigned long long size, int* index);
     bool appendFileInfo(const File*, int* index);
@@ -418,10 +448,14 @@ public:
     virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool newSparseArray(uint32_t length) = 0;
     virtual bool newDenseArray(uint32_t length) = 0;
+    virtual bool newMap() = 0;
+    virtual bool newSet() = 0;
     virtual bool newObject() = 0;
     virtual bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) = 0;
     virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) = 0;
     virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) = 0;
+    virtual bool completeMap(uint32_t length, v8::Local<v8::Value>*) = 0;
+    virtual bool completeSet(uint32_t length, v8::Local<v8::Value>*) = 0;
 };
 
 // SerializedScriptValueReader is responsible for deserializing primitive types and
@@ -542,11 +576,15 @@ public:
     v8::Local<v8::Value> deserialize();
     virtual bool newSparseArray(uint32_t) override;
     virtual bool newDenseArray(uint32_t length) override;
+    virtual bool newMap() override;
+    virtual bool newSet() override;
     virtual bool consumeTopOfStack(v8::Local<v8::Value>*) override;
     virtual bool newObject() override;
     virtual bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) override;
     virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
     virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
+    virtual bool completeMap(uint32_t length, v8::Local<v8::Value>*) override;
+    virtual bool completeSet(uint32_t length, v8::Local<v8::Value>*) override;
     virtual void pushObjectReference(const v8::Local<v8::Value>&) override;
     virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
     virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;

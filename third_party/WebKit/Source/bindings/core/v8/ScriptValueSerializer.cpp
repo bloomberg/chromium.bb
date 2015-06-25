@@ -378,6 +378,28 @@ void SerializedScriptValueWriter::writeGenerateFreshDenseArray(uint32_t length)
     doWriteUint32(length);
 }
 
+void SerializedScriptValueWriter::writeGenerateFreshMap()
+{
+    append(GenerateFreshMapTag);
+}
+
+void SerializedScriptValueWriter::writeGenerateFreshSet()
+{
+    append(GenerateFreshSetTag);
+}
+
+void SerializedScriptValueWriter::writeMap(uint32_t length)
+{
+    append(MapTag);
+    doWriteUint32(length);
+}
+
+void SerializedScriptValueWriter::writeSet(uint32_t length)
+{
+    append(SetTag);
+    doWriteUint32(length);
+}
+
 void SerializedScriptValueWriter::doWriteFile(const File& file)
 {
     doWriteWebCoreString(file.hasBackingFile() ? file.path() : "");
@@ -578,6 +600,22 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::SparseArrayState::objec
     return serializer.writeSparseArray(numProperties, composite().As<v8::Array>()->Length(), this);
 }
 
+template <typename T>
+ScriptValueSerializer::StateBase* ScriptValueSerializer::CollectionState<T>::advance(ScriptValueSerializer& serializer)
+{
+    while (m_index < m_length) {
+        v8::Local<v8::Value> value;
+        if (!m_entries->Get(serializer.context(), m_index).ToLocal(&value))
+            return serializer.handleError(JSException, "Failed to get an element while cloning a collection.", this);
+        m_index++;
+        if (StateBase* newState = serializer.checkException(this))
+            return newState;
+        if (StateBase* newState = serializer.doSerialize(value, this))
+            return newState;
+    }
+    return serializer.writeCollection<T>(m_length, this);
+}
+
 static v8::Local<v8::Object> toV8Object(MessagePort* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
@@ -710,6 +748,10 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
             writeBooleanObject(value);
         } else if (value->IsArray()) {
             return startArrayState(value.As<v8::Array>(), next);
+        } else if (value->IsMap()) {
+            return startMapState(value.As<v8::Map>(), next);
+        } else if (value->IsSet()) {
+            return startSetState(value.As<v8::Set>(), next);
         } else if (V8File::hasInstance(value, isolate())) {
             return writeFile(value, next);
         } else if (V8Blob::hasInstance(value, isolate())) {
@@ -760,6 +802,20 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeSparseArray(uint32
 ScriptValueSerializer::StateBase* ScriptValueSerializer::writeDenseArray(uint32_t numProperties, uint32_t length, ScriptValueSerializer::StateBase* state)
 {
     m_writer.writeDenseArray(numProperties, length);
+    return pop(state);
+}
+
+template <>
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeCollection<v8::Map>(uint32_t length, ScriptValueSerializer::StateBase* state)
+{
+    m_writer.writeMap(length);
+    return pop(state);
+}
+
+template <>
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeCollection<v8::Set>(uint32_t length, ScriptValueSerializer::StateBase* state)
+{
+    m_writer.writeSet(length);
     return pop(state);
 }
 
@@ -982,6 +1038,18 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::startArrayState(v8::Loc
     return push(new SparseArrayState(array, propertyNames, next, isolate()));
 }
 
+ScriptValueSerializer::StateBase* ScriptValueSerializer::startMapState(v8::Local<v8::Map> map, ScriptValueSerializer::StateBase* next)
+{
+    m_writer.writeGenerateFreshMap();
+    return push(new MapState(map, next));
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializer::startSetState(v8::Local<v8::Set> set, ScriptValueSerializer::StateBase* next)
+{
+    m_writer.writeGenerateFreshSet();
+    return push(new SetState(set, next));
+}
+
 ScriptValueSerializer::StateBase* ScriptValueSerializer::startObjectState(v8::Local<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
     m_writer.writeGenerateFreshObject();
@@ -1170,6 +1238,22 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
             return false;
         break;
     }
+    case MapTag: {
+        uint32_t length;
+        if (!doReadUint32(&length))
+            return false;
+        if (!creator.completeMap(length, value))
+            return false;
+        break;
+    }
+    case SetTag: {
+        uint32_t length;
+        if (!doReadUint32(&length))
+            return false;
+        if (!creator.completeSet(length, value))
+            return false;
+        break;
+    }
     case ArrayBufferViewTag: {
         if (!m_version)
             return false;
@@ -1210,6 +1294,20 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
         if (!doReadUint32(&length))
             return false;
         if (!creator.newDenseArray(length))
+            return false;
+        return true;
+    }
+    case GenerateFreshMapTag: {
+        if (!m_version)
+            return false;
+        if (!creator.newMap())
+            return false;
+        return true;
+    }
+    case GenerateFreshSetTag: {
+        if (!m_version)
+            return false;
+        if (!creator.newSet())
             return false;
         return true;
     }
@@ -1760,6 +1858,20 @@ bool ScriptValueDeserializer::newDenseArray(uint32_t length)
     return true;
 }
 
+bool ScriptValueDeserializer::newMap()
+{
+    v8::Local<v8::Map> map = v8::Map::New(m_reader.scriptState()->isolate());
+    openComposite(map);
+    return true;
+}
+
+bool ScriptValueDeserializer::newSet()
+{
+    v8::Local<v8::Set> set = v8::Set::New(m_reader.scriptState()->isolate());
+    openComposite(set);
+    return true;
+}
+
 bool ScriptValueDeserializer::consumeTopOfStack(v8::Local<v8::Value>* object)
 {
     if (stackDepth() < 1)
@@ -1834,6 +1946,48 @@ bool ScriptValueDeserializer::completeDenseArray(uint32_t numProperties, uint32_
         }
     }
     pop(length);
+    return true;
+}
+
+bool ScriptValueDeserializer::completeMap(uint32_t length, v8::Local<v8::Value>* value)
+{
+    ASSERT(m_version > 0);
+    v8::Local<v8::Value> composite;
+    if (!closeComposite(&composite))
+        return false;
+    v8::Local<v8::Map> map = composite.As<v8::Map>();
+    if (map.IsEmpty())
+        return false;
+    v8::Local<v8::Context> context = m_reader.scriptState()->context();
+    ASSERT(length % 2 == 0);
+    for (unsigned i = stackDepth() - length; i + 1 < stackDepth(); i += 2) {
+        v8::Local<v8::Value> key = element(i);
+        v8::Local<v8::Value> val = element(i + 1);
+        if (map->Set(context, key, val).IsEmpty())
+            return false;
+    }
+    pop(length);
+    *value = map;
+    return true;
+}
+
+bool ScriptValueDeserializer::completeSet(uint32_t length, v8::Local<v8::Value>* value)
+{
+    ASSERT(m_version > 0);
+    v8::Local<v8::Value> composite;
+    if (!closeComposite(&composite))
+        return false;
+    v8::Local<v8::Set> set = composite.As<v8::Set>();
+    if (set.IsEmpty())
+        return false;
+    v8::Local<v8::Context> context = m_reader.scriptState()->context();
+    for (unsigned i = stackDepth() - length; i < stackDepth(); i++) {
+        v8::Local<v8::Value> key = element(i);
+        if (set->Add(context, key).IsEmpty())
+            return false;
+    }
+    pop(length);
+    *value = set;
     return true;
 }
 
