@@ -47,7 +47,7 @@ namespace blink {
 
 class FontDescription;
 
-enum FontDataVariant { AutoVariant, NormalVariant, SmallCapsVariant, EmphasisMarkVariant, BrokenIdeographVariant };
+enum FontDataVariant { AutoVariant, NormalVariant, SmallCapsVariant, EmphasisMarkVariant };
 
 class PLATFORM_EXPORT SimpleFontData : public FontData {
 public:
@@ -64,7 +64,6 @@ public:
 
     PassRefPtr<SimpleFontData> smallCapsFontData(const FontDescription&) const;
     PassRefPtr<SimpleFontData> emphasisMarkFontData(const FontDescription&) const;
-    PassRefPtr<SimpleFontData> brokenIdeographFontData() const;
 
     PassRefPtr<SimpleFontData> variantFontData(const FontDescription& description, FontDataVariant variant) const
     {
@@ -73,8 +72,6 @@ public:
             return smallCapsFontData(description);
         case EmphasisMarkVariant:
             return emphasisMarkFontData(description);
-        case BrokenIdeographVariant:
-            return brokenIdeographFontData();
         case AutoVariant:
         case NormalVariant:
             break;
@@ -157,7 +154,6 @@ private:
     mutable GlyphMetricsMap<float> m_glyphToWidthMap;
 
     bool m_isTextOrientationFallback;
-    bool m_isBrokenIdeographFallback;
     RefPtr<OpenTypeVerticalData> m_verticalData;
     bool m_hasVerticalGlyphs;
 
@@ -176,7 +172,6 @@ private:
         bool forCustomFont;
         RefPtr<SimpleFontData> smallCaps;
         RefPtr<SimpleFontData> emphasisMark;
-        RefPtr<SimpleFontData> brokenIdeograph;
         RefPtr<SimpleFontData> verticalRightOrientation;
         RefPtr<SimpleFontData> uprightOrientation;
 

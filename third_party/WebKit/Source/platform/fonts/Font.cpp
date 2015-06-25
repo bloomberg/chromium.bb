@@ -423,16 +423,8 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
                         return data;
 
                     bool isUpright = m_fontDescription.isVerticalUpright(c);
-                    if (isUpright && Character::isCJKIdeographOrSymbol(c)) {
-                        if (!data.fontData->hasVerticalGlyphs()) {
-                            // Use the broken ideograph font data. The broken ideograph font will use the horizontal width of glyphs
-                            // to make sure you get a square (even for broken glyphs like symbols used for punctuation).
-                            variant = BrokenIdeographVariant;
-                            break;
-                        }
-                    } else {
+                    if (!isUpright || !Character::isCJKIdeographOrSymbol(c))
                         return glyphDataForNonCJKCharacterWithGlyphOrientation(c, isUpright, data, pageNumber);
-                    }
 
                     return data;
                 }
@@ -498,11 +490,8 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
     if (fontData) {
         const SimpleFontData* fontDataToSubstitute = fontData->fontDataForCharacter(characterToRender);
         RefPtr<SimpleFontData> characterFontData = FontCache::fontCache()->fallbackFontForCharacter(m_fontDescription, characterToRender, fontDataToSubstitute);
-        if (characterFontData) {
-            if (characterFontData->platformData().isVerticalAnyUpright() && !characterFontData->hasVerticalGlyphs() && Character::isCJKIdeographOrSymbol(c))
-                variant = BrokenIdeographVariant;
-            if (variant != NormalVariant)
-                characterFontData = characterFontData->variantFontData(m_fontDescription, variant);
+        if (characterFontData && variant != NormalVariant) {
+            characterFontData = characterFontData->variantFontData(m_fontDescription, variant);
         }
         if (characterFontData) {
             // Got the fallback glyph and font.

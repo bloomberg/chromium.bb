@@ -59,7 +59,6 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
     , m_avgCharWidth(-1)
     , m_platformData(platformData)
     , m_isTextOrientationFallback(isTextOrientationFallback)
-    , m_isBrokenIdeographFallback(false)
     , m_verticalData(nullptr)
     , m_hasVerticalGlyphs(false)
     , m_customFontData(customData)
@@ -75,7 +74,6 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
 SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
     : m_platformData(FontPlatformData(fontSize, syntheticBold, syntheticItalic))
     , m_isTextOrientationFallback(false)
-    , m_isBrokenIdeographFallback(false)
     , m_verticalData(nullptr)
     , m_hasVerticalGlyphs(false)
     , m_customFontData(customData)
@@ -367,17 +365,6 @@ PassRefPtr<SimpleFontData> SimpleFontData::emphasisMarkFontData(const FontDescri
     return m_derivedFontData->emphasisMark;
 }
 
-PassRefPtr<SimpleFontData> SimpleFontData::brokenIdeographFontData() const
-{
-    if (!m_derivedFontData)
-        m_derivedFontData = DerivedFontData::create(isCustomFont());
-    if (!m_derivedFontData->brokenIdeograph) {
-        m_derivedFontData->brokenIdeograph = create(m_platformData, isCustomFont() ? CustomFontData::create(): nullptr);
-        m_derivedFontData->brokenIdeograph->m_isBrokenIdeographFallback = true;
-    }
-    return m_derivedFontData->brokenIdeograph;
-}
-
 PassOwnPtr<SimpleFontData::DerivedFontData> SimpleFontData::DerivedFontData::create(bool forCustomFont)
 {
     return adoptPtr(new DerivedFontData(forCustomFont));
@@ -392,8 +379,6 @@ SimpleFontData::DerivedFontData::~DerivedFontData()
         GlyphPageTreeNode::pruneTreeCustomFontData(smallCaps.get());
     if (emphasisMark)
         GlyphPageTreeNode::pruneTreeCustomFontData(emphasisMark.get());
-    if (brokenIdeograph)
-        GlyphPageTreeNode::pruneTreeCustomFontData(brokenIdeograph.get());
     if (verticalRightOrientation)
         GlyphPageTreeNode::pruneTreeCustomFontData(verticalRightOrientation.get());
     if (uprightOrientation)

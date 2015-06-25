@@ -808,6 +808,11 @@ crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/justify-ideograph-ve
 crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ Failure Pass ]
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
+crbug.com/501623 virtual/antialiasedtext/fast/text/emphasis-vertical.html [ NeedsRebaseline ]
+crbug.com/501623 fast/text/emphasis-vertical.html [ NeedsRebaseline ]
+crbug.com/501623 fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/501623 fast/text/orientation-sideways.html [ NeedsRebaseline ]
+
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 
