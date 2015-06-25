@@ -80,6 +80,7 @@ class ToughCanvasCasesPageSet(page_set_module.PageSet):
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=filled_path&back=gradient',
       # pylint: disable=C0301
       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15',
+      'file://tough_canvas_cases/canvas-font-cycler.html',
       'file://tough_canvas_cases/canvas-animation-no-clear.html',
       'file://../../../chrome/test/data/perf/canvas_bench/single_image.html',
       'file://../../../chrome/test/data/perf/canvas_bench/many_images.html'
