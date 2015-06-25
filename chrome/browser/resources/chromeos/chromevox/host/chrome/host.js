@@ -125,6 +125,9 @@ cvox.ChromeHost.prototype.init = function() {
     var message = msg['message'];
     if (message == 'USER_COMMAND') {
       var cmd = msg['command'];
+      if (cmd != 'toggleChromeVox' && !cvox.ChromeVox.documentHasFocus()) {
+        return;
+      }
       cvox.ChromeVoxUserCommands.commands[cmd](msg);
     }
   });
