@@ -49,6 +49,10 @@ void AccessUnitQueue::PushBack(const DemuxerData& data) {
       DCHECK(i == data.access_units.size() - 1);
       DCHECK(data.demuxer_configs.size() == 1);
     }
+
+    if (unit.status == DemuxerStream::kAborted) {
+      DVLOG(1) << "AccessUnitQueue::" << __FUNCTION__ << " kAborted";
+    }
   }
 #endif
 

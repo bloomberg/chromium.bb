@@ -38,13 +38,17 @@ class TestDataFactory {
   virtual ~TestDataFactory();
 
   // Returns demuxer configuration for this factory.
-  virtual DemuxerConfigs GetConfigs() = 0;
+  virtual DemuxerConfigs GetConfigs() const = 0;
 
-  // Populates next chunk and the corresponding delay.
+  // Populates next chunk and the corresponding delay and returns true if
+  // duration is not exceeded, otherwise returns false.
   // Default implementation repeatedly uses |packet_| array in order 0-1-2-3
   // and monotonically increases timestamps from 0 to |duration_|.
   // The first unit to exceed |duration_| becomes EOS. The delay is set to 0.
-  virtual void CreateChunk(DemuxerData* chunk, base::TimeDelta* delay);
+  virtual bool CreateChunk(DemuxerData* chunk, base::TimeDelta* delay);
+
+  // In starvation mode we do not add EOS at the end.
+  void SetStarvationMode(bool value) { starvation_mode_ = value; }
 
   base::TimeDelta last_pts() const { return last_pts_; }
 
@@ -61,6 +65,7 @@ class TestDataFactory {
   std::vector<uint8_t> packet_[4];
   base::TimeDelta regular_pts_;  // monotonically increasing PTS
   base::TimeDelta last_pts_;     // subclass can modify PTS, maintains the last
+  bool starvation_mode_;         // true means no EOS at the end
 };
 
 }  // namespace media

@@ -33,14 +33,14 @@ const int kOutputBufferTimeout = 20;
 
 MediaCodecDecoder::MediaCodecDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const base::Closure& request_data_cb,
+    const base::Closure& external_request_data_cb,
     const base::Closure& starvation_cb,
     const base::Closure& stop_done_cb,
     const base::Closure& error_cb,
     const char* decoder_thread_name)
     : media_task_runner_(media_task_runner),
       decoder_thread_(decoder_thread_name),
-      request_data_cb_(request_data_cb),
+      external_request_data_cb_(external_request_data_cb),
       starvation_cb_(starvation_cb),
       stop_done_cb_(stop_done_cb),
       error_cb_(error_cb),
@@ -48,6 +48,8 @@ MediaCodecDecoder::MediaCodecDecoder(
       eos_enqueued_(false),
       completed_(false),
       last_frame_posted_(false),
+      is_data_request_in_progress_(false),
+      is_incoming_data_invalid_(false),
       weak_factory_(this) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -55,6 +57,8 @@ MediaCodecDecoder::MediaCodecDecoder(
 
   internal_error_cb_ =
       base::Bind(&MediaCodecDecoder::OnCodecError, weak_factory_.GetWeakPtr());
+  request_data_cb_ =
+      base::Bind(&MediaCodecDecoder::RequestData, weak_factory_.GetWeakPtr());
 }
 
 MediaCodecDecoder::~MediaCodecDecoder() {
@@ -86,6 +90,11 @@ void MediaCodecDecoder::Flush() {
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
 
   DCHECK_EQ(GetState(), kStopped);
+
+  // Flush() is a part of the Seek request. Whenever we request a seek we need
+  // to invalidate the current data request.
+  if (is_data_request_in_progress_)
+    is_incoming_data_invalid_ = true;
 
   eos_enqueued_ = false;
   completed_ = false;
@@ -288,15 +297,23 @@ void MediaCodecDecoder::OnLastFrameRendered(bool completed) {
 void MediaCodecDecoder::OnDemuxerDataAvailable(const DemuxerData& data) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  DVLOG(2) << class_name() << "::" << __FUNCTION__
+  const char* explain_if_skipped =
+      is_incoming_data_invalid_ ? " skipped as invalid" : "";
+
+  DVLOG(2) << class_name() << "::" << __FUNCTION__ << explain_if_skipped
            << " #AUs:" << data.access_units.size()
            << " #Configs:" << data.demuxer_configs.size();
 #if !defined(NDEBUG)
   for (const auto& unit : data.access_units)
-    DVLOG(2) << class_name() << "::" << __FUNCTION__ << " au: " << unit;
+    DVLOG(2) << class_name() << "::" << __FUNCTION__ << explain_if_skipped
+             << " au: " << unit;
 #endif
 
-  au_queue_.PushBack(data);
+  if (!is_incoming_data_invalid_)
+    au_queue_.PushBack(data);
+
+  is_incoming_data_invalid_ = false;
+  is_data_request_in_progress_ = false;
 
   if (state_ == kPrefetching)
     PrefetchNextChunk();
@@ -325,6 +342,16 @@ void MediaCodecDecoder::OnCodecError() {
 
   SetState(kError);
   error_cb_.Run();
+}
+
+void MediaCodecDecoder::RequestData() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  // Ensure one data request at a time.
+  if (!is_data_request_in_progress_) {
+    is_data_request_in_progress_ = true;
+    external_request_data_cb_.Run();
+  }
 }
 
 void MediaCodecDecoder::PrefetchNextChunk() {
@@ -434,7 +461,7 @@ bool MediaCodecDecoder::EnqueueInputBuffer() {
     // Report starvation and return, Start() will be called again later.
     DVLOG(1) << class_name() << "::" << __FUNCTION__ << ": starvation detected";
     media_task_runner_->PostTask(FROM_HERE, starvation_cb_);
-    return false;
+    return true;
   }
 
   if (au_info.configs) {

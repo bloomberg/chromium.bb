@@ -33,7 +33,7 @@ const base::TimeDelta kVideoFramePeriod = base::TimeDelta::FromMilliseconds(20);
 class AudioFactory : public TestDataFactory {
  public:
   AudioFactory(const base::TimeDelta& duration);
-  DemuxerConfigs GetConfigs() override;
+  DemuxerConfigs GetConfigs() const override;
 
  protected:
   void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override;
@@ -42,7 +42,7 @@ class AudioFactory : public TestDataFactory {
 class VideoFactory : public TestDataFactory {
  public:
   VideoFactory(const base::TimeDelta& duration);
-  DemuxerConfigs GetConfigs() override;
+  DemuxerConfigs GetConfigs() const override;
 
  protected:
   void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override;
@@ -52,7 +52,7 @@ AudioFactory::AudioFactory(const base::TimeDelta& duration)
     : TestDataFactory("vorbis-packet-%d", duration, kAudioFramePeriod) {
 }
 
-DemuxerConfigs AudioFactory::GetConfigs() {
+DemuxerConfigs AudioFactory::GetConfigs() const {
   return TestDataFactory::CreateAudioConfigs(kCodecVorbis, duration_);
 }
 
@@ -67,7 +67,7 @@ VideoFactory::VideoFactory(const base::TimeDelta& duration)
     : TestDataFactory("h264-320x180-frame-%d", duration, kVideoFramePeriod) {
 }
 
-DemuxerConfigs VideoFactory::GetConfigs() {
+DemuxerConfigs VideoFactory::GetConfigs() const {
   return TestDataFactory::CreateVideoConfigs(kCodecH264, duration_,
                                              gfx::Size(320, 180));
 }
@@ -133,8 +133,9 @@ class MediaCodecDecoderTest : public testing::Test {
   bool is_stopped() const { return is_stopped_; }
   bool is_starved() const { return is_starved_; }
 
-  // Prefetch callback has to be public.
-  void SetPrefetched() { is_prefetched_ = true; }
+  void SetPrefetched(bool value) { is_prefetched_ = value; }
+  void SetStopped(bool value) { is_stopped_ = value; }
+  void SetStarved(bool value) { is_starved_ = value; }
 
  protected:
   typedef base::Callback<bool()> Predicate;
@@ -150,7 +151,7 @@ class MediaCodecDecoderTest : public testing::Test {
     data_factory_ = factory.Pass();
   }
 
-  DemuxerConfigs GetConfigs() {
+  DemuxerConfigs GetConfigs() const {
     // ASSERT_NE does not compile here because it expects void return value.
     EXPECT_NE(nullptr, data_factory_.get());
     return data_factory_->GetConfigs();
@@ -159,6 +160,9 @@ class MediaCodecDecoderTest : public testing::Test {
   void CreateAudioDecoder();
   void CreateVideoDecoder();
   void SetVideoSurface();
+  void SetStopRequestAtTime(const base::TimeDelta& time) {
+    stop_request_time_ = time;
+  }
 
   // Decoder callbacks.
   void OnDataRequested();
@@ -168,7 +172,14 @@ class MediaCodecDecoderTest : public testing::Test {
   void OnUpdateCurrentTime(base::TimeDelta now_playing,
                            base::TimeDelta last_buffered) {
     pts_stat_.AddValue(now_playing);
+
+    if (stop_request_time_ != kNoTimestamp() &&
+        now_playing >= stop_request_time_) {
+      stop_request_time_ = kNoTimestamp();
+      decoder_->RequestToStop();
+    }
   }
+
   void OnVideoSizeChanged(const gfx::Size& video_size) {}
   void OnVideoCodecCreated() {}
 
@@ -186,6 +197,7 @@ class MediaCodecDecoderTest : public testing::Test {
   bool is_prefetched_;
   bool is_stopped_;
   bool is_starved_;
+  base::TimeDelta stop_request_time_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   DataAvailableCallback data_available_cb_;
@@ -199,6 +211,7 @@ MediaCodecDecoderTest::MediaCodecDecoderTest()
       is_prefetched_(false),
       is_stopped_(false),
       is_starved_(false),
+      stop_request_time_(kNoTimestamp()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
@@ -266,7 +279,8 @@ void MediaCodecDecoderTest::OnDataRequested() {
 
   DemuxerData data;
   base::TimeDelta delay;
-  data_factory_->CreateChunk(&data, &delay);
+  if (!data_factory_->CreateChunk(&data, &delay))
+    return;
 
   task_runner_->PostDelayedTask(FROM_HERE, base::Bind(data_available_cb_, data),
                                 delay);
@@ -288,7 +302,7 @@ TEST_F(MediaCodecDecoderTest, AudioPrefetch) {
   SetDataFactory(scoped_ptr<TestDataFactory>(new AudioFactory(duration)));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -301,7 +315,7 @@ TEST_F(MediaCodecDecoderTest, VideoPrefetch) {
   SetDataFactory(scoped_ptr<VideoFactory>(new VideoFactory(duration)));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -349,7 +363,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureNoSurface) {
   SetDataFactory(scoped_ptr<VideoFactory>(new VideoFactory(duration)));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -373,7 +387,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureInvalidSurface) {
   SetDataFactory(scoped_ptr<VideoFactory>(new VideoFactory(duration)));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -407,7 +421,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureValidParams) {
   SetDataFactory(scoped_ptr<VideoFactory>(new VideoFactory(duration)));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -437,7 +451,7 @@ TEST_F(MediaCodecDecoderTest, AudioStartWithoutConfigure) {
 
   // Prefetch to avoid starvation at the beginning of playback.
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -458,7 +472,7 @@ TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
 
   // Prefetch to avoid starvation at the beginning of playback.
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -495,7 +509,7 @@ TEST_F(MediaCodecDecoderTest, VideoPlayTillCompletion) {
 
   // Prefetch
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
-                                base::Unretained(this)));
+                                base::Unretained(this), true));
 
   EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
                                           base::Unretained(this))));
@@ -517,6 +531,121 @@ TEST_F(MediaCodecDecoderTest, VideoPlayTillCompletion) {
 
   EXPECT_EQ(26, pts_stat_.num_values());
   EXPECT_EQ(data_factory_->last_pts(), pts_stat_.max());
+}
+
+TEST_F(MediaCodecDecoderTest, VideoStopAndResume) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  CreateVideoDecoder();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta stop_request_time = base::TimeDelta::FromMilliseconds(200);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1000);
+
+  SetDataFactory(scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  // Prefetch
+  decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
+                                base::Unretained(this), true));
+
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
+                                          base::Unretained(this))));
+
+  decoder_->SetDemuxerConfigs(GetConfigs());
+
+  SetVideoSurface();
+
+  EXPECT_EQ(MediaCodecDecoder::CONFIG_OK, decoder_->Configure());
+
+  SetStopRequestAtTime(stop_request_time);
+
+  // Start from the beginning.
+  EXPECT_TRUE(decoder_->Start(base::TimeDelta::FromMilliseconds(0)));
+
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecDecoderTest::is_stopped, base::Unretained(this)),
+      timeout));
+
+  EXPECT_TRUE(decoder_->IsStopped());
+  EXPECT_FALSE(decoder_->IsCompleted());
+
+  base::TimeDelta last_pts = pts_stat_.max();
+
+  EXPECT_GE(last_pts, stop_request_time);
+
+  // Resume playback from last_pts:
+
+  SetPrefetched(false);
+  SetStopped(false);
+
+  // Prefetch again.
+  decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
+                                base::Unretained(this), true));
+
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
+                                          base::Unretained(this))));
+
+  // Then start.
+  EXPECT_TRUE(decoder_->Start(last_pts));
+
+  // Wait till completion.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecDecoderTest::is_stopped, base::Unretained(this)),
+      timeout));
+
+  EXPECT_TRUE(decoder_->IsStopped());
+  EXPECT_TRUE(decoder_->IsCompleted());
+
+  // We should not skip frames in this process.
+  EXPECT_EQ(26, pts_stat_.num_values());
+  EXPECT_EQ(data_factory_->last_pts(), pts_stat_.max());
+}
+
+TEST_F(MediaCodecDecoderTest, AudioStarvationAndStop) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  CreateAudioDecoder();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(200);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(400);
+
+  AudioFactory* factory = new AudioFactory(duration);
+  factory->SetStarvationMode(true);
+  SetDataFactory(scoped_ptr<AudioFactory>(factory));
+
+  // Prefetch.
+  decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
+                                base::Unretained(this), true));
+
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MediaCodecDecoderTest::is_prefetched,
+                                          base::Unretained(this))));
+
+  // Configure.
+  decoder_->SetDemuxerConfigs(GetConfigs());
+
+  EXPECT_EQ(MediaCodecDecoder::CONFIG_OK, decoder_->Configure());
+
+  // Start.
+  EXPECT_TRUE(decoder_->Start(base::TimeDelta::FromMilliseconds(0)));
+
+  // Wait for starvation.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecDecoderTest::is_starved, base::Unretained(this)),
+      timeout));
+
+  EXPECT_FALSE(decoder_->IsStopped());
+  EXPECT_FALSE(decoder_->IsCompleted());
+
+  EXPECT_GT(pts_stat_.num_values(), 0);
+
+  // After starvation we should be able to stop decoder.
+  decoder_->RequestToStop();
+
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecDecoderTest::is_stopped, base::Unretained(this))));
+
+  EXPECT_TRUE(decoder_->IsStopped());
+  EXPECT_FALSE(decoder_->IsCompleted());
 }
 
 }  // namespace media

@@ -61,17 +61,22 @@ DemuxerConfigs TestDataFactory::CreateVideoConfigs(
 TestDataFactory::TestDataFactory(const char* file_name_template,
                                  const base::TimeDelta& duration,
                                  const base::TimeDelta& frame_period)
-    : duration_(duration), frame_period_(frame_period) {
+    : duration_(duration),
+      frame_period_(frame_period),
+      starvation_mode_(false) {
   LoadPackets(file_name_template);
 }
 
 TestDataFactory::~TestDataFactory() {}
 
-void TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
+bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
   DCHECK(chunk);
   DCHECK(delay);
 
   *delay = base::TimeDelta();
+
+  if (regular_pts_ > duration_)
+    return false;
 
   for (int i = 0; i < 4; ++i) {
     chunk->access_units.push_back(AccessUnit());
@@ -82,6 +87,9 @@ void TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
     regular_pts_ += frame_period_;
 
     if (unit.timestamp > duration_) {
+      if (starvation_mode_)
+        return false;
+
       unit.is_end_of_stream = true;
       break;  // EOS units have no data.
     }
@@ -91,10 +99,12 @@ void TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
     // Allow for modification by subclasses.
     ModifyAccessUnit(i, &unit);
 
-    // Maintain last PTS. FillAccessUnit can modify unit's PTS.
+    // Maintain last PTS. ModifyAccessUnit() can modify unit's PTS.
     if (last_pts_ < unit.timestamp)
       last_pts_ = unit.timestamp;
   }
+
+  return true;
 }
 
 void TestDataFactory::LoadPackets(const char* file_name_template) {

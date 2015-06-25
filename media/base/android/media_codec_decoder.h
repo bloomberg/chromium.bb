@@ -83,8 +83,8 @@ class MediaCodecDecoder {
   //     A task runner for the controlling thread. All public methods should be
   //     called on this thread, and callbacks are delivered on this thread.
   //     The MediaCodecPlayer uses a dedicated (Media) thread for this.
-  //   request_data_cb:
-  //     Called periodically as the amount of internally stored data decreased.
+  //   external_request_data_cb:
+  //     Called periodically as the amount of internally stored data decreases.
   //     The receiver should call OnDemuxerDataAvailable() with more data.
   //   starvation_cb:
   //     Called when starvation is detected. The decoder state does not change.
@@ -98,7 +98,7 @@ class MediaCodecDecoder {
   //     The thread name to be passed to decoder thread constructor.
   MediaCodecDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const base::Closure& request_data_cb,
+      const base::Closure& external_request_data_cb,
       const base::Closure& starvation_cb,
       const base::Closure& stop_done_cb,
       const base::Closure& error_cb,
@@ -223,6 +223,9 @@ class MediaCodecDecoder {
   // Helper method that processes an error from MediaCodec.
   void OnCodecError();
 
+  // Requests data. Ensures there is no more than one request at a time.
+  void RequestData();
+
   // Prefetching callback that is posted to Media thread
   // in the kPrefetching state.
   void PrefetchNextChunk();
@@ -247,14 +250,17 @@ class MediaCodecDecoder {
 
   // Private Data.
 
-  // Callback used to request more data.
-  base::Closure request_data_cb_;
+  // External data request callback that is passed to decoder.
+  base::Closure external_request_data_cb_;
 
   // These notifications are called on corresponding conditions.
   base::Closure prefetch_done_cb_;
   base::Closure starvation_cb_;
   base::Closure stop_done_cb_;
   base::Closure error_cb_;
+
+  // Data request callback that is posted by decoder internally.
+  base::Closure request_data_cb_;
 
   // Callback used to post OnCodecError method.
   base::Closure internal_error_cb_;
@@ -271,6 +277,12 @@ class MediaCodecDecoder {
 
   // Flag to ensure we post last frame notification once.
   bool last_frame_posted_;
+
+  // Indicates whether the data request is in progress.
+  bool is_data_request_in_progress_;
+
+  // Indicates whether the incoming data should be ignored.
+  bool is_incoming_data_invalid_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaCodecDecoder> weak_factory_;
