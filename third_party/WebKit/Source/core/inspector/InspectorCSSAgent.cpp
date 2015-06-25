@@ -805,14 +805,11 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layout
 }
 
 void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int nodeId,
-    String* cssFamilyName, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage> >& platformFonts)
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>>& platformFonts)
 {
     Node* node = m_domAgent->assertNode(errorString, nodeId);
     if (!node)
         return;
-
-    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
-    *cssFamilyName = computedStyleInfo->getPropertyValue(CSSPropertyFontFamily);
 
     HashCountedSet<String> fontStats;
     LayoutObject* root = node->layoutObject();

@@ -73,13 +73,13 @@ function test()
         {
             InspectorTest.cssModel.getInlineStylesAsync(nodeId, stylesCallback);
 
-            function stylesCallback(inlineStyle)
+            function stylesCallback(inlineStyleResult)
             {
-                if (!inlineStyle) {
+                if (!inlineStyleResult || !inlineStyleResult.inlineStyle) {
                     InspectorTest.completeTest();
                     return;
                 }
-                inlineStyle.appendProperty("font-size", "14px", appendCallback);
+                inlineStyleResult.inlineStyle.appendProperty("font-size", "14px", appendCallback);
             }
 
             function appendCallback(newStyle)

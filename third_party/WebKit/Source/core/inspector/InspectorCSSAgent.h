@@ -125,7 +125,7 @@ public:
 
     void enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback>) override;
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&) override;
-    virtual void getPlatformFontsForNode(ErrorString*, int nodeId, String* cssFamilyName, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage> >&) override;
+    virtual void getPlatformFontsForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>>&) override;
     virtual void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributes) override;
     virtual void getMatchedStylesForNode(ErrorString*, int nodeId, const bool* excludePseudo, const bool* excludeInherited, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> >& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches> >&, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry> >& inheritedEntries) override;
     virtual void getStyleSheetText(ErrorString*, const String& styleSheetId, String* result) override;

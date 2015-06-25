@@ -34,14 +34,14 @@ function test()
         InspectorTest.cssModel.getInlineStylesAsync(node.id, onInlineStyle);
     }
 
-    function onInlineStyle(inlineStyle)
+    function onInlineStyle(inlineStyleResult)
     {
-        if (!inlineStyle) {
+        if (!inlineStyleResult || !inlineStyleResult.inlineStyle) {
             InspectorTest.addResult("Failed to get inline styles.").
             InspectorTest.completeTest();
             return;
         }
-        InspectorTest.addResult("font-size: " + inlineStyle.getPropertyValue("font-size"));
+        InspectorTest.addResult("font-size: " + inlineStyleResult.inlineStyle.getPropertyValue("font-size"));
         InspectorTest.completeTest();
     }
 }
