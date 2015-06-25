@@ -148,13 +148,13 @@ protected:
 
 private:
     InspectorStyleSheet(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
-    unsigned ruleIndexBySourceRange(CSSMediaRule* parentMediaRule, const SourceRange&);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> ruleAfterSourceRange(const SourceRange&);
     RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByHeaderRange(const SourceRange&);
     RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByBodyRange(const SourceRange&);
     RefPtrWillBeRawPtr<CSSRule> ruleForSourceData(CSSRuleSourceData*);
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceDataForRule(CSSRule*);
-    CSSStyleRule* insertCSSOMRuleInStyleSheet(const SourceRange&, const String& ruleText, ExceptionState&);
-    CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, const SourceRange&, const String& ruleText, ExceptionState&);
+    CSSStyleRule* insertCSSOMRuleInStyleSheet(CSSRule* insertBefore, const String& ruleText, ExceptionState&);
+    CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, CSSRule* insertBefore, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
     String sourceMapURL();
     String sourceURL();

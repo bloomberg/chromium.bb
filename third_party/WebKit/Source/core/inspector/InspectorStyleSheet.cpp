@@ -907,24 +907,27 @@ RefPtrWillBeRawPtr<CSSMediaRule> InspectorStyleSheet::setMediaRuleText(const Sou
     return mediaRule;
 }
 
-unsigned InspectorStyleSheet::ruleIndexBySourceRange(CSSMediaRule* parentMediaRule, const SourceRange& sourceRange)
+RefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheet::ruleAfterSourceRange(const SourceRange& sourceRange)
 {
     ASSERT(m_sourceData);
     unsigned index = 0;
-    for (size_t i = 0; i < m_flatRules.size() && i < m_sourceData->size(); ++i) {
-        RefPtrWillBeRawPtr<CSSRule> rule = m_flatRules.at(i);
-        if (rule->parentRule() != parentMediaRule)
-            continue;
-        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_sourceData->at(i);
-        if (ruleSourceData->ruleBodyRange.end < sourceRange.start)
-            ++index;
+    for (; index < m_sourceData->size(); ++index) {
+        RefPtrWillBeRawPtr<CSSRuleSourceData> sd = m_sourceData->at(index);
+        if (sd->ruleHeaderRange.start >= sourceRange.end)
+            break;
     }
-    return index;
+    return index < m_sourceData->size() ? m_sourceData->at(index) : nullptr;
 }
 
-CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInStyleSheet(const SourceRange& sourceRange, const String& ruleText, ExceptionState& exceptionState)
+CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInStyleSheet(CSSRule* insertBefore, const String& ruleText, ExceptionState& exceptionState)
 {
-    unsigned index = ruleIndexBySourceRange(nullptr, sourceRange);
+    unsigned index = 0;
+    for (; index < m_pageStyleSheet->length(); ++index) {
+        CSSRule* rule = m_pageStyleSheet->item(index);
+        if (rule == insertBefore)
+            break;
+    }
+
     m_pageStyleSheet->insertRule(ruleText, index, exceptionState);
     CSSRule* rule = m_pageStyleSheet->item(index);
     CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
@@ -936,9 +939,15 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInStyleSheet(const SourceRange
     return styleRule;
 }
 
-CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInMediaRule(CSSMediaRule* mediaRule, const SourceRange& sourceRange, const String& ruleText, ExceptionState& exceptionState)
+CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleInMediaRule(CSSMediaRule* mediaRule, CSSRule* insertBefore, const String& ruleText, ExceptionState& exceptionState)
 {
-    unsigned index = ruleIndexBySourceRange(mediaRule, sourceRange);
+    unsigned index = 0;
+    for (; index < mediaRule->length(); ++index) {
+        CSSRule* rule = mediaRule->item(index);
+        if (rule == insertBefore)
+            break;
+    }
+
     mediaRule->insertRule(ruleText, index, exceptionState);
     CSSRule* rule = mediaRule->item(index);
     CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
@@ -954,8 +963,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
 {
     ASSERT(m_sourceData);
 
-    int containingRuleIndex = -1;
-    unsigned containingRuleLength = 0;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> containingRuleSourceData;
     for (size_t i = 0; i < m_sourceData->size(); ++i) {
         RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_sourceData->at(i);
         if (ruleSourceData->ruleHeaderRange.start < sourceRange.start && sourceRange.start < ruleSourceData->ruleBodyRange.start) {
@@ -964,21 +972,23 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
         }
         if (sourceRange.start < ruleSourceData->ruleBodyRange.start || ruleSourceData->ruleBodyRange.end < sourceRange.start)
             continue;
-        if (containingRuleIndex == -1 || containingRuleLength > ruleSourceData->ruleBodyRange.length()) {
-            containingRuleIndex = i;
-            containingRuleLength = ruleSourceData->ruleBodyRange.length();
-        }
+        if (!containingRuleSourceData || containingRuleSourceData->ruleBodyRange.length() > ruleSourceData->ruleBodyRange.length())
+            containingRuleSourceData = ruleSourceData;
     }
-    if (containingRuleIndex == -1)
-        return insertCSSOMRuleInStyleSheet(sourceRange, ruleText, exceptionState);
 
-    RefPtrWillBeRawPtr<CSSRule> rule = containingRuleIndex < static_cast<int>(m_flatRules.size()) ? m_flatRules.at(containingRuleIndex) : nullptr;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> insertBefore = ruleAfterSourceRange(sourceRange);
+    RefPtrWillBeRawPtr<CSSRule> insertBeforeRule = ruleForSourceData(insertBefore.get());
+
+    if (!containingRuleSourceData)
+        return insertCSSOMRuleInStyleSheet(insertBeforeRule.get(), ruleText, exceptionState);
+
+    RefPtrWillBeRawPtr<CSSRule> rule = ruleForSourceData(containingRuleSourceData.get());
     if (!rule || rule->type() != CSSRule::MEDIA_RULE) {
         exceptionState.throwDOMException(NotFoundError, "Cannot insert rule in non-media rule.");
         return nullptr;
     }
 
-    return insertCSSOMRuleInMediaRule(toCSSMediaRule(rule.get()), sourceRange, ruleText, exceptionState);
+    return insertCSSOMRuleInMediaRule(toCSSMediaRule(rule.get()), insertBeforeRule.get(), ruleText, exceptionState);
 }
 
 RefPtrWillBeRawPtr<CSSStyleRule> InspectorStyleSheet::addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState& exceptionState)
@@ -1017,10 +1027,9 @@ bool InspectorStyleSheet::deleteRule(const SourceRange& range, ExceptionState& e
     }
 
     // Find index of CSSRule that entirely belongs to the range.
-    RefPtrWillBeRawPtr<CSSRule> rule = nullptr;
-    unsigned containingRuleLength = 0;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> foundData = nullptr;
 
-    for (size_t i = 0; i < m_flatRules.size() && i < m_sourceData->size(); ++i) {
+    for (size_t i = 0; i < m_sourceData->size(); ++i) {
         RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_sourceData->at(i);
         unsigned ruleStart = ruleSourceData->ruleHeaderRange.start;
         unsigned ruleEnd = ruleSourceData->ruleBodyRange.end + 1;
@@ -1031,11 +1040,10 @@ bool InspectorStyleSheet::deleteRule(const SourceRange& range, ExceptionState& e
             break;
         if (!startBelongs)
             continue;
-        if (!rule || containingRuleLength > ruleSourceData->ruleBodyRange.length()) {
-            containingRuleLength = ruleSourceData->ruleBodyRange.length();
-            rule = m_flatRules.at(i).get();
-        }
+        if (!foundData || foundData->ruleBodyRange.length() > ruleSourceData->ruleBodyRange.length())
+            foundData = ruleSourceData;
     }
+    RefPtrWillBeRawPtr<CSSRule> rule = ruleForSourceData(foundData.get());
     if (!rule) {
         exceptionState.throwDOMException(NotFoundError, "No style rule could be found in given range.");
         return false;
@@ -1352,7 +1360,7 @@ RefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheet::findRuleByBodyRange(c
 
 RefPtrWillBeRawPtr<CSSRule> InspectorStyleSheet::ruleForSourceData(CSSRuleSourceData* sourceData)
 {
-    if (!m_sourceData)
+    if (!m_sourceData || !sourceData)
         return nullptr;
     for (size_t i = 0; i < m_sourceData->size(); ++i) {
         if (m_sourceData->at(i).get() == sourceData)
