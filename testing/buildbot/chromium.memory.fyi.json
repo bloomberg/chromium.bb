@@ -282,6 +282,9 @@
         "test": "gcm_unit_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gfx_unittests"
       },
       {
@@ -466,6 +469,9 @@
         "test": "gcm_unit_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gfx_unittests"
       },
       {
