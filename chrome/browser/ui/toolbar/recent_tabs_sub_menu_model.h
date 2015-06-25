@@ -144,6 +144,9 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // Accelerator for reopening last closed tab.
   ui::Accelerator reopen_closed_tab_accelerator_;
 
+  // Accelerator for showing history.
+  ui::Accelerator show_history_accelerator_;
+
   // Navigation items for local recently closed tabs.  The |command_id| for
   // these is set to |kFirstLocalTabCommandId| plus the index into the vector.
   // Upon invocation of the menu, the navigation information is retrieved from

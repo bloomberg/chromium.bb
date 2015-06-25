@@ -69,6 +69,10 @@ const int kMaxDeviceNameCommandId = 1110;
 // shown in the menu.
 const int kMaxLocalEntries = 8;
 
+// Index of the separator that follows the history menu item. Used as a
+// reference position for inserting local entries.
+const int kHistorySeparatorIndex = 1;
+
 // Comparator function for use with std::sort that will sort sessions by
 // descending modified_time (i.e., most recent first).
 bool SortSessionsByRecency(const sync_driver::SyncedSession* s1,
@@ -171,10 +175,9 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     : ui::SimpleMenuModel(this),
       browser_(browser),
       open_tabs_delegate_(open_tabs_delegate),
-      last_local_model_index_(-1),
-      default_favicon_(
-          ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-              IDR_DEFAULT_FAVICON)),
+      last_local_model_index_(kHistorySeparatorIndex),
+      default_favicon_(ui::ResourceBundle::GetSharedInstance().
+                       GetNativeImageNamed(IDR_DEFAULT_FAVICON)),
       weak_ptr_factory_(this) {
   // Invoke asynchronous call to load tabs from local last session, which does
   // nothing if the tabs have already been loaded or they shouldn't be loaded.
@@ -211,6 +214,11 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
         IDC_RESTORE_TAB, &reopen_closed_tab_accelerator_);
   }
 #endif  // defined(USE_ASH)
+
+  if (accelerator_provider) {
+    accelerator_provider->GetAcceleratorForCommandId(
+        IDC_SHOW_HISTORY, &show_history_accelerator_);
+  }
 }
 
 RecentTabsSubMenuModel::~RecentTabsSubMenuModel() {
@@ -246,6 +254,12 @@ bool RecentTabsSubMenuModel::GetAcceleratorForCommandId(
     *accelerator = reopen_closed_tab_accelerator_;
     return true;
   }
+
+  if (command_id == IDC_SHOW_HISTORY) {
+    *accelerator = show_history_accelerator_;
+    return true;
+  }
+
   return false;
 }
 
@@ -367,30 +381,33 @@ bool RecentTabsSubMenuModel::GetURLAndTitleForItemAtIndex(
 
 void RecentTabsSubMenuModel::Build() {
   // The menu contains:
+  // - History to open the full history tab.
+  // - Separator
   // - Recently closed header, then list of local recently closed tabs/windows,
   //   then separator
   // - device 1 section header, then list of tabs from device, then separator
   // - device 2 section header, then list of tabs from device, then separator
   // - device 3 section header, then list of tabs from device, then separator
-  // - More... to open the history tab to get more other devices.
   // |local_tab_navigation_items_| and |other_devices_tab_navigation_items_|
   // only contain navigatable (and hence executable) tab items for local
   // recently closed tabs and tabs from other devices respectively.
   // |local_window_items_| contains the local recently closed windows.
+  InsertItemWithStringIdAt(0, IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
+  InsertSeparatorAt(1, ui::NORMAL_SEPARATOR);
   BuildLocalEntries();
   BuildTabsFromOtherDevices();
 }
 
 void RecentTabsSubMenuModel::BuildLocalEntries() {
+  last_local_model_index_ = kHistorySeparatorIndex;
+
   // All local items use InsertItem*At() to append or insert a menu item.
   // We're appending if building the entries for the first time i.e. invoked
   // from Constructor(), inserting when local entries change subsequently i.e.
   // invoked from TabRestoreServiceChanged().
-
-  DCHECK_EQ(last_local_model_index_, -1);
-
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
+
   if (!service || service->entries().size() == 0) {
     // This is to show a disabled restore tab entry with the accelerator to
     // teach users about this command.
@@ -430,7 +447,6 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
       ++added_count;
     }
   }
-
   DCHECK_GE(last_local_model_index_, 0);
 }
 
@@ -510,8 +526,6 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
 
   // We are not supposed to get here unless at least some items were added.
   DCHECK_GT(GetItemCount(), 0);
-  AddSeparator(ui::NORMAL_SEPARATOR);
-  AddItemWithStringId(IDC_SHOW_HISTORY, IDS_RECENT_TABS_MORE);
 }
 
 void RecentTabsSubMenuModel::BuildLocalTabItem(int session_id,
@@ -655,12 +669,11 @@ int RecentTabsSubMenuModel::CommandIdToTabVectorIndex(
 
 void RecentTabsSubMenuModel::ClearLocalEntries() {
   // Remove local items (recently closed tabs and windows) from menumodel.
-  while (last_local_model_index_ >= 0)
+  while (last_local_model_index_ > kHistorySeparatorIndex)
     RemoveItemAt(last_local_model_index_--);
 
   // Cancel asynchronous FaviconService::GetFaviconImageForPageURL() tasks of
-  // all
-  // local tabs.
+  // all local tabs.
   local_tab_cancelable_task_tracker_.TryCancelAll();
 
   // Remove all local tab navigation items.

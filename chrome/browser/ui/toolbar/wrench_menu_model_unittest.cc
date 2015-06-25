@@ -154,8 +154,8 @@ TEST_F(WrenchMenuModelTest, Basics) {
   int bookmarksModelIndex = -1;
   for (int i = 0; i < itemCount; ++i) {
     if (model.GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
-      // Tabs is the first submenu item. Bookmarks submenu is under tabs.
-      bookmarksModelIndex = i + 1;
+      // The bookmarks submenu comes after the Tabs and Downloads items.
+      bookmarksModelIndex = i + 2;
       break;
     }
   }

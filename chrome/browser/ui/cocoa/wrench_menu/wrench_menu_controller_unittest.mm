@@ -198,25 +198,28 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
   EXPECT_TRUE(recent_tabs_menu);
   EXPECT_EQ(7, [recent_tabs_menu numberOfItems]);
 
-  // Index 0: restore tabs menu item.
-  NSString* restore_tab_label = l10n_util::FixUpWindowsStyleLabel(
-      recent_tabs_sub_menu_model.GetLabelAt(0));
-  EXPECT_NSEQ(restore_tab_label, [[recent_tabs_menu itemAtIndex:0] title]);
-
   // Item 1: separator.
   EXPECT_TRUE([[recent_tabs_menu itemAtIndex:1] isSeparatorItem]);
 
-  // Item 2: window title.
+  // Index 2: restore tabs menu item.
+  NSString* restore_tab_label = l10n_util::FixUpWindowsStyleLabel(
+      recent_tabs_sub_menu_model.GetLabelAt(2));
+  EXPECT_NSEQ(restore_tab_label, [[recent_tabs_menu itemAtIndex:2] title]);
+
+  // Item 3: separator.
+  EXPECT_TRUE([[recent_tabs_menu itemAtIndex:3] isSeparatorItem]);
+
+  // Item 4: window title.
   EXPECT_NSEQ(
-      base::SysUTF16ToNSString(recent_tabs_sub_menu_model.GetLabelAt(2)),
-      [[recent_tabs_menu itemAtIndex:2] title]);
+      base::SysUTF16ToNSString(recent_tabs_sub_menu_model.GetLabelAt(4)),
+      [[recent_tabs_menu itemAtIndex:4] title]);
 
-  // Item 3: short tab title.
+  // Item 5: short tab title.
   EXPECT_NSEQ(base::SysUTF16ToNSString(tab1_short_title),
-              [[recent_tabs_menu itemAtIndex:3] title]);
+              [[recent_tabs_menu itemAtIndex:5] title]);
 
-  // Item 4: long tab title.
-  NSString* tab2_actual_title = [[recent_tabs_menu itemAtIndex:4] title];
+  // Item 6: long tab title.
+  NSString* tab2_actual_title = [[recent_tabs_menu itemAtIndex:6] title];
   NSUInteger title_length = [tab2_actual_title length];
   EXPECT_GT(tab2_long_title.size(), title_length);
   NSString* actual_substring =

@@ -1356,8 +1356,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_PRINT" desc="In Title Case: The text label of the Print... menu item. Opens a dialog box to select print settings">
             &amp;Print...
           </message>
-          <message name="IDS_MORE_TOOLS_MENU" desc="The text label of the Tools submenu for touch">
-            More too&amp;ls
+          <message name="IDS_MORE_TOOLS_MENU" desc="In Title Case: The text label of the Tools submenu for touch">
+            More Too&amp;ls
           </message>
           <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
             &amp;Zoom
@@ -1580,7 +1580,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           Get H&amp;elp
         </message>
         <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item">
-          H&amp;elp
+          H&amp;elp and about
         </message>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
@@ -1620,8 +1620,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_GET_HELP" desc="The text label of the Get Help menu item">
           Get H&amp;elp
         </message>
-        <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item">
-          H&amp;elp
+        <message name="IDS_HELP_MENU" desc="In Title Case: The text label of the Help sub-menu item">
+          H&amp;elp and About
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
@@ -12436,7 +12436,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Block
       </message>
 
-      <if expr="use_title_case">
+      <if expr="use_titlecase">
+        <message name="IDS_HISTORY_RECENT_TABS_MENU" desc="In Title Case: The title of the History and Recent Tabs menu in the wrench menu.">
+          History and Recent Tabs
+        </message>
         <message name="IDS_RECENT_TABS_MENU" desc="In Title Case: The title of the Recent Tabs menu in the wrench menu.">
           Recent Tabs
         </message>
@@ -12446,8 +12449,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_RECENTLY_CLOSED_WINDOW" desc="In Title Case: Title of recently closed windows in Recent Tabs menu. [ICU_Syntax]">
           {NUM_TABS, plural, =1 {1 Tab} other {# Tabs}}
         </message>
+        <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="In Title Case: The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
+          No Tabs From Other Devices
+        </message>
       </if>
-      <if expr="not use_title_case">
+      <if expr="not use_titlecase">
+        <message name="IDS_HISTORY_RECENT_TABS_MENU" desc="The title of the History and Recent Tabs menu in the wrench menu.">
+          History and recent tabs
+        </message>
         <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
           Recent tabs
         </message>
@@ -12457,11 +12466,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_RECENTLY_CLOSED_WINDOW" desc="Title of recently closed windows in Recent Tabs menu. [ICU_Syntax]">
           {NUM_TABS, plural, =1 {1 tab} other {# tabs}}
         </message>
+        <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
+          No tabs from other devices
+        </message>
       </if>
 
-      <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
-        No tabs from other devices
-      </message>
       <message name="IDS_RECENT_TABS_MORE" desc="The label in the Recent Tabs menu in the wrench menu to open the other devices and history page.">
         More...
       </message>

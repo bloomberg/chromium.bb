@@ -248,13 +248,13 @@ class WrenchMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
 #else
     int help_string_id = IDS_HELP_PAGE;
 #endif
+    AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
     AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, help_string_id);
     if (browser_defaults::kShowHelpMenuItemIcon) {
       ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
               rb.GetNativeImageNamed(IDR_HELP_MENU));
     }
-
     AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
   }
 
@@ -274,6 +274,11 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
 
 ToolsMenuModel::~ToolsMenuModel() {}
 
+// More tools submenu is constructed as follows:
+// - Page specific actions overflow (save page, adding to taskbar).
+// - Browser / OS level tools (extensions, task manager).
+// - Developer tools.
+// - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
   bool show_create_shortcuts = true;
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
@@ -282,13 +287,7 @@ void ToolsMenuModel::Build(Browser* browser) {
   if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
     show_create_shortcuts = false;
 #endif
-
-  AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
-  AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
-
-  if (chrome::CanOpenTaskManager())
-    AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
-
+  AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
 #if defined(OS_MACOSX)
     int string_id = IDS_ADD_TO_APPLICATIONS;
@@ -306,18 +305,20 @@ void ToolsMenuModel::Build(Browser* browser) {
     AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
   }
 
+  AddSeparator(ui::NORMAL_SEPARATOR);
+  AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
+  AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
+  if (chrome::CanOpenTaskManager())
+    AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
 #if defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_TAKE_SCREENSHOT, IDS_TAKE_SCREENSHOT);
 #endif
-
   encoding_menu_model_.reset(new EncodingMenuModel(browser));
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
                          encoding_menu_model_.get());
+
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_DEV_TOOLS, IDS_DEV_TOOLS);
-  AddItemWithStringId(IDC_VIEW_SOURCE, IDS_VIEW_SOURCE);
-  AddItemWithStringId(IDC_DEV_TOOLS_CONSOLE, IDS_DEV_TOOLS_CONSOLE);
-  AddItemWithStringId(IDC_DEV_TOOLS_DEVICES, IDS_DEV_TOOLS_DEVICES);
 
 #if defined(ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   AddSeparator(ui::NORMAL_SEPARATOR);
@@ -888,10 +889,8 @@ void WrenchMenuModel::Build() {
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           ui::ResourceBundle::GetSharedInstance().
               GetNativeImageNamed(IDR_INPUT_ALERT_MENU));
-
   if (IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
-
   if (AddGlobalErrorMenuItems() ||
       IsCommandIdVisible(IDC_VIEW_INCOMPATIBILITIES) ||
       IsCommandIdVisible(IDC_UPGRADE_DIALOG))
@@ -901,20 +900,16 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   if (ShouldShowNewIncognitoWindowMenuItem())
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
-
   AddSeparator(ui::NORMAL_SEPARATOR);
-
-  AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
-  AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
 
   if (!browser_->profile()->IsOffTheRecord()) {
     recent_tabs_sub_menu_model_.reset(new RecentTabsSubMenuModel(provider_,
                                                                  browser_,
                                                                  NULL));
-    AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_RECENT_TABS_MENU,
+    AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_RECENT_TABS_MENU,
                            recent_tabs_sub_menu_model_.get());
   }
-
+  AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   if (!browser_->profile()->IsGuestSession()) {
     bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
     AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
@@ -922,9 +917,7 @@ void WrenchMenuModel::Build() {
   }
 
   CreateZoomMenu();
-
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-  AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDomDistiller))
@@ -932,13 +925,11 @@ void WrenchMenuModel::Build() {
   tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
   AddSubMenuWithStringId(
       IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
-
   // Append the full menu including separators. The final separator only gets
   // appended when this is a touch menu - otherwise it would get added twice.
   CreateCutCopyPasteMenu();
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
-
 #if !defined(OS_CHROMEOS)
   if (!switches::IsNewAvatarMenu()) {
     // No "Sign in to Chromium..." menu item on ChromeOS.
@@ -954,18 +945,16 @@ void WrenchMenuModel::Build() {
     }
   }
 #endif
-
-// On ChromeOS we don't want the about menu option.
-#if !defined(OS_CHROMEOS)
-  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-#endif
-
+// The help submenu is only displayed on official Chrome builds. As the
+// 'About' item has been moved to this submenu, it's reinstated here for
+// Chromium builds.
 #if defined(GOOGLE_CHROME_BUILD)
   help_menu_model_.reset(new HelpMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU,
                          help_menu_model_.get());
+#else
+  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
 #endif
-
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableRequestTabletSite))
@@ -983,13 +972,11 @@ void WrenchMenuModel::Build() {
     AddItemWithStringId(command_id, string_id);
   }
 #endif
-
   bool show_exit_menu = browser_defaults::kShowExitMenuItem;
 #if defined(OS_WIN)
   if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
     show_exit_menu = false;
 #endif
-
   if (show_exit_menu) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
