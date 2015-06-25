@@ -47,10 +47,8 @@ bool LogMessageToAsl(
       level = ASL_LEVEL_WARNING;
       break;
     case logging::LOG_ERROR:
-      level = ASL_LEVEL_ERR;
-      break;
     case logging::LOG_FATAL:
-      level = ASL_LEVEL_EMERG;
+      level = ASL_LEVEL_ERR;
       break;
     default:
       // 'notice' is the lowest priority that the asl libraries will log by
