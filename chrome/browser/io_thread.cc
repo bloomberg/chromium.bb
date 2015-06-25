@@ -139,11 +139,6 @@ const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
 const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 
-// Field trial for network quality estimator. Seeds RTT and downstream
-// throughput observations with values that correspond to the connection type
-// determined by the operating system.
-const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ObserveKeychainEvents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -646,11 +641,7 @@ void IOThread::Init() {
   globals_->system_network_delegate = chrome_network_delegate.Pass();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  variations::GetVariationParams(kNetworkQualityEstimatorFieldTrialName,
-                                 &network_quality_estimator_params);
-  globals_->network_quality_estimator.reset(
-      new net::NetworkQualityEstimator(network_quality_estimator_params));
+  globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator());
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.

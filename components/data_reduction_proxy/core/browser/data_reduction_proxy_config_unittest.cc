@@ -4,7 +4,6 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
-#include <map>
 #include <vector>
 
 #include "base/command_line.h"
@@ -1222,11 +1221,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiStatusTransition) {
 // Overrides net::NetworkQualityEstimator for testing.
 class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
-  explicit TestNetworkQualityEstimator(
-      const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(variation_params),
-        rtt_(base::TimeDelta()),
-        kbps_(0) {}
+  TestNetworkQualityEstimator() : rtt_(base::TimeDelta()), kbps_(0) {}
 
   ~TestNetworkQualityEstimator() override {}
 
@@ -1283,9 +1278,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(hysteresis_sec),
             config.auto_lofi_hysteresis_);
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  TestNetworkQualityEstimator test_network_quality_estimator(
-      network_quality_estimator_params);
+  TestNetworkQualityEstimator test_network_quality_estimator;
 
   // RTT is higher than threshold. Network is slow.
   test_network_quality_estimator.SetRtt(

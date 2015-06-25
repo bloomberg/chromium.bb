@@ -8,12 +8,7 @@
 
 namespace net {
 
-const base::TimeDelta NetworkQuality::kInvalidRTT = base::TimeDelta::Max();
-
-const int32_t NetworkQuality::kInvalidThroughput = 0;
-
-NetworkQuality::NetworkQuality()
-    : NetworkQuality(kInvalidRTT, kInvalidThroughput) {
+NetworkQuality::NetworkQuality() : NetworkQuality(base::TimeDelta::Max(), 0) {
 }
 
 NetworkQuality::NetworkQuality(const base::TimeDelta& rtt,

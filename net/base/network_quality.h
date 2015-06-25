@@ -16,14 +16,6 @@ namespace net {
 // estimated by the NetworkQualityEstimator.
 class NET_EXPORT_PRIVATE NetworkQuality {
  public:
-  // RTT is set to |kInvalidRTT| if a valid value is unavailable. Readers
-  // should discard RTT if it is set to |kInvalidRTT|.
-  static const base::TimeDelta kInvalidRTT;
-  // Throughput is set to |kInvalidThroughput| if a valid value is unavailable.
-  // Readers should discard throughput value if it is set to
-  // |kInvalidThroughput|.
-  static const int32_t kInvalidThroughput;
-
   NetworkQuality();
   // |rtt| is the estimate of the round trip time.
   // |downstream_throughput_kbps| is the estimate of the downstream throughput.
