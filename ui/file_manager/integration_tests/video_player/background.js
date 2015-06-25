@@ -11,14 +11,6 @@
  */
 var VIDEO_PLAYER_APP_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
 
-/**
- * Extension ID of Files.app.
- * @type {string}
- * @const
- */
-var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
-
-var remoteCallFilesApp = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
 var remoteCallVideoPlayer = new RemoteCall(VIDEO_PLAYER_APP_ID);
 
 /**

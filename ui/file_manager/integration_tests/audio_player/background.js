@@ -11,14 +11,6 @@
  */
 var AUDIO_PLAYER_APP_ID = 'cjbfomnbifhcdnihkgipgfcihmgjfhbf';
 
-/**
- * Extension ID of Files.app.
- * @type {string}
- * @const
- */
-var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
-
-var remoteCallFilesApp = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
 var remoteCallAudioPlayer = new RemoteCall(AUDIO_PLAYER_APP_ID);
 
 /**
