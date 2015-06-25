@@ -34,7 +34,6 @@ public:
 
 private:
     const TransformationMatrix m_transform;
-    FloatPoint3D m_transformOrigin;
 };
 
 class PLATFORM_EXPORT EndTransform3DDisplayItem : public PairedEndDisplayItem {
