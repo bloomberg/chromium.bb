@@ -46,6 +46,7 @@ class RasterTaskImpl : public RasterTask {
       float contents_scale,
       TileResolution tile_resolution,
       int layer_id,
+      uint64_t source_prepare_tiles_id,
       const void* tile,
       uint64_t new_content_id,
       uint64_t previous_content_id,
@@ -62,6 +63,7 @@ class RasterTaskImpl : public RasterTask {
         contents_scale_(contents_scale),
         tile_resolution_(tile_resolution),
         layer_id_(layer_id),
+        source_prepare_tiles_id_(source_prepare_tiles_id),
         tile_(tile),
         new_content_id_(new_content_id),
         previous_content_id_(previous_content_id),
@@ -72,7 +74,8 @@ class RasterTaskImpl : public RasterTask {
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    TRACE_EVENT0("cc", "RasterizerTaskImpl::RunOnWorkerThread");
+    TRACE_EVENT1("cc", "RasterizerTaskImpl::RunOnWorkerThread",
+                 "source_prepare_tiles_id", source_prepare_tiles_id_);
 
     DCHECK(raster_source_.get());
     DCHECK(raster_buffer_);
@@ -136,6 +139,7 @@ class RasterTaskImpl : public RasterTask {
   float contents_scale_;
   TileResolution tile_resolution_;
   int layer_id_;
+  uint64_t source_prepare_tiles_id_;
   const void* tile_;
   uint64_t new_content_id_;
   uint64_t previous_content_id_;
@@ -152,13 +156,16 @@ class RasterTaskImpl : public RasterTask {
 class ImageDecodeTaskImpl : public ImageDecodeTask {
  public:
   ImageDecodeTaskImpl(SkPixelRef* pixel_ref,
+                      uint64_t source_prepare_tiles_id,
                       const base::Callback<void(bool was_canceled)>& reply)
       : pixel_ref_(skia::SharePtr(pixel_ref)),
+        source_prepare_tiles_id_(source_prepare_tiles_id),
         reply_(reply) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    TRACE_EVENT0("cc", "ImageDecodeTaskImpl::RunOnWorkerThread");
+    TRACE_EVENT1("cc", "ImageDecodeTaskImpl::RunOnWorkerThread",
+                 "source_prepare_tiles_id", source_prepare_tiles_id_);
 
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         pixel_ref_.get());
@@ -181,6 +188,7 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
 
  private:
   skia::RefPtr<SkPixelRef> pixel_ref_;
+  uint64_t source_prepare_tiles_id_;
   const base::Callback<void(bool was_canceled)> reply_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
@@ -260,7 +268,8 @@ TileManager::TileManager(
       did_notify_ready_to_activate_(false),
       did_notify_ready_to_draw_(false),
       did_notify_all_tile_tasks_completed_(false),
-      has_scheduled_tile_tasks_(false) {
+      has_scheduled_tile_tasks_(false),
+      prepare_tiles_count_(0u) {
   tile_task_runner_->SetClient(this);
 }
 
@@ -360,7 +369,10 @@ void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
 
 void TileManager::PrepareTiles(
     const GlobalStateThatImpactsTilePriority& state) {
-  TRACE_EVENT0("cc", "TileManager::PrepareTiles");
+  ++prepare_tiles_count_;
+
+  TRACE_EVENT1("cc", "TileManager::PrepareTiles", "prepare_tiles_id",
+               prepare_tiles_count_);
 
   global_state_ = state;
 
@@ -686,10 +698,9 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
     Tile* tile,
     SkPixelRef* pixel_ref) {
   return make_scoped_refptr(new ImageDecodeTaskImpl(
-      pixel_ref,
+      pixel_ref, prepare_tiles_count_,
       base::Bind(&TileManager::OnImageDecodeTaskCompleted,
-                 base::Unretained(this),
-                 tile->layer_id(),
+                 base::Unretained(this), tile->layer_id(),
                  base::Unretained(pixel_ref))));
 }
 
@@ -742,8 +753,8 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
       const_resource, prioritized_tile.raster_source(), tile->content_rect(),
       tile->invalidated_content_rect(), tile->contents_scale(),
       prioritized_tile.priority().resolution, tile->layer_id(),
-      static_cast<const void*>(tile), tile->id(), tile->invalidated_id(),
-      resource_content_id, tile->source_frame_number(),
+      prepare_tiles_count_, static_cast<const void*>(tile), tile->id(),
+      tile->invalidated_id(), resource_content_id, tile->source_frame_number(),
       tile->use_picture_analysis(),
       base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
                  tile->id(), base::Passed(&resource)),

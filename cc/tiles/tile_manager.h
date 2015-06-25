@@ -321,6 +321,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   bool did_notify_all_tile_tasks_completed_;
   bool has_scheduled_tile_tasks_;
 
+  uint64_t prepare_tiles_count_;
+
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
 
