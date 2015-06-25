@@ -1599,11 +1599,6 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
     case GL_UNPACK_SKIP_IMAGES:
         unpack_skip_images_ = param;
         return;
-    case GL_UNPACK_FLIP_Y_CHROMIUM:
-    case GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM:
-    case GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM:
-        // TODO(zmo): Remove this when blink side callers are removed.
-        return;
     case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
         pack_reverse_row_order_ =
             IsAnglePackReverseRowOrderAvailable() ? (param != 0) : false;
