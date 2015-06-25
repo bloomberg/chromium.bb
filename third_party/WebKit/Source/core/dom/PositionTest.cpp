@@ -82,7 +82,6 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
     setBodyContent(bodyContent);
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
     RefPtrWillBeRawPtr<Element> anchor = shadowRoot->getElementById("a");
-    RefPtrWillBeRawPtr<Element> insertionPoint = shadowRoot->getElementById("content");
 
     EXPECT_EQ(positionInComposedTree(*anchor, 0), toPositionInComposedTree(positionInDOMTree(*anchor, 0)));
     EXPECT_EQ(positionInComposedTree(*anchor, 1), toPositionInComposedTree(positionInDOMTree(*anchor, 1)));
