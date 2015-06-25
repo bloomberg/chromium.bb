@@ -171,6 +171,10 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
       if (!provisional_entry_)
         return;
       current_entry_.reset(provisional_entry_.release());
+      if (HistoryEntry::HistoryNode* node =
+              current_entry_->GetHistoryNodeForFrame(frame)) {
+        node->set_item(item);
+      }
       break;
     case blink::WebStandardCommit:
       CreateNewBackForwardItem(frame, item, navigation_within_page);
