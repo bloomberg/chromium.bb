@@ -489,6 +489,10 @@ class ChromeSDKCommand(command.CliCommand):
         help='Sets up SDK for building official (internal) Chrome '
              'Chrome, rather than Chromium.')
     parser.add_argument(
+        '--component', action='store_true', default=False,
+        help='Sets up SDK for building a componentized build of Chrome '
+             '(component=shared_library in GYP).')
+    parser.add_argument(
         '--use-external-config', action='store_true', default=False,
         help='Use the external configuration for the specified board, even if '
              'an internal configuration is avalable.')
@@ -666,6 +670,8 @@ class ChromeSDKCommand(command.CliCommand):
       gyp_dict.pop('branding', None)
       gyp_dict.pop('buildtype', None)
       gyp_dict.pop('internal_gles2_conform_tests', None)
+    if options.component:
+      gyp_dict['component'] = 'shared_library'
 
     # Enable goma if requested.
     if goma_dir:
