@@ -215,3 +215,5 @@ crbug.com/498539 inspector/sources/debugger-step/debugger-step-into-async2.html 
 
 crbug.com/485428 [ Debug ] css3/filters/huge-region.html [ Slow ]
 crbug.com/503175 http/tests/serviceworker/getregistrations.html [ Slow ]
+
+crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
