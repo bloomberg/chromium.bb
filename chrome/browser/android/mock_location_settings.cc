@@ -27,7 +27,8 @@ bool MockLocationSettings::IsMasterLocationSettingEnabled() {
   return master_location_enabled;
 }
 
-bool MockLocationSettings::IsLocationEnabled() {
+bool MockLocationSettings::CanSitesRequestLocationPermission(
+    content::WebContents* web_contents) {
   return IsMasterLocationSettingEnabled() &&
       IsGoogleAppsLocationSettingEnabled();
 }

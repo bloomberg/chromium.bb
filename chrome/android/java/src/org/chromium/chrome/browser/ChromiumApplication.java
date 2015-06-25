@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.ui.base.ActivityWindowAndroid;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -317,5 +318,12 @@ public abstract class ChromiumApplication extends ContentApplication {
      */
     public HelpAndFeedback createHelpAndFeedback() {
         return new HelpAndFeedback();
+    }
+
+    /**
+     * @return A new ActivityWindowAndroid instance.
+     */
+    public ActivityWindowAndroid createActivityWindowAndroid(Activity activity) {
+        return new ActivityWindowAndroid(activity, true);
     }
 }

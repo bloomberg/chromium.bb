@@ -13,8 +13,10 @@ import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Process;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
@@ -214,6 +216,36 @@ public class WindowAndroid {
     }
 
     /**
+     * Determine whether access to a particular permission is granted.
+     * @param permission The permission whose access is to be checked.
+     * @return Whether access to the permission is granted.
+     */
+    public boolean hasPermission(String permission) {
+        return mApplicationContext.checkPermission(permission, Process.myPid(), Process.myUid())
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * Determine whether the specified permission can be requested.
+     *
+     * <p>
+     * A permission can be requested in the following states:
+     * 1.) Default un-granted state, permission can be requested
+     * 2.) Permission previously requested but denied by the user, but the user did not select
+     *     "Never ask again".
+     *
+     * @param permission The permission name.
+     * @return Whether the requesting the permission is allowed.
+     */
+    public boolean canRequestPermission(String permission) {
+        Log.w(TAG, "Cannot determine the request permission state as the context "
+                + "is not an Activity");
+        assert false : "Failed to determine the request permission state using a WindowAndroid "
+                + "without an Activity";
+        return false;
+    }
+
+    /**
      * Requests the specified permissions are granted for further use.
      * @param permissions The list of permissions to request access to.
      * @param callback The callback to be notified whether the permissions were granted.
@@ -345,11 +377,6 @@ public class WindowAndroid {
          * @param grantResults Whether the permissions were granted.
          */
         void onRequestPermissionsResult(String[] permissions, int[] grantResults);
-
-        /**
-         * Called when a permission request has been aborted.
-         */
-        void onRequestPermissionAborted();
     }
 
     /**

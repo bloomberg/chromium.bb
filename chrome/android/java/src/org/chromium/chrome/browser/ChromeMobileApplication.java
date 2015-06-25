@@ -69,6 +69,7 @@ import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
 import org.chromium.printing.PrintingController;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.ActivityWindowAndroid;
 
 import java.lang.ref.WeakReference;
 import java.util.Locale;
@@ -615,5 +616,11 @@ public class ChromeMobileApplication extends ChromiumApplication {
      */
     public RevenueStats createRevenueStatsInstance() {
         return new RevenueStats();
+    }
+
+    @Override
+    public ActivityWindowAndroid createActivityWindowAndroid(Activity activity) {
+        if (activity instanceof ChromeActivity) return new ChromeWindow((ChromeActivity) activity);
+        return new ActivityWindowAndroid(activity);
     }
 }

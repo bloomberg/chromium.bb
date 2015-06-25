@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
@@ -15,6 +16,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Provides methods for querying Android system-wide location settings as well as Chrome's internal
@@ -50,12 +54,18 @@ public class LocationSettings {
         return sInstance;
     }
 
-    /**
-     * Returns true if location is enabled system-wide.
-     */
     @CalledByNative
-    private static boolean staticIsSystemLocationSettingEnabled() {
-        return LocationSettings.getInstance().isSystemLocationSettingEnabled();
+    private static boolean canSitesRequestLocationPermission(WebContents webContents) {
+        if (!LocationSettings.getInstance().isSystemLocationSettingEnabled()) return false;
+
+        ContentViewCore cvc = ContentViewCore.fromWebContents(webContents);
+        if (cvc == null) return false;
+        WindowAndroid windowAndroid = cvc.getWindowAndroid();
+        if (windowAndroid == null) return false;
+
+        return windowAndroid.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                || windowAndroid.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                || windowAndroid.canRequestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
     /**

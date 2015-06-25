@@ -140,11 +140,6 @@ public class ConfirmInfoBar extends InfoBar {
                     onButtonClickedInternal(true);
                 }
             }
-
-            @Override
-            public void onRequestPermissionAborted() {
-                onCloseButtonClicked();
-            }
         };
 
         mWindowAndroid.requestPermissions(

@@ -21,11 +21,11 @@ GeolocationPermissionContextAndroid::~GeolocationPermissionContextAndroid() {
 
 void GeolocationPermissionContextAndroid::RequestPermission(
     content::WebContents* web_contents,
-     const PermissionRequestID& id,
-     const GURL& requesting_frame_origin,
-     bool user_gesture,
-     const BrowserPermissionCallback& callback) {
-  if (!location_settings_->IsLocationEnabled()) {
+    const PermissionRequestID& id,
+    const GURL& requesting_frame_origin,
+    bool user_gesture,
+    const BrowserPermissionCallback& callback) {
+  if (!location_settings_->CanSitesRequestLocationPermission(web_contents)) {
     PermissionDecided(id, requesting_frame_origin,
                       web_contents->GetLastCommittedURL().GetOrigin(),
                       callback, false /* persist */, CONTENT_SETTING_BLOCK);

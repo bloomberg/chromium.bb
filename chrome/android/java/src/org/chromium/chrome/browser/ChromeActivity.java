@@ -198,7 +198,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void postInflationStartup() {
         super.postInflationStartup();
 
-        mWindowAndroid = new ChromeWindow(this);
+        mWindowAndroid = ((ChromeMobileApplication) getApplicationContext())
+                .createActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
         mSnackbarManager = new SnackbarManager(findViewById(android.R.id.content));
         mLoFiBarPopupController = new LoFiBarPopupController(this, getSnackbarManager());

@@ -7,12 +7,15 @@ package org.chromium.ui.base;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PermissionInfo;
 import android.os.Handler;
-import android.os.Process;
+import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -38,10 +41,11 @@ public class ActivityWindowAndroid
     private static final int REQUEST_CODE_RANGE_SIZE = 100;
     private static final String TAG = "ActivityWindowAndroid";
 
+    private static final String PERMISSION_QUERIED_KEY_PREFIX = "HasRequestedAndroidPermission::";
+
     private final WeakReference<Activity> mActivityRef;
     private final Handler mHandler;
     private final SparseArray<PermissionCallback> mOutstandingPermissionRequests;
-    private final Runnable mClearPermissionRequestsTask;
 
     private Method mRequestPermissionsMethod;
 
@@ -67,15 +71,6 @@ public class ActivityWindowAndroid
         mActivityRef = new WeakReference<Activity>(activity);
         mHandler = new Handler();
         mOutstandingPermissionRequests = new SparseArray<PermissionCallback>();
-        mClearPermissionRequestsTask = new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < mOutstandingPermissionRequests.size(); i++) {
-                    mOutstandingPermissionRequests.valueAt(i).onRequestPermissionAborted();
-                }
-                mOutstandingPermissionRequests.clear();
-            }
-        };
         if (listenToActivityState) {
             ApplicationStatus.registerStateListenerForActivity(this, activity);
         }
@@ -163,9 +158,47 @@ public class ActivityWindowAndroid
         return false;
     }
 
-    private static boolean hasPermission(Context context, String permission) {
-        return context.checkPermission(permission, Process.myPid(), Process.myUid())
-                != PackageManager.PERMISSION_DENIED;
+    private String getHasRequestedPermissionKey(String permission) {
+        String permissionQueriedKey = permission;
+        try {
+            // Runtime permissions are controlled at the group level.  So when determining whether
+            // we have requested a particular permission before, we should check whether we
+            // have requested any permission in that group as that mimics the logic in the Android
+            // framework.
+            //
+            // e.g. Requesting first the permission ACCESS_FINE_LOCATION will result in Chrome
+            //      treating ACCESS_COARSE_LOCATION as if it had already been requested as well.
+            PermissionInfo permissionInfo = getApplicationContext().getPackageManager()
+                    .getPermissionInfo(permission, PackageManager.GET_META_DATA);
+
+            if (!TextUtils.isEmpty(permissionInfo.group)) {
+                permissionQueriedKey = permissionInfo.group;
+            }
+        } catch (NameNotFoundException e) {
+            // Unknown permission.  Default back to the permission name instead of the group.
+        }
+
+        return PERMISSION_QUERIED_KEY_PREFIX + permissionQueriedKey;
+    }
+
+    @Override
+    public boolean canRequestPermission(String permission) {
+        if (!BuildInfo.isMncOrLater()) return false;
+
+        Activity activity = mActivityRef.get();
+        if (activity == null) return false;
+
+        // TODO(tedchoc): Child classes are currently required to determine whether we have
+        //                previously requested the permission before but the user did not
+        //                select "Never ask again".  Merge with this class when possible.
+
+        // Check whether we have ever asked for this permission by checking whether we saved
+        // a preference associated with it before.
+        String permissionQueriedKey = getHasRequestedPermissionKey(permission);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        if (!prefs.getBoolean(permissionQueriedKey, false)) return true;
+
+        return false;
     }
 
     @Override
@@ -181,13 +214,21 @@ public class ActivityWindowAndroid
                 public void run() {
                     int[] results = new int[permissions.length];
                     for (int i = 0; i < permissions.length; i++) {
-                        results[i] = hasPermission(mApplicationContext, permissions[i])
+                        results[i] = hasPermission(permissions[i])
                                 ? PackageManager.PERMISSION_GRANTED
                                 : PackageManager.PERMISSION_DENIED;
                     }
                     callback.onRequestPermissionsResult(permissions, results);
                 }
             });
+        } else {
+            Activity activity = mActivityRef.get();
+            SharedPreferences.Editor editor =
+                    PreferenceManager.getDefaultSharedPreferences(activity).edit();
+            for (int i = 0; i < permissions.length; i++) {
+                editor.putBoolean(getHasRequestedPermissionKey(permissions[i]), true);
+            }
+            editor.apply();
         }
     }
 
@@ -195,8 +236,6 @@ public class ActivityWindowAndroid
      * Issues the permission request and returns whether it was sent successfully.
      */
     private boolean requestPermissionsInternal(String[] permissions, PermissionCallback callback) {
-        mHandler.removeCallbacks(mClearPermissionRequestsTask);
-
         // TODO(tedchoc): Remove the MNC check once the SDK version is bumped.
         if (!BuildInfo.isMncOrLater()) return false;
 
@@ -258,11 +297,6 @@ public class ActivityWindowAndroid
             onActivityPaused();
         } else if (newState == ActivityState.RESUMED) {
             onActivityResumed();
-
-            // Work around an issue where we do not always get an onRequestPermissionsResult
-            // callback if the user hits the back button in the permission dialog instead
-            // of taking an action.
-            mHandler.post(mClearPermissionRequestsTask);
         }
     }
 

@@ -73,6 +73,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   base::android::ScopedJavaLocalRef<jobject> GetWebContentsAndroid(JNIEnv* env,
                                                                    jobject obj);
+  base::android::ScopedJavaLocalRef<jobject> GetJavaWindowAndroid(JNIEnv* env,
+                                                                  jobject obj);
 
   void OnJavaContentViewCoreDestroyed(JNIEnv* env, jobject obj);
 

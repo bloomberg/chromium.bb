@@ -272,6 +272,13 @@ ContentViewCoreImpl::GetWebContentsAndroid(JNIEnv* env, jobject obj) {
   return web_contents_->GetJavaWebContents();
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+ContentViewCoreImpl::GetJavaWindowAndroid(JNIEnv* env, jobject obj) {
+  if (!window_android_)
+    return ScopedJavaLocalRef<jobject>();
+  return window_android_->GetJavaObject();
+}
+
 void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(JNIEnv* env,
                                                          jobject obj) {
   DCHECK(env->IsSameObject(java_ref_.get(env).obj(), obj));

@@ -5,6 +5,7 @@
 #include "chrome/browser/android/location_settings_impl.h"
 
 #include "base/android/jni_android.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/LocationSettings_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -13,9 +14,11 @@ LocationSettingsImpl::LocationSettingsImpl() {}
 
 LocationSettingsImpl::~LocationSettingsImpl() {}
 
-bool LocationSettingsImpl::IsLocationEnabled() {
+bool LocationSettingsImpl::CanSitesRequestLocationPermission(
+    content::WebContents* web_contents) {
   JNIEnv* env = AttachCurrentThread();
-  return Java_LocationSettings_staticIsSystemLocationSettingEnabled(env);
+  return Java_LocationSettings_canSitesRequestLocationPermission(
+      env, web_contents->GetJavaWebContents().obj());
 }
 
 // Register native methods

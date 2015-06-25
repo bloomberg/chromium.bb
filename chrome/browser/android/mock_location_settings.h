@@ -15,7 +15,8 @@ class MockLocationSettings : public LocationSettings {
 
   static void SetLocationStatus(bool master, bool google_apps);
 
-  bool IsLocationEnabled() override;
+  bool CanSitesRequestLocationPermission(
+      content::WebContents* web_contents) override;
 
   bool IsMasterLocationSettingEnabled();
   bool IsGoogleAppsLocationSettingEnabled();
