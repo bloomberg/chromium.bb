@@ -45,6 +45,7 @@ namespace blink {
 class Attribute;
 class FontResource;
 class ImageResource;
+class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
 class Document;
@@ -85,6 +86,9 @@ private:
     // Serializes the stylesheet back to text and adds it to the resources if URL is not-empty.
     // It also adds any resources included in that stylesheet (including any imported stylesheets and their own resources).
     void serializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
+
+    // Serializes the css rule (including any imported stylesheets), adding referenced resources.
+    void serializeCSSRule(CSSRule*);
 
     bool shouldAddURL(const KURL&);
 

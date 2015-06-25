@@ -19,6 +19,22 @@
 </style>
 
 <style>
+@media not all {
+  body {
+    background-image: url('do_not_serialize.png');
+  }
+}
+
+@supports (invalid-css-property: invalid-css-value) {
+  body {
+    background-image: url('do_not_serialize.png');
+  }
+}
+
+#nonexistentDiv {
+  background-image: url('do_not_serialize.png');
+}
+
 #divBlue {
   background-image:url('blue_background.png');
 }
@@ -29,6 +45,18 @@ ul {
 
 ol {
   list-style-image: url('ol-dot.png');
+}
+
+@media all {
+  #divPink {
+    background-image: url('pink_background.png');
+  }
+}
+
+@supports not (invalid-css-property: invalid-css-value) {
+  #divBrown {
+    background-image: url('brown_background.png');
+  }
 }
 
 </style>
@@ -80,6 +108,16 @@ This div has a green image as its background.
 <!-- Style id dynamically generated with JavaScript in the onload handler -->
 <div id='divPurple'>
 This div has a purple image as its background.
+</div>
+
+<!-- Style is defined in a media query -->
+<div id='divPink'>
+This div has a pink image as its background.
+</div>
+
+<!-- Style is defined in a supports feature query -->
+<div id='divBrown'>
+This div has a brown image as its background.
 </div>
 
 Unordered list:<br>

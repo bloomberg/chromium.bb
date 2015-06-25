@@ -37,6 +37,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
@@ -302,22 +303,9 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KUR
             if (i < styleSheet.length() - 1)
                 cssText.appendLiteral("\n\n");
         }
-        ASSERT(styleSheet.ownerDocument());
-        Document& document = *styleSheet.ownerDocument();
+
         // Some rules have resources associated with them that we need to retrieve.
-        if (rule->type() == CSSRule::IMPORT_RULE) {
-            CSSImportRule* importRule = toCSSImportRule(rule);
-            ASSERT(styleSheet.baseURL().isValid());
-            KURL importURL = KURL(styleSheet.baseURL(), importRule->href());
-            if (m_resourceURLs.contains(importURL))
-                continue;
-            if (importRule->styleSheet())
-                serializeCSSStyleSheet(*importRule->styleSheet(), importURL);
-        } else if (rule->type() == CSSRule::FONT_FACE_RULE) {
-            retrieveResourcesForProperties(&toCSSFontFaceRule(rule)->styleRule()->properties(), document);
-        } else if (rule->type() == CSSRule::STYLE_RULE) {
-            retrieveResourcesForProperties(&toCSSStyleRule(rule)->styleRule()->properties(), document);
-        }
+        serializeCSSRule(rule);
     }
 
     if (url.isValid() && !m_resourceURLs.contains(url)) {
@@ -328,6 +316,54 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KUR
         CString text = textEncoding.normalizeAndEncode(textString, WTF::EntitiesForUnencodables);
         m_resources->append(SerializedResource(url, String("text/css"), SharedBuffer::create(text.data(), text.length())));
         m_resourceURLs.add(url);
+    }
+}
+
+void PageSerializer::serializeCSSRule(CSSRule* rule)
+{
+    ASSERT(rule->parentStyleSheet()->ownerDocument());
+    Document& document = *rule->parentStyleSheet()->ownerDocument();
+
+    switch (rule->type()) {
+    case CSSRule::STYLE_RULE:
+        retrieveResourcesForProperties(&toCSSStyleRule(rule)->styleRule()->properties(), document);
+        break;
+
+    case CSSRule::IMPORT_RULE: {
+        CSSImportRule* importRule = toCSSImportRule(rule);
+        KURL sheetBaseURL = rule->parentStyleSheet()->baseURL();
+        ASSERT(sheetBaseURL.isValid());
+        KURL importURL = KURL(sheetBaseURL, importRule->href());
+        if (m_resourceURLs.contains(importURL))
+            break;
+        if (importRule->styleSheet())
+            serializeCSSStyleSheet(*importRule->styleSheet(), importURL);
+        break;
+    }
+
+    // Rules inheriting CSSGroupingRule
+    case CSSRule::MEDIA_RULE:
+    case CSSRule::SUPPORTS_RULE: {
+        CSSRuleList* ruleList = rule->cssRules();
+        for (unsigned i = 0; i < ruleList->length(); ++i)
+            serializeCSSRule(ruleList->item(i));
+        break;
+    }
+
+    case CSSRule::FONT_FACE_RULE:
+        retrieveResourcesForProperties(&toCSSFontFaceRule(rule)->styleRule()->properties(), document);
+        break;
+
+    // Rules in which no external resources can be referenced
+    case CSSRule::CHARSET_RULE:
+    case CSSRule::PAGE_RULE:
+    case CSSRule::KEYFRAMES_RULE:
+    case CSSRule::KEYFRAME_RULE:
+    case CSSRule::VIEWPORT_RULE:
+        break;
+
+    default:
+        ASSERT_NOT_REACHED();
     }
 }
 
