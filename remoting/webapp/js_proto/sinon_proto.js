@@ -34,6 +34,9 @@ sinon.Expectation = function() {};
 /** @return {sinon.Expectation} */
 sinon.Expectation.prototype.once = function() {};
 
+/** @return {sinon.Expectation} */
+sinon.Expectation.prototype.never = function() {};
+
 /**
  * @param {...} data
  * @return {sinon.Expectation}
@@ -65,6 +68,11 @@ sinon.Mock.prototype.expects = function(method) {};
  * @return {void}
  */
 sinon.Mock.prototype.restore = function() {};
+
+/**
+ * @return {boolean}
+ */
+sinon.Mock.prototype.verify = function() {};
 
 /** @type {function(...):Function} */
 sinon.spy = function() {};

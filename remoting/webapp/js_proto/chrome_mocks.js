@@ -76,6 +76,10 @@ chromeMocks.runtime.Port.prototype.postMessage = function(message) {};
 /** @type {chromeMocks.Event} */
 chromeMocks.runtime.onMessage = new chromeMocks.Event();
 
+
+/** @type {chromeMocks.Event} */
+chromeMocks.runtime.onSuspend = new chromeMocks.Event();
+
 /**
  * @param {string?} extensionId
  * @param {*} message
@@ -121,6 +125,14 @@ chromeMocks.runtime.lastError = {
   message: undefined
 };
 
+chromeMocks.runtime.getManifest = function() {
+  return {
+    version: 10,
+    app: {
+      background: true
+    }
+  };
+};
 
 // Sample implementation of chrome.StorageArea according to
 // https://developer.chrome.com/apps/storage#type-StorageArea
@@ -251,10 +263,12 @@ chromeMocks.I18n.prototype.getMessage = function(messageName, opt_args) {};
 chromeMocks.I18n.prototype.getUILanguage = function() {};
 
 /** @constructor */
-chromeMocks.WindowManager = function() {};
+chromeMocks.WindowManager = function() {
+  this.current_ = new chromeMocks.AppWindow();
+};
 
 chromeMocks.WindowManager.prototype.current = function() {
-  return new chromeMocks.AppWindow();
+  return this.current_;
 };
 
 /** @constructor */

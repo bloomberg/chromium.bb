@@ -90,6 +90,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/l10n_unittest.js",
   "base/js/platform_unittest.js",
   "base/js/protocol_extension_manager_unittest.js",
+  "base/js/telemetry_event_writer_unittest.js",
   "base/js/typecheck_unittest.js",
   "base/js/viewport_unittest.js",
   "base/js/window_shape_unittest.js",
@@ -164,6 +165,7 @@ remoting_webapp_shared_js_client_files = [
   "base/js/credentials_provider.js",
   "base/js/host_desktop.js",
   "base/js/smart_reconnector.js",
+  "base/js/telemetry_event_writer.js",
 ]
 
 # Remoting core JavaScript files.
@@ -181,7 +183,6 @@ remoting_webapp_shared_js_core_files = [
   "base/js/suspend_detector.js",
   "base/js/typecheck.js",
   "base/js/window_message_dispatcher.js",
-  "base/js/xhr_event_writer.js",
   "base/js/xhr.js",
 ]
 
@@ -394,8 +395,10 @@ remoting_webapp_background_html_all_js_files += [
   "base/js/oauth2_api.js",
   "base/js/oauth2_api_impl.js",
   "base/js/plugin_settings.js",
+  "base/js/telemetry_event_writer.js",
   "base/js/typecheck.js",
   "base/js/xhr.js",
+  "base/js/xhr_event_writer.js",
   "crd/js/host_installer.js",
   "crd/js/host_session.js",
   "crd/js/it2me_host_facade.js",

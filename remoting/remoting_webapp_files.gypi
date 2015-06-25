@@ -96,6 +96,7 @@
       'webapp/base/js/l10n_unittest.js',
       'webapp/base/js/platform_unittest.js',
       'webapp/base/js/protocol_extension_manager_unittest.js',
+      'webapp/base/js/telemetry_event_writer_unittest.js',
       'webapp/base/js/typecheck_unittest.js',
       'webapp/base/js/viewport_unittest.js',
       'webapp/base/js/window_shape_unittest.js',
@@ -172,6 +173,7 @@
       'webapp/base/js/credentials_provider.js',
       'webapp/base/js/host_desktop.js',
       'webapp/base/js/smart_reconnector.js',
+      'webapp/base/js/telemetry_event_writer.js',
     ],
     # Remoting core JavaScript files.
     'remoting_webapp_shared_js_core_files': [
@@ -404,8 +406,10 @@
       'webapp/base/js/oauth2_api.js',
       'webapp/base/js/oauth2_api_impl.js',
       'webapp/base/js/plugin_settings.js',
+      'webapp/base/js/telemetry_event_writer.js',
       'webapp/base/js/typecheck.js',
       'webapp/base/js/xhr.js',
+      'webapp/base/js/xhr_event_writer.js',
       'webapp/crd/js/host_installer.js',
       'webapp/crd/js/host_session.js',
       'webapp/crd/js/it2me_host_facade.js',

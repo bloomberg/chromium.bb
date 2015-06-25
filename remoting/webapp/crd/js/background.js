@@ -9,6 +9,9 @@ var remoting = remoting || {};
 
 'use strict';
 
+// TODO(kelvinp): Update the url to point to the telemetry front-end.
+var LOGGING_URL = '';
+
 /**
  * @constructor
  */
@@ -17,6 +20,10 @@ var BackgroundPage = function() {
   this.appLauncher_ = null;
   /** @private {remoting.ActivationHandler} */
   this.activationHandler_ = null;
+  /** @private {remoting.TelemetryEventWriter.Service} */
+  this.telemetryService_ = null;
+  /** @private */
+  this.disposables_ = new base.Disposables();
   this.preInit_();
 };
 
@@ -40,6 +47,14 @@ BackgroundPage.prototype.preInit_ = function() {
     this.appLauncher_ = new remoting.V2AppLauncher();
     this.activationHandler_ = new remoting.ActivationHandler(
         base.Ipc.getInstance(), this.appLauncher_);
+    this.telemetryService_ = new remoting.TelemetryEventWriter.Service(
+        base.Ipc.getInstance(),
+        new remoting.XhrEventWriter(LOGGING_URL, chrome.storage.local,
+                                    'pending-log-requests'));
+    this.telemetryService_.init();
+    this.disposables_.add(new base.EventHook(
+        this.activationHandler_, remoting.ActivationHandler.Events.windowClosed,
+        this.telemetryService_.unbindSession.bind(this.telemetryService_)));
   } else {
     this.appLauncher_ = new remoting.V1AppLauncher();
   }
