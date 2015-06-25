@@ -334,7 +334,7 @@ def _CreateSOLinks(dest_dir, build_dir):
   # to the output directory).
   # TODO(sky): come up with some way to automate this.
   files_to_link = {
-    'html_viewer.mojo': ['libhtml_viewer', 'html_viewer_library.so'],
+    'html_viewer.mojo': ['libhtml_viewer_library.so'],
     'libmandoline_runner.so': ['mandoline_runner'],
   }
   for android_name, so_path in files_to_link.iteritems():
