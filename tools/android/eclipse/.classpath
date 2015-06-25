@@ -5,6 +5,12 @@ Eclipse classpath. See instructions at
 https://code.google.com/p/chromium/wiki/AndroidEclipseDev for setting up Eclipse
 for Chrome Android development.
 
+Obsolete entries can be found using:
+
+  for f in $(grep -oP '(?<= path=")[^"]*' tools/android/eclipse/.classpath); do
+    [[ -e $f ]] || echo $f
+  done
+
 Note: this file can be processed as a Jinja2 template to add additional entries
 to the classpath for downstream development. See "additional_entries" below.
 
@@ -31,7 +37,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/test/chromedriver/test/webview_shell/java/src"/>
     <classpathentry kind="src" path="components/bookmarks/common/android/java/src"/>
     <classpathentry kind="src" path="components/cronet/android/java/src"/>
-    <classpathentry kind="src" path="components/devtools_bridge/android/java/src"/>
     <classpathentry kind="src" path="components/dom_distiller/android/java/src"/>
     <classpathentry kind="src" path="components/gcm_driver/android/java/src"/>
     <classpathentry kind="src" path="components/navigation_interception/android/java/src"/>
@@ -48,7 +53,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="content/shell/android/shell_apk/src"/>
     <classpathentry kind="src" path="device/battery/android/java/src"/>
     <classpathentry kind="src" path="media/base/android/java/src"/>
-    <classpathentry kind="src" path="mojo/public/java/system/src"/>
     <classpathentry kind="src" path="mojo/android/system/src"/>
     <classpathentry kind="src" path="mojo/android/javatests/src"/>
     <classpathentry kind="src" path="net/android/java/src"/>
@@ -59,8 +63,12 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="sync/android/java/src"/>
     <classpathentry kind="src" path="sync/android/javatests/src"/>
     <classpathentry kind="src" path="sync/test/android/javatests/src"/>
-    <classpathentry kind="src" path="testing/android/java/src"/>
+    <classpathentry kind="src" path="testing/android/appurify_support/java/src"/>
+    <classpathentry kind="src" path="testing/android/broker/java/src"/>
+    <classpathentry kind="src" path="testing/android/driver/java/src"/>
     <classpathentry kind="src" path="testing/android/junit/java/src"/>
+    <classpathentry kind="src" path="testing/android/native_test/java/src"/>
+    <classpathentry kind="src" path="testing/android/reporter/java/src"/>
     <classpathentry kind="src" path="third_party/android_data_chart/java/src"/>
     <classpathentry kind="src" path="third_party/android_protobuf/src/java/src/main/java" including="com/google/protobuf/nano/*"/>
     <classpathentry kind="src" path="third_party/android_swipe_refresh/java/src"/>
@@ -91,7 +99,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/content_gamepad_mapping"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_setting_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_settings_type_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/enhanced_bookmarks_launch_location_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/enhanced_bookmarks_launch_location_srcjar"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/gesture_event_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/invalidate_types_java"/>
@@ -111,13 +118,11 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/system_ui_resource_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/tab_load_status_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/text_input_type_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/toolbar_model_security_levels_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/top_controls_state_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/touch_device_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_input_event_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_text_input_type"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/window_open_disposition_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/templates/app_banner_metrics_ids_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/base_native_libraries_gen"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/chrome_version_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/dom_distiller_core_font_family_java"/>
@@ -144,7 +149,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="third_party/robolectric/lib/robolectric-2.4-jar-with-dependencies.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/cacheinvalidation_proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/content_java.jar"/>
-    <classpathentry kind="lib" path="out/Debug/lib.java/eyesfree_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/jsr_305_javalib.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/net_java.jar"/>
     <classpathentry kind="output" path="out/bin"/>
