@@ -119,9 +119,8 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 };
 
 // Readback can't be done with a delegating renderer.
-// Disabled due to flake: http://crbug.com/448521
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
-       DISABLED_GLRenderer_RunSingleThread) {
+       GLRenderer_RunSingleThread) {
   use_gl_renderer_ = true;
   RunTest(false, false);
 }
