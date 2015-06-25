@@ -321,12 +321,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-decoration-001.htm
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-emphasis-001.htm [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-and-inherit-001.htm [ ImageOnlyFailure ]
 
-crbug.com/503979 [ Mac Win ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-crbug.com/503979 fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/503979 fast/text/orientation-sideways.html [ NeedsRebaseline ]
-crbug.com/503979 [ Mac ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/503979 [ Mac ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ NeedsRebaseline ]
-
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-009.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vlr-003.xht [ ImageOnlyFailure ]
