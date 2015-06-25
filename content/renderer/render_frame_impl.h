@@ -156,8 +156,17 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderFrameImpls.
-  using CreateRenderFrameImplFunction = RenderFrameImpl* (*)(RenderViewImpl*,
-                                                             int32);
+  struct CreateParams {
+    CreateParams(RenderViewImpl* render_view, int32 routing_id)
+        : render_view(render_view), routing_id(routing_id) {}
+    ~CreateParams() {}
+
+    RenderViewImpl* render_view;
+    int32 routing_id;
+  };
+
+  using CreateRenderFrameImplFunction =
+      RenderFrameImpl* (*)(const CreateParams&);
   static void InstallCreateHook(
       CreateRenderFrameImplFunction create_render_frame_impl);
 
@@ -560,7 +569,7 @@ class CONTENT_EXPORT RenderFrameImpl
       scoped_ptr<NavigationParams> navigation_params);
 
  protected:
-  RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
+  explicit RenderFrameImpl(const CreateParams& params);
 
  private:
   friend class RenderFrameImplTest;

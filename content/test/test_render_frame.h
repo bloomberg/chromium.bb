@@ -17,8 +17,8 @@ struct StartNavigationParams;
 // A test class to use in RenderViewTests.
 class TestRenderFrame : public RenderFrameImpl {
  public:
-  static RenderFrameImpl* CreateTestRenderFrame(RenderViewImpl* render_view,
-                                                int32 routing_id);
+  static RenderFrameImpl* CreateTestRenderFrame(
+      const RenderFrameImpl::CreateParams& params);
   ~TestRenderFrame() override;
 
   void Navigate(const CommonNavigationParams& common_params,
@@ -37,7 +37,7 @@ class TestRenderFrame : public RenderFrameImpl {
       const std::vector<blink::WebCompositionUnderline>& underlines);
 
  private:
-  TestRenderFrame(RenderViewImpl* render_view, int32 routing_id);
+  explicit TestRenderFrame(const RenderFrameImpl::CreateParams& params);
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrame);
 };
 

@@ -518,11 +518,12 @@ RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
 RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
                                          int32 routing_id) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
+  CreateParams params(render_view, routing_id);
 
   if (g_create_render_frame_impl)
-    return g_create_render_frame_impl(render_view, routing_id);
+    return g_create_render_frame_impl(params);
   else
-    return new RenderFrameImpl(render_view, routing_id);
+    return new RenderFrameImpl(params);
 }
 
 // static
@@ -618,12 +619,12 @@ void RenderFrameImpl::InstallCreateHook(
 }
 
 // RenderFrameImpl ----------------------------------------------------------
-RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
+RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
     : frame_(NULL),
       is_subframe_(false),
       is_local_root_(false),
-      render_view_(render_view->AsWeakPtr()),
-      routing_id_(routing_id),
+      render_view_(params.render_view->AsWeakPtr()),
+      routing_id_(params.routing_id),
       is_swapped_out_(false),
       render_frame_proxy_(NULL),
       is_detaching_(false),

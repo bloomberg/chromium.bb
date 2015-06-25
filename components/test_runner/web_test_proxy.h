@@ -233,7 +233,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   blink::WebString acceptLanguages();
 
  private:
-  template <class, typename, typename>
+  template <class, typename>
   friend class WebFrameTestProxy;
 
   enum CheckDoneReason {

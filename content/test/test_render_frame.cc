@@ -13,13 +13,12 @@ namespace content {
 
 // static
 RenderFrameImpl* TestRenderFrame::CreateTestRenderFrame(
-    RenderViewImpl* render_view,
-    int32 routing_id) {
-  return new TestRenderFrame(render_view, routing_id);
+    const RenderFrameImpl::CreateParams& params) {
+  return new TestRenderFrame(params);
 }
 
-TestRenderFrame::TestRenderFrame(RenderViewImpl* render_view, int32 routing_id)
-    : RenderFrameImpl(render_view, routing_id) {
+TestRenderFrame::TestRenderFrame(const RenderFrameImpl::CreateParams& params)
+    : RenderFrameImpl(params) {
 }
 
 TestRenderFrame::~TestRenderFrame() {

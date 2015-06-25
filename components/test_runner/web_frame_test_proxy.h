@@ -17,10 +17,10 @@ namespace test_runner {
 
 // Templetized wrapper around RenderFrameImpl objects, which implement
 // the WebFrameClient interface.
-template <class Base, typename P, typename R>
+template <class Base, typename P>
 class WebFrameTestProxy : public Base {
  public:
-  WebFrameTestProxy(P p, R r) : Base(p, r), base_proxy_(NULL) {}
+  explicit WebFrameTestProxy(P p) : Base(p), base_proxy_(NULL) {}
 
   virtual ~WebFrameTestProxy() {}
 

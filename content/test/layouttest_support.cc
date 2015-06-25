@@ -64,7 +64,7 @@ RenderViewImpl* CreateWebTestProxy(const ViewMsg_New_Params& params) {
 
 test_runner::WebTestProxyBase* GetWebTestProxyBase(
     RenderViewImpl* render_view) {
-  typedef test_runner::WebTestProxy<RenderViewImpl, ViewMsg_New_Params*>
+  typedef test_runner::WebTestProxy<RenderViewImpl, const ViewMsg_New_Params&>
       ViewProxy;
 
   ViewProxy* render_view_proxy = static_cast<ViewProxy*>(render_view);
@@ -72,13 +72,12 @@ test_runner::WebTestProxyBase* GetWebTestProxyBase(
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(
-    RenderViewImpl* render_view,
-    int32 routing_id) {
-  typedef test_runner::WebFrameTestProxy<RenderFrameImpl, RenderViewImpl*,
-                                         int32> FrameProxy;
+    const RenderFrameImpl::CreateParams& params) {
+  typedef test_runner::WebFrameTestProxy<
+      RenderFrameImpl, const RenderFrameImpl::CreateParams&> FrameProxy;
 
-  FrameProxy* render_frame_proxy = new FrameProxy(render_view, routing_id);
-  render_frame_proxy->set_base_proxy(GetWebTestProxyBase(render_view));
+  FrameProxy* render_frame_proxy = new FrameProxy(params);
+  render_frame_proxy->set_base_proxy(GetWebTestProxyBase(params.render_view));
 
   return render_frame_proxy;
 }
