@@ -372,9 +372,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_PROGRESS,
             GetNotification(notification_id())->type());
 
-  // Installs observers before requesting the completion.
-  NotificationAddObserver download_notification_add_observer;
-  NotificationRemoveObserver download_notification_remove_observer;
+  NotificationUpdateObserver download_notification_update_observer;
 
   // Requests to complete the download.
   ui_test_utils::NavigateToURL(
@@ -387,8 +385,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   }
 
   // Waits for new notification.
-  download_notification_remove_observer.Wait();
-  download_notification_add_observer.Wait();
+  download_notification_update_observer.Wait();
 
   // Checks strings.
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -605,8 +602,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
   CreateDownload();
 
   // Installs observers before requesting.
-  NotificationAddObserver download_notification_add_observer;
-  NotificationRemoveObserver download_notification_remove_observer;
+  NotificationUpdateObserver download_notification_update_observer;
   content::DownloadTestObserverTerminal download_terminal_observer(
       GetDownloadManager(browser()),
       1u, /* wait_count */
@@ -618,8 +614,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
   download_terminal_observer.WaitForFinished();
 
   // Waits that new notification.
-  download_notification_remove_observer.Wait();
-  download_notification_add_observer.Wait();
+  download_notification_update_observer.Wait();
 
   // Confirms that there is only one notification.
   message_center::NotificationList::Notifications

@@ -74,6 +74,8 @@ class DownloadItemNotification : public DownloadNotification,
   // if IsDangerous() is true.
   base::string16 GetWarningText() const;
 
+  bool IsNotificationVisible() const;
+
   Browser* GetBrowser() const;
   Profile* profile() const;
 

@@ -221,6 +221,12 @@ void DownloadItemNotification::UpdateNotificationData(
   DownloadItemModel model(item_);
   DownloadCommands command(item_);
 
+  if (type == UPDATE_AND_POPUP && IsNotificationVisible()) {
+    // If the notification is already visible as popup or in the notification
+    // center, doesn't pop it up.
+    type = UPDATE;
+  }
+
   if (item_->IsDangerous()) {
     notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
     notification_->set_title(GetTitle());
@@ -561,3 +567,20 @@ Browser* DownloadItemNotification::GetBrowser() const {
 Profile* DownloadItemNotification::profile() const {
   return Profile::FromBrowserContext(item_->GetBrowserContext());
 }
+
+bool DownloadItemNotification::IsNotificationVisible() const {
+  const std::string& notification_id = watcher()->id();
+  const ProfileID profile_id = NotificationUIManager::GetProfileID(profile());
+  const std::string notification_id_in_message_center =
+      ProfileNotification::GetProfileNotificationId(notification_id,
+                                                    profile_id);
+
+  message_center::NotificationList::Notifications visible_notifications =
+      g_browser_process->message_center()->GetVisibleNotifications();
+  for (const auto& notification : visible_notifications) {
+    if (notification->id() == notification_id_in_message_center)
+      return true;
+  }
+  return false;
+}
+
