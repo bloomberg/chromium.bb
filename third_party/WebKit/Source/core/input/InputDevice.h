@@ -18,7 +18,10 @@ public:
     ~InputDevice();
 
     // This return a static local InputDevice pointer which has firesTouchEvents set to be true.
-    static InputDevice* touchEventInstance();
+    static InputDevice* firesTouchEventsInputDevice();
+
+    // This return a static local InputDevice pointer which has firesTouchEvents set to be false.
+    static InputDevice* doesntFireTouchEventsInputDevice();
 
     static InputDevice* create(bool firesTouchEvents)
     {

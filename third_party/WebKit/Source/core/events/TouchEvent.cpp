@@ -47,7 +47,7 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable, bool causesScrollingIfUncanceled,
         double uiCreateTime)
     // Pass a sourceDevice which fires touchevents when creating this touchevent, which is always created from input devices from EventHandler.
-    : UIEventWithKeyState(type, true, cancelable, view, 0, ctrlKey, altKey, shiftKey, metaKey, InputDevice::touchEventInstance())
+    : UIEventWithKeyState(type, true, cancelable, view, 0, ctrlKey, altKey, shiftKey, metaKey, InputDevice::firesTouchEventsInputDevice())
     , m_touches(touches)
     , m_targetTouches(targetTouches)
     , m_changedTouches(changedTouches)

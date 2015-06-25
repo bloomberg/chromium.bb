@@ -64,6 +64,12 @@ public:
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
         short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, unsigned short buttons = 0);
 
+    void initMouseEventInternal(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
+        int detail, int screenX, int screenY, int clientX, int clientY,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
+        short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDevice* sourceDevice, unsigned short buttons = 0);
+
+
     // WinIE uses 1,4,2 for left/middle/right but not for click (just for mousedown/up, maybe others),
     // but we will match the standard DOM.
     short button() const { return m_button == -1 ? 0 : m_button; }
@@ -71,6 +77,7 @@ public:
     bool buttonDown() const { return m_button != -1; }
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
+    PlatformMouseEvent::SyntheticEventType syntheticEventType() const { return m_syntheticEventType; }
 
     Node* toElement() const;
     Node* fromElement() const;

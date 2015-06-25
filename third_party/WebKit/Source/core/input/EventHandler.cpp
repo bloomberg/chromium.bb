@@ -1296,7 +1296,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
-        0, MouseEvent::platformModifiersToButtons(event.modifiers()), nullptr, dataTransfer);
+        0, MouseEvent::platformModifiersToButtons(event.modifiers()), nullptr, dataTransfer, false, event.syntheticEventType(), event.timestamp());
 
     dragTarget->dispatchEvent(me.get(), IGNORE_EXCEPTION);
     return me->defaultPrevented();

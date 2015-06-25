@@ -34,7 +34,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(ScriptState* scriptState, const AtomicString& type, const MouseEventInit& initializer)
 {
-    if (scriptState->world().isIsolatedWorld())
+    if (scriptState && scriptState->world().isIsolatedWorld())
         UIEventWithKeyState::didCreateEventInIsolatedWorld(initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey());
     return adoptRefWillBeNoop(new MouseEvent(type, initializer));
 }
@@ -89,7 +89,8 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
         IntPoint(windowX, windowY),
         IntPoint(movementX, movementY),
-        ctrlKey, altKey, shiftKey, metaKey, isSimulated)
+        ctrlKey, altKey, shiftKey, metaKey, isSimulated,
+        syntheticEventType == PlatformMouseEvent::FromTouch ? InputDevice::firesTouchEventsInputDevice() : InputDevice::doesntFireTouchEventsInputDevice())
     , m_button(button)
     , m_buttons(buttons)
     , m_relatedTarget(relatedTarget)
@@ -103,7 +104,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& init
     : MouseRelatedEvent(eventType, initializer.bubbles(), initializer.cancelable(), initializer.view(), initializer.detail(), IntPoint(initializer.screenX(), initializer.screenY()),
         IntPoint(0 /* pageX */, 0 /* pageY */),
         IntPoint(initializer.movementX(), initializer.movementY()),
-        initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), false /* isSimulated */)
+        initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), false /* isSimulated */, initializer.sourceDevice())
     , m_button(initializer.button())
     , m_buttons(initializer.buttons())
     , m_relatedTarget(initializer.relatedTarget())
@@ -135,6 +136,13 @@ void MouseEvent::initMouseEvent(ScriptState* scriptState, const AtomicString& ty
                                 int detail, int screenX, int screenY, int clientX, int clientY,
                                 bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
                                 short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, unsigned short buttons)
+{
+    initMouseEventInternal(scriptState, type, canBubble, cancelable, view, detail, screenX, screenY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, nullptr, buttons);
+}
+
+void MouseEvent::initMouseEventInternal(ScriptState* scriptState, const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
+    int detail, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
+    short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDevice* sourceDevice, unsigned short buttons)
 {
     if (dispatched())
         return;
@@ -285,10 +293,10 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) cons
     // of the DOM specs, but is used for compatibility with the ondblclick="" attribute. This is treated
     // as a separate event in other DOM-compliant browsers like Firefox, and so we do the same.
     RefPtrWillBeRawPtr<MouseEvent> doubleClickEvent = MouseEvent::create();
-    doubleClickEvent->initMouseEvent(nullptr, EventTypeNames::dblclick, event().bubbles(), event().cancelable(), event().view(),
+    doubleClickEvent->initMouseEventInternal(nullptr, EventTypeNames::dblclick, event().bubbles(), event().cancelable(), event().view(),
         event().detail(), event().screenX(), event().screenY(), event().clientX(), event().clientY(),
         event().ctrlKey(), event().altKey(), event().shiftKey(), event().metaKey(),
-        event().button(), relatedTarget, event().buttons());
+        event().button(), relatedTarget, event().sourceDevice(), event().buttons());
     if (event().defaultHandled())
         doubleClickEvent->setDefaultHandled();
     EventDispatcher::dispatchEvent(dispatcher.node(), MouseEventDispatchMediator::create(doubleClickEvent));

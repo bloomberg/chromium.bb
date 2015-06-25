@@ -21,9 +21,15 @@ InputDevice::~InputDevice()
 {
 }
 
-InputDevice* InputDevice::touchEventInstance()
+InputDevice* InputDevice::firesTouchEventsInputDevice()
 {
     DEFINE_STATIC_LOCAL(Persistent<InputDevice>, instance, (InputDevice::create(true)));
+    return instance;
+}
+
+InputDevice* InputDevice::doesntFireTouchEventsInputDevice()
+{
+    DEFINE_STATIC_LOCAL(Persistent<InputDevice>, instance, (InputDevice::create(false)));
     return instance;
 }
 

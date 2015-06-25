@@ -55,8 +55,8 @@ static LayoutSize contentsScrollOffset(AbstractView* abstractView)
 MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> abstractView,
     int detail, const IntPoint& screenLocation, const IntPoint& rootFrameLocation,
     const IntPoint& movementDelta,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated)
-    : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, ctrlKey, altKey, shiftKey, metaKey)
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated, InputDevice* sourceDevice)
+    : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, ctrlKey, altKey, shiftKey, metaKey, sourceDevice)
     , m_screenLocation(screenLocation)
     , m_movementDelta(movementDelta)
     , m_isSimulated(isSimulated)

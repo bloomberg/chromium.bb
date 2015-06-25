@@ -2,6 +2,7 @@
 <script>
     description("This tests that UIEvent and its subclass will have sourceDevice set to be null by default, and it can also be passed when initialization.")
 
+    // Creating UIEvent.
     var uievent = document.createEvent('UIEvent');
     shouldBeNonNull("uievent");
     shouldBeNull("uievent.sourceDevice");  
@@ -14,8 +15,18 @@
     shouldBeNonNull("uievent.sourceDevice");
     shouldBeTrue("uievent.sourceDevice.firesTouchEvents");
     
+    // Creating TouchEvent.
     var touchevent = document.createEvent("TouchEvent");
     shouldBeNonNull("touchevent");
     shouldBeNull("touchevent.sourceDevice");
+    
+    // Creating MouseEvent.
+    var mouseevent = new MouseEvent('mousedown');
+    shouldBeNonNull("mouseevent");
+    shouldBeNull("mouseevent.sourceDevice");
+    
+    var mouseevent = new MouseEvent('mousedown', { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
+    shouldBeNonNull("mouseevent.sourceDevice");
+    shouldBeFalse("mouseevent.sourceDevice.firesTouchEvents");
 
 </script>
