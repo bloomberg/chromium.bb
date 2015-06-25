@@ -5,7 +5,6 @@
 #ifndef NinePieceImagePainter_h
 #define NinePieceImagePainter_h
 
-#include "platform/LayoutUnit.h"
 #include "platform/heap/Heap.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
@@ -16,7 +15,6 @@ class GraphicsContext;
 class LayoutBoxModelObject;
 class LayoutRect;
 class NinePieceImage;
-class BorderImageLength;
 
 class NinePieceImagePainter {
     STACK_ALLOCATED();
@@ -26,8 +24,6 @@ public:
     bool paint(GraphicsContext*, const LayoutRect&, const ComputedStyle&, const NinePieceImage&, SkXfermode::Mode) const;
 
 private:
-    static LayoutUnit computeBorderImageSide(const BorderImageLength& borderSlice, LayoutUnit borderSide, LayoutUnit imageSide, LayoutUnit boxExtent);
-
     LayoutBoxModelObject& m_layoutObject;
 };
 
