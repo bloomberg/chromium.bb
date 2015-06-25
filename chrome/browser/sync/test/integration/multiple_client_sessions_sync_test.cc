@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/guid.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -27,26 +28,24 @@ class MultipleClientSessionsSyncTest : public SyncTest {
 
 // Timeout on Windows, see http://crbug.com/99819
 #if defined(OS_WIN)
-#define MAYBE_AllChanged DISABLED_AllChanged
+#define MAYBE_E2ETest_AllChanged DISABLED_E2ETest_AllChanged
 #define MAYBE_EncryptedAndChanged DISABLED_EncryptedAndChanged
 #else
-#define MAYBE_AllChanged AllChanged
+#define MAYBE_E2ETest_AllChanged E2ETest_AllChanged
 #define MAYBE_EncryptedAndChanged EncryptedAndChanged
 #endif
 
-IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, MAYBE_AllChanged) {
+IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
+                       MAYBE_E2ETest_AllChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  std::vector<ScopedWindowMap> client_windows(num_clients());
-
-  for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(CheckInitialState(i));
-  }
 
   // Open tabs on all clients and retain window information.
+  std::vector<ScopedWindowMap> client_windows(num_clients());
   for (int i = 0; i < num_clients(); ++i) {
     SessionWindowMap windows;
-    ASSERT_TRUE(OpenTabAndGetLocalWindows(
-        i, GURL(base::StringPrintf("http://127.0.0.1/bubba%i", i)), &windows));
+    std::string url = base::StringPrintf("http://127.0.0.1/bubba%s",
+        base::GenerateGUID().c_str());
+    ASSERT_TRUE(OpenTabAndGetLocalWindows(i, GURL(url), &windows));
     client_windows[i].Reset(&windows);
   }
 

@@ -318,15 +318,27 @@ bool WindowsMatch(const SessionWindowMap& win1,
                   const SessionWindowMap& win2) {
   sessions::SessionTab* client0_tab;
   sessions::SessionTab* client1_tab;
-  if (win1.size() != win2.size())
+  if (win1.size() != win2.size()) {
+    LOG(ERROR) << "Win size doesn't match, win1 size: "
+        << win1.size()
+        << ", win2 size: "
+        << win2.size();
     return false;
+  }
   for (SessionWindowMap::const_iterator i = win1.begin();
        i != win1.end(); ++i) {
     SessionWindowMap::const_iterator j = win2.find(i->first);
-    if (j == win2.end())
+    if (j == win2.end()) {
+      LOG(ERROR) << "Session doesn't match";
       return false;
-    if (i->second->tabs.size() != j->second->tabs.size())
+    }
+    if (i->second->tabs.size() != j->second->tabs.size()) {
+      LOG(ERROR) << "Tab size doesn't match, tab1 size: "
+          << i->second->tabs.size()
+          << ", tab2 size: "
+          << j->second->tabs.size();
       return false;
+    }
     for (size_t t = 0; t < i->second->tabs.size(); ++t) {
       client0_tab = i->second->tabs[t];
       client1_tab = j->second->tabs[t];
@@ -346,18 +358,28 @@ bool CheckForeignSessionsAgainst(
     int index,
     const std::vector<ScopedWindowMap>& windows) {
   SyncedSessionVector sessions;
-  if (!GetSessionData(index, &sessions))
-    return false;
-  if ((size_t)(test()->num_clients()-1) != sessions.size())
-    return false;
 
-  int window_index = 0;
-  for (size_t j = 0; j < sessions.size(); ++j, ++window_index) {
-    if (window_index == index)
-      window_index++;  // Skip self.
-    if (!WindowsMatch(sessions[j]->windows,
-                      *(windows[window_index].Get())))
+  if (!GetSessionData(index, &sessions)) {
+    LOG(ERROR) << "Cannot get session data";
+    return false;
+  }
+
+  for (size_t w_index = 0; w_index < windows.size(); ++w_index) {
+    // Skip the client's local window
+    if (static_cast<int>(w_index) == index)
+      continue;
+
+    size_t s_index = 0;
+
+    for (; s_index < sessions.size(); ++s_index) {
+      if (WindowsMatch(sessions[s_index]->windows, *(windows[w_index].Get())))
+        break;
+    }
+
+    if (s_index == sessions.size()) {
+      LOG(ERROR) << "Cannot find window #" << w_index;
       return false;
+    }
   }
 
   return true;

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/guid.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -18,6 +20,7 @@ using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
 using sessions_helper::OpenTabAndGetLocalWindows;
 using sessions_helper::ScopedWindowMap;
+using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
 using sessions_helper::WindowsMatch;
 
@@ -39,36 +42,32 @@ static const char* kURL2 = "http://127.0.0.1/bubba2";
 
 // Fails on Win, see http://crbug.com/232313
 #if defined(OS_WIN)
-#define MAYBE_SingleClientChanged DISABLED_SingleClientChanged
+#define MAYBE_E2ETest_SingleClientChanged DISABLED_E2ETest_SingleClientChanged
 #define MAYBE_BothChanged DISABLED_BothChanged
 #define MAYBE_DeleteIdleSession DISABLED_DeleteIdleSession
 #else
-#define MAYBE_SingleClientChanged SingleClientChanged
+#define MAYBE_E2ETest_SingleClientChanged E2ETest_SingleClientChanged
 #define MAYBE_BothChanged BothChanged
 #define MAYBE_DeleteIdleSession DeleteIdleSession
 #endif
 
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       MAYBE_SingleClientChanged) {
+                       MAYBE_E2ETest_SingleClientChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
+  // Open tab and access a url on client 0
+  SessionWindowMap client0_windows;
+  std::string url = base::StringPrintf("http://127.0.0.1/bubba%s",
+      base::GenerateGUID().c_str());
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(url), &client0_windows));
 
-  ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
-      client0_windows.GetMutable()));
+  // Retain the window information on client 0
+  std::vector<ScopedWindowMap> expected_windows(1);
+  expected_windows[0].Reset(&client0_windows);
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  // Get foreign session data from client 1.
-  SyncedSessionVector sessions1;
-  ASSERT_TRUE(GetSessionData(1, &sessions1));
-
-  // Verify client 1's foreign session matches client 0 current window.
-  ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
+  // Check the foreign windows on client 1
+  ASSERT_TRUE(AwaitCheckForeignSessionsAgainst(1, expected_windows));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
