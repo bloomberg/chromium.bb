@@ -33,10 +33,10 @@ ROLL_BRANCH_NAME = 'special_webrtc_roll_branch'
 TRYJOB_STATUS_SLEEP_SECONDS = 30
 
 # Use a shell for subcommands on Windows to get a PATH search.
-USE_SHELL = sys.platform.startswith('win')
-WEBRTC_PATH = 'third_party/webrtc'
-LIBJINGLE_PATH = 'third_party/libjingle/source/talk'
-LIBJINGLE_README = 'third_party/libjingle/README.chromium'
+IS_WIN = sys.platform.startswith('win')
+WEBRTC_PATH = os.path.join('third_party', 'webrtc')
+LIBJINGLE_PATH = os.path.join('third_party', 'libjingle', 'source', 'talk')
+LIBJINGLE_README = os.path.join('third_party', 'libjingle', 'README.chromium')
 
 # Result codes from build/third_party/buildbot_8_4p1/buildbot/status/results.py
 # plus the -1 code which is used when there's no result yet.
@@ -56,6 +56,12 @@ CommitInfo = collections.namedtuple('CommitInfo', ['commit_position',
                                                    'git_commit',
                                                    'git_repo_url'])
 CLInfo = collections.namedtuple('CLInfo', ['issue', 'url', 'rietveld_server'])
+
+
+def _PosixPath(path):
+  """Convert a possibly-Windows path to a posix-style path."""
+  (_, path) = os.path.splitdrive(path)
+  return path.replace(os.sep, '/')
 
 
 def _ParseGitCommitPosition(description):
@@ -145,8 +151,8 @@ def _PrintTrybotsStatus(tryjob_results):
     print '%s: %s' % (status, ','.join(sorted(name_list)))
 
 
-def _GenerateCLDescription(webrtc_current, libjingle_current,
-                           webrtc_new, libjingle_new):
+def _GenerateCLDescriptionCommand(webrtc_current, libjingle_current,
+                                  webrtc_new, libjingle_new):
   delim = ''
   webrtc_str = ''
   def GetChangeLogURL(git_repo_url, current_hash, new_hash):
@@ -169,14 +175,14 @@ def _GenerateCLDescription(webrtc_current, libjingle_current,
                                               libjingle_current.git_commit,
                                               libjingle_new.git_commit)
 
-  description = 'Roll ' + webrtc_str + delim + libjingle_str + '\n\n'
+  description = [ '-m', 'Roll ' + webrtc_str + delim + libjingle_str ]
   if webrtc_str:
-    description += webrtc_str + '\n'
-    description += 'Changes: %s\n\n' % webrtc_changelog_url
+    description.extend(['-m', webrtc_str])
+    description.extend(['-m', 'Changes: %s' % webrtc_changelog_url])
   if libjingle_str:
-    description += libjingle_str + '\n'
-    description += 'Changes: %s\n' % libjingle_changelog_url
-  description += '\nTBR='
+    description.extend(['-m', libjingle_str])
+    description.extend(['-m', 'Changes: %s' % libjingle_changelog_url])
+  description.extend(['-m', 'TBR='])
   return description
 
 
@@ -197,7 +203,7 @@ class AutoRoller(object):
       logging.debug('extra env: %s', extra_env)
       env.update(extra_env)
     p = subprocess.Popen(command, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, shell=USE_SHELL, env=env,
+                         stderr=subprocess.PIPE, shell=IS_WIN, env=env,
                          cwd=working_dir, universal_newlines=True)
     output = p.stdout.read()
     p.wait()
@@ -220,7 +226,7 @@ class AutoRoller(object):
                       git_repo_url)
 
   def _GetDepsCommitInfo(self, deps_dict, path_below_src):
-    entry = deps_dict['deps']['src/%s' % path_below_src]
+    entry = deps_dict['deps'][_PosixPath('src/%s' % path_below_src)]
     at_index = entry.find('@')
     git_repo_url = entry[:at_index]
     git_hash = entry[at_index + 1:]
@@ -298,6 +304,10 @@ class AutoRoller(object):
     webrtc_latest = self._GetCommitInfo(WEBRTC_PATH)
     libjingle_latest = self._GetCommitInfo(LIBJINGLE_PATH)
 
+    if IS_WIN:
+      # Make sure the roll script doesn't use Windows line endings.
+      self._RunCommand(['git', 'config', 'core.autocrlf', 'true'])
+
     self._UpdateDep(deps_filename, WEBRTC_PATH, webrtc_latest)
     self._UpdateDep(deps_filename, LIBJINGLE_PATH, libjingle_latest)
 
@@ -306,13 +316,13 @@ class AutoRoller(object):
       self._DeleteRollBranch()
     else:
       self._UpdateReadmeFile(LIBJINGLE_README, libjingle_latest.commit_position)
-      description = _GenerateCLDescription(webrtc_current, libjingle_current,
-                                           webrtc_latest, libjingle_latest)
+      description = _GenerateCLDescriptionCommand(
+        webrtc_current, libjingle_current, webrtc_latest, libjingle_latest)
       logging.debug('Committing changes locally.')
       self._RunCommand(['git', 'add', '--update', '.'])
-      self._RunCommand(['git', 'commit', '-m', description])
+      self._RunCommand(['git', 'commit'] + description)
       logging.debug('Uploading changes...')
-      self._RunCommand(['git', 'cl', 'upload', '-m', description],
+      self._RunCommand(['git', 'cl', 'upload'],
                        extra_env={'EDITOR': 'true'})
       cl_info = self._GetCLInfo()
       logging.debug('Issue: %d URL: %s', cl_info.issue, cl_info.url)
@@ -385,10 +395,6 @@ class AutoRoller(object):
 
 
 def main():
-  if sys.platform in ('win32', 'cygwin'):
-    logging.error('Only Linux and Mac platforms are supported right now.')
-    return -1
-
   parser = argparse.ArgumentParser(
       description='Find webrtc and libjingle revisions for roll.')
   parser.add_argument('--abort',
