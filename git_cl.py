@@ -2202,7 +2202,7 @@ def RietveldUpload(options, args, cl, change):
                  branch_cl_issue, branch_cl_patchset)])
         print
         print ('The current branch (%s) is tracking a local branch (%s) with '
-               'an open CL.') % (cl.GetBranch(), local_branch)
+               'an associated CL.') % (cl.GetBranch(), local_branch)
         print 'Adding %s/#ps%s as a dependency patchset.' % (
             branch_cl_issue_url, branch_cl_patchset)
         print
