@@ -1857,8 +1857,13 @@ PassRefPtr<AbstractInlineTextBox> LayoutText::firstAbstractInlineTextBox()
 void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
 {
     LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer);
-    for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
+    for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box);
+        if (box->truncation() != cNoTruncation) {
+            if (EllipsisBox* ellipsisBox = box->root().ellipsisBox())
+                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox);
+        }
+    }
 }
 
 } // namespace blink
