@@ -435,10 +435,6 @@ void BookmarkModel::SetNodeSyncTransactionVersion(
 }
 
 void BookmarkModel::OnFaviconChanged(const std::set<GURL>& urls) {
-  // Ignore events if |Load| has not been called yet.
-  if (!store_)
-    return;
-
   // Prevent the observers from getting confused for multiple favicon loads.
   for (std::set<GURL>::const_iterator i = urls.begin(); i != urls.end(); ++i) {
     std::vector<const BookmarkNode*> nodes;
