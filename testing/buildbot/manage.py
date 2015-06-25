@@ -46,6 +46,10 @@ SKIP = {
   'ClangToTMac',
   'ClangToTMacASan',
 
+  # This builder is fine, but win8_chromium_ng uses GN and this configuration,
+  # which breaks everything.
+  'Win8 Aura',
+
   # One off builders. Note that Swarming does support ARM.
   'Linux ARM Cross-Compile',
   'Site Isolation Linux',
