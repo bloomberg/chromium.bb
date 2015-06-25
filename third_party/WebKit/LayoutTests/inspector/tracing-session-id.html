@@ -25,7 +25,7 @@ function test()
             WebInspector.TimelineModel.RecordType.TracingStartedInPage
         ];
 
-        if (event.category !== WebInspector.TracingModel.DevToolsMetadataEventCategory || metadataEvents.indexOf(event.name) < 0)
+        if (!event.hasCategory(WebInspector.TracingModel.DevToolsMetadataEventCategory) || metadataEvents.indexOf(event.name) < 0)
             return;
 
         InspectorTest.assertEquals(InspectorTest.tracingModel().sessionId(), event.args["data"]["sessionId"]);

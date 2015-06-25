@@ -55,7 +55,7 @@ function test()
 
     function processEvent(event)
     {
-        if (event.category !== WebInspector.TracingModel.DevToolsMetadataEventCategory || event.name !== WebInspector.TracingModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
+        if (!event.hasCategory(WebInspector.TracingModel.DevToolsMetadataEventCategory) || event.name !== WebInspector.TracingModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
             return;
 
         ++workerMetadataEventCount;
