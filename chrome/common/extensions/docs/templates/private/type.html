@@ -14,7 +14,16 @@
     <tr><th>Enum</th></tr>
     <tr><td>
       {{#e:enum_values}}
-      {{?e.last}}or {{/}}<code>"{{e.name}}"</code>{{^e.last}}, {{/}}
+        {{?e.description}}
+          <dl>
+            <dt><code>"{{e.name}}"</code></dt>
+            <dd>
+              {{{e.description}}}
+            </dd>
+          </dl>
+        {{:e.description}}
+          {{?e.last}}or {{/}}<code>"{{e.name}}"</code>{{^e.last}}, {{/}}
+        {{/e.description}}
       {{/enum_values}}
     </td></tr>
     {{:enum_values}}
