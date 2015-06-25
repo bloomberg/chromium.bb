@@ -28,6 +28,11 @@ class BluetoothPairingChromeOS;
 
 // The BluetoothDeviceChromeOS class implements BluetoothDevice for the
 // Chrome OS platform.
+//
+// This class is not thread-safe, but is only called from the UI thread.
+//
+// A socket thread is used to create sockets but posts all callbacks on the UI
+// thread.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
     : public device::BluetoothDevice,
       public BluetoothGattServiceClient::Observer {
@@ -94,7 +99,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   BluetoothAdapterChromeOS* adapter() const { return adapter_; }
 
  protected:
-   // BluetoothDevice override
+  // BluetoothDevice override
   std::string GetDeviceName() const override;
 
  private:

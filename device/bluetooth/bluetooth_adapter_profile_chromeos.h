@@ -22,6 +22,9 @@ namespace chromeos {
 // Maintains a list of delegates which may serve the profile.
 // One delegate is allowed for each device.
 //
+// This class is not thread-safe, but is only called from the dbus origin
+// thread.
+//
 // BluetoothAdapterProfileChromeOS objects are owned by the
 // BluetoothAdapterChromeOS and allocated through Register()
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileChromeOS
@@ -103,4 +106,4 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterProfileChromeOS
 
 }  // namespace chromeos
 
-#endif
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_PROFILE_CHROMEOS_H_

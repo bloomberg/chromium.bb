@@ -18,28 +18,28 @@ namespace chromeos {
 // FakeBluetoothProfileServiceProvider simulates the behavior of a local
 // Bluetooth agent object and is used both in test cases in place of a
 // mock and on the Linux desktop.
+//
+// This class is only called from the dbus origin thread and is not thread-safe.
 class CHROMEOS_EXPORT FakeBluetoothProfileServiceProvider
     : public BluetoothProfileServiceProvider {
  public:
   FakeBluetoothProfileServiceProvider(const dbus::ObjectPath& object_path,
-                                      Delegate *delegate);
+                                      Delegate* delegate);
   ~FakeBluetoothProfileServiceProvider() override;
 
   // Each of these calls the equivalent
   // BluetoothProfileServiceProvider::Delegate method on the object passed on
   // construction.
-  virtual void Release();
-  virtual void NewConnection(
-      const dbus::ObjectPath& device_path,
-      scoped_ptr<dbus::FileDescriptor> fd,
-      const Delegate::Options& options,
-      const Delegate::ConfirmationCallback& callback);
-  virtual void RequestDisconnection(
-      const dbus::ObjectPath& device_path,
-      const Delegate::ConfirmationCallback& callback);
-  virtual void Cancel();
+  void Released();
+  void NewConnection(const dbus::ObjectPath& device_path,
+                     scoped_ptr<dbus::FileDescriptor> fd,
+                     const Delegate::Options& options,
+                     const Delegate::ConfirmationCallback& callback);
+  void RequestDisconnection(const dbus::ObjectPath& device_path,
+                            const Delegate::ConfirmationCallback& callback);
+  void Cancel();
 
-  const dbus::ObjectPath& object_path() { return object_path_; }
+  const dbus::ObjectPath& object_path() const { return object_path_; }
 
  private:
   friend class FakeBluetoothProfileManagerClient;
@@ -51,6 +51,8 @@ class CHROMEOS_EXPORT FakeBluetoothProfileServiceProvider
   // passed to generate the reply. |delegate_| is generally the object that
   // owns this one, and must outlive it.
   Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeBluetoothProfileServiceProvider);
 };
 
 }  // namespace chromeos

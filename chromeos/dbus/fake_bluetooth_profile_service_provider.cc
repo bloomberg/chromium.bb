@@ -31,8 +31,8 @@ FakeBluetoothProfileServiceProvider::~FakeBluetoothProfileServiceProvider() {
   fake_bluetooth_profile_manager_client->UnregisterProfileServiceProvider(this);
 }
 
-void FakeBluetoothProfileServiceProvider::Release() {
-  VLOG(1) << object_path_.value() << ": Release";
+void FakeBluetoothProfileServiceProvider::Released() {
+  VLOG(1) << object_path_.value() << ": Released";
   delegate_->Released();
 }
 

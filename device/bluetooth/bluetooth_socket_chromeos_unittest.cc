@@ -76,7 +76,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothSocketChromeOSTest::AdapterCallback,
                    base::Unretained(this)));
-    ASSERT_TRUE(adapter_.get() != NULL);
+    ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
 
@@ -89,7 +89,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
   }
 
   void TearDown() override {
-    adapter_ = NULL;
+    adapter_ = nullptr;
     BluetoothSocketThread::CleanupForTesting();
     DBusThreadManager::Shutdown();
   }
@@ -184,7 +184,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
 TEST_F(BluetoothSocketChromeOSTest, Connect) {
   BluetoothDevice* device = adapter_->GetDevice(
       FakeBluetoothDeviceClient::kPairedDeviceAddress);
-  ASSERT_TRUE(device != NULL);
+  ASSERT_TRUE(device != nullptr);
 
   device->ConnectToService(
       BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
@@ -196,11 +196,11 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of the socket for the remainder of the test.
   scoped_refptr<BluetoothSocket> socket = last_socket_;
-  last_socket_ = NULL;
+  last_socket_ = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -235,18 +235,18 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
   EXPECT_EQ(4, last_bytes_received_);
-  EXPECT_TRUE(last_io_buffer_.get() != NULL);
+  EXPECT_TRUE(last_io_buffer_.get() != nullptr);
 
   // Take ownership of the received buffer.
   scoped_refptr<net::IOBuffer> read_buffer = last_io_buffer_;
-  last_io_buffer_ = NULL;
+  last_io_buffer_ = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
   std::string data = std::string(read_buffer->data(), last_bytes_received_);
   EXPECT_EQ("test", data);
 
-  read_buffer = NULL;
+  read_buffer = nullptr;
 
   // Receive data again; the socket will have been closed, this should cause a
   // disconnected error to be returned via the error callback.
@@ -305,11 +305,11 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of the socket for the remainder of the test.
   scoped_refptr<BluetoothSocket> server_socket = last_socket_;
-  last_socket_ = NULL;
+  last_socket_ = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -324,7 +324,7 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
           DBusThreadManager::Get()->GetBluetoothDeviceClient());
   BluetoothDevice* device = adapter_->GetDevice(
       FakeBluetoothDeviceClient::kPairedDeviceAddress);
-  ASSERT_TRUE(device != NULL);
+  ASSERT_TRUE(device != nullptr);
   fake_bluetooth_device_client->ConnectProfile(
       static_cast<BluetoothDeviceChromeOS*>(device)->object_path(),
       FakeBluetoothProfileManagerClient::kRfcommUuid,
@@ -343,11 +343,11 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of the client socket for the remainder of the test.
   scoped_refptr<BluetoothSocket> client_socket = last_socket_;
-  last_socket_ = NULL;
+  last_socket_ = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -359,7 +359,7 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
   message_loop_.Run();
 
   EXPECT_EQ(1U, success_callback_count_);
-  client_socket = NULL;
+  client_socket = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -383,11 +383,11 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of the client socket for the remainder of the test.
   client_socket = last_socket_;
-  last_socket_ = NULL;
+  last_socket_ = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -399,7 +399,7 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
   message_loop_.Run();
 
   EXPECT_EQ(1U, success_callback_count_);
-  client_socket = NULL;
+  client_socket = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -432,11 +432,11 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of the socket for the remainder of the test.
   scoped_refptr<BluetoothSocket> socket = last_socket_;
-  last_socket_ = NULL;
+  last_socket_ = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -447,7 +447,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
   FakeBluetoothProfileServiceProvider* profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
           FakeBluetoothProfileManagerClient::kRfcommUuid);
-  EXPECT_TRUE(profile_service_provider == NULL);
+  EXPECT_TRUE(profile_service_provider == nullptr);
 
   // Make the adapter visible. This should register a profile.
   fake_bluetooth_adapter_client->SetVisible(true);
@@ -457,7 +457,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
   profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
           FakeBluetoothProfileManagerClient::kRfcommUuid);
-  EXPECT_TRUE(profile_service_provider != NULL);
+  EXPECT_TRUE(profile_service_provider != nullptr);
 
   // Cleanup the socket.
   socket->Disconnect(
@@ -486,11 +486,11 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of the socket for the remainder of the test.
   scoped_refptr<BluetoothSocket> socket = last_socket_;
-  last_socket_ = NULL;
+  last_socket_ = nullptr;
   success_callback_count_ = 0;
   error_callback_count_ = 0;
 
@@ -501,7 +501,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
   FakeBluetoothProfileServiceProvider* profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
           FakeBluetoothProfileManagerClient::kRfcommUuid);
-  EXPECT_TRUE(profile_service_provider != NULL);
+  EXPECT_TRUE(profile_service_provider != nullptr);
 
   // Make the adapter invisible, and fiddle with the profile fake to unregister
   // the profile since this doesn't happen automatically.
@@ -517,7 +517,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
   profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
           FakeBluetoothProfileManagerClient::kRfcommUuid);
-  EXPECT_TRUE(profile_service_provider != NULL);
+  EXPECT_TRUE(profile_service_provider != nullptr);
 
   // Cleanup the socket.
   socket->Disconnect(
@@ -532,7 +532,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
 TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
   BluetoothDevice* device = adapter_->GetDevice(
       FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress);
-  ASSERT_TRUE(device != NULL);
+  ASSERT_TRUE(device != nullptr);
 
   device->ConnectToService(
       BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
@@ -544,7 +544,7 @@ TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
 
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() == NULL);
+  EXPECT_TRUE(last_socket_.get() == nullptr);
 
   device->ConnectToService(
       BluetoothUUID(FakeBluetoothProfileManagerClient::kRfcommUuid),
@@ -556,7 +556,7 @@ TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
 
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(2U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() == NULL);
+  EXPECT_TRUE(last_socket_.get() == nullptr);
 }
 
 TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
@@ -572,7 +572,7 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take control of this socket.
   scoped_refptr<BluetoothSocket> server_socket;
@@ -586,7 +586,7 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
 
   server_socket->Close();
 
-  server_socket = NULL;
+  server_socket = nullptr;
 
   message_loop_.RunUntilIdle();
 
@@ -605,7 +605,7 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
 
   EXPECT_EQ(2U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
-  EXPECT_TRUE(last_socket_.get() != NULL);
+  EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take control of this socket.
   server_socket.swap(last_socket_);
@@ -618,7 +618,7 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
 
   server_socket->Close();
 
-  server_socket = NULL;
+  server_socket = nullptr;
 
   message_loop_.RunUntilIdle();
 

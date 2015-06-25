@@ -86,7 +86,7 @@ BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
 
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
-    adapter_ = NULL;
+    adapter_ = nullptr;
   }
 }
 
@@ -168,7 +168,7 @@ void BluetoothSocketChromeOS::Close() {
   // DBusThreadManager during shutdown if that callback executes too late.
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
-    adapter_ = NULL;
+    adapter_ = nullptr;
   }
 
   if (!device_path_.value().empty()) {
@@ -182,7 +182,7 @@ void BluetoothSocketChromeOS::Disconnect(const base::Closure& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   if (profile_)
-   UnregisterProfile();
+    UnregisterProfile();
 
   if (!device_path_.value().empty()) {
     BluetoothSocketNet::Disconnect(callback);
@@ -523,7 +523,7 @@ void BluetoothSocketChromeOS::OnNewConnection(
     accept_request_->error_callback.Run(kAcceptFailed);
   }
 
-  accept_request_.reset(NULL);
+  accept_request_.reset(nullptr);
   connection_request_queue_.pop();
 
   callback.Run(status);
@@ -535,7 +535,7 @@ void BluetoothSocketChromeOS::DoCloseListening() {
   if (accept_request_) {
     accept_request_->error_callback.Run(
         net::ErrorToString(net::ERR_CONNECTION_CLOSED));
-    accept_request_.reset(NULL);
+    accept_request_.reset(nullptr);
   }
 
   while (connection_request_queue_.size() > 0) {

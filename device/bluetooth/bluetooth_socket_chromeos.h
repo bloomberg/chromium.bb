@@ -31,6 +31,8 @@ class BluetoothAdapterProfileChromeOS;
 
 // The BluetoothSocketChromeOS class implements BluetoothSocket for the
 // Chrome OS platform.
+//
+// This class is not thread-safe, but is only called from the UI thread.
 class CHROMEOS_EXPORT BluetoothSocketChromeOS
     : public device::BluetoothSocketNet,
       public device::BluetoothAdapter::Observer,

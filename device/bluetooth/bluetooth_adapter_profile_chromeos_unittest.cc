@@ -191,7 +191,7 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, DelegateCount) {
                            base::Bind(&base::DoNothing));
 
   EXPECT_EQ(0U, profile_->DelegateCount());
-};
+}
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
   BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
@@ -227,7 +227,7 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, BlackHole) {
   EXPECT_EQ(1U, error_callback_count_);
 
   EXPECT_EQ(0U, fake_delegate_paired_.connections_);
-};
+}
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
   BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
@@ -303,7 +303,7 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, Routing) {
   EXPECT_EQ(0U, error_callback_count_);
 
   EXPECT_EQ(1U, fake_delegate_listen_.connections_);
-};
+}
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegister) {
   BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kRfcommUuid);
@@ -344,7 +344,7 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegister) {
                           profile_user_ptr_);
 
   message_loop_.RunUntilIdle();
-};
+}
 
 TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegisterFail) {
   BluetoothUUID uuid(FakeBluetoothProfileManagerClient::kUnregisterableUuid);
@@ -378,6 +378,6 @@ TEST_F(BluetoothAdapterProfileChromeOSTest, SimultaneousRegisterFail) {
   EXPECT_FALSE(profile_user_ptr_);
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(2U, error_callback_count_);
-};
+}
 
 }  // namespace chromeos

@@ -46,6 +46,12 @@ class BluetoothRemoteGattServiceChromeOS;
 // The BluetoothAdapterChromeOS class implements BluetoothAdapter for the
 // Chrome OS platform.
 //
+// All methods are called from the dbus origin / UI thread and are generally
+// not assumed to be thread-safe.
+//
+// This class interacts with sockets using the BluetoothSocketThread to ensure
+// single-threaded calls, and posts tasks to the UI thread.
+//
 // Methods tolerate a shutdown scenario where BluetoothAdapterChromeOS::Shutdown
 // causes IsPresent to return false just before the dbus system is shutdown but
 // while references to the BluetoothAdapterChromeOS object still exists.
@@ -109,8 +115,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   BluetoothDeviceChromeOS* GetDeviceWithPath(
       const dbus::ObjectPath& object_path);
 
-  // Announce to observers a change in device state that is not reflected by
-  // its D-Bus properties.
+  // Announces to observers a change in device state that is not reflected by
+  // its D-Bus properties. |device| is owned by the caller and cannot be NULL.
   void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
 
   // The following methods are used to send various GATT observer events to

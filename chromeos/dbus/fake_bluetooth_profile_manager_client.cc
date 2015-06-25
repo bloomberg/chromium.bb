@@ -48,7 +48,7 @@ void FakeBluetoothProfileManagerClient::RegisterProfile(
     return;
   }
 
-  // check options for channel & psm
+  // TODO(jamuraa): check options for channel & psm
 
   ServiceProviderMap::iterator iter = service_provider_map_.find(profile_path);
   if (iter == service_provider_map_.end()) {
@@ -107,7 +107,7 @@ FakeBluetoothProfileManagerClient::GetProfileServiceProvider(
     const std::string& uuid) {
   ProfileMap::iterator iter = profile_map_.find(uuid);
   if (iter == profile_map_.end())
-    return NULL;
+    return nullptr;
   return service_provider_map_[iter->second];
 }
 
