@@ -177,7 +177,6 @@
           ],
           'dependencies': [
             'net_javatests',
-            'net_test_jni_headers',
           ],
         }],
         [ 'use_nss_certs != 1', {
@@ -588,11 +587,7 @@
         'test/spawned_test_server/local_test_server.h',
         'test/spawned_test_server/local_test_server_posix.cc',
         'test/spawned_test_server/local_test_server_win.cc',
-        'test/spawned_test_server/remote_test_server.cc',
-        'test/spawned_test_server/remote_test_server.h',
         'test/spawned_test_server/spawned_test_server.h',
-        'test/spawned_test_server/spawner_communicator.cc',
-        'test/spawned_test_server/spawner_communicator.h',
         'test/url_request/url_request_failed_job.cc',
         'test/url_request/url_request_failed_job.h',
         'test/url_request/url_request_mock_data_job.cc',
@@ -634,8 +629,15 @@
             }],
           ],
         }],
-        ['OS != "android"', {
-          'sources!': [
+        ['OS == "android"', {
+          'dependencies': [
+            'net_test_jni_headers',
+          ],
+          'sources': [
+            'test/android/net_test_jni_onload.cc',
+            'test/android/net_test_jni_onload.h',
+            'test/embedded_test_server/android/embedded_test_server_android.cc',
+            'test/embedded_test_server/android/embedded_test_server_android.h',
             'test/spawned_test_server/remote_test_server.cc',
             'test/spawned_test_server/remote_test_server.h',
             'test/spawned_test_server/spawner_communicator.cc',
@@ -1368,9 +1370,10 @@
           'type': 'none',
           'sources': [
             'android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java',
+            'test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java',
           ],
           'variables': {
-            'jni_gen_package': 'net',
+            'jni_gen_package': 'net/test',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
@@ -1412,6 +1415,7 @@
             'java_in_dir': '../net/test/android/javatests',
           },
           'dependencies': [
+            'net_test_support',
             'url_request_failed_job_java',
             '../base/base.gyp:base_java',
             '<@(net_test_extra_libs)',
