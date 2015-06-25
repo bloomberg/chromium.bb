@@ -175,8 +175,8 @@ void CertificateSelector::OnSelectionChanged() {
 }
 
 void CertificateSelector::OnDoubleClick() {
-  if (Accept())
-    GetWidget()->Close();
+  if (GetSelectedCert())
+    GetDialogClientView()->AcceptWindow();
 }
 
 }  // namespace chrome

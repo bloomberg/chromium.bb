@@ -25,12 +25,40 @@ class TestCertificateSelector : public chrome::CertificateSelector {
                           content::WebContents* web_contents)
       : CertificateSelector(certificates, web_contents) {}
 
+  ~TestCertificateSelector() override {
+    if (!on_destroy_.is_null())
+      on_destroy_.Run();
+  }
+
   void Init() {
     InitWithText(make_scoped_ptr(
         new views::Label(base::ASCIIToUTF16("some arbitrary text"))));
   }
 
+  bool Accept() override {
+    if (accepted_)
+      *accepted_ = true;
+    return CertificateSelector::Accept();
+  }
+
+  bool Cancel() override {
+    if (canceled_)
+      *canceled_ = true;
+    return CertificateSelector::Cancel();
+  }
+
+  void TrackState(bool* accepted, bool* canceled) {
+    accepted_ = accepted;
+    canceled_ = canceled;
+  }
+
+  void set_on_destroy(base::Closure on_destroy) { on_destroy_ = on_destroy; }
+
  private:
+  bool* accepted_ = nullptr;
+  bool* canceled_ = nullptr;
+  base::Closure on_destroy_;
+
   DISALLOW_COPY_AND_ASSIGN(TestCertificateSelector);
 };
 
@@ -60,16 +88,12 @@ class CertificateSelectorTest : public InProcessBrowserTest {
     selector_->Show();
   }
 
-  void TearDownOnMainThread() override {
-    selector_->Close();
-    selector_ = nullptr;
-  }
-
  protected:
   scoped_refptr<net::X509Certificate> client_1_;
   scoped_refptr<net::X509Certificate> client_2_;
 
-  // The selector will be deleted when the browser is shutdown.
+  // The selector will be owned by the Views hierarchy and will at latest be
+  // deleted during the browser shutdown.
   TestCertificateSelector* selector_ = nullptr;
 };
 
@@ -83,4 +107,24 @@ IN_PROC_BROWSER_TEST_F(CertificateSelectorTest, GetSelectedCert) {
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_UP, false,
                                               false, false, false));
   EXPECT_EQ(client_1_.get(), selector_->GetSelectedCert());
+}
+
+IN_PROC_BROWSER_TEST_F(CertificateSelectorTest, DoubleClick) {
+  bool accepted = false;
+  bool canceled = false;
+  selector_->TrackState(&accepted, &canceled);
+
+  base::RunLoop loop;
+  selector_->set_on_destroy(loop.QuitClosure());
+
+  // Simulate double clicking on an entry in the certificate list.
+  selector_->OnDoubleClick();
+
+  // Wait for the dialog to be closed and destroyed.
+  loop.Run();
+
+  // Closing the dialog through a double click must call only the Accept()
+  // function and not Cancel().
+  EXPECT_TRUE(accepted);
+  EXPECT_FALSE(canceled);
 }
