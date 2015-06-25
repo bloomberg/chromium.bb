@@ -97,7 +97,6 @@ class PepperPluginInstanceImpl;
 class PermissionDispatcher;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
-class RenderCdmFactory;
 class RendererAccessibility;
 class RendererCdmManager;
 class RendererMediaPlayerManager;
@@ -943,7 +942,7 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   // The CDM factory attached to this frame, lazily initialized.
-  RenderCdmFactory* cdm_factory_;
+  scoped_ptr<media::CdmFactory> cdm_factory_;
 
 #if defined(VIDEO_HOLE)
   // Whether or not this RenderFrameImpl contains a media player. Used to

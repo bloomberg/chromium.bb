@@ -24,21 +24,19 @@
 
 namespace content {
 
+#if defined(ENABLE_PEPPER_CDMS)
 RenderCdmFactory::RenderCdmFactory(
-#if defined(ENABLE_PEPPER_CDMS)
-    const CreatePepperCdmCB& create_pepper_cdm_cb,
-#elif defined(ENABLE_BROWSER_CDMS)
-    RendererCdmManager* manager,
-#endif  // defined(ENABLE_PEPPER_CDMS)
-    RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame)
-#if defined(ENABLE_PEPPER_CDMS)
-    , create_pepper_cdm_cb_(create_pepper_cdm_cb)
-#elif defined(ENABLE_BROWSER_CDMS)
-    , manager_(manager)
-#endif  // defined(ENABLE_PEPPER_CDMS)
-{
+    const CreatePepperCdmCB& create_pepper_cdm_cb)
+    : create_pepper_cdm_cb_(create_pepper_cdm_cb) {
 }
+#elif defined(ENABLE_BROWSER_CDMS)
+RenderCdmFactory::RenderCdmFactory(RendererCdmManager* manager)
+    : manager_(manager) {
+}
+#else
+RenderCdmFactory::RenderCdmFactory() {
+}
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 RenderCdmFactory::~RenderCdmFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());

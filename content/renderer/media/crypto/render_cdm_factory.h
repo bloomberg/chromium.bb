@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_keys.h"
 
@@ -31,15 +30,15 @@ class RendererCdmManager;
 
 // CdmFactory implementation in content/renderer. This class is not thread safe
 // and should only be used on one thread.
-class RenderCdmFactory : public media::CdmFactory, public RenderFrameObserver {
+class RenderCdmFactory : public media::CdmFactory {
  public:
-  RenderCdmFactory(
 #if defined(ENABLE_PEPPER_CDMS)
-      const CreatePepperCdmCB& create_pepper_cdm_cb,
+  explicit RenderCdmFactory(const CreatePepperCdmCB& create_pepper_cdm_cb);
 #elif defined(ENABLE_BROWSER_CDMS)
-      RendererCdmManager* manager,
+  explicit RenderCdmFactory(RendererCdmManager* manager);
+#else
+  RenderCdmFactory();
 #endif  // defined(ENABLE_PEPPER_CDMS)
-      RenderFrame* render_frame);
 
   ~RenderCdmFactory() override;
 

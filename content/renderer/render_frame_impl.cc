@@ -180,6 +180,7 @@
 #endif
 
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#include "media/mojo/services/mojo_cdm_factory.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
@@ -644,7 +645,6 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #if defined(ENABLE_BROWSER_CDMS)
       cdm_manager_(NULL),
 #endif
-      cdm_factory_(NULL),
 #if defined(VIDEO_HOLE)
       contains_media_player_(false),
 #endif
@@ -4975,16 +4975,21 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
 
   if (!cdm_factory_) {
     DCHECK(frame_);
-    cdm_factory_ = new RenderCdmFactory(
+
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceProvider()));
+#else
+    cdm_factory_.reset(new RenderCdmFactory(
 #if defined(ENABLE_PEPPER_CDMS)
-        base::Bind(&PepperCdmWrapperImpl::Create, frame_),
+        base::Bind(&PepperCdmWrapperImpl::Create, frame_)
 #elif defined(ENABLE_BROWSER_CDMS)
-        cdm_manager_,
+        cdm_manager_
 #endif
-        this);
+        ));
+#endif  //  defined(ENABLE_MEDIA_MOJO_RENDERER)
   }
 
-  return cdm_factory_;
+  return cdm_factory_.get();
 }
 
 }  // namespace content
