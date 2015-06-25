@@ -49,6 +49,11 @@ int FileDescriptor::TakeValue() {
 
 void FileDescriptor::CheckValidity() {
   base::File file(value_);
+  if (!file.IsValid()) {
+    valid_ = false;
+    return;
+  }
+
   base::File::Info info;
   bool ok = file.GetInfo(&info);
   file.TakePlatformFile();  // Prevent |value_| from being closed by |file|.
