@@ -53,6 +53,7 @@ class SyncChromeStage(generic_stages.BuilderStage,
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
+    chrome_atom_to_build = None
     if self._chrome_rev:
       if (self._chrome_rev == constants.CHROME_REV_SPEC and
           self._run.options.chrome_version):
@@ -66,7 +67,6 @@ class SyncChromeStage(generic_stages.BuilderStage,
                        self.chrome_version)
 
       # Perform chrome uprev.
-      chrome_atom_to_build = None
       chrome_atom_to_build = commands.MarkChromeAsStable(
           self._build_root, self._run.manifest_branch,
           self._chrome_rev, self._boards,
