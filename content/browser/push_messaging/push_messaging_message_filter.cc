@@ -19,7 +19,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/console_message_level.h"
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
@@ -29,6 +32,13 @@ const char kPushSenderIdServiceWorkerKey[] = "push_sender_id";
 const char kPushRegistrationIdServiceWorkerKey[] = "push_registration_id";
 
 namespace {
+
+// Chrome currently does not support the Push API in incognito.
+const char kIncognitoPushUnsupportedMessage[] =
+    "Chrome currently does not support the Push API in incognito mode "
+    "(https://crbug.com/401439). There is deliberately no way to "
+    "feature-detect this, since incognito mode needs to be undetectable by "
+    "websites.";
 
 // These UMA methods are only called from IO thread, but it would be acceptable
 // (even though slightly racy) to call them from UI thread as well, see
@@ -364,10 +374,19 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
                        io_parent_,
                        data,
                        PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
+      } else {
+        // Leave the promise hanging forever, to simulate a user ignoring the
+        // infobar. TODO(johnme): Simulate the user dismissing the infobar after
+        // a random time period.
+        RenderFrameHost* render_frame_host =
+            RenderFrameHost::FromID(render_process_id_, data.render_frame_id);
+        WebContents* web_contents =
+            WebContents::FromRenderFrameHost(render_frame_host);
+        if (web_contents) {
+          web_contents->GetMainFrame()->AddMessageToConsole(
+              CONSOLE_MESSAGE_LEVEL_ERROR, kIncognitoPushUnsupportedMessage);
+        }
       }
-      // Else leave the promise hanging forever, to simulate a user ignoring the
-      // infobar. TODO(johnme): Simulate the user dismissing the infobar after a
-      // random time period.
     }
     return;
   }

@@ -339,9 +339,6 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(renderer_id, render_frame_id);
-  if (!render_frame_host)
-    return;
-
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents)
