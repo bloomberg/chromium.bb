@@ -359,27 +359,7 @@ class BatteryUtils(object):
     def battery_updates_disabled():
       return self.GetCharging() is False
 
-    if (self._device.build_version_sdk <
-        constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
-      raise device_errors.DeviceVersionError('Device must be L or higher.')
-
-    self._device.RunShellCommand(
-        ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True)
-    self._device.RunShellCommand(
-        ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True)
-    self._device.RunShellCommand(
-        ['dumpsys', 'batterystats', '--reset'], check_return=True)
-    battery_data = self._device.RunShellCommand(
-        ['dumpsys', 'batterystats', '--charged', '--checkin'],
-        check_return=True, large_output=True)
-    ROW_TYPE_INDEX = 3
-    PWI_POWER_INDEX = 5
-    for line in battery_data:
-      l = line.split(',')
-      if (len(l) > PWI_POWER_INDEX and l[ROW_TYPE_INDEX] == 'pwi'
-          and l[PWI_POWER_INDEX] != 0):
-        raise device_errors.CommandFailedError(
-            'Non-zero pmi value found after reset.')
+    self._ClearPowerData()
     self._device.RunShellCommand(['dumpsys', 'battery', 'set', 'ac', '0'],
                                  check_return=True)
     self._device.RunShellCommand(['dumpsys', 'battery', 'set', 'usb', '0'],
@@ -402,10 +382,6 @@ class BatteryUtils(object):
       return (self.GetCharging()
               or not bool('UPDATES STOPPED' in self._device.RunShellCommand(
                   ['dumpsys', 'battery'], check_return=True)))
-
-    if (self._device.build_version_sdk <
-        constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
-      raise device_errors.DeviceVersionError('Device must be L or higher.')
 
     self._device.RunShellCommand(['dumpsys', 'battery', 'reset'],
                                  check_return=True)
@@ -483,6 +459,7 @@ class BatteryUtils(object):
                  target_temp)
     timeout_retry.WaitFor(cool_device, wait_period=wait_period)
 
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def TieredSetCharging(self, enabled, timeout=None, retries=None):
     """Enables or disables charging on the device.
 
@@ -492,6 +469,10 @@ class BatteryUtils(object):
       timeout: timeout in seconds
       retries: number of retries
     """
+    if self.GetCharging() == enabled:
+      logging.warning('Device charging already in expected state: %s', enabled)
+      return
+
     if enabled:
       try:
         self.SetCharging(enabled)
@@ -501,14 +482,55 @@ class BatteryUtils(object):
         self.EnableBatteryUpdates()
     else:
       try:
+        self._ClearPowerData()
         self.SetCharging(enabled)
       except device_errors.CommandFailedError:
         logging.info('Unable to disable charging via hardware.'
                      ' Falling back to software disabling.')
         self.DisableBatteryUpdates()
 
+  def _ClearPowerData(self):
+    """Resets battery data and makes device appear like it is not
+    charging so that it will collect power data since last charge.
+
+    Returns:
+      True if power data cleared.
+      False if power data clearing is not supported (pre-L)
+
+    Raises:
+      device_errors.DeviceVersionError: If power clearing is supported,
+        but fails.
+    """
+    if (self._device.build_version_sdk <
+        constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
+      logging.warning('Dumpsys power data only available on 5.0 and above. '
+                      'Cannot clear power data.')
+      return False
+
+    self._device.RunShellCommand(
+        ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True)
+    self._device.RunShellCommand(
+        ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True)
+    self._device.RunShellCommand(
+        ['dumpsys', 'batterystats', '--reset'], check_return=True)
+    battery_data = self._device.RunShellCommand(
+        ['dumpsys', 'batterystats', '--charged', '--checkin'],
+        check_return=True, large_output=True)
+    for line in battery_data:
+      l = line.split(',')
+      if (len(l) > _PWI_POWER_CONSUMPTION_INDEX and l[_ROW_TYPE_INDEX] == 'pwi'
+          and l[_PWI_POWER_CONSUMPTION_INDEX] != 0):
+        self._device.RunShellCommand(
+            ['dumpsys', 'battery', 'reset'], check_return=True)
+        raise device_errors.CommandFailedError(
+            'Non-zero pmi value found after reset.')
+    self._device.RunShellCommand(
+        ['dumpsys', 'battery', 'reset'], check_return=True)
+    return True
+
   def _DiscoverDeviceProfile(self):
     """Checks and caches device information.
+
     Returns:
       True if profile is found, false otherwise.
     """

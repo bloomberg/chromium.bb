@@ -53,7 +53,6 @@ class BatteryUtilsTest(mock_calls.TestCase):
     'charge_counter': None,
     'voltage': None,
     'current': None,
-
   }
 
   _NEXUS_6 = {
@@ -65,7 +64,6 @@ class BatteryUtilsTest(mock_calls.TestCase):
         '/sys/class/power_supply/max170xx_battery/charge_counter_ext'),
     'voltage': '/sys/class/power_supply/max170xx_battery/voltage_now',
     'current': '/sys/class/power_supply/max170xx_battery/current_now',
-
   }
 
   _NEXUS_10 = {
@@ -149,15 +147,7 @@ class BatteryUtilsSetBatteryMeasurementTest(BatteryUtilsTest):
         (self.call.device.RunShellCommand(
             mock.ANY, retries=0, single_line=True,
             timeout=10, check_return=True), '22'),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--charged', '--checkin'],
-            check_return=True, large_output=True), []),
+        (self.call.battery._ClearPowerData(), True),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
         (self.call.device.RunShellCommand(
@@ -180,15 +170,7 @@ class BatteryUtilsSetBatteryMeasurementTest(BatteryUtilsTest):
         (self.call.device.RunShellCommand(
             mock.ANY, retries=0, single_line=True,
             timeout=10, check_return=True), '22'),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--charged', '--checkin'],
-            check_return=True, large_output=True), []),
+        (self.call.battery._ClearPowerData(), True),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
         (self.call.device.RunShellCommand(
@@ -202,7 +184,6 @@ class BatteryUtilsSetBatteryMeasurementTest(BatteryUtilsTest):
         (self.call.battery.GetCharging(), True)):
       with self.battery.BatteryMeasurement():
         pass
-
 
 
 class BatteryUtilsGetPowerData(BatteryUtilsTest):
@@ -441,8 +422,7 @@ class BatteryUtilsTieredSetCharging(BatteryUtilsTest):
   def testTieredSetCharging_softwareSetTrue(self):
     self.battery._cache['profile'] = self._NEXUS_6
     with self.assertCalls(
-        (self.call.device.RunShellCommand(mock.ANY, retries=0, single_line=True,
-            timeout=10, check_return=True), '22'),
+        (self.call.battery.GetCharging(), False),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'reset'], check_return=True), []),
         (self.call.battery.GetCharging(), False),
@@ -455,17 +435,9 @@ class BatteryUtilsTieredSetCharging(BatteryUtilsTest):
   def testTieredSetCharging_softwareSetFalse(self):
     self.battery._cache['profile'] = self._NEXUS_6
     with self.assertCalls(
-        (self.call.device.RunShellCommand( mock.ANY, retries=0,
-            single_line=True, timeout=10, check_return=True), '22'),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--charged', '--checkin'],
-            check_return=True, large_output=True), []),
+        (self.call.battery.GetCharging(), True),
+        (self.call.battery._ClearPowerData(), True),
+        (self.call.battery._ClearPowerData(), True),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
         (self.call.device.RunShellCommand(
@@ -476,13 +448,26 @@ class BatteryUtilsTieredSetCharging(BatteryUtilsTest):
   @mock.patch('time.sleep', mock.Mock())
   def testTieredSetCharging_hardwareSetTrue(self):
     self.battery._cache['profile'] = self._NEXUS_5
-    with self.assertCalls((self.call.battery.SetCharging(True))):
+    with self.assertCalls(
+        (self.call.battery.GetCharging(), False),
+        (self.call.battery.SetCharging(True))):
       self.battery.TieredSetCharging(True)
 
   @mock.patch('time.sleep', mock.Mock())
   def testTieredSetCharging_hardwareSetFalse(self):
     self.battery._cache['profile'] = self._NEXUS_5
-    with self.assertCalls((self.call.battery.SetCharging(False))):
+    with self.assertCalls(
+        (self.call.battery.GetCharging(), True),
+        (self.call.battery._ClearPowerData(), True),
+        (self.call.battery.SetCharging(False))):
+      self.battery.TieredSetCharging(False)
+
+  def testTieredSetCharging_expectedStateAlreadyTrue(self):
+    with self.assertCalls((self.call.battery.GetCharging(), True)):
+      self.battery.TieredSetCharging(True)
+
+  def testTieredSetCharging_expectedStateAlreadyFalse(self):
+    with self.assertCalls((self.call.battery.GetCharging(), False)):
       self.battery.TieredSetCharging(False)
 
 
@@ -499,6 +484,51 @@ class BatteryUtilsDiscoverDeviceProfile(BatteryUtilsTest):
         (self.call.adb.Shell('getprop ro.product.model'), "Other")):
       self.battery._DiscoverDeviceProfile()
       self.assertEqual(self.battery._cache['profile']['name'], None)
+
+
+class BatteryUtilsClearPowerData(BatteryUtilsTest):
+
+  def testClearPowerData_preL(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(mock.ANY, retries=0,
+            single_line=True, timeout=10, check_return=True), '20')):
+      self.assertFalse(self.battery._ClearPowerData())
+
+  def testClearPowerData_clearedL(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(mock.ANY, retries=0,
+            single_line=True, timeout=10, check_return=True), '22'),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--charged', '--checkin'],
+            check_return=True, large_output=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'reset'], check_return=True), [])):
+      self.assertTrue(self.battery._ClearPowerData())
+
+  def testClearPowerData_notClearedL(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(mock.ANY, retries=0,
+            single_line=True, timeout=10, check_return=True), '22'),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--charged', '--checkin'],
+            check_return=True, large_output=True),
+            ['9,1000,l,pwi,uid,0.0327']),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'reset'], check_return=True), [])):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.battery._ClearPowerData()
 
 
 if __name__ == '__main__':
