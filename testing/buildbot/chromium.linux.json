@@ -365,6 +365,10 @@
         ],
         "name": "gyp_flag_compare",
         "script": "gyp_flag_compare.py"
+      },
+      {
+        "name": "mojo_apptests",
+        "script": "mojo_apptests.py"
       }
     ]
   },
