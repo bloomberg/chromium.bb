@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MSVC++ requires this to be set before any other includes to get M_PI.
+#define _USE_MATH_DEFINES
+
+#include <cmath>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
@@ -175,6 +180,49 @@ TEST(MotionEventGenericTest, RemovePointerAt) {
   EXPECT_EQ(1u, event.GetPointerCount());
   EXPECT_EQ(0, event.FindPointerIndexOfId(7));
   EXPECT_EQ(-1, event.FindPointerIndexOfId(0));
+}
+
+TEST(MotionEventGenericTest, AxisAndOrientation) {
+  {
+    PointerProperties properties;
+    float radius_x = 10;
+    float radius_y = 5;
+    float rotation_angle_deg = 0;
+    properties.SetAxesAndOrientation(radius_x, radius_y, rotation_angle_deg);
+    EXPECT_EQ(20, properties.touch_major);
+    EXPECT_EQ(10, properties.touch_minor);
+    EXPECT_NEAR(-M_PI_2, properties.orientation, 0.001);
+  }
+  {
+    PointerProperties properties;
+    float radius_x = 5;
+    float radius_y = 10;
+    float rotation_angle_deg = 0;
+    properties.SetAxesAndOrientation(radius_x, radius_y, rotation_angle_deg);
+    EXPECT_EQ(20, properties.touch_major);
+    EXPECT_EQ(10, properties.touch_minor);
+    EXPECT_NEAR(0, properties.orientation, 0.001);
+  }
+  {
+    PointerProperties properties;
+    float radius_x = 10;
+    float radius_y = 5;
+    float rotation_angle_deg = 179.99f;
+    properties.SetAxesAndOrientation(radius_x, radius_y, rotation_angle_deg);
+    EXPECT_EQ(20, properties.touch_major);
+    EXPECT_EQ(10, properties.touch_minor);
+    EXPECT_NEAR(M_PI_2, properties.orientation, 0.001);
+  }
+  {
+    PointerProperties properties;
+    float radius_x = 10;
+    float radius_y = 5;
+    float rotation_angle_deg = 90;
+    properties.SetAxesAndOrientation(radius_x, radius_y, rotation_angle_deg);
+    EXPECT_EQ(20, properties.touch_major);
+    EXPECT_EQ(10, properties.touch_minor);
+    EXPECT_NEAR(0, properties.orientation, 0.001);
+  }
 }
 
 TEST(MotionEventGenericTest, ToString) {

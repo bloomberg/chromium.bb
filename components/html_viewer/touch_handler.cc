@@ -23,9 +23,9 @@ void SetPropertiesFromEvent(const mojo::Event& event,
   properties->raw_x = event.pointer_data->screen_x;
   properties->raw_y = event.pointer_data->screen_y;
   properties->pressure = event.pointer_data->pressure;
-  properties->touch_major = event.pointer_data->radius_major;
-  properties->touch_minor = event.pointer_data->radius_minor;
-  properties->orientation = event.pointer_data->orientation;
+  properties->SetAxesAndOrientation(event.pointer_data->radius_major,
+                                    event.pointer_data->radius_minor,
+                                    event.pointer_data->orientation);
   // TODO(sky): Add support for tool_type.
 }
 

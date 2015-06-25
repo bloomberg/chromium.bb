@@ -2,12 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "ui/events/gestures/motion_event_aura.h"
-
-#include <cmath>
 
 #include "base/logging.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -25,35 +20,8 @@ PointerProperties GetPointerPropertiesFromTouchEvent(const TouchEvent& touch) {
   pointer_properties.pressure = touch.force();
   pointer_properties.source_device_id = touch.source_device_id();
 
-  float radius_x = touch.radius_x();
-  float radius_y = touch.radius_y();
-  float rotation_angle_rad = touch.rotation_angle() * M_PI / 180.f;
-
-  DCHECK_GE(radius_x, 0) << "Unexpected x-radius < 0";
-  DCHECK_GE(radius_y, 0) << "Unexpected y-radius < 0";
-  DCHECK(0 <= rotation_angle_rad && rotation_angle_rad < M_PI)
-      << "Unexpected touch rotation angle";
-
-  // Make the angle acute to ease subsequent logic. The angle range effectively
-  // changes from [0, pi) to [0, pi/2).
-  if (rotation_angle_rad >= M_PI_2) {
-    rotation_angle_rad -= static_cast<float>(M_PI_2);
-    std::swap(radius_x, radius_y);
-  }
-
-  if (radius_x > radius_y) {
-    // The case radius_x == radius_y is omitted from here on purpose: for
-    // circles, we want to pass the angle (which could be any value in such
-    // cases but always seem to be set to zero) unchanged.
-    pointer_properties.touch_major = 2.f * radius_x;
-    pointer_properties.touch_minor = 2.f * radius_y;
-    pointer_properties.orientation = rotation_angle_rad - M_PI_2;
-  } else {
-    pointer_properties.touch_major = 2.f * radius_y;
-    pointer_properties.touch_minor = 2.f * radius_x;
-    pointer_properties.orientation = rotation_angle_rad;
-  }
-
+  pointer_properties.SetAxesAndOrientation(touch.radius_x(), touch.radius_y(),
+                                           touch.rotation_angle());
   if (!pointer_properties.touch_major) {
     pointer_properties.touch_major =
         2.f * GestureConfiguration::GetInstance()->default_radius();

@@ -18,6 +18,12 @@ struct GESTURE_DETECTION_EXPORT PointerProperties {
   PointerProperties(float x, float y, float touch_major);
   PointerProperties(const MotionEvent& event, size_t pointer_index);
 
+  // Sets |touch_major|, |touch_minor|, and |orientation| from the given radius
+  // and rotation angle (in degrees).
+  void SetAxesAndOrientation(float radius_x,
+                             float radius_y,
+                             float rotation_angle_degree);
+
   int id;
   MotionEvent::ToolType tool_type;
   float x;
