@@ -199,6 +199,13 @@ int NumberOfRendererRasterThreads() {
   if (async_uploads_is_used)
     --num_raster_threads;
 
+#if defined(OS_ANDROID)
+  // Limit the number of raster threads to 1 on Android.
+  // TODO(reveman): Remove this when we have a better mechanims to prevent
+  // pre-paint raster work from slowing down non-raster work. crbug.com/504515
+  num_raster_threads = 1;
+#endif
+
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
