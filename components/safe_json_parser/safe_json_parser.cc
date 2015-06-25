@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tuple.h"
@@ -31,7 +32,8 @@ SafeJsonParser::SafeJsonParser(const std::string& unsafe_json,
 }
 
 void SafeJsonParser::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  caller_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeJsonParser::StartWorkOnIOThread, this));
@@ -67,13 +69,17 @@ void SafeJsonParser::OnJSONParseFailed(const std::string& error_message) {
 void SafeJsonParser::ReportResults() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SafeJsonParser::ReportResultOnUIThread, this));
+  caller_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SafeJsonParser::ReportResultsOnOriginThread, this));
 }
 
-void SafeJsonParser::ReportResultOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void SafeJsonParser::ReportResultsOnOriginThread() {
+  // Current callers of this class are known to either come from
+  // the UI or IO threads. This DCHECK can be removed/further enhanced
+  // in case this class is useable outside of these contexts.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (error_.empty() && parsed_json_) {
     if (!success_callback_.is_null())
       success_callback_.Run(parsed_json_.Pass());

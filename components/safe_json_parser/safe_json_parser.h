@@ -14,6 +14,7 @@
 
 namespace base {
 class ListValue;
+class SingleThreadTaskRunner;
 class Value;
 }
 
@@ -46,7 +47,7 @@ class SafeJsonParser : public content::UtilityProcessHostClient {
   void OnJSONParseFailed(const std::string& error_message);
 
   void ReportResults();
-  void ReportResultOnUIThread();
+  void ReportResultsOnOriginThread();
 
   // Implementing pieces of the UtilityProcessHostClient interface.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -54,6 +55,7 @@ class SafeJsonParser : public content::UtilityProcessHostClient {
   const std::string unsafe_json_;
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
   scoped_ptr<base::Value> parsed_json_;
   std::string error_;
