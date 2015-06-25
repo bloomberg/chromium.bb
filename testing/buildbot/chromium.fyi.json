@@ -6,6 +6,9 @@
           "--enable-browser-side-navigation",
           "--gtest_filter=-CrossSiteRedirectorBrowserTest.VerifyCrossSiteRedirectURL:CrossSiteTransferTest.NoLeakOnCrossSiteCancel:CrossSiteTransferTest.ReplaceEntryCrossProcessThenTransfer:CrossSiteTransferTest.ReplaceEntryCrossProcessTwice:CrossSiteTransferTest.ReplaceEntryInProcessThenTranfers:DevToolsProtocolTest.NavigationPreservesMessages:NavigationControllerBrowserTest.CorrectLengthWithCurrentItemReplacement:NavigationControllerBrowserTest.FrameNavigationEntry_BlankAutoSubframe:NavigationControllerBrowserTest.NavigationTypeClassification_ClientSideRedirect:NavigationControllerBrowserTest.NavigationTypeClassification_ExistingPage:NavigationControllerBrowserTest.NavigationTypeClassification_InPage:NavigationControllerBrowserTest.NavigationTypeClassification_NewAndAutoSubframe:NavigationControllerBrowserTest.NavigationTypeClassification_NewPage:NavigationControllerBrowserTest.PreventSpoofFromSubframeAndReplace:NavigationControllerBrowserTest.StopCausesFailureDespiteJavaScriptURL:RenderViewImplTest.DecideNavigationPolicy:RenderViewImplTest.NavigationStartOverride:RenderViewImplTest.OnNavigationHttpPost:RenderViewImplTest.ReloadWhileSwappedOut:RenderViewImplTest.TestBackForward:SecurityExploitBrowserTest.AttemptDuplicateRenderViewHost:SecurityExploitBrowserTest.AttemptDuplicateRenderWidgetHost:SecurityExploitBrowserTest.InterstitialCommandFromUnderlyingContent:ServiceWorkerBrowserTest.CrossSiteTransfer:ServiceWorkerBrowserTest.ImportsBustMemcache:ServiceWorkerBrowserTest.Reload:ServiceWorkerBrowserTest.ResponseFromHTTPServiceWorkerIsNotMarkedAsSecure:ServiceWorkerBrowserTest.ResponseFromHTTPSServiceWorkerIsMarkedAsSecure:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:SessionHistoryTest.FrameFormBackForward:SessionHistoryTest.LocationChangeInSubframe:SitePerProcessBrowserTest.CrossSiteDidStopLoading:WebContentsImplBrowserTest.ClearNonVisiblePendingOnFail:WebContentsViewAuraTest.ReplaceStateReloadPushState:WebRtcBrowserTest.CallInsideIframe:WebUIMojoTest.EndToEndPing"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {
@@ -2841,6 +2844,9 @@
         "test": "compositor_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {
@@ -3228,6 +3234,9 @@
         "test": "compositor_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {

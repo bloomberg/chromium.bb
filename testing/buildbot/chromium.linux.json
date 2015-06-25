@@ -115,6 +115,9 @@
         "args": [
           "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:OutOfProcessPPAPITest.BrowserFont"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {
