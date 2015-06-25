@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_IO_THREAD_H_
 #define CHROME_BROWSER_IO_THREAD_H_
 
+#include <map>
 #include <string>
 #include <vector>
 

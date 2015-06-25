@@ -5,6 +5,7 @@
 #include "net/base/network_quality_estimator.h"
 
 #include <limits>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -30,11 +31,13 @@ TEST(NetworkQualityEstimatorTest, DISABLED_TestPeakKbpsFastestRTTUpdates) {
   ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
   // Enable requests to local host to be used for network quality estimation.
-  NetworkQualityEstimator estimator(true, true);
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimator estimator(variation_params, true, true);
   {
     NetworkQuality network_quality = estimator.GetPeakEstimate();
-    EXPECT_EQ(network_quality.rtt(), base::TimeDelta::Max());
-    EXPECT_EQ(network_quality.downstream_throughput_kbps(), 0);
+    EXPECT_EQ(NetworkQuality::InvalidRTT(), network_quality.rtt());
+    EXPECT_EQ(NetworkQuality::kInvalidThroughput,
+              network_quality.downstream_throughput_kbps());
   }
 
   TestDelegate test_delegate;
@@ -69,8 +72,9 @@ TEST(NetworkQualityEstimatorTest, DISABLED_TestPeakKbpsFastestRTTUpdates) {
     NetworkQuality network_quality = estimator.GetPeakEstimate();
     EXPECT_EQ(estimator.current_connection_type_,
               NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-    EXPECT_EQ(network_quality.rtt(), base::TimeDelta::Max());
-    EXPECT_EQ(network_quality.downstream_throughput_kbps(), 0);
+    EXPECT_EQ(NetworkQuality::InvalidRTT(), network_quality.rtt());
+    EXPECT_EQ(NetworkQuality::kInvalidThroughput,
+              network_quality.downstream_throughput_kbps());
   }
 }
 
@@ -80,7 +84,8 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
-  NetworkQualityEstimator estimator(true, true);
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimator estimator(variation_params, true, true);
   TestDelegate test_delegate;
   TestURLRequestContext context(false);
 
@@ -126,7 +131,8 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
 // the same timestamp. Kbps percentiles must be in decreasing order. RTT
 // percentiles must be in increasing order.
 TEST(NetworkQualityEstimatorTest, PercentileSameTimestamps) {
-  NetworkQualityEstimator estimator;
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
 
   // Network quality should be unavailable when no observations are available.
@@ -174,7 +180,8 @@ TEST(NetworkQualityEstimatorTest, PercentileSameTimestamps) {
 // much more heavily than older samples. Kbps percentiles must be in decreasing
 // order. RTT percentiles must be in increasing order.
 TEST(NetworkQualityEstimatorTest, PercentileDifferentTimestamps) {
-  NetworkQualityEstimator estimator;
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks very_old = base::TimeTicks::UnixEpoch();
 
@@ -218,10 +225,12 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
-  NetworkQualityEstimator estimator(true, true);
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimator estimator(variation_params, true, true);
   NetworkQuality network_quality = estimator.GetPeakEstimate();
-  EXPECT_EQ(network_quality.rtt(), base::TimeDelta::Max());
-  EXPECT_EQ(network_quality.downstream_throughput_kbps(), 0);
+  EXPECT_EQ(NetworkQuality::InvalidRTT(), network_quality.rtt());
+  EXPECT_EQ(NetworkQuality::kInvalidThroughput,
+            network_quality.downstream_throughput_kbps());
 
   TestDelegate test_delegate;
   TestURLRequestContext context(false);
@@ -259,5 +268,71 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
     }
   }
 }
+
+// http://crbug.com/504058
+#if !defined(OS_WIN)
+TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
+  std::map<std::string, std::string> variation_params;
+  variation_params["Unknown.DefaultMedianKbps"] = "100";
+  variation_params["WiFi.DefaultMedianKbps"] = "200";
+  variation_params["2G.DefaultMedianKbps"] = "300";
+
+  variation_params["Unknown.DefaultMedianRTTMsec"] = "1000";
+  variation_params["WiFi.DefaultMedianRTTMsec"] = "2000";
+  // Negative variation value should not be used.
+  variation_params["2G.DefaultMedianRTTMsec"] = "-5";
+
+  NetworkQualityEstimator estimator(variation_params, true, true);
+  EXPECT_EQ(1U, estimator.kbps_observations_.Size());
+  EXPECT_EQ(1U, estimator.rtt_msec_observations_.Size());
+  NetworkQuality network_quality;
+  EXPECT_TRUE(estimator.GetEstimate(&network_quality));
+  EXPECT_EQ(100, network_quality.downstream_throughput_kbps());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), network_quality.rtt());
+  auto it = estimator.kbps_observations_.observations_.begin();
+  EXPECT_EQ(100, (*it).value);
+  it = estimator.rtt_msec_observations_.observations_.begin();
+  EXPECT_EQ(1000, (*it).value);
+
+  // Simulate network change to Wi-Fi.
+  estimator.OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  EXPECT_EQ(1U, estimator.kbps_observations_.Size());
+  EXPECT_EQ(1U, estimator.rtt_msec_observations_.Size());
+  EXPECT_TRUE(estimator.GetEstimate(&network_quality));
+  EXPECT_EQ(200, network_quality.downstream_throughput_kbps());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2000), network_quality.rtt());
+  it = estimator.kbps_observations_.observations_.begin();
+  EXPECT_EQ(200, (*it).value);
+  it = estimator.rtt_msec_observations_.observations_.begin();
+  EXPECT_EQ(2000, (*it).value);
+
+  // Peak network quality should not be affected by the network quality
+  // estimator field trial.
+  EXPECT_EQ(NetworkQuality::InvalidRTT(),
+            estimator.fastest_rtt_since_last_connection_change_);
+  EXPECT_EQ(NetworkQuality::kInvalidThroughput,
+            estimator.peak_kbps_since_last_connection_change_);
+
+  // Simulate network change to 2G. Only the Kbps default estimate should be
+  // available.
+  estimator.OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_2G);
+  EXPECT_EQ(1U, estimator.kbps_observations_.Size());
+  EXPECT_EQ(0U, estimator.rtt_msec_observations_.Size());
+  // For GetEstimate() to return true, at least one observation must be
+  // available for both RTT and downstream throughput.
+  EXPECT_FALSE(estimator.GetEstimate(&network_quality));
+  it = estimator.kbps_observations_.observations_.begin();
+  EXPECT_EQ(300, (*it).value);
+
+  // Simulate network change to 3G. Default estimates should be unavailable.
+  estimator.OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  EXPECT_FALSE(estimator.GetEstimate(&network_quality));
+  EXPECT_EQ(0U, estimator.kbps_observations_.Size());
+  EXPECT_EQ(0U, estimator.rtt_msec_observations_.Size());
+}
+#endif  // !defined(OS_WIN)
 
 }  // namespace net
