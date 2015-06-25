@@ -2149,8 +2149,9 @@ bool SkipConditionalExperiment(const Experiment& experiment,
 #endif
 
   // data-reduction-proxy-lo-fi is only available for Chromium builds and
-  // the Canary/Dev channel.
+  // the Canary/Dev/Beta channels.
   if (!strcmp("data-reduction-proxy-lo-fi", experiment.internal_name) &&
+      channel != chrome::VersionInfo::CHANNEL_BETA &&
       channel != chrome::VersionInfo::CHANNEL_DEV &&
       channel != chrome::VersionInfo::CHANNEL_CANARY &&
       channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {
