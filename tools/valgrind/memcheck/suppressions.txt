@@ -3313,7 +3313,7 @@
    bug_436172_b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3IPC7Channel6CreateERKNS_13ChannelHandleENS0_4ModeEPNS_8ListenerE
+   fun:_ZN3IPC7Channel6CreateERKNS_13ChannelHandleENS0_4ModeEPNS_8ListenerE*
    fun:_ZN3IPC12_GLOBAL__N_122PlatformChannelFactory12BuildChannelEPNS_8ListenerE
    fun:_ZN3IPC12ChannelProxy7Context13CreateChannelE10scoped_ptrINS_14ChannelFactoryEN4base14DefaultDeleterIS3_EEE
    ...

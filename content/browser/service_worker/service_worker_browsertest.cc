@@ -1233,8 +1233,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ(expected, console_output);
 }
 
+// https://crbug.com/504202
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SyncEventWaitUntil_Rejected DISABLED_SyncEventWaitUntil_Rejected
+#else
+#define MAYBE_SyncEventWaitUntil_Rejected SyncEventWaitUntil_Rejected
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       SyncEventWaitUntil_Rejected) {
+                       MAYBE_SyncEventWaitUntil_Rejected) {
   base::string16 console_output = RunSyncTestWithConsoleOutput(
       "/background_sync/sync_event_rejected.js",
       SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED);
