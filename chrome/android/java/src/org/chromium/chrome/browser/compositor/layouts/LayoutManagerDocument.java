@@ -101,7 +101,10 @@ public class LayoutManagerDocument extends LayoutManager
             @Override
             public ReaderModePanel getActiveReaderModePanel() {
                 if (mStaticLayout == null || !mStaticLayout.isActive()) return null;
-                return mStaticLayout.getReaderModePanel();
+                ReaderModePanel panel = mStaticLayout.getReaderModePanel();
+                if (panel == null) return null;
+                if (!panel.isShowing() || !panel.isReaderModeCurrentlyAllowed()) return null;
+                return panel;
             }
         };
 

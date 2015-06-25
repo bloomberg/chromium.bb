@@ -540,9 +540,14 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         animateTo(mX, 1.0f, true);
     }
 
-    private boolean isReaderModeCurrentlyAllowed() {
+    /**
+     * @return Whether the reader mode could be currently allowed.
+     */
+    public boolean isReaderModeCurrentlyAllowed() {
         return !mIsReaderModePanelHidden && !mIsReaderModePanelDismissed
-                && !mIsFullscreenModeEntered && !mIsInfobarContainerShown;
+                && !mIsFullscreenModeEntered && !mIsInfobarContainerShown
+                && mReaderModeHost.getTab().getContentViewCore() != null
+                && mReaderModeHost.getTab().getWebContents() != null;
     }
 
     private void nonAnimatedUpdateButtomButtonBar() {
