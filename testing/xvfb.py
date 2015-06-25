@@ -94,7 +94,7 @@ def run_executable(cmd, build_dir, env):
     # No need to recurse.
     return test_env.run_executable(cmd, env)
 
-  xvfb_proc = None
+  pid = None
   xvfb = 'Xvfb'
   try:
     if sys.platform == 'linux2':
@@ -130,9 +130,8 @@ def run_executable(cmd, build_dir, env):
         return 1
     return test_env.run_executable(cmd, env)
   finally:
-    # When the X server dies, it takes down the window manager with it.
-    if xvfb_proc and xvfb_proc.pid:
-      kill(xvfb_proc.pid)
+    if pid:
+      kill(pid)
 
 
 def main():
