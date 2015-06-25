@@ -195,9 +195,14 @@ public:
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
     bool hasNonCompositedChild() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasNonCompositedChild; }
 
-    // Gets the nearest enclosing positioned ancestor layer (also includes
-    // the <html> layer and the root layer).
-    DeprecatedPaintLayer* enclosingPositionedAncestor() const;
+    // Gets the ancestor layer that serves as the containing block of this layer. It is assumed
+    // that this layer is established by an out-of-flow positioned layout object (i.e. either
+    // absolutely or fixed positioned).
+    // If |ancestor| is specified, |*skippedAncestor| will be set to true if |ancestor| is found in
+    // the ancestry chain between this layer and the containing block layer; if not found, it will
+    // be set to false. Either both |ancestor| and |skippedAncestor| should be nullptr, or none of
+    // them should.
+    DeprecatedPaintLayer* enclosingPositionedAncestor(const DeprecatedPaintLayer* ancestor = nullptr, bool* skippedAncestor = nullptr) const;
 
     bool isPaintInvalidationContainer() const;
 

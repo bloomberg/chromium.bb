@@ -773,9 +773,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
     }
 
     // Subtract our parent's scroll offset.
-    if (layoutObject()->isOutOfFlowPositioned() && enclosingPositionedAncestor()) {
-        DeprecatedPaintLayer* positionedParent = enclosingPositionedAncestor();
-
+    if (DeprecatedPaintLayer* positionedParent = layoutObject()->isOutOfFlowPositioned() ? enclosingPositionedAncestor() : nullptr) {
         // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
         if (positionedParent->layoutObject()->hasOverflowClip()) {
             IntSize offset = positionedParent->layoutBox()->scrolledContentOffset();
@@ -844,19 +842,28 @@ static inline bool isFixedPositionedContainer(DeprecatedPaintLayer* layer)
     return layer->isRootLayer() || layer->hasTransformRelatedProperty();
 }
 
-DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingPositionedAncestor() const
+DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingPositionedAncestor(const DeprecatedPaintLayer* ancestor, bool* skippedAncestor) const
 {
+    ASSERT(!ancestor || skippedAncestor); // If we have specified an ancestor, surely the caller needs to know whether we skipped it.
+    if (skippedAncestor)
+        *skippedAncestor = false;
     if (layoutObject()->style()->position() == FixedPosition) {
         DeprecatedPaintLayer* curr = parent();
-        while (curr && !isFixedPositionedContainer(curr))
+        while (curr && !isFixedPositionedContainer(curr)) {
+            if (skippedAncestor && curr == ancestor)
+                *skippedAncestor = true;
             curr = curr->parent();
+        }
 
         return curr;
     }
 
     DeprecatedPaintLayer* curr = parent();
-    while (curr && !curr->isPositionedContainer())
+    while (curr && !curr->isPositionedContainer()) {
+        if (skippedAncestor && curr == ancestor)
+            *skippedAncestor = true;
         curr = curr->parent();
+    }
 
     return curr;
 }
@@ -1320,31 +1327,18 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
 
     DeprecatedPaintLayer* parentLayer;
     if (position == AbsolutePosition) {
-        // Do what enclosingPositionedAncestor() does, but check for ancestorLayer along the way.
-        parentLayer = layer->parent();
-        bool foundAncestorFirst = false;
-        while (parentLayer) {
-            if (parentLayer->isPositionedContainer())
-                break;
-
-            if (parentLayer == ancestorLayer) {
-                foundAncestorFirst = true;
-                break;
-            }
-
-            parentLayer = parentLayer->parent();
-        }
+        bool foundAncestorFirst;
+        parentLayer = layer->enclosingPositionedAncestor(ancestorLayer, &foundAncestorFirst);
 
         if (foundAncestorFirst) {
             // Found ancestorLayer before the abs. positioned container, so compute offset of both relative
-            // to enclosingPositionedAncestor and subtract.
-            DeprecatedPaintLayer* positionedAncestor = parentLayer->enclosingPositionedAncestor();
+            // to the positioned ancestor and subtract.
 
             LayoutPoint thisCoords;
-            layer->convertToLayerCoords(positionedAncestor, thisCoords);
+            layer->convertToLayerCoords(parentLayer, thisCoords);
 
             LayoutPoint ancestorCoords;
-            ancestorLayer->convertToLayerCoords(positionedAncestor, ancestorCoords);
+            ancestorLayer->convertToLayerCoords(parentLayer, ancestorCoords);
 
             location += (thisCoords - ancestorCoords);
             return ancestorLayer;
