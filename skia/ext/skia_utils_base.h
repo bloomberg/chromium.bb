@@ -7,6 +7,8 @@
 
 #include "base/pickle.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
+#include "third_party/skia/include/core/SkFontHost.h"
+#include "third_party/skia/include/core/SkSurfaceProps.h"
 
 namespace skia {
 
@@ -26,6 +28,9 @@ SK_API bool WriteSkString(base::Pickle* pickle, const SkString& str);
 SK_API bool WriteSkFontIdentity(
     base::Pickle* pickle,
     const SkFontConfigInterface::FontIdentity& identity);
+
+// Determine the default pixel geometry (for LCD) by querying the font host
+SK_API SkPixelGeometry ComputeDefaultPixelGeometry();
 
 }  // namespace skia
 
