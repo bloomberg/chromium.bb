@@ -232,13 +232,6 @@ void CacheStorageDispatcherHost::OnCacheBatch(
     int request_id,
     int cache_id,
     const std::vector<CacheStorageBatchOperation>& operations) {
-  if (operations.size() != 1u) {
-    Send(new CacheStorageMsg_CacheBatchError(
-        thread_id, request_id,
-        blink::WebServiceWorkerCacheErrorNotImplemented));
-    return;
-  }
-
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end()) {
     Send(new CacheStorageMsg_CacheBatchError(
