@@ -315,6 +315,8 @@ void HttpServerPropertiesImpl::SetAlternativeService(
 
 void HttpServerPropertiesImpl::MarkAlternativeServiceBroken(
     const AlternativeService& alternative_service) {
+  // Empty host means use host of origin, callers are supposed to substitute.
+  DCHECK(!alternative_service.host.empty());
   if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
     LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
     return;
