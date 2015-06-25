@@ -40,6 +40,9 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   history::HistoryService* GetHistoryServiceForBrowserState(
       ChromeBrowserState* browser_state,
       ServiceAccessType access_type) override;
+  history::HistoryService* GetHistoryServiceForBrowserStateIfExists(
+      ChromeBrowserState* browser_state,
+      ServiceAccessType access_type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestKeyedServiceProvider);

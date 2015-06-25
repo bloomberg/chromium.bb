@@ -145,4 +145,11 @@ TestKeyedServiceProvider::GetHistoryServiceForBrowserState(
   return nullptr;
 }
 
+history::HistoryService*
+TestKeyedServiceProvider::GetHistoryServiceForBrowserStateIfExists(
+    ChromeBrowserState* browser_state,
+    ServiceAccessType access_type) {
+  return nullptr;
+}
+
 }  // namespace ios

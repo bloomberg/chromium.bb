@@ -107,6 +107,12 @@ class KeyedServiceProvider {
       ChromeBrowserState* browser_state,
       ServiceAccessType access_type) = 0;
 
+  // Returns an instance of history::HistoryService tied to |browser_state| if
+  // it exists, or null otherwise.
+  virtual history::HistoryService* GetHistoryServiceForBrowserStateIfExists(
+      ChromeBrowserState* browser_state,
+      ServiceAccessType access_type) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyedServiceProvider);
 };
