@@ -36,14 +36,10 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
     // Check if we need to do anything at all.
     // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the LayoutView
     // paints the root's background.
-    // TODO(schenney): Unroll m_layoutBlock.isDocumentElement() to try to get some insight into crbug.com/475698
     Node* blockNode = m_layoutBlock.node();
     RELEASE_ASSERT(blockNode || m_layoutBlock.isAnonymous());
     if (blockNode) {
-        TreeScope& blockTreescope = blockNode->treeScope(); // Will crash on bad node
-        Document& blockDocument = blockTreescope.document(); // Will crash in bad treeScope
-        Element* blockDocumentElement = blockDocument.documentElement(); // Will crash on bad TreeScope::m_document
-        if (blockDocumentElement != blockNode) {
+        if (m_layoutBlock.isDocumentElement()) {
             LayoutRect overflowBox = overflowRectForPaintRejection();
             m_layoutBlock.flipForWritingMode(overflowBox);
             overflowBox.moveBy(adjustedPaintOffset);

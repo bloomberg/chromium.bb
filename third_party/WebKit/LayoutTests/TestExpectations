@@ -1763,6 +1763,8 @@ crbug.com/503824 inspector/console/console-revoke-error.html [ Failure Pass ]
 
 crbug.com/503849 [ Debug ] svg/hixie/error/dumpAsText/004.xml [ Crash Pass ]
 
+crbug.com/475698 [ Mac ] svg/W3C-SVG-1.1/metadata-example-01-b.svg [ NeedsRebaseline ]
+
 crbug.com/503852 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrackList/onremovetrack.html [ Failure Pass ]
 crbug.com/503856 imported/web-platform-tests/html/semantics/embedded-content/the-img-element/current-pixel-density/error.html [ Failure Pass ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-digits2-003.html [ ImageOnlyFailure Pass ]
