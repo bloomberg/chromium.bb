@@ -47,3 +47,6 @@ DumpAccessibilityEventsTest.AccessibilityEventsListboxNext
 
 # https://crbug.com/500576
 NavigationControllerBrowserTest.DontIgnoreBackAfterNavEntryLimit
+
+# https://crbug.com/504186
+WebRtcBrowserTest.CallInsideIframe
