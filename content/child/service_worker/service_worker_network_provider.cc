@@ -21,6 +21,15 @@ int GetNextProviderId() {
   return sequence.GetNext();  // We start at zero.
 }
 
+// When the provider is for a sandboxed iframe we use
+// kInvalidServiceWorkerProviderId as the provider type and we don't create
+// ServiceWorkerProviderContext and ServiceWorkerProviderHost.
+int GenerateProviderIdForType(const ServiceWorkerProviderType provider_type) {
+  if (provider_type == SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME)
+    return kInvalidServiceWorkerProviderId;
+  return GetNextProviderId();
+}
+
 }  // namespace
 
 void ServiceWorkerNetworkProvider::AttachToDocumentState(
@@ -38,8 +47,10 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int route_id,
     ServiceWorkerProviderType provider_type)
-    : provider_id_(GetNextProviderId()),
-      context_(new ServiceWorkerProviderContext(provider_id_)) {
+    : provider_id_(GenerateProviderIdForType(provider_type)) {
+  if (provider_id_ == kInvalidServiceWorkerProviderId)
+    return;
+  context_ = new ServiceWorkerProviderContext(provider_id_);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
   ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
@@ -47,6 +58,8 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 }
 
 ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
+  if (provider_id_ == kInvalidServiceWorkerProviderId)
+    return;
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
   ChildThreadImpl::current()->Send(
@@ -55,6 +68,7 @@ ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
 
 void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
     int64 version_id) {
+  DCHECK_NE(kInvalidServiceWorkerProviderId, provider_id_);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
   ChildThreadImpl::current()->Send(

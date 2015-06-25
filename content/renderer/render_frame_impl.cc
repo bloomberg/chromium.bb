@@ -2064,9 +2064,10 @@ blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(frame->dataSource()));
+  DCHECK(provider);
   return new WebServiceWorkerProviderImpl(
       ChildThreadImpl::current()->thread_safe_sender(),
-      provider ? provider->context() : NULL);
+      provider->context());
 }
 
 void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
@@ -2465,9 +2466,14 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   // exists).
   if (!ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(datasource))) {
+    ServiceWorkerProviderType provider_type =
+        SERVICE_WORKER_PROVIDER_FOR_WINDOW;
+    if ((frame->effectiveSandboxFlags() & blink::WebSandboxFlags::Origin) ==
+        blink::WebSandboxFlags::Origin) {
+      provider_type = SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME;
+    }
     scoped_ptr<ServiceWorkerNetworkProvider> network_provider(
-        new ServiceWorkerNetworkProvider(routing_id_,
-                                         SERVICE_WORKER_PROVIDER_FOR_WINDOW));
+        new ServiceWorkerNetworkProvider(routing_id_, provider_type));
     ServiceWorkerNetworkProvider::AttachToDocumentState(
         DocumentState::FromDataSource(datasource),
         network_provider.Pass());
@@ -3675,6 +3681,8 @@ bool RenderFrameImpl::isControlledByServiceWorker(WebDataSource& data_source) {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(&data_source));
+  if (!provider->context())
+    return false;
   return provider->context()->controller_handle_id() !=
       kInvalidServiceWorkerHandleId;
 }
@@ -3683,8 +3691,7 @@ int64_t RenderFrameImpl::serviceWorkerID(WebDataSource& data_source) {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromDocumentState(
           DocumentState::FromDataSource(&data_source));
-
-  if (provider->context()->controller())
+  if (provider->context() && provider->context()->controller())
     return provider->context()->controller()->version_id();
   return kInvalidServiceWorkerVersionId;
 }

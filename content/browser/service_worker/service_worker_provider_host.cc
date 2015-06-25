@@ -85,6 +85,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       allow_association_(true) {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
+  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME, provider_type_);
   if (provider_type_ == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
     // Actual thread id is set when the service worker context gets started.
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
@@ -220,8 +221,10 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       return true;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
-    case SERVICE_WORKER_PROVIDER_UNKNOWN:
       return false;
+    case SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME:
+    case SERVICE_WORKER_PROVIDER_UNKNOWN:
+      NOTREACHED() << provider_type_;
   }
   NOTREACHED() << provider_type_;
   return false;
@@ -237,6 +240,7 @@ blink::WebServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       return blink::WebServiceWorkerClientTypeSharedWorker;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+    case SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << provider_type_;
   }

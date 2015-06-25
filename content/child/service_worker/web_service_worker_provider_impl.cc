@@ -21,6 +21,7 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ServiceWorkerProviderContext* context)
     : thread_safe_sender_(thread_safe_sender),
       context_(context) {
+  DCHECK(context_);
 }
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
