@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class provides access to user data stored in Chrome, such as bookmarks, most visited pages,
@@ -179,11 +178,6 @@ public class ChromeBrowserProvider extends ContentProvider {
     private long mNativeChromeBrowserProvider;
     private BookmarkNode mMobileBookmarksFolder;
 
-    /**
-     * Records whether we've received a call to one of the public ContentProvider APIs.
-     */
-    protected boolean mContentProviderApiCalled;
-
     private void ensureUriMatcherInitialized() {
         synchronized (mInitializeUriMatcherLock) {
             if (mUriMatcher != null) return;
@@ -261,8 +255,7 @@ public class ChromeBrowserProvider extends ContentProvider {
                         new BrowserStartupController.StartupCallback() {
                             @Override
                             public void onSuccess(boolean alreadyStarted) {
-                                // TODO(knn): Investigate why this is required.
-                                ensureNativeChromeLoadedOnUIThread();
+                                ensureNativeSideInitialized();
                             }
 
                             @Override
@@ -649,7 +642,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         return nativeGetEditableBookmarkFolders(mNativeChromeBrowserProvider);
     }
 
-    protected BookmarkNode getBookmarkNode(long nodeId, boolean getParent, boolean getChildren,
+    private BookmarkNode getBookmarkNode(long nodeId, boolean getParent, boolean getChildren,
             boolean getFavicons, boolean getThumbnails) {
         // Don't allow going up the hierarchy if sync is disabled and the requested node
         // is the Mobile Bookmarks folder.
@@ -704,7 +697,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         return mMobileBookmarksFolder;
     }
 
-    protected long getMobileBookmarksFolderId() {
+    private long getMobileBookmarksFolderId() {
         BookmarkNode mobileBookmarks = getMobileBookmarksFolder();
         return mobileBookmarks != null ? mobileBookmarks.id() : INVALID_BOOKMARK_ID;
     }
@@ -768,10 +761,28 @@ public class ChromeBrowserProvider extends ContentProvider {
      * ChromeBrowserProvider.
      */
     private boolean canHandleContentProviderApiCall() {
-        mContentProviderApiCalled = true;
-
         if (isInUiThread()) return false;
-        if (!ensureNativeChromeLoaded()) return false;
+        ensureUriMatcherInitialized();
+        if (mNativeChromeBrowserProvider != 0) return true;
+        synchronized (mLoadNativeLock) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                @SuppressFBWarnings("DM_EXIT")
+                public void run() {
+                    if (mNativeChromeBrowserProvider != 0) return;
+                    try {
+                        ((ChromiumApplication) getContext().getApplicationContext())
+                                .startBrowserProcessesAndLoadLibrariesSync(
+                                        true /*Start GoogleServicesManager*/);
+                    } catch (ProcessInitException e) {
+                        // Chrome browser runs in the background, so exit silently; but do exit,
+                        // since otherwise the next attempt to use Chrome will find a broken JNI.
+                        System.exit(-1);
+                    }
+                    ensureNativeSideInitialized();
+                }
+            });
+        }
         return true;
     }
 
@@ -1266,56 +1277,13 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     /**
-     * Returns true if the native side of the class is initialized.
+     * Initialize native side if it hasn't been already initialized.
+     * This is called from BrowserStartupCallback during normal startup except when called
+     * through one of the public ContentProvider APIs.
      */
-    protected boolean isNativeSideInitialized() {
-        return mNativeChromeBrowserProvider != 0;
-    }
-
-    /**
-     * Make sure chrome is running. This method mustn't run on UI thread.
-     *
-     * @return Whether the native chrome process is running successfully once this has returned.
-     */
-    private boolean ensureNativeChromeLoaded() {
-        ensureUriMatcherInitialized();
-
-        synchronized (mLoadNativeLock) {
-            if (mNativeChromeBrowserProvider != 0) return true;
-
-            final AtomicBoolean retVal = new AtomicBoolean(true);
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    retVal.set(ensureNativeChromeLoadedOnUIThread());
-                }
-            });
-            return retVal.get();
-        }
-    }
-
-    /**
-     * This method should only run on UI thread.
-     */
-    @SuppressFBWarnings("DM_EXIT")
-    private boolean ensureNativeChromeLoadedOnUIThread() {
-        if (isNativeSideInitialized()) return true;
-        // Only start the GoogleServicesManager if we were initialized via a call to the browser
-        // provider.  If it wasn't, let the Chrome browser worry about sequencing the
-        // initialization.
-        boolean shouldStartGoogleServicesManager = mContentProviderApiCalled;
-        try {
-            ((ChromiumApplication) getContext().getApplicationContext())
-                    .startBrowserProcessesAndLoadLibrariesSync(shouldStartGoogleServicesManager);
-        } catch (ProcessInitException e) {
-            // Chrome browser runs in the background, so exit silently; but do exit, since
-            // otherwise the next attempt to use Chrome will find a broken JNI.
-            System.exit(-1);
-        }
-
-        if (isNativeSideInitialized()) return true;
-        mNativeChromeBrowserProvider = nativeInit();
-        return isNativeSideInitialized();
+    private void ensureNativeSideInitialized() {
+        ThreadUtils.assertOnUiThread();
+        if (mNativeChromeBrowserProvider == 0) mNativeChromeBrowserProvider = nativeInit();
     }
 
     @Override
@@ -1337,7 +1305,7 @@ public class ChromeBrowserProvider extends ContentProvider {
      * This method should only run on UI thread.
      */
     private void ensureNativeChromeDestroyedOnUIThread() {
-        if (isNativeSideInitialized()) {
+        if (mNativeChromeBrowserProvider != 0) {
             nativeDestroy(mNativeChromeBrowserProvider);
             mNativeChromeBrowserProvider = 0;
         }
