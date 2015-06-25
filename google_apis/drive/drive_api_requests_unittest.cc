@@ -2009,7 +2009,8 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
         test_util::CreateCopyResultCallback(&errors[i], &file_resources[i]));
     drive::MultipartUploadNewFileDelegate* const child_request =
         new drive::MultipartUploadNewFileDelegate(
-            request_sender_.get(), base::StringPrintf("new file title %d", i),
+            request_sender_->blocking_task_runner(),
+            base::StringPrintf("new file title %d", i),
             "parent_resource_id", kTestContentType, kTestContent.size(),
             base::Time(), base::Time(), kTestFilePath, drive::Properties(),
             *url_generator_, callback, ProgressCallback());

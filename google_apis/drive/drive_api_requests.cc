@@ -986,7 +986,7 @@ void GetUploadStatusRequest::OnRangeRequestComplete(
 //======================= MultipartUploadNewFileDelegate =======================
 
 MultipartUploadNewFileDelegate::MultipartUploadNewFileDelegate(
-    RequestSender* sender,
+    base::SequencedTaskRunner* task_runner,
     const std::string& title,
     const std::string& parent_resource_id,
     const std::string& content_type,
@@ -999,7 +999,7 @@ MultipartUploadNewFileDelegate::MultipartUploadNewFileDelegate(
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
     : MultipartUploadRequestBase(
-          sender->blocking_task_runner(),
+          task_runner,
           CreateMultipartUploadMetadataJson(title,
                                             parent_resource_id,
                                             modified_date,
@@ -1029,7 +1029,7 @@ net::URLFetcher::RequestType MultipartUploadNewFileDelegate::GetRequestType()
 //====================== MultipartUploadExistingFileDelegate ===================
 
 MultipartUploadExistingFileDelegate::MultipartUploadExistingFileDelegate(
-    RequestSender* sender,
+    base::SequencedTaskRunner* task_runner,
     const std::string& title,
     const std::string& resource_id,
     const std::string& parent_resource_id,
@@ -1044,7 +1044,7 @@ MultipartUploadExistingFileDelegate::MultipartUploadExistingFileDelegate(
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
     : MultipartUploadRequestBase(
-          sender->blocking_task_runner(),
+          task_runner,
           CreateMultipartUploadMetadataJson(title,
                                             parent_resource_id,
                                             modified_date,

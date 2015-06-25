@@ -631,6 +631,7 @@
       'browser/apps/drive/drive_app_mapping_unittest.cc',
       'browser/apps/ephemeral_app_service_unittest.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl_unittest.cc',
+      'browser/drive/drive_api_service_unittest.cc',
       'browser/drive/drive_api_util_unittest.cc',
       'browser/drive/drive_app_registry_unittest.cc',
       'browser/drive/drive_uploader_unittest.cc',

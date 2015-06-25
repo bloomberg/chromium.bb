@@ -45,6 +45,8 @@ class BatchRequestConfigurator : public BatchRequestConfiguratorInterface,
   BatchRequestConfigurator(
       const base::WeakPtr<google_apis::drive::BatchUploadRequest>&
           batch_request,
+      base::SequencedTaskRunner* task_runner,
+      const google_apis::DriveApiUrlGenerator& url_generator,
       const google_apis::CancelCallback& cancel_callback);
   ~BatchRequestConfigurator() override;
 
@@ -71,6 +73,8 @@ class BatchRequestConfigurator : public BatchRequestConfiguratorInterface,
  private:
   // Reference to batch request. It turns to null after committing.
   base::WeakPtr<google_apis::drive::BatchUploadRequest> batch_request_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  google_apis::DriveApiUrlGenerator url_generator_;
   google_apis::CancelCallback cancel_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BatchRequestConfigurator);

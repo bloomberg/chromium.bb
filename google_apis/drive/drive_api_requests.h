@@ -977,7 +977,7 @@ class MultipartUploadNewFileDelegate : public MultipartUploadRequestBase {
   // |title| should be set.
   // See also the comments of MultipartUploadRequestBase for more details
   // about the other parameters.
-  MultipartUploadNewFileDelegate(RequestSender* sender,
+  MultipartUploadNewFileDelegate(base::SequencedTaskRunner* task_runner,
                                  const std::string& title,
                                  const std::string& parent_resource_id,
                                  const std::string& content_type,
@@ -1013,7 +1013,7 @@ class MultipartUploadExistingFileDelegate : public MultipartUploadRequestBase {
   // See also the comments of MultipartUploadRequestBase for more details
   // about the other parameters.
   MultipartUploadExistingFileDelegate(
-      RequestSender* sender,
+      base::SequencedTaskRunner* task_runner,
       const std::string& title,
       const std::string& resource_id,
       const std::string& parent_resource_id,
