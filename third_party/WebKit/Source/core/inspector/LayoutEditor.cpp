@@ -59,6 +59,12 @@ LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent)
 {
 }
 
+DEFINE_TRACE(LayoutEditor)
+{
+    visitor->trace(m_node);
+    visitor->trace(m_cssAgent);
+}
+
 void LayoutEditor::setNode(Node* node)
 {
     m_node = node;

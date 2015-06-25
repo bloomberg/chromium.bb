@@ -18,7 +18,8 @@ namespace blink {
 class JSONObject;
 class InspectorCSSAgent;
 
-class LayoutEditor final: public NoBaseWillBeGarbageCollected<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
+class LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LayoutEditor);
 public:
     static PassOwnPtrWillBeRawPtr<LayoutEditor> create(InspectorCSSAgent* cssAgent)
     {
@@ -28,11 +29,7 @@ public:
     void setNode(Node*);
     PassRefPtr<JSONObject> buildJSONInfo() const;
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_node);
-        visitor->trace(m_cssAgent);
-    }
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit LayoutEditor(InspectorCSSAgent*);
