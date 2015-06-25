@@ -29,12 +29,9 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cidb
 from chromite.lib import clactions
-from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import gerrit
-from chromite.lib import git
 from chromite.lib import git_unittest
-from chromite.lib import gs_unittest
 from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
@@ -95,40 +92,6 @@ class ManifestVersionedSyncStageTest(
 
     self.sync_stage.Run()
 
-  @cros_test_lib.NetworkTest()
-  @mock.patch.object(git, 'PushWithRetry')
-  def testCommitProjectSDKManifest(self, _mock_push):
-    """Tests that we can 'push' an SDK manifest."""
-    gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
-    gs_mock.SetDefaultCmdResult()
-
-    # Create test manifest
-    MANIFEST_CONTENTS = 'bogus value'
-    manifest = os.path.join(self.tempdir, 'sdk.xml')
-    osutils.WriteFile(manifest, MANIFEST_CONTENTS)
-
-    self.sync_stage.CommitProjectSDKManifest(manifest, 'test_version', True)
-
-    project_sdk_dir = os.path.join(
-        self.sync_stage._build_root, 'manifest-versions-project-sdk',
-        'project-sdk')
-    manifest_path = os.path.join(project_sdk_dir, 'test_version.xml')
-    latest_path = os.path.join(project_sdk_dir, 'latest.xml')
-
-    # Ensure new manifest was created, correctly.
-    contents = osutils.ReadFile(manifest_path)
-    self.assertEqual(contents, MANIFEST_CONTENTS)
-
-    # Ensure link to latest manifest was updated.
-    self.assertTrue(os.path.exists(latest_path))
-    self.assertEqual(os.path.realpath(latest_path), manifest_path)
-
-    # Verify pushes to GS.
-    gs_mock.assertCommandContains(
-        ('cp', manifest, 'gs://brillo-releases/sdk-releases/test_version.xml'))
-
-    gs_mock.assertCommandContains(
-        ('cp', 'gs://brillo-releases/sdk-releases/LATEST'))
 
 class MockPatch(mock.MagicMock):
   """MagicMock for a GerritPatch-like object."""
