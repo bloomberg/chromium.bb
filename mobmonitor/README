@@ -1,0 +1,169 @@
+----------------------------------
+----------------------------------
+Details on using the Mob* Monitor:
+----------------------------------
+----------------------------------
+
+
+Overview:
+---------
+
+The Mob* Monitor provides a way to monitor the health state of a particular
+service. Service health is defined by a set of satisfiable checks, called
+health checks.
+
+The Mob* Monitor executes health checks that are written for a particular
+service and collects information on the health state. Users can query
+the health state of a service via an RPC/RESTful interface.
+
+When a service is unhealthy, the Mob* Monitor can be requested to execute
+repair actions that are defined in the service's check file package.
+
+
+Check Files and Check File Packages:
+------------------------------------
+
+Check file packages are located in the check file directory. Each 'package'
+is a Python package.
+
+The layout of the checkfile directory is as follows:
+
+checkfile_directory:
+    service1:
+        __init__.py
+        service_actions.py
+        more_service_actions.py
+        easy_check.py
+        harder_check.py
+        ...
+    service2:
+        __init__.py
+        service2_actions.py
+        service_check.py
+        ....
+    .
+    .
+    .
+    serviceN:
+        ...
+
+Each service check file package should be flat, that is, no subdirectories will
+be walked to collect health checks.
+
+Check files define health checks and must end in '_check.py'. The Mob* Monitor
+does not enforce how or where in the package you define repair actions.
+
+
+Health Checks:
+--------------
+
+Health checks are the basic conditions that altogether define whether or not a
+service is healthy from the perspective of the Mob* Monitor.
+
+A health check is a python object that implements the following interface:
+
+  - Check()
+
+    Tests the health condition.
+
+    -> Returns 0 if the health check was completely satisfied.
+    -> Returns a positive integer if the check was successfuly, but could
+       have been better.
+    -> Returns a negative integer if the check was unsuccessful.
+
+  - Diagnose(errocode)
+
+    Maps an error code to a description and a set of actions that can be
+    used to repair or improve the condition.
+
+    -> Returns a tuple of (description, actions) where:
+         description is a string describing the state.
+         actions is a list of repair functions.
+
+
+Health checks can (optionally) also define the following attributes:
+
+  - CHECK_INTERVAL: Defines the interval (in seconds) between health check
+                    executions. This defaults to 30 seconds if not defined.
+
+
+A check file may contain as many health checks as the writer feels is
+necessary. There is no restriction on what else may be included in the
+check file. The writer is free to write many health check files.
+
+
+Repair Actions:
+---------------
+
+Repair actions are used to repair or improve the health state of a service. The
+appropriate repair actions to take are returned in a health check's Diagnose
+method.
+
+Repair actions are functions and can be defined anywhere in the service check
+package.
+
+It is suggested that repair actions are defined in files ending in 'actions.py'
+which are imported by health check files.
+
+
+Health Check and Action Example:
+--------------------------------
+
+Suppose we have a service named 'myservice'. The check file package should have
+the following layout:
+
+checkdir:
+    myservice:
+        __init__.py
+        myservice_check.py
+        repair_actions.py
+
+
+The 'myservice_check.py' file should look like the following:
+
+    from myservice import repair_actions
+
+    def IsKeyFileInstalled():
+      """Checks if the key file is installed.
+
+      Returns:
+        True if USB key is plugged in, False otherwise.
+      """
+      ....
+      return result
+
+
+    class MyHealthCheck(object):
+
+      CHECK_INTERVAL = 10
+
+      def Check(self):
+        if IsKeyFileInstalled():
+          return 0
+
+        return -1
+
+      def Diagnose(self, errcode):
+        if -1 == errcode:
+          return ('Key file is missing.' [repair_actions.InstallKeyFile])
+
+        return ('Unknown failure.', [])
+
+
+And the 'repair_actions.py' file should look like:
+
+
+    def InstallKeyFile(**kwargs):
+      """Installs the key file."""
+      ...
+
+
+TODO (msartori): Implement crbug.com/505066 for handling inputs to repair
+                 actions.
+
+
+Communicating with the Mob* Monitor:
+------------------------------------
+
+TODO (msartori): Fill in once RPCs are fully implemented.
+                 See crbug.com/493318, crbug.com/493319, crbug.com/293320.

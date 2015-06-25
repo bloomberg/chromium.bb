@@ -33,7 +33,6 @@ HEALTH_CHECK_METHODS = ['Check', 'Diagnose']
 CHECK_INTERVAL_DEFAULT_SEC = 30
 HEALTH_CHECK_DEFAULT_ATTRIBUTES = {'CHECK_INTERVAL': CHECK_INTERVAL_DEFAULT_SEC}
 
-CHECKFILE_SERVICE = 'SERVICE'
 CHECKFILE_DIR = '/etc/mobmonitor/checkfiles/'
 CHECKFILE_ENDING = '_check.py'
 
@@ -110,35 +109,36 @@ def ApplyHealthCheckAttributes(obj):
   return obj
 
 
-def ImportCheckfile(checkfile_path):
-  """Import the checkfile.
+def ImportFile(service, modulepath):
+  """Import and collect health checks from the given module.
 
   Args:
-    checkfile_path: The path of the checkfile to import.
+    service: The name of the service this check module belongs to and
+      for which the objects to import belong to.
+    modulepath: The path of the module to import.
 
   Returns:
-    A tuple containing the name of the service this checkfile is
-    associated with and the list of health checks in the module.
+    A tuple containing the healthchecks defined in the module and the
+    time of the module's last modification.
 
   Raises:
     SyntaxError may be raised by imp.load_source if the python file
-      specified by checkfile_path has errors.
+      specified by modulepath has errors.
   """
-  # Import the checkfile
-  modname = os.path.basename(os.path.splitext(checkfile_path)[0])
-  check = imp.load_source(modname, checkfile_path)
+  # Name and load the module from the module path. If service is 'testservice'
+  # and the module path is '/path/to/checkdir/testservice/test_check.py',
+  # the module name becomes 'testservice.test_check'.
+  objects = []
+  modname = '%s.%s' % (service,
+                       os.path.basename(os.path.splitext(modulepath)[0]))
+  module = imp.load_source(modname, modulepath)
 
-  # Gather the service name and the health checks
-  service_name = None
-  healthchecks = []
-  for name in dir(check):
-    obj = getattr(check, name)
-    if CHECKFILE_SERVICE == name:
-      service_name = obj
+  for name in dir(module):
+    obj = getattr(module, name)
     if inspect.isclass(obj) and IsHealthCheck(obj):
-      healthchecks.append(ApplyHealthCheckAttributes(obj()))
+      objects.append(ApplyHealthCheckAttributes(obj()))
 
-  return service_name, healthchecks, os.path.getmtime(checkfile_path)
+  return objects, os.path.getmtime(modulepath)
 
 
 class CheckFileManager(object):
@@ -177,28 +177,23 @@ class CheckFileManager(object):
 
     self.service_states = {}
 
-  def Update(self, service, healthchecks, mtime):
-    """Update the health checks that are associated with each service.
+  def Update(self, service, objects, mtime):
+    """Update the healthcheck objects for each service.
 
     Args:
-      service: The name of the service that the health check corresponds to.
-      healthchecks: A list of health check objects.
-      mtime: The time of latest modification of the health check module.
+      service: The service that the healthcheck corresponds to.
+      objects: A list of healthcheck objects.
+      mtime: The time of last modification of the healthcheck module.
     """
-    # The update and callback procedure used here leverages the cherrypy
-    # Monitor plugin. When a file that was read during collection is modified,
-    # cherrypy detects the change and restarts the Monitor and main thread.
-    # Thus, we get on-the-fly check file change detection and we do not need
-    # to provide extra logic for purging existing health check objects.
-    for healthcheck in healthchecks:
-      hcname = healthcheck.__class__.__name__
+    for obj in objects:
+      name = obj.__class__.__name__
       self.service_checks.setdefault(service, {})
 
-      stored_mtime, _ = self.service_checks[service].get(hcname, (None, None))
+      stored_mtime, _ = self.service_checks[service].get(name, (None, None))
       if stored_mtime is None or mtime > stored_mtime:
-        self.service_checks[service][hcname] = (mtime, healthcheck)
+        self.service_checks[service][name] = (mtime, obj)
         logging.info('Updated healthcheck "%s" for service "%s" at time "%s"',
-                     hcname, service, mtime)
+                     name, service, mtime)
 
   def Execute(self):
     """Execute all health checks and collect healthcheck status information."""
@@ -227,23 +222,29 @@ class CheckFileManager(object):
 
   def CollectionExecutionCallback(self):
     """Callback for cherrypy Monitor. Collect checkfiles from the checkdir."""
-    # Collect the paths of each checkfile to import.
-    checkfile_paths = []
-    for root, _dirs, files in os.walk(self.checkdir):
-      for file_ in files:
-        if file_.endswith(CHECKFILE_ENDING):
-          checkfile_paths.append(os.path.join(root, file_))
+    # Find all service check file packages.
+    _, service_dirs, _ = next(os.walk(self.checkdir))
+    for service_name in service_dirs:
+      service_package = os.path.join(self.checkdir, service_name)
 
-    # Import each checkfile and update the check collection.
-    for path in checkfile_paths:
+      # Import the package.
       try:
-        service_name, health_checks, mtime = ImportCheckfile(path)
-        self.Update(service_name, health_checks, mtime)
-      # At least SyntaxError and NameError may be raised when attempting
-      # to import a bad check file. Catch general exceptions here in
-      # the event that unforeseen errors do not bring down the monitor.
+        file_, path, desc = imp.find_module(service_name, [self.checkdir])
+        imp.load_module(service_name, file_, path, desc)
       except Exception as e:
-        logging.warning('Checkfile %s has errors: %s', path, e)
+        logging.warning('Failed to import package %s: %s', service_name, e)
+        continue
+
+      # Collect all of the service's health checks.
+      for file_ in os.listdir(service_package):
+        filepath = os.path.join(service_package, file_)
+        if os.path.isfile(filepath) and file_.endswith(CHECKFILE_ENDING):
+          try:
+            healthchecks, mtime = ImportFile(service_name, filepath)
+            self.Update(service_name, healthchecks, mtime)
+          except Exception as e:
+            logging.warning('Failed to import module %s.%s: %s',
+                            service_name, file_[:-3], e)
 
     self.Execute()
 
@@ -279,7 +280,7 @@ class CheckFileManager(object):
           check class.
     """
 
-  # TODO (msartori): Implement crbug.com/493320.
+  # TODO (msartori): Implement crbug.com/493320 and crbug.com/505066.
   def RepairService(self, service, action):
     """Execute the repair action on the specified service.
 

@@ -91,6 +91,10 @@ class TestHealthCheckBroken(object):
     raise ValueError()
 
 
+def TestAction():
+  return True
+
+
 TEST_SERVICE_NAME = 'test-service'
 TEST_MTIME = 100
 TEST_EXEC_TIME = 400
@@ -154,6 +158,14 @@ ANOTHER_NOT_A_CHECKFILE = '''
 class AnotherNotAHealthCheck(object):
   def AnotherNotCheckNorDiagnose(self):
     return -2
+'''
+
+ACTION_FILE = '''
+def TestAction():
+  return True
+
+def AnotherAction():
+  return False
 '''
 
 
@@ -265,7 +277,7 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     result = manager.ApplyHealthCheckAttributes(testhc)
     self.assertEquals(result.CHECK_INTERVAL, check_interval)
 
-  def testImportCheckFileAllHealthChecks(self):
+  def testImportFileAllHealthChecks(self):
     """Test that health checks and service name are collected."""
     self.StartPatcher(mock.patch('os.path.splitext'))
     os.path.splitext.return_value = '/path/to/test_check.py'
@@ -278,13 +290,12 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     self.StartPatcher(mock.patch('imp.load_source'))
     imp.load_source.return_value = checkmodule
 
-    service_name, healthchecks, mtime = manager.ImportCheckfile('/')
+    healthchecks, mtime = manager.ImportFile(TEST_SERVICE_NAME, '/')
 
-    self.assertEquals(service_name, 'test-service')
     self.assertEquals(len(healthchecks), 3)
     self.assertEquals(mtime, TEST_MTIME)
 
-  def testImportCheckFileSomeHealthChecks(self):
+  def testImportFileSomeHealthChecks(self):
     """Test importing when not all classes are actually health checks."""
     self.StartPatcher(mock.patch('os.path.splitext'))
     os.path.splitext.return_value = '/path/to/test_check.py'
@@ -297,9 +308,8 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     self.StartPatcher(mock.patch('imp.load_source'))
     imp.load_source.return_value = checkmodule
 
-    service_name, healthchecks, mtime = manager.ImportCheckfile('/')
+    healthchecks, mtime = manager.ImportFile(TEST_SERVICE_NAME, '/')
 
-    self.assertEquals(service_name, 'test-service')
     self.assertEquals(len(healthchecks), 2)
     self.assertEquals(mtime, TEST_MTIME)
 
@@ -307,33 +317,43 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
 class CheckFileManagerTest(cros_test_lib.MockTestCase):
   """Unittests for CheckFileManager."""
 
-  def testCollectionExecutionCallback(self):
-    """Test the CollectionExecutionCallback."""
+  def testCollectionExecutionCallbackCheckfiles(self):
+    """Test the CollectionExecutionCallback on collecting checkfiles."""
     self.StartPatcher(mock.patch('os.walk'))
-    os.walk.return_value = [['/checkdir/', [], ['test_check.py']]]
+    os.walk.return_value = iter([[CHECKDIR, [TEST_SERVICE_NAME], []]])
+
+    self.StartPatcher(mock.patch('os.listdir'))
+    os.listdir.return_value = ['test_check.py']
+
+    self.StartPatcher(mock.patch('os.path.isfile'))
+    os.path.isfile.return_value = True
+
+    self.StartPatcher(mock.patch('imp.find_module'))
+    imp.find_module.return_value = (None, None, None)
+    self.StartPatcher(mock.patch('imp.load_module'))
 
     myobj = TestHealthCheck()
-    manager.ImportCheckfile = mock.Mock(
-        return_value=[TEST_SERVICE_NAME, [myobj], 100])
+    manager.ImportFile = mock.Mock(return_value=[[myobj], TEST_MTIME])
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
     cfm.CollectionExecutionCallback()
 
-    manager.ImportCheckfile.assert_called_once_with('/checkdir/test_check.py')
+    manager.ImportFile.assert_called_once_with(
+        TEST_SERVICE_NAME, './%s/test_check.py' % TEST_SERVICE_NAME)
 
     self.assertTrue(TEST_SERVICE_NAME in cfm.service_checks)
     self.assertEquals(cfm.service_checks[TEST_SERVICE_NAME],
-                      {myobj.__class__.__name__: (100, myobj)})
+                      {myobj.__class__.__name__: (TEST_MTIME, myobj)})
 
   def testCollectionExecutionCallbackNoChecks(self):
     """Test the CollectionExecutionCallback with no valid check files."""
     self.StartPatcher(mock.patch('os.walk'))
-    os.walk.return_value = [['/checkdir/', [], ['test.py']]]
+    os.walk.return_value = iter([['/checkdir/', [], ['test.py']]])
 
-    manager.ImportCheckfile = mock.Mock(return_value=None)
+    manager.ImportFile = mock.Mock(return_value=None)
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
     cfm.CollectionExecutionCallback()
 
-    self.assertFalse(manager.ImportCheckfile.called)
+    self.assertFalse(manager.ImportFile.called)
 
     self.assertFalse(TEST_SERVICE_NAME in cfm.service_checks)
 
@@ -346,7 +366,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
 
     self.assertTrue(plugins.Monitor.called)
 
-  def testUpdateExisting(self):
+  def testUpdateExistingHealthCheck(self):
     """Test update when a health check exists and is not stale."""
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
 
@@ -361,8 +381,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertEquals(cfm.service_checks[TEST_SERVICE_NAME],
                       {myobj.__class__.__name__: (TEST_MTIME, myobj)})
 
-
-  def testUpdateNonExisting(self):
+  def testUpdateNonExistingHealthCheck(self):
     """Test adding a new health check to the manager."""
     cfm = manager.CheckFileManager(checkdir=CHECKDIR)
     cfm.service_checks = {}
@@ -441,11 +460,13 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertEquals(exec_status, manager.HCEXECUTION_COMPLETED)
     self.assertEquals(exec_time, TEST_EXEC_TIME)
 
+
 class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for checking when live changes are made to a checkfile."""
 
   MOBMONITOR_BASENAME = 'chromite'
   MOBMONITOR_REL_CMD = 'bin/mobmonitor'
+  SERVICE_DIR = 'test_service'
   CHECKFILE_REL_PATH = 'test_check.py'
   NOTACHECK_REL_PATH = 'notacheck.py'
   CHERRYPY_RESTART_STR = 'ENGINE Restarting because %(checkfile)s changed.'
@@ -454,8 +475,8 @@ class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
 
   def CreateFile(self, relpath, filestr):
     """Create a file from a string in the temp dir."""
-    abspath = os.path.join(self.checkdir, relpath)
-    osutils.WriteFile(abspath, filestr)
+    abspath = os.path.join(self.service_dir, relpath)
+    osutils.WriteFile(abspath, filestr, makedirs=True)
     return abspath
 
   def RunCheckfileMod(self, expect_handler, modpath, modfilestr):
@@ -466,7 +487,7 @@ class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
     for attempt in range(1, self.CHECKFILE_MOD_ATTEMPTS + 1):
       # This target should appear in the output if a checkfile is changed.
       target = self.CHERRYPY_RESTART_STR % {'checkfile':
-                                            os.path.join(self.checkdir,
+                                            os.path.join(self.service_dir,
                                                          modpath)}
 
       # Start the Mob* Monitor in a separate thread. The timeout
@@ -491,10 +512,12 @@ class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
     """Setup the check directory and the Mob* Monitor process."""
     # Create the test check directory and the test files.
     self.checkdir = self.tempdir
+    self.service_dir = os.path.join(self.checkdir, self.SERVICE_DIR)
     self.checkfile = self.CreateFile(self.CHECKFILE_REL_PATH,
                                      CHECKFILE_MANY_SIMPLE)
     self.notacheck = self.CreateFile(self.NOTACHECK_REL_PATH,
                                      NOT_A_CHECKFILE)
+    self.CreateFile('__init__.py', '')
 
     # Setup the Mob* Monitor command.
     path = os.path.abspath(__file__)

@@ -101,6 +101,7 @@ class RpcExecutor(object):
     """
     return self.Execute('GetStatus', service=service)
 
+  # TODO (msartori): Implement crbug.com/505066.
   def RepairService(self, service=None, action=None):
     """Apply the specified action to the specified service.
 

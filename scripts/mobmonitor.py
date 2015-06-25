@@ -45,7 +45,8 @@ class MobMonitorRoot(object):
     """
     return 'GetStatus reached: service="%s"' % service
 
-  # TODO (msartori): Stub until crbug.com/493320 is implemented.
+  # TODO (msartori): Stub until crbug.com/493320 is implemented. Also
+  # need to implement crbug.com/505066.
   @cherrypy.expose
   def RepairService(self, service, action):
     """Execute the repair action on the specified service.
