@@ -27,6 +27,7 @@ namespace internal {
 namespace {
 #if !defined(OS_NACL)
 const struct sched_param kRealTimePrio = {8};
+const struct sched_param kResetPrio = {0};
 #endif
 }  // namespace
 
@@ -40,6 +41,16 @@ const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
 bool SetThreadPriorityForPlatform(PlatformThreadHandle handle,
                                   ThreadPriority priority) {
 #if !defined(OS_NACL)
+  ThreadPriority current_priority;
+  if (priority != ThreadPriority::REALTIME_AUDIO &&
+      GetThreadPriorityForPlatform(handle, &current_priority) &&
+      current_priority == ThreadPriority::REALTIME_AUDIO) {
+    // If the pthread's round-robin scheduler is already enabled, and the new
+    // priority will use setpriority() instead, the pthread scheduler should be
+    // reset to use SCHED_OTHER so that setpriority() just works.
+    pthread_setschedparam(pthread_self(), SCHED_OTHER, &kResetPrio);
+    return false;
+  }
   // TODO(gab): Assess the correctness of using |pthread_self()| below instead
   // of |handle|. http://crbug.com/468793.
   return priority == ThreadPriority::REALTIME_AUDIO  &&
