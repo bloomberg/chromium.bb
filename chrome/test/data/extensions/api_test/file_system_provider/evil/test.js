@@ -68,20 +68,20 @@ var TESTING_RELATIVE_NAME_FILE = Object.freeze({
  * @param {function(string)} onError Error callback.
  */
 function onOpenFileRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
-  if (options.mode != 'READ') {
+  if (options.mode !== 'READ') {
     onError('ACCESS_DENIED');  // enum ProviderError.
     return;
   }
 
-  if (options.filePath != '/' + TESTING_TOO_LARGE_CHUNK_FILE.name &&
-      options.filePath != '/' + TESTING_INVALID_CALLBACK_FILE.name &&
-      options.filePath != '/' + TESTING_NEGATIVE_SIZE_FILE.name &&
-      options.filePath != '/' + TESTING_RELATIVE_NAME_FILE.name) {
+  if (options.filePath !== '/' + TESTING_TOO_LARGE_CHUNK_FILE.name &&
+      options.filePath !== '/' + TESTING_INVALID_CALLBACK_FILE.name &&
+      options.filePath !== '/' + TESTING_NEGATIVE_SIZE_FILE.name &&
+      options.filePath !== '/' + TESTING_RELATIVE_NAME_FILE.name) {
     onError('NOT_FOUND');  // enum ProviderError.
     return;
   }
@@ -98,7 +98,7 @@ function onOpenFileRequested(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback.
  */
 function onCloseFileRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID ||
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID ||
       !openedFiles[options.openRequestId]) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
@@ -119,12 +119,12 @@ function onCloseFileRequested(options, onSuccess, onError) {
  */
 function onReadFileRequested(options, onSuccess, onError) {
   var filePath = openedFiles[options.openRequestId];
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID || !filePath) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID || !filePath) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
-  if (filePath == '/' + TESTING_TOO_LARGE_CHUNK_FILE.name) {
+  if (filePath === '/' + TESTING_TOO_LARGE_CHUNK_FILE.name) {
     var buffer = '';
     while (buffer.length < 4 * TESTING_TOO_LARGE_CHUNK_FILE.size) {
       buffer += 'I-LIKE-ICE-CREAM!';
@@ -140,7 +140,7 @@ function onReadFileRequested(options, onSuccess, onError) {
     return;
   }
 
-  if (filePath == '/' + TESTING_INVALID_CALLBACK_FILE.name) {
+  if (filePath === '/' + TESTING_INVALID_CALLBACK_FILE.name) {
     // Calling onSuccess after onError is unexpected. After handling the error
     // the request should be removed.
     onError('NOT_FOUND');
@@ -148,13 +148,13 @@ function onReadFileRequested(options, onSuccess, onError) {
     return;
   }
 
-  if (filePath == '/' + TESTING_NEGATIVE_SIZE_FILE.name) {
+  if (filePath === '/' + TESTING_NEGATIVE_SIZE_FILE.name) {
     onSuccess(new ArrayBuffer(-TESTING_NEGATIVE_SIZE_FILE.size * 2),
               false /* hasMore */);
     return;
   }
 
-  if (filePath == '/' + TESTING_RELATIVE_NAME_FILE.name) {
+  if (filePath === '/' + TESTING_RELATIVE_NAME_FILE.name) {
     onSuccess(new ArrayBuffer(options.length), false /* hasMore */);
     return;
   }

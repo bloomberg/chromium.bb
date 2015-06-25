@@ -46,12 +46,12 @@ var TESTING_TIRAMISU_FILE = Object.freeze({
  * @param {function(string)} onError Error callback with an error code.
  */
 function onReadDirectoryRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (options.directoryPath != '/' + TESTING_HELLO_DIR.name) {
+  if (options.directoryPath !== '/' + TESTING_HELLO_DIR.name) {
     onError('NOT_FOUND');  // enum ProviderError.
     return;
   }

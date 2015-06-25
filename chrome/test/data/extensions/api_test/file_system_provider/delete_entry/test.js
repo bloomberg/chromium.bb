@@ -45,17 +45,17 @@ var TESTING_C_FILE = Object.freeze({
  * @param {function(string)} onError Error callback with an error code.
  */
 function onDeleteEntryRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (options.entryPath == '/') {
+  if (options.entryPath === '/') {
     onError('INVALID_OPERATION');
     return;
   }
 
-  if (options.entryPath == '/' + TESTING_A_DIRECTORY.name) {
+  if (options.entryPath === '/' + TESTING_A_DIRECTORY.name) {
     if (options.recursive)
       onSuccess();
     else
@@ -63,8 +63,8 @@ function onDeleteEntryRequested(options, onSuccess, onError) {
     return;
   }
 
-  if (options.entryPath == '/' + TESTING_C_FILE.name ||
-      options.entryPath == '/' + TESTING_A_DIRECTORY.name + '/' +
+  if (options.entryPath === '/' + TESTING_C_FILE.name ||
+      options.entryPath === '/' + TESTING_A_DIRECTORY.name + '/' +
       TESTING_B_DIRECTORY.name) {
     onSuccess();
     return;

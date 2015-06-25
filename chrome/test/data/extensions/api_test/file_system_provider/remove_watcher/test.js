@@ -34,17 +34,17 @@ var TESTING_BROKEN_FILE = Object.freeze({
  * @param {function(string)} onError Error callback with an error code.
  */
 function onRemoveWatcherRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (options.entryPath == '/' + TESTING_FILE.name) {
+  if (options.entryPath === '/' + TESTING_FILE.name) {
     onSuccess();
     return;
   }
 
-  if (options.entryPath == '/' + TESTING_BROKEN_FILE.name) {
+  if (options.entryPath === '/' + TESTING_BROKEN_FILE.name) {
     onError('INVALID_OPERATION');
     return;
   }

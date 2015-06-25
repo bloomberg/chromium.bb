@@ -70,12 +70,12 @@ function onReadFileRequested(options, onSuccess, onError) {
   var filePath = test_util.openedFiles[options.openRequestId];
 
   var continueRead = function() {
-    if (options.fileSystemId != test_util.FILE_SYSTEM_ID || !filePath) {
+    if (options.fileSystemId !== test_util.FILE_SYSTEM_ID || !filePath) {
       onError('SECURITY');  // enum ProviderError.
       return;
     }
 
-    if (filePath == '/' + TESTING_TIRAMISU_FILE.name) {
+    if (filePath === '/' + TESTING_TIRAMISU_FILE.name) {
       var textToSend = TESTING_TEXT.substr(options.offset, options.length);
       var textToSendInChunks = textToSend.split(/(?= )/);
 
@@ -94,12 +94,12 @@ function onReadFileRequested(options, onSuccess, onError) {
       return;
     }
 
-    if (filePath == '/' + TESTING_VANILLA_FOR_ABORT_FILE.name) {
+    if (filePath === '/' + TESTING_VANILLA_FOR_ABORT_FILE.name) {
       // Do nothing. This simulates a very slow read.
       return;
     }
 
-    if (filePath == '/' + TESTING_BROKEN_TIRAMISU_FILE.name) {
+    if (filePath === '/' + TESTING_BROKEN_TIRAMISU_FILE.name) {
       onError('ACCESS_DENIED');  // enum ProviderError.
       return;
     }

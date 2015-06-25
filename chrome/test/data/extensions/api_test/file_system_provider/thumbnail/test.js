@@ -64,7 +64,7 @@ var TESTING_WITH_INVALID_THUMBNAIL_FILE = Object.freeze({
  * @param {function(string)} onError Error callback with an error code.
  */
 function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
@@ -98,7 +98,7 @@ function onGetMetadataRequested(options, onSuccess, onError) {
   // reasons. Remove the field if needed. However, do not remove it for one
   // file, to simulate an error.
   if (!options.thumbnail && metadata.thumbnail &&
-      options.entryPath != '/' + TESTING_ALWAYS_WITH_THUMBNAIL_FILE.name) {
+      options.entryPath !== '/' + TESTING_ALWAYS_WITH_THUMBNAIL_FILE.name) {
     var metadataWithoutThumbnail = {
       isDirectory: metadata.isDirectory,
       name: metadata.name,

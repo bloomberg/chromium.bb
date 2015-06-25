@@ -62,8 +62,8 @@ test_util.openedFiles = {};
 test_util.getVolumeInfo = function(fileSystemId, callback) {
   chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
     for (var i = 0; i < volumeList.length; i++) {
-      if (volumeList[i].extensionId == chrome.runtime.id &&
-          volumeList[i].fileSystemId == fileSystemId) {
+      if (volumeList[i].extensionId === chrome.runtime.id &&
+          volumeList[i].fileSystemId === fileSystemId) {
         callback(volumeList[i]);
         return;
       }
@@ -128,7 +128,7 @@ test_util.mountFileSystem = function(callback, opt_options) {
  */
 test_util.onGetMetadataRequestedDefault = function(
     options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
@@ -150,7 +150,7 @@ test_util.onGetMetadataRequestedDefault = function(
  * @param {function(string)} onError Error callback.
  */
 test_util.onOpenFileRequested = function(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
@@ -173,7 +173,7 @@ test_util.onOpenFileRequested = function(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback.
  */
 test_util.onCloseFileRequested = function(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID ||
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID ||
       !test_util.openedFiles[options.openRequestId]) {
     onError('SECURITY');  // enum ProviderError.
     return;
@@ -191,12 +191,12 @@ test_util.onCloseFileRequested = function(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback with an error code.
  */
 test_util.onCreateFileRequested = function(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (options.filePath == '/') {
+  if (options.filePath === '/') {
     onError('INVALID_OPERATION');
     return;
   }
@@ -224,7 +224,7 @@ test_util.onCreateFileRequested = function(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback with an error code.
  */
 test_util.onAddWatcherRequested = function(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
@@ -245,7 +245,7 @@ test_util.onAddWatcherRequested = function(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback with an error code.
  */
 test_util.onRemoveWatcherRequested = function(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }

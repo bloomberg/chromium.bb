@@ -46,22 +46,22 @@ var TESTING_WRONG_TIME_FILE = Object.freeze({
  * @param {function(string)} onError Error callback with an error code.
  */
 function onGetMetadataRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (options.entryPath == '/') {
+  if (options.entryPath === '/') {
     onSuccess(TESTING_ROOT);
     return;
   }
 
-  if (options.entryPath == '/' + TESTING_FILE.name) {
+  if (options.entryPath === '/' + TESTING_FILE.name) {
     onSuccess(TESTING_FILE);
     return;
   }
 
-  if (options.entryPath == '/' + TESTING_WRONG_TIME_FILE.name) {
+  if (options.entryPath === '/' + TESTING_WRONG_TIME_FILE.name) {
     onSuccess(TESTING_WRONG_TIME_FILE);
     return;
   }

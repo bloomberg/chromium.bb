@@ -49,17 +49,17 @@ var TESTING_6GB_FILE = Object.freeze({
  * @param {function(string)} onError Error callback.
  */
 function onOpenFileRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
-  if (options.mode != 'READ') {
+  if (options.mode !== 'READ') {
     onError('ACCESS_DENIED');  // enum ProviderError.
     return;
   }
 
-  if (options.filePath != '/' + TESTING_6GB_FILE.name) {
+  if (options.filePath !== '/' + TESTING_6GB_FILE.name) {
     onError('NOT_FOUND');  // enum ProviderError.
     return;
   }
@@ -76,7 +76,7 @@ function onOpenFileRequested(options, onSuccess, onError) {
  * @param {function(string)} onError Error callback.
  */
 function onCloseFileRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID ||
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID ||
       !openedFiles[options.openRequestId]) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
@@ -97,12 +97,12 @@ function onCloseFileRequested(options, onSuccess, onError) {
  */
 function onReadFileRequested(options, onSuccess, onError) {
   var filePath = openedFiles[options.openRequestId];
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID || !filePath) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID || !filePath) {
     onError('INVALID_OPERATION');  // enum ProviderError.
     return;
   }
 
-  if (filePath == '/' + TESTING_6GB_FILE.name) {
+  if (filePath === '/' + TESTING_6GB_FILE.name) {
     if (options.offset < TESTING_TEXT_OFFSET ||
         options.offset >= TESTING_TEXT_OFFSET + TESTING_TEXT.length) {
       console.error('Reading from a wrong location in the file!');

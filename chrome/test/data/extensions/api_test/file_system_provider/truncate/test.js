@@ -18,7 +18,7 @@ var TESTING_TIRAMISU_FILE_NAME = 'tiramisu.txt';
  * @param {function(string)} onError Error callback.
  */
 function onTruncateRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }

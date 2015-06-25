@@ -23,12 +23,12 @@ var TESTING_DIRECTORY = Object.freeze({
  * @param {function(string)} onError Error callback with an error code.
  */
 function onCreateDirectoryRequested(options, onSuccess, onError) {
-  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
     onError('SECURITY');  // enum ProviderError.
     return;
   }
 
-  if (options.directoryPath == '/' || options.recursive) {
+  if (options.directoryPath === '/' || options.recursive) {
     onError('INVALID_OPERATION');
     return;
   }
