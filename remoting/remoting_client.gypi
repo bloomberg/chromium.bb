@@ -126,11 +126,11 @@
 
     {
       # GN version: //remoting/webapp:credits
-      'target_name': 'remoting_webapp_credits',
+      'target_name': 'remoting_client_credits',
       'type': 'none',
       'actions': [
         {
-          'action_name': 'Build remoting webapp credits',
+          'action_name': 'Build remoting client credits',
           'inputs': [
             '../tools/licenses.py',
             'webapp/base/html/credits.tmpl',
@@ -156,7 +156,7 @@
       'target_name': 'remoting_webapp',
       'type': 'none',
       'dependencies': [
-        'remoting_webapp_credits',
+        'remoting_client_credits',
         'remoting_webapp_v1',
       ],
       'conditions': [

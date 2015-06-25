@@ -41,6 +41,24 @@
           ],
         },  # end of target 'remoting_client_jni'
         {
+          'target_name': 'remoting_android_resources',
+          'type': 'none',
+          'copies': [
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/raw',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/credits.html',
+                'webapp/base/html/credits_css.css',
+                'webapp/base/html/main.css',
+                'webapp/base/js/credits_js.js',
+              ],
+            },
+          ],
+          'dependencies': [
+            'remoting_client_credits',
+          ],
+        },  # end of target 'remoting_android_resources'
+        {
           'target_name': 'remoting_apk_manifest',
           'type': 'none',
           'sources': [
@@ -79,6 +97,7 @@
             ],
           },
           'dependencies': [
+            'remoting_android_resources',
             '../base/base.gyp:base_java',
             '../ui/android/ui_android.gyp:ui_java',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
