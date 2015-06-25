@@ -44,7 +44,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     }
 
     for (size_t i = 0; i < documents.size(); ++i) {
-        if (documents[i]->frame()) {
+        if (documents[i]->view()) {
             documents[i]->view()->scrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
 
             if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = documents[i]->view()->animatingScrollableAreas()) {
