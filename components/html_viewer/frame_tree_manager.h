@@ -66,6 +66,10 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
   Frame* GetLocalFrame();
   blink::WebLocalFrame* GetLocalWebFrame();
 
+  void LoadingStarted();
+  void LoadingStopped();
+  void ProgressChanged(double progress);
+
  private:
   friend class Frame;
 

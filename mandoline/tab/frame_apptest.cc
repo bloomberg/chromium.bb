@@ -137,6 +137,8 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
                                   MessageEvent* event) override {
     return false;
   }
+  void LoadingStateChanged(bool loading) override {}
+  void ProgressChanged(double progress) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeDelegate);

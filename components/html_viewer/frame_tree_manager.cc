@@ -176,6 +176,18 @@ void FrameTreeManager::OnConnect(
   NOTREACHED();
 }
 
+void FrameTreeManager::LoadingStarted() {
+  server_->LoadingStarted();
+}
+
+void FrameTreeManager::LoadingStopped() {
+  server_->LoadingStopped();
+}
+
+void FrameTreeManager::ProgressChanged(double progress) {
+  server_->ProgressChanged(progress);
+}
+
 void FrameTreeManager::OnFrameAdded(mandoline::FrameDataPtr frame_data) {
   NOTIMPLEMENTED();
 }

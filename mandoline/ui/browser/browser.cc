@@ -185,11 +185,26 @@ void Browser::Embed(mojo::URLRequestPtr request) {
   frame_connection->application_connection()->AddService<mojo::NavigatorHost>(
       this);
   FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_.reset(new FrameTree(content_, nullptr, frame_tree_client,
+  frame_tree_.reset(new FrameTree(content_, this, frame_tree_client,
                                   frame_connection.Pass()));
   content_->Embed(view_manager_client.Pass());
+  LoadingStateChanged(true);
 
   navigator_host_.RecordNavigation(gurl.spec());
+}
+
+bool Browser::CanPostMessageEventToFrame(const Frame* source,
+                                         const Frame* target,
+                                         MessageEvent* event) {
+  return true;
+}
+
+void Browser::LoadingStateChanged(bool loading) {
+  ui_->LoadingStateChanged(loading);
+}
+
+void Browser::ProgressChanged(double progress) {
+  ui_->ProgressChanged(progress);
 }
 
 void Browser::Create(mojo::ApplicationConnection* connection,

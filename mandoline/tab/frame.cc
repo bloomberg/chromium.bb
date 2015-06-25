@@ -47,6 +47,8 @@ Frame::Frame(FrameTree* tree,
       view_ownership_(view_ownership),
       frame_user_data_(user_data.Pass()),
       frame_tree_client_(frame_tree_client),
+      loading_(false),
+      progress_(0.f),
       frame_tree_server_binding_(this) {
   view_->SetLocalProperty(kFrame, this);
   view_->AddObserver(this);
@@ -99,6 +101,24 @@ const Frame* Frame::FindFrame(uint32_t id) const {
       return match;
   }
   return nullptr;
+}
+
+bool Frame::IsLoading() const {
+  if (loading_)
+    return true;
+  for (const Frame* child : children_) {
+    if (child->IsLoading())
+      return true;
+  }
+  return false;
+}
+
+double Frame::GatherProgress(int* frame_count) const {
+  ++(*frame_count);
+  double progress = progress_;
+  for (const Frame* child : children_)
+    progress += child->GatherProgress(frame_count);
+  return progress_;
 }
 
 void Frame::BuildFrameTree(std::vector<const Frame*>* frames) const {
@@ -183,6 +203,25 @@ void Frame::NavigateFrame(uint32_t frame_id) {
 
 void Frame::ReloadFrame(uint32_t frame_id) {
   NOTIMPLEMENTED();
+}
+
+void Frame::LoadingStarted() {
+  DCHECK(!loading_);
+  loading_ = true;
+  progress_ = 0.f;
+  tree_->LoadingStateChanged();
+}
+
+void Frame::LoadingStopped() {
+  DCHECK(loading_);
+  loading_ = false;
+  tree_->LoadingStateChanged();
+}
+
+void Frame::ProgressChanged(double progress) {
+  DCHECK(loading_);
+  progress_ = progress;
+  tree_->ProgressChanged();
 }
 
 }  // namespace mandoline
