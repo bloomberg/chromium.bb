@@ -56,7 +56,11 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
   // Keep all the broken ones since those don't get persisted.
   for (AlternativeServiceMap::iterator it = alternative_service_map_.begin();
        it != alternative_service_map_.end();) {
-    if (IsAlternativeServiceBroken(it->second.alternative_service)) {
+    AlternativeService alternative_service(it->second.alternative_service);
+    if (alternative_service.host.empty()) {
+      alternative_service.host = it->first.host();
+    }
+    if (IsAlternativeServiceBroken(alternative_service)) {
       ++it;
     } else {
       it = alternative_service_map_.Erase(it);

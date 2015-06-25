@@ -325,6 +325,29 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   EXPECT_EQ(123, alternative_service.port);
 }
 
+// Regression test for https://crbug.com/504032:
+// InitializeAlternativeServiceServers() should not crash if there is an empty
+// hostname is the mapping.
+TEST_F(AlternateProtocolServerPropertiesTest, InitializeWithEmptyHostname) {
+  const HostPortPair host_port_pair("foo", 443);
+  const AlternativeService alternative_service_with_empty_hostname(NPN_SPDY_4,
+                                                                   "", 1234);
+  const AlternativeService alternative_service_with_foo_hostname(NPN_SPDY_4,
+                                                                 "foo", 1234);
+  impl_.SetAlternativeService(host_port_pair,
+                              alternative_service_with_empty_hostname, 1.0);
+  impl_.MarkAlternativeServiceBroken(alternative_service_with_foo_hostname);
+
+  AlternativeServiceMap alternative_service_map(
+      AlternativeServiceMap::NO_AUTO_EVICT);
+  impl_.InitializeAlternativeServiceServers(&alternative_service_map);
+
+  EXPECT_TRUE(
+      impl_.IsAlternativeServiceBroken(alternative_service_with_foo_hostname));
+  EXPECT_TRUE(impl_.GetAlternativeService(host_port_pair) ==
+              alternative_service_with_foo_hostname);
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
   HostPortPair test_host_port_pair1("foo1", 80);
   const AlternativeService alternative_service1(NPN_SPDY_4, "foo1", 443);
