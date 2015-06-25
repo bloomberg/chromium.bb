@@ -1638,20 +1638,35 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   // to use antialiasing.
   SetBlendEnabled(quad->ShouldDrawWithBlending() || use_aa);
 
-  // Normalize to tile_rect.
-  local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
+  // Antialising requires a normalized quad, but this could lead to floating
+  // point precision errors, so only normalize when antialising is on.
+  if (use_aa) {
+    // Normalize to tile_rect.
+    local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
 
-  SetShaderQuadF(local_quad, uniforms.quad_location);
+    SetShaderQuadF(local_quad, uniforms.quad_location);
 
-  // The transform and vertex data are used to figure out the extents that the
-  // un-antialiased quad should have and which vertex this is and the float
-  // quad passed in via uniform is the actual geometry that gets used to draw
-  // it. This is why this centered rect is used and not the original quad_rect.
-  gfx::RectF centered_rect(
-      gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
-      tile_rect.size());
-  DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
-                   centered_rect, uniforms.matrix_location);
+    // The transform and vertex data are used to figure out the extents that the
+    // un-antialiased quad should have and which vertex this is and the float
+    // quad passed in via uniform is the actual geometry that gets used to draw
+    // it. This is why this centered rect is used and not the original
+    // quad_rect.
+    gfx::RectF centered_rect(
+        gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
+        tile_rect.size());
+    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
+                     centered_rect, uniforms.matrix_location);
+  } else {
+    PrepareGeometry(SHARED_BINDING);
+    SetShaderQuadF(local_quad, uniforms.quad_location);
+    static float gl_matrix[16];
+    ToGLMatrix(&gl_matrix[0],
+               frame->projection_matrix *
+                   quad->shared_quad_state->quad_to_target_transform);
+    gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]);
+
+    gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+  }
 }
 
 struct TileProgramUniforms {
