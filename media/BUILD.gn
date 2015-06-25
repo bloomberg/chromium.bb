@@ -79,6 +79,9 @@ if (use_ozone) {
       "--typename=MediaOzonePlatform",
       "--include=\"media/ozone/media_ozone_platform.h\"",
     ]
+    deps = [
+      "//ui/ozone:generate_ozone_platform_list",
+    ]
   }
 }
 
