@@ -796,7 +796,7 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
 
 inline void Node::removedFrom(ContainerNode* insertionPoint)
 {
-    ASSERT(insertionPoint->inDocument() || isContainerNode());
+    ASSERT(insertionPoint->inDocument() || isContainerNode() || isInShadowTree());
     if (insertionPoint->inDocument())
         clearFlag(InDocumentFlag);
     if (isInShadowTree() && !treeScope().rootNode().isShadowRoot())

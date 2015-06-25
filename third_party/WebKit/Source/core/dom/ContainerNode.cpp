@@ -850,9 +850,9 @@ void ContainerNode::notifyNodeRemoved(Node& root)
 
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
         // As an optimization we skip notifying Text nodes and other leaf nodes
-        // of removal when they're not in the Document tree since the virtual
+        // of removal when they're not in the Document tree and not in a shadow root since the virtual
         // call to removedFrom is not needed.
-        if (!node.inDocument() && !node.isContainerNode())
+        if (!node.isContainerNode() && !node.isInTreeScope())
             continue;
         node.removedFrom(this);
         for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
