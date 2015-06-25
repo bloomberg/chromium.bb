@@ -87,9 +87,7 @@ void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(
     const GURL& endpoint) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
-
-  // TODO(peter): Change this back to a DCHECK before M45 branches.
-  CHECK(callbacks) << "Invalid request id received: " << request_id;
+  DCHECK(callbacks);
 
   scoped_ptr<blink::WebPushSubscription> subscription(
       new blink::WebPushSubscription(endpoint));
@@ -103,9 +101,7 @@ void PushMessagingDispatcher::OnSubscribeFromDocumentError(
     PushRegistrationStatus status) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
-
-  // TODO(peter): Change this back to a DCHECK before M45 branches.
-  CHECK(callbacks) << "Invalid request id received: " << request_id;
+  DCHECK(callbacks);
 
   scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
       blink::WebPushError::ErrorTypeAbort,
