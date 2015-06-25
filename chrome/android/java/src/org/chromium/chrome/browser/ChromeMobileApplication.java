@@ -56,7 +56,6 @@ import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.signin.AccountManagementFragmentDelegateImpl;
 import org.chromium.chrome.browser.smartcard.EmptyPKCS11AuthenticationManager;
 import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -190,8 +189,6 @@ public class ChromeMobileApplication extends ChromiumApplication {
         // in the SyncController constructor.
         UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,
                 new UuidBasedUniqueIdentificationGenerator(this, SESSIONS_UUID_PREF_KEY), false);
-
-        AccountManagementFragmentDelegateImpl.registerAccountManagementFragmentDelegate();
     }
 
     @Override

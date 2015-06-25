@@ -18,6 +18,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -30,7 +31,10 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
@@ -40,12 +44,12 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
-import org.chromium.chrome.browser.signin.AccountManagementScreenHelper.AccountManagementFragmentDelegate;
 import org.chromium.chrome.browser.signin.SignOutDialogFragment.SignOutDialogListener;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
+import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -117,10 +121,6 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private ArrayList<Preference> mAccountsListPreferences = new ArrayList<Preference>();
     private Preference mPrimaryAccountPreference;
-
-    private AccountManagementFragmentDelegate getDelegate() {
-        return AccountManagementScreenHelper.getDelegate();
-    }
 
     @Override
     public void onCreate(Bundle savedState) {
@@ -290,13 +290,10 @@ public class AccountManagementFragment extends PreferenceFragment
                     if (!isVisible() || !isResumed()) return false;
                     if (!PrefServiceBridge.getInstance().isIncognitoModeEnabled()) return false;
 
-                    AccountManagementFragmentDelegate delegate = getDelegate();
-                    // The delegate is set as part of deferred startup, so it might be null.
-                    if (delegate == null) return false;
                     AccountManagementScreenHelper.logEvent(
                             ProfileAccountManagementMetrics.GO_INCOGNITO,
                             mGaiaServiceType);
-                    delegate.openIncognitoTab(getActivity());
+                    openIncognitoTab(getActivity());
                     if (isAdded()) getActivity().finish();
 
                     return true;
@@ -313,6 +310,20 @@ public class AccountManagementFragment extends PreferenceFragment
                 }
             });
         }
+    }
+
+    private static void openIncognitoTab(Activity activity) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
+                IntentHandler.GOOGLECHROME_NAVIGATE_PREFIX + UrlConstants.NTP_URL));
+        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+        intent.setPackage(activity.getApplicationContext().getPackageName());
+        intent.setClassName(activity.getApplicationContext().getPackageName(),
+                ChromeLauncherActivity.class.getName());
+
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        IntentHandler.startActivityForTrustedIntent(intent, activity);
     }
 
     private void configureChildAccountPreferences() {
@@ -400,10 +411,10 @@ public class AccountManagementFragment extends PreferenceFragment
                                 mGaiaServiceType);
 
                         if (AndroidSyncSettings.isMasterSyncEnabled(activity)) {
-                            AccountManagementFragmentDelegate delegate = getDelegate();
-                            // The delegate is set as part of deferred startup, so it might be null.
-                            if (delegate == null) return false;
-                            delegate.openSyncCustomizationFragment(activity, account);
+                            Bundle args = new Bundle();
+                            args.putString(
+                                    SyncCustomizationFragment.ARGUMENT_ACCOUNT, account.name);
+                            activity.startFragment(SyncCustomizationFragment.class.getName(), args);
                         } else {
                             Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
                             intent.putExtra("account_types", new String[]{"com.google"});
@@ -446,10 +457,7 @@ public class AccountManagementFragment extends PreferenceFragment
         // we do not hit a native crash.
         if (!ChromeSigninController.get(getActivity()).isSignedIn()) return;
 
-        AccountManagementFragmentDelegate delegate = getDelegate();
-        // The delegate is set as part of deferred startup, so it might be null.
-        if (delegate == null) return;
-        delegate.openSignOutDialog(getActivity());
+        SigninManager.get(getActivity()).signOut(getActivity(), null);
         AccountManagementScreenHelper.logEvent(
                 ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
                 mGaiaServiceType);

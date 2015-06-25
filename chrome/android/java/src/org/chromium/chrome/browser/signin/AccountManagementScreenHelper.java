@@ -4,15 +4,12 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.accounts.Account;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 
@@ -20,7 +17,6 @@ import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
  * Stub entry points and implementation interface for the account management fragment delegate.
  */
 public class AccountManagementScreenHelper {
-    private static AccountManagementFragmentDelegate sDelegate;
 
     /*
      * TODO(guohui): add all Gaia service types.
@@ -32,46 +28,6 @@ public class AccountManagementScreenHelper {
     private static final String EXTRA_ACCOUNT_TYPES = "account_types";
     private static final String EXTRA_VALUE_GOOGLE_ACCOUNTS = "com.google";
 
-    /**
-     * An account management screen delegate interface.
-     */
-    public interface AccountManagementFragmentDelegate {
-        /**
-         * Opens an incognito tab.
-         * @param activity Fragment activity
-         */
-        void openIncognitoTab(Activity activity);
-
-        /**
-         * Opens a sign out dialog.
-         * @param activity Fragment activity.
-         */
-        void openSignOutDialog(Activity activity);
-
-        /**
-         * Opens the sync customization preferences fragment.
-         * @param activity A preferences activity
-         * @param account An account to customize
-         */
-        void openSyncCustomizationFragment(Preferences activity, Account account);
-    }
-
-    /**
-     * Sets the account management fragment delegate.
-     * @param delegate An implementation of AccountManagementFragmentDelegate interface
-     */
-    public static void setDelegate(AccountManagementFragmentDelegate delegate) {
-        ThreadUtils.assertOnUiThread();
-        sDelegate = delegate;
-    }
-
-    /**
-     * @return An instance of the account management fragment delegate, or null.
-     */
-    public static AccountManagementFragmentDelegate getDelegate() {
-        return sDelegate;
-    }
-
     @CalledByNative
     private static void openAccountManagementScreen(
             Context applicationContext, Profile profile, int gaiaServiceType) {
@@ -82,7 +38,6 @@ public class AccountManagementScreenHelper {
             return;
         }
 
-        if (sDelegate == null) return;
         AccountManagementFragment.openAccountManagementScreen(
                 applicationContext, profile, gaiaServiceType);
     }
