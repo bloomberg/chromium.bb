@@ -9,6 +9,10 @@
 
 #include "base/macros.h"
 
+namespace ios {
+class ChromeBrowserStateManager;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -32,6 +36,9 @@ class ApplicationContext {
 
   // Gets the locale used by the application.
   virtual const std::string& GetApplicationLocale() = 0;
+
+  // Gets the ChromeBrowserStateManager used by this application.
+  virtual ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

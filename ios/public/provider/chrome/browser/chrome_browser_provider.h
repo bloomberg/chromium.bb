@@ -36,6 +36,7 @@ class UIView;
 namespace ios {
 
 class ChromeBrowserProvider;
+class ChromeBrowserStateManager;
 class GeolocationUpdaterProvider;
 class StringProvider;
 class UpdatableResourceProvider;
@@ -58,6 +59,8 @@ class ChromeBrowserProvider {
   virtual PrefService* GetLocalState();
   // Returns an UpdatableResourceProvider instance.
   virtual UpdatableResourceProvider* GetUpdatableResourceProvider();
+  // Returns a ChromeBrowserStateManager instance.
+  virtual ChromeBrowserStateManager* GetChromeBrowserStateManager();
   // Returns an infobar view conforming to the InfoBarViewProtocol. The returned
   // object is retained.
   virtual InfoBarViewPlaceholder CreateInfoBarView(

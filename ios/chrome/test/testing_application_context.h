@@ -21,15 +21,20 @@ class TestingApplicationContext : public ApplicationContext {
   // Sets the local state.
   void SetLocalState(PrefService* local_state);
 
+  // Sets the ChromeBrowserStateManager.
+  void SetChromeBrowserStateManager(ios::ChromeBrowserStateManager* manager);
+
   // ApplicationContext implementation.
   PrefService* GetLocalState() override;
   net::URLRequestContextGetter* GetSystemURLRequestContext() override;
   const std::string& GetApplicationLocale() override;
+  ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
 
  private:
   base::ThreadChecker thread_checker_;
   std::string application_locale_;
   PrefService* local_state_;
+  ios::ChromeBrowserStateManager* chrome_browser_state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingApplicationContext);
 };

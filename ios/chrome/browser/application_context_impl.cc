@@ -41,3 +41,8 @@ void ApplicationContextImpl::SetApplicationLocale(const std::string& locale) {
   translate::TranslateDownloadManager::GetInstance()->set_application_locale(
       application_locale_);
 }
+
+ios::ChromeBrowserStateManager*
+ApplicationContextImpl::GetChromeBrowserStateManager() {
+  return ios::GetChromeBrowserProvider()->GetChromeBrowserStateManager();
+}

@@ -42,6 +42,11 @@ ChromeBrowserProvider::GetUpdatableResourceProvider() {
   return nullptr;
 }
 
+ChromeBrowserStateManager*
+ChromeBrowserProvider::GetChromeBrowserStateManager() {
+  return nullptr;
+}
+
 InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
     CGRect frame,
     InfoBarViewDelegate* delegate) {

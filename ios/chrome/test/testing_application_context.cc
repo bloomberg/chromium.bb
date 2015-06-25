@@ -8,7 +8,9 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 TestingApplicationContext::TestingApplicationContext()
-    : application_locale_("en"), local_state_(nullptr) {
+    : application_locale_("en"),
+      local_state_(nullptr),
+      chrome_browser_state_manager_(nullptr) {
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 }
@@ -21,6 +23,11 @@ TestingApplicationContext::~TestingApplicationContext() {
 void TestingApplicationContext::SetLocalState(PrefService* local_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   local_state_ = local_state;
+}
+
+void TestingApplicationContext::SetChromeBrowserStateManager(
+    ios::ChromeBrowserStateManager* manager) {
+  chrome_browser_state_manager_ = manager;
 }
 
 // static
@@ -43,4 +50,9 @@ const std::string& TestingApplicationContext::GetApplicationLocale() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!application_locale_.empty());
   return application_locale_;
+}
+
+ios::ChromeBrowserStateManager*
+TestingApplicationContext::GetChromeBrowserStateManager() {
+  return chrome_browser_state_manager_;
 }
