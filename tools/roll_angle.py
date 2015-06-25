@@ -31,7 +31,7 @@ ROLL_BRANCH_NAME = 'special_angle_roll_branch'
 TRYJOB_STATUS_SLEEP_SECONDS = 30
 
 # Use a shell for subcommands on Windows to get a PATH search.
-USE_SHELL = sys.platform.startswith('win')
+IS_WIN = sys.platform.startswith('win')
 ANGLE_PATH = os.path.join('third_party', 'angle')
 
 CommitInfo = collections.namedtuple('CommitInfo', ['git_commit',
@@ -115,7 +115,7 @@ class AutoRoller(object):
       logging.debug('extra env: %s', extra_env)
       env.update(extra_env)
     p = subprocess.Popen(command, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, shell=USE_SHELL, env=env,
+                         stderr=subprocess.PIPE, shell=IS_WIN, env=env,
                          cwd=working_dir, universal_newlines=True)
     output = p.stdout.read()
     p.wait()
@@ -234,8 +234,9 @@ class AutoRoller(object):
     # Find ToT revisions.
     angle_latest = self._GetCommitInfo(ANGLE_PATH)
 
-    # Make sure the roll script doesn't use windows line endings
-    self._RunCommand(['git', 'config', 'core.autocrlf', 'true'])
+    if IS_WIN:
+      # Make sure the roll script doesn't use windows line endings
+      self._RunCommand(['git', 'config', 'core.autocrlf', 'true'])
 
     self._UpdateDep(deps_filename, ANGLE_PATH, angle_latest)
 
