@@ -273,8 +273,6 @@ MANIFEST_INT_URL = '%s/%s' % (INTERNAL_GERRIT_URL, MANIFEST_INT_PROJECT)
 
 DEFAULT_MANIFEST = 'default.xml'
 OFFICIAL_MANIFEST = 'official.xml'
-PROJECT_MANIFEST = 'project_sdk.xml'
-LATEST_PROJECT_SDK_MANIFEST = 'project-sdk/latest.xml'
 LKGM_MANIFEST = 'LKGM/lkgm.xml'
 
 SHARED_CACHE_ENVVAR = 'CROS_CACHEDIR'
@@ -327,8 +325,6 @@ CHANGE_PREFIX = {
 # List of remotes that are ok to include in the external manifest.
 EXTERNAL_REMOTES = (EXTERNAL_REMOTE, CHROMIUM_REMOTE)
 
-PROJECT_SDK_GROUPS = ('project_sdk',)
-
 # Mapping 'remote name' -> regexp that matches names of repositories on that
 # remote that can be branched when creating CrOS branch. Branching script will
 # actually create a new git ref when branching these projects. It won't attempt
@@ -369,7 +365,6 @@ MANIFEST_VERSIONS_GS_URL = 'gs://chromeos-manifest-versions'
 # Standard directories under buildroot for cloning these repos.
 EXTERNAL_MANIFEST_VERSIONS_PATH = 'manifest-versions'
 INTERNAL_MANIFEST_VERSIONS_PATH = 'manifest-versions-internal'
-PROJECT_SDK_MANIFEST_VERSIONS_PATH = 'manifest-versions-project-sdk'
 
 STREAK_COUNTERS = 'streak_counters'
 
@@ -453,9 +448,6 @@ CANARY_TYPE = 'canary'
 # Generate payloads for an already built build/version.
 PAYLOADS_TYPE = 'payloads'
 
-# Generate a Project SDK build.
-PROJECT_SDK_TYPE = 'project-sdk'
-
 BRANCH_UTIL_CONFIG = 'branch-util'
 
 # Special build type for Chroot builders.  These builds focus on building
@@ -474,7 +466,6 @@ VALID_BUILD_TYPES = (
     PFQ_TYPE,
     PRE_CQ_LAUNCHER_TYPE,
     PAYLOADS_TYPE,
-    PROJECT_SDK_TYPE,
 )
 
 # The default list of pre-cq configs to use.

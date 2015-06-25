@@ -1071,24 +1071,3 @@ def FilterManifest(manifest, whitelisted_remotes=None, whitelisted_groups=None):
     manifest_file.write(os.linesep.join(filtered_manifest_noempty))
 
   return new_path
-
-
-def ConvertToProjectSdkManifest(manifest):
-  """Converts a manifest to a ProjectSDK Manifest.
-
-  Project SDK manifests are based on the current manifest, but stripped
-  down in a variety of ways. If you want the project manifest to be pinned
-  to specific SHA1 values, then you should pass in a pinned manifest.
-
-  This is commonly done with: repo.ExportManifest(mark_revision=True)
-
-  Args:
-    manifest: Path to an existing manifest that should be converted.
-
-  Returns:
-    Path to a new manifest that is a converted copy of the original.
-  """
-  return FilterManifest(
-      manifest,
-      whitelisted_remotes=constants.EXTERNAL_REMOTES,
-      whitelisted_groups=constants.PROJECT_SDK_GROUPS)

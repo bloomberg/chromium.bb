@@ -115,7 +115,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LKGM_SUBDIR = 'LKGM-candidates'
   CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
   COMMIT_QUEUE_SUBDIR = 'paladin'
-  PROJECT_SDK_SUBDIR = 'project-sdk'
 
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
@@ -152,8 +151,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.rel_working_dir = self.CHROME_PFQ_SUBDIR
     elif config_lib.IsCQType(self.build_type):
       self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
-    elif self.build_type == constants.PROJECT_SDK_TYPE:
-      self.rel_working_dir = self.PROJECT_SDK_SUBDIR
     else:
       assert config_lib.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR
