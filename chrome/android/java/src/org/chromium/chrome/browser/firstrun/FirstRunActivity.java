@@ -20,6 +20,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.lang.ref.WeakReference;
@@ -423,6 +424,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public void showEmbedContentViewActivity(int title, int url) {
-        // TODO(aurimas): implement this once EmbededContentViewActivity is upstreamed.
+        EmbedContentViewActivity.show(this, title, url);
     }
 }

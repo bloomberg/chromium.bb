@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
-import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -83,13 +82,6 @@ public abstract class ChromiumApplication extends ContentApplication {
      */
     public String getSettingsActivityName() {
         return Preferences.class.getName();
-    }
-
-    /**
-     * Returns the class name of the FirstRun activity.
-     */
-    public String getFirstRunActivityName() {
-        return FirstRunActivity.class.getName();
     }
 
     /**

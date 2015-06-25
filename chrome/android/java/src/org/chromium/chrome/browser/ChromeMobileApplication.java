@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.document.TabDelegateImpl;
 import org.chromium.chrome.browser.download.DownloadManagerService;
-import org.chromium.chrome.browser.firstrun.FirstRunActivityStaging;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -478,12 +477,6 @@ public class ChromeMobileApplication extends ChromiumApplication {
     @Override
     public boolean isMultiWindow(Activity activity) {
         return MultiWindowUtils.getInstance().isMultiWindow(activity);
-    }
-
-    // TODO(aurimas): delete this after upstreaming.
-    @Override
-    public String getFirstRunActivityName() {
-        return FirstRunActivityStaging.class.getName();
     }
 
     /**

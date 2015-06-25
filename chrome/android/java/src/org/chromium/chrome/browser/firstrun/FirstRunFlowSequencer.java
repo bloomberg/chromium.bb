@@ -16,7 +16,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
@@ -229,11 +228,8 @@ public abstract class FirstRunFlowSequencer  {
     */
     public static Intent createGenericFirstRunIntent(
             Activity activity, Intent originalIntent, boolean fromChromeIcon) {
-        ChromiumApplication application = (ChromiumApplication) activity.getApplication();
-        String activityName = application.getFirstRunActivityName();
-
         Intent intent = new Intent();
-        intent.setClassName(activity, activityName);
+        intent.setClassName(activity, FirstRunActivity.class.getName());
         intent.putExtra(FirstRunActivity.COMING_FROM_CHROME_ICON, fromChromeIcon);
         intent.putExtra(FirstRunActivity.USE_FRE_FLOW_SEQUENCER, true);
         return intent;
