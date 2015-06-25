@@ -28,11 +28,10 @@ class BluetoothLowEnergyDiscoveryManagerMac {
   // Interface for being notified of events during a device discovery session.
   class Observer {
    public:
-    // Called when |this| manager has found a device.
-    virtual void DeviceFound(BluetoothLowEnergyDeviceMac* device) = 0;
-
-    // Called when |this| manager has updated on a device.
-    virtual void DeviceUpdated(BluetoothLowEnergyDeviceMac* device) = 0;
+    // Called when |this| manager has found a device or an update on a device.
+    virtual void LowEnergyDeviceUpdated(CBPeripheral* peripheral,
+                                        NSDictionary* advertisementData,
+                                        int rssi) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -69,14 +68,26 @@ class BluetoothLowEnergyDiscoveryManagerMac {
 
  private:
   explicit BluetoothLowEnergyDiscoveryManagerMac(Observer* observer);
-  void ClearDevices();
+
+  // Private method for testing.  Resets |manager_| to |manager| and set
+  // |bridge_| as its delegate.  Only for use on OSX 10.7 or later, where
+  // CoreBluetooth is available.
+  virtual void SetManagerForTesting(CBCentralManager* manager);
 
   friend class BluetoothLowEnergyDiscoveryManagerMacDelegate;
+  friend class BluetoothAdapterMacTest;
 
   // Observer interested in notifications from us.
   Observer* observer_;
 
-  // Underlaying CoreBluetooth central manager.
+  // Underlying CoreBluetooth central manager.
+  //
+  // Note: Intentionally leaked. Deallocating CBCentralManager
+  // results in a crash, at least when running OSX 10.9.5 on a
+  // mac_chromuim_rel_ng trybot. On the other hand, restricting |manager_| use
+  // to 10.10 and later would mean the code is unrun and untested by the current
+  // trybots. To work around this we call retain on |manager_| after allocation,
+  // so that the object is leaked.
   base::scoped_nsobject<CBCentralManager> manager_;
 
   // Discovery has been initiated by calling the API StartDiscovery().
@@ -88,9 +99,6 @@ class BluetoothLowEnergyDiscoveryManagerMac {
 
   // Delegate of the central manager.
   base::scoped_nsobject<BluetoothLowEnergyDiscoveryManagerMacBridge> bridge_;
-
-  // Map of the device identifiers to the discovered device.
-  std::map<const std::string, BluetoothLowEnergyDeviceMac*> devices_;
 
   // List of service UUIDs to scan.
   BluetoothDevice::UUIDList services_uuids_;

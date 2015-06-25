@@ -422,7 +422,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   //      success.
   //
   // |discovery_filter| passed to AddDiscoverySession and RemoveDiscoverySession
-  // is owned by other objects and shall not be freed.
+  // is owned by other objects and shall not be freed.  When the count is
+  // greater than 0 and AddDiscoverySession or RemoveDiscoverySession is called
+  // the filter being used by the underlying controller must be updated.
   //
   // These methods invoke |callback| for success and |error_callback| for
   // failures.
@@ -433,6 +435,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       BluetoothDiscoveryFilter* discovery_filter,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
+
+  // Used to set and update the discovery filter used by the underlying
+  // Bluetooth controller.
   virtual void SetDiscoveryFilter(
       scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const base::Closure& callback,

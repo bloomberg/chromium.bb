@@ -21,13 +21,13 @@ class BluetoothDiscoveryManagerMac {
    public:
     // Called when |this| manager has found a device through classic device
     // inquiry in the form of an IOBluetoothDevice.
-    virtual void DeviceFound(IOBluetoothDevice* device) = 0;
+    virtual void ClassicDeviceFound(IOBluetoothDevice* device) = 0;
 
     // Called when device discovery is no longer running, due to either a call
     // to BluetoothDiscoveryManagerMac::StopDiscovery or an unexpected reason,
     // such as when a user disables the controller, in which case the value of
     // |unexpected| will be true.
-    virtual void DiscoveryStopped(bool unexpected) = 0;
+    virtual void ClassicDiscoveryStopped(bool unexpected) = 0;
 
    protected:
     virtual ~Observer() {}

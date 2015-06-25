@@ -79,7 +79,13 @@ class BluetoothLowEnergyDiscoveryManagerMacDelegate {
 
 BluetoothLowEnergyDiscoveryManagerMac::
     ~BluetoothLowEnergyDiscoveryManagerMac() {
-  ClearDevices();
+  // Set the manager's delegate to nil since the object it points to
+  // (|bridge_|) will be deallocated while |manager_| is leaked.
+  if (base::mac::IsOSLionOrLater()) {
+    // CoreBluetooth only available in OSX 10.7 and later.
+    SEL selector = NSSelectorFromString(@"setDelegate:");
+    [manager_ performSelector:selector withObject:nil];
+  }
 }
 
 bool BluetoothLowEnergyDiscoveryManagerMac::IsDiscovering() const {
@@ -88,7 +94,6 @@ bool BluetoothLowEnergyDiscoveryManagerMac::IsDiscovering() const {
 
 void BluetoothLowEnergyDiscoveryManagerMac::StartDiscovery(
     BluetoothDevice::UUIDList services_uuids) {
-  ClearDevices();
   discovering_ = true;
   pending_ = true;
   services_uuids_ = services_uuids;
@@ -137,23 +142,16 @@ void BluetoothLowEnergyDiscoveryManagerMac::DiscoveredPeripheral(
     CBPeripheral* peripheral,
     NSDictionary* advertisementData,
     int rssi) {
-  // Look for existing device.
-  auto iter = devices_.find(
-      BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral));
-  if (iter == devices_.end()) {
-    // A device has been added.
-    BluetoothLowEnergyDeviceMac* device =
-        new BluetoothLowEnergyDeviceMac(peripheral, advertisementData, rssi);
-    devices_.insert(devices_.begin(),
-                    std::make_pair(device->GetIdentifier(), device));
-    observer_->DeviceFound(device);
-    return;
-  }
+  observer_->LowEnergyDeviceUpdated(peripheral, advertisementData, rssi);
+}
 
-  // A device has an update.
-  BluetoothLowEnergyDeviceMac* old_device = iter->second;
-  old_device->Update(peripheral, advertisementData, rssi);
-  observer_->DeviceUpdated(old_device);
+void BluetoothLowEnergyDiscoveryManagerMac::SetManagerForTesting(
+    CBCentralManager* manager) {
+  // setDelegate is only available in OSX 10.7 and later.
+  CHECK(base::mac::IsOSLionOrLater());
+  SEL selector = NSSelectorFromString(@"setDelegate:");
+  [manager performSelector:selector withObject:bridge_];
+  manager_.reset(manager);
 }
 
 BluetoothLowEnergyDiscoveryManagerMac*
@@ -173,10 +171,8 @@ BluetoothLowEnergyDiscoveryManagerMac::BluetoothLowEnergyDiscoveryManagerMac(
     manager_.reset(
         [[aClass alloc] initWithDelegate:bridge_
                                    queue:dispatch_get_main_queue()]);
+    // Increment reference count, see comment at declaration.
+    [manager_ retain];
   }
   discovering_ = false;
-}
-
-void BluetoothLowEnergyDiscoveryManagerMac::ClearDevices() {
-  STLDeleteValues(&devices_);
 }

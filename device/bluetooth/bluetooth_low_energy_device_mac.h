@@ -82,7 +82,7 @@ class BluetoothLowEnergyDeviceMac : public BluetoothDevice {
   static std::string GetPeripheralIdentifier(CBPeripheral* peripheral);
 
  private:
-  friend class BluetoothLowEnergyDiscoveryManagerMac;
+  friend class BluetoothAdapterMac;
 
   // CoreBluetooth data structure.
   base::scoped_nsobject<CBPeripheral> peripheral_;
