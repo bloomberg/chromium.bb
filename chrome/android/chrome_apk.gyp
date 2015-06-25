@@ -12,47 +12,20 @@
     'manifest_package': 'org.chromium.chrome',
     'chrome_public_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_apk_manifest/AndroidManifest.xml',
     'chrome_public_test_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_test_apk_manifest/AndroidManifest.xml',
-    'chrome_java_tests_dir': 'javatests',
-    'chrome_java_test_support_dir': '../test/android/javatests_staging',
-    'chrome_native_sources_dir': '../browser/android/',
     # This list is shared with GN.
     # Defines a list of source files should be present in the open-source
     # chrome-apk but not in the published static_library which is included in the
     # real chrome for android.
     'chrome_public_app_native_sources': [
-      '<(chrome_native_sources_dir)/chrome_entry_point.cc',
-      '<(chrome_native_sources_dir)/chrome_main_delegate_staging_android_initializer.cc',
+      '../browser/android/chrome_entry_point.cc',
+      '../browser/android/chrome_main_delegate_staging_android_initializer.cc',
     ],
   },
   'targets': [
-     {
-      # TODO(newt): delete this once all references are gone.
-      'target_name': 'libchrome_staging',
-      'type': 'none',
-    },
     {
       # TODO(newt): delete this once all references are gone.
-      'target_name': 'chrome_staging_java',
-      'type': 'none',
-    },
-    {
-      # GN: //chrome/test/android:chrome_staging_test_support_java
       'target_name': 'chrome_staging_test_support_java',
       'type': 'none',
-      'variables': {
-          'java_in_dir': '<(chrome_java_test_support_dir)',
-      },
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base_java',
-        '<(DEPTH)/base/base.gyp:base_java_test_support',
-        '<(DEPTH)/chrome/chrome.gyp:chrome_java',
-        '<(DEPTH)/chrome/chrome.gyp:chrome_java_test_support',
-        '<(DEPTH)/content/content_shell_and_tests.gyp:content_java_test_support',
-        '<(DEPTH)/net/net.gyp:net_java',
-        '<(DEPTH)/net/net.gyp:net_java_test_support',
-        '<(DEPTH)/sync/sync.gyp:sync_java_test_support',
-      ],
-      'includes': [ '../../build/java.gypi' ],
     },
     {
       # GN: //chrome/android:custom_tabs_service_aidl
@@ -96,10 +69,10 @@
       'target_name': 'libchrome_public',
       'type': 'shared_library',
       'dependencies': [
-        '<(DEPTH)/chrome/chrome.gyp:chrome_android_core',
+        '../../chrome/chrome.gyp:chrome_android_core',
       ],
       'include_dirs': [
-        '<(DEPTH)',
+        '../..',
       ],
       'sources': [
         '<@(chrome_public_app_native_sources)',
@@ -114,7 +87,7 @@
         # between internal/external.
         ['cld_version==2', {
           'dependencies': [
-            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_dynamic',
+            '../../third_party/cld_2/cld_2.gyp:cld2_dynamic',
           ],
         }],
         # conditions for order_text_section
@@ -122,13 +95,13 @@
         ['order_profiling!=0', {
           'conditions': [
             ['OS=="android"', {
-              'dependencies': [ '<(DEPTH)/tools/cygprofile/cygprofile.gyp:cygprofile' ],
+              'dependencies': [ '../../tools/cygprofile/cygprofile.gyp:cygprofile' ],
             }],
           ],
         }],  # order_profiling!=0
         ['use_allocator!="none"', {
           'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+            '../../base/allocator/allocator.gyp:allocator',
           ],
         }],
       ],
@@ -188,46 +161,25 @@
       'includes': [ '../../build/apk_fake_jar.gypi' ],
     },
     {
-      # TODO(newt): delete this target once all references are gone.
-      'target_name': 'chrome_staging_unittests',
-      'type': 'static_library',
-      'sources': [
-        # This file is already tested elsewhere but is included here to
-        # prevent this from being an empty static_library, which would
-        # break the the test APK that depends on this.
-        '../browser/android/policy/policy_manager_unittest.cc',
-      ],
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base_java',
-        '<(DEPTH)/chrome/chrome.gyp:browser',
-        '<(DEPTH)/chrome/chrome.gyp:chrome_java',
-        '<(DEPTH)/chrome/chrome.gyp:test_support_unit',
-        '<(DEPTH)/net/net.gyp:net_test_support',
-        '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
-        '<(DEPTH)/testing/gtest.gyp:gtest',
-      ],
-    },
-    {
-      # GN: None.
+      # GN: //chrome/android:chrome_shared_test_java
       # This target is for sharing tests between both upstream and internal
       # trees until sufficient test coverage is upstream.
       'target_name': 'chrome_shared_test_java',
       'type': 'none',
       'variables': {
-        'java_in_dir': '<(chrome_java_tests_dir)',
+        'java_in_dir': 'javatests',
       },
       'dependencies': [
-        'chrome_staging_test_support_java',
-        '<(DEPTH)/base/base.gyp:base_java',
-        '<(DEPTH)/base/base.gyp:base_java_test_support',
-        '<(DEPTH)/chrome/chrome.gyp:chrome_java',
-        '<(DEPTH)/chrome/chrome.gyp:chrome_java_test_support',
-        '<(DEPTH)/components/components.gyp:web_contents_delegate_android_java',
-        '<(DEPTH)/content/content_shell_and_tests.gyp:content_java_test_support',
-        '<(DEPTH)/net/net.gyp:net_java',
-        '<(DEPTH)/net/net.gyp:net_java_test_support',
-        '<(DEPTH)/sync/sync.gyp:sync_java_test_support',
-        '<(DEPTH)/third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
+        '../../base/base.gyp:base_java',
+        '../../base/base.gyp:base_java_test_support',
+        '../../chrome/chrome.gyp:chrome_java',
+        '../../chrome/chrome.gyp:chrome_java_test_support',
+        '../../components/components.gyp:web_contents_delegate_android_java',
+        '../../content/content_shell_and_tests.gyp:content_java_test_support',
+        '../../net/net.gyp:net_java',
+        '../../net/net.gyp:net_java_test_support',
+        '../../sync/sync.gyp:sync_java_test_support',
+        '../../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
       ],
       'includes': [ '../../build/java.gypi' ],
     },
@@ -236,7 +188,7 @@
       'target_name': 'chrome_public_test_apk_manifest',
       'type': 'none',
       'variables': {
-        'jinja_inputs': ['<(chrome_java_tests_dir)/AndroidManifest.xml'],
+        'jinja_inputs': ['javatests/AndroidManifest.xml'],
         'jinja_output': '<(chrome_public_test_apk_manifest)',
         'jinja_variables': [
           'manifest_package=<(manifest_package)',
@@ -251,13 +203,13 @@
       'dependencies': [
         'chrome_shared_test_java',
         'chrome_public_apk_java',
-        '<(DEPTH)/testing/android/on_device_instrumentation.gyp:broker_java',
-        '<(DEPTH)/testing/android/on_device_instrumentation.gyp:require_driver_apk',
+        '../../testing/android/on_device_instrumentation.gyp:broker_java',
+        '../../testing/android/on_device_instrumentation.gyp:require_driver_apk',
       ],
       'variables': {
         'android_manifest_path': '<(chrome_public_test_apk_manifest)',
         'package_name': 'chrome_public_test',
-        'java_in_dir': '<(chrome_java_tests_dir)',
+        'java_in_dir': 'javatests',
         'java_in_dir_suffix': '/src_dummy',
         'apk_name': 'ChromePublicTest',
         'is_test_apk': 1,

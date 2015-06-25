@@ -3085,7 +3085,10 @@
           },
           'dependencies': [
             'chrome_java',
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
+            '../net/net.gyp:net_java',
             '../net/net.gyp:net_java_test_support',
             '../sync/sync.gyp:sync_java',
             '../sync/sync.gyp:sync_java_test_support',

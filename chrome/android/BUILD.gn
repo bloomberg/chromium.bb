@@ -597,25 +597,19 @@ zip("chrome_version_srcjar") {
 #GYP: //chrome/android/chrome_apk.gyp:custom_tabs_service_aidl
 android_aidl("custom_tabs_service_aidl") {
   import_include = "java/src/org/chromium/chrome/browser/customtabs"
-  interface_file =
-      "java/src/org/chromium/chrome/browser/customtabs/common.aidl"
+  interface_file = "java/src/org/chromium/chrome/browser/customtabs/common.aidl"
   sources = [
     "java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl",
     "java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl",
   ]
 }
 
-# TODO(newt): delete this once all references are gone.
-group("chrome_staging_java") {
-}
-
-# GYP: //chrome/android/chrome_apk.gyp:chrome_staging_test_java
-android_library("chrome_staging_test_java") {
+# GYP: //chrome/android/chrome_apk.gyp:chrome_shared_test_java
+android_library("chrome_shared_test_java") {
   testonly = true
   DEPRECATED_java_in_dir = "javatests/src"
 
   deps = [
-    "//chrome/test/android:chrome_staging_test_support_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
@@ -638,10 +632,6 @@ android_library("chrome_staging_test_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
   ]
-}
-
-# TODO(newt): delete this once all references are gone.
-group("chrome_staging") {
 }
 
 chrome_public_apk_assets_dir = "$root_build_dir/chrome_public_apk_assets"
@@ -754,8 +744,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
   android_manifest = chrome_public_test_apk_manifest
   deps = [
     ":chrome_public_test_apk_manifest",
-    "//chrome/test/android:chrome_staging_test_support_java",
-    "//chrome/android:chrome_staging_test_java",
+    "//chrome/android:chrome_shared_test_java",
   ]
   isolate_file = "../chrome_public_test_apk.isolate"
 }
