@@ -100,13 +100,13 @@ struct text_backend {
 
 	struct {
 		char *path;
-		struct weston_process process;
 		struct wl_client *client;
 
 		unsigned deathcount;
 		uint32_t deathstamp;
 	} input_method;
 
+	struct wl_listener client_listener;
 	struct wl_listener seat_created_listener;
 };
 
@@ -922,14 +922,9 @@ input_method_init_seat(struct weston_seat *seat)
 static void launch_input_method(struct text_backend *text_backend);
 
 static void
-handle_input_method_sigchld(struct weston_process *process, int status)
+respawn_input_method_process(struct text_backend *text_backend)
 {
 	uint32_t time;
-	struct text_backend *text_backend =
-		container_of(process, struct text_backend, input_method.process);
-
-	text_backend->input_method.process.pid = 0;
-	text_backend->input_method.client = NULL;
 
 	/* if input_method dies more than 5 times in 10 seconds, give up */
 	time = weston_compositor_get_time();
@@ -940,12 +935,24 @@ handle_input_method_sigchld(struct weston_process *process, int status)
 
 	text_backend->input_method.deathcount++;
 	if (text_backend->input_method.deathcount > 5) {
-		weston_log("input_method died, giving up.\n");
+		weston_log("input_method disconnected, giving up.\n");
 		return;
 	}
 
-	weston_log("input_method died, respawning...\n");
+	weston_log("input_method disconnected, respawning...\n");
 	launch_input_method(text_backend);
+}
+
+static void
+input_method_client_notifier(struct wl_listener *listener, void *data)
+{
+	struct text_backend *text_backend;
+
+	text_backend = container_of(listener, struct text_backend,
+				    client_listener);
+
+	text_backend->input_method.client = NULL;
+	respawn_input_method_process(text_backend);
 }
 
 static void
@@ -957,18 +964,19 @@ launch_input_method(struct text_backend *text_backend)
 	if (strcmp(text_backend->input_method.path, "") == 0)
 		return;
 
-	if (text_backend->input_method.process.pid != 0)
-		return;
-
 	text_backend->input_method.client =
-		weston_client_launch(text_backend->compositor,
-				     &text_backend->input_method.process,
-				     text_backend->input_method.path,
-				     handle_input_method_sigchld);
+		weston_client_start(text_backend->compositor,
+				    text_backend->input_method.path);
 
-	if (!text_backend->input_method.client)
+	if (!text_backend->input_method.client) {
 		weston_log("not able to start %s\n",
 			   text_backend->input_method.path);
+		return;
+	}
+
+	text_backend->client_listener.notify = input_method_client_notifier;
+	wl_client_add_destroy_listener(text_backend->input_method.client,
+				       &text_backend->client_listener);
 }
 
 static void
@@ -1031,8 +1039,11 @@ text_backend_configuration(struct text_backend *text_backend)
 WL_EXPORT void
 text_backend_destroy(struct text_backend *text_backend)
 {
-	if (text_backend->input_method.client)
+	if (text_backend->input_method.client) {
+		/* disable respawn */
+		wl_list_remove(&text_backend->client_listener.link);
 		wl_client_destroy(text_backend->input_method.client);
+	}
 
 	free(text_backend->input_method.path);
 	free(text_backend);
