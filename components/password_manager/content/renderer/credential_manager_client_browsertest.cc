@@ -16,20 +16,11 @@ namespace password_manager {
 
 namespace {
 
-// This test has crashed on Android since commit
-// d94a4430bc4448406b7564790d06110c7c5bcaaf was merged.
-// http://crbug.com/481415
-#if defined(OS_ANDROID)
-#define MAYBE_CredentialManagerClientTest DISABLED_CredentialManagerClientTest
-#else
-#define MAYBE_CredentialManagerClientTest CredentialManagerClientTest
-#endif  // defined(OS_ANDROID)
-
-class MAYBE_CredentialManagerClientTest : public content::RenderViewTest {
+class CredentialManagerClientTest : public content::RenderViewTest {
  public:
-  MAYBE_CredentialManagerClientTest()
+  CredentialManagerClientTest()
       : callback_errored_(false), callback_succeeded_(false) {}
-  ~MAYBE_CredentialManagerClientTest() override {}
+  ~CredentialManagerClientTest() override {}
 
   void SetUp() override {
     content::RenderViewTest::SetUp();
@@ -118,7 +109,7 @@ class MAYBE_CredentialManagerClientTest : public content::RenderViewTest {
 class TestNotificationCallbacks
     : public blink::WebCredentialManagerClient::NotificationCallbacks {
  public:
-  explicit TestNotificationCallbacks(MAYBE_CredentialManagerClientTest* test)
+  explicit TestNotificationCallbacks(CredentialManagerClientTest* test)
       : test_(test) {}
 
   virtual ~TestNotificationCallbacks() {}
@@ -130,13 +121,13 @@ class TestNotificationCallbacks
   }
 
  private:
-  MAYBE_CredentialManagerClientTest* test_;
+  CredentialManagerClientTest* test_;
 };
 
 class TestRequestCallbacks
     : public blink::WebCredentialManagerClient::RequestCallbacks {
  public:
-  explicit TestRequestCallbacks(MAYBE_CredentialManagerClientTest* test)
+  explicit TestRequestCallbacks(CredentialManagerClientTest* test)
       : test_(test) {}
 
   virtual ~TestRequestCallbacks() {}
@@ -150,12 +141,12 @@ class TestRequestCallbacks
   }
 
  private:
-  MAYBE_CredentialManagerClientTest* test_;
+  CredentialManagerClientTest* test_;
 };
 
 }  // namespace
 
-TEST_F(MAYBE_CredentialManagerClientTest, SendNotifyFailedSignIn) {
+TEST_F(CredentialManagerClientTest, SendNotifyFailedSignIn) {
   int request_id;
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_NotifyFailedSignIn::ID,
                                 request_id));
@@ -172,7 +163,7 @@ TEST_F(MAYBE_CredentialManagerClientTest, SendNotifyFailedSignIn) {
   EXPECT_FALSE(callback_errored());
 }
 
-TEST_F(MAYBE_CredentialManagerClientTest, SendNotifySignedIn) {
+TEST_F(CredentialManagerClientTest, SendNotifySignedIn) {
   int request_id;
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedIn::ID,
                                 request_id));
@@ -189,7 +180,7 @@ TEST_F(MAYBE_CredentialManagerClientTest, SendNotifySignedIn) {
   EXPECT_FALSE(callback_errored());
 }
 
-TEST_F(MAYBE_CredentialManagerClientTest, SendRequestUserMediation) {
+TEST_F(CredentialManagerClientTest, SendRequestUserMediation) {
   int request_id;
   EXPECT_FALSE(ExtractRequestId(
       CredentialManagerHostMsg_RequireUserMediation::ID, request_id));
@@ -206,7 +197,7 @@ TEST_F(MAYBE_CredentialManagerClientTest, SendRequestUserMediation) {
   EXPECT_FALSE(callback_errored());
 }
 
-TEST_F(MAYBE_CredentialManagerClientTest, SendRequestCredential) {
+TEST_F(CredentialManagerClientTest, SendRequestCredential) {
   int request_id;
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                 request_id));
@@ -225,7 +216,7 @@ TEST_F(MAYBE_CredentialManagerClientTest, SendRequestCredential) {
   EXPECT_FALSE(callback_errored());
 }
 
-TEST_F(MAYBE_CredentialManagerClientTest, SendRequestCredentialEmpty) {
+TEST_F(CredentialManagerClientTest, SendRequestCredentialEmpty) {
   int request_id;
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                 request_id));

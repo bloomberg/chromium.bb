@@ -1254,6 +1254,19 @@
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/components_browsertests_manifest/AndroidManifest.xml',
             'resource_dir': 'test/android/browsertests_apk/res',
             'asset_location': '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets',
+            'conditions': [
+              ['icu_use_data_file_flag==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/icudtl.dat',
+                ],
+              }],
+              ['v8_use_external_startup_data==1', {
+                'additional_input_paths': [
+                  '<(PRODUCT_DIR)/natives_blob.bin',
+                  '<(PRODUCT_DIR)/snapshot_blob.bin',
+                ],
+              }],
+            ],
           },
           'includes': [ '../build/apk_browsertest.gypi' ],
         },
