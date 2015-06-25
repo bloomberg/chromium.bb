@@ -64,7 +64,7 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
   if (count != 1)
     return false;
 
-  return true;
+  return false;
 }
 
 }  // namespace
