@@ -1615,7 +1615,7 @@ crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ P
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure Pass ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
-crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/463358 transforms/2d/hindi-rotated.html [ NeedsRebaseline ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
