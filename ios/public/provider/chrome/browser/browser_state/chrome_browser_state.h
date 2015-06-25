@@ -7,9 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "ios/web/public/browser_state.h"
 
 class PrefService;
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace ios {
 
@@ -20,6 +25,10 @@ class ChromeBrowserState : public web::BrowserState {
 
   // Returns the ChromeBrowserState corresponding to the given BrowserState.
   static ChromeBrowserState* FromBrowserState(BrowserState* browser_state);
+
+  // Returns sequenced task runner where browser state dependent I/O
+  // operations should be performed.
+  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() = 0;
 
   // Returns the original "recording" ChromeBrowserState. This method returns
   // |this| if the ChromeBrowserState is not incognito.
