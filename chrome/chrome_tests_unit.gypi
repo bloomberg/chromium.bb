@@ -1140,7 +1140,6 @@
     ],
     'chrome_unit_tests_chromeos_sources': [
       'browser/chromeos/accessibility/magnification_manager_unittest.cc',
-      'browser/chromeos/accessibility/spoken_feedback_event_rewriter_unittest.cc',
       'browser/chromeos/attestation/attestation_ca_client_unittest.cc',
       'browser/chromeos/attestation/attestation_policy_observer_unittest.cc',
       'browser/chromeos/attestation/fake_certificate.cc',

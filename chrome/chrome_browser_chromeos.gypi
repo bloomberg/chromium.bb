@@ -15,8 +15,6 @@
         'browser/chromeos/accessibility/accessibility_util.h',
         'browser/chromeos/accessibility/magnification_manager.cc',
         'browser/chromeos/accessibility/magnification_manager.h',
-        'browser/chromeos/accessibility/spoken_feedback_event_rewriter.cc',
-        'browser/chromeos/accessibility/spoken_feedback_event_rewriter.h',
         'browser/chromeos/app_mode/app_launch_utils.cc',
         'browser/chromeos/app_mode/app_launch_utils.h',
         'browser/chromeos/app_mode/app_session_lifetime.cc',
