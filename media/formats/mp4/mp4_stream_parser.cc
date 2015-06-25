@@ -160,20 +160,15 @@ bool MP4StreamParser::ParseBox(bool* err) {
     // before the head of the 'moof', so keeping this box around is sufficient.)
     return !(*err);
   } else {
-    const int kMaxNumLogsForSkippingTopLevelBox = 5;
-
-    // TODO(wolenetz): Do not log when skipping ftyp, since strict MSE would
-    // require ftyp. See http://crbug.com/499077
-    LIMITED_MEDIA_LOG(DEBUG, log_cb_, num_top_level_box_skipped_,
-                      kMaxNumLogsForSkippingTopLevelBox)
-        << "Skipping unrecognized top-level box: "
-        << FourCCToString(reader->type());
+    // TODO(wolenetz,chcunningham): Enforce more strict adherence to MSE byte
+    // stream spec for ftyp and styp. See http://crbug.com/504514.
+    DVLOG(2) << "Skipping unrecognized top-level box: "
+             << FourCCToString(reader->type());
   }
 
   queue_.Pop(reader->size());
   return !(*err);
 }
-
 
 bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   moov_.reset(new Movie);
