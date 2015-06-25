@@ -35,7 +35,9 @@ test_configurations = []
 def AddCommonFlags(envlist):
   for (i, e) in enumerate(envlist):
     # Add -Wno-long-long because we use c99 long long constants in C++ code.
-    e.Append(CCFLAGS=['-DMODULE' + str(i), '-Wno-long-long'])
+    # GCC warns/errors about kPTR_EMPTYSTRUCT_PTR as an unused variable.
+    e.Append(CCFLAGS=['-DMODULE' + str(i), '-Wno-long-long',
+                      '-Wno-unused-variable'])
 
 def MakeSelfTestEnv(base_env, extra_flags):
   """ Make a list of four (nearly identical) envs which use the same CC

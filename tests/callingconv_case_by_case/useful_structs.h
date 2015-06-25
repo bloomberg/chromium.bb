@@ -54,6 +54,10 @@ typedef struct { float x; float y; } FLOAT_FLOAT;
 typedef struct { struct { int32_t a; char b; } x;
   struct { char a; float b;} y; } STRUCT_STRUCT;
 
+/* Struct containing an empty struct */
+typedef struct {} EMPTY;
+typedef struct { int* a; EMPTY x; double* b; } PTR_EMPTYSTRUCT_PTR;
+
 /* Not sharing within an eight-byte, but mixing within two eight-bytes */
 typedef struct { int64_t x; double y; } I64_DOUBLE;
 /* And not-sharing even within two eight-bytes */
@@ -323,8 +327,6 @@ typedef int64_t __m256i __attribute__((__vector_size__(32)));
    char flex[];
    } I32_CHARFLEX2; */
 
-/* Empty struct */
-/* typedef struct {} EMPTY; */
 
 /*----- Constant definitions for the above types, along with CHECKs ------*/
 
@@ -420,6 +422,15 @@ static const STRUCT_STRUCT kSTRUCT_STRUCT = { { KI321, KCHAR1 },
   ASSERT_EQ(s.x.b, KCHAR1, "(CHECK_STRUCT_STRUCT, x.b")     \
   ASSERT_EQ(s.y.a, KCHAR2, "(CHECK_STRUCT_STRUCT, y.a")     \
   ASSERT_EQ(s.y.b, KFLOAT1, "(CHECK_STRUCT_STRUCT, y.b")
+
+static const EMPTY kEMPTY = {};
+static const PTR_EMPTYSTRUCT_PTR kPTR_EMPTYSTRUCT_PTR = { (int*) KPTR1,
+                                                          kEMPTY,
+                                                          (double*) KPTR2 };
+
+#define CHECK_PTR_EMPTYSTRUCT_PTR(s) \
+    ASSERT_EQ(s.a, KPTR1, "(CHECK_PTR_EMPTYSTRUCT_PTR, a)") \
+    ASSERT_EQ(s.b, KPTR2, "(CHECK_PTR_EMPTYSTRUCT_PTR, b)")
 
 static const I64_DOUBLE kI64_DOUBLE = { KI641, KDOUBLE1 };
 #define CHECK_I64_DOUBLE(s)                         \

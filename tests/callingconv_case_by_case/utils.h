@@ -75,6 +75,9 @@
 #define KI643 (KI641 + 3)
 #define KI644 (KI641 + 7)
 
+#define KPTR1 ((void *)(KI321))
+#define KPTR2 ((void *)(KI322))
+
 /* If there was a way to test _Bool at the same time, that would be good. */
 #define KBOOL1 ((bool) false)
 #define KBOOL2 ((bool) true)
