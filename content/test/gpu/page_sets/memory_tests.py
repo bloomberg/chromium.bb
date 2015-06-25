@@ -11,7 +11,6 @@ class MemoryTestsPage(page_module.Page):
     super(MemoryTestsPage, self).__init__(
       url='file://../../data/gpu/mem_css3d.html', page_set=page_set,
       name='Memory.CSS3D')
-    self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):
     super(MemoryTestsPage, self).RunNavigateSteps(action_runner)
@@ -24,7 +23,6 @@ class MemoryTestsPageSet(page_set_module.PageSet):
   """ Tests that validate GPU memory management """
 
   def __init__(self):
-    super(MemoryTestsPageSet, self).__init__(
-      user_agent_type='desktop')
+    super(MemoryTestsPageSet, self).__init__()
 
     self.AddUserStory(MemoryTestsPage(self))

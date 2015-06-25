@@ -33,7 +33,32 @@ ANGLE_MODIFIERS = ['d3d9', 'd3d11', 'opengl']
 BROWSER_TYPE_MODIFIERS = [
     'android-webview-shell', 'android-content-shell', 'debug' ]
 
+class _FlakyExpectation(object):
+  def __init__(self, expectation, max_num_retries):
+    self.expectation = expectation
+    self.max_num_retries = max_num_retries
+
+class _FakeSharedPageState(object):
+  def __init__(self, browser):
+    self.browser = browser
+
 class GpuTestExpectations(test_expectations.TestExpectations):
+  def __init__(self):
+    self._flaky_expectations = []
+    super(GpuTestExpectations, self).__init__()
+
+  def Flaky(self, url_pattern, conditions=None, bug=None, max_num_retries=2):
+    expectation = _FlakyExpectation(self.CreateExpectation(
+      'pass', url_pattern, conditions, bug), max_num_retries)
+    self._flaky_expectations.append(expectation)
+
+  def GetFlakyRetriesForPage(self, page, browser):
+    for fe in self._flaky_expectations:
+      e = fe.expectation
+      if self.ExpectationAppliesToPage(e, _FakeSharedPageState(browser), page):
+        return fe.max_num_retries
+    return 0
+
   def IsValidUserDefinedCondition(self, condition):
     # Add support for d3d9, d3d11 and opengl-specific expectations.
     if condition in ANGLE_MODIFIERS:

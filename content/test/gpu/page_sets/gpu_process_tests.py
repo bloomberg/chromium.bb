@@ -9,7 +9,6 @@ class GpuProcessTestsPage(page_module.Page):
   def __init__(self, url, name, page_set):
     super(GpuProcessTestsPage, self).__init__(url=url, page_set=page_set,
                                               name=name)
-    self.user_agent_type = 'desktop'
 
 
 class FunctionalVideoPage(GpuProcessTestsPage):
@@ -55,8 +54,7 @@ class GpuProcessTestsPageSet(page_set_module.PageSet):
 
   def __init__(self):
     super(GpuProcessTestsPageSet, self).__init__(
-      serving_dirs=set(['../../../../content/test/data']),
-      user_agent_type='desktop')
+      serving_dirs=set(['../../../../content/test/data']))
 
     urls_and_names_list = [
       ('file://../../data/gpu/functional_canvas_demo.html',

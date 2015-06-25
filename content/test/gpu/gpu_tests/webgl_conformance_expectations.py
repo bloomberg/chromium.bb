@@ -10,7 +10,7 @@ from gpu_test_expectations import GpuTestExpectations
 class WebGLConformanceExpectations(GpuTestExpectations):
   def __init__(self, conformance_path):
     self.conformance_path = conformance_path
-    GpuTestExpectations.__init__(self)
+    super(WebGLConformanceExpectations, self).__init__()
 
   def Fail(self, pattern, condition=None, bug=None):
     self.CheckPatternIsValid(pattern)
@@ -66,28 +66,27 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/gl-viewport-test.html',
         ['win7', 'intel'], bug=372511)
 
-    # Win / AMD flakiness seen on new tryservers (affecting most tests
-    # randomly, must investigate ASAP)
-    self.Fail('conformance/canvas/drawingbuffer-hd-dpi-test.html',
+    # Win / AMD flakiness seen on new tryservers
+    self.Flaky('conformance/canvas/drawingbuffer-hd-dpi-test.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/context/' +
+    self.Flaky('conformance/context/' +
         'context-attributes-alpha-depth-stencil-antialias.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/extensions/oes-standard-derivatives.html',
+    self.Flaky('conformance/extensions/oes-standard-derivatives.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
+    self.Flaky('conformance/extensions/oes-vertex-array-object.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/glsl/functions/*',
+    self.Flaky('conformance/glsl/functions/*',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/glsl/misc/glsl-long-variable-names.html',
+    self.Flaky('conformance/glsl/misc/glsl-long-variable-names.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/ogles/GL/swizzlers/swizzlers_017_to_024.html',
+    self.Flaky('conformance/ogles/GL/swizzlers/swizzlers_017_to_024.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/ogles/GL/vec3/vec3_001_to_008.html',
+    self.Flaky('conformance/ogles/GL/vec3/vec3_001_to_008.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/rendering/gl-scissor-test.html',
+    self.Flaky('conformance/rendering/gl-scissor-test.html',
         ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('conformance/textures/texture-size.html',
+    self.Flaky('conformance/textures/texture-size.html',
         ['win', ('amd', 0x6779)], bug=491419)
 
     # Win / AMD D3D9 failures

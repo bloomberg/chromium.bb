@@ -9,7 +9,6 @@ class PixelTestsPage(page_module.Page):
 
   def __init__(self, url, name, test_rect, revision, page_set):
     super(PixelTestsPage, self).__init__(url=url, page_set=page_set, name=name)
-    self.user_agent_type = 'desktop'
     self.test_rect = test_rect
     self.revision = revision
 
@@ -24,8 +23,7 @@ class PixelTestsPageSet(page_set_module.PageSet):
   """ Some basic test cases for GPU. """
 
   def __init__(self, base_name='Pixel'):
-    super(PixelTestsPageSet, self).__init__(
-      user_agent_type='desktop')
+    super(PixelTestsPageSet, self).__init__()
     self.AddUserStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_canvas2d.html',
       name=base_name + '.Canvas2DRedBox',

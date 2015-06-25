@@ -335,7 +335,6 @@ class ContextLost(benchmark_module.Benchmark):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       base_dir=data_path,
-      user_agent_type='desktop',
       serving_dirs=set(['']))
     ps.AddUserStory(GPUProcessCrashesExactlyOnce(ps, ps.base_dir))
     ps.AddUserStory(WebGLContextLostFromGPUProcessExitPage(ps, ps.base_dir))

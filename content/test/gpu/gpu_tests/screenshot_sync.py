@@ -49,7 +49,6 @@ class ScreenshotSyncPage(page.Page):
       page_set=page_set,
       base_dir=base_dir,
       name='ScreenshotSync')
-    self.user_agent_type = 'desktop'
 
   def RunNavigateSteps(self, action_runner):
     super(ScreenshotSyncPage, self).RunNavigateSteps(action_runner)
