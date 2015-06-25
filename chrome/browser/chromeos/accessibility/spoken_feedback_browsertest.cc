@@ -355,21 +355,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
       break;
   }
 
-  SendKeyPress(ui::VKEY_TAB);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
-
-  // Compat next element.
-  SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
-
-  // Compat next button.
-  SendKeyPressWithSearchAndShift(ui::VKEY_N);
-  SendKeyPressWithSearchAndShift(ui::VKEY_B);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
-
   // Navigate to Bluetooth sub-menu and open it.
   while (true) {
     SendKeyPress(ui::VKEY_TAB);

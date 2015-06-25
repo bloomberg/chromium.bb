@@ -79,6 +79,37 @@ namespace {
 
 using base::UserMetricsAction;
 
+bool CanHandleAccessibleFocusCycle() {
+  if (!Shell::GetInstance()->accessibility_delegate()->
+      IsSpokenFeedbackEnabled()) {
+    return false;
+  }
+  aura::Window* active_window = ash::wm::GetActiveWindow();
+  if (!active_window)
+    return false;
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(active_window);
+  if (!widget)
+    return false;
+  views::FocusManager* focus_manager = widget->GetFocusManager();
+  if (!focus_manager)
+    return false;
+  views::View* view = focus_manager->GetFocusedView();
+  return view && strcmp(view->GetClassName(), views::WebView::kViewClassName);
+}
+
+void HandleAccessibleFocusCycle(bool reverse) {
+  if (reverse)
+    base::RecordAction(UserMetricsAction("Accel_Accessible_Focus_Previous"));
+  else
+    base::RecordAction(UserMetricsAction("Accel_Accessible_Focus_Next"));
+
+  aura::Window* active_window = ash::wm::GetActiveWindow();
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(active_window);
+  widget->GetFocusManager()->AdvanceFocus(reverse);
+}
+
 void HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
@@ -849,6 +880,9 @@ bool AcceleratorController::CanPerformAction(
   // false should be returned to give the web contents a chance at handling the
   // accelerator.
   switch (action) {
+    case ACCESSIBLE_FOCUS_NEXT:
+    case ACCESSIBLE_FOCUS_PREVIOUS:
+      return CanHandleAccessibleFocusCycle();
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
@@ -979,6 +1013,12 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
   // implement it in your module's controller code (like TOGGLE_MIRROR_MODE
   // below) or pull it into a HandleFoo() function above.
   switch (action) {
+    case ACCESSIBLE_FOCUS_NEXT:
+      HandleAccessibleFocusCycle(false);
+      break;
+    case ACCESSIBLE_FOCUS_PREVIOUS:
+      HandleAccessibleFocusCycle(true);
+      break;
     case CYCLE_BACKWARD_MRU:
       HandleCycleBackwardMRU(accelerator);
       break;

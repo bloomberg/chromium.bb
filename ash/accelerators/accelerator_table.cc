@@ -171,6 +171,11 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_U, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
     PRINT_UI_HIERARCHIES },
 
+  { false, ui::VKEY_HOME, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_PREVIOUS},
+  { false, ui::VKEY_PRIOR, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_PREVIOUS},
+  { false, ui::VKEY_END, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_NEXT},
+  { false, ui::VKEY_NEXT, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_NEXT},
+
   // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
   // VKEY_MEDIA_LAUNCH_MAIL.
 };
@@ -403,6 +408,8 @@ const size_t kActionsAllowedInAppModeLength =
     arraysize(kActionsAllowedInAppMode);
 
 const AcceleratorAction kActionsNeedingWindow[] = {
+    ACCESSIBLE_FOCUS_NEXT,
+    ACCESSIBLE_FOCUS_PREVIOUS,
     CYCLE_BACKWARD_MRU,
     CYCLE_FORWARD_MRU,
     TOGGLE_OVERVIEW,
