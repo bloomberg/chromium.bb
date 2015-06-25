@@ -10,7 +10,7 @@
   window.addEventListener('DOMContentLoaded', function() {
     var style = document.createElement('style');
     style.appendChild(document.createTextNode(
-      '@font-face { font-family: Ahem; src: url(' + relativePath + '/Ahem.ttf'));
+      '@font-face { font-family: myahem; src: url(' + relativePath + '/Ahem.ttf'));
     document.head.appendChild(style);
     // Force a layout to start loading the font.
     document.documentElement.offsetTop;

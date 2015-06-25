@@ -1199,7 +1199,13 @@ crbug.com/331583 [ Mac ] ietestcenter/css3/multicolumn/column-containing-block-0
 crbug.com/331583 crbug.com/392046 [ Mac Win7 ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
 
 # Try @font-face to load Ahem font to see it produces different flakiness from pre-registered Ahem font.
-crbug.com/392046 try-ahem [ Pass Failure ImageOnlyFailure ]
+crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/repaint/text-emphasis-v-try-ahem.html [ Pass ImageOnlyFailure ]
+crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/text/whitespace/002-try-ahem.html [ Pass Failure ]
+crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/text/whitespace/003-try-ahem.html [ Pass Failure ]
+crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/text/whitespace/004-try-ahem.html [ Pass Failure ]
+crbug.com/331583 crbug.com/392046 virtual/antialiasedtext/fast/text/whitespace/002-try-ahem.html [ Skip ]
+crbug.com/331583 crbug.com/392046 virtual/antialiasedtext/fast/text/whitespace/003-try-ahem.html [ Skip ]
+crbug.com/331583 crbug.com/392046 virtual/antialiasedtext/fast/text/whitespace/004-try-ahem.html [ Skip ]
 
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
