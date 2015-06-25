@@ -148,9 +148,6 @@ class Frame : public blink::WebFrameClient,
                                      const blink::WebHistoryItem& history_item,
                                      blink::WebHistoryCommitType commit_type);
   virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
-  virtual void didStartLoading(bool to_different_document);
-  virtual void didStopLoading();
-  virtual void didChangeLoadProgress(double load_progress);
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);

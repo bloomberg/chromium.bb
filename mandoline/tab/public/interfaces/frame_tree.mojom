@@ -34,16 +34,6 @@ interface FrameTreeServer {
   PostMessageEventToFrame(uint32 frame_id, MessageEvent event);
   NavigateFrame(uint32 frame_id);
   ReloadFrame(uint32 frame_id);
-
-  // Notifies the server that a load has started or stopped in this frame.
-  // When loading is started, progress is reset to 0, but when loading is
-  // stopped progress may not have reached 1.0.
-  LoadingStarted();
-  LoadingStopped();
-
-  // Called when the progress for this frame changes. Will only be called while
-  // a load is in progress.
-  ProgressChanged(double progress);
 };
 
 interface FrameTreeClient {

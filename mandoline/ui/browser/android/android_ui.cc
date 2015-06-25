@@ -29,9 +29,8 @@ void AndroidUI::Init(mojo::View* root) {
   browser_->content()->SetBounds(root_->bounds());
 }
 
-void AndroidUI::OnURLChanged() {}
-void AndroidUI::LoadingStateChanged(bool loading) {}
-void AndroidUI::ProgressChanged(double progress) {}
+void AndroidUI::OnURLChanged() {
+}
 
 void AndroidUI::OnViewBoundsChanged(mojo::View* view,
                                     const mojo::Rect& old_bounds,

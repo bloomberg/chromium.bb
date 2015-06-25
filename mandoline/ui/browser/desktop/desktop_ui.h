@@ -22,7 +22,6 @@ class LabelButton;
 namespace mandoline {
 
 class Browser;
-class ProgressView;
 
 class DesktopUI : public BrowserUI,
                   public views::LayoutManager,
@@ -35,8 +34,6 @@ class DesktopUI : public BrowserUI,
   // Overridden from BrowserUI
   void Init(mojo::View* root) override;
   void OnURLChanged() override;
-  void LoadingStateChanged(bool loading) override;
-  void ProgressChanged(double progress) override;
 
   // Overridden from views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* view) const override;
@@ -48,7 +45,6 @@ class DesktopUI : public BrowserUI,
   Browser* browser_;
   mojo::ApplicationImpl* application_impl_;
   views::LabelButton* omnibox_launcher_;
-  ProgressView* progress_bar_;
   mojo::View* root_;
   mojo::View* content_;
   OmniboxPtr omnibox_;

@@ -38,16 +38,11 @@ class FrameTree {
  private:
   friend class Frame;
 
-  void LoadingStateChanged();
-  void ProgressChanged();
-
   mojo::View* view_;
 
   FrameTreeDelegate* delegate_;
 
   Frame root_;
-
-  double progress_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

@@ -27,10 +27,6 @@ class BrowserUI {
   virtual void Init(mojo::View* root) = 0;
 
   virtual void OnURLChanged() = 0;
-
-  virtual void LoadingStateChanged(bool loading) = 0;
-
-  virtual void ProgressChanged(double progress) = 0;
 };
 
 }  // namespace mandoline

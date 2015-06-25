@@ -10,7 +10,6 @@
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
-#include "mandoline/tab/frame_tree_delegate.h"
 #include "mandoline/ui/browser/navigator_host_impl.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/browser/public/interfaces/view_embedder.mojom.h"
@@ -35,7 +34,6 @@ class Browser : public mojo::ViewManagerDelegate,
                 public mojo::ViewManagerRootClient,
                 public OmniboxClient,
                 public ViewEmbedder,
-                public FrameTreeDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
                 public mojo::InterfaceFactory<ViewEmbedder> {
  public:
@@ -71,13 +69,6 @@ class Browser : public mojo::ViewManagerDelegate,
 
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;
-
-  // Overridden from FrameTreeDelegate:
-  bool CanPostMessageEventToFrame(const Frame* source,
-                                  const Frame* target,
-                                  MessageEvent* event) override;
-  void LoadingStateChanged(bool loading) override;
-  void ProgressChanged(double progress) override;
 
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,

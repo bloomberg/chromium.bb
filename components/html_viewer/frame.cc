@@ -468,18 +468,6 @@ blink::WebEncryptedMediaClient* Frame::encryptedMediaClient() {
   return setup()->media_factory()->GetEncryptedMediaClient();
 }
 
-void Frame::didStartLoading(bool to_different_document) {
-  frame_tree_manager_->LoadingStarted();
-}
-
-void Frame::didStopLoading() {
-  frame_tree_manager_->LoadingStopped();
-}
-
-void Frame::didChangeLoadProgress(double load_progress) {
-  frame_tree_manager_->ProgressChanged(load_progress);
-}
-
 void Frame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {
   if (type == blink::WebRemoteFrameClient::DetachType::Swap) {
     web_frame_->close();

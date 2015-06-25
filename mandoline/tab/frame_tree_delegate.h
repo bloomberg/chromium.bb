@@ -7,7 +7,6 @@
 
 namespace mandoline {
 
-class Frame;
 class MessageEvent;
 
 class FrameTreeDelegate {
@@ -15,9 +14,6 @@ class FrameTreeDelegate {
   virtual bool CanPostMessageEventToFrame(const Frame* source,
                                           const Frame* target,
                                           MessageEvent* event) = 0;
-
-  virtual void LoadingStateChanged(bool loading) = 0;
-  virtual void ProgressChanged(double progress) = 0;
 
  protected:
   virtual ~FrameTreeDelegate() {}
