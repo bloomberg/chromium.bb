@@ -6963,6 +6963,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_MAC_VIEWS_NATIVE_APP_WINDOWS_DESCRIPTION" desc="Description of flag to enable or disable toolkit-views Chrome App windows on Mac.">
           Controls whether to use Toolkit-Views based Chrome App windows.
         </message>
+        <message name="IDS_FLAGS_APP_WINDOW_CYCLING_NAME" desc="Name of the flag to enable or disable custom Cmd+` App window cycling on Mac.">
+          Custom Window Cycling for Chrome Apps.
+        </message>
+        <message name="IDS_FLAGS_APP_WINDOW_CYCLING_DESCRIPTION" desc="Description of flag to enable or disable custom Cmd+` App window cycling on Mac.">
+          Changes the behavior of Cmd+` when a Chrome App becomes active. When enabled, Chrome Apps will not be cycled when Cmd+` is pressed from a browser window, and browser windows will not be cycled when a Chrome App is active.
+        </message>
       </if>
 
       <!-- Crashes -->

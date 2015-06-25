@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
 
 @interface WindowedNSNotificationObserver ()
 - (void)onNotification:(NSNotification*)notification;
@@ -41,31 +42,46 @@
   return self;
 }
 
+- (void)dealloc {
+  if (bundleId_)
+    [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
+  else
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (void)onNotification:(NSNotification*)notification {
   if (bundleId_) {
     NSRunningApplication* application =
         [[notification userInfo] objectForKey:NSWorkspaceApplicationKey];
     if (![[application bundleIdentifier] isEqualToString:bundleId_])
       return;
-
-    [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
-  } else {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
   }
 
-  notificationReceived_ = YES;
+  ++notificationCount_;
   if (runLoop_)
     runLoop_->Quit();
 }
 
-- (void)wait {
-  if (notificationReceived_)
-    return;
+- (BOOL)waitForCount:(int)minimumCount {
+  while (notificationCount_ < minimumCount) {
+    const int oldCount = notificationCount_;
+    base::RunLoop runLoop;
+    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+        FROM_HERE, runLoop.QuitClosure(), TestTimeouts::action_timeout());
+    runLoop_ = &runLoop;
+    runLoop.Run();
+    runLoop_ = nullptr;
 
-  base::RunLoop runLoop;
-  runLoop_ = &runLoop;
-  runLoop.Run();
-  runLoop_ = nullptr;
+    // If there was no new notification, it must have been a timeout.
+    if (notificationCount_ == oldCount)
+      break;
+  }
+  return notificationCount_ >= minimumCount;
+}
+
+- (BOOL)wait {
+  return [self waitForCount:1];
 }
 
 @end

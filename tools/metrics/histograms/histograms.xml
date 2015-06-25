@@ -59472,6 +59472,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
+  <int value="-1212167260" label="disable-app-window-cycling"/>
   <int value="-1203742042" label="enable-gesture-selection"/>
   <int value="-1201183153" label="enable-centered-app-list"/>
   <int value="-1184904651" label="enable-npapi"/>
@@ -59656,6 +59657,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="711424932" label="enable-cloud-print-xps"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
+  <int value="752194066" label="enable-app-window-cycling"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>

@@ -1229,6 +1229,9 @@ const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
 // Disable the toolkit-views App Info dialog for Mac.
 const char kDisableAppInfoDialogMac[] = "disable-app-info-dialog-mac";
 
+// Disables custom Cmd+` window cycling for platform apps and hosted apps.
+const char kDisableAppWindowCycling[] = "disable-app-window-cycling";
+
 // Disables app shim creation for hosted apps on Mac.
 const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 
@@ -1244,6 +1247,9 @@ const char kDisableSystemFullscreenForTesting[] =
 // Enable the toolkit-views App Info dialog for Mac. This is accessible from
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
+
+// Enables custom Cmd+` window cycling for platform apps and hosted apps.
+const char kEnableAppWindowCycling[] = "enable-app-window-cycling";
 
 // Enables use of toolkit-views based native app windows.
 const char kEnableMacViewsNativeAppWindows[] =

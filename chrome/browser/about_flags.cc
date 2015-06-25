@@ -2002,6 +2002,12 @@ const Experiment kExperiments[] = {
      kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMacViewsNativeAppWindows,
                                switches::kDisableMacViewsNativeAppWindows)},
+    {"app-window-cycling",
+     IDS_FLAGS_APP_WINDOW_CYCLING_NAME,
+     IDS_FLAGS_APP_WINDOW_CYCLING_DESCRIPTION,
+     kOsMac,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppWindowCycling,
+                               switches::kDisableAppWindowCycling)},
 #endif
 #if defined(ENABLE_WEBVR)
     {"enable-webvr",

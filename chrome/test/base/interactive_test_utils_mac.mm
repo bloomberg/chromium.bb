@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "ui/base/test/ui_controls.h"
+#import "ui/base/test/windowed_nsnotification_observer.h"
 
 namespace ui_test_utils {
 
@@ -104,17 +105,25 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   TransformProcessType(&psn,kProcessTransformToForegroundApplication);
   SetFrontProcess(&psn);
 
+  base::scoped_nsobject<WindowedNSNotificationObserver> async_waiter;
+  if (![window isKeyWindow]) {
+    // Only wait when expecting a change to actually occur.
+    async_waiter.reset([[WindowedNSNotificationObserver alloc]
+        initForNotification:NSWindowDidBecomeKeyNotification
+                     object:window]);
+  }
   [window makeKeyAndOrderFront:nil];
 
   // Wait until |window| becomes key window, then make sure the shortcuts for
   // "Close Window" and "Close Tab" are updated.
   // This is because normal AppKit menu updating does not get invoked when
   // events are sent via ui_test_utils::SendKeyPressSync.
-  base::RunLoop().RunUntilIdle();
+  BOOL notification_observed = [async_waiter wait];
+  base::RunLoop().RunUntilIdle();  // There may be other events queued. Flush.
   NSMenu* file_menu = [[[NSApp mainMenu] itemWithTag:IDC_FILE_MENU] submenu];
   [[file_menu delegate] menuNeedsUpdate:file_menu];
 
-  return true;
+  return !async_waiter || notification_observed;
 }
 
 }  // namespace ui_test_utils

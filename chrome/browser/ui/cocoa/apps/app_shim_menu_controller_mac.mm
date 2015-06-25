@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/apps/app_shim_menu_controller_mac.h"
 
+#include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,13 +15,32 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using extensions::Extension;
+
 namespace {
+
+// When an app window loses main status, AppKit may make another app window main
+// instead. Rather than trying to predict what AppKit will do (which is hard),
+// just protect against changes in the event queue that will clobber each other.
+int g_window_cycle_sequence_number = 0;
+
+// Whether Custom Cmd+` window cycling is enabled for apps.
+bool IsAppWindowCyclingEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableAppWindowCycling))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableAppWindowCycling))
+    return true;
+
+  return false;  // Current default.
+}
 
 // Gets an item from the main menu given the tag of the top level item
 // |menu_tag| and the tag of the item |item_tag|.
@@ -113,6 +133,100 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   [menu_item setHidden:!visible];
 }
 
+// Return the Extension (if any) associated with the given window. If it is not
+// a platform app nor hosted app, but it is a browser, |is_browser| will be set
+// to true (otherwise false).
+const Extension* GetExtensionForNSWindow(NSWindow* window, bool* is_browser) {
+  const Extension* extension = nullptr;
+  Browser* browser = nullptr;
+
+  extensions::AppWindow* app_window =
+      AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(window);
+  if (app_window) {
+    extension = app_window->GetExtension();
+  } else {
+    // If there is no corresponding AppWindow, this could be a hosted app, so
+    // check for a browser.
+    browser = chrome::FindBrowserWithWindow(window);
+    extension = apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
+  }
+
+  *is_browser = extension == nullptr && browser != nullptr;
+  return extension;
+}
+
+// Sets or clears NSWindowCollectionBehaviorIgnoresCycle for |window|. Does not
+// change NSWindowCollectionBehaviorParticipatesInCycle. That exists, e.g, for
+// an NSPanel to override its default behavior, but this should only ever be
+// called for Browser windows and App windows (which are not panels).
+bool SetWindowParticipatesInCycle(NSWindow* window, bool participates) {
+  const NSWindowCollectionBehavior past_behavior = [window collectionBehavior];
+  NSWindowCollectionBehavior behavior = past_behavior;
+  if (participates)
+    behavior &= ~NSWindowCollectionBehaviorIgnoresCycle;
+  else
+    behavior |= NSWindowCollectionBehaviorIgnoresCycle;
+
+  // Often, there is no change. AppKit has no early exit since the value is
+  // derived partially from styleMask and other things, so do our own.
+  if (behavior == past_behavior)
+    return false;
+
+  [window setCollectionBehavior:behavior];
+  return true;
+}
+
+// Sets the window cycle list to |app_id|'s windows only.
+void SetAppCyclesWindows(const std::string& app_id, int sequence_number) {
+  if (g_window_cycle_sequence_number != sequence_number)
+    return;
+
+  bool any_change = false;
+  for (NSWindow* window : [NSApp windows]) {
+    bool is_browser;
+    const Extension* extension = GetExtensionForNSWindow(window, &is_browser);
+    if (extension && extension->id() == app_id)
+      any_change |= SetWindowParticipatesInCycle(window, true);
+    else if (extension || is_browser)
+      any_change |= SetWindowParticipatesInCycle(window, false);
+  }
+
+  // Without the following, -[NSApplication _getLockedWindowListForCycle] will
+  // happily return windows that were just set to ignore window cycling. Doing
+  // this seems to trick AppKit into updating the window cycle list. But it is a
+  // bit scary, so avoid it when there is no change. These attempts were based
+  // on the observation that clicking a window twice to switch focus would
+  // always work. Also tried (without luck):
+  //  - [NSApp setWindowsNeedUpdate:YES],
+  //  - Creating a deferred NSWindow and immediately releasing it,
+  //  - Calling private methods like [NSApp _unlockWindowListForCycle],
+  //  - [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined...
+  //      (an attempt to tickle AppKit into an update of some kind),
+  //  - Calling synchronously (i.e. not via PostTask) <- this was actually the
+  //      initial attempt. Then, switching to PostTask didn't help with this
+  //      quirk, but was useful for the sequence number stuff, and
+  //  - Re-ordering collection behavior changes to ensure one window was always
+  //      participating (i.e. all 'adds' before any 'removes').
+  if (any_change)
+    [[NSApp keyWindow] makeKeyAndOrderFront:nil];
+}
+
+// Sets the window cycle list to Chrome browser windows only.
+void SetChromeCyclesWindows(int sequence_number) {
+  if (g_window_cycle_sequence_number != sequence_number)
+    return;
+
+  bool any_change = false;
+  for (NSWindow* window : [NSApp windows]) {
+    bool is_browser;
+    const Extension* extension = GetExtensionForNSWindow(window, &is_browser);
+    if (extension || is_browser)
+      any_change |= SetWindowParticipatesInCycle(window, is_browser);
+  }
+  if (any_change)
+    [[NSApp keyWindow] makeKeyAndOrderFront:nil];
+}
+
 }  // namespace
 
 // Used by AppShimMenuController to manage menu items that are a copy of a
@@ -149,7 +263,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
         targetItemTag:(NSInteger)targetItemTag
         keyEquivalent:(NSString*)keyEquivalent;
 // Set the title using |resourceId_| and unset the source item's key equivalent.
-- (void)enableForApp:(const extensions::Extension*)app;
+- (void)enableForApp:(const Extension*)app;
 // Restore the source item's key equivalent.
 - (void)disable;
 @end
@@ -195,7 +309,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   return self;
 }
 
-- (void)enableForApp:(const extensions::Extension*)app {
+- (void)enableForApp:(const Extension*)app {
   // It seems that two menu items that have the same key equivalent must also
   // have the same action for the keyboard shortcut to work. (This refers to the
   // original keyboard shortcut, regardless of any overrides set in OSX).
@@ -225,8 +339,12 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
 - (void)registerEventHandlers;
 // If the window is an app window, add or remove menu items.
 - (void)windowMainStatusChanged:(NSNotification*)notification;
+// Called when |app| becomes the main window in the Chrome process.
+- (void)appBecameMain:(const Extension*)app;
+// Called when there is no main window, or if the main window is not an app.
+- (void)chromeBecameMain;
 // Add menu items for an app and hide Chrome menu items.
-- (void)addMenuItems:(const extensions::Extension*)app;
+- (void)addMenuItems:(const Extension*)app;
 // If the window belongs to the currently focused app, remove the menu items and
 // unhide Chrome menu items.
 - (void)removeMenuItems;
@@ -376,23 +494,14 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   NSString* name = [notification name];
   if ([name isEqualToString:NSWindowDidBecomeMainNotification]) {
     id window = [notification object];
-    extensions::AppWindow* appWindow =
-        AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
-            window);
-
-    const extensions::Extension* extension = NULL;
-    // If there is no corresponding AppWindow, this could be a hosted app, so
-    // check for a browser.
-    if (appWindow)
-      extension = appWindow->GetExtension();
-    else
-      extension = apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(
-          chrome::FindBrowserWithWindow(window));
-
+    bool is_browser;
+    const Extension* extension = GetExtensionForNSWindow(window, &is_browser);
+    // Ignore is_browser: if a window becomes main that does not belong to an
+    // extension or browser, treat it the same as switching to a browser.
     if (extension)
-      [self addMenuItems:extension];
+      [self appBecameMain:extension];
     else
-      [self removeMenuItems];
+      [self chromeBecameMain];
   } else if ([name isEqualToString:NSWindowDidResignMainNotification]) {
     // When a window resigns main status, reset back to the Chrome menu.
     // In the past we've tried:
@@ -410,21 +519,44 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     // unconditionally means that if another packaged app window becomes key,
     // the menu will flicker. TODO(tapted): Investigate restoring the logic when
     // the panel code is removed.
-    [self removeMenuItems];
+    [self chromeBecameMain];
   } else {
     NOTREACHED();
   }
 }
 
-- (void)addMenuItems:(const extensions::Extension*)app {
-  NSString* appId = base::SysUTF8ToNSString(app->id());
-  NSString* title = base::SysUTF8ToNSString(app->name());
-
-  if ([appId_ isEqualToString:appId])
+- (void)appBecameMain:(const Extension*)app {
+  if (appId_ == app->id())
     return;
 
+  if (!appId_.empty())
+    [self removeMenuItems];
+
+  appId_ = app->id();
+  [self addMenuItems:app];
+  if (IsAppWindowCyclingEnabled()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&SetAppCyclesWindows, appId_,
+                              ++g_window_cycle_sequence_number));
+  }
+}
+
+- (void)chromeBecameMain {
+  if (appId_.empty())
+    return;
+
+  appId_.clear();
   [self removeMenuItems];
-  appId_.reset([appId copy]);
+  if (IsAppWindowCyclingEnabled()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SetChromeCyclesWindows, ++g_window_cycle_sequence_number));
+  }
+}
+
+- (void)addMenuItems:(const Extension*)app {
+  DCHECK_EQ(appId_, app->id());
+  NSString* title = base::SysUTF8ToNSString(app->name());
 
   // Hide Chrome menu items.
   NSMenu* mainMenu = [NSApp mainMenu];
@@ -438,7 +570,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   [openDoppelganger_ enableForApp:app];
   [closeWindowDoppelganger_ enableForApp:app];
 
-  [appMenuItem_ setTitle:appId];
+  [appMenuItem_ setTitle:base::SysUTF8ToNSString(appId_)];
   [[appMenuItem_ submenu] setTitle:title];
 
   [mainMenu addItem:appMenuItem_];
@@ -459,11 +591,6 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
 }
 
 - (void)removeMenuItems {
-  if (!appId_)
-    return;
-
-  appId_.reset();
-
   NSMenu* mainMenu = [NSApp mainMenu];
   [mainMenu removeItem:appMenuItem_];
   [mainMenu removeItem:fileMenuItem_];
@@ -494,7 +621,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     apps::ExtensionAppShimHandler::QuitAppForWindow(appWindow);
   } else {
     Browser* browser = chrome::FindBrowserWithWindow([NSApp keyWindow]);
-    const extensions::Extension* extension =
+    const Extension* extension =
         apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (extension)
       apps::ExtensionAppShimHandler::QuitHostedAppForWindow(browser->profile(),
@@ -510,7 +637,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     apps::ExtensionAppShimHandler::HideAppForWindow(appWindow);
   } else {
     Browser* browser = chrome::FindBrowserWithWindow([NSApp keyWindow]);
-    const extensions::Extension* extension =
+    const Extension* extension =
         apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (extension)
       apps::ExtensionAppShimHandler::HideHostedApp(browser->profile(),

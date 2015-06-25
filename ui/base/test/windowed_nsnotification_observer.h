@@ -15,16 +15,17 @@ class RunLoop;
 
 // Like WindowedNotificationObserver in content/public/test/test_utils.h, this
 // starts watching for a notification upon construction and can wait until the
-// notification is observed. This guarantees that a notification fired between
+// notification is observed. This guarantees that notifications fired between
 // calls to init and wait will be caught.
 @interface WindowedNSNotificationObserver : NSObject {
  @private
   base::scoped_nsobject<NSString> bundleId_;
-  BOOL notificationReceived_;
+  int notificationCount_;
   base::RunLoop* runLoop_;
 }
 
-// Watch for an NSNotification on the default notification center.
+// Watch for an NSNotification on the default notification center for the given
+// |notificationSender|, or a nil object if omitted.
 - (id)initForNotification:(NSString*)name;
 
 // Watch for an NSNotification on the default notification center from a
@@ -32,13 +33,16 @@ class RunLoop;
 - (id)initForNotification:(NSString*)name object:(id)sender;
 
 // Watch for an NSNotification on the shared workspace notification center for
-// the
-// given application.
+// the given application.
 - (id)initForWorkspaceNotification:(NSString*)name bundleId:(NSString*)bundleId;
 
-// Returns if the notification has been observed, or spins a RunLoop until it
-// is. Stops observing.
-- (void)wait;
+// Waits for |minimumCount| notifications to be observed and returns YES.
+// Returns NO on a timeout. This can be called multiple times.
+- (BOOL)waitForCount:(int)minimumCount;
+
+// Returns YES if any notification has been observed, or spins a RunLoop until
+// it either is observed, or a timeout occurs. Returns NO on a timeout.
+- (BOOL)wait;
 @end
 
 #endif  // UI_BASE_TEST_WINDOWED_NSNOTIFICATION_OBSERVER_H_
