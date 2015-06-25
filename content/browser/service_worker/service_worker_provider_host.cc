@@ -297,6 +297,19 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
   matching_registrations_.erase(key);
 }
 
+void ServiceWorkerProviderHost::AddAllMatchingRegistrations() {
+  DCHECK(context_);
+  const std::map<int64, ServiceWorkerRegistration*>& registrations =
+      context_->GetLiveRegistrations();
+  for (const auto& key_registration : registrations) {
+    ServiceWorkerRegistration* registration = key_registration.second;
+    if (!registration->is_uninstalled() &&
+        ServiceWorkerUtils::ScopeMatches(registration->pattern(),
+                                         document_url_))
+      AddMatchingRegistration(registration);
+  }
+}
+
 ServiceWorkerRegistration*
 ServiceWorkerProviderHost::MatchRegistration() const {
   ServiceWorkerRegistrationMap::const_reverse_iterator it =
