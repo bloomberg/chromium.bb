@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.child_accounts;
+package org.chromium.chrome.browser.childaccounts;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -17,7 +17,7 @@ import android.content.Context;
 import com.google.android.collect.Sets;
 
 import org.chromium.base.CommandLine;
-import org.chromium.chrome.browser.child_accounts.ChildAccountService.HasChildAccountCallback;
+import org.chromium.chrome.browser.childaccounts.ChildAccountService.HasChildAccountCallback;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.test.util.AccountHolder;
 import org.chromium.sync.test.util.MockAccountManager;

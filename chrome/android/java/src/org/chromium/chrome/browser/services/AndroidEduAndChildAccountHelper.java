@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.services;
 import android.app.Activity;
 
 import org.chromium.chrome.browser.ChromiumApplication;
-import org.chromium.chrome.browser.child_accounts.ChildAccountService;
+import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 
 /**
  * A helper for Android EDU and child account checks.
