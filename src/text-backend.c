@@ -1005,8 +1005,6 @@ text_backend_seat_created(struct text_backend *text_backend,
 	wl_signal_add(&seat->destroy_signal, &input_method->destroy_listener);
 
 	seat->input_method = input_method;
-
-	launch_input_method(text_backend);
 }
 
 static void
@@ -1070,6 +1068,8 @@ text_backend_init(struct weston_compositor *ec)
 		      &text_backend->seat_created_listener);
 
 	text_input_manager_create(ec);
+
+	launch_input_method(text_backend);
 
 	return text_backend;
 }
