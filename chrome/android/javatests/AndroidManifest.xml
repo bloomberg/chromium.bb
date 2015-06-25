@@ -68,7 +68,7 @@
         </receiver>
     </application>
 
-    <instrumentation android:name="org.chromium.chrome.test.ChromeStagingInstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.chrome.test.ChromeInstrumentationTestRunner"
         android:targetPackage="{{manifest_package}}"
         android:label="Tests for {{manifest_package}}"/>
 </manifest>

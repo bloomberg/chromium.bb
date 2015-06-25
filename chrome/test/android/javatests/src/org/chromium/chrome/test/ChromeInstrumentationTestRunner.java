@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
+import junit.framework.TestCase;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -25,10 +27,15 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpParams;
 
 import org.chromium.base.test.BaseInstrumentationTestRunner;
+import org.chromium.base.test.BaseInstrumentationTestRunner.SkipCheck;
+import org.chromium.base.test.BaseInstrumentationTestRunner.SkippingTestResult;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.net.test.BaseHttpTestServer;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.Collections;
 import java.util.HashMap;
@@ -208,6 +215,43 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
         }
     }
 
+    @Override
+    protected void addSkipChecks(SkippingTestResult result) {
+        super.addSkipChecks(result);
+        result.addSkipCheck(new DisableInTabbedModeSkipCheck());
+    }
 
+    /**
+     * Checks for tests that should only run in document mode.
+     */
+    private class DisableInTabbedModeSkipCheck implements SkipCheck {
 
+        /**
+         * If the test is running in tabbed mode, checks for
+         * {@link org.chromium.chrome.test.util.DisableInTabbedMode}.
+         *
+         * @param testCase The test to check.
+         * @return Whether the test is running in tabbed mode and has been marked as disabled in
+         *      tabbed mode.
+         */
+        @Override
+        public boolean shouldSkip(TestCase testCase) {
+            Class<?> testClass = testCase.getClass();
+            try {
+                if (!FeatureUtilities.isDocumentMode(getContext())) {
+                    Method testMethod = testClass.getMethod(testCase.getName());
+                    if (testMethod.isAnnotationPresent(DisableInTabbedMode.class)
+                            || testClass.isAnnotationPresent(DisableInTabbedMode.class)) {
+                        Log.i(TAG, "Test " + testClass.getName() + "#" + testCase.getName()
+                                + " is disabled in non-document mode.");
+                        return true;
+                    }
+                }
+            } catch (NoSuchMethodException e) {
+                Log.e(TAG, "Couldn't find test method: " + e.toString());
+            }
+
+            return false;
+        }
+    }
 }
