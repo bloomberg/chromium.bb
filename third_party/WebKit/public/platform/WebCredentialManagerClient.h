@@ -28,9 +28,6 @@ public:
     virtual void dispatchSignedIn(const WebCredential&, NotificationCallbacks*) { }
     virtual void dispatchRequireUserMediation(NotificationCallbacks*) { }
     virtual void dispatchRequest(bool zeroClickOnly, const WebVector<WebURL>& federations, RequestCallbacks*) { }
-
-    // TODO(mkwst): Drop this once the Chromium side is updated.
-    virtual void dispatchSignedOut(NotificationCallbacks*) { }
 };
 
 } // namespace blink
