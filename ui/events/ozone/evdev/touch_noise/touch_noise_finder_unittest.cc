@@ -53,7 +53,7 @@ class TouchNoiseFinderTest : public testing::Test {
           size_t slot = touches[j].slot;
           if (touch_noise_finder_->SlotHasNoise(slot) != expect_noise) {
             LOG(ERROR) << base::StringPrintf(
-                "Incorrect filtering at %dms for slot %lu", entry.time_ms,
+                "Incorrect filtering at %dms for slot %zu", entry.time_ms,
                 slot);
             return false;
           }

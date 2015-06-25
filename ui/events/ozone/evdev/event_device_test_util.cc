@@ -27,7 +27,7 @@ std::string SerializeBitfield(unsigned long* bitmap, int max) {
 
   for (int i = EVDEV_BITS_TO_GROUPS(max) - 1; i >= 0; i--) {
     if (bitmap[i] || ret.size()) {
-      base::StringAppendF(&ret, "%" PRIx64, bitmap[i]);
+      base::StringAppendF(&ret, "%lx", bitmap[i]);
 
       if (i > 0)
         ret += " ";
