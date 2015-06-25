@@ -8,6 +8,10 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace net {
 
 namespace ct {
@@ -17,9 +21,8 @@ struct SignedTreeHead;
 // |json_signed_tree_head|.
 // Returns true and fills in |signed_tree_head| if all fields are present and
 // valid.Otherwise, returns false and does not modify |signed_tree_head|.
-NET_EXPORT bool FillSignedTreeHead(
-    const base::StringPiece& json_signed_tree_head,
-    SignedTreeHead* signed_tree_head);
+NET_EXPORT bool FillSignedTreeHead(const base::Value& json_signed_tree_head,
+                                   SignedTreeHead* signed_tree_head);
 
 }  // namespace ct
 

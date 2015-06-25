@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/signed_tree_head.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +18,13 @@
 namespace net {
 
 namespace ct {
+
+namespace {
+scoped_ptr<base::Value> ParseJson(const std::string& json) {
+  base::JSONReader json_reader;
+  return json_reader.Read(json).Pass();
+}
+}
 
 std::string CreateSignedTreeHeadJsonString(std::string sha256_root_hash,
                                            std::string tree_head_signature) {
@@ -41,10 +50,10 @@ const char kTreeHeadSignature[] =
     "mpinCjAIhAKDXdXMtqbvQ42r9dBIwV5RM/KpEzNQdIhXHesd9HPv3";
 
 TEST(CTLogResponseParserTest, ParsesValidJsonSTH) {
-  std::string sample_sth =
-      CreateSignedTreeHeadJsonString(kSHA256RootHash, kTreeHeadSignature);
+  scoped_ptr<base::Value> sample_sth = ParseJson(
+      CreateSignedTreeHeadJsonString(kSHA256RootHash, kTreeHeadSignature));
   SignedTreeHead tree_head;
-  EXPECT_TRUE(FillSignedTreeHead(sample_sth, &tree_head));
+  EXPECT_TRUE(FillSignedTreeHead(*sample_sth.get(), &tree_head));
 
   base::Time expected_timestamp =
       base::Time::UnixEpoch() +
@@ -78,27 +87,29 @@ TEST(CTLogResponseParserTest, ParsesValidJsonSTH) {
 }
 
 TEST(CTLogResponseParserTest, FailsToParseMissingFields) {
-  std::string missing_signature_sth =
-      CreateSignedTreeHeadJsonString(kSHA256RootHash, "");
+  scoped_ptr<base::Value> missing_signature_sth =
+      ParseJson(CreateSignedTreeHeadJsonString(kSHA256RootHash, ""));
 
   SignedTreeHead tree_head;
-  ASSERT_FALSE(FillSignedTreeHead(missing_signature_sth, &tree_head));
+  ASSERT_FALSE(FillSignedTreeHead(*missing_signature_sth.get(), &tree_head));
 
-  std::string missing_root_hash_sth =
-      CreateSignedTreeHeadJsonString("", kTreeHeadSignature);
-  ASSERT_FALSE(FillSignedTreeHead(missing_root_hash_sth, &tree_head));
+  scoped_ptr<base::Value> missing_root_hash_sth =
+      ParseJson(CreateSignedTreeHeadJsonString("", kTreeHeadSignature));
+  ASSERT_FALSE(FillSignedTreeHead(*missing_root_hash_sth.get(), &tree_head));
 }
 
 TEST(CTLogResponseParserTest, FailsToParseIncorrectLengthRootHash) {
   SignedTreeHead tree_head;
 
-  std::string too_long_hash = CreateSignedTreeHeadJsonString(
-      kSHA256RootHash, "/WHFMgXtI/umKKuACJIN0Bb73TcILm9WkeU6qszvoArK\n");
-  ASSERT_FALSE(FillSignedTreeHead(too_long_hash, &tree_head));
+  scoped_ptr<base::Value> too_long_hash =
+      ParseJson(CreateSignedTreeHeadJsonString(
+          kSHA256RootHash, "/WHFMgXtI/umKKuACJIN0Bb73TcILm9WkeU6qszvoArK\n"));
+  ASSERT_FALSE(FillSignedTreeHead(*too_long_hash.get(), &tree_head));
 
-  std::string too_short_hash = CreateSignedTreeHeadJsonString(
-      kSHA256RootHash, "/WHFMgXtI/umKKuACJIN0Bb73TcILm9WkeU6qszvoA==\n");
-  ASSERT_FALSE(FillSignedTreeHead(too_short_hash, &tree_head));
+  scoped_ptr<base::Value> too_short_hash =
+      ParseJson(CreateSignedTreeHeadJsonString(
+          kSHA256RootHash, "/WHFMgXtI/umKKuACJIN0Bb73TcILm9WkeU6qszvoA==\n"));
+  ASSERT_FALSE(FillSignedTreeHead(*too_short_hash.get(), &tree_head));
 }
 
 }  // namespace ct

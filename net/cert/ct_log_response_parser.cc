@@ -5,7 +5,6 @@
 #include "net/cert/ct_log_response_parser.h"
 
 #include "base/base64.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
@@ -104,18 +103,11 @@ bool IsJsonSTHStructurallyValid(const JsonSignedTreeHead& sth) {
 
 }  // namespace
 
-bool FillSignedTreeHead(const base::StringPiece& json_signed_tree_head,
+bool FillSignedTreeHead(const base::Value& json_signed_tree_head,
                         SignedTreeHead* signed_tree_head) {
-  base::JSONReader json_reader;
-  scoped_ptr<base::Value> json(json_reader.Read(json_signed_tree_head));
-  if (json.get() == NULL) {
-    DVLOG(1) << "Empty Signed Tree Head JSON.";
-    return false;
-  }
-
   JsonSignedTreeHead parsed_sth;
   base::JSONValueConverter<JsonSignedTreeHead> converter;
-  if (!converter.Convert(*json.get(), &parsed_sth)) {
+  if (!converter.Convert(json_signed_tree_head, &parsed_sth)) {
     DVLOG(1) << "Invalid Signed Tree Head JSON.";
     return false;
   }
