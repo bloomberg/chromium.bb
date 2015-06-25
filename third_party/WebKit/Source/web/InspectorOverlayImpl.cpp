@@ -109,6 +109,7 @@ public:
     void suspendUpdates() override { }
     void resumeUpdates() override { }
     void clear() override { }
+    void setLayoutEditor(PassOwnPtrWillBeRawPtr<LayoutEditor>) override { }
 };
 
 DEFINE_TRACE(InspectorOverlayStub)
@@ -135,7 +136,7 @@ InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     , m_suspendCount(0)
     , m_updating(false)
 {
-    m_overlayHost->setListener(this);
+    m_overlayHost->setDebuggerListener(this);
 }
 
 InspectorOverlayImpl::~InspectorOverlayImpl()
@@ -177,8 +178,9 @@ void InspectorOverlayImpl::invalidate()
 
 bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
+    bool handled = false;
     if (isEmpty())
-        return false;
+        return handled;
 
     if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
         // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
@@ -189,11 +191,11 @@ bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
         // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
         PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebMouseEvent&>(inputEvent));
         if (mouseEvent.type() == PlatformEvent::MouseMoved)
-            overlayMainFrame()->eventHandler().handleMouseMoveEvent(mouseEvent);
+            handled = overlayMainFrame()->eventHandler().handleMouseMoveEvent(mouseEvent);
         if (mouseEvent.type() == PlatformEvent::MousePressed)
-            overlayMainFrame()->eventHandler().handleMousePressEvent(mouseEvent);
+            handled = overlayMainFrame()->eventHandler().handleMousePressEvent(mouseEvent);
         if (mouseEvent.type() == PlatformEvent::MouseReleased)
-            overlayMainFrame()->eventHandler().handleMouseReleaseEvent(mouseEvent);
+            handled = overlayMainFrame()->eventHandler().handleMouseReleaseEvent(mouseEvent);
     }
     if (WebInputEvent::isTouchEventType(inputEvent.type)) {
         PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebTouchEvent&>(inputEvent));
@@ -204,8 +206,7 @@ bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
         overlayMainFrame()->eventHandler().keyEvent(keyboardEvent);
     }
 
-    // Overlay should not consume events.
-    return false;
+    return handled;
 }
 
 void InspectorOverlayImpl::setPausedInDebuggerMessage(const String* message)
@@ -222,10 +223,11 @@ void InspectorOverlayImpl::setInspectModeEnabled(bool enabled)
 
 void InspectorOverlayImpl::hideHighlight()
 {
+    if (m_layoutEditor)
+        m_layoutEditor->setNode(nullptr);
     m_highlightNode.clear();
     m_eventTargetNode.clear();
     m_highlightQuad.clear();
-    m_layoutEditor.clear();
     update();
 }
 
@@ -233,8 +235,8 @@ void InspectorOverlayImpl::highlightNode(Node* node, Node* eventTarget, const In
 {
     m_nodeHighlightConfig = highlightConfig;
     m_highlightNode = node;
-    if (highlightConfig.showLayoutEditor)
-        m_layoutEditor = LayoutEditor::create(node);
+    if (m_layoutEditor && highlightConfig.showLayoutEditor)
+        m_layoutEditor->setNode(node);
     m_eventTargetNode = eventTarget;
     m_omitTooltip = omitTooltip;
     update();
@@ -483,5 +485,12 @@ void InspectorOverlayImpl::resumeUpdates()
 {
     --m_suspendCount;
 }
+
+void InspectorOverlayImpl::setLayoutEditor(PassOwnPtrWillBeRawPtr<LayoutEditor> layoutEditor)
+{
+    m_layoutEditor = layoutEditor;
+    m_overlayHost->setLayoutEditorListener(m_layoutEditor.get());
+}
+
 
 } // namespace blink

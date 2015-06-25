@@ -33,7 +33,8 @@
 namespace blink {
 
 InspectorOverlayHost::InspectorOverlayHost()
-    : m_listener(nullptr)
+    : m_debuggerListener(nullptr)
+    , m_layoutEditorListener(nullptr)
 {
 }
 
@@ -43,19 +44,38 @@ InspectorOverlayHost::~InspectorOverlayHost()
 
 void InspectorOverlayHost::resume()
 {
-    if (m_listener)
-        m_listener->overlayResumed();
+    if (m_debuggerListener)
+        m_debuggerListener->overlayResumed();
 }
 
 void InspectorOverlayHost::stepOver()
 {
-    if (m_listener)
-        m_listener->overlaySteppedOver();
+    if (m_debuggerListener)
+        m_debuggerListener->overlaySteppedOver();
+}
+
+void InspectorOverlayHost::startPropertyChange(const String& anchorName)
+{
+    if (m_layoutEditorListener)
+        m_layoutEditorListener->overlayStartedPropertyChange(anchorName);
+}
+
+void InspectorOverlayHost::changeProperty(float delta)
+{
+    if (m_layoutEditorListener)
+        m_layoutEditorListener->overlayPropertyChanged(delta);
+}
+
+void InspectorOverlayHost::endPropertyChange()
+{
+    if (m_layoutEditorListener)
+        m_layoutEditorListener->overlayEndedPropertyChange();
 }
 
 DEFINE_TRACE(InspectorOverlayHost)
 {
-    visitor->trace(m_listener);
+    visitor->trace(m_debuggerListener);
+    visitor->trace(m_layoutEditorListener);
 }
 
 } // namespace blink

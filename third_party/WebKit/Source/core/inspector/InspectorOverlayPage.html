@@ -657,7 +657,51 @@ function createAnchor(anchorInfo)
     anchorElement.className = "editor-anchor";
     anchorElement.style.left = anchorInfo.x - handleWidth + "px";
     anchorElement.style.top = anchorInfo.y - handleWidth + "px";
+    anchorElement.addEventListener("mousedown", onAnchorMouseDown.bind(null, anchorInfo));
     return anchorElement;
+}
+
+function calculateDelta(deltaVector, moveDelta)
+{
+    return (deltaVector.x * moveDelta.x + deltaVector.y * moveDelta.y) / Math.sqrt(deltaVector.x * deltaVector.x + deltaVector.y * deltaVector.y);
+}
+
+function onAnchorMouseDown(anchorInfo, event)
+{
+    // Only drag upon left button. Right will likely cause a context menu. So will ctrl-click on mac.
+    if (event.button || (window.platform == "mac" && event.ctrlKey))
+        return;
+
+    event.preventDefault();
+    window.boundDragMove = onDragMove.bind(null, new Point(event.screenX, event.screenY), anchorInfo.deltaVector);
+    document.addEventListener("mousemove", boundDragMove);
+    document.addEventListener("mouseup", onDragEnd);
+    InspectorOverlayHost.startPropertyChange(anchorInfo.propertyName);
+}
+
+function onDragMove(mouseDownPoint, deltaVector, event)
+{
+    if (event.buttons !== 1) {
+        onDragEnd(event);
+        return;
+    }
+    event.preventDefault();
+    InspectorOverlayHost.changeProperty(calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)));
+}
+
+function onDragEnd(event)
+{
+    document.removeEventListener("mousemove", boundDragMove);
+    delete window.boundDragMove;
+    document.removeEventListener("mouseup", onDragEnd);
+    event.preventDefault();
+    InspectorOverlayHost.endPropertyChange();
+}
+
+function Point(x, y)
+{
+    this.x = x;
+    this.y = y;
 }
 
 window.addEventListener("DOMContentLoaded", onLoaded);

@@ -5,13 +5,14 @@
 #include "config.h"
 #include "core/inspector/LayoutEditor.h"
 
-#include "core/dom/Node.h"
+#include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/frame/FrameView.h"
+#include "core/inspector/InspectorCSSAgent.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/JSONValues.h"
-
 
 namespace blink {
 
@@ -50,13 +51,26 @@ FloatPoint orthogonalVector(FloatPoint from, FloatPoint to, FloatPoint defaultVe
 
 } // namespace
 
-LayoutEditor::LayoutEditor(Node* node)
-    : m_node(node)
+LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent)
+    : m_node(nullptr)
+    , m_cssAgent(cssAgent)
+    , m_changingProperty(CSSPropertyInvalid)
+    , m_propertyInitialValue(0)
 {
+}
+
+void LayoutEditor::setNode(Node* node)
+{
+    m_node = node;
+    m_changingProperty = CSSPropertyInvalid;
+    m_propertyInitialValue = 0;
 }
 
 PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
 {
+    if (!m_node)
+        return nullptr;
+
     LayoutObject* layoutObject = m_node->layoutObject();
 
     if (!layoutObject)
@@ -105,7 +119,34 @@ PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
     object->setArray("anchors", anchors.release());
 
     return object.release();
+}
 
+void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
+{
+    m_changingProperty = cssPropertyID(anchorName);
+    if (!m_node || !m_changingProperty)
+        return;
+
+    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(m_node, true);
+    RefPtrWillBeRawPtr<CSSValue> cssValue = computedStyleInfo->getPropertyCSSValue(m_changingProperty);
+    if (!cssValue->isPrimitiveValue()) {
+        m_changingProperty = CSSPropertyInvalid;
+        return;
+    }
+
+    m_propertyInitialValue = toCSSPrimitiveValue(cssValue.get())->getFloatValue();
+}
+
+void LayoutEditor::overlayPropertyChanged(float cssDelta)
+{
+    if (m_changingProperty)
+        m_cssAgent->setCSSPropertyValue(m_node.get(), m_changingProperty, cssDelta + m_propertyInitialValue);
+}
+
+void LayoutEditor::overlayEndedPropertyChange()
+{
+    m_changingProperty = CSSPropertyInvalid;
+    m_propertyInitialValue = 0;
 }
 
 } // namespace blink

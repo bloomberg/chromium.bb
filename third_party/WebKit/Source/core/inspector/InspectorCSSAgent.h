@@ -113,6 +113,7 @@ public:
     void disable(ErrorString*) override;
     void reset();
     void mediaQueryResultChanged();
+    void setCSSPropertyValue(Node*, CSSPropertyID, float);
 
     void activeStyleSheetsUpdated(Document*);
     void documentDetached(Document*);

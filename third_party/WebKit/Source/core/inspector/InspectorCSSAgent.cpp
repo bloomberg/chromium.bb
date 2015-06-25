@@ -1514,6 +1514,16 @@ void InspectorCSSAgent::resetPseudoStates()
         document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
+void InspectorCSSAgent::setCSSPropertyValue(Node* node, CSSPropertyID propertyId, float newValue)
+{
+    Element* element = toElement(node);
+    if (element) {
+        TrackExceptionState exceptionState;
+        String newText = getPropertyNameString(propertyId) +  " : " + String::number(newValue) + "px";
+        element->style()->setCSSText(newText, exceptionState);
+    }
+}
+
 DEFINE_TRACE(InspectorCSSAgent)
 {
     visitor->trace(m_domAgent);

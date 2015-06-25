@@ -65,6 +65,7 @@
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/LayoutEditor.h"
 #include "core/inspector/PageConsoleAgent.h"
 #include "core/inspector/PageDebuggerAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
@@ -490,6 +491,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId)
 
     initializeDeferredAgents();
     m_resourceAgent->setHostId(hostId);
+    m_overlay->setLayoutEditor(LayoutEditor::create(m_cssAgent.get()));
 
     m_inspectorFrontend = adoptPtr(new InspectorFrontend(this));
     // We can reconnect to existing front-end -> unmute state.
@@ -533,6 +535,7 @@ void WebDevToolsAgentImpl::detach()
 
     // Release overlay resources.
     m_overlay->clear();
+    m_overlay->setLayoutEditor(nullptr);
     InspectorInstrumentation::frontendDeleted();
     InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 

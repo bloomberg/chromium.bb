@@ -34,4 +34,7 @@
 ] interface InspectorOverlayHost {
     void resume();
     void stepOver();
+    void startPropertyChange(DOMString propertyName);
+    void changeProperty(float cssDelta);
+    void endPropertyChange();
 };

@@ -5,32 +5,47 @@
 #ifndef LayoutEditor_h
 #define LayoutEditor_h
 
+#include "core/CSSPropertyNames.h"
+#include "core/dom/Node.h"
+#include "core/inspector/InspectorOverlayHost.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class JSONObject;
-class Node;
+class InspectorCSSAgent;
 
-class LayoutEditor final : public NoBaseWillBeGarbageCollected<LayoutEditor> {
+class LayoutEditor final: public NoBaseWillBeGarbageCollected<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
 public:
-    static PassOwnPtrWillBeRawPtr<LayoutEditor> create(Node* node)
+    static PassOwnPtrWillBeRawPtr<LayoutEditor> create(InspectorCSSAgent* cssAgent)
     {
-        return adoptPtrWillBeNoop(new LayoutEditor(node));
+        return adoptPtrWillBeNoop(new LayoutEditor(cssAgent));
     }
+
+    void setNode(Node*);
     PassRefPtr<JSONObject> buildJSONInfo() const;
 
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_node);
+        visitor->trace(m_cssAgent);
     }
 
 private:
-    explicit LayoutEditor(Node*);
+    explicit LayoutEditor(InspectorCSSAgent*);
+
+    // InspectorOverlayHost::LayoutEditorListener implementation.
+    void overlayStartedPropertyChange(const String&) override;
+    void overlayPropertyChanged(float) override;
+    void overlayEndedPropertyChange() override;
 
     RefPtrWillBeMember<Node> m_node;
+    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
+    CSSPropertyID m_changingProperty;
+    float m_propertyInitialValue;
 };
 
 } // namespace blink
