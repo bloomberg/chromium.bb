@@ -383,6 +383,19 @@ void LayoutView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidatio
     LayoutBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
+static void setShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(LayoutObject* object)
+{
+    object->setShouldDoFullPaintInvalidation();
+    for (LayoutObject* child = object->slowFirstChild(); child; child = child->nextSibling()) {
+        setShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(child);
+    }
+}
+
+void LayoutView::setShouldDoFullPaintInvalidationForViewAndAllDescendants()
+{
+    setShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(this);
+}
+
 void LayoutView::invalidatePaintForRectangle(const LayoutRect& paintInvalidationRect, PaintInvalidationReason invalidationReason) const
 {
     ASSERT(!paintInvalidationRect.isEmpty());

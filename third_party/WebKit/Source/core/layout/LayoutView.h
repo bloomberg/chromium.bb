@@ -183,6 +183,10 @@ public:
 
     virtual LayoutRect visualOverflowRect() const override;
 
+    // Invalidates paint for the entire view, including composited descendants, but not including child frames.
+    // It is very likely you do not want to call this method.
+    void setShouldDoFullPaintInvalidationForViewAndAllDescendants();
+
 private:
     virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
 
