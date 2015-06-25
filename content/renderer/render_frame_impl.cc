@@ -179,7 +179,7 @@
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #endif
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if defined(ENABLE_MOJO_MEDIA)
 #include "media/mojo/services/mojo_cdm_factory.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
@@ -1982,7 +1982,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       base::Bind(&GetSharedMainThreadContext3D), GetMediaPermission(),
       initial_cdm);
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if defined(ENABLE_MOJO_MEDIA)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
       new media::MojoRendererFactory(GetMediaServiceProvider()));
 #else
@@ -1995,7 +1995,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         media_log, render_thread->GetGpuFactories(),
         *render_thread->GetAudioHardwareConfig()));
   }
-#endif  // defined(ENABLE_MEDIA_MOJO_RENDERER)
+#endif  // defined(ENABLE_MOJO_MEDIA)
 
   return new media::WebMediaPlayerImpl(
       frame, client, weak_factory_.GetWeakPtr(), media_renderer_factory.Pass(),
@@ -4943,7 +4943,7 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
   return media_permission_dispatcher_;
 }
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if defined(ENABLE_MOJO_MEDIA)
 mojo::ServiceProvider* RenderFrameImpl::GetMediaServiceProvider() {
   if (!media_service_provider_) {
     mojo::InterfacePtr<mojo::Shell> shell_ptr;

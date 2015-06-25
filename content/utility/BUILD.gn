@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//content/utility/utility.gni")
+import("//media/media_options.gni")
 
 source_set("utility") {
   # Only the public target should depend on this. All other targets (even
@@ -29,4 +30,8 @@ source_set("utility") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
+
+  if (enable_mojo_media == "utility") {
+    deps += [ "//media/mojo/services:application" ]
+  }
 }

@@ -12,6 +12,10 @@
 #include "mojo/shell/static_application_loader.h"
 #include "url/gurl.h"
 
+#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
+#include "media/mojo/services/mojo_media_application.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -30,6 +34,13 @@ UtilityProcessControlImpl::UtilityProcessControlImpl() {
     url_to_loader_map_[entry.first] = new mojo::shell::StaticApplicationLoader(
         entry.second, base::Bind(&QuitProcess));
   }
+
+#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
+  url_to_loader_map_[media::MojoMediaApplication::AppUrl()] =
+      new mojo::shell::StaticApplicationLoader(
+          base::Bind(&media::MojoMediaApplication::CreateApp),
+          base::Bind(&QuitProcess));
+#endif
 }
 
 UtilityProcessControlImpl::~UtilityProcessControlImpl() {

@@ -193,7 +193,7 @@ source_set("renderer") {
     ]
   }
 
-  if (enable_media_mojo_renderer) {
+  if (enable_mojo_media != "none") {
     deps += [ "//media/mojo/services:proxy" ]
   }
 

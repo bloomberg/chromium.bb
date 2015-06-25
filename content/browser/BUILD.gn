@@ -477,7 +477,7 @@ source_set("browser") {
     deps += [ "//third_party/boringssl" ]
   }
 
-  if (enable_media_mojo_renderer) {
+  if (enable_mojo_media == "browser") {
     deps += [ "//media/mojo/services:application" ]
   }
 

@@ -45,8 +45,12 @@ declare_args() {
   # default since it's not available on the normal Web Platform and costs money.
   enable_mpeg2ts_stream_parser = false
 
-  # Experiment to enable mojo based media renderer: http://crbug.com/431776
-  enable_media_mojo_renderer = false
+  # Experiment to enable mojo media application: http://crbug.com/431776
+  # Valid options are:
+  # - "none": Do not use mojo media application.
+  # - "browser": Use mojo media application hosted in the browser process.
+  # - "utility": Use mojo media application hosted in the utility process.
+  enable_mojo_media = "none"
 
   # TODO(GYP): This should be a platform define.
   is_openbsd = false

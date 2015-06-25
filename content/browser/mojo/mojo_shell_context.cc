@@ -24,7 +24,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "media/mojo/services/mojo_media_application.h"
 #endif
 
@@ -142,7 +142,7 @@ MojoShellContext::MojoShellContext()
         entry.first);
   }
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   application_manager_->SetLoaderForURL(
       scoped_ptr<mojo::shell::ApplicationLoader>(
           new mojo::shell::StaticApplicationLoader(

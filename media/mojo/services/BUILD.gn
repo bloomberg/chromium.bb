@@ -13,9 +13,18 @@ import("//mojo/public/mojo_application.gni")
 # - unittests: Unit tests for a particular class/file.
 # - test: Tests for a particular app, e.g. media.
 
-config("enable_media_mojo_renderer_config") {
-  if (enable_media_mojo_renderer) {
-    defines = [ "ENABLE_MEDIA_MOJO_RENDERER" ]
+config("enable_mojo_media_config") {
+  assert(enable_mojo_media == "none" || enable_mojo_media == "browser" ||
+         enable_mojo_media == "utility")
+
+  if (enable_mojo_media != "none") {
+    defines = [ "ENABLE_MOJO_MEDIA" ]
+  }
+
+  if (enable_mojo_media == "browser") {
+    defines += [ "ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS" ]
+  } else if (enable_mojo_media == "utility") {
+    defines += [ "ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS" ]
   }
 }
 
@@ -53,7 +62,7 @@ source_set("proxy") {
     "mojo_type_trait.h",
   ]
 
-  public_configs = [ ":enable_media_mojo_renderer_config" ]
+  public_configs = [ ":enable_mojo_media_config" ]
 
   deps = [
     ":converters",
@@ -121,7 +130,7 @@ source_set("renderer_service") {
     "renderer_config_default.cc",
   ]
 
-  public_configs = [ ":enable_media_mojo_renderer_config" ]
+  public_configs = [ ":enable_mojo_media_config" ]
 
   deps = [
     ":renderer_service_generic",
@@ -137,7 +146,7 @@ source_set("application") {
     "mojo_media_application.h",
   ]
 
-  public_configs = [ ":enable_media_mojo_renderer_config" ]
+  public_configs = [ ":enable_mojo_media_config" ]
 
   deps = [
     ":cdm_service",

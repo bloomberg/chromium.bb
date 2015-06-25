@@ -805,7 +805,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   media::MediaPermission* GetMediaPermission();
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if defined(ENABLE_MOJO_MEDIA)
   mojo::ServiceProvider* GetMediaServiceProvider();
 
   // Called when a connection error happened on |media_service_provider_|.
@@ -919,7 +919,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // The media permission dispatcher attached to this frame, lazily initialized.
   MediaPermissionDispatcher* media_permission_dispatcher_;
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if defined(ENABLE_MOJO_MEDIA)
   // The media service provider attached to this frame, lazily initialized.
   mojo::ServiceProviderPtr media_service_provider_;
 #endif
