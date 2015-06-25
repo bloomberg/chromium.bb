@@ -22,8 +22,6 @@
     'chrome_public_app_native_sources': [
       '<(chrome_native_sources_dir)/chrome_entry_point.cc',
       '<(chrome_native_sources_dir)/chrome_main_delegate_staging_android_initializer.cc',
-      '<(chrome_native_sources_dir)/chrome_staging_jni_onload.cc',
-      '<(chrome_native_sources_dir)/chrome_staging_jni_onload.h',
     ],
   },
   'targets': [

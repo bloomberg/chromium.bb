@@ -12,16 +12,25 @@
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
+#include "chrome/browser/android/bookmark/edit_bookmark_helper.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/compositor/compositor_view.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
+#include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
+#include "chrome/browser/android/compositor/scene_layer/reader_mode_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/static_tab_scene_layer.h"
+#include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
+#include "chrome/browser/android/compositor/scene_layer/tab_strip_scene_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
+#include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
+#include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
 #include "chrome/browser/android/dev_tools_server.h"
+#include "chrome/browser/android/document/document_web_contents_delegate.h"
 #include "chrome/browser/android/dom_distiller/external_feedback_reporter_android.h"
 #include "chrome/browser/android/download/chrome_download_delegate.h"
 #include "chrome/browser/android/favicon_helper.h"
@@ -54,10 +63,12 @@
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
+#include "chrome/browser/android/rlz/revenue_stats.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab/background_content_view_helper.h"
+#include "chrome/browser/android/tab/thumbnail_tab_helper_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/android/url_utilities.h"
@@ -182,23 +193,29 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ChromeWebContentsDelegateAndroid",
      RegisterChromeWebContentsDelegateAndroid},
     {"ChromiumApplication", ChromiumApplication::RegisterBindings},
+    {"CompositorView", RegisterCompositorView},
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
     {"ConnectionInfoPopupAndroid",
      ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
     {"ConnectionSecurity", RegisterConnectionSecurityAndroid},
     {"ConnectivityChecker", RegisterConnectivityChecker},
     {"ContextMenuHelper", RegisterContextMenuHelper},
+    {"ContextualSearchManager", RegisterContextualSearchManager},
+    {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},
+    {"ContextualSearchTabHelper", RegisterContextualSearchTabHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},
     {"Credential", RegisterCredential},
     {"CreditCardScanner", autofill::CreditCardScannerViewAndroid::Register},
     {"DataReductionProxyInfoBarDelegate", DataReductionProxyInfoBar::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},
     {"DevToolsServer", RegisterDevToolsServer},
+    {"DocumentWebContentsDelegate", DocumentWebContentsDelegate::Register},
     {"DomDistillerServiceFactory",
      dom_distiller::android::DomDistillerServiceFactoryAndroid::Register},
     {"DomDistillerTabUtils", RegisterDomDistillerTabUtils},
     {"DownloadOverwriteInfoBarDelegate",
      RegisterDownloadOverwriteInfoBarDelegate},
+    {"EditBookmarkHelper", RegisterEditBookmarkHelper},
     {"EnhancedBookmarksBridge",
      enhanced_bookmarks::android::RegisterEnhancedBookmarksBridge},
     {"ExternalPrerenderRequestHandler",
@@ -253,10 +270,12 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ProfileAndroid", ProfileAndroid::RegisterProfileAndroid},
     {"ProfileDownloader", RegisterProfileDownloader},
     {"ProfileSyncService", ProfileSyncServiceAndroid::Register},
+    {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
     {"RecentlyClosedBridge", RecentlyClosedTabsBridge::Register},
     {"RecordCastAction", remote_media::RegisterRecordCastAction},
     {"RemoteMediaPlayerBridge",
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
+    {"RevenueStats", RegisterRevenueStats},
     {"SavePasswordInfoBar", SavePasswordInfoBar::Register},
     {"SceneLayer", chrome::android::RegisterSceneLayer},
     {"ServiceTabLauncher", service_tab_launcher::RegisterServiceTabLauncherJni},
@@ -268,9 +287,12 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"StaticTabSceneLayer", chrome::android::RegisterStaticTabSceneLayer},
     {"TabAndroid", TabAndroid::RegisterTabAndroid},
     {"TabContentManager", chrome::android::RegisterTabContentManager},
+    {"TabListSceneLayer", RegisterTabListSceneLayer},
     {"TabModelJniBridge", TabModelJniBridge::Register},
     {"TabState", RegisterTabState},
+    {"TabStripSceneLayer", RegisterTabStripSceneLayer},
     {"TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register},
+    {"ThumbnailTabHelperAndroid", RegisterThumbnailTabHelperAndroid},
     {"ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid},
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},

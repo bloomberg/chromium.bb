@@ -4,39 +4,11 @@
 
 #include "chrome/browser/android/staging_jni_registrar.h"
 
-#include "base/android/jni_android.h"
-#include "base/android/jni_registrar.h"
-#include "chrome/browser/android/bookmark/edit_bookmark_helper.h"
-#include "chrome/browser/android/compositor/compositor_view.h"
-#include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/reader_mode_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
-#include "chrome/browser/android/compositor/scene_layer/tab_strip_scene_layer.h"
-#include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
-#include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
-#include "chrome/browser/android/document/document_web_contents_delegate.h"
-#include "chrome/browser/android/rlz/revenue_stats.h"
-#include "chrome/browser/android/tab/thumbnail_tab_helper_android.h"
-
 namespace chrome {
 namespace android {
-static base::android::RegistrationMethod kRegistrationMethods[] = {
-    {"CompositorView", RegisterCompositorView},
-    {"ContextualSearchManager", RegisterContextualSearchManager},
-    {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},
-    {"ContextualSearchTabHelper", RegisterContextualSearchTabHelper},
-    {"DocumentWebContentsDelegate", DocumentWebContentsDelegate::Register},
-    {"EditBookmarkHelper", RegisterEditBookmarkHelper},
-    {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
-    {"RevenueStats", RegisterRevenueStats},
-    {"TabListSceneLayer", RegisterTabListSceneLayer},
-    {"TabStripSceneLayer", RegisterTabStripSceneLayer},
-    {"ThumbnailTabHelperAndroid", RegisterThumbnailTabHelperAndroid},
-};
 
+// TODO(pkotwicz): Delete once all references have been removed.
 bool RegisterStagingJNI(JNIEnv* env) {
-  return base::android::RegisterNativeMethods(env, kRegistrationMethods,
-                                              arraysize(kRegistrationMethods));
   return true;
 }
 

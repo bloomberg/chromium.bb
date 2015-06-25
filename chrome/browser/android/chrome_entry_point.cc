@@ -3,12 +3,25 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
-#include "chrome/browser/android/chrome_staging_jni_onload.h"
+#include "base/bind.h"
+#include "chrome/app/android/chrome_jni_onload.h"
+
+namespace {
+
+bool RegisterJNI(JNIEnv* env) {
+  return true;
+}
+
+bool Init() {
+  return true;
+}
+
+}  // namespace
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  if (!chrome::android::OnJNIOnLoadRegisterJNI(vm) ||
-      !chrome::android::OnJNIOnLoadInit()) {
+  if (!chrome::android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI)) ||
+      !chrome::android::OnJNIOnLoadInit(base::Bind(&Init))) {
     return -1;
   }
   return JNI_VERSION_1_4;
