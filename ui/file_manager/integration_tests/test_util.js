@@ -27,6 +27,37 @@ function wait(time) {
 }
 
 /**
+ * Verifies if there are no Javascript errors in any of the app windows.
+ * @param {function()} Completion callback.
+ */
+function checkIfNoErrorsOccuredOnApp(app, callback) {
+  var countPromise = remoteCallVideoPlayer.callRemoteTestUtil(
+      'getErrorCount', null, []);
+  countPromise.then(function(count) {
+    chrome.test.assertEq(0, count, 'The error count is not 0.');
+    callback();
+  });
+}
+
+/**
+ * Adds check of chrome.test to the end of the given promise.
+ * @param {Promise} promise Promise.
+ */
+function testPromiseAndApps(promise, apps) {
+  promise.then(function() {
+    return Promisea.all(
+        apps.map(function(app) {
+          return new Promise(checkIfNoErrorsOccuredOnApp.bind(null, app));
+        }));
+  }).then(chrome.test.callbackPass(function() {
+    // The callbacPass is necessary to avoid prematurely finishing tests.
+    // Don't put chrome.test.succeed() here to avoid doubled success log.
+  }), function(error) {
+    chrome.test.fail(error.stack || error);
+  });
+};
+
+/**
  * Interval milliseconds between checks of repeatUntil.
  * @type {number}
  * @const
