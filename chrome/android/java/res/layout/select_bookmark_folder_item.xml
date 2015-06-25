@@ -14,4 +14,4 @@
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:paddingStart="@dimen/select_bookmark_folder_item_left"
     android:textAppearance="?android:attr/textAppearanceMedium"
-    android:textColor="?android:attr/textColorPrimaryInverse" />
+    android:textColor="@color/default_text_color" />
