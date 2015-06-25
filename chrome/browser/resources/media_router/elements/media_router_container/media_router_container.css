@@ -19,18 +19,27 @@
   margin: 0;
 }
 
-#container-header {
-  background-color: rgb(214, 214, 214);
+#container-header.cast-mode {
+  /* TODO(kdresner): Update this when we get a real color. */
+  background-color: rgb(244, 67, 54);
 }
 
-.route {
-  color: rgb(119, 119, 119);
+#container-header.filter {
+  background-color: rgb(57, 73, 171);
+}
+
+#container-header.route-details {
+  display: none;
+}
+
+#container-header.sink-list {
+  background-color: rgb(33, 150, 243);
 }
 
 #header-text {
-  -webkit-padding-start: 20px;
+  -webkit-padding-start: 5px;
   flex-grow: 1;
-  font-size: 1.25em;
+  font-size: 1.4em;
   margin: 0;
 }
 
@@ -53,4 +62,8 @@
   margin: 0;
   max-height: 275px;
   overflow-y: scroll;
+}
+
+.route {
+  color: rgb(119, 119, 119);
 }

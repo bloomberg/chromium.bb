@@ -7,12 +7,13 @@
    * The possible states of media-router-container. Used to determine which
    * components of media-router-container to show.
    *
-   * @enum {number}
+   * @enum {string}
    */
   var MediaRouterContainerView = {
-    CAST_MODE_LIST: 0,
-    ROUTE_DETAILS: 1,
-    SINK_LIST: 2,
+    CAST_MODE_LIST: 'cast-mode-list',
+    FILTER: 'filter',
+    ROUTE_DETAILS: 'route-details',
+    SINK_LIST: 'sink-list',
   };
 
 // This Polymer element contains the entire media router interface. It handles
@@ -46,7 +47,7 @@ Polymer({
      * @private {!MediaRouterContainerView}
      */
     currentView_: {
-      type: Number,
+      type: String,
       value: MediaRouterContainerView.SINK_LIST,
     },
 
@@ -239,7 +240,7 @@ Polymer({
 
   /**
    * @param {?media_router.Route} route The current route.
-   * return {?media_router.Sink} The sink associated with |route|.
+   * @return {?media_router.Sink} The sink associated with |route|.
    * @private
    */
   computeSinkForCurrentRoute_: function(route) {
