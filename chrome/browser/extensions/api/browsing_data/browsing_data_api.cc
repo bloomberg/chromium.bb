@@ -239,7 +239,7 @@ bool BrowsingDataRemoverFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
   DCHECK(options);
 
-  origin_set_mask_ = ParseOriginSetMask(*options);
+  origin_type_mask_ = ParseOriginTypeMask(*options);
 
   // If |ms_since_epoch| isn't set, default it to 0.
   double ms_since_epoch;
@@ -310,10 +310,10 @@ void BrowsingDataRemoverFunction::StartRemoving() {
   BrowsingDataRemover* remover = BrowsingDataRemover::CreateForRange(
       GetProfile(), remove_since_, base::Time::Max());
   remover->AddObserver(this);
-  remover->Remove(removal_mask_, origin_set_mask_);
+  remover->Remove(removal_mask_, origin_type_mask_);
 }
 
-int BrowsingDataRemoverFunction::ParseOriginSetMask(
+int BrowsingDataRemoverFunction::ParseOriginTypeMask(
     const base::DictionaryValue& options) {
   // Parse the |options| dictionary to generate the origin set mask. Default to
   // UNPROTECTED_WEB if the developer doesn't specify anything.

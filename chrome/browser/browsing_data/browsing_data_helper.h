@@ -19,7 +19,7 @@ class GURL;
 
 class BrowsingDataHelper {
  public:
-  enum OriginSetMask {
+  enum OriginTypeMask {
     UNPROTECTED_WEB = 1 << 0,  // drive-by web.
     PROTECTED_WEB = 1 << 1,    // hosted applications.
     EXTENSION = 1 << 2,        // chrome-extension://*
@@ -40,7 +40,7 @@ class BrowsingDataHelper {
 
   // Returns true if the provided origin matches the provided mask.
   static bool DoesOriginMatchMask(const GURL& origin,
-                                  int origin_set_mask,
+                                  int origin_type_mask,
                                   storage::SpecialStoragePolicy* policy);
 
  private:

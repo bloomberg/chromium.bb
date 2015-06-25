@@ -40,24 +40,24 @@ bool BrowsingDataHelper::HasExtensionScheme(const GURL& origin) {
 // Static
 bool BrowsingDataHelper::DoesOriginMatchMask(
     const GURL& origin,
-    int origin_set_mask,
+    int origin_type_mask,
     storage::SpecialStoragePolicy* policy) {
   // Packaged apps and extensions match iff EXTENSION.
   if (BrowsingDataHelper::HasExtensionScheme(origin.GetOrigin()) &&
-      origin_set_mask & EXTENSION)
+      origin_type_mask & EXTENSION)
     return true;
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
   if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
       BrowsingDataHelper::HasWebScheme(origin.GetOrigin()) &&
-      origin_set_mask & UNPROTECTED_WEB)
+      origin_type_mask & UNPROTECTED_WEB)
     return true;
 
   // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
   if (policy &&
       policy->IsStorageProtected(origin.GetOrigin()) &&
       BrowsingDataHelper::HasWebScheme(origin.GetOrigin()) &&
-      origin_set_mask & PROTECTED_WEB)
+      origin_type_mask & PROTECTED_WEB)
     return true;
 
   return false;

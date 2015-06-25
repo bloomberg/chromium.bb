@@ -25,7 +25,7 @@ using extension_function_test_utils::RunFunctionAndReturnSingleResult;
 
 namespace {
 
-enum OriginSetMask {
+enum OriginTypeMask {
   UNPROTECTED_WEB = BrowsingDataHelper::UNPROTECTED_WEB,
   PROTECTED_WEB = BrowsingDataHelper::PROTECTED_WEB,
   EXTENSION = BrowsingDataHelper::EXTENSION
@@ -50,8 +50,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     return called_with_details_->removal_mask;
   }
 
-  int GetOriginSetMask() {
-    return called_with_details_->origin_set_mask;
+  int GetOriginTypeMask() {
+    return called_with_details_->origin_type_mask;
   }
 
  protected:
@@ -90,7 +90,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
         std::string("[{\"since\": 1},") + data_types + "]",
         browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
-    EXPECT_EQ(UNPROTECTED_WEB, GetOriginSetMask());
+    EXPECT_EQ(UNPROTECTED_WEB, GetOriginTypeMask());
   }
 
   void RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
@@ -100,7 +100,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
         std::string("{\"") + key + "\": true}", expected_mask);
   }
 
-  void RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  void RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       const std::string& protectedStr,
       int expected_mask) {
     scoped_refptr<BrowsingDataRemoveFunction> function =
@@ -110,7 +110,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
         function.get(),
         "[{\"originTypes\": " + protectedStr + "}, {\"cookies\": true}]",
         browser()));
-    EXPECT_EQ(expected_mask, GetOriginSetMask());
+    EXPECT_EQ(expected_mask, GetOriginTypeMask());
   }
 
   template<class ShortcutFunction>
@@ -123,7 +123,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
         std::string("[{\"since\": 1}]"),
         browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
-    EXPECT_EQ(UNPROTECTED_WEB, GetOriginSetMask());
+    EXPECT_EQ(UNPROTECTED_WEB, GetOriginTypeMask());
   }
 
   void SetSinceAndVerify(BrowsingDataRemover::TimePeriod since_pref) {
@@ -158,7 +158,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
   }
 
   void SetPrefsAndVerifySettings(int data_type_flags,
-                                 int expected_origin_set_mask,
+                                 int expected_origin_type_mask,
                                  int expected_removal_mask) {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kDeleteCache,
@@ -192,12 +192,12 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
     EXPECT_TRUE(result->GetDictionary("options", &options));
     base::DictionaryValue* origin_types;
     EXPECT_TRUE(options->GetDictionary("originTypes", &origin_types));
-    int origin_set_mask = GetAsMask(origin_types, "unprotectedWeb",
+    int origin_type_mask = GetAsMask(origin_types, "unprotectedWeb",
                                     UNPROTECTED_WEB) |
                           GetAsMask(origin_types, "protectedWeb",
                                     PROTECTED_WEB) |
                           GetAsMask(origin_types, "extension", EXTENSION);
-    EXPECT_EQ(expected_origin_set_mask, origin_set_mask);
+    EXPECT_EQ(expected_origin_type_mask, origin_type_mask);
 
     base::DictionaryValue* data_to_remove;
     EXPECT_TRUE(result->GetDictionary("dataToRemove", &data_to_remove));
@@ -323,27 +323,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataOriginSetMask) {
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask("{}", 0);
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataOriginTypeMask) {
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask("{}", 0);
 
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       "{\"unprotectedWeb\": true}", UNPROTECTED_WEB);
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       "{\"protectedWeb\": true}", PROTECTED_WEB);
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       "{\"extension\": true}", EXTENSION);
 
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       "{\"unprotectedWeb\": true, \"protectedWeb\": true}",
       UNPROTECTED_WEB | PROTECTED_WEB);
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       "{\"unprotectedWeb\": true, \"extension\": true}",
       UNPROTECTED_WEB | EXTENSION);
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       "{\"protectedWeb\": true, \"extension\": true}",
       PROTECTED_WEB | EXTENSION);
 
-  RunBrowsingDataRemoveFunctionAndCompareOriginSetMask(
+  RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       ("{\"unprotectedWeb\": true, \"protectedWeb\": true, "
        "\"extension\": true}"),
       UNPROTECTED_WEB | PROTECTED_WEB | EXTENSION);
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
         std::string("[{\"since\": 1},") + json + "]",
         browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
-    EXPECT_EQ(UNPROTECTED_WEB, GetOriginSetMask());
+    EXPECT_EQ(UNPROTECTED_WEB, GetOriginTypeMask());
   }
 }
 

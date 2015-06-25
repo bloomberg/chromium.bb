@@ -120,33 +120,33 @@ BrowsingDataRemover::CompletionInhibitor*
 // Helper to create callback for BrowsingDataRemover::DoesOriginMatchMask.
 // Static.
 bool DoesOriginMatchMask(
-    int origin_set_mask,
+    int origin_type_mask,
     const GURL& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
   return BrowsingDataHelper::DoesOriginMatchMask(
-      origin, origin_set_mask, special_storage_policy);
+      origin, origin_type_mask, special_storage_policy);
 }
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails()
     : removal_begin(base::Time()),
       removal_mask(-1),
-      origin_set_mask(-1) {
+      origin_type_mask(-1) {
 }
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails(
     const BrowsingDataRemover::NotificationDetails& details)
     : removal_begin(details.removal_begin),
       removal_mask(details.removal_mask),
-      origin_set_mask(details.origin_set_mask) {
+      origin_type_mask(details.origin_type_mask) {
 }
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails(
     base::Time removal_begin,
     int removal_mask,
-    int origin_set_mask)
+    int origin_type_mask)
     : removal_begin(removal_begin),
       removal_mask(removal_mask),
-      origin_set_mask(origin_set_mask) {
+      origin_type_mask(origin_type_mask) {
 }
 
 BrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
@@ -224,7 +224,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
 #endif
       remove_mask_(0),
       remove_origin_(GURL()),
-      origin_set_mask_(0),
+      origin_type_mask_(0),
       storage_partition_for_testing_(NULL) {
   DCHECK(profile);
   // crbug.com/140910: Many places were calling this with base::Time() as
@@ -245,18 +245,18 @@ void BrowsingDataRemover::set_removing(bool is_removing) {
   is_removing_ = is_removing;
 }
 
-void BrowsingDataRemover::Remove(int remove_mask, int origin_set_mask) {
-  RemoveImpl(remove_mask, GURL(), origin_set_mask);
+void BrowsingDataRemover::Remove(int remove_mask, int origin_type_mask) {
+  RemoveImpl(remove_mask, GURL(), origin_type_mask);
 }
 
 void BrowsingDataRemover::RemoveImpl(int remove_mask,
                                      const GURL& origin,
-                                     int origin_set_mask) {
+                                     int origin_type_mask) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   set_removing(true);
   remove_mask_ = remove_mask;
   remove_origin_ = origin;
-  origin_set_mask_ = origin_set_mask;
+  origin_type_mask_ = origin_type_mask;
 
   PrefService* prefs = profile_->GetPrefs();
   bool may_delete_history = prefs->GetBoolean(
@@ -267,25 +267,25 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   DCHECK(may_delete_history || (remove_mask & REMOVE_NOCHECKS) ||
       (!(remove_mask & REMOVE_HISTORY) && !(remove_mask & REMOVE_DOWNLOADS)));
 
-  if (origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
+  if (origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
   }
-  if (origin_set_mask_ & BrowsingDataHelper::PROTECTED_WEB) {
+  if (origin_type_mask_ & BrowsingDataHelper::PROTECTED_WEB) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsProtectedWeb"));
   }
-  if (origin_set_mask_ & BrowsingDataHelper::EXTENSION) {
+  if (origin_type_mask_ & BrowsingDataHelper::EXTENSION) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_MaskContainsExtension"));
   }
-  // If this fires, we added a new BrowsingDataHelper::OriginSetMask without
+  // If this fires, we added a new BrowsingDataHelper::OriginTypeMask without
   // updating the user metrics above.
   static_assert(
       BrowsingDataHelper::ALL == (BrowsingDataHelper::UNPROTECTED_WEB |
                                   BrowsingDataHelper::PROTECTED_WEB |
                                   BrowsingDataHelper::EXTENSION),
-      "OriginSetMask has been updated without updating user metrics");
+      "OriginTypeMask has been updated without updating user metrics");
 
   if ((remove_mask & REMOVE_HISTORY) && may_delete_history) {
     history::HistoryService* history_service =
@@ -456,7 +456,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   // UNPROTECTED_WEB origin. This is necessary because cookies are not separated
   // between UNPROTECTED_WEB and PROTECTED_WEB.
   if (remove_mask & REMOVE_COOKIES &&
-      origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
+      origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
 
     storage_partition_remove_mask |=
@@ -488,9 +488,9 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 
   // Channel IDs are not separated for protected and unprotected web
-  // origins. We check the origin_set_mask_ to prevent unintended deletion.
+  // origins. We check the origin_type_mask_ to prevent unintended deletion.
   if (remove_mask & REMOVE_CHANNEL_IDS &&
-      origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
+      origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(
         UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
@@ -532,9 +532,9 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
 #if defined(ENABLE_PLUGINS)
   // Plugin is data not separated for protected and unprotected web origins. We
-  // check the origin_set_mask_ to prevent unintended deletion.
+  // check the origin_type_mask_ to prevent unintended deletion.
   if (remove_mask & REMOVE_PLUGIN_DATA &&
-      origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
+      origin_type_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
     waiting_for_clear_plugin_data_ = true;
@@ -661,7 +661,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         ~content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
 
     if (delete_begin_ == base::Time() ||
-        origin_set_mask_ &
+        origin_type_mask_ &
           (BrowsingDataHelper::PROTECTED_WEB | BrowsingDataHelper::EXTENSION)) {
       // If we're deleting since the beginning of time, or we're removing
       // protected origins, then remove persistent quota data.
@@ -673,7 +673,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         storage_partition_remove_mask,
         quota_storage_remove_mask,
         remove_origin_,
-        base::Bind(&DoesOriginMatchMask, origin_set_mask_),
+        base::Bind(&DoesOriginMatchMask, origin_type_mask_),
         delete_begin_,
         delete_end_,
         base::Bind(&BrowsingDataRemover::OnClearedStoragePartitionData,
@@ -828,7 +828,7 @@ void BrowsingDataRemover::NotifyAndDelete() {
 
   // Notify observers.
   BrowsingDataRemover::NotificationDetails details(delete_begin_, remove_mask_,
-      origin_set_mask_);
+      origin_type_mask_);
 
   GetOnBrowsingDataRemovedCallbacks()->Notify(details);
 
