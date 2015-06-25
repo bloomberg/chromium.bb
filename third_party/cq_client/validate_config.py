@@ -6,11 +6,7 @@
 """CQ config validation library."""
 
 import argparse
-# The 'from google import protobuf' below was replaced to fix an issue where
-# some users may have built-in google package installed on their system, which
-# is incompatible with cq_pb2 below. This hack can be removed after
-# http://crbug.com/503067 is resolved.
-import protobuf26 as protobuf
+from google import protobuf
 import logging
 import re
 import sys
