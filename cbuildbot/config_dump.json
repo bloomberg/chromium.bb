@@ -12232,7 +12232,6 @@
         "boards": [
             "nyan"
         ],
-        "important": false,
         "manifest": "official.xml",
         "name": "nyan-chrome-pfq",
         "vm_tests": []
