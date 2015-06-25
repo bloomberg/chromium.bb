@@ -27,6 +27,7 @@ class TargetServices;
 }
 
 namespace content {
+class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 
 // The main thread of the GPU child process. There will only ever be one of
@@ -37,10 +38,11 @@ class GpuChildThread : public ChildThreadImpl {
  public:
   typedef std::queue<IPC::Message*> DeferredMessages;
 
-  explicit GpuChildThread(GpuWatchdogThread* gpu_watchdog_thread,
-                          bool dead_on_arrival,
-                          const gpu::GPUInfo& gpu_info,
-                          const DeferredMessages& deferred_messages);
+  GpuChildThread(GpuWatchdogThread* gpu_watchdog_thread,
+                 bool dead_on_arrival,
+                 const gpu::GPUInfo& gpu_info,
+                 const DeferredMessages& deferred_messages,
+                 GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   explicit GpuChildThread(const InProcessChildThreadParams& params);
 
@@ -93,6 +95,9 @@ class GpuChildThread : public ChildThreadImpl {
 
   // Whether the GPU thread is running in the browser process.
   bool in_browser_process_;
+
+  // The GpuMemoryBufferFactory instance used to allocate GpuMemoryBuffers.
+  GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

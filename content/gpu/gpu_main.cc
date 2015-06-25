@@ -23,6 +23,7 @@
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/gpu/gpu_config.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
@@ -364,12 +365,18 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   logging::SetLogMessageHandler(NULL);
 
+  std::vector<gfx::GpuMemoryBufferType> supported_types;
+  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
+  DCHECK(!supported_types.empty());
+  // Note: We always use the preferred type.
+  scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory =
+      GpuMemoryBufferFactory::Create(supported_types[0]);
+
   GpuProcess gpu_process;
 
-  GpuChildThread* child_thread = new GpuChildThread(watchdog_thread.get(),
-                                                    dead_on_arrival,
-                                                    gpu_info,
-                                                    deferred_messages.Get());
+  GpuChildThread* child_thread = new GpuChildThread(
+      watchdog_thread.get(), dead_on_arrival, gpu_info, deferred_messages.Get(),
+      gpu_memory_buffer_factory.get());
   while (!deferred_messages.Get().empty())
     deferred_messages.Get().pop();
 

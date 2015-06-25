@@ -112,7 +112,7 @@ class SimpleGpuClient : public IPC::SimpleWorker {
     IPC::SimpleWorker::Start();
     gpu_channel_manager_.reset(
         new GpuChannelManager(&router_, NULL, ipc_thread().task_runner().get(),
-                              shutdown_event(), channel(), nullptr));
+                              shutdown_event(), channel(), nullptr, nullptr));
   }
 
   void Shutdown() override {

@@ -31,70 +31,14 @@
 
 namespace content {
 
-namespace {
-
-class GpuChannelManagerMessageFilter : public IPC::MessageFilter {
- public:
-  GpuChannelManagerMessageFilter(
-      GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-      : sender_(NULL), gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {}
-
-  void OnFilterAdded(IPC::Sender* sender) override {
-    DCHECK(!sender_);
-    sender_ = sender;
-  }
-
-  void OnFilterRemoved() override {
-    DCHECK(sender_);
-    sender_ = NULL;
-  }
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    DCHECK(sender_);
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(GpuChannelManagerMessageFilter, message)
-      IPC_MESSAGE_HANDLER(GpuMsg_CreateGpuMemoryBuffer, OnCreateGpuMemoryBuffer)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- protected:
-  ~GpuChannelManagerMessageFilter() override {}
-
-  // GPU IO thread bounces off GpuMsg_CreateGpuMemoryBuffer message, because
-  // the UI thread in the browser process must remain fast at all times.
-  void OnCreateGpuMemoryBuffer(
-      const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
-    TRACE_EVENT2("gpu",
-                 "GpuChannelManagerMessageFilter::OnCreateGpuMemoryBuffer",
-                 "id", params.id, "client_id", params.client_id);
-    sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
-        gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-            params.id, params.size, params.format, params.usage,
-            params.client_id, params.surface_handle)));
-  }
-
-  IPC::Sender* sender_;
-  GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
-};
-
-gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType() {
-  std::vector<gfx::GpuMemoryBufferType> supported_types;
-  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
-  DCHECK(!supported_types.empty());
-  return supported_types[0];
-}
-
-}  // namespace
-
 GpuChannelManager::GpuChannelManager(
     MessageRouter* router,
     GpuWatchdog* watchdog,
     base::SingleThreadTaskRunner* io_task_runner,
     base::WaitableEvent* shutdown_event,
     IPC::SyncChannel* channel,
-    IPC::AttachmentBroker* broker)
+    IPC::AttachmentBroker* broker,
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : io_task_runner_(io_task_runner),
       shutdown_event_(shutdown_event),
       router_(router),
@@ -103,18 +47,14 @@ GpuChannelManager::GpuChannelManager(
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       watchdog_(watchdog),
       sync_point_manager_(gpu::SyncPointManager::Create(false)),
-      gpu_memory_buffer_factory_(
-          GpuMemoryBufferFactory::Create(GetGpuMemoryBufferFactoryType())),
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       channel_(channel),
-      filter_(
-          new GpuChannelManagerMessageFilter(gpu_memory_buffer_factory_.get())),
       relinquish_resources_pending_(false),
       attachment_broker_(broker),
       weak_factory_(this) {
   DCHECK(router_);
   DCHECK(io_task_runner);
   DCHECK(shutdown_event);
-  channel_->AddFilter(filter_.get());
 }
 
 GpuChannelManager::~GpuChannelManager() {

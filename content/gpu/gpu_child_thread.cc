@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
@@ -44,8 +45,58 @@ bool GpuProcessLogMessageHandler(int severity,
   return false;
 }
 
-ChildThreadImpl::Options GetOptions() {
+// Message filter used to to handle GpuMsg_CreateGpuMemoryBuffer messages on
+// the IO thread. This allows the UI thread in the browser process to remain
+// fast at all times.
+class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
+ public:
+  explicit GpuMemoryBufferMessageFilter(
+      GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+      : gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+        sender_(nullptr) {}
+
+  // Overridden from IPC::MessageFilter:
+  void OnFilterAdded(IPC::Sender* sender) override {
+    DCHECK(!sender_);
+    sender_ = sender;
+  }
+  void OnFilterRemoved() override {
+    DCHECK(sender_);
+    sender_ = nullptr;
+  }
+  bool OnMessageReceived(const IPC::Message& message) override {
+    DCHECK(sender_);
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(GpuMemoryBufferMessageFilter, message)
+    IPC_MESSAGE_HANDLER(GpuMsg_CreateGpuMemoryBuffer, OnCreateGpuMemoryBuffer)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+ protected:
+  ~GpuMemoryBufferMessageFilter() override {}
+
+  void OnCreateGpuMemoryBuffer(
+      const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
+    TRACE_EVENT2("gpu", "GpuMemoryBufferMessageFilter::OnCreateGpuMemoryBuffer",
+                 "id", params.id, "client_id", params.client_id);
+    sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
+        gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
+            params.id, params.size, params.format, params.usage,
+            params.client_id, params.surface_handle)));
+  }
+
+  GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+  IPC::Sender* sender_;
+};
+
+ChildThreadImpl::Options GetOptions(
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory) {
   ChildThreadImpl::Options::Builder builder;
+
+  builder.AddStartupFilter(
+      new GpuMemoryBufferMessageFilter(gpu_memory_buffer_factory));
 
 #if defined(USE_OZONE)
   IPC::MessageFilter* message_filter = ui::OzonePlatform::GetInstance()
@@ -60,15 +111,18 @@ ChildThreadImpl::Options GetOptions() {
 
 }  // namespace
 
-GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
-                               bool dead_on_arrival,
-                               const gpu::GPUInfo& gpu_info,
-                               const DeferredMessages& deferred_messages)
-    : ChildThreadImpl(GetOptions()),
+GpuChildThread::GpuChildThread(
+    GpuWatchdogThread* watchdog_thread,
+    bool dead_on_arrival,
+    const gpu::GPUInfo& gpu_info,
+    const DeferredMessages& deferred_messages,
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
       dead_on_arrival_(dead_on_arrival),
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
-      in_browser_process_(false) {
+      in_browser_process_(false),
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
   watchdog_thread_ = watchdog_thread;
 #if defined(OS_WIN)
   target_services_ = NULL;
@@ -81,7 +135,8 @@ GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params)
                           .InBrowserProcess(params)
                           .Build()),
       dead_on_arrival_(false),
-      in_browser_process_(true) {
+      in_browser_process_(true),
+      gpu_memory_buffer_factory_(nullptr) {
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
@@ -174,11 +229,11 @@ void GpuChildThread::OnInitialize() {
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
-  gpu_channel_manager_.reset(
-      new GpuChannelManager(GetRouter(), watchdog_thread_.get(),
-                            ChildProcess::current()->io_task_runner(),
-                            ChildProcess::current()->GetShutDownEvent(),
-                            channel(), GetAttachmentBroker()));
+  gpu_channel_manager_.reset(new GpuChannelManager(
+      GetRouter(), watchdog_thread_.get(),
+      ChildProcess::current()->io_task_runner(),
+      ChildProcess::current()->GetShutDownEvent(), channel(),
+      GetAttachmentBroker(), gpu_memory_buffer_factory_));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()

@@ -29,7 +29,6 @@ class WaitableEvent;
 
 namespace gfx {
 class GLShareGroup;
-struct GpuMemoryBufferHandle;
 }
 
 namespace gpu {
@@ -46,7 +45,6 @@ namespace IPC {
 class AttachmentBroker;
 struct ChannelHandle;
 class SyncChannel;
-class MessageFilter;
 }
 
 struct GPUCreateCommandBufferConfig;
@@ -69,7 +67,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                     base::SingleThreadTaskRunner* io_task_runner,
                     base::WaitableEvent* shutdown_event,
                     IPC::SyncChannel* channel,
-                    IPC::AttachmentBroker* broker);
+                    IPC::AttachmentBroker* broker,
+                    GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~GpuChannelManager() override;
 
   // Remove the channel for a particular renderer.
@@ -104,7 +103,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   gfx::GLSurface* GetDefaultOffscreenSurface();
 
   GpuMemoryBufferFactory* gpu_memory_buffer_factory() {
-    return gpu_memory_buffer_factory_.get();
+    return gpu_memory_buffer_factory_;
   }
 
  private:
@@ -158,9 +157,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
-  scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
+  GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
   IPC::SyncChannel* channel_;
-  scoped_refptr<IPC::MessageFilter> filter_;
   bool relinquish_resources_pending_;
   // Must outlive this instance of GpuChannelManager.
   IPC::AttachmentBroker* attachment_broker_;
