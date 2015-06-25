@@ -126,7 +126,8 @@ class SafeBrowsingUIManager
                                      const GURL& referrer_url,
                                      bool is_subresource,
                                      SBThreatType threat_type,
-                                     const std::string& post_data);
+                                     const std::string& post_data,
+                                     bool is_extended_reporting);
 
   // Report an invalid TLS/SSL certificate chain to the server. Can only
   // be called on UI thread.
@@ -153,7 +154,8 @@ class SafeBrowsingUIManager
                                        const GURL& referrer_url,
                                        bool is_subresource,
                                        SBThreatType threat_type,
-                                       const std::string& post_data);
+                                       const std::string& post_data,
+                                       bool is_extended_reporting);
 
   // Sends an invalid certificate chain report over the network.
   void ReportInvalidCertificateChainOnIOThread(

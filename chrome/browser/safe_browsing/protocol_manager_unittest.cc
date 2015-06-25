@@ -107,8 +107,10 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
                                                   kDefaultPhishList,
                                                   kDefaultMalwareList));
     EXPECT_EQ(expected_lists, url_fetcher->upload_data());
-    EXPECT_EQ(GURL(expected_prefix + "/downloads?client=unittest&appver=1.0"
-                   "&pver=3.0" + key_param_),
+    EXPECT_EQ(GURL(expected_prefix +
+                   "/downloads?client=unittest&appver=1.0"
+                   "&pver=3.0" +
+                   key_param_ + "&ext=0"),
               url_fetcher->GetOriginalURL());
   }
 
@@ -261,25 +263,35 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
-  EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_, pm->GetHashUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&ext=0",
+      pm->GetHashUrl().spec());
 
   pm->set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&additional_query",
-            pm->GetHashUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&additional_query&ext=0",
+      pm->GetHashUrl().spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
-  EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_, pm->UpdateUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&ext=0",
+      pm->UpdateUrl().spec());
 
   pm->set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=3.0" + key_param_ + "&additional_query",
-            pm->UpdateUrl().spec());
+  EXPECT_EQ(
+      "https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
+      "pver=3.0" +
+          key_param_ + "&additional_query&ext=0",
+      pm->UpdateUrl().spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
@@ -438,8 +450,10 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
                                "%s;\n",
                                kDefaultPhishList, kDefaultMalwareList),
             url_fetcher->upload_data());
-  EXPECT_EQ(GURL("https://prefix.com/foo/downloads?client=unittest&appver=1.0"
-                 "&pver=3.0" + key_param_),
+  EXPECT_EQ(GURL(
+                "https://prefix.com/foo/downloads?client=unittest&appver=1.0"
+                "&pver=3.0" +
+                key_param_ + "&ext=0"),
             url_fetcher->GetOriginalURL());
 
   url_fetcher->set_status(net::URLRequestStatus());
