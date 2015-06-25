@@ -5,13 +5,8 @@
 #include "config.h"
 #include "core/editing/VisibleSelection.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/Range.h"
-#include "core/dom/Text.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/CoreTestHelpers.h"
-#include "core/testing/DummyPageHolder.h"
-#include <gtest/gtest.h>
+#include "core/editing/EditingTestBase.h"
 
 #define LOREM_IPSUM \
     "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor " \
@@ -23,17 +18,8 @@
 
 namespace blink {
 
-class VisibleSelectionTest : public ::testing::Test {
+class VisibleSelectionTest : public EditingTestBase {
 protected:
-    void SetUp() override;
-
-    Document& document() const { return m_dummyPageHolder->document(); }
-
-    static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope&, const char* hostElementID, const char* shadowRootContent);
-
-    void setBodyContent(const char*);
-    PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char*);
-
     // Helper function to set the VisibleSelection base/extent.
     void setSelection(VisibleSelection& selection, int base) { setSelection(selection, base, base); }
 
@@ -47,32 +33,7 @@ protected:
 
     static bool equalPositions(const Position&, const PositionInComposedTree&);
     static void testComposedTreePositionsToEqualToDOMTreePositions(const VisibleSelection&);
-
-private:
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
-
-void VisibleSelectionTest::SetUp()
-{
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-}
-
-PassRefPtrWillBeRawPtr<ShadowRoot> VisibleSelectionTest::createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
-{
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
-    shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
-    return shadowRoot.release();
-}
-
-void VisibleSelectionTest::setBodyContent(const char* bodyContent)
-{
-    document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
-}
-
-PassRefPtrWillBeRawPtr<ShadowRoot> VisibleSelectionTest::setShadowContent(const char* shadowContent)
-{
-    return createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-}
 
 bool VisibleSelectionTest::equalPositions(const Position& positionInDOMTree, const PositionInComposedTree& positionInComposedTree)
 {
