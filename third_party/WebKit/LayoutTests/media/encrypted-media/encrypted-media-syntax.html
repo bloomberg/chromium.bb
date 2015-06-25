@@ -73,7 +73,7 @@
                     func: function() { return navigator.requestMediaKeySystemAccess(1, [{}]); }
                 },
                 {
-                    exception: 'NotSupportedError',
+                    exception: 'InvalidAccessError',
                     func: function() { return navigator.requestMediaKeySystemAccess(new Uint8Array(0), [{}]); }
                 },
                 {
@@ -279,7 +279,7 @@
                     func: function(mk11, _, initData) { return mk11.createSession().generateRequest(1, initData); }
                 },
                 {
-                    exception: 'NotSupportedError',
+                    exception: 'InvalidAccessError',
                     func: function(mk12, _, initData) { return mk12.createSession().generateRequest(new Uint8Array(0), initData); }
                 },
                 {

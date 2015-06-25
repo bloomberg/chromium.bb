@@ -743,7 +743,6 @@ crbug.com/438403 crypto/subtle/aes-cbc/decrypt-failures.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc/encrypt-decrypt.html [ Crash Pass ]
 
 # Temporarily disabled tests for V8 Harmony Array/TypedArray methods
-crbug.com/502308 media/encrypted-media/encrypted-media-syntax.html [ NeedsManualRebaseline ]
 crbug.com/502308 virtual/pointerevent/fast/events/constructors/midi-message-event-constructor.html [ NeedsManualRebaseline ]
 crbug.com/502308 fast/canvas/webgl/type-conversion-test.html [ NeedsManualRebaseline ]
 crbug.com/502308 fast/dom/Window/window-postmessage-args.html [ NeedsManualRebaseline ]
