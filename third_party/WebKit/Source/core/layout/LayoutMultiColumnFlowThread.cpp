@@ -73,6 +73,13 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::lastMultiColumnSet() const
     return nullptr;
 }
 
+static inline bool isMultiColumnContainer(const LayoutObject& object)
+{
+    if (!object.isLayoutBlockFlow())
+        return false;
+    return toLayoutBlockFlow(object).multiColumnFlowThread();
+}
+
 // Find the next layout object that has the multicol container in its containing block chain, skipping nested multicol containers.
 static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiColumnFlowThread* flowThread, LayoutObject* descendant)
 {
@@ -95,7 +102,7 @@ static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiCol
 #if ENABLE(ASSERT)
     // Make sure that we didn't stumble into an inner multicol container.
     for (LayoutObject* walker = object->parent(); walker && walker != flowThread; walker = walker->parent())
-        ASSERT(!walker->isLayoutBlockFlow() || !toLayoutBlockFlow(walker)->multiColumnFlowThread());
+        ASSERT(!isMultiColumnContainer(*walker));
 #endif
     return object;
 }
@@ -120,7 +127,7 @@ static LayoutObject* previousInPreOrderSkippingOutOfFlow(LayoutMultiColumnFlowTh
             for (ancestor = object->parent(); ; ancestor = ancestor->parent()) {
                 if (ancestor == flowThread)
                     return object;
-                if (ancestor->isLayoutBlockFlow() && toLayoutBlockFlow(ancestor)->multiColumnFlowThread()) {
+                if (isMultiColumnContainer(*ancestor)) {
                     // We're inside an inner multicol container. We have no business there.
                     break;
                 }
@@ -137,7 +144,7 @@ static LayoutObject* previousInPreOrderSkippingOutOfFlow(LayoutMultiColumnFlowTh
 #if ENABLE(ASSERT)
     // Make sure that we didn't stumble into an inner multicol container.
     for (LayoutObject* walker = object->parent(); walker && walker != flowThread; walker = walker->parent())
-        ASSERT(!walker->isLayoutBlockFlow() || !toLayoutBlockFlow(walker)->multiColumnFlowThread());
+        ASSERT(!isMultiColumnContainer(*walker));
 #endif
     return object;
 }
