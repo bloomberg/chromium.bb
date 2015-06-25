@@ -11,7 +11,7 @@
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_MAIN_JS" file="webstore_widget/app/main.js" flattenhtml="true" type="BINDATA" />
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_MAIN_CSS" file="webstore_widget/app/main.css" flattenhtml="true" type="BINDATA" />
 
- <!-- Widget container resoruces: -->
+  <!-- Widget container resources: -->
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_APP_INSTALLER_JS" file="webstore_widget/cws_widget/app_installer.js" type="BINDATA" />
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_CWS_WEBVIEW_CLIENT_JS" file="webstore_widget/cws_widget/cws_webview_client.js" type="BINDATA" />
   <include name="IDR_CHROME_APPS_WEBSTORE_WIDGET_CWS_WIDGET_CONTAINER_JS" file="webstore_widget/cws_widget/cws_widget_container.js" type="BINDATA" />

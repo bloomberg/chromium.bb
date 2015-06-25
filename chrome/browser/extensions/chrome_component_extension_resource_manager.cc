@@ -29,6 +29,11 @@ ChromeComponentExtensionResourceManager() {
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
     {"chrome_app/product_logo_128.png", IDR_PRODUCT_LOGO_128},
     {"chrome_app/product_logo_16.png", IDR_PRODUCT_LOGO_16},
+#if defined(OS_CHROMEOS)
+    {"webstore_widget/app/icons/icon_16.png", IDR_WEBSTORE_ICON_16},
+    {"webstore_widget/app/icons/icon_32.png", IDR_WEBSTORE_ICON_32},
+    {"webstore_widget/app/icons/icon_128.png", IDR_WEBSTORE_ICON},
+#endif
 #if defined(ENABLE_SETTINGS_APP)
     {"settings_app/settings_app_icon_128.png", IDR_SETTINGS_APP_ICON_128},
     {"settings_app/settings_app_icon_16.png", IDR_SETTINGS_APP_ICON_16},

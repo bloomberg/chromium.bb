@@ -15,6 +15,12 @@
     "cws_widget/cws_widget_container_error_dialog.js"
   ],
 
+  "icons": {
+    "16": "app/icons/icon_16.png",
+    "32": "app/icons/icon_32.png",
+    "128": "app/icons/icon_128.png"
+  },
+
   "app": {
     "background": {
       "scripts": ["app/background.js"]
