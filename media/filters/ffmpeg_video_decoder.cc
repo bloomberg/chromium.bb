@@ -127,8 +127,7 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
       format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp());
-  if (format == VideoFrame::YV12 &&
-      codec_context->colorspace == AVCOL_SPC_BT709) {
+  if (codec_context->colorspace == AVCOL_SPC_BT709) {
     video_frame->metadata()->SetInteger(VideoFrameMetadata::COLOR_SPACE,
                                         VideoFrame::COLOR_SPACE_HD_REC709);
   }
