@@ -744,7 +744,7 @@ void WaitForFullScreenTransition() {
 }
 
 // http://crbug.com/53586
-TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
+TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   [controller_ showWindow:nil];
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 
@@ -762,7 +762,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
 // please do not mark it as flaky without first verifying that there are no bot
 // problems.
 // http://crbug.com/53586
-TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
+TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   [controller_ showWindow:nil];
 
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
