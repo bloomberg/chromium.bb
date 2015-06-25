@@ -152,7 +152,7 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
           that.session_ = session;
           session.logHostOfflineErrors(true);
           session.getLogger().setLogEntryMode(
-              remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING);
+              remoting.ChromotingEvent.Mode.LGAPP);
           session.connect(host, credentialsProvider);
       });
     } else if (response && response.status == 'pending') {

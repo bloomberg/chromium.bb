@@ -198,6 +198,8 @@
     ],
     # Logging and stats JavaScript files.
     'remoting_webapp_shared_js_logging_files': [
+      'webapp/base/js/chromoting_event.js',
+      'webapp/base/js/logger.js',
       'webapp/base/js/format_iq.js',
       'webapp/base/js/log_to_server.js',
       'webapp/base/js/server_log_entry.js',

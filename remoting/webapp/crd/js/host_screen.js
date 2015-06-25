@@ -385,7 +385,7 @@ function ensureIT2MeLogger_() {
   var bufferedSignalStrategy =
       new remoting.BufferedSignalStrategy(xmppConnection);
   it2meLogger = new remoting.LogToServer(bufferedSignalStrategy, true);
-  it2meLogger.setLogEntryMode(remoting.ServerLogEntry.VALUE_MODE_IT2ME);
+  it2meLogger.setLogEntryMode(remoting.ChromotingEvent.Mode.IT2ME);
 
   return setHostVersion_();
 };

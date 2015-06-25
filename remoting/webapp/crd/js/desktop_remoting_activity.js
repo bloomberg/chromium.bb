@@ -54,13 +54,12 @@ remoting.DesktopRemotingActivity.prototype.start =
       session.logHostOfflineErrors(!opt_suppressOfflineError);
       session.getLogger().setHostVersion(host.hostVersion);
 
-      var mode = remoting.ServerLogEntry.VALUE_MODE_UNKNOWN;
+      var Mode = remoting.ChromotingEvent.Mode;
       if (that.parentActivity_ instanceof remoting.It2MeActivity) {
-          mode = remoting.ServerLogEntry.VALUE_MODE_IT2ME;
+        session.getLogger().setLogEntryMode(Mode.IT2ME);
       } else if (that.parentActivity_ instanceof remoting.Me2MeActivity) {
-          mode = remoting.ServerLogEntry.VALUE_MODE_ME2ME;
+        session.getLogger().setLogEntryMode(Mode.ME2ME);
       }
-      session.getLogger().setLogEntryMode(mode);
 
       session.connect(host, credentialsProvider);
   }).catch(remoting.Error.handler(

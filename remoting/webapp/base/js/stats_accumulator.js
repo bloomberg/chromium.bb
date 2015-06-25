@@ -122,3 +122,24 @@ remoting.StatsAccumulator.prototype.getValueList = function(key) {
   }
   return valueList;
 };
+
+/**
+ * @return {?remoting.ClientSession.PerfStats} returns null if all fields are
+ *     zero.
+ */
+remoting.StatsAccumulator.prototype.getPerfStats = function() {
+  var stats = new remoting.ClientSession.PerfStats();
+  stats.videoBandWidth = this.calcMean('videoBandwidth');
+  stats.captureLatency = this.calcMean('captureLatency');
+  stats.encodeLatency = this.calcMean('encodeLatency');
+  stats.decodeLatency = this.calcMean('decodeLatency');
+  stats.renderLatency = this.calcMean('renderLatency');
+  stats.roundtripLatency = this.calcMean('roundtripLatency');
+
+  for (var key in stats) {
+    if (stats[key] !== 0) {
+      return stats;
+    }
+  }
+  return null;
+};

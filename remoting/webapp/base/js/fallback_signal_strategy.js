@@ -73,8 +73,8 @@ remoting.FallbackSignalStrategy = function(primary,
   /** @private {number} */
   this.primaryConnectTimerId_ = 0;
 
-  /** @private {remoting.LogToServer} */
-  this.logToServer_ = null;
+  /** @private {remoting.Logger} */
+  this.logger_ = null;
 
   /**
    * @type {Array<{strategyType: remoting.SignalStrategy.Type,
@@ -156,12 +156,12 @@ remoting.FallbackSignalStrategy.prototype.sendMessage = function(message) {
 /**
  * Send any messages accumulated during connection set-up.
  *
- * @param {remoting.LogToServer} logToServer The LogToServer instance for the
+ * @param {remoting.Logger} logToServer The Logger instance for the
  *     connection.
  */
 remoting.FallbackSignalStrategy.prototype.sendConnectionSetupResults =
     function(logToServer) {
-  this.logToServer_ = logToServer;
+  this.logger_ = logToServer;
   this.sendConnectionSetupResultsInternal_();
 }
 
@@ -169,7 +169,7 @@ remoting.FallbackSignalStrategy.prototype.sendConnectionSetupResultsInternal_ =
     function() {
   for (var i = 0; i < this.connectionSetupResults_.length; ++i) {
     var result = this.connectionSetupResults_[i];
-    this.logToServer_.logSignalStrategyProgress(result.strategyType,
+    this.logger_.logSignalStrategyProgress(result.strategyType,
                                                 result.progress);
   }
   this.connectionSetupResults_ = [];
@@ -351,7 +351,7 @@ remoting.FallbackSignalStrategy.prototype.updateProgress_ = function(
     'strategyType': strategy.getType(),
     'progress': progress
   });
-  if (this.logToServer_) {
+  if (this.logger_) {
     this.sendConnectionSetupResultsInternal_();
   }
 };

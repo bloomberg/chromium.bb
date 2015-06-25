@@ -122,12 +122,8 @@ remoting.XmppConnection.prototype.sendMessage = function(message) {
   this.sendString_(message);
 };
 
-/**
- * @param {remoting.LogToServer} logToServer The LogToServer instance for the
- *     connection.
- */
 remoting.XmppConnection.prototype.sendConnectionSetupResults =
-    function(logToServer) {
+    function(logger) {
 };
 
 /** @return {remoting.SignalStrategy.State} Current state */

@@ -45,12 +45,11 @@ remoting.BufferedSignalStrategy.prototype.sendMessage = function(message) {
 /**
  * Send any messages accumulated during connection set-up.
  *
- * @param {remoting.LogToServer} logToServer The LogToServer instance for the
- *     connection.
+ * @param {remoting.Logger} logger The Logger instance for the connection.
  */
 remoting.BufferedSignalStrategy.prototype.sendConnectionSetupResults =
-    function(logToServer) {
-  this.underlying_.sendConnectionSetupResults(logToServer);
+    function(logger) {
+  this.underlying_.sendConnectionSetupResults(logger);
 };
 
 /**

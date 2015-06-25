@@ -115,13 +115,9 @@ remoting.DnsBlackholeChecker.prototype.dispose = function() {
   this.setState_(remoting.SignalStrategy.State.CLOSED);
 };
 
-/**
- * @param {remoting.LogToServer} logToServer The LogToServer instance for the
- *     connection.
- */
 remoting.DnsBlackholeChecker.prototype.sendConnectionSetupResults = function(
-    logToServer) {
-  this.signalStrategy_.sendConnectionSetupResults(logToServer)
+    logger) {
+  this.signalStrategy_.sendConnectionSetupResults(logger);
 };
 
 /** @param {string} message */

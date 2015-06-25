@@ -102,12 +102,8 @@ remoting.WcsAdapter.prototype.sendMessage = function(message) {
   remoting.wcsSandbox.sendIq(message);
 };
 
-/**
- * @param {remoting.LogToServer} logToServer The LogToServer instance for the
- *     connection.
- */
 remoting.WcsAdapter.prototype.sendConnectionSetupResults =
-    function(logToServer) {
+    function(logger) {
 };
 
 /** @param {string} jid */

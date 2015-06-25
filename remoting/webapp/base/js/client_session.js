@@ -55,8 +55,8 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
   /** @private */
   this.hasReceivedFrame_ = false;
 
-  /** @private */
-  this.logToServer_ = new remoting.LogToServer(signalStrategy);
+  /** @private {remoting.Logger} */
+  this.logger_ = new remoting.LogToServer(signalStrategy);
 
   /** @private */
   this.signalStrategy_ = signalStrategy;
@@ -316,10 +316,10 @@ remoting.ClientSession.prototype.getState = function() {
 };
 
 /**
- * @return {remoting.LogToServer}.
+ * @return {remoting.Logger}.
  */
 remoting.ClientSession.prototype.getLogger = function() {
-  return this.logToServer_;
+  return this.logger_;
 };
 
 /**
@@ -476,7 +476,7 @@ remoting.ClientSession.prototype.onRouteChanged =
     function(channel, connectionType) {
   console.log('plugin: Channel ' + channel + ' using ' +
               connectionType + ' connection.');
-  this.logToServer_.setConnectionType(connectionType);
+  this.logger_.setConnectionType(connectionType);
 };
 
 /**
@@ -537,7 +537,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   }
 
   this.notifyStateChanges_(oldState, this.state_);
-  this.logToServer_.logClientSessionStateChange(this.state_, this.error_);
+  this.logger_.logClientSessionStateChange(this.state_, this.error_);
 };
 
 /**
@@ -623,7 +623,7 @@ remoting.ClientSession.prototype.translateState_ = function(previous, current) {
 
 /** @private */
 remoting.ClientSession.prototype.reportStatistics = function() {
-  this.logToServer_.logStatistics(this.plugin_.getPerfStats());
+  this.logger_.logStatistics(this.plugin_.getPerfStats());
 };
 
 /**
