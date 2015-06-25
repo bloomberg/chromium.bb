@@ -51,8 +51,13 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& ur
     if (scriptURL.isEmpty())
         return false;
 
-    m_scriptLoader = WorkerScriptLoader::create();
-    m_scriptLoader->loadAsynchronously(*context, scriptURL, DenyCrossOriginRequests, this);
+    m_scriptLoader = adoptPtr(new WorkerScriptLoader());
+    m_scriptLoader->loadAsynchronously(
+        *context,
+        scriptURL,
+        DenyCrossOriginRequests,
+        bind(&InProcessWorkerBase::onResponse, this),
+        bind(&InProcessWorkerBase::onFinished, this));
 
     m_contextProxy = createWorkerGlobalScopeProxy(context);
 
@@ -83,12 +88,12 @@ PassRefPtr<ContentSecurityPolicy> InProcessWorkerBase::contentSecurityPolicy()
     return m_contentSecurityPolicy;
 }
 
-void InProcessWorkerBase::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
+void InProcessWorkerBase::onResponse()
 {
-    InspectorInstrumentation::didReceiveScriptResponse(executionContext(), identifier);
+    InspectorInstrumentation::didReceiveScriptResponse(executionContext(), m_scriptLoader->identifier());
 }
 
-void InProcessWorkerBase::notifyFinished()
+void InProcessWorkerBase::onFinished()
 {
     if (m_scriptLoader->failed()) {
         dispatchEvent(Event::createCancelable(EventTypeNames::error));

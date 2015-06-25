@@ -11,7 +11,6 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/workers/AbstractWorker.h"
-#include "core/workers/WorkerScriptLoaderClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -25,10 +24,11 @@ class ExecutionContext;
 class WorkerGlobalScopeProxy;
 class WorkerScriptLoader;
 
-// Base class for workers that operate in the same process as the document that creates them.
-class CORE_EXPORT InProcessWorkerBase : public AbstractWorker, private WorkerScriptLoaderClient {
+// Base class for workers that operate in the same process as the document that
+// creates them.
+class CORE_EXPORT InProcessWorkerBase : public AbstractWorker {
 public:
-    virtual ~InProcessWorkerBase();
+    ~InProcessWorkerBase() override;
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
     void terminate();
@@ -52,11 +52,11 @@ protected:
     virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(ExecutionContext*) = 0;
 
 private:
-    // WorkerScriptLoaderClient callbacks
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse&) override;
-    void notifyFinished() override;
+    // Callbacks for m_scriptLoader.
+    void onResponse();
+    void onFinished();
 
-    RefPtr<WorkerScriptLoader> m_scriptLoader;
+    OwnPtr<WorkerScriptLoader> m_scriptLoader;
     RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
 };

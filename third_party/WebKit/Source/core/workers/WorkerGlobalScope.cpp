@@ -241,23 +241,23 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
     }
 
     for (const KURL& completeURL : completedURLs) {
-        RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
-        scriptLoader->setRequestContext(WebURLRequest::RequestContextScript);
-        scriptLoader->loadSynchronously(executionContext, completeURL, AllowCrossOriginRequests);
+        WorkerScriptLoader scriptLoader;
+        scriptLoader.setRequestContext(WebURLRequest::RequestContextScript);
+        scriptLoader.loadSynchronously(executionContext, completeURL, AllowCrossOriginRequests);
 
         // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.
-        if (scriptLoader->failed()) {
+        if (scriptLoader.failed()) {
             exceptionState.throwDOMException(NetworkError, "The script at '" + completeURL.elidedString() + "' failed to load.");
             return;
         }
 
-        InspectorInstrumentation::scriptImported(&executionContext, scriptLoader->identifier(), scriptLoader->script());
-        scriptLoaded(scriptLoader->script().length(), scriptLoader->cachedMetadata() ? scriptLoader->cachedMetadata()->size() : 0);
+        InspectorInstrumentation::scriptImported(&executionContext, scriptLoader.identifier(), scriptLoader.script());
+        scriptLoaded(scriptLoader.script().length(), scriptLoader.cachedMetadata() ? scriptLoader.cachedMetadata()->size() : 0);
 
         RefPtrWillBeRawPtr<ErrorEvent> errorEvent = nullptr;
-        OwnPtr<Vector<char>> cachedMetaData(scriptLoader->releaseCachedMetadata());
+        OwnPtr<Vector<char>> cachedMetaData(scriptLoader.releaseCachedMetadata());
         OwnPtr<CachedMetadataHandler> handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
-        m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent, handler.get(), m_v8CacheOptions);
+        m_script->evaluate(ScriptSourceCode(scriptLoader.script(), scriptLoader.responseURL()), &errorEvent, handler.get(), m_v8CacheOptions);
         if (errorEvent) {
             m_script->rethrowExceptionFromImportedScript(errorEvent.release(), exceptionState);
             return;

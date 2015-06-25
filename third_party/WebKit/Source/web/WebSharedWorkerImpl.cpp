@@ -79,68 +79,6 @@ namespace blink {
 
 // TODO(toyoshim): Share implementation with WebEmbeddedWorkerImpl as much as
 // possible.
-// A thin wrapper for one-off script loading.
-class WebSharedWorkerImpl::Loader : public WorkerScriptLoaderClient {
-public:
-    static PassOwnPtr<Loader> create()
-    {
-        return adoptPtr(new Loader());
-    }
-
-    virtual ~Loader()
-    {
-        m_scriptLoader->setClient(0);
-    }
-
-    void load(ExecutionContext* loadingContext, const KURL& scriptURL, PassOwnPtr<Closure> receiveResponseCallback, PassOwnPtr<Closure> finishCallback)
-    {
-        ASSERT(loadingContext);
-        m_receiveResponseCallback = receiveResponseCallback;
-        m_finishCallback = finishCallback;
-        m_scriptLoader->setRequestContext(WebURLRequest::RequestContextSharedWorker);
-        m_scriptLoader->loadAsynchronously(
-            *loadingContext, scriptURL, DenyCrossOriginRequests, this);
-    }
-
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) override
-    {
-        m_identifier = identifier;
-        m_appCacheID = response.appCacheID();
-        (*m_receiveResponseCallback)();
-    }
-
-    virtual void notifyFinished() override
-    {
-        (*m_finishCallback)();
-    }
-
-    void cancel()
-    {
-        m_scriptLoader->cancel();
-    }
-
-    bool failed() const { return m_scriptLoader->failed(); }
-    const KURL& url() const { return m_scriptLoader->responseURL(); }
-    String script() const { return m_scriptLoader->script(); }
-    unsigned long identifier() const { return m_identifier; }
-    long long appCacheID() const { return m_appCacheID; }
-    PassRefPtr<ContentSecurityPolicy> contentSecurityPolicy() { return m_scriptLoader->contentSecurityPolicy(); }
-
-private:
-    Loader()
-        : m_scriptLoader(WorkerScriptLoader::create())
-        , m_identifier(0)
-        , m_appCacheID(0)
-    {
-        m_scriptLoader->setContentSecurityPolicy(ContentSecurityPolicy::create());
-    }
-
-    RefPtr<WorkerScriptLoader> m_scriptLoader;
-    unsigned long m_identifier;
-    long long m_appCacheID;
-    OwnPtr<Closure> m_receiveResponseCallback;
-    OwnPtr<Closure> m_finishCallback;
-};
 
 // This function is called on the main thread to force to initialize some static
 // values used in WebKit before any worker thread is started. This is because in
@@ -253,11 +191,13 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
     ASSERT(!m_loadingDocument);
     ASSERT(!m_mainScriptLoader);
     m_networkProvider = adoptPtr(m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
-    m_mainScriptLoader = Loader::create();
+    m_mainScriptLoader = adoptPtr(new WorkerScriptLoader());
+    m_mainScriptLoader->setRequestContext(WebURLRequest::RequestContextSharedWorker);
     m_loadingDocument = toWebLocalFrameImpl(frame)->frame()->document();
-    m_mainScriptLoader->load(
-        m_loadingDocument.get(),
+    m_mainScriptLoader->loadAsynchronously(
+        *m_loadingDocument.get(),
         m_url,
+        DenyCrossOriginRequests,
         bind(&WebSharedWorkerImpl::didReceiveScriptLoaderResponse, this),
         bind(&WebSharedWorkerImpl::onScriptLoaderFinished, this));
 }
@@ -411,13 +351,14 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
     provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
+    RefPtr<ContentSecurityPolicy> contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         m_url,
         m_loadingDocument->userAgent(m_url),
         m_mainScriptLoader->script(),
         nullptr,
         startMode,
-        m_mainScriptLoader->contentSecurityPolicy()->headers(),
+        contentSecurityPolicy ? contentSecurityPolicy->headers() : nullptr,
         starterOrigin,
         workerClients.release());
     m_loaderProxy = WorkerLoaderProxy::create(this);

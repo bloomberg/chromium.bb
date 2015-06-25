@@ -46,6 +46,7 @@ class WebLocalFrameImpl;
 class WebServiceWorkerNetworkProvider;
 class WebView;
 class WorkerInspectorProxy;
+class WorkerScriptLoader;
 class WorkerThread;
 
 class WebEmbeddedWorkerImpl final
@@ -56,7 +57,7 @@ class WebEmbeddedWorkerImpl final
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 public:
     WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient>, PassOwnPtr<WebWorkerContentSettingsClientProxy>);
-    virtual ~WebEmbeddedWorkerImpl();
+    ~WebEmbeddedWorkerImpl() override;
 
     // Terminate all WebEmbeddedWorkerImpl for testing purposes.
     // Note that this only schedules termination and
@@ -64,38 +65,36 @@ public:
     static void terminateAll();
 
     // WebEmbeddedWorker overrides.
-    virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) override;
-    virtual void resumeAfterDownload() override;
-    virtual void terminateWorkerContext() override;
-    virtual void attachDevTools(const WebString& hostId) override;
-    virtual void reattachDevTools(const WebString& hostId, const WebString& savedState) override;
-    virtual void detachDevTools() override;
-    virtual void dispatchDevToolsMessage(const WebString&) override;
+    void startWorkerContext(const WebEmbeddedWorkerStartData&) override;
+    void resumeAfterDownload() override;
+    void terminateWorkerContext() override;
+    void attachDevTools(const WebString& hostId) override;
+    void reattachDevTools(const WebString& hostId, const WebString& savedState) override;
+    void detachDevTools() override;
+    void dispatchDevToolsMessage(const WebString&) override;
 
     void postMessageToPageInspector(const WTF::String&);
 
 private:
-    class Loader;
-
     void prepareShadowPageForLoader();
     void loadShadowPage();
 
     // WebFrameClient overrides.
-    virtual void willSendRequest(
+    void willSendRequest(
         WebLocalFrame*, unsigned identifier, WebURLRequest&,
         const WebURLResponse& redirectResponse) override;
-    virtual void didFinishDocumentLoad(WebLocalFrame*) override;
+    void didFinishDocumentLoad(WebLocalFrame*) override;
 
     // WebDevToolsAgentClient overrides.
-    virtual void sendProtocolMessage(int callId, const WebString&, const WebString&) override;
-    virtual void resumeStartup() override;
+    void sendProtocolMessage(int callId, const WebString&, const WebString&) override;
+    void resumeStartup() override;
 
     void onScriptLoaderFinished();
     void startWorkerThread();
 
     // WorkerLoaderProxyProvider
-    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
+    void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
+    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
 
     WebEmbeddedWorkerStartData m_workerStartData;
 
@@ -110,7 +109,7 @@ private:
     OwnPtr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
     // Kept around only while main script loading is ongoing.
-    OwnPtr<Loader> m_mainScriptLoader;
+    OwnPtr<WorkerScriptLoader> m_mainScriptLoader;
 
     RefPtr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;

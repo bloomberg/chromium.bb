@@ -32,7 +32,6 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerScriptLoaderClient.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/ResourceResponse.h"
 #include "public/platform/WebURLRequest.h"
@@ -43,9 +42,11 @@
 namespace blink {
 
 WorkerScriptLoader::WorkerScriptLoader()
-    : m_client(nullptr)
+    : m_responseCallback(nullptr)
+    , m_finishedCallback(nullptr)
     , m_failed(false)
     , m_identifier(0)
+    , m_appCacheID(0)
     , m_finishing(false)
     , m_requestContext(WebURLRequest::RequestContextWorker)
 {
@@ -76,10 +77,11 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
     WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), *request, *this, options, resourceLoaderOptions);
 }
 
-void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WorkerScriptLoaderClient* client)
+void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, PassOwnPtr<Closure> responseCallback, PassOwnPtr<Closure> finishedCallback)
 {
-    ASSERT(client);
-    m_client = client;
+    ASSERT(responseCallback || finishedCallback);
+    m_responseCallback = responseCallback;
+    m_finishedCallback = finishedCallback;
     m_url = url;
 
     OwnPtr<ResourceRequest> request(createResourceRequest());
@@ -92,8 +94,6 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
-    // During create, callbacks may happen which remove the last reference to this object.
-    RefPtr<WorkerScriptLoader> protect(this);
     m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options, resourceLoaderOptions);
 }
 
@@ -118,11 +118,13 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
         m_failed = true;
         return;
     }
+    m_identifier = identifier;
     m_responseURL = response.url();
     m_responseEncoding = response.textEncodingName();
+    m_appCacheID = response.appCacheID();
     processContentSecurityPolicy(response);
-    if (m_client)
-        m_client->didReceiveResponse(identifier, response);
+    if (m_responseCallback)
+        (*m_responseCallback)();
 }
 
 void WorkerScriptLoader::didReceiveData(const char* data, unsigned len)
@@ -159,8 +161,8 @@ void WorkerScriptLoader::didFinishLoading(unsigned long identifier, double)
     if (m_decoder)
         m_script.append(m_decoder->flush());
 
-    m_identifier = identifier;
-    notifyFinished();
+    if (m_finishedCallback)
+        (*m_finishedCallback)();
 }
 
 void WorkerScriptLoader::didFail(const ResourceError&)
@@ -192,15 +194,21 @@ String WorkerScriptLoader::script()
 
 void WorkerScriptLoader::notifyFinished()
 {
-    if (!m_client || m_finishing)
+    if (!m_finishedCallback || m_finishing)
         return;
 
     m_finishing = true;
-    m_client->notifyFinished();
+    if (m_finishedCallback)
+        (*m_finishedCallback)();
 }
 
 void WorkerScriptLoader::processContentSecurityPolicy(const ResourceResponse& response)
 {
+    // Per http://www.w3.org/TR/CSP2/#processing-model-workers, if the Worker's
+    // URL is not a GUID, then it grabs its CSP from the response headers
+    // directly.  Otherwise, the Worker inherits the policy from the parent
+    // document (which is implemented in WorkerMessagingProxy, and
+    // m_contentSecurityPolicy should be left as nullptr to inherit the policy).
     if (!response.url().protocolIs("blob") && !response.url().protocolIs("file") && !response.url().protocolIs("filesystem")) {
         m_contentSecurityPolicy = ContentSecurityPolicy::create();
         m_contentSecurityPolicy->setOverrideURLForSelf(response.url());

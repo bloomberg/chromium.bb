@@ -36,7 +36,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerScriptLoaderClient.h"
 #include "core/workers/WorkerThread.h"
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
@@ -57,11 +56,14 @@ class WebString;
 class WebURL;
 class WebView;
 class WorkerInspectorProxy;
+class WorkerScriptLoader;
 
-// This class is used by the worker process code to talk to the SharedWorker implementation.
-// It can't use it directly since it uses WebKit types, so this class converts the data types.
-// When the SharedWorker object wants to call WorkerReportingProxy, this class will
-// convert to Chrome data types first and then call the supplied WebCommonWorkerClient.
+// This class is used by the worker process code to talk to the SharedWorker
+// implementation.
+// It can't use it directly since it uses WebKit types, so this class converts
+// the data types.  When the SharedWorker object wants to call
+// WorkerReportingProxy, this class will convert to Chrome data types first and
+// then call the supplied WebCommonWorkerClient.
 class WebSharedWorkerImpl final
     : public WorkerReportingProxy
     , public WebFrameClient
@@ -72,43 +74,41 @@ public:
     explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
     // WorkerReportingProxy methods:
-    virtual void reportException(
+    void reportException(
         const WTF::String&, int, int, const WTF::String&, int) override;
-    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
-    virtual void postMessageToPageInspector(const WTF::String&) override;
-    virtual void postWorkerConsoleAgentEnabled() override { }
-    virtual void didEvaluateWorkerScript(bool success) override { };
-    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override;
-    virtual void workerGlobalScopeClosed() override;
-    virtual void workerThreadTerminated() override;
-    virtual void willDestroyWorkerGlobalScope() override { }
+    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    void postMessageToPageInspector(const WTF::String&) override;
+    void postWorkerConsoleAgentEnabled() override { }
+    void didEvaluateWorkerScript(bool success) override { };
+    void workerGlobalScopeStarted(WorkerGlobalScope*) override;
+    void workerGlobalScopeClosed() override;
+    void workerThreadTerminated() override;
+    void willDestroyWorkerGlobalScope() override { }
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
-    virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) override;
-    virtual void willSendRequest(WebLocalFrame*, unsigned identifier, WebURLRequest&, const WebURLResponse& redirectResponse) override;
-    virtual void didFinishDocumentLoad(WebLocalFrame*) override;
-    virtual bool isControlledByServiceWorker(WebDataSource&) override;
-    virtual int64_t serviceWorkerID(WebDataSource&) override;
+    WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) override;
+    void willSendRequest(WebLocalFrame*, unsigned identifier, WebURLRequest&, const WebURLResponse& redirectResponse) override;
+    void didFinishDocumentLoad(WebLocalFrame*) override;
+    bool isControlledByServiceWorker(WebDataSource&) override;
+    int64_t serviceWorkerID(WebDataSource&) override;
 
     // WebDevToolsAgentClient overrides.
-    virtual void sendProtocolMessage(int callId, const WebString&, const WebString&) override;
-    virtual void resumeStartup() override;
+    void sendProtocolMessage(int callId, const WebString&, const WebString&) override;
+    void resumeStartup() override;
 
     // WebSharedWorker methods:
-    virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType) override;
-    virtual void connect(WebMessagePortChannel*) override;
-    virtual void terminateWorkerContext() override;
+    void startWorkerContext(const WebURL&, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType) override;
+    void connect(WebMessagePortChannel*) override;
+    void terminateWorkerContext() override;
 
-    virtual void pauseWorkerContextOnStart() override;
-    virtual void attachDevTools(const WebString& hostId) override;
-    virtual void reattachDevTools(const WebString& hostId, const WebString& savedState) override;
-    virtual void detachDevTools() override;
-    virtual void dispatchDevToolsMessage(const WebString&) override;
+    void pauseWorkerContextOnStart() override;
+    void attachDevTools(const WebString& hostId) override;
+    void reattachDevTools(const WebString& hostId, const WebString& savedState) override;
+    void detachDevTools() override;
+    void dispatchDevToolsMessage(const WebString&) override;
 
 private:
-    class Loader;
-
-    virtual ~WebSharedWorkerImpl();
+    ~WebSharedWorkerImpl() override;
 
     void setWorkerThread(PassRefPtr<WorkerThread> thread) { m_workerThread = thread; }
     WorkerThread* workerThread() { return m_workerThread.get(); }
@@ -153,7 +153,7 @@ private:
     bool m_isPausedOnStart;
 
     // Kept around only while main script loading is ongoing.
-    OwnPtr<Loader> m_mainScriptLoader;
+    OwnPtr<WorkerScriptLoader> m_mainScriptLoader;
 
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
 

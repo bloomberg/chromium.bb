@@ -39,8 +39,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/SharedWorker.h"
-#include "core/workers/WorkerScriptLoader.h"
-#include "core/workers/WorkerScriptLoaderClient.h"
 #include "platform/network/ResourceResponse.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"

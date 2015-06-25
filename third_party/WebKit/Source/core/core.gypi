@@ -2088,7 +2088,6 @@
             'workers/WorkerReportingProxy.h',
             'workers/WorkerScriptLoader.cpp',
             'workers/WorkerScriptLoader.h',
-            'workers/WorkerScriptLoaderClient.h',
             'workers/WorkerThread.cpp',
             'workers/WorkerThread.h',
             'workers/WorkerThreadStartupData.cpp',

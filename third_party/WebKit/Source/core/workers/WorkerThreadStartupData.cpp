@@ -46,6 +46,9 @@ WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const St
     , m_v8CacheOptions(v8CacheOptions)
 {
     m_contentSecurityPolicyHeaders = adoptPtr(new Vector<CSPHeaderAndType>());
+    if (!contentSecurityPolicyHeaders)
+        return;
+
     for (const auto& header : *contentSecurityPolicyHeaders) {
         CSPHeaderAndType copiedHeader(header.first.isolatedCopy(), header.second);
         m_contentSecurityPolicyHeaders->append(copiedHeader);
