@@ -225,7 +225,7 @@ config("feature_flags") {
     defines += [ "ENABLE_HIDPI=1" ]
   }
   if (enable_topchrome_md) {
-    defines += [ "ENABLE_TOPCHRME_MD=1" ]
+    defines += [ "ENABLE_TOPCHROME_MD=1" ]
   }
   if (proprietary_codecs) {
     defines += [ "USE_PROPRIETARY_CODECS" ]
