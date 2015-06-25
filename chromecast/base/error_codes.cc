@@ -54,19 +54,21 @@ bool SetInitialErrorCode(ErrorCode initial_error_code) {
         base::IntToString(initial_error_code));
     int fd = creat(error_file_path.c_str(), 0640);
     if (fd < 0) {
-      LOG(ERROR) << "Could not open error code file";
+      PLOG(ERROR) << "Could not open error code file";
       return false;
     }
 
     int written =
         write(fd, initial_error_code_str.data(), initial_error_code_str.size());
-    close(fd);
 
     if (written != static_cast<int>(initial_error_code_str.size())) {
-      LOG(ERROR) << "Could not write error code to file";
+      PLOG(ERROR) << "Could not write error code to file: written=" << written
+                  << ", expected=" << initial_error_code_str.size();
+      close(fd);
       return false;
     }
 
+    close(fd);
     return true;
   }
 
@@ -74,7 +76,7 @@ bool SetInitialErrorCode(ErrorCode initial_error_code) {
   if (unlink(error_file_path.c_str()) == 0 || errno == ENOENT)
     return true;
 
-  LOG(ERROR) << "Failed to remove error file";
+  PLOG(ERROR) << "Failed to remove error file";
   return false;
 }
 
