@@ -1145,6 +1145,11 @@ void LayoutBox::paintBoxDecorationBackground(const PaintInfo& paintInfo, const L
 bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
 {
     ASSERT(hasBackground());
+
+    // LayoutView is special in the sense that it expands to the whole canvas,
+    // thus can't be handled by this function.
+    ASSERT(!isLayoutView());
+
     LayoutRect backgroundRect(enclosingIntRect(borderBoxRect()));
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
@@ -1268,7 +1273,7 @@ bool LayoutBox::computeBackgroundIsKnownToBeObscured()
     if (!hasBackground())
         return false;
     // Table and root background painting is special.
-    if (isTable() || isDocumentElement())
+    if (isTable() || isLayoutView())
         return false;
     // FIXME: box-shadow is painted while background painting.
     if (style()->boxShadow())
