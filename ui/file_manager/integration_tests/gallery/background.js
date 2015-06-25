@@ -54,6 +54,33 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
 }
 
 /**
+ * Verifies if there are no Javascript errors in any of the app windows.
+ * @param {function()} Completion callback.
+ */
+function checkIfNoErrorsOccured(callback) {
+  var countPromise = gallery.callRemoteTestUtil('getErrorCount', null, []);
+  countPromise.then(function(count) {
+    chrome.test.assertEq(0, count, 'The error count is not 0.');
+    callback();
+  });
+}
+
+/**
+ * Adds check of chrome.test to the end of the given promise.
+ * @param {Promise} promise Promise.
+ */
+function testPromise(promise) {
+  promise.then(function() {
+    return new Promise(checkIfNoErrorsOccured);
+  }).then(chrome.test.callbackPass(function() {
+    // The callbacPass is necessary to avoid prematurely finishing tests.
+    // Don't put chrome.test.succeed() here to avoid doubled success log.
+  }), function(error) {
+    chrome.test.fail(error.stack || error);
+  });
+};
+
+/**
  * Namespace for test cases.
  */
 var testcase = {};
@@ -91,7 +118,7 @@ window.addEventListener('load', function() {
       // Specify the name of test to the test system.
       targetTest.generatedName = testCaseName;
       chrome.test.runTests([function() {
-        return testPromiseAndApps(targetTest(), [gallery]);
+        return testPromise(targetTest());
       }]);
     }
   ];
