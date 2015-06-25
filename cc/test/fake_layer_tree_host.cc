@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_layer_tree_host.h"
 
+#include "cc/layers/layer.h"
 #include "cc/test/test_task_graph_runner.h"
 
 namespace cc {
@@ -52,6 +53,17 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   TreeSynchronizer::PushProperties(root_layer(), layer_impl.get());
 
   active_tree()->SetRootLayer(layer_impl.Pass());
+
+  if (page_scale_layer() && inner_viewport_scroll_layer()) {
+    active_tree()->SetViewportLayersFromIds(
+        overscroll_elasticity_layer() ? overscroll_elasticity_layer()->id()
+                                      : Layer::INVALID_ID,
+        page_scale_layer()->id(), inner_viewport_scroll_layer()->id(),
+        outer_viewport_scroll_layer() ? outer_viewport_scroll_layer()->id()
+                                      : Layer::INVALID_ID);
+  }
+
+  active_tree()->UpdatePropertyTreesForBoundsDelta();
   return active_tree()->root_layer();
 }
 

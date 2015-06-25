@@ -40,6 +40,8 @@ class CC_EXPORT LayerTreeHostCommon {
                         float device_scale_factor,
                         float page_scale_factor,
                         const LayerType* page_scale_layer,
+                        const LayerType* inner_viewport_scroll_layer,
+                        const LayerType* outer_viewport_scroll_layer,
                         const gfx::Vector2dF& elastic_overscroll,
                         const LayerType* elastic_overscroll_application_layer,
                         int max_texture_size,
@@ -57,6 +59,8 @@ class CC_EXPORT LayerTreeHostCommon {
           device_scale_factor(device_scale_factor),
           page_scale_factor(page_scale_factor),
           page_scale_layer(page_scale_layer),
+          inner_viewport_scroll_layer(inner_viewport_scroll_layer),
+          outer_viewport_scroll_layer(outer_viewport_scroll_layer),
           elastic_overscroll(elastic_overscroll),
           elastic_overscroll_application_layer(
               elastic_overscroll_application_layer),
@@ -77,6 +81,8 @@ class CC_EXPORT LayerTreeHostCommon {
     float device_scale_factor;
     float page_scale_factor;
     const LayerType* page_scale_layer;
+    const LayerType* inner_viewport_scroll_layer;
+    const LayerType* outer_viewport_scroll_layer;
     gfx::Vector2dF elastic_overscroll;
     const LayerType* elastic_overscroll_application_layer;
     int max_texture_size;
@@ -252,6 +258,8 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           1.f,
           1.f,
           NULL,
+          NULL,
+          NULL,
           gfx::Vector2dF(),
           NULL,
           std::numeric_limits<int>::max() / 2,
@@ -280,6 +288,8 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           gfx::Transform(),
           1.f,
           1.f,
+          NULL,
+          NULL,
           NULL,
           gfx::Vector2dF(),
           NULL,

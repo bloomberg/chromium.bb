@@ -29,6 +29,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -186,6 +187,52 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
   return root_layer_.Pass();
+}
+
+static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,
+                                                ClipTree* clip_tree) {
+  if (layer && layer->masks_to_bounds()) {
+    ClipNode* clip_node = clip_tree->Node(layer->clip_tree_index());
+    if (clip_node) {
+      DCHECK_EQ(layer->id(), clip_node->owner_id);
+      gfx::Size bounds = layer->bounds();
+      if (clip_node->data.clip.size() != bounds) {
+        clip_node->data.clip.set_size(bounds);
+        clip_tree->set_needs_update(true);
+      }
+    }
+  }
+}
+
+void LayerTreeImpl::UpdatePropertyTreesForBoundsDelta() {
+  DCHECK(IsActiveTree());
+  LayerImpl* inner_container = InnerViewportContainerLayer();
+  LayerImpl* outer_container = OuterViewportContainerLayer();
+
+  UpdateClipTreeForBoundsDeltaOnLayer(inner_container,
+                                      &property_trees_.clip_tree);
+  UpdateClipTreeForBoundsDeltaOnLayer(InnerViewportScrollLayer(),
+                                      &property_trees_.clip_tree);
+  UpdateClipTreeForBoundsDeltaOnLayer(outer_container,
+                                      &property_trees_.clip_tree);
+
+  TransformTree& transform_tree = property_trees_.transform_tree;
+  if (inner_container) {
+    if (inner_container->bounds_delta() !=
+        transform_tree.inner_viewport_bounds_delta()) {
+      transform_tree.set_inner_viewport_bounds_delta(
+          inner_container->bounds_delta());
+      transform_tree.set_needs_update(true);
+    }
+  }
+  if (outer_container) {
+    if (outer_container->bounds_delta() !=
+        transform_tree.outer_viewport_bounds_delta()) {
+      transform_tree.set_outer_viewport_bounds_delta(
+          outer_container->bounds_delta());
+      transform_tree.set_needs_update(true);
+    }
+  }
 }
 
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
@@ -580,6 +627,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         root_layer(), DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
         current_page_scale_factor(), page_scale_layer,
+        inner_viewport_scroll_layer_, outer_viewport_scroll_layer_,
         elastic_overscroll()->Current(IsActiveTree()),
         overscroll_elasticity_layer_, resource_provider()->max_texture_size(),
         settings().can_use_lcd_text, settings().layers_always_allowed_lcd_text,
@@ -713,7 +761,8 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
 void LayerTreeImpl::BuildPropertyTreesForTesting() {
   PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer_.get(), page_scale_layer_, current_page_scale_factor(),
+      root_layer_.get(), page_scale_layer_, inner_viewport_scroll_layer_,
+      outer_viewport_scroll_layer_, current_page_scale_factor(),
       device_scale_factor(), gfx::Rect(DrawViewportSize()),
       layer_tree_host_impl_->DrawTransform(), &property_trees_);
 }

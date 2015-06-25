@@ -135,6 +135,8 @@ class CC_EXPORT LayerTreeImpl {
   }
   PropertyTrees* property_trees() { return &property_trees_; }
 
+  void UpdatePropertyTreesForBoundsDelta();
+
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
   int source_frame_number() const { return source_frame_number_; }

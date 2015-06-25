@@ -91,6 +91,10 @@ void LayerTreeHostCommonTestBase::
       preserves_2d_axis_alignment);
 
   Layer* page_scale_layer = nullptr;
+  Layer* inner_viewport_scroll_layer =
+      root_layer->layer_tree_host()->inner_viewport_scroll_layer();
+  Layer* outer_viewport_scroll_layer =
+      root_layer->layer_tree_host()->outer_viewport_scroll_layer();
   float page_scale_factor = 1.f;
   float device_scale_factor = 1.f;
   gfx::Size device_viewport_size =
@@ -98,7 +102,8 @@ void LayerTreeHostCommonTestBase::
                 root_layer->bounds().height() * device_scale_factor);
   LayerList update_layer_list;
   BuildPropertyTreesAndComputeVisibleRects(
-      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
+      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform,
       root_layer->layer_tree_host()->property_trees(), &update_layer_list);
 }
@@ -110,6 +115,10 @@ void LayerTreeHostCommonTestBase::
 
   gfx::Transform identity_transform;
   LayerImpl* page_scale_layer = nullptr;
+  LayerImpl* inner_viewport_scroll_layer =
+      root_layer->layer_tree_impl()->InnerViewportScrollLayer();
+  LayerImpl* outer_viewport_scroll_layer =
+      root_layer->layer_tree_impl()->OuterViewportScrollLayer();
   float page_scale_factor = 1.f;
   float device_scale_factor = 1.f;
   gfx::Size device_viewport_size =
@@ -117,7 +126,8 @@ void LayerTreeHostCommonTestBase::
                 root_layer->bounds().height() * device_scale_factor);
   std::vector<LayerImpl*> update_layer_list;
   BuildPropertyTreesAndComputeVisibleRects(
-      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
+      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform,
       root_layer->layer_tree_impl()->property_trees(), &update_layer_list);
 }

@@ -26,6 +26,9 @@ PropertyTree<T>::~PropertyTree() {
 TransformTree::TransformTree() : source_to_parent_updates_allowed_(true) {
 }
 
+TransformTree::~TransformTree() {
+}
+
 template <typename T>
 int PropertyTree<T>::Insert(const T& tree_node, int parent_id) {
   DCHECK_GT(nodes_.size(), 0u);
@@ -61,6 +64,10 @@ TransformNodeData::TransformNodeData()
       node_and_ancestors_are_flat(true),
       scrolls(false),
       needs_sublayer_scale(false),
+      affected_by_inner_viewport_bounds_delta_x(false),
+      affected_by_inner_viewport_bounds_delta_y(false),
+      affected_by_outer_viewport_bounds_delta_x(false),
+      affected_by_outer_viewport_bounds_delta_y(false),
       layer_scale_factor(1.0f),
       post_local_scale_factor(1.0f) {
 }
@@ -145,12 +152,19 @@ bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
           node->parent_id != node->data.source_node_id);
 }
 
+static bool AffectedByBoundsDelta(TransformNode* node) {
+  return node->data.affected_by_inner_viewport_bounds_delta_x ||
+         node->data.affected_by_inner_viewport_bounds_delta_y ||
+         node->data.affected_by_outer_viewport_bounds_delta_x ||
+         node->data.affected_by_outer_viewport_bounds_delta_y;
+}
+
 void TransformTree::UpdateTransforms(int id) {
   TransformNode* node = Node(id);
   TransformNode* parent_node = parent(node);
   TransformNode* target_node = Node(node->data.target_id);
   if (node->data.needs_local_transform_update ||
-      NeedsSourceToParentUpdate(node))
+      NeedsSourceToParentUpdate(node) || AffectedByBoundsDelta(node))
     UpdateLocalTransform(node);
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSublayerScale(node);
@@ -289,9 +303,23 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
     ComputeTransform(node->data.source_node_id, node->parent_id, &to_parent);
     node->data.source_to_parent = to_parent.To2dTranslation();
   }
+
+  gfx::Vector2dF fixed_position_adjustment;
+  if (node->data.affected_by_inner_viewport_bounds_delta_x)
+    fixed_position_adjustment.set_x(inner_viewport_bounds_delta_.x());
+  else if (node->data.affected_by_outer_viewport_bounds_delta_x)
+    fixed_position_adjustment.set_x(outer_viewport_bounds_delta_.x());
+
+  if (node->data.affected_by_inner_viewport_bounds_delta_y)
+    fixed_position_adjustment.set_y(inner_viewport_bounds_delta_.y());
+  else if (node->data.affected_by_outer_viewport_bounds_delta_y)
+    fixed_position_adjustment.set_y(outer_viewport_bounds_delta_.y());
+
   transform.Translate(
-      node->data.source_to_parent.x() - node->data.scroll_offset.x(),
-      node->data.source_to_parent.y() - node->data.scroll_offset.y());
+      node->data.source_to_parent.x() - node->data.scroll_offset.x() +
+          fixed_position_adjustment.x(),
+      node->data.source_to_parent.y() - node->data.scroll_offset.y() +
+          fixed_position_adjustment.y());
   transform.PreconcatTransform(node->data.local);
   transform.PreconcatTransform(node->data.pre_local);
   node->data.set_to_parent(transform);

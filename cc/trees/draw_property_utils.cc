@@ -453,6 +453,8 @@ void ComputeVisibleRectsUsingPropertyTreesInternal(
 void BuildPropertyTreesAndComputeVisibleRects(
     Layer* root_layer,
     const Layer* page_scale_layer,
+    const Layer* inner_viewport_scroll_layer,
+    const Layer* outer_viewport_scroll_layer,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -460,7 +462,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
     PropertyTrees* property_trees,
     LayerList* update_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
+      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
                                         update_layer_list);
@@ -469,6 +472,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
 void BuildPropertyTreesAndComputeVisibleRects(
     LayerImpl* root_layer,
     const LayerImpl* page_scale_layer,
+    const LayerImpl* inner_viewport_scroll_layer,
+    const LayerImpl* outer_viewport_scroll_layer,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
@@ -476,7 +481,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
     PropertyTrees* property_trees,
     LayerImplList* update_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
+      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
   ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
                                         update_layer_list);

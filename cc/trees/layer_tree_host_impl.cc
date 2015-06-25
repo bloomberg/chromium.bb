@@ -1906,6 +1906,9 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     active_tree_->ProcessUIResourceRequestQueue();
   }
 
+  // bounds_delta isn't a pushed property, so the newly-pushed property tree
+  // won't already account for current bounds_delta values.
+  active_tree_->UpdatePropertyTreesForBoundsDelta();
   active_tree_->DidBecomeActive();
   ActivateAnimations();
   client_->RenewTreePriority();

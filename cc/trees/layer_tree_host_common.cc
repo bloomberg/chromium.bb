@@ -2582,7 +2582,9 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
 
         BuildPropertyTreesAndComputeVisibleRects(
             inputs->root_layer, inputs->page_scale_layer,
-            inputs->page_scale_factor, inputs->device_scale_factor,
+            inputs->inner_viewport_scroll_layer,
+            inputs->outer_viewport_scroll_layer, inputs->page_scale_factor,
+            inputs->device_scale_factor,
             gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
             inputs->property_trees, &update_layer_list);
 

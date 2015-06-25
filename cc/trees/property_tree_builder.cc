@@ -31,9 +31,13 @@ struct DataForRecursion {
   int clip_tree_parent;
   int opacity_tree_parent;
   const LayerType* page_scale_layer;
+  const LayerType* inner_viewport_scroll_layer;
+  const LayerType* outer_viewport_scroll_layer;
   float page_scale_factor;
   float device_scale_factor;
   bool in_subtree_of_page_scale_layer;
+  bool affected_by_inner_viewport_bounds_delta;
+  bool affected_by_outer_viewport_bounds_delta;
   bool should_flatten;
   bool ancestor_clips_subtree;
   const gfx::Transform* device_transform;
@@ -183,6 +187,7 @@ bool AddTransformNodeIfNeeded(
                        is_fixed || is_page_scale_layer;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
+  DCHECK_IMPLIES(!is_root, transform_parent);
 
   int parent_index = 0;
   if (transform_parent)
@@ -211,6 +216,10 @@ bool AddTransformNodeIfNeeded(
   }
 
   if (layer->IsContainerForFixedPositionLayers() || is_root) {
+    data_for_children->affected_by_inner_viewport_bounds_delta =
+        layer == data_from_ancestor.inner_viewport_scroll_layer;
+    data_for_children->affected_by_outer_viewport_bounds_delta =
+        layer == data_from_ancestor.outer_viewport_scroll_layer;
     if (is_scrollable) {
       DCHECK(!is_root);
       DCHECK(layer->transform().IsIdentity());
@@ -292,6 +301,20 @@ bool AddTransformNodeIfNeeded(
 
   if (!layer->scroll_parent())
     node->data.scroll_offset = layer->CurrentScrollOffset();
+
+  if (is_fixed) {
+    if (data_from_ancestor.affected_by_inner_viewport_bounds_delta) {
+      node->data.affected_by_inner_viewport_bounds_delta_x =
+          layer->position_constraint().is_fixed_to_right_edge();
+      node->data.affected_by_inner_viewport_bounds_delta_y =
+          layer->position_constraint().is_fixed_to_bottom_edge();
+    } else if (data_from_ancestor.affected_by_outer_viewport_bounds_delta) {
+      node->data.affected_by_outer_viewport_bounds_delta_x =
+          layer->position_constraint().is_fixed_to_right_edge();
+      node->data.affected_by_outer_viewport_bounds_delta_y =
+          layer->position_constraint().is_fixed_to_bottom_edge();
+    }
+  }
 
   node->data.local = layer->transform();
   node->data.update_pre_local_transform(layer->transform_origin());
@@ -385,13 +408,16 @@ void BuildPropertyTreesInternal(
 }  // namespace
 
 template <typename LayerType>
-void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
-                                        const LayerType* page_scale_layer,
-                                        float page_scale_factor,
-                                        float device_scale_factor,
-                                        const gfx::Rect& viewport,
-                                        const gfx::Transform& device_transform,
-                                        PropertyTrees* property_trees) {
+void BuildPropertyTreesTopLevelInternal(
+    LayerType* root_layer,
+    const LayerType* page_scale_layer,
+    const LayerType* inner_viewport_scroll_layer,
+    const LayerType* outer_viewport_scroll_layer,
+    float page_scale_factor,
+    float device_scale_factor,
+    const gfx::Rect& viewport,
+    const gfx::Transform& device_transform,
+    PropertyTrees* property_trees) {
   if (!property_trees->needs_rebuild)
     return;
 
@@ -407,9 +433,13 @@ void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
   data_for_recursion.clip_tree_parent = 0;
   data_for_recursion.opacity_tree_parent = -1;
   data_for_recursion.page_scale_layer = page_scale_layer;
+  data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
+  data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
   data_for_recursion.page_scale_factor = page_scale_factor;
   data_for_recursion.device_scale_factor = device_scale_factor;
   data_for_recursion.in_subtree_of_page_scale_layer = false;
+  data_for_recursion.affected_by_inner_viewport_bounds_delta = false;
+  data_for_recursion.affected_by_outer_viewport_bounds_delta = false;
   data_for_recursion.should_flatten = false;
   data_for_recursion.ancestor_clips_subtree = true;
   data_for_recursion.device_transform = &device_transform;
@@ -437,26 +467,32 @@ void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
 void PropertyTreeBuilder::BuildPropertyTrees(
     Layer* root_layer,
     const Layer* page_scale_layer,
+    const Layer* inner_viewport_scroll_layer,
+    const Layer* outer_viewport_scroll_layer,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
   BuildPropertyTreesTopLevelInternal(
-      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
+      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(
     LayerImpl* root_layer,
     const LayerImpl* page_scale_layer,
+    const LayerImpl* inner_viewport_scroll_layer,
+    const LayerImpl* outer_viewport_scroll_layer,
     float page_scale_factor,
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
   BuildPropertyTreesTopLevelInternal(
-      root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
+      outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
 }
 

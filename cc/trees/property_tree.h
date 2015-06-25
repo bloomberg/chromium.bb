@@ -68,25 +68,33 @@ struct CC_EXPORT TransformNodeData {
   int source_node_id;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
-  bool needs_local_transform_update;
+  bool needs_local_transform_update : 1;
 
-  bool is_invertible;
-  bool ancestors_are_invertible;
+  bool is_invertible : 1;
+  bool ancestors_are_invertible : 1;
 
-  bool is_animated;
-  bool to_screen_is_animated;
+  bool is_animated : 1;
+  bool to_screen_is_animated : 1;
 
   // Flattening, when needed, is only applied to a node's inherited transform,
   // never to its local transform.
-  bool flattens_inherited_transform;
+  bool flattens_inherited_transform : 1;
 
   // This is true if the to_parent transform at every node on the path to the
   // root is flat.
-  bool node_and_ancestors_are_flat;
+  bool node_and_ancestors_are_flat : 1;
 
-  bool scrolls;
+  bool scrolls : 1;
 
-  bool needs_sublayer_scale;
+  bool needs_sublayer_scale : 1;
+
+  // These are used to position nodes wrt the right or bottom of the inner or
+  // outer viewport.
+  bool affected_by_inner_viewport_bounds_delta_x : 1;
+  bool affected_by_inner_viewport_bounds_delta_y : 1;
+  bool affected_by_outer_viewport_bounds_delta_x : 1;
+  bool affected_by_outer_viewport_bounds_delta_y : 1;
+
   // This is used as a fallback when we either cannot adjust raster scale or if
   // the raster scale cannot be extracted from the screen space transform.
   float layer_scale_factor;
@@ -177,6 +185,7 @@ class CC_EXPORT PropertyTree {
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
   TransformTree();
+  ~TransformTree() override;
 
   // Computes the change of basis transform from node |source_id| to |dest_id|.
   // The function returns false iff the inverse of a singular transform was
@@ -230,6 +239,20 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return source_to_parent_updates_allowed_;
   }
 
+  void set_inner_viewport_bounds_delta(gfx::Vector2dF bounds_delta) {
+    inner_viewport_bounds_delta_ = bounds_delta;
+  }
+  gfx::Vector2dF inner_viewport_bounds_delta() const {
+    return inner_viewport_bounds_delta_;
+  }
+
+  void set_outer_viewport_bounds_delta(gfx::Vector2dF bounds_delta) {
+    outer_viewport_bounds_delta_ = bounds_delta;
+  }
+  gfx::Vector2dF outer_viewport_bounds_delta() const {
+    return outer_viewport_bounds_delta_;
+  }
+
  private:
   // Returns true iff the node at |desc_id| is a descendant of the node at
   // |anc_id|.
@@ -261,6 +284,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   bool NeedsSourceToParentUpdate(TransformNode* node);
 
   bool source_to_parent_updates_allowed_;
+  gfx::Vector2dF inner_viewport_bounds_delta_;
+  gfx::Vector2dF outer_viewport_bounds_delta_;
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};
