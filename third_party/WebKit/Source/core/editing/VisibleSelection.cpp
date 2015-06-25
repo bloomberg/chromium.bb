@@ -39,10 +39,6 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
-
 namespace blink {
 
 VisibleSelection::VisibleSelection()
