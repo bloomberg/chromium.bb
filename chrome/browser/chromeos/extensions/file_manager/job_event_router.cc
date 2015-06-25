@@ -128,6 +128,7 @@ void JobEventRouter::SendDriveFileTransferEvent() {
   pending_event_->total = num_total_bytes_;
 
   BroadcastEvent(
+      extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
       file_manager_private::OnFileTransfersUpdated::kEventName,
       file_manager_private::OnFileTransfersUpdated::Create(*pending_event_));
   pending_event_.reset();

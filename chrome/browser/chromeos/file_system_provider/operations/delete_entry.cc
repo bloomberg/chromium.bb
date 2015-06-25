@@ -41,6 +41,7 @@ bool DeleteEntry::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_DELETE_ENTRY_REQUESTED,
       extensions::api::file_system_provider::OnDeleteEntryRequested::kEventName,
       extensions::api::file_system_provider::OnDeleteEntryRequested::Create(
           options));

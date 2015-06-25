@@ -59,6 +59,7 @@ bool GetActions::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_GET_ACTIONS_REQUESTED,
       extensions::api::file_system_provider::OnGetActionsRequested::kEventName,
       extensions::api::file_system_provider::OnGetActionsRequested::Create(
           options));

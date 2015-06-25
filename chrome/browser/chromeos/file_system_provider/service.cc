@@ -279,7 +279,7 @@ bool Service::RequestMount(const std::string& extension_id) {
   event_router->DispatchEventToExtension(
       extension_id,
       make_scoped_ptr(new extensions::Event(
-          extensions::events::UNKNOWN,
+          extensions::events::FILE_SYSTEM_PROVIDER_ON_MOUNT_REQUESTED,
           extensions::api::file_system_provider::OnMountRequested::kEventName,
           scoped_ptr<base::ListValue>(new base::ListValue()))));
 

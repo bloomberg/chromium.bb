@@ -34,7 +34,7 @@ bool Abort::Execute(int request_id) {
   options.operation_request_id = operation_request_id_;
 
   return SendEvent(
-      request_id,
+      request_id, extensions::events::FILE_SYSTEM_PROVIDER_ON_ABORT_REQUESTED,
       extensions::api::file_system_provider::OnAbortRequested::kEventName,
       extensions::api::file_system_provider::OnAbortRequested::Create(options));
 }

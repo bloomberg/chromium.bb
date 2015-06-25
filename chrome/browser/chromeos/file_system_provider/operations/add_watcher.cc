@@ -38,6 +38,7 @@ bool AddWatcher::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_ADD_WATCHER_REQUESTED,
       extensions::api::file_system_provider::OnAddWatcherRequested::kEventName,
       extensions::api::file_system_provider::OnAddWatcherRequested::Create(
           options));

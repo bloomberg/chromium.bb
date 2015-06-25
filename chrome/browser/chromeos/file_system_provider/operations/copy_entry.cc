@@ -41,6 +41,7 @@ bool CopyEntry::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_COPY_ENTRY_REQUESTED,
       extensions::api::file_system_provider::OnCopyEntryRequested::kEventName,
       extensions::api::file_system_provider::OnCopyEntryRequested::Create(
           options));

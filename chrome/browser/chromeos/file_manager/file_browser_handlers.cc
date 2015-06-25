@@ -410,7 +410,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   }
 
   scoped_ptr<extensions::Event> event(
-      new extensions::Event(extensions::events::UNKNOWN,
+      new extensions::Event(extensions::events::FILE_BROWSER_HANDLER_ON_EXECUTE,
                             "fileBrowserHandler.onExecute", event_args.Pass()));
   event->restrict_to_browser_context = profile_;
   router->DispatchEventToExtension(extension_->id(), event.Pass());

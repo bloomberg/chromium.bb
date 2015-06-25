@@ -184,8 +184,9 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, extensions::api::wallpaper_private::
-                                       OnWallpaperChangedBy3rdParty::kEventName,
+      extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
+      extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
+          kEventName,
       event_args.Pass()));
   event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
                                          event.Pass());

@@ -38,6 +38,7 @@ bool CreateFile::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_CREATE_FILE_REQUESTED,
       extensions::api::file_system_provider::OnCreateFileRequested::kEventName,
       extensions::api::file_system_provider::OnCreateFileRequested::Create(
           options));

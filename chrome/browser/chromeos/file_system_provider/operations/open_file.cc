@@ -52,6 +52,7 @@ bool OpenFile::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_OPEN_FILE_REQUESTED,
       extensions::api::file_system_provider::OnOpenFileRequested::kEventName,
       extensions::api::file_system_provider::OnOpenFileRequested::Create(
           options));

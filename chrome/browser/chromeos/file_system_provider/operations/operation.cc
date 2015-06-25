@@ -43,10 +43,11 @@ void Operation::SetDispatchEventImplForTesting(
 }
 
 bool Operation::SendEvent(int request_id,
+                          extensions::events::HistogramValue histogram_value,
                           const std::string& event_name,
                           scoped_ptr<base::ListValue> event_args) {
-  return dispatch_event_impl_.Run(make_scoped_ptr(new extensions::Event(
-      extensions::events::UNKNOWN, event_name, event_args.Pass())));
+  return dispatch_event_impl_.Run(make_scoped_ptr(
+      new extensions::Event(histogram_value, event_name, event_args.Pass())));
 }
 
 }  // namespace operations

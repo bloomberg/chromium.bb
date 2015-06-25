@@ -28,7 +28,7 @@ bool Unmount::Execute(int request_id) {
   options.request_id = request_id;
 
   return SendEvent(
-      request_id,
+      request_id, extensions::events::FILE_SYSTEM_PROVIDER_ON_UNMOUNT_REQUESTED,
       extensions::api::file_system_provider::OnUnmountRequested::kEventName,
       extensions::api::file_system_provider::OnUnmountRequested::Create(
           options));

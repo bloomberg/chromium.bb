@@ -35,6 +35,7 @@ bool CloseFile::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_CLOSE_FILE_REQUESTED,
       extensions::api::file_system_provider::OnCloseFileRequested::kEventName,
       extensions::api::file_system_provider::OnCloseFileRequested::Create(
           options));

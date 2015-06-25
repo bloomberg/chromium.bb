@@ -41,6 +41,7 @@ bool MoveEntry::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_MOVE_ENTRY_REQUESTED,
       extensions::api::file_system_provider::OnMoveEntryRequested::kEventName,
       extensions::api::file_system_provider::OnMoveEntryRequested::Create(
           options));

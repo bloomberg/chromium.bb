@@ -11,16 +11,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
 namespace base {
 class ListValue;
-}  // namespace base
+}
 
 namespace extensions {
 struct Event;
 class EventRouter;
-}  // namespace extensions
+}
 
 namespace chromeos {
 namespace file_system_provider {
@@ -53,6 +54,7 @@ class Operation : public RequestManager::HandlerInterface {
   // Sends an event to the providing extension. Returns false, if the providing
   // extension does not handle the |event_name| event.
   bool SendEvent(int request_id,
+                 extensions::events::HistogramValue histogram_value,
                  const std::string& event_name,
                  scoped_ptr<base::ListValue> event_args);
 

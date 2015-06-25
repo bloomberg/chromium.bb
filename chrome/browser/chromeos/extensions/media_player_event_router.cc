@@ -11,15 +11,20 @@
 
 namespace extensions {
 
-static void BroadcastEvent(content::BrowserContext* context,
-                           const std::string& event_name) {
+namespace {
+
+void BroadcastEvent(content::BrowserContext* context,
+                    events::HistogramValue histogram_value,
+                    const std::string& event_name) {
   if (context && EventRouter::Get(context)) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
-    scoped_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::UNKNOWN, event_name, args.Pass()));
+    scoped_ptr<Event> event(
+        new Event(histogram_value, event_name, args.Pass()));
     EventRouter::Get(context)->BroadcastEvent(event.Pass());
   }
 }
+
+}  // namespace
 
 MediaPlayerEventRouter::MediaPlayerEventRouter(content::BrowserContext* context)
     : browser_context_(context) {}
@@ -28,15 +33,19 @@ MediaPlayerEventRouter::~MediaPlayerEventRouter() {
 }
 
 void MediaPlayerEventRouter::NotifyNextTrack() {
-  BroadcastEvent(browser_context_, "mediaPlayerPrivate.onNextTrack");
+  BroadcastEvent(browser_context_, events::MEDIA_PLAYER_PRIVATE_ON_NEXT_TRACK,
+                 "mediaPlayerPrivate.onNextTrack");
 }
 
 void MediaPlayerEventRouter::NotifyPrevTrack() {
-  BroadcastEvent(browser_context_, "mediaPlayerPrivate.onPrevTrack");
+  BroadcastEvent(browser_context_, events::MEDIA_PLAYER_PRIVATE_ON_PREV_TRACK,
+                 "mediaPlayerPrivate.onPrevTrack");
 }
 
 void MediaPlayerEventRouter::NotifyTogglePlayState() {
-  BroadcastEvent(browser_context_, "mediaPlayerPrivate.onTogglePlayState");
+  BroadcastEvent(browser_context_,
+                 events::MEDIA_PLAYER_PRIVATE_ON_TOGGLE_PLAY_STATE,
+                 "mediaPlayerPrivate.onTogglePlayState");
 }
 
 }  // namespace extensions

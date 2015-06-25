@@ -122,6 +122,7 @@ bool GetMetadata::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_GET_METADATA_REQUESTED,
       extensions::api::file_system_provider::OnGetMetadataRequested::kEventName,
       extensions::api::file_system_provider::OnGetMetadataRequested::Create(
           options));

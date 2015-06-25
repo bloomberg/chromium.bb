@@ -39,8 +39,10 @@ bool ExecuteAction::Execute(int request_id) {
   options.action_id = action_id_;
 
   return SendEvent(
-      request_id, extensions::api::file_system_provider::
-                      OnExecuteActionRequested::kEventName,
+      request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_EXECUTE_ACTION_REQUESTED,
+      extensions::api::file_system_provider::OnExecuteActionRequested::
+          kEventName,
       extensions::api::file_system_provider::OnExecuteActionRequested::Create(
           options));
 }

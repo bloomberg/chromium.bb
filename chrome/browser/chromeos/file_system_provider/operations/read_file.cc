@@ -77,6 +77,7 @@ bool ReadFile::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_READ_FILE_REQUESTED,
       extensions::api::file_system_provider::OnReadFileRequested::kEventName,
       extensions::api::file_system_provider::OnReadFileRequested::Create(
           options));

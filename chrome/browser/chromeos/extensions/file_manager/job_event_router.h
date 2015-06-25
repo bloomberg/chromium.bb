@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "url/gurl.h"
 
 namespace file_manager {
@@ -37,8 +38,10 @@ class JobEventRouter : public drive::JobListObserver {
                                                const std::string& id) const = 0;
 
   // Helper method to dispatch events.
-  virtual void BroadcastEvent(const std::string& event_name,
-                              scoped_ptr<base::ListValue> event_args) = 0;
+  virtual void BroadcastEvent(
+      extensions::events::HistogramValue histogram_value,
+      const std::string& event_name,
+      scoped_ptr<base::ListValue> event_args) = 0;
 
  private:
   // Request sending transfer event with |job_info| and |state|.

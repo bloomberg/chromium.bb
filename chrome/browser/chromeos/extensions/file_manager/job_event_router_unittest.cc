@@ -22,7 +22,8 @@ class JobEventRouterImpl : public JobEventRouter {
     return GURL();
   }
 
-  void BroadcastEvent(const std::string& event_name,
+  void BroadcastEvent(extensions::events::HistogramValue histogram_value,
+                      const std::string& event_name,
                       scoped_ptr<base::ListValue> event_args) override {
     ASSERT_EQ(1u, event_args->GetSize());
     const base::DictionaryValue* event;

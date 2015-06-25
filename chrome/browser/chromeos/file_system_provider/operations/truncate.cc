@@ -41,6 +41,7 @@ bool Truncate::Execute(int request_id) {
 
   return SendEvent(
       request_id,
+      extensions::events::FILE_SYSTEM_PROVIDER_ON_TRUNCATE_REQUESTED,
       extensions::api::file_system_provider::OnTruncateRequested::kEventName,
       extensions::api::file_system_provider::OnTruncateRequested::Create(
           options));

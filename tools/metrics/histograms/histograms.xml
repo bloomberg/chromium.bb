@@ -54053,7 +54053,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="278" label="VPN_PROVIDER_ON_PACKET_RECEIVED"/>
   <int value="279" label="VPN_PROVIDER_ON_PLATFORM_MESSAGE"/>
   <int value="280" label="VPN_PROVIDER_ON_UIEVENT"/>
-  <int value="281" label="WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY3RD_PARTY"/>
+  <int value="281" label="WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY"/>
   <int value="282" label="WEB_NAVIGATION_ON_BEFORE_NAVIGATE"/>
   <int value="283" label="WEB_NAVIGATION_ON_COMMITTED"/>
   <int value="284" label="WEB_NAVIGATION_ON_COMPLETED"/>
@@ -54096,6 +54096,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="321" label="WINDOWS_ON_CREATED"/>
   <int value="322" label="WINDOWS_ON_FOCUS_CHANGED"/>
   <int value="323" label="WINDOWS_ON_REMOVED"/>
+  <int value="324" label="FILE_SYSTEM_PROVIDER_ON_EXECUTE_ACTION_REQUESTED"/>
+  <int value="325" label="FILE_SYSTEM_PROVIDER_ON_GET_ACTIONS_REQUESTED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
