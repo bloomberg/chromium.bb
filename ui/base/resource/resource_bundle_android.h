@@ -28,8 +28,11 @@ UI_BASE_EXPORT int GetMainAndroidPackFd(
 UI_BASE_EXPORT int GetCommonResourcesPackFd(
     base::MemoryMappedFile::Region* out_region);
 
-// Checks whether the locale data pak is contained within the .apk.
-bool AssetContainedInApk(const std::string& filename);
+// Returns the path within the apk for the given locale's .pak file, or an
+// empty string if it doesn't exist.
+// Only locale paks for the active Android language can be retrieved.
+UI_BASE_EXPORT std::string GetPathForAndroidLocalePakWithinApk(
+    const std::string& locale);
 
 bool RegisterResourceBundleAndroid(JNIEnv* env);
 

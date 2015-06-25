@@ -94,6 +94,17 @@
       ],
     },
     {
+      'target_name': 'android_webview_locale_paks',
+      'type': 'none',
+      'variables': {
+        'locale_pak_files': [ '<@(webview_locales_input_paks)' ],
+      },
+      'includes': [
+        'apk/system_webview_locales_paks.gypi',
+        '../build/android/locale_pak_resources.gypi',
+      ],
+    },
+    {
       'target_name': 'android_webview_strings_grd',
       'android_unmangled_name': 1,
       'type': 'none',
@@ -350,6 +361,7 @@
         '../components/components.gyp:web_contents_delegate_android_java',
         '../content/content.gyp:content_java',
         '../ui/android/ui_android.gyp:ui_java',
+        'android_webview_locale_paks',
         'android_webview_strings_grd',
       ],
       'variables': {

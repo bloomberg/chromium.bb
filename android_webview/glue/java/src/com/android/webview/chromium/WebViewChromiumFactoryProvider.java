@@ -37,6 +37,7 @@ import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.R;
 import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.PathService;
@@ -48,6 +49,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.ui.base.ResourceBundle;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -241,6 +243,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         // Make sure that ResourceProvider is initialized before starting the browser process.
         Context context = getWrappedCurrentApplicationContext();
         setUpResources(context);
+        ResourceBundle.initializeLocalePaks(context, R.array.locale_paks);
         initPlatSupportLibrary();
         AwBrowserProcess.start(context);
 

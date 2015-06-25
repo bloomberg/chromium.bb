@@ -199,16 +199,12 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 }
 
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  bool locale_file_path_exists = !GetLocaleFilePath(locale, true).empty();
 #if defined(OS_ANDROID)
-  // TODO(mkosiba,primiano): Chrome should mmap the .pak files too, in which
-  // case we'd not need to check if locale_file_path_exists here.
-  // http://crbug.com/394502.
-  return locale_file_path_exists ||
-      AssetContainedInApk(locale + kPakFileSuffix);
-#else
-  return locale_file_path_exists;
+  if (!GetPathForAndroidLocalePakWithinApk(locale).empty()) {
+    return true;
+  }
 #endif
+  return !GetLocaleFilePath(locale, true).empty();
 }
 
 void ResourceBundle::AddDataPackFromPath(const base::FilePath& path,

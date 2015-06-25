@@ -17,13 +17,12 @@
         'java_in_dir': 'test/shell',
         'native_lib_target': 'libstandalonelibwebviewchromium',
         'resource_dir': 'test/shell/res',
-        'extensions_to_not_compress': 'pak,dat,bin',
+        'extensions_to_not_compress': '.lpak,.pak,.dat,.bin',
         'asset_location': '<(PRODUCT_DIR)/android_webview_apk/assets',
         'extra_native_libs': ['<(SHARED_LIB_DIR)/libdrawgl.>(android_product_extension)'],
         'snapshot_copy_files': '<(snapshot_copy_files)',
         'additional_input_paths': [
           '<(asset_location)/webviewchromium.pak',
-          '<(asset_location)/en-US.pak',
           '<(asset_location)/asset_file.html',
           '<(asset_location)/cookie_test.html',
           '<(asset_location)/asset_icon.png',
@@ -51,7 +50,6 @@
           'destination': '<(asset_location)',
           'files': [
             '<(PRODUCT_DIR)/android_webview_assets/webviewchromium.pak',
-            '<(PRODUCT_DIR)/android_webview_assets/locales/en-US.pak',
             '<(java_in_dir)/assets/asset_file.html',
             '<(java_in_dir)/assets/asset_icon.png',
             '<(java_in_dir)/assets/cookie_test.html',

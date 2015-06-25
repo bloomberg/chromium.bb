@@ -8,15 +8,14 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Trace;
 import android.util.Log;
+
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
@@ -41,21 +39,21 @@ public class ResourceExtractor {
     private static final String V8_NATIVES_DATA_FILENAME = "natives_blob.bin";
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
 
-    private static String[] sMandatoryPaks = new String[0];
-    private static int sLocalePaksResId = 0;
+    private static ResourceEntry[] sResourcesToExtract = new ResourceEntry[0];
 
     /**
-     * Applies the reverse mapping done by locale_pak_resources.py.
+     * Holds information about a res/raw file (e.g. locale .pak files).
      */
-    private static String toChromeLocaleName(String srcFileName) {
-        srcFileName = srcFileName.replace(".lpak", ".pak");
-        String[] parts = srcFileName.split("_");
-        if (parts.length > 1) {
-            int dotIdx = parts[1].indexOf('.');
-            return parts[0] + "-" + parts[1].substring(0, dotIdx).toUpperCase(Locale.ENGLISH)
-                    + parts[1].substring(dotIdx);
+    public static final class ResourceEntry {
+        public final int resourceId;
+        public final String pathWithinApk;
+        public final String extractedFileName;
+
+        public ResourceEntry(int resourceId, String pathWithinApk, String extractedFileName) {
+            this.resourceId = resourceId;
+            this.pathWithinApk = pathWithinApk;
+            this.extractedFileName = extractedFileName;
         }
-        return srcFileName;
     }
 
     private class ExtractTask extends AsyncTask<Void, Void, Void> {
@@ -112,49 +110,21 @@ public class ResourceExtractor {
             }
 
             beginTraceSection("WalkAssets");
-            AssetManager assetManager = mContext.getAssets();
             byte[] buffer = new byte[BUFFER_SIZE];
             try {
                 // Extract all files that don't already exist.
-                for (String fileName : sMandatoryPaks) {
-                    File output = new File(outputDir, fileName);
+                for (ResourceEntry entry : sResourcesToExtract) {
+                    File output = new File(outputDir, entry.extractedFileName);
                     if (output.exists()) {
                         continue;
                     }
                     beginTraceSection("ExtractResource");
-                    InputStream inputStream = assetManager.open(fileName);
+                    InputStream inputStream = mContext.getResources().openRawResource(
+                            entry.resourceId);
                     try {
                         extractResourceHelper(inputStream, output, buffer);
                     } finally {
                         endTraceSection(); // ExtractResource
-                    }
-                }
-
-                if (sLocalePaksResId != 0) {
-                    // locale_paks yields the current language's pak file paths.
-                    Resources resources = mContext.getResources();
-                    TypedArray resIds = resources.obtainTypedArray(sLocalePaksResId);
-                    try {
-                        int len = resIds.length();
-                        for (int i = 0; i < len; ++i) {
-                            int resId = resIds.getResourceId(i, 0);
-                            String resPath = resources.getString(resId);
-                            String srcBaseName = new File(resPath).getName();
-                            String dstBaseName = toChromeLocaleName(srcBaseName);
-                            File output = new File(outputDir, dstBaseName);
-                            if (output.exists()) {
-                                continue;
-                            }
-                            beginTraceSection("ExtractResource");
-                            InputStream inputStream = resources.openRawResource(resId);
-                            try {
-                                extractResourceHelper(inputStream, output, buffer);
-                            } finally {
-                                endTraceSection(); // ExtractResource
-                            }
-                        }
-                    } finally {
-                        resIds.recycle();
                     }
                 }
             } catch (IOException e) {
@@ -285,24 +255,18 @@ public class ResourceExtractor {
 
     /**
      * Specifies the files that should be extracted from the APK.
-     * and moved to {@link #getOutputDirFromContext(Context)}.
-     * @param localePaksResId Resource ID for the locale_paks string array. Pass
-     *     in 0 to disable locale pak extraction.
-     * @param paths The list of paths to be extracted.
+     * and moved to {@link #getOutputDir()}.
      */
-    public static void setMandatoryPaksToExtract(int localePaksResId, String... paths) {
+    @SuppressFBWarnings("EI_EXPOSE_STATIC_REP2")
+    public static void setResourcesToExtract(ResourceEntry[] entries) {
         assert (sInstance == null || sInstance.mExtractTask == null)
                 : "Must be called before startExtractingResources is called";
-        sLocalePaksResId = localePaksResId;
-        sMandatoryPaks = paths;
+        sResourcesToExtract = entries;
     }
 
     // TODO(agrieve): Delete this method ones all usages of it are updated.
     public static void setMandatoryPaksToExtract(String... paths) {
-        if (paths.length == 1 && "".equals(paths[0])) {
-            paths = new String[0];
-        }
-        setMandatoryPaksToExtract(0, paths);
+        assert paths.length == 1 && "".equals(paths[0]);
     }
 
     private ResourceExtractor(Context context) {
@@ -433,6 +397,6 @@ public class ResourceExtractor {
      * Pak extraction not necessarily required by the embedder.
      */
     private static boolean shouldSkipPakExtraction() {
-        return sMandatoryPaks.length == 0 && sLocalePaksResId == 0;
+        return sResourcesToExtract.length == 0;
     }
 }

@@ -8,10 +8,12 @@ import android.os.Debug;
 import android.util.Log;
 
 import org.chromium.android_webview.AwBrowserProcess;
+import org.chromium.android_webview.R;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.TraceEvent;
 import org.chromium.content.app.ContentApplication;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * The android_webview shell Application subclass.
@@ -40,6 +42,11 @@ public class AwShellApplication extends ContentApplication {
             Log.e(TAG, "Enabling Android trace.");
             TraceEvent.setATraceEnabled(true);
         }
+    }
+
+    @Override
+    protected void initializeLibraryDependencies() {
+        ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
     }
 
     @Override

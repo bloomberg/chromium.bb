@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.smartcard.EmptyPKCS11AuthenticationManager;
 import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.shell.preferences.ChromeShellPreferences;
+import org.chromium.ui.base.ResourceBundle;
 
 import java.util.ArrayList;
 
@@ -58,7 +59,8 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks);
+        ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
+        ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

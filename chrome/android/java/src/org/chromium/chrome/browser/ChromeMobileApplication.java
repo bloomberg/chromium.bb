@@ -70,6 +70,7 @@ import org.chromium.content.browser.DownloadController;
 import org.chromium.printing.PrintingController;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.ResourceBundle;
 
 import java.lang.ref.WeakReference;
 import java.util.Locale;
@@ -195,7 +196,8 @@ public class ChromeMobileApplication extends ChromiumApplication {
     protected void initializeLibraryDependencies() {
         // The ResourceExtractor is only needed by the browser process, but this will have no
         // impact on the renderer process construction.
-        ResourceExtractor.setMandatoryPaksToExtract(R.array.locale_paks);
+        ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
+        ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 
