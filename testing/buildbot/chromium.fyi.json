@@ -1700,6 +1700,9 @@
         "test": "midi_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "net_unittests"
       },
       {
@@ -1830,6 +1833,9 @@
         "test": "midi_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "net_unittests"
       },
       {
@@ -2928,6 +2934,9 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "net_unittests"
       },
       {
@@ -3312,6 +3321,9 @@
         "test": "nacl_loader_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "net_unittests"
       },
       {
