@@ -144,7 +144,7 @@ void BookmarkModel::Load(
       new BookmarkExpandedStateTracker(this, pref_service));
 
   // Load the bookmarks. BookmarkStorage notifies us when done.
-  store_ .reset(new BookmarkStorage(this, profile_path, io_task_runner.get()));
+  store_.reset(new BookmarkStorage(this, profile_path, io_task_runner.get()));
   store_->LoadBookmarks(CreateLoadDetails(accept_languages), ui_task_runner);
 }
 
