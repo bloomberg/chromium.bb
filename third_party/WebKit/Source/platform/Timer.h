@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Noncopyable.h"
@@ -71,6 +72,11 @@ public:
 
     void didChangeAlignmentInterval(double now);
 
+#if defined(ADDRESS_SANITIZER)
+protected:
+    CancellableTaskFactory& cancellableTaskFactory() { return m_cancellableTaskFactory; }
+#endif
+
 private:
     virtual void fired() = 0;
 
@@ -81,38 +87,13 @@ private:
 
     void setNextFireTime(double now, double delay);
 
-    void runInternal();
-
-    class CancellableTimerTask final : public WebThread::Task {
-        WTF_MAKE_NONCOPYABLE(CancellableTimerTask);
-    public:
-        explicit CancellableTimerTask(TimerBase* timer) : m_timer(timer) { }
-
-        ~CancellableTimerTask() override { }
-
-        NO_LAZY_SWEEP_SANITIZE_ADDRESS
-        void run() override
-        {
-            if (m_timer) {
-                m_timer->m_cancellableTimerTask = nullptr;
-                m_timer->runInternal();
-            }
-        }
-
-        void cancel()
-        {
-            m_timer = nullptr;
-        }
-
-    private:
-        TimerBase* m_timer; // NOT OWNED
-    };
+    void run();
 
     double m_nextFireTime; // 0 if inactive
     double m_unalignedNextFireTime; // m_nextFireTime not considering alignment interval
     double m_repeatInterval; // 0 if not repeating
     WebTraceLocation m_location;
-    CancellableTimerTask* m_cancellableTimerTask; // NOT OWNED
+    CancellableTaskFactory m_cancellableTaskFactory;
     WebScheduler* m_webScheduler; // Not owned.
 
 #if ENABLE(ASSERT)
@@ -147,6 +128,10 @@ public:
     Timer(TimerFiredClass* o, TimerFiredFunction f)
         : m_object(o), m_function(f)
     {
+#if ENABLE(LAZY_SWEEPING) && defined(ADDRESS_SANITIZER)
+        if (IsGarbageCollectedType<TimerFiredClass>::value)
+            cancellableTaskFactory().setUnpoisonBeforeUpdate();
+#endif
     }
 
 protected:
@@ -177,7 +162,7 @@ NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline bool TimerBase::isActive() const
 {
     ASSERT(m_thread == currentThread());
-    return m_cancellableTimerTask;
+    return m_cancellableTaskFactory.isPending();
 }
 
 } // namespace blink
