@@ -53,6 +53,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_SITE_TITLE = "site_title";
     public static final String PREF_USAGE = "site_usage";
     public static final String PREF_PERMISSIONS = "site_permissions";
+    public static final String PREF_OS_PERMISSIONS_WARNING = "os_permissions_warning";
     // Actions at the top (if adding new, see hasUsagePreferences below):
     public static final String PREF_CLEAR_DATA = "clear_data";
     // Buttons:
@@ -305,8 +306,21 @@ public class SingleWebsitePreferences extends PreferenceFragment
             }
         }
 
-        // Remove categories if no sub-items.
+        // Remove the 'permission is off in Android' message if not needed.
         PreferenceScreen preferenceScreen = getPreferenceScreen();
+        if (!showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)
+                && !showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
+                && !showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
+            getPreferenceScreen().removePreference(
+                    preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING));
+        } else {
+            Preference preference = preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING);
+            WebsitePreferences.configurePermissionIsOffPreference(
+                    preference, getActivity(), 0, true);
+            preference.setIcon(getDisabledInAndroidIcon());
+        }
+
+        // Remove categories if no sub-items.
         if (!hasUsagePreferences()) {
             Preference heading = preferenceScreen.findPreference(PREF_USAGE);
             preferenceScreen.removePreference(heading);
@@ -315,6 +329,23 @@ public class SingleWebsitePreferences extends PreferenceFragment
             Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
             preferenceScreen.removePreference(heading);
         }
+    }
+
+    private boolean showWarningFor(int type) {
+        switch (type) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+                if (mSite.getGeolocationPermission() == null) return false;
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                if (mSite.getCameraPermission() == null) return false;
+                break;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                if (mSite.getMicrophonePermission() == null) return false;
+                break;
+            default:
+                return false;
+        }
+        return !WebsitePreferences.isPermissionEnabledInAndroid(getActivity(), type);
     }
 
     private boolean hasUsagePreferences() {
@@ -363,19 +394,43 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
 
         if (listPreference.isEnabled()) {
-            listPreference.setIcon(ContentSettingsResources.getIcon(contentType));
+            if (!WebsitePreferences.isPermissionEnabledInAndroid(getActivity(), contentType)) {
+                listPreference.setIcon(getDisabledInAndroidIcon());
+                listPreference.setEnabled(false);
+            } else {
+                listPreference.setIcon(ContentSettingsResources.getIcon(contentType));
+            }
         } else {
-            Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(),
-                    ContentSettingsResources.getIcon(contentType));
-            icon.mutate();
-            int disabledColor = getResources().getColor(
-                    R.color.primary_text_disabled_material_light);
-            icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
-            listPreference.setIcon(icon);
+            listPreference.setIcon(getDisabledInChromeIcon(contentType));
         }
 
         preference.setSummary(mListPreferenceSummaries[index]);
         listPreference.setOnPreferenceChangeListener(this);
+    }
+
+    /**
+     * Returns the icon for permissions that have been disabled by Chrome.
+     */
+    private Drawable getDisabledInChromeIcon(int contentType) {
+        Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(),
+                ContentSettingsResources.getIcon(contentType));
+        icon.mutate();
+        int disabledColor = getResources().getColor(
+                R.color.primary_text_disabled_material_light);
+        icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
+        return icon;
+    }
+
+    /**
+     * Returns the icon for permissions that have been disabled by Android.
+     */
+    private Drawable getDisabledInAndroidIcon() {
+        Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(),
+                R.drawable.exclamation_triangle);
+        icon.mutate();
+        int disabledColor = getResources().getColor(R.color.pref_accent_color);
+        icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
+        return icon;
     }
 
     private int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {

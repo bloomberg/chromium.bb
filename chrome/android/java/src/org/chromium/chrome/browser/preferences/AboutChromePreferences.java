@@ -46,7 +46,7 @@ public class AboutChromePreferences extends PreferenceFragment implements
                             R.style.DeprecationWarningPreferenceTheme));
             deprecationWarning.setOrder(-1);
             deprecationWarning.setTitle(R.string.deprecation_warning);
-            deprecationWarning.setIcon(R.drawable.deprecation_warning);
+            deprecationWarning.setIcon(R.drawable.exclamation_triangle);
             getPreferenceScreen().addPreference(deprecationWarning);
         }
 

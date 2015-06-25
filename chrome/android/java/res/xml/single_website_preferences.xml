@@ -4,6 +4,8 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+        android:key="os_permissions_warning" />
     <PreferenceCategory
         android:key="site_heading"
         android:title="@string/website_settings_site_category" />

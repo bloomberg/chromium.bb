@@ -4,6 +4,12 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -11,6 +17,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
+import android.provider.Settings;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.text.SpannableString;
@@ -23,7 +30,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -92,8 +101,8 @@ public class WebsitePreferences extends PreferenceFragment
     private static final String BLOCKED_GROUP = "blocked_group";
 
     private void getInfoForOrigins() {
-        if (mFilter.showGeolocationSites(mCategoryFilter)
-                && !LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
+        if (!isPermissionEnabledInAndroid(
+                getActivity(), mFilter.toContentSettingsType(mCategoryFilter))) {
             // No need to fetch any data if we're not going to show it, but we do need to update
             // the global toggle to reflect updates in Android settings (e.g. Location).
             resetList();
@@ -574,31 +583,34 @@ public class WebsitePreferences extends PreferenceFragment
             PreferenceGroup blockedGroup =
                     (PreferenceGroup) getPreferenceScreen().findPreference(
                             BLOCKED_GROUP);
-            allowedGroup.setOnPreferenceClickListener(this);
-            blockedGroup.setOnPreferenceClickListener(this);
 
-            if (mFilter.showGeolocationSites(mCategoryFilter)
-                    && !LocationSettings.getInstance().isSystemLocationSettingEnabled()
-                    && (LocationSettings.getInstance().isChromeLocationSettingEnabled()
-                               || !isCategoryManaged())) {
+            boolean showPermissionOffInAndroidMsg = !isPermissionEnabledInAndroid(
+                    getActivity(), mFilter.toContentSettingsType(mCategoryFilter))
+                            || (!LocationSettings.getInstance().isSystemLocationSettingEnabled()
+                                    && mFilter.showGeolocationSites(mCategoryFilter));
+            // The only time we don't want to show location as blocked in system is when Chrome also
+            // blocks Location by policy (because then turning it on in the system isn't going to
+            // turn on location in Chrome).
+            if (showPermissionOffInAndroidMsg && mFilter.showGeolocationSites(mCategoryFilter)
+                    && !LocationSettings.getInstance().isChromeLocationSettingEnabled()
+                            && isCategoryManaged()) {
+                showPermissionOffInAndroidMsg = false;
+            }
+
+            if (showPermissionOffInAndroidMsg) {
                 getPreferenceScreen().removePreference(globalToggle);
                 getPreferenceScreen().removePreference(allowedGroup);
                 getPreferenceScreen().removePreference(blockedGroup);
 
-                // Show the link to system settings since system location is disabled.
-                ChromeBasePreference locationMessage =
-                        new ChromeBasePreference(getActivity(), null);
-                int color = getResources().getColor(R.color.pref_accent_color);
-                ForegroundColorSpan linkSpan = new ForegroundColorSpan(color);
-                final String message = getString(R.string.android_location_off);
-                final SpannableString messageWithLink =
-                        SpanApplier.applySpans(
-                                message, new SpanInfo("<link>", "</link>", linkSpan));
-                locationMessage.setTitle(messageWithLink);
-                locationMessage.setIntent(
-                        LocationSettings.getInstance().getSystemLocationSettingsIntent());
-                getPreferenceScreen().addPreference(locationMessage);
+                // Show the link to system settings since permission is disabled.
+                ChromeBasePreference preference = new ChromeBasePreference(getActivity(), null);
+                configurePermissionIsOffPreference(preference, getActivity(),
+                        mFilter.toContentSettingsType(mCategoryFilter), false);
+                getPreferenceScreen().addPreference(preference);
             } else {
+                allowedGroup.setOnPreferenceClickListener(this);
+                blockedGroup.setOnPreferenceClickListener(this);
+
                 // Determine what toggle to use and what it should display.
                 int contentType = mFilter.toContentSettingsType(mCategoryFilter);
                 globalToggle.setOnPreferenceChangeListener(this);
@@ -645,6 +657,72 @@ public class WebsitePreferences extends PreferenceFragment
                 }
             }
         }
+    }
+
+    /**
+     * Returns true when a certain permissions is enabled in Android.
+     * @param category The permission category to look up.
+     */
+    public static boolean isPermissionEnabledInAndroid(Context context, int contentSettingType) {
+        if (!BuildInfo.isMncOrLater()) return true;
+
+        boolean enabled = true;
+        if (contentSettingType == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+            enabled = LocationSettings.getInstance().isSystemLocationSettingEnabled()
+                    && hasPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION, context);
+        } else if (contentSettingType
+                == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+            enabled = hasPermission(android.Manifest.permission.CAMERA, context);
+        } else if (contentSettingType
+                == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+            enabled = hasPermission(android.Manifest.permission.RECORD_AUDIO, context);
+        }
+
+        return enabled;
+    }
+
+    private static boolean hasPermission(String permission, Context context) {
+        return PackageManager.PERMISSION_GRANTED == context.getPackageManager().checkPermission(
+                permission, context.getPackageName());
+    }
+
+    /**
+     * Returns the system permission Intent to use when certain permissions are disabled.
+     * For GeoLocation, the Intent will send the user to the Android Location setting page (if
+     * location is turned off altogether) but otherwise to the App Info page for Chrome.
+     * For all other permissions, the user is taken to the App Info page.
+     */
+    private static Intent getIntentToEnableOsPermission(Context context, int category) {
+        if (category == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
+                && !LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
+            return LocationSettings.getInstance().getSystemLocationSettingsIntent();
+        }
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setData(
+                new Uri.Builder().scheme("package").opaquePart(context.getPackageName()).build());
+        return intent;
+    }
+
+    /**
+     * Configure a preference to show when certain permissions are disabled.
+     * @param preference The preference to configure.
+     * @param activity The current activity.
+     * @param category The content settings category to configure the preference for.
+     * @param plural Whether the message should refer to a single category or many permissions.
+     */
+    public static void configurePermissionIsOffPreference(
+            Preference preference, Activity activity, int category, boolean plural) {
+        Resources resources = activity.getResources();
+        int color = resources.getColor(R.color.pref_accent_color);
+        ForegroundColorSpan linkSpan = new ForegroundColorSpan(color);
+        final String message = resources.getString(plural
+                ? R.string.android_permission_off_plural
+                : R.string.android_permission_off);
+        final SpannableString messageWithLink =
+                SpanApplier.applySpans(
+                        message, new SpanInfo("<link>", "</link>", linkSpan));
+        preference.setTitle(messageWithLink);
+        preference.setIntent(getIntentToEnableOsPermission(activity, category));
     }
 
     private void updateThirdPartyCookiesCheckBox() {

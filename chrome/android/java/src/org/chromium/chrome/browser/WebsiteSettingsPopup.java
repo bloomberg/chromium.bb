@@ -648,7 +648,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                     R.id.website_settings_permission_unavailable_message);
             permissionUnavailable.setVisibility(View.VISIBLE);
 
-            permissionIcon.setImageResource(R.drawable.deprecation_warning);
+            permissionIcon.setImageResource(R.drawable.exclamation_triangle);
             permissionIcon.setColorFilter(
                     mContext.getResources().getColor(R.color.website_settings_popup_text_link));
 
