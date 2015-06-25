@@ -201,6 +201,24 @@ public:
 
     SelectionController& selectionController() const { return *m_selectionController; }
 
+    class TouchInfo {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(touchTarget);
+            visitor->trace(targetFrame);
+        }
+
+        PlatformTouchPoint point;
+        RefPtrWillBeMember<EventTarget> touchTarget;
+        RefPtrWillBeMember<LocalFrame> targetFrame;
+        FloatPoint adjustedPagePoint;
+        FloatSize adjustedRadius;
+        bool knownTarget;
+        bool consumed;
+    };
+
 private:
     static DragState& dragState();
 
@@ -318,18 +336,8 @@ private:
     // the given element.
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 
-    using TouchInfo = struct {
-        PlatformTouchPoint point;
-        EventTarget* touchTarget;
-        LocalFrame* targetFrame;
-        FloatPoint adjustedPagePoint;
-        FloatSize adjustedRadius;
-        bool knownTarget;
-        bool consumed;
-    };
-
-    void dispatchPointerEventsForTouchEvent(const PlatformTouchEvent&, Vector<TouchInfo>&);
-    bool dispatchTouchEvents(const PlatformTouchEvent&, Vector<TouchInfo>&, bool, bool);
+    void dispatchPointerEventsForTouchEvent(const PlatformTouchEvent&, WillBeHeapVector<TouchInfo>&);
+    bool dispatchTouchEvents(const PlatformTouchEvent&, WillBeHeapVector<TouchInfo>&, bool, bool);
 
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.
@@ -433,5 +441,7 @@ private:
 };
 
 } // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::EventHandler::TouchInfo);
 
 #endif // EventHandler_h

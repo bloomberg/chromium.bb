@@ -3448,7 +3448,7 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
     return result;
 }
 
-void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& event, Vector<TouchInfo>& touchInfos)
+void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& event, WillBeHeapVector<TouchInfo>& touchInfos)
 {
     const String& PointerTypeStrForTouch("touch");
 
@@ -3503,7 +3503,7 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
 }
 
 bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
-    Vector<TouchInfo>& touchInfos, bool freshTouchEvents, bool allTouchReleased)
+    WillBeHeapVector<TouchInfo>& touchInfos, bool freshTouchEvents, bool allTouchReleased)
 {
     bool swallowedEvent = false;
 
@@ -3539,8 +3539,8 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
             continue;
 
         RefPtrWillBeRawPtr<Touch> touch = Touch::create(
-            touchInfo.targetFrame,
-            touchInfo.touchTarget,
+            touchInfo.targetFrame.get(),
+            touchInfo.touchTarget.get(),
             point.id(),
             point.screenPos(),
             touchInfo.adjustedPagePoint,
@@ -3550,10 +3550,10 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
 
         // Ensure this target's touch list exists, even if it ends up empty, so
         // it can always be passed to TouchEvent::Create below.
-        TargetTouchesHeapMap::iterator targetTouchesIterator = touchesByTarget.find(touchInfo.touchTarget);
+        TargetTouchesHeapMap::iterator targetTouchesIterator = touchesByTarget.find(touchInfo.touchTarget.get());
         if (targetTouchesIterator == touchesByTarget.end()) {
-            touchesByTarget.set(touchInfo.touchTarget, TouchList::create());
-            targetTouchesIterator = touchesByTarget.find(touchInfo.touchTarget);
+            touchesByTarget.set(touchInfo.touchTarget.get(), TouchList::create());
+            targetTouchesIterator = touchesByTarget.find(touchInfo.touchTarget.get());
         }
 
         // touches and targetTouches should only contain information about
@@ -3711,7 +3711,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     }
 
     // Compute and store the common info used by both PointerEvent and TouchEvent.
-    Vector<TouchInfo> touchInfos(points.size());
+    WillBeHeapVector<TouchInfo> touchInfos(points.size());
 
     for (unsigned i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
@@ -3766,7 +3766,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
         TouchInfo& touchInfo = touchInfos[i];
         touchInfo.point = point;
-        touchInfo.touchTarget = touchTarget.get();
+        touchInfo.touchTarget = touchTarget;
         touchInfo.targetFrame = targetFrame;
         touchInfo.adjustedPagePoint = pagePoint.scaledBy(scaleFactor);
         touchInfo.adjustedRadius = point.radius().scaledBy(scaleFactor);
@@ -3776,11 +3776,10 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
     if (RuntimeEnabledFeatures::pointerEventEnabled()) {
         dispatchPointerEventsForTouchEvent(event, touchInfos);
-        // TODO(mustaq): This needs attention.
-        // From CL discussion: The disposition of any pointer events affects only the generation of
-        // touch events. If pointer events were handled (and hence no touch events generated) that is
-        // still equivalent to the touch events going unhandled because pointer event handler don't
-        // block scroll gesture generation.
+        // Note that the disposition of any pointer events affects only the generation of touch
+        // events. If all pointer events were handled (and hence no touch events were fired), that
+        // is still equivalent to the touch events going unhandled because pointer event handler
+        // don't block scroll gesture generation.
     }
 
     return dispatchTouchEvents(event, touchInfos, freshTouchEvents, allTouchReleased);
