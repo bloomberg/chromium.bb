@@ -206,7 +206,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
 };
 
-}  // namespace test_server
+}  // namespace test_servers
 }  // namespace net
 
 #endif  // NET_TEST_EMBEDDED_TEST_SERVER_EMBEDDED_TEST_SERVER_H_
