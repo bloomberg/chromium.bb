@@ -40,16 +40,9 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 };
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
-    DISABLED_RunsAudioVideoWebRTCCallInTwoTabs
-#else
-#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
-    RunsAudioVideoWebRTCCallInTwoTabs
-#endif
-
+// Extremely flaky. See http://crbug.com/443542
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       MAYBE_RunsAudioVideoWebRTCCallInTwoTabs) {
+                       DISABLED_RunsAudioVideoWebRTCCallInTwoTabs) {
   if (OnWinXp()) return;
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
