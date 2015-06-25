@@ -79,15 +79,17 @@ function test()
                 resultStyles.matchedCSSRules = matchedCSSRules;
                 resultStyles.pseudoElements = pseudoElements;
                 resultStyles.inherited = inherited;
-                callback(resultStyles);
             }
 
             function nodeCallback(node)
             {
                 bodyId = node.id;
-                InspectorTest.CSSAgent.getComputedStyleForNode(node.id, computedCallback);
-                InspectorTest.CSSAgent.getInlineStylesForNode(node.id, inlineCallback);
-                InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, false, false, matchedCallback);
+                var promises = [
+                    InspectorTest.CSSAgent.getComputedStyleForNode(node.id, computedCallback),
+                    InspectorTest.CSSAgent.getInlineStylesForNode(node.id, inlineCallback),
+                    InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, false, false, matchedCallback)
+                ];
+                Promise.all(promises).then(callback.bind(null, resultStyles));
             }
             InspectorTest.selectNodeWithId("mainBody", nodeCallback);
         },

@@ -61,13 +61,15 @@ function test()
              return;
         }
         resultStyles.matchedCSSRules = matchedCSSRules;
-        step2();
     }
 
     function step1(node)
     {
-        InspectorTest.CSSAgent.getInlineStylesForNode(node.id, inlineCallback);
-        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, matchedCallback);
+        var promises = [
+            InspectorTest.CSSAgent.getInlineStylesForNode(node.id, inlineCallback),
+            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, matchedCallback)
+        ];
+        Promise.all(promises).then(step2);
     }
 
     function step2()

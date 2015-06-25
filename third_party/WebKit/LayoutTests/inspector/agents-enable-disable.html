@@ -34,20 +34,24 @@ function test()
         {
             ++requestsSent;
             var agent = target._agentsMap[agentName];
-            if (agent._promisified)
-                agent.disable().then(finishWhenDone.bind(null, agentName, "disable", null), finishWhenDone.bind(null, agentName, "disable"));
-            else
+            if (agent._promisified) {
+                agent.disable(finishWhenDone.bind(null, agentName, "disable"))
+                    .catch(finishWhenDone.bind(null, agentName, "disable"));
+            } else {
                 agent.disable(finishWhenDone.bind(null, agentName, "disable"));
+            }
         }
 
         function enableAgent(agentName)
         {
             ++requestsSent;
             var agent = target._agentsMap[agentName];
-            if (agent._promisified)
-                agent.enable().then(finishWhenDone.bind(null, agentName, "enable", null), finishWhenDone.bind(null, agentName, "enable"));
-            else
+            if (agent._promisified) {
+                agent.enable(finishWhenDone.bind(null, agentName, "enable"))
+                    .catch(finishWhenDone.bind(null, agentName, "enable"));
+            } else {
                 agent.enable(finishWhenDone.bind(null, agentName, "enable"));
+            }
         }
 
         agentNames.forEach(disableAgent);

@@ -5,7 +5,6 @@ Profiler was enabled.
 Running: testProfiling
 Stop recording command issued.
 resumed
-error: No recording profiles found
 Recording stopped. profile (should be null): null
 
 Profiler was disabled.
