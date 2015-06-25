@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Records the round trip time or throughput observation, along with the time
   // the observation was made.
-  struct Observation {
+  struct NET_EXPORT_PRIVATE Observation {
     Observation(int32_t value, base::TimeTicks timestamp);
 
     ~Observation();
@@ -116,7 +116,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   };
 
   // Stores observations sorted by time.
-  class ObservationBuffer {
+  class NET_EXPORT_PRIVATE ObservationBuffer {
    public:
     ObservationBuffer();
 

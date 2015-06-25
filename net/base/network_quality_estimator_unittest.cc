@@ -23,8 +23,7 @@
 
 namespace net {
 
-// http://crbug.com/492410
-TEST(NetworkQualityEstimatorTest, DISABLED_TestPeakKbpsFastestRTTUpdates) {
+TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   net::test_server::EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
@@ -54,7 +53,6 @@ TEST(NetworkQualityEstimatorTest, DISABLED_TestPeakKbpsFastestRTTUpdates) {
   estimator.NotifyDataReceived(*request, 1000, 1000);
   {
     NetworkQuality network_quality = estimator.GetPeakEstimate();
-    EXPECT_GT(network_quality.rtt(), base::TimeDelta());
     EXPECT_LT(network_quality.rtt(), base::TimeDelta::Max());
     EXPECT_GE(network_quality.downstream_throughput_kbps(), 1);
   }
@@ -125,8 +123,6 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
   }
 }
 
-// http://crbug.com/504058
-#if !defined(OS_WIN)
 // Verifies that the percentiles are correctly computed. All observations have
 // the same timestamp. Kbps percentiles must be in decreasing order. RTT
 // percentiles must be in increasing order.
@@ -214,7 +210,6 @@ TEST(NetworkQualityEstimatorTest, PercentileDifferentTimestamps) {
                 1);
   }
 }
-#endif  // !defined(OS_WIN)
 
 // This test notifies NetworkQualityEstimator of received data. Next,
 // throughput and RTT percentiles are checked for correctness by doing simple
@@ -269,8 +264,6 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
   }
 }
 
-// http://crbug.com/504058
-#if !defined(OS_WIN)
 TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   std::map<std::string, std::string> variation_params;
   variation_params["Unknown.DefaultMedianKbps"] = "100";
@@ -333,6 +326,5 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   EXPECT_EQ(0U, estimator.kbps_observations_.Size());
   EXPECT_EQ(0U, estimator.rtt_msec_observations_.Size());
 }
-#endif  // !defined(OS_WIN)
 
 }  // namespace net
