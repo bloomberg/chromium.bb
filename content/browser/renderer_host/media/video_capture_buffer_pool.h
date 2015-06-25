@@ -84,6 +84,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // new allocation at a larger size. If so, the ID of the destroyed buffer is
   // returned via |buffer_id_to_drop|.
   int ReserveForProducer(media::VideoPixelFormat format,
+                         media::VideoPixelStorage storage,
                          const gfx::Size& dimensions,
                          int* buffer_id_to_drop);
 
@@ -117,21 +118,19 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
     Tracker()
         : pixel_count_(0), held_by_producer_(false), consumer_hold_count_(0) {}
-    virtual bool Init(media::VideoFrame::Format format,
-                      media::VideoFrame::StorageType storage_type,
+    virtual bool Init(media::VideoPixelFormat format,
+                      media::VideoPixelStorage storage_type,
                       const gfx::Size& dimensions) = 0;
     virtual ~Tracker();
 
     size_t pixel_count() const { return pixel_count_; }
     void set_pixel_count(size_t count) { pixel_count_ = count; }
-    media::VideoFrame::Format pixel_format() const { return pixel_format_; }
-    void set_pixel_format(media::VideoFrame::Format format) {
+    media::VideoPixelFormat pixel_format() const { return pixel_format_; }
+    void set_pixel_format(media::VideoPixelFormat format) {
       pixel_format_ = format;
     }
-    media::VideoFrame::StorageType storage_type() const {
-      return storage_type_;
-    }
-    void set_storage_type(media::VideoFrame::StorageType storage_type) {
+    media::VideoPixelStorage storage_type() const { return storage_type_; }
+    void set_storage_type(media::VideoPixelStorage storage_type) {
       storage_type_ = storage_type;
     }
     bool held_by_producer() const { return held_by_producer_; }
@@ -150,8 +149,8 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
    private:
     size_t pixel_count_;
-    media::VideoFrame::Format pixel_format_;
-    media::VideoFrame::StorageType storage_type_;
+    media::VideoPixelFormat pixel_format_;
+    media::VideoPixelStorage storage_type_;
     // Indicates whether this Tracker is currently referenced by the producer.
     bool held_by_producer_;
     // Number of consumer processes which hold this Tracker.
@@ -162,6 +161,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   virtual ~VideoCaptureBufferPool();
 
   int ReserveForProducerInternal(media::VideoPixelFormat format,
+                                 media::VideoPixelStorage storage,
                                  const gfx::Size& dimensions,
                                  int* tracker_id_to_drop);
 

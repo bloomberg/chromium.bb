@@ -41,17 +41,19 @@ void ScreenCaptureDeviceCore::AllocateAndStart(
     return;
   }
 
-  if (params.requested_format.pixel_format != PIXEL_FORMAT_I420 &&
-      params.requested_format.pixel_format != PIXEL_FORMAT_TEXTURE) {
-    std::string error_msg = base::StringPrintf(
-        "unsupported format: %d", params.requested_format.pixel_format);
+  if (!(params.requested_format.pixel_format == PIXEL_FORMAT_I420 &&
+        params.requested_format.pixel_storage == PIXEL_STORAGE_CPU) &&
+      !(params.requested_format.pixel_format == PIXEL_FORMAT_ARGB &&
+        params.requested_format.pixel_storage == PIXEL_STORAGE_TEXTURE)) {
+    const std::string error_msg = base::StringPrintf(
+        "unsupported format: %s", params.requested_format.ToString().c_str());
     DVLOG(1) << error_msg;
     client->OnError(error_msg);
     return;
   }
 
   if (params.requested_format.frame_size.IsEmpty()) {
-    std::string error_msg =
+    const std::string error_msg =
         "invalid frame size: " + params.requested_format.frame_size.ToString();
     DVLOG(1) << error_msg;
     client->OnError(error_msg);

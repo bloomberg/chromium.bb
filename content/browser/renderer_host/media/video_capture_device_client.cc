@@ -216,10 +216,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     int rotation,
     const base::TimeTicks& timestamp) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedData");
+  DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
 
   if (last_captured_pixel_format_ != frame_format.pixel_format) {
-    OnLog("Pixel format: " + media::VideoCaptureFormat::PixelFormatToString(
-                                 frame_format.pixel_format));
+    OnLog("Pixel format: " +
+          VideoCaptureFormat::PixelFormatToString(frame_format.pixel_format));
     last_captured_pixel_format_ = frame_format.pixel_format;
   }
 
@@ -238,7 +239,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (rotation == 90 || rotation == 270)
     std::swap(destination_width, destination_height);
 
-  DCHECK_EQ(rotation % 90, 0)
+  DCHECK_EQ(0, rotation % 90)
       << " Rotation must be a multiple of 90, now: " << rotation;
   libyuv::RotationMode rotation_mode = libyuv::kRotate0;
   if (rotation == 90)
@@ -257,8 +258,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     return;
   }
 
-  scoped_ptr<Buffer> buffer(
-      ReserveOutputBuffer(media::PIXEL_FORMAT_I420, dimensions));
+  scoped_ptr<Buffer> buffer(ReserveOutputBuffer(
+      dimensions, media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU));
   if (!buffer.get())
     return;
 
@@ -350,16 +351,15 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
                             rotation_mode,
                             origin_colorspace) != 0) {
     DLOG(WARNING) << "Failed to convert buffer's pixel format to I420 from "
-                  << media::VideoCaptureFormat::PixelFormatToString(
+                  << VideoCaptureFormat::PixelFormatToString(
                          frame_format.pixel_format);
     return;
   }
 
-  OnIncomingCapturedBuffer(buffer.Pass(),
-                           media::VideoCaptureFormat(dimensions,
-                                                     frame_format.frame_rate,
-                                                     media::PIXEL_FORMAT_I420),
-                           timestamp);
+  const VideoCaptureFormat output_format = VideoCaptureFormat(
+      dimensions, frame_format.frame_rate, media::PIXEL_FORMAT_I420,
+      media::PIXEL_STORAGE_CPU);
+  OnIncomingCapturedBuffer(buffer.Pass(), output_format, timestamp);
 }
 
 void
@@ -374,11 +374,13 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
     int clockwise_rotation,
     const base::TimeTicks& timestamp) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedYuvData");
-  DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
-  DCHECK_EQ(clockwise_rotation, 0) << "Rotation not supported";
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
+  DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
+  DCHECK_EQ(0, clockwise_rotation) << "Rotation not supported";
 
-  scoped_ptr<Buffer> buffer(
-      ReserveOutputBuffer(frame_format.pixel_format, frame_format.frame_size));
+  scoped_ptr<Buffer> buffer(ReserveOutputBuffer(frame_format.frame_size,
+                                                frame_format.pixel_format,
+                                                frame_format.pixel_storage));
   if (!buffer.get())
     return;
 
@@ -418,22 +420,26 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
 };
 
 scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
-VideoCaptureDeviceClient::ReserveOutputBuffer(media::VideoPixelFormat format,
-                                              const gfx::Size& dimensions) {
-  DCHECK(format == media::PIXEL_FORMAT_I420 ||
-         format == media::PIXEL_FORMAT_TEXTURE ||
-         format == media::PIXEL_FORMAT_GPUMEMORYBUFFER);
-  DCHECK_GT(dimensions.width(), 0);
-  DCHECK_GT(dimensions.height(), 0);
+VideoCaptureDeviceClient::ReserveOutputBuffer(
+    const gfx::Size& frame_size,
+    media::VideoPixelFormat pixel_format,
+    media::VideoPixelStorage pixel_storage) {
+  DCHECK(pixel_format == media::PIXEL_FORMAT_I420 ||
+         pixel_format == media::PIXEL_FORMAT_ARGB);
+  DCHECK_GT(frame_size.width(), 0);
+  DCHECK_GT(frame_size.height(), 0);
 
-  if (format == media::PIXEL_FORMAT_GPUMEMORYBUFFER && !texture_wrap_helper_) {
+  if (pixel_storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER &&
+      !texture_wrap_helper_) {
     texture_wrap_helper_ =
         new TextureWrapHelper(controller_, capture_task_runner_);
   }
 
+  // TODO(mcasas): For PIXEL_STORAGE_GPUMEMORYBUFFER, find a way to indicate if
+  // it's a ShMem GMB or a DmaBuf GMB.
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
-  const int buffer_id =
-      buffer_pool_->ReserveForProducer(format, dimensions, &buffer_id_to_drop);
+  const int buffer_id = buffer_pool_->ReserveForProducer(
+      pixel_format, pixel_storage, frame_size, &buffer_id_to_drop);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return NULL;
 
@@ -452,9 +458,9 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(media::VideoPixelFormat format,
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     scoped_ptr<Buffer> buffer,
-    const media::VideoCaptureFormat& frame_format,
+    const VideoCaptureFormat& frame_format,
     const base::TimeTicks& timestamp) {
-  if (frame_format.pixel_format == media::PIXEL_FORMAT_GPUMEMORYBUFFER) {
+  if (frame_format.pixel_storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER) {
     capture_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer,
@@ -463,7 +469,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
                    frame_format,
                    timestamp));
   } else {
-    DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
+    DCHECK(frame_format.pixel_format == media::PIXEL_FORMAT_I420 ||
+           frame_format.pixel_format == media::PIXEL_FORMAT_ARGB);
     scoped_refptr<VideoFrame> video_frame =
         VideoFrame::WrapExternalData(
             VideoFrame::I420,
@@ -537,7 +544,8 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
         const media::VideoCaptureFormat& frame_format,
         const base::TimeTicks& timestamp) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_GPUMEMORYBUFFER);
+  DCHECK_EQ(media::PIXEL_FORMAT_ARGB, frame_format.pixel_format);
+  DCHECK_EQ(media::PIXEL_STORAGE_GPUMEMORYBUFFER, frame_format.pixel_storage);
   if (!gl_helper_) {
     // |gl_helper_| might not exist due to asynchronous initialization not
     // finished or due to termination in process after a context loss.
@@ -582,7 +590,7 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
 // TODO(mcasas): After http://crev.com/1179323002, use |frame_format| to query
 // the storage type of the buffer and use the appropriate |video_frame| method.
 #if defined(USE_OZONE)
-  DCHECK_EQ(media::VideoFrame::NumPlanes(video_frame->format()), 1u);
+  DCHECK_EQ(1u, media::VideoFrame::NumPlanes(video_frame->format()));
   video_frame->DuplicateFileDescriptors(
       std::vector<int>(1, buffer->AsPlatformFile().fd));
 #else

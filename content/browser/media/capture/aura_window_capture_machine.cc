@@ -306,8 +306,10 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_window_)
     return false;
 
-  if (capture_params_.requested_format.pixel_format ==
-      media::PIXEL_FORMAT_TEXTURE) {
+  if (capture_params_.requested_format.pixel_storage ==
+      media::PIXEL_STORAGE_TEXTURE) {
+    DCHECK_EQ(media::PIXEL_FORMAT_ARGB,
+              capture_params_.requested_format.pixel_format);
     DCHECK(!video_frame.get());
     cc::TextureMailbox texture_mailbox;
     scoped_ptr<cc::SingleReleaseCallback> release_callback;

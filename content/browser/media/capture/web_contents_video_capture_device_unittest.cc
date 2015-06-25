@@ -349,12 +349,13 @@ class StubClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
 
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
+      const gfx::Size& dimensions,
       media::VideoPixelFormat format,
-      const gfx::Size& dimensions) override {
+      media::VideoPixelStorage storage) override {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
     int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
-    int buffer_id = buffer_pool_->ReserveForProducer(format, dimensions,
-                                                     &buffer_id_to_drop);
+    const int buffer_id = buffer_pool_->ReserveForProducer(
+        format, storage, dimensions, &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return NULL;
 
