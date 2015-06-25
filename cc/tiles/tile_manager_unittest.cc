@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -22,6 +23,7 @@
 #include "cc/tiles/tile_priority.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -1459,6 +1461,59 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
     scoped_ptr<TilingSetRasterQueueAll> queue(
         new TilingSetRasterQueueAll(tiling_set.get(), false));
     EXPECT_FALSE(queue->IsEmpty());
+  }
+}
+
+class TileManagerTest : public testing::Test {
+ public:
+  TileManagerTest()
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
+
+ protected:
+  // MockLayerTreeHostImpl allows us to intercept tile manager callbacks.
+  class MockLayerTreeHostImpl : public FakeLayerTreeHostImpl {
+   public:
+    MockLayerTreeHostImpl(Proxy* proxy,
+                          SharedBitmapManager* manager,
+                          TaskGraphRunner* task_graph_runner)
+        : FakeLayerTreeHostImpl(proxy, manager, task_graph_runner) {
+      InitializeRenderer(FakeOutputSurface::Create3d());
+    }
+
+    MOCK_METHOD0(NotifyAllTileTasksCompleted, void());
+  };
+
+  TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
+  FakeImplProxy proxy_;
+  MockLayerTreeHostImpl host_impl_;
+};
+
+// Test to ensure that we call NotifyAllTileTasksCompleted when PrepareTiles is
+// called.
+TEST_F(TileManagerTest, AllWorkFinishedTest) {
+  // Check with no tile work enqueued.
+  {
+    base::RunLoop run_loop;
+    EXPECT_FALSE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
+    EXPECT_CALL(host_impl_, NotifyAllTileTasksCompleted())
+        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+    host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
+    EXPECT_TRUE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
+    run_loop.Run();
+  }
+
+  // Check that the "schedule more work" path also triggers the expected
+  // callback.
+  {
+    base::RunLoop run_loop;
+    EXPECT_FALSE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
+    EXPECT_CALL(host_impl_, NotifyAllTileTasksCompleted())
+        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
+    host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
+    host_impl_.tile_manager()->SetMoreTilesNeedToBeRasterizedForTesting();
+    EXPECT_TRUE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
+    run_loop.Run();
   }
 }
 
