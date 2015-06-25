@@ -63,9 +63,9 @@ using namespace HTMLNames;
 
 namespace {
 
-inline bool isShadowInsertionPointFocusScopeOwner(Node& node)
+inline bool isShadowInsertionPointFocusScopeOwner(Element& element)
 {
-    return isActiveShadowInsertionPoint(node) && toHTMLShadowElement(node).olderShadowRoot();
+    return isActiveShadowInsertionPoint(element) && toHTMLShadowElement(element).olderShadowRoot();
 }
 
 class FocusNavigationScope {
@@ -83,8 +83,6 @@ private:
     explicit FocusNavigationScope(TreeScope*);
     RawPtrWillBeMember<TreeScope> m_rootTreeScope;
 };
-
-// FIXME: Some of Node* return values and Node* arguments should be Element*.
 
 FocusNavigationScope::FocusNavigationScope(TreeScope* treeScope)
     : m_rootTreeScope(treeScope)
@@ -203,55 +201,58 @@ inline bool hasCustomFocusLogic(const Element& element)
     return element.isHTMLElement() && toHTMLElement(element).hasCustomFocusLogic();
 }
 
-inline bool isShadowHostWithoutCustomFocusLogic(const Node& node)
+inline bool isShadowHostWithoutCustomFocusLogic(const Element& element)
 {
-    if (!node.isElementNode())
-        return false;
-    const Element& element = toElement(node);
     return isShadowHost(element) && !hasCustomFocusLogic(element);
 }
 
 #if ENABLE(ASSERT)
 inline bool isNonFocusableShadowHost(const Node& node)
 {
-    return isShadowHostWithoutCustomFocusLogic(node) && !toElement(node).isFocusable();
+    if (!node.isElementNode())
+        return false;
+    const Element& element = toElement(node);
+    return isShadowHostWithoutCustomFocusLogic(element) && !element.isFocusable();
 }
 #endif
 
-inline bool isNonKeyboardFocusableShadowHost(const Node& node)
+inline bool isNonKeyboardFocusableShadowHost(const Element& element)
 {
-    return isShadowHostWithoutCustomFocusLogic(node) && !toElement(node).isKeyboardFocusable();
+    return isShadowHostWithoutCustomFocusLogic(element) && !element.isKeyboardFocusable();
 }
 
-inline bool isKeyboardFocusableShadowHost(const Node& node)
+inline bool isKeyboardFocusableShadowHost(const Element& element)
 {
-    return isShadowHostWithoutCustomFocusLogic(node) && toElement(node).isKeyboardFocusable();
+    return isShadowHostWithoutCustomFocusLogic(element) && element.isKeyboardFocusable();
 }
 
-inline bool isNonFocusableFocusScopeOwner(Node& node)
+inline bool isNonFocusableFocusScopeOwner(Element& element)
 {
-    return isNonKeyboardFocusableShadowHost(node) || isShadowInsertionPointFocusScopeOwner(node);
+    return isNonKeyboardFocusableShadowHost(element) || isShadowInsertionPointFocusScopeOwner(element);
 }
 
-inline bool isShadowHostDelegatesFocus(const Node& node)
+inline bool isShadowHostDelegatesFocus(const Element& element)
 {
-    return node.isElementNode() && toElement(node).shadowRoot() && toElement(node).shadowRoot()->delegatesFocus();
+    return element.shadowRoot() && element.shadowRoot()->delegatesFocus();
 }
 
 inline int adjustedTabIndex(Node& node)
 {
-    return isNonFocusableFocusScopeOwner(node) ? 0 : node.tabIndex();
+    return node.isElementNode() && isNonFocusableFocusScopeOwner(toElement(node)) ? 0 : node.tabIndex();
 }
 
 inline bool shouldVisit(Node& node)
 {
-    return (node.isElementNode() && toElement(node).isKeyboardFocusable()) || isNonFocusableFocusScopeOwner(node);
+    if (!node.isElementNode())
+        return false;
+    Element& element = toElement(node);
+    return element.isKeyboardFocusable() || isNonFocusableFocusScopeOwner(element);
 }
 
 Element* findElementWithExactTabIndex(Node* start, int tabIndex, WebFocusType type)
 {
     // Search is inclusive of start
-    for (Node* node = start; node; node = type == WebFocusTypeForward ? NodeTraversal::next(*node) : NodeTraversal::previous(*node)) {
+    for (Node* node = start; node; node = type == WebFocusTypeForward ? ElementTraversal::next(*node) : ElementTraversal::previous(*node)) {
         if (shouldVisit(*node) && adjustedTabIndex(*node) == tabIndex)
             return toElement(node);
     }
@@ -279,7 +280,7 @@ Element* previousElementWithLowerTabIndex(Node* start, int tabIndex)
     // Search is inclusive of start
     int winningTabIndex = 0;
     Node* winner = nullptr;
-    for (Node* node = start; node; node = NodeTraversal::previous(*node)) {
+    for (Node* node = start; node; node = ElementTraversal::previous(*node)) {
         int currentTabIndex = adjustedTabIndex(*node);
         if (shouldVisit(*node) && currentTabIndex < tabIndex && currentTabIndex > winningTabIndex) {
             winner = node;
@@ -302,7 +303,7 @@ Element* nextFocusableElement(const FocusNavigationScope& scope, Node* start)
             }
         } else {
             // First try to find a node with the same tabindex as start that comes after start in the scope.
-            if (Element* winner = findElementWithExactTabIndex(NodeTraversal::next(*start), tabIndex, WebFocusTypeForward))
+            if (Element* winner = findElementWithExactTabIndex(ElementTraversal::next(*start), tabIndex, WebFocusTypeForward))
                 return winner;
         }
         if (!tabIndex) {
@@ -334,7 +335,7 @@ Element* previousFocusableElement(const FocusNavigationScope& scope, Node* start
     Node* startingNode;
     int startingTabIndex;
     if (start) {
-        startingNode = NodeTraversal::previous(*start);
+        startingNode = ElementTraversal::previous(*start);
         startingTabIndex = adjustedTabIndex(*start);
     } else {
         startingNode = last;
@@ -343,7 +344,7 @@ Element* previousFocusableElement(const FocusNavigationScope& scope, Node* start
 
     // However, if a node is excluded from the normal tabbing cycle, the previous focusable node is determined by tree order
     if (startingTabIndex < 0) {
-        for (Node* node = startingNode; node; node = NodeTraversal::previous(*node)) {
+        for (Node* node = startingNode; node; node = ElementTraversal::previous(*node)) {
             if (shouldVisit(*node) && adjustedTabIndex(*node) >= 0)
                 return toElement(node);
         }
@@ -473,7 +474,7 @@ Element* findFocusableElementAcrossFocusScopesForward(const FocusNavigationScope
 {
     ASSERT(!currentNode || !isNonFocusableShadowHost(*currentNode));
     Element* found;
-    if (currentNode && isShadowHostWithoutCustomFocusLogic(*currentNode)) {
+    if (currentNode && currentNode->isElementNode() && isShadowHostWithoutCustomFocusLogic(*toElement(currentNode))) {
         FocusNavigationScope innerScope = FocusNavigationScope::ownedByShadowHost(*toElement(currentNode));
         Element* foundInInnerFocusScope = findFocusableElementRecursivelyForward(innerScope, nullptr);
         found = foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableElementRecursivelyForward(scope, currentNode);
