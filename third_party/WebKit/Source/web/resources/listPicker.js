@@ -45,6 +45,8 @@ function ListPicker(element, config) {
     this._selectElement = createElement("select");
     this._selectElement.size = 20;
     this._element.appendChild(this._selectElement);
+    this._delayedChildrenConfig = null;
+    this._delayedChildrenConfigIndex = 0;
     this._layout();
     this._selectElement.addEventListener("mouseup", this._handleMouseUp.bind(this), false);
     this._selectElement.addEventListener("touchstart", this._handleTouchStart.bind(this), false);
@@ -252,6 +254,8 @@ ListPicker.prototype._update = function() {
     this.dispatchEvent("didUpdate");
 };
 
+ListPicker.DelayedLayoutThreshold = 1000;
+
 /**
  * @param {!Element} parent Select element or optgroup element.
  * @param {!Object} config
@@ -260,10 +264,16 @@ ListPicker.prototype._updateChildren = function(parent, config) {
     var outOfDateIndex = 0;
     var fragment = null;
     var inGroup = parent.tagName === "OPTGROUP";
-    for (var i = 0; i < config.children.length; ++i) {
+    var lastListIndex = -1;
+    var limit = Math.max(this._config.selectedIndex, ListPicker.DelayedLayoutThreshold);
+    var i;
+    for (i = 0; i < config.children.length; ++i) {
+        if (!inGroup && lastListIndex >= limit)
+            break;
         var childConfig = config.children[i];
         var item = this._findReusableItem(parent, childConfig, outOfDateIndex) || this._createItemElement(childConfig);
         this._configureItem(item, childConfig, inGroup);
+        lastListIndex = item.value ? Number(item.value) : -1;
         if (outOfDateIndex < parent.children.length) {
             parent.insertBefore(item, parent.children[outOfDateIndex]);
         } else {
@@ -275,12 +285,37 @@ ListPicker.prototype._updateChildren = function(parent, config) {
     }
     if (fragment) {
         parent.appendChild(fragment);
+    } else {
+        var unused = parent.children.length - outOfDateIndex;
+        for (var j = 0; j < unused; j++) {
+            parent.removeChild(parent.lastElementChild);
+        }
+    }
+    if (i < config.children.length) {
+        // We don't bind |config.children| and |i| to _updateChildrenLater
+        // because config.children can get invalid before _updateChildrenLater
+        // is called.
+        this._delayedChildrenConfig = config.children;
+        this._delayedChildrenConfigIndex = i;
+        requestAnimationFrame(this._updateChildrenLater.bind(this));
+    }
+};
+
+ListPicker.prototype._updateChildrenLater = function(timeStamp) {
+    if (!this._delayedChildrenConfig)
         return;
+    var startIndex = this._delayedChildrenConfigIndex;
+    for (; this._delayedChildrenConfigIndex < this._delayedChildrenConfig.length && this._delayedChildrenConfigIndex - startIndex < ListPicker.DelayedLayoutThreshold; ++this._delayedChildrenConfigIndex) {
+        var childConfig = this._delayedChildrenConfig[this._delayedChildrenConfigIndex];
+        var item = this._createItemElement(childConfig);
+        this._configureItem(item, childConfig, false);
+        this._selectElement.appendChild(item);
     }
-    var unused = parent.children.length - outOfDateIndex;
-    for (var i = 0; i < unused; i++) {
-        parent.removeChild(parent.lastElementChild);
-    }
+    if (this._delayedChildrenConfigIndex < this._delayedChildrenConfig.length)
+        requestAnimationFrame(this._updateChildrenLater.bind(this));
+    else
+        this._delayedChildrenConfig = null;
+    this._selectElement.classList.add("wrap");
 };
 
 ListPicker.prototype._findReusableItem = function(parent, config, startIndex) {

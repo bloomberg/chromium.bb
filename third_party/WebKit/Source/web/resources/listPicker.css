@@ -12,3 +12,7 @@ select hr {
 option, optgroup {
     -webkit-padding-end: 2px;
 }
+
+.wrap option {
+    white-space: pre-wrap;
+}
