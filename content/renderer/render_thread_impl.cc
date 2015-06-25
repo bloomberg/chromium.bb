@@ -1718,19 +1718,15 @@ void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
 
 #if defined(OS_MACOSX)
 void RenderThreadImpl::OnUpdateScrollbarTheme(
-    float initial_button_delay,
-    float autoscroll_button_delay,
-    bool jump_on_track_click,
-    blink::ScrollerStyle preferred_scroller_style,
-    bool redraw) {
+    const ViewMsg_UpdateScrollbarTheme_Params& params) {
   EnsureWebKitInitialized();
   static_cast<WebScrollbarBehaviorImpl*>(
       blink_platform_impl_->scrollbarBehavior())
-      ->set_jump_on_track_click(jump_on_track_click);
-  blink::WebScrollbarTheme::updateScrollbars(initial_button_delay,
-                                             autoscroll_button_delay,
-                                             preferred_scroller_style,
-                                             redraw);
+      ->set_jump_on_track_click(params.jump_on_track_click);
+
+  blink::WebScrollbarTheme::updateScrollbars(
+      params.initial_button_delay, params.autoscroll_button_delay,
+      params.preferred_scroller_style, params.redraw);
 }
 #endif
 

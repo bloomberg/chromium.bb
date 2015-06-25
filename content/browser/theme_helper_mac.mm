@@ -99,15 +99,17 @@ void ThemeHelperMac::SendThemeChangeToAllRenderers(
     bool jump_on_track_click,
     blink::ScrollerStyle preferred_scroller_style,
     bool redraw) {
+  ViewMsg_UpdateScrollbarTheme_Params params;
+  params.initial_button_delay = initial_button_delay;
+  params.autoscroll_button_delay = autoscroll_button_delay;
+  params.jump_on_track_click = jump_on_track_click;
+  params.preferred_scroller_style = preferred_scroller_style;
+  params.redraw = redraw;
+
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
        it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_UpdateScrollbarTheme(
-        initial_button_delay,
-        autoscroll_button_delay,
-        jump_on_track_click,
-        preferred_scroller_style,
-        redraw));
+    it.GetCurrentValue()->Send(new ViewMsg_UpdateScrollbarTheme(params));
   }
 }
 
@@ -131,12 +133,17 @@ void ThemeHelperMac::Observe(int type,
   [defaults synchronize];
 
   RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
-  rph->Send(new ViewMsg_UpdateScrollbarTheme(
-      [defaults floatForKey:@"NSScrollerButtonDelay"],
-      [defaults floatForKey:@"NSScrollerButtonPeriod"],
-      [defaults boolForKey:@"AppleScrollerPagingBehavior"],
-      GetPreferredScrollerStyle(),
-      false));
+
+  ViewMsg_UpdateScrollbarTheme_Params params;
+  params.initial_button_delay = [defaults floatForKey:@"NSScrollerButtonDelay"];
+  params.autoscroll_button_delay =
+      [defaults floatForKey:@"NSScrollerButtonPeriod"];
+  params.jump_on_track_click =
+      [defaults boolForKey:@"AppleScrollerPagingBehavior"];
+  params.preferred_scroller_style = GetPreferredScrollerStyle();
+  params.redraw = false;
+
+  rph->Send(new ViewMsg_UpdateScrollbarTheme(params));
 }
 
 }  // namespace content

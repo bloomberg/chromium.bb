@@ -118,6 +118,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 
 #if defined(OS_MACOSX)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
+
 IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
   IPC_STRUCT_TRAITS_MEMBER(font_name)
   IPC_STRUCT_TRAITS_MEMBER(font_point_size)
@@ -546,6 +548,16 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   IPC_STRUCT_MEMBER(gfx::Size, max_size)
 IPC_STRUCT_END()
 
+#if defined(OS_MACOSX)
+IPC_STRUCT_BEGIN(ViewMsg_UpdateScrollbarTheme_Params)
+  IPC_STRUCT_MEMBER(float, initial_button_delay)
+  IPC_STRUCT_MEMBER(float, autoscroll_button_delay)
+  IPC_STRUCT_MEMBER(bool, jump_on_track_click)
+  IPC_STRUCT_MEMBER(blink::ScrollerStyle, preferred_scroller_style)
+  IPC_STRUCT_MEMBER(bool, redraw)
+IPC_STRUCT_END()
+#endif
+
 // Messages sent from the browser to the renderer.
 
 #if defined(OS_ANDROID)
@@ -902,15 +914,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
 IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
 
 #if defined(OS_MACOSX)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
-
 // Notification of a change in scrollbar appearance and/or behavior.
-IPC_MESSAGE_CONTROL5(ViewMsg_UpdateScrollbarTheme,
-                     float /* initial_button_delay */,
-                     float /* autoscroll_button_delay */,
-                     bool /* jump_on_track_click */,
-                     blink::ScrollerStyle /* preferred_scroller_style */,
-                     bool /* redraw */)
+IPC_MESSAGE_CONTROL1(ViewMsg_UpdateScrollbarTheme,
+                     ViewMsg_UpdateScrollbarTheme_Params /* params */)
 #endif
 
 #if defined(OS_ANDROID)

@@ -37,6 +37,7 @@ class GrContext;
 class SkBitmap;
 struct FrameMsg_NewFrame_Params;
 struct ViewMsg_New_Params;
+struct ViewMsg_UpdateScrollbarTheme_Params;
 struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace blink {
@@ -455,11 +456,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnSetWebKitSharedTimersSuspended(bool suspend);
 #endif
 #if defined(OS_MACOSX)
-  void OnUpdateScrollbarTheme(float initial_button_delay,
-                              float autoscroll_button_delay,
-                              bool jump_on_track_click,
-                              blink::ScrollerStyle preferred_scroller_style,
-                              bool redraw);
+  void OnUpdateScrollbarTheme(
+      const ViewMsg_UpdateScrollbarTheme_Params& params);
 #endif
   void OnCreateNewSharedWorker(
       const WorkerProcessMsg_CreateWorker_Params& params);
