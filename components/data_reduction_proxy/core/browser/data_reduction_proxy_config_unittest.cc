@@ -1224,28 +1224,25 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   explicit TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(variation_params),
-        rtt_(base::TimeDelta()),
-        kbps_(0) {}
+      : NetworkQualityEstimator(variation_params) {}
 
   ~TestNetworkQualityEstimator() override {}
 
   bool GetEstimate(net::NetworkQuality* median) const override {
     // |median| must not be null.
-    *median = net::NetworkQuality(rtt_, kbps_);
+    DCHECK(median);
+    *median = network_quality_estimate_;
     return true;
   }
 
-  void SetRtt(base::TimeDelta rtt) { rtt_ = rtt; }
-
-  void SetKbps(int32_t kbps) { kbps_ = kbps; }
+  void SetRTT(base::TimeDelta rtt) {
+    network_quality_estimate_ = net::NetworkQuality(
+        rtt, network_quality_estimate_.downstream_throughput_kbps());
+  }
 
  private:
-  // RTT of the network.
-  base::TimeDelta rtt_;
-
-  // Downstream throughput of the network.
-  int32_t kbps_;
+  // Estimate of the quality of the network.
+  net::NetworkQuality network_quality_estimate_;
 };
 
 TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
@@ -1288,14 +1285,14 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
       network_quality_estimator_params);
 
   // RTT is higher than threshold. Network is slow.
-  test_network_quality_estimator.SetRtt(
+  test_network_quality_estimator.SetRTT(
       base::TimeDelta::FromMilliseconds(rtt_msec + 1));
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
 
   // Network quality improved. RTT is lower than the threshold. However,
   // network should still be marked as slow because of hysteresis.
-  test_network_quality_estimator.SetRtt(
+  test_network_quality_estimator.SetRTT(
       base::TimeDelta::FromMilliseconds(rtt_msec - 1));
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
@@ -1309,7 +1306,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
       &test_network_quality_estimator));
 
   // Changing the RTT has no effect because of hysteresis.
-  test_network_quality_estimator.SetRtt(
+  test_network_quality_estimator.SetRTT(
       base::TimeDelta::FromMilliseconds(rtt_msec + 1));
   EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
