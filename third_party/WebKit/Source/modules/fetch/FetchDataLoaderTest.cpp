@@ -5,6 +5,8 @@
 #include "config.h"
 #include "modules/fetch/FetchDataLoader.h"
 
+#include "modules/fetch/DataConsumerHandleTestUtil.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -20,6 +22,7 @@ using ::testing::_;
 using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
+using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoaderClient;
 
 const WebDataConsumerHandle::Result kOk = WebDataConsumerHandle::Ok;
 const WebDataConsumerHandle::Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
@@ -49,32 +52,6 @@ public:
     static PassOwnPtr<StrictMock<MockHandle>> create() { return adoptPtr(new StrictMock<MockHandle>); }
 
     MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
-};
-
-class MockFetchDataLoaderClient : public GarbageCollectedFinalized<MockFetchDataLoaderClient>, public FetchDataLoader::Client {
-    USING_GARBAGE_COLLECTED_MIXIN(MockFetchDataLoaderClient);
-public:
-    static StrictMock<MockFetchDataLoaderClient>* create() { return new StrictMock<MockFetchDataLoaderClient>; }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        FetchDataLoader::Client::trace(visitor);
-    }
-
-    MOCK_METHOD1(didFetchDataLoadedBlobHandleMock, void(RefPtr<BlobDataHandle>));
-    MOCK_METHOD1(didFetchDataLoadedArrayBufferMock, void(RefPtr<DOMArrayBuffer>));
-    MOCK_METHOD1(didFetchDataLoadedString, void(const String&));
-    MOCK_METHOD0(didFetchDataLoadFailed, void());
-
-    // In mock methods we use RefPtr<> rather than PassRefPtr<>.
-    void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
-    {
-        didFetchDataLoadedArrayBufferMock(arrayBuffer);
-    }
-    void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
-    {
-        didFetchDataLoadedBlobHandleMock(blobDataHandle);
-    }
 };
 
 const char kQuickBrownFox[] = "Quick brown fox";

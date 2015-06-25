@@ -10,6 +10,7 @@
 #include "gin/public/isolate_holder.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
+#include "modules/fetch/FetchDataLoader.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -18,7 +19,11 @@
 #include "public/platform/WebDataConsumerHandle.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebWaitableEvent.h"
+#include "wtf/Deque.h"
 #include "wtf/Locker.h"
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/ThreadingPrimitives.h"
+#include "wtf/Vector.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -211,6 +216,111 @@ public:
 
         OwnPtr<WebDataConsumerHandle> m_handle;
     };
+
+    class MockFetchDataLoaderClient : public GarbageCollectedFinalized<MockFetchDataLoaderClient>, public FetchDataLoader::Client {
+        USING_GARBAGE_COLLECTED_MIXIN(MockFetchDataLoaderClient);
+    public:
+        static ::testing::StrictMock<MockFetchDataLoaderClient>* create() { return new ::testing::StrictMock<MockFetchDataLoaderClient>; }
+
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            FetchDataLoader::Client::trace(visitor);
+        }
+
+        MOCK_METHOD1(didFetchDataLoadedBlobHandleMock, void(RefPtr<BlobDataHandle>));
+        MOCK_METHOD1(didFetchDataLoadedArrayBufferMock, void(RefPtr<DOMArrayBuffer>));
+        MOCK_METHOD1(didFetchDataLoadedString, void(const String&));
+        MOCK_METHOD0(didFetchDataLoadFailed, void());
+
+        // In mock methods we use RefPtr<> rather than PassRefPtr<>.
+        void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer) override
+        {
+            didFetchDataLoadedArrayBufferMock(arrayBuffer);
+        }
+        void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
+        {
+            didFetchDataLoadedBlobHandleMock(blobDataHandle);
+        }
+    };
+
+    class Command final {
+    public:
+        enum Name {
+            Data,
+            Done,
+            Error,
+            Wait,
+        };
+
+        Command(Name name) : m_name(name) { }
+        Command(Name name, const Vector<char>& body) : m_name(name), m_body(body) { }
+        Command(Name name, const char* body, size_t size) : m_name(name)
+        {
+            m_body.append(body, size);
+        }
+        Command(Name name, const char* body) : Command(name, body, strlen(body)) { }
+        Name name() const { return m_name; }
+        const Vector<char>& body() const { return m_body; }
+
+    private:
+        const Name m_name;
+        Vector<char> m_body;
+    };
+
+    // ReplayingHandle stores commands via |add| and replays the stored commends when read.
+    class ReplayingHandle final : public WebDataConsumerHandle {
+    public:
+        static PassOwnPtr<ReplayingHandle> create() { return adoptPtr(new ReplayingHandle()); }
+        ~ReplayingHandle();
+
+        // Add a command to this handle. This function must be called on the
+        // creator thread. This function must be called BEFORE any reader is
+        // obtained.
+        void add(const Command&);
+
+        class Context final : public ThreadSafeRefCounted<Context> {
+        public:
+            static PassRefPtr<Context> create() { return adoptRef(new Context); }
+
+            // This function cannot be called after creating a tee.
+            void add(const Command&);
+            void attachReader(WebDataConsumerHandle::Client*);
+            void detachReader();
+            void detachHandle();
+            Result beginRead(const void** buffer, Flags, size_t* available);
+            Result endRead(size_t readSize);
+            WebWaitableEvent* detached() { return m_detached.get(); }
+
+        private:
+            Context();
+            bool isEmpty() const { return m_commands.isEmpty(); }
+            const Command& top();
+            void consume(size_t);
+            size_t offset() const { return m_offset; }
+            void notify();
+            void notifyInternal();
+
+            Deque<Command> m_commands;
+            size_t m_offset;
+            WebThread* m_readerThread;
+            Client* m_client;
+            Result m_result;
+            bool m_isHandleAttached;
+            Mutex m_mutex;
+            OwnPtr<WebWaitableEvent> m_detached;
+        };
+
+        Context* context() { return m_context.get(); }
+
+    private:
+        class ReaderImpl;
+
+        ReplayingHandle();
+        Reader* obtainReaderInternal(Client*) override;
+
+        RefPtr<Context> m_context;
+    };
+
 };
 
 } // namespace blink

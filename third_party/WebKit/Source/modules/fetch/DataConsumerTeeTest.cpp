@@ -15,12 +15,8 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebWaitableEvent.h"
-#include "wtf/Deque.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
 
 #include <gtest/gtest.h>
 #include <string.h>
@@ -37,236 +33,8 @@ const Result kShouldWait = WebDataConsumerHandle::ShouldWait;
 const Result kDone = WebDataConsumerHandle::Done;
 const Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
 
-class Command final {
-public:
-    enum Name {
-        Data,
-        Done,
-        Error,
-        Wait,
-    };
-
-    Command(Name name) : m_name(name) { }
-    Command(Name name, const Vector<char>& body) : m_name(name), m_body(body) { }
-    Command(Name name, const char* body, size_t size) : m_name(name)
-    {
-        m_body.append(body, size);
-    }
-    Command(Name name, const char* body) : Command(name, body, strlen(body)) { }
-    Name name() const { return m_name; }
-    const Vector<char>& body() const { return m_body; }
-
-private:
-    const Name m_name;
-    Vector<char> m_body;
-};
-
-// Handle stores commands via |add| and replays the stored commends when read.
-class Handle final : public WebDataConsumerHandle {
-public:
-    class Context final : public ThreadSafeRefCounted<Context> {
-    public:
-        static PassRefPtr<Context> create() { return adoptRef(new Context); }
-
-        // This function cannot be called after creating a tee.
-        void add(const Command& command)
-        {
-            MutexLocker locker(m_mutex);
-            m_commands.append(command);
-        }
-
-        void attachReader(WebDataConsumerHandle::Client* client)
-        {
-            MutexLocker locker(m_mutex);
-            ASSERT(!m_readerThread);
-            ASSERT(!m_client);
-            m_readerThread = Platform::current()->currentThread();
-            m_client = client;
-
-            if (m_client && !(isEmpty() && m_result == kShouldWait))
-                notify();
-        }
-        void detachReader()
-        {
-            MutexLocker locker(m_mutex);
-            ASSERT(m_readerThread && m_readerThread->isCurrentThread());
-            m_readerThread = nullptr;
-            m_client = nullptr;
-            if (!m_isHandleAttached)
-                m_detached->signal();
-        }
-
-        void detachHandle()
-        {
-            MutexLocker locker(m_mutex);
-            m_isHandleAttached = false;
-            if (!m_readerThread)
-                m_detached->signal();
-        }
-
-        Result beginRead(const void** buffer, Flags, size_t* available)
-        {
-            MutexLocker locker(m_mutex);
-            *buffer = nullptr;
-            *available = 0;
-            if (isEmpty())
-                return m_result;
-
-            const Command& command = top();
-            Result result = Ok;
-            switch (command.name()) {
-            case Command::Data: {
-                auto& body = command.body();
-                *available = body.size() - offset();
-                *buffer = body.data() + offset();
-                result = Ok;
-                break;
-            }
-            case Command::Done:
-                m_result = result = Done;
-                consume(0);
-                break;
-            case Command::Wait:
-                consume(0);
-                result = ShouldWait;
-                notify();
-                break;
-            case Command::Error:
-                m_result = result = UnexpectedError;
-                consume(0);
-                break;
-            }
-            return result;
-        }
-        Result endRead(size_t readSize)
-        {
-            MutexLocker locker(m_mutex);
-            consume(readSize);
-            return Ok;
-        }
-
-        WebWaitableEvent* detached() { return m_detached.get(); }
-
-    private:
-        Context()
-            : m_offset(0)
-            , m_readerThread(nullptr)
-            , m_client(nullptr)
-            , m_result(ShouldWait)
-            , m_isHandleAttached(true)
-            , m_detached(adoptPtr(Platform::current()->createWaitableEvent()))
-        {
-        }
-
-        bool isEmpty() const { return m_commands.isEmpty(); }
-        const Command& top()
-        {
-            ASSERT(!isEmpty());
-            return m_commands.first();
-        }
-
-        void consume(size_t size)
-        {
-            ASSERT(!isEmpty());
-            ASSERT(size + m_offset <= top().body().size());
-            bool fullyConsumed = (size + m_offset >= top().body().size());
-            if (fullyConsumed) {
-                m_offset = 0;
-                m_commands.removeFirst();
-            } else {
-                m_offset += size;
-            }
-        }
-
-        size_t offset() const { return m_offset; }
-
-        void notify()
-        {
-            if (!m_client)
-                return;
-            ASSERT(m_readerThread);
-            m_readerThread->postTask(FROM_HERE, new Task(threadSafeBind(&Context::notifyInternal, this)));
-        }
-
-        void notifyInternal()
-        {
-            {
-                MutexLocker locker(m_mutex);
-                if (!m_client || !m_readerThread->isCurrentThread()) {
-                    // There is no client, or a new reader is attached.
-                    return;
-                }
-            }
-            // The reading thread is the current thread.
-            m_client->didGetReadable();
-        }
-
-        Deque<Command> m_commands;
-        size_t m_offset;
-        WebThread* m_readerThread;
-        Client* m_client;
-        Result m_result;
-        bool m_isHandleAttached;
-        Mutex m_mutex;
-        OwnPtr<WebWaitableEvent> m_detached;
-    };
-
-    class ReaderImpl final : public Reader {
-    public:
-        ReaderImpl(PassRefPtr<Context> context, Client* client)
-            : m_context(context)
-        {
-            m_context->attachReader(client);
-        }
-        ~ReaderImpl()
-        {
-            m_context->detachReader();
-        }
-
-        Result read(void* buffer, size_t size, Flags flags, size_t* readSize) override
-        {
-            const void* src = nullptr;
-            Result result = beginRead(&src, flags, readSize);
-            if (result != Ok)
-                return result;
-            *readSize = std::min(*readSize, size);
-            memcpy(buffer, src, *readSize);
-            return endRead(*readSize);
-        }
-        Result beginRead(const void** buffer, Flags flags, size_t* available) override
-        {
-            return m_context->beginRead(buffer, flags, available);
-        }
-        Result endRead(size_t readSize) override
-        {
-            return m_context->endRead(readSize);
-        }
-
-    private:
-        RefPtr<Context> m_context;
-    };
-
-    Handle() : m_context(Context::create()) { }
-    ~Handle()
-    {
-        m_context->detachHandle();
-    }
-
-    ReaderImpl* obtainReaderInternal(Client* client) override { return new ReaderImpl(m_context, client); }
-
-    // Add a command to this handle. This function must be called on the
-    // creator thread. This function must be called BEFORE any reader is
-    // obtained.
-    void add(const Command& command)
-    {
-        m_context->add(command);
-    }
-
-    Context* context() { return m_context.get(); };
-
-private:
-    RefPtr<Context> m_context;
-};
+using Command = DataConsumerHandleTestUtil::Command;
+using Handle = DataConsumerHandleTestUtil::ReplayingHandle;
 
 class HandleReader : public WebDataConsumerHandle::Client {
 public:
@@ -394,7 +162,7 @@ private:
 
 TEST(DataConsumerTeeTest, CreateDone)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Done));
@@ -421,7 +189,7 @@ TEST(DataConsumerTeeTest, CreateDone)
 
 TEST(DataConsumerTeeTest, Read)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Wait));
@@ -454,7 +222,7 @@ TEST(DataConsumerTeeTest, Read)
 
 TEST(DataConsumerTeeTest, TwoPhaseRead)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Wait));
@@ -488,7 +256,7 @@ TEST(DataConsumerTeeTest, TwoPhaseRead)
 
 TEST(DataConsumerTeeTest, Error)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Data, "hello, "));
@@ -519,7 +287,7 @@ void postStop(Thread* thread)
 
 TEST(DataConsumerTeeTest, StopSource)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Data, "hello, "));
@@ -548,7 +316,7 @@ TEST(DataConsumerTeeTest, StopSource)
 
 TEST(DataConsumerTeeTest, DetachSource)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Data, "hello, "));
@@ -575,7 +343,7 @@ TEST(DataConsumerTeeTest, DetachSource)
 
 TEST(DataConsumerTeeTest, DetachSourceAfterReadingDone)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Data, "hello, "));
@@ -606,7 +374,7 @@ TEST(DataConsumerTeeTest, DetachSourceAfterReadingDone)
 
 TEST(DataConsumerTeeTest, DetachOneDestination)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Data, "hello, "));
@@ -631,7 +399,7 @@ TEST(DataConsumerTeeTest, DetachOneDestination)
 
 TEST(DataConsumerTeeTest, DetachBothDestinationsShouldStopSourceReader)
 {
-    OwnPtr<Handle> src(adoptPtr(new Handle));
+    OwnPtr<Handle> src(Handle::create());
     RefPtr<Handle::Context> context(src->context());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
