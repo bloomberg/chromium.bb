@@ -11,6 +11,7 @@
 #include "base/mac/objc_property_releaser.h"
 
 @implementation NativeContentController {
+  GURL _url;
   base::mac::ObjCPropertyReleaser _propertyReleaser_NativeContentController;
 }
 
@@ -23,26 +24,26 @@
   if (self) {
     _propertyReleaser_NativeContentController.Init(
         self, [NativeContentController class]);
-    [base::mac::FrameworkBundle() loadNibNamed:nibName owner:self options:nil];
+    if (nibName.length) {
+      [base::mac::FrameworkBundle() loadNibNamed:nibName
+                                           owner:self
+                                         options:nil];
+    }
     _url = url;
   }
   return self;
 }
 
 - (instancetype)initWithURL:(const GURL&)url {
-  self = [super init];
-  if (self) {
-    _propertyReleaser_NativeContentController.Init(
-        self, [NativeContentController class]);
-    _url = url;
-  }
-  return self;
+  return [self initWithNibName:nil url:url];
 }
 
 - (void)dealloc {
   [_view removeFromSuperview];
   [super dealloc];
 }
+
+#pragma mark CRWNativeContent
 
 - (void)handleLowMemory {
   // TODO(pinkerton): What should this do? Toss the view?

@@ -26,6 +26,9 @@
         'ios_chrome.gyp:ios_chrome_common',
         'ios_chrome_test_support',
       ],
+      'mac_bundle_resources': [
+        'browser/ui/native_content_controller_test.xib'
+      ],
       'sources': [
         'app/safe_mode_util_unittest.cc',
         'browser/chrome_url_util_unittest.mm',
@@ -44,6 +47,7 @@
         'browser/snapshots/snapshots_util_unittest.mm',
         'browser/translate/translate_service_ios_unittest.cc',
         'browser/ui/commands/set_up_for_testing_command_unittest.mm',
+        'browser/ui/native_content_controller_unittest.mm',
         'browser/ui/ui_util_unittest.mm',
         'browser/ui/uikit_ui_util_unittest.mm',
         'common/string_util_unittest.mm',
