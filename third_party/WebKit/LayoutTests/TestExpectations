@@ -441,8 +441,6 @@ crbug.com/451577 [ Win ] http/tests/inspector/network/network-datareceived.html 
 
 crbug.com/452018 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash Timeout Pass ]
 
-crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
-
 # Disable KeyboardEvent key tests till https://codereview.chromium.org/929053004/ lands
 crbug.com/227231 fast/events/keyboardevent-key.html [ Failure Pass ]
 crbug.com/227231 virtual/pointerevent/fast/events/keyboardevent-key.html [ Failure Pass ]
