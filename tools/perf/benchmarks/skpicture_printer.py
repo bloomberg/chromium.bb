@@ -5,7 +5,7 @@
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.core import discover
+from telemetry.util import classes_util
 from telemetry.page import page_set
 
 from measurements import skpicture_printer
@@ -13,9 +13,8 @@ from measurements import skpicture_printer
 
 def _MatchPageSetName(page_set_name, page_set_base_dir):
   page_sets = []
-  page_sets += discover.DiscoverClasses(page_set_base_dir, page_set_base_dir,
-                                        page_set.PageSet,
-                                        index_by_class_name=True).values()
+  page_sets += classes_util.DiscoverClasses(
+      page_set_base_dir, page_set_base_dir, page_set.PageSet)
   for p in page_sets:
     if page_set_name == p.Name():
       return p
