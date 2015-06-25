@@ -7,6 +7,10 @@ body {
   overflow: auto;
 }
 
+body.show-only-selected .product:not(.selected) {
+  display: none;
+}
+
 .page-title {
   font-size: 164%;
   font-weight: bold;
@@ -31,20 +35,9 @@ body {
   margin: 3px;
 }
 
-.product .homepage {
+.right-align {
   float: right;
-  margin: 3px;
-  text-align: right;
-}
-
-.product .homepage::after {
-  content: " - ";
-}
-
-.product .toggle-licence {
-  float: right;
-  margin: 3px;
-  text-align: right;
+  margin: 3px 6px;
 }
 
 .licence {
@@ -54,9 +47,9 @@ body {
   padding: 16px;
 }
 
-.toggle-licence.hide-licence ~ .licence {
+.product:not(.selected) .licence {
   display: none;
-};
+}
 
 .licence h3 {
   margin-top: 0;

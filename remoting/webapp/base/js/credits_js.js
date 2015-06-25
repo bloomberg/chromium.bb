@@ -10,7 +10,8 @@
 function onClick(event) {
   var element = /** @type {HTMLElement} */ (event.target);
   if (element.classList.contains('toggle-licence')) {
-    element.classList.toggle('hide-licence');
+    element.parentElement.parentElement.classList.toggle('selected');
+    document.body.classList.toggle('show-only-selected');
   }
 }
 
