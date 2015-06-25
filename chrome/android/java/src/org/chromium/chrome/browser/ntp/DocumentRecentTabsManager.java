@@ -163,8 +163,16 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
 
     @Override
     public void closeTab(CurrentlyOpenTab tab) {
+        Tab currentTab =
+                ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTab();
         Tab tabOject = TabModelUtils.getTabById(mTabModel, tab.getTabId());
         mTabModel.closeTab(tabOject);
+        if (currentTab.getId() == tabOject.getId()) {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_MAIN);
+            intent.setPackage(mActivity.getPackageName());
+            mActivity.startActivity(intent);
+        }
         postUpdate();
     }
 
