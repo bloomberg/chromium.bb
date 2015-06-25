@@ -13,6 +13,11 @@
 
 namespace sdk_util {
 
+#ifdef __APPLE__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 // Initializes mutex, semaphores and a pool of threads.  If 0 is passed for
 // num_threads, all work will be performed on the dispatch thread.
 ThreadPool::ThreadPool(int num_threads)
@@ -119,6 +124,10 @@ void ThreadPool::DispatchMany(int num_tasks, WorkFunction work, void* data) {
     sem_wait(&done_sem_);
   // On exit, all tasks are done and all worker threads are sleeping again.
 }
+
+#ifdef __APPLE__
+#pragma clang diagnostic pop
+#endif
 
 //  DispatchHere will dispatch all tasks on this thread.
 void ThreadPool::DispatchHere(int num_tasks, WorkFunction work, void* data) {
