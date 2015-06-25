@@ -6444,14 +6444,14 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	weston_compositor_add_button_binding(ec, BTN_LEFT, mod, move_binding,
 					     shell);
 	weston_compositor_add_touch_binding(ec, mod, touch_move_binding, shell);
-	weston_compositor_add_button_binding(ec, BTN_MIDDLE, mod,
+	weston_compositor_add_button_binding(ec, BTN_RIGHT, mod,
 					     resize_binding, shell);
 	weston_compositor_add_button_binding(ec, BTN_LEFT,
 					     mod | MODIFIER_SHIFT,
 					     resize_binding, shell);
 
 	if (ec->capabilities & WESTON_CAP_ROTATION_ANY)
-		weston_compositor_add_button_binding(ec, BTN_RIGHT, mod,
+		weston_compositor_add_button_binding(ec, BTN_MIDDLE, mod,
 						     rotate_binding, NULL);
 
 	weston_compositor_add_key_binding(ec, KEY_TAB, mod, switcher_binding,
