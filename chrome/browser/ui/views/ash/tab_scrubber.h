@@ -13,6 +13,7 @@
 #include "ui/events/event_handler.h"
 
 class Browser;
+class Tab;
 class TabStrip;
 
 namespace gfx {
@@ -67,13 +68,28 @@ class TabScrubber : public ui::EventHandler,
   void TabStripDeleted(TabStrip* tab_strip) override;
 
   Browser* GetActiveBrowser();
+
+  void BeginScrub(Browser* browser, BrowserView* browser_view, float x_offset);
   void FinishScrub(bool activate);
+
+  void ScheduleFinishScrubIfNeeded();
+
+  // Updates the direction and the starting point of the swipe.
+  void ScrubDirectionChanged(Direction direction);
+
+  // Updates the X co-ordinate of the swipe taking into account RTL layouts if
+  // any.
+  void UpdateSwipeX(float x_offset);
+
+  void UpdateHighlightedTab(Tab* new_tab, int new_index);
 
   // Are we currently scrubbing?.
   bool scrubbing_;
   // The last browser we used for scrubbing, NULL if |scrubbing_| is
   // false and there is no pending work.
   Browser* browser_;
+  // The TabStrip of the active browser we're scrubbing.
+  TabStrip* tab_strip_;
   // The current accumulated x and y positions of a swipe, in
   // the coordinates of the TabStrip of |browser_|
   float swipe_x_;

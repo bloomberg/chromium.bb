@@ -40,7 +40,11 @@ gfx::Point TabScrubber::GetStartPoint(
     int index,
     TabScrubber::Direction direction) {
   int initial_tab_offset = Tab::GetPinnedWidth() / 2;
-  gfx::Rect tab_bounds = tab_strip->tab_at(index)->bounds();
+  // In RTL layouts the tabs are mirrored. We hence use GetMirroredBounds()
+  // which will give us the correct bounds of tabs in RTL layouts as well as
+  // non-RTL layouts (in non-RTL layouts GetMirroredBounds() is the same as
+  // bounds()).
+  gfx::Rect tab_bounds = tab_strip->tab_at(index)->GetMirroredBounds();
   float x = direction == LEFT ?
       tab_bounds.x() + initial_tab_offset :
           tab_bounds.right() - initial_tab_offset;
@@ -53,7 +57,8 @@ bool TabScrubber::IsActivationPending() {
 
 TabScrubber::TabScrubber()
     : scrubbing_(false),
-      browser_(NULL),
+      browser_(nullptr),
+      tab_strip_(nullptr),
       swipe_x_(-1),
       swipe_y_(-1),
       swipe_direction_(LEFT),
@@ -107,92 +112,48 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   // We are handling the event.
   event->StopPropagation();
 
+  // The event's x_offset doesn't change in an RTL layout. Negative value means
+  // left, positive means right.
   float x_offset = event->x_offset();
-  int last_tab_index = highlighted_tab_ == -1 ?
-      browser->tab_strip_model()->active_index() : highlighted_tab_;
+  int initial_tab_index = highlighted_tab_ == -1
+                              ? browser->tab_strip_model()->active_index()
+                              : highlighted_tab_;
   if (!scrubbing_) {
-    swipe_direction_ = (x_offset < 0) ? LEFT : RIGHT;
-    const gfx::Point start_point =
-        GetStartPoint(tab_strip,
-                      browser->tab_strip_model()->active_index(),
-                      swipe_direction_);
-    browser_ = browser;
-    scrubbing_ = true;
-
-    swipe_x_ = start_point.x();
-    swipe_y_ = start_point.y();
-    ImmersiveModeController* immersive_controller =
-        browser_view->immersive_mode_controller();
-    if (immersive_controller->IsEnabled()) {
-      immersive_reveal_lock_.reset(immersive_controller->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_YES));
-    }
-    tab_strip->AddObserver(this);
+    BeginScrub(browser, browser_view, x_offset);
   } else if (highlighted_tab_ == -1) {
+    // Has the direction of the swipe changed while scrubbing?
     Direction direction = (x_offset < 0) ? LEFT : RIGHT;
-    if (direction != swipe_direction_) {
-      const gfx::Point start_point =
-          GetStartPoint(tab_strip,
-                        browser->tab_strip_model()->active_index(),
-                        direction);
-      swipe_x_ = start_point.x();
-      swipe_y_ = start_point.y();
-      swipe_direction_ = direction;
-    }
+    if (direction != swipe_direction_)
+      ScrubDirectionChanged(direction);
   }
 
-  swipe_x_ += x_offset;
-  Tab* first_tab = tab_strip->tab_at(0);
-  int first_tab_center = first_tab->bounds().CenterPoint().x();
-  Tab* last_tab = tab_strip->tab_at(tab_strip->tab_count() - 1);
-  int last_tab_tab_center = last_tab->bounds().CenterPoint().x();
-  if (swipe_x_ < first_tab_center)
-    swipe_x_ = first_tab_center;
-  if (swipe_x_ > last_tab_tab_center)
-    swipe_x_ = last_tab_tab_center;
+  UpdateSwipeX(x_offset);
 
-  Tab* initial_tab = tab_strip->tab_at(last_tab_index);
+  Tab* initial_tab = tab_strip_->tab_at(initial_tab_index);
   gfx::Point tab_point(swipe_x_, swipe_y_);
-  views::View::ConvertPointToTarget(tab_strip, initial_tab, &tab_point);
-  Tab* new_tab = tab_strip->GetTabAt(initial_tab, tab_point);
+  views::View::ConvertPointToTarget(tab_strip_, initial_tab, &tab_point);
+  Tab* new_tab = tab_strip_->GetTabAt(initial_tab, tab_point);
   if (!new_tab)
     return;
 
-  int new_index = tab_strip->GetModelIndexOfTab(new_tab);
+  int new_index = tab_strip_->GetModelIndexOfTab(new_tab);
   if (highlighted_tab_ == -1 &&
-      new_index == browser->tab_strip_model()->active_index())
+      new_index == browser_->tab_strip_model()->active_index()) {
     return;
+  }
 
   if (new_index != highlighted_tab_) {
-    if (activate_timer_.IsRunning()) {
+    if (activate_timer_.IsRunning())
       activate_timer_.Reset();
-    } else {
-      int delay = use_default_activation_delay_
-                      ? ui::GestureConfiguration::GetInstance()
-                            ->tab_scrub_activation_delay_in_ms()
-                      : activation_delay_;
-      if (delay >= 0) {
-        activate_timer_.Start(FROM_HERE,
-                              base::TimeDelta::FromMilliseconds(delay),
-                              base::Bind(&TabScrubber::FinishScrub,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         true));
-      }
-    }
-    if (highlighted_tab_ != -1) {
-      Tab* tab = tab_strip->tab_at(highlighted_tab_);
-      tab->hover_controller()->HideImmediately();
-    }
-    if (new_index == browser->tab_strip_model()->active_index()) {
-      highlighted_tab_ = -1;
-    } else {
-      highlighted_tab_ = new_index;
-      new_tab->hover_controller()->Show(views::GlowHoverController::PRONOUNCED);
-    }
+    else
+      ScheduleFinishScrubIfNeeded();
   }
+
+  UpdateHighlightedTab(new_tab, new_index);
+
   if (highlighted_tab_ != -1) {
     gfx::Point hover_point(swipe_x_, swipe_y_);
-    views::View::ConvertPointToTarget(tab_strip, new_tab, &hover_point);
+    views::View::ConvertPointToTarget(tab_strip_, new_tab, &hover_point);
     new_tab->hover_controller()->SetLocation(hover_point);
   }
 }
@@ -206,7 +167,8 @@ void TabScrubber::Observe(int type,
     swipe_y_ = -1;
     scrubbing_ = false;
     highlighted_tab_ = -1;
-    browser_ = NULL;
+    browser_ = nullptr;
+    tab_strip_ = nullptr;
   }
 }
 
@@ -260,6 +222,29 @@ Browser* TabScrubber::GetActiveBrowser() {
   return browser;
 }
 
+void TabScrubber::BeginScrub(Browser* browser,
+                             BrowserView* browser_view,
+                             float x_offset) {
+  DCHECK(browser);
+  DCHECK(browser_view);
+
+  scrubbing_ = true;
+  browser_ = browser;
+  tab_strip_ = browser_view->tabstrip();
+
+  Direction direction = (x_offset < 0) ? LEFT : RIGHT;
+  ScrubDirectionChanged(direction);
+
+  ImmersiveModeController* immersive_controller =
+      browser_view->immersive_mode_controller();
+  if (immersive_controller->IsEnabled()) {
+    immersive_reveal_lock_.reset(immersive_controller->GetRevealedLock(
+        ImmersiveModeController::ANIMATE_REVEAL_YES));
+  }
+
+  tab_strip_->AddObserver(this);
+}
+
 void TabScrubber::FinishScrub(bool activate) {
   activate_timer_.Stop();
 
@@ -279,8 +264,81 @@ void TabScrubber::FinishScrub(bool activate) {
     }
     tab_strip->RemoveObserver(this);
   }
+
+  browser_ = nullptr;
+  tab_strip_ = nullptr;
   swipe_x_ = -1;
   swipe_y_ = -1;
   scrubbing_ = false;
   highlighted_tab_ = -1;
+}
+
+void TabScrubber::ScheduleFinishScrubIfNeeded() {
+  int delay = use_default_activation_delay_
+                  ? ui::GestureConfiguration::GetInstance()
+                        ->tab_scrub_activation_delay_in_ms()
+                  : activation_delay_;
+
+  if (delay >= 0) {
+    activate_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay),
+                          base::Bind(&TabScrubber::FinishScrub,
+                                     weak_ptr_factory_.GetWeakPtr(), true));
+  }
+}
+
+void TabScrubber::ScrubDirectionChanged(Direction direction) {
+  DCHECK(browser_);
+  DCHECK(tab_strip_);
+  DCHECK(scrubbing_);
+
+  swipe_direction_ = direction;
+  const gfx::Point start_point =
+      GetStartPoint(tab_strip_, browser_->tab_strip_model()->active_index(),
+                    swipe_direction_);
+  swipe_x_ = start_point.x();
+  swipe_y_ = start_point.y();
+}
+
+void TabScrubber::UpdateSwipeX(float x_offset) {
+  DCHECK(browser_);
+  DCHECK(tab_strip_);
+  DCHECK(scrubbing_);
+
+  swipe_x_ += x_offset;
+
+  // In an RTL layout, everything is mirrored, i.e. the index of the first tab
+  // (with the smallest X mirrored co-ordinates) is actually the index of the
+  // last tab. Same for the index of the last tab.
+  int first_tab_index = base::i18n::IsRTL() ? tab_strip_->tab_count() - 1 : 0;
+  int last_tab_index = base::i18n::IsRTL() ? 0 : tab_strip_->tab_count() - 1;
+
+  Tab* first_tab = tab_strip_->tab_at(first_tab_index);
+  int first_tab_center = first_tab->GetMirroredBounds().CenterPoint().x();
+  Tab* last_tab = tab_strip_->tab_at(last_tab_index);
+  int last_tab_center = last_tab->GetMirroredBounds().CenterPoint().x();
+
+  if (swipe_x_ < first_tab_center)
+    swipe_x_ = first_tab_center;
+  if (swipe_x_ > last_tab_center)
+    swipe_x_ = last_tab_center;
+}
+
+void TabScrubber::UpdateHighlightedTab(Tab* new_tab, int new_index) {
+  DCHECK(scrubbing_);
+  DCHECK(new_tab);
+
+  if (new_index == highlighted_tab_)
+    return;
+
+  if (highlighted_tab_ != -1) {
+    Tab* tab = tab_strip_->tab_at(highlighted_tab_);
+    tab->hover_controller()->HideImmediately();
+  }
+
+  if (new_index != browser_->tab_strip_model()->active_index()) {
+    highlighted_tab_ = new_index;
+    new_tab->hover_controller()->Show(views::GlowHoverController::PRONOUNCED);
+  } else {
+    highlighted_tab_ = -1;
+  }
 }
