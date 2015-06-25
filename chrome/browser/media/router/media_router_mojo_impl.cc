@@ -94,7 +94,7 @@ MediaRouterMojoImpl::~MediaRouterMojoImpl() {
 void MediaRouterMojoImpl::BindToRequest(
     const std::string& extension_id,
     content::BrowserContext* context,
-    mojo::InterfaceRequest<interfaces::MediaRouterObserver> request) {
+    mojo::InterfaceRequest<interfaces::MediaRouter> request) {
   MediaRouterMojoImpl* impl =
       MediaRouterMojoImplFactory::GetApiForBrowserContext(context);
   DCHECK(impl);
@@ -103,15 +103,15 @@ void MediaRouterMojoImpl::BindToRequest(
 }
 
 void MediaRouterMojoImpl::BindToMojoRequest(
-    mojo::InterfaceRequest<interfaces::MediaRouterObserver> request,
+    mojo::InterfaceRequest<interfaces::MediaRouter> request,
     const std::string& extension_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   binding_.reset(
-      new mojo::Binding<interfaces::MediaRouterObserver>(this, request.Pass()));
+      new mojo::Binding<interfaces::MediaRouter>(this, request.Pass()));
   binding_->set_error_handler(this);
 
-  mojo_media_router_extension_id_ = extension_id;
+  media_route_provider_extension_id_ = extension_id;
 }
 
 // TODO(imcheng): If this occurs while there are pending requests, we should
@@ -119,18 +119,18 @@ void MediaRouterMojoImpl::BindToMojoRequest(
 void MediaRouterMojoImpl::OnConnectionError() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  mojo_media_router_.reset();
+  media_route_provider_.reset();
   binding_.reset();
 }
 
-void MediaRouterMojoImpl::ProvideMediaRouter(
-    interfaces::MediaRouterPtr media_router_ptr,
-    const interfaces::MediaRouterObserver::ProvideMediaRouterCallback&
+void MediaRouterMojoImpl::RegisterMediaRouteProvider(
+    interfaces::MediaRouteProviderPtr media_route_provider_ptr,
+    const interfaces::MediaRouter::RegisterMediaRouteProviderCallback&
         callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  mojo_media_router_ = media_router_ptr.Pass();
-  mojo_media_router_.set_error_handler(this);
+  media_route_provider_ = media_route_provider_ptr.Pass();
+  media_route_provider_.set_error_handler(this);
   callback.Run(instance_id_);
   ExecutePendingRequests();
 }
@@ -338,9 +338,9 @@ void MediaRouterMojoImpl::DoCreateRoute(
   presentation_id += base::GenerateGUID();
   DVLOG_WITH_INSTANCE(1) << "DoCreateRoute " << source_id << "=>" << sink_id
                          << ", presentation ID: " << presentation_id;
-  mojo_media_router_->CreateRoute(source_id, sink_id, presentation_id, origin,
-                                  tab_id,
-                                  base::Bind(&RouteResponseReceived, callback));
+  media_route_provider_->CreateRoute(
+      source_id, sink_id, presentation_id, origin, tab_id,
+      base::Bind(&RouteResponseReceived, callback));
 }
 
 void MediaRouterMojoImpl::DoJoinRoute(
@@ -351,13 +351,14 @@ void MediaRouterMojoImpl::DoJoinRoute(
     const MediaRouteResponseCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "DoJoinRoute " << source_id
                          << ", presentation ID: " << presentation_id;
-  mojo_media_router_->JoinRoute(source_id, presentation_id, origin, tab_id,
-                                base::Bind(&RouteResponseReceived, callback));
+  media_route_provider_->JoinRoute(
+      source_id, presentation_id, origin, tab_id,
+      base::Bind(&RouteResponseReceived, callback));
 }
 
 void MediaRouterMojoImpl::DoCloseRoute(const MediaRoute::Id& route_id) {
   DVLOG_WITH_INSTANCE(1) << "DoCloseRoute " << route_id;
-  mojo_media_router_->CloseRoute(route_id);
+  media_route_provider_->CloseRoute(route_id);
 }
 
 void MediaRouterMojoImpl::DoSendSessionMessage(
@@ -365,14 +366,14 @@ void MediaRouterMojoImpl::DoSendSessionMessage(
     const std::string& message,
     const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteMessage " << route_id;
-  mojo_media_router_->SendRouteMessage(route_id, message, callback);
+  media_route_provider_->SendRouteMessage(route_id, message, callback);
 }
 
 void MediaRouterMojoImpl::DoListenForRouteMessages(
     const std::vector<MediaRoute::Id>& route_ids,
     const PresentationSessionMessageCallback& message_cb) {
   DVLOG_WITH_INSTANCE(1) << "ListenForRouteMessages";
-  mojo_media_router_->ListenForRouteMessages(
+  media_route_provider_->ListenForRouteMessages(
       mojo::Array<mojo::String>::From(route_ids),
       base::Bind(&MediaRouterMojoImpl::OnRouteMessageReceived,
                  base::Unretained(this), message_cb));
@@ -392,29 +393,29 @@ void MediaRouterMojoImpl::OnRouteMessageReceived(
 
 void MediaRouterMojoImpl::DoClearIssue(const Issue::Id& issue_id) {
   DVLOG_WITH_INSTANCE(1) << "DoClearIssue " << issue_id;
-  mojo_media_router_->ClearIssue(issue_id);
+  media_route_provider_->ClearIssue(issue_id);
 }
 
 void MediaRouterMojoImpl::DoStartObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaSinks: " << source_id;
-  mojo_media_router_->StartObservingMediaSinks(source_id);
+  media_route_provider_->StartObservingMediaSinks(source_id);
 }
 
 void MediaRouterMojoImpl::DoStopObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStopObservingMediaSinks: " << source_id;
-  mojo_media_router_->StopObservingMediaSinks(source_id);
+  media_route_provider_->StopObservingMediaSinks(source_id);
 }
 
 void MediaRouterMojoImpl::DoStartObservingMediaRoutes() {
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaRoutes";
-  mojo_media_router_->StartObservingMediaRoutes();
+  media_route_provider_->StartObservingMediaRoutes();
 }
 
 void MediaRouterMojoImpl::DoStopObservingMediaRoutes() {
   DVLOG_WITH_INSTANCE(1) << "DoStopObservingMediaRoutes";
-  mojo_media_router_->StopObservingMediaRoutes();
+  media_route_provider_->StopObservingMediaRoutes();
 }
 
 void MediaRouterMojoImpl::EnqueueTask(const base::Closure& closure) {
@@ -426,20 +427,20 @@ void MediaRouterMojoImpl::EnqueueTask(const base::Closure& closure) {
 void MediaRouterMojoImpl::RunOrDefer(const base::Closure& request) {
   DCHECK(event_page_tracker_);
 
-  if (mojo_media_router_extension_id_.empty()) {
+  if (media_route_provider_extension_id_.empty()) {
     DVLOG_WITH_INSTANCE(1) << "Extension ID not known yet.";
     EnqueueTask(request);
   } else if (event_page_tracker_->IsEventPageSuspended(
-                 mojo_media_router_extension_id_)) {
+                 media_route_provider_extension_id_)) {
     DVLOG_WITH_INSTANCE(1) << "Waking event page.";
     EnqueueTask(request);
     if (!event_page_tracker_->WakeEventPage(
-            mojo_media_router_extension_id_,
+            media_route_provider_extension_id_,
             base::Bind(&EventPageWakeComplete))) {
       LOG(ERROR) << "An error encountered while waking the event page.";
     }
-    mojo_media_router_.reset();
-  } else if (!mojo_media_router_) {
+    media_route_provider_.reset();
+  } else if (!media_route_provider_) {
     DVLOG_WITH_INSTANCE(1) << "Extension is awake, awaiting ProvideMediaRouter "
                               " to be called.";
     EnqueueTask(request);
@@ -450,12 +451,12 @@ void MediaRouterMojoImpl::RunOrDefer(const base::Closure& request) {
 
 void MediaRouterMojoImpl::ExecutePendingRequests() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(mojo_media_router_);
+  DCHECK(media_route_provider_);
   DCHECK(event_page_tracker_);
-  DCHECK(!mojo_media_router_extension_id_.empty());
+  DCHECK(!media_route_provider_extension_id_.empty());
 
   if (event_page_tracker_->IsEventPageSuspended(
-          mojo_media_router_extension_id_)) {
+          media_route_provider_extension_id_)) {
     DVLOG_WITH_INSTANCE(1)
         << "ExecutePendingRequests was called while extension is suspended.";
     return;

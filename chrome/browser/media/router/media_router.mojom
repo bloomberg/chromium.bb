@@ -97,7 +97,7 @@ struct RouteMessage {
 
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
-interface MediaRouter {
+interface MediaRouteProvider {
   // Initiates a media route from |media_source| to |sink_id|.
   // The presentation ID of the route created will be |presentation_id|, but it
   // may be overridden by a provider implementation. The presentation ID will
@@ -161,13 +161,12 @@ interface MediaRouter {
 
 // Interface for a service which observes state changes across media
 // sources, sinks, and issues.
-interface MediaRouterObserver {
-  // Registers MediaRouter functionality with the remote end.
-  // Allows the browser-side MediaRouter to dispatch MediaRouter methods
-  // to providers.
+interface MediaRouter {
+  // Registers a MediaRouteProvider with the MediaRouter.
   // Returns a string that uniquely identifies the Media Router browser
   // process.
-  ProvideMediaRouter(MediaRouter media_router) => (string instance_id);
+  RegisterMediaRouteProvider(MediaRouteProvider media_router_provider) =>
+      (string instance_id);
 
   // Called when the Media Route Manager receives a new list of sinks.
   OnSinksReceived(string media_source, array<MediaSink> sinks);

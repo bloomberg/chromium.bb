@@ -36,7 +36,7 @@ namespace media_router {
 // MediaRouter implementation that delegates calls to the component extension.
 // Also handles the suspension and wakeup of the component extension.
 class MediaRouterMojoImpl : public MediaRouter,
-                            public interfaces::MediaRouterObserver,
+                            public interfaces::MediaRouter,
                             public mojo::ErrorHandler,
                             public KeyedService {
  public:
@@ -54,7 +54,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   static void BindToRequest(
       const std::string& extension_id,
       content::BrowserContext* context,
-      mojo::InterfaceRequest<interfaces::MediaRouterObserver> request);
+      mojo::InterfaceRequest<interfaces::MediaRouter> request);
 
   // MediaRouter implementation.
   // Execution of the requests is delegated to the Do* methods, which can be
@@ -104,7 +104,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   // handle to a MediaRouterMojoImpl instance via the Mojo service connector.
   // Stores the |extension_id| of the component extension.
   void BindToMojoRequest(
-      mojo::InterfaceRequest<interfaces::MediaRouterObserver> request,
+      mojo::InterfaceRequest<interfaces::MediaRouter> request,
       const std::string& extension_id);
 
   // Enqueues a closure for later execution by ExecutePendingRequests().
@@ -153,10 +153,10 @@ class MediaRouterMojoImpl : public MediaRouter,
   // mojo::ErrorHandler implementation.
   void OnConnectionError() override;
 
-  // interfaces::MediaRouterObserver implementation.
-  void ProvideMediaRouter(
-      interfaces::MediaRouterPtr media_router_ptr,
-      const interfaces::MediaRouterObserver::ProvideMediaRouterCallback&
+  // interfaces::MediaRouter implementation.
+  void RegisterMediaRouteProvider(
+      interfaces::MediaRouteProviderPtr media_route_provider_ptr,
+      const interfaces::MediaRouter::RegisterMediaRouteProviderCallback&
           callback) override;
   void OnIssue(interfaces::IssuePtr issue) override;
   void OnSinksReceived(const mojo::String& media_source,
@@ -173,19 +173,19 @@ class MediaRouterMojoImpl : public MediaRouter,
 
   base::ObserverList<MediaRoutesObserver> routes_observers_;
 
-  // Binds |this| to listen for updates from the component extension Media
-  // Router.
-  scoped_ptr<mojo::Binding<interfaces::MediaRouterObserver>> binding_;
+  // Binds |this| to a Mojo connection stub for interfaces::MediaRouter.
+  scoped_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;
 
-  // Mojo proxy object for the component extension Media Router.
-  // Set to null initially, and set to the proxy to the component extension
-  // on |ProvideMediaRouter()|. This is set to null again when the component
-  // extension becomes suspended or if there is a connection error.
-  interfaces::MediaRouterPtr mojo_media_router_;
+  // Mojo proxy object for the Media Route Provider Manager.
+  // Set to null initially, and later set to the Provider Manager proxy object
+  // passed in via |RegisterMediaRouteProvider()|.
+  // This is set to null again when the component extension is suspended
+  // if or a Mojo channel error occured.
+  interfaces::MediaRouteProviderPtr media_route_provider_;
 
   // Id of the component extension. Used for managing its suspend/wake state
   // via event_page_tracker_.
-  std::string mojo_media_router_extension_id_;
+  std::string media_route_provider_extension_id_;
 
   // Allows the extension to be monitored for suspend, and woken.
   // This is a reference to a BrowserContext keyed service that outlives this

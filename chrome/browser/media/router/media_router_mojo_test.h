@@ -22,12 +22,6 @@ class MediaRouterMojoImpl;
 
 // Tests the API call flow between the MediaRouterMojoImpl and the Media Router
 // Mojo service in both directions.
-// Calls are made through Mojo service bindings backed by mock objects.
-// |router_| delegates Media Router calls to |mock_mojo_media_router_service_|,
-// which represents the service provided by the component extension.
-// Calls from the component extension back to |router_| via the
-// MediaRouterObserver interface can be simulated with
-// |mojo_media_router_observer_|.
 class MediaRouterMojoTest : public ::testing::Test {
  public:
   MediaRouterMojoTest();
@@ -42,20 +36,20 @@ class MediaRouterMojoTest : public ::testing::Test {
 
   const std::string& extension_id() const { return extension_id_; }
 
-  MediaRouterMojoImpl* router() const { return router_.get(); }
+  MediaRouterMojoImpl* router() const { return mock_media_router_.get(); }
 
   // Mock objects.
-  MockMojoMediaRouterService mock_mojo_media_router_service_;
+  MockMediaRouteProvider mock_media_route_provider_;
   testing::NiceMock<MockEventPageTracker> mock_event_page_tracker_;
 
-  // MediaRouterObserver interface that is bound to |router_|.
-  media_router::interfaces::MediaRouterObserverPtr mojo_media_router_observer_;
+  // Mojo proxy object for |mock_media_router_|
+  media_router::interfaces::MediaRouterPtr media_router_proxy_;
 
  private:
   base::MessageLoop message_loop_;
   std::string extension_id_;
-  scoped_ptr<MediaRouterMojoImpl> router_;
-  scoped_ptr<mojo::Binding<interfaces::MediaRouter>> binding_;
+  scoped_ptr<MediaRouterMojoImpl> mock_media_router_;
+  scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);
 };

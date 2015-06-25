@@ -18,33 +18,33 @@ void ExpectAsyncResultEqual(T1 expected, T2 actual) {
 
 }  // namespace
 
-MockMojoMediaRouterService::MockMojoMediaRouterService() {
+MockMediaRouteProvider::MockMediaRouteProvider() {
 }
 
-MockMojoMediaRouterService::~MockMojoMediaRouterService() {
+MockMediaRouteProvider::~MockMediaRouteProvider() {
 }
 
 MediaRouterMojoTest::MediaRouterMojoTest()
     : message_loop_(mojo::common::MessagePumpMojo::Create()),
       extension_id_("ext-123"),
-      router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)) {
-  router_->set_instance_id_for_test(kInstanceId);
+      mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)) {
+  mock_media_router_->set_instance_id_for_test(kInstanceId);
 }
 
 MediaRouterMojoTest::~MediaRouterMojoTest() {
 }
 
 void MediaRouterMojoTest::ConnectProviderManagerService() {
-  // Bind the |mojo_media_router_observer_| interface to |router_|.
-  auto request = mojo::GetProxy(&mojo_media_router_observer_);
-  router_->BindToMojoRequest(request.Pass(), extension_id_);
+  // Bind the |media_route_provider| interface to |media_route_provider_|.
+  auto request = mojo::GetProxy(&media_router_proxy_);
+  mock_media_router_->BindToMojoRequest(request.Pass(), extension_id_);
 
-  // Bind the Mojo MediaRouter interface used by |router_| to
-  // |mock_mojo_media_router_service_|.
-  interfaces::MediaRouterPtr mojo_media_router;
-  binding_.reset(new mojo::Binding<interfaces::MediaRouter>(
-      &mock_mojo_media_router_service_, mojo::GetProxy(&mojo_media_router)));
-  mojo_media_router_observer_->ProvideMediaRouter(
+  // Bind the Mojo MediaRouter interface used by |mock_media_router_| to
+  // |mock_media_route_provider_service_|.
+  interfaces::MediaRouteProviderPtr mojo_media_router;
+  binding_.reset(new mojo::Binding<interfaces::MediaRouteProvider>(
+      &mock_media_route_provider_, mojo::GetProxy(&mojo_media_router)));
+  media_router_proxy_->RegisterMediaRouteProvider(
       mojo_media_router.Pass(),
       base::Bind(&ExpectAsyncResultEqual<std::string, mojo::String>,
                  kInstanceId));

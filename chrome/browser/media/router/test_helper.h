@@ -36,10 +36,10 @@ MATCHER_P(SequenceEquals, other, "") {
   return true;
 }
 
-class MockMojoMediaRouterService : public interfaces::MediaRouter {
+class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
  public:
-  MockMojoMediaRouterService();
-  ~MockMojoMediaRouterService() override;
+  MockMediaRouteProvider();
+  ~MockMediaRouteProvider() override;
 
   MOCK_METHOD6(CreateRoute,
                void(const mojo::String& source_urn,
@@ -73,7 +73,7 @@ class MockMojoMediaRouterService : public interfaces::MediaRouter {
   MOCK_METHOD0(StopObservingMediaRoutes, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockMojoMediaRouterService);
+  DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);
 };
 
 class MockMediaSinksObserver : public MediaSinksObserver {

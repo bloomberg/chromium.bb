@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var mediaRouterObserver;
+var mediaRouter;
 
 define('media_router_bindings', [
     'mojo/public/js/bindings',
@@ -76,12 +76,12 @@ define('media_router_bindings', [
   }
 
   /**
-   * Creates a new MediaRouterObserver.
+   * Creates a new MediaRouter.
    * Converts a route struct to its Mojo form.
    * @param {!MediaRouterService} service
    * @constructor
    */
-  function MediaRouterObserver(service) {
+  function MediaRouter(service) {
     /**
      * The Mojo service proxy. Allows extension code to call methods that reside
      * in the browser.
@@ -94,7 +94,7 @@ define('media_router_bindings', [
      * browser-resident Mojo service.
      * @type {!MediaRouter}
      */
-    this.mrpm_ = new MediaRouter(this);
+    this.mrpm_ = new MediaRouteProvider(this);
 
     /**
      * The message pipe that connects the Media Router to mrpm_ across
@@ -118,19 +118,19 @@ define('media_router_bindings', [
      * prevent the connection from closing automatically.
      * @type {!mojom.MediaRouter}
      */
-    this.mediaRouterStub_ = connector.bindHandleToStub(
-        this.pipe_.handle0, mediaRouterMojom.MediaRouter);
+    this.mediaRouteProviderStub_ = connector.bindHandleToStub(
+        this.pipe_.handle0, mediaRouterMojom.MediaRouteProvider);
 
-    // Link mediaRouterStub_ to the provider manager delegate.
-    bindings.StubBindings(this.mediaRouterStub_).delegate = this.mrpm_;
+    // Link mediaRouteProviderStub_ to the provider manager delegate.
+    bindings.StubBindings(this.mediaRouteProviderStub_).delegate = this.mrpm_;
   }
 
   /**
    * Registers the Media Router Provider Manager with the Media Router.
    * @return {!Promise<string>} Instance ID for the Media Router.
    */
-  MediaRouterObserver.prototype.start = function() {
-    return this.service_.provideMediaRouter(this.pipe_.handle1).then(
+  MediaRouter.prototype.start = function() {
+    return this.service_.registerMediaRouteProvider(this.pipe_.handle1).then(
         function(result) {
           return result.instance_id;
         }.bind(this));
@@ -140,7 +140,7 @@ define('media_router_bindings', [
    * Sets the service delegate methods.
    * @param {Object} handlers
    */
-  MediaRouterObserver.prototype.setHandlers = function(handlers) {
+  MediaRouter.prototype.setHandlers = function(handlers) {
     this.mrpm_.setHandlers(handlers);
   }
 
@@ -148,7 +148,7 @@ define('media_router_bindings', [
    * The keep alive status.
    * @return {boolean}
    */
-  MediaRouterObserver.prototype.getKeepAlive = function() {
+  MediaRouter.prototype.getKeepAlive = function() {
     return this.keepAlive_ != null;
   };
 
@@ -158,7 +158,7 @@ define('media_router_bindings', [
    * @param {!string} sourceUrn
    * @param {!Array<!MediaSink>} sinks
    */
-  MediaRouterObserver.prototype.onSinksReceived = function(sourceUrn, sinks) {
+  MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks) {
     this.service_.onSinksReceived(sourceUrn, sinks.map(sinkToMojo_));
   };
 
@@ -170,7 +170,7 @@ define('media_router_bindings', [
    * If keepAlive is false, the extension is allowed to suspend.
    * @param {boolean} keepAlive
    */
-  MediaRouterObserver.prototype.setKeepAlive = function(keepAlive) {
+  MediaRouter.prototype.setKeepAlive = function(keepAlive) {
     if (keepAlive === false && this.keepAlive_) {
       this.keepAlive_.close();
       this.keepAlive_ = null;
@@ -186,7 +186,7 @@ define('media_router_bindings', [
    * provider to the Media Router, to show the user.
    * @param {!Object} issue The issue object.
    */
-  MediaRouterObserver.prototype.onIssue = function(issue) {
+  MediaRouter.prototype.onIssue = function(issue) {
     function issueSeverityToMojo_(severity) {
       switch (severity) {
         case 'fatal':
@@ -238,7 +238,7 @@ define('media_router_bindings', [
    * @param {!Array<MediaRoute>} routes The active set of media routes.
    * @param {!Array<MediaSink>} sinks The active set of media sinks.
    */
-  MediaRouterObserver.prototype.onRoutesUpdated = function(routes, sinks) {
+  MediaRouter.prototype.onRoutesUpdated = function(routes, sinks) {
     // Create an inverted index relating sink IDs to their names.
     var sinkNameMap = {};
     for (var i = 0; i < sinks.length; i++) {
@@ -260,7 +260,7 @@ define('media_router_bindings', [
    * @param {!string} requestId The request id.
    * @param {!string} error The error.
    */
-  MediaRouterObserver.prototype.onRouteResponseError =
+  MediaRouter.prototype.onRouteResponseError =
       function(requestId, error) {
     this.service_.onRouteResponseError(requestId, error);
   };
@@ -272,7 +272,7 @@ define('media_router_bindings', [
    * @param {string} requestId The media route request id.
    * @param {string} routeId The id of the media route that was created.
    */
-  MediaRouterObserver.prototype.onRouteResponseReceived =
+  MediaRouter.prototype.onRouteResponseReceived =
       function(requestId, routeId) {
     this.service_.onRouteResponseReceived(requestId, routeId);
   };
@@ -334,12 +334,12 @@ define('media_router_bindings', [
   /**
    * Routes calls from Media Router to the provider manager extension.
    * Registered with the MediaRouter stub.
-   * @param {!MediaRouterObserver} mediaRouterObserver API to call into the
+   * @param {!MediaRouter} MediaRouter proxy to call into the
    * Media Router mojo interface.
    * @constructor
    */
-  function MediaRouter(mediaRouterObserver) {
-    mediaRouterMojom.MediaRouter.stubClass.call(this);
+  function MediaRouteProvider(mediaRouter) {
+    mediaRouterMojom.MediaRouteProvider.stubClass.call(this);
 
     /**
      * Object containing JS callbacks into Provider Manager code.
@@ -349,12 +349,12 @@ define('media_router_bindings', [
 
     /**
      * Proxy class to the browser's Media Router Mojo service.
-     * @type {!MediaRouterObserver}
+     * @type {!MediaRouter}
      */
-    this.mediaRouter_ = mediaRouterObserver;
+    this.mediaRouter_ = mediaRouter;
   }
-  MediaRouter.prototype = Object.create(
-      mediaRouterMojom.MediaRouter.stubClass.prototype);
+  MediaRouteProvider.prototype = Object.create(
+      mediaRouterMojom.MediaRouteProvider.stubClass.prototype);
 
   /*
    * Sets the callback handler used to invoke methods in the provider manager.
@@ -362,7 +362,7 @@ define('media_router_bindings', [
    * TODO(mfoltz): Rename to something more explicit?
    * @param {!MediaRouterHandlers} handlers
    */
-  MediaRouter.prototype.setHandlers = function(handlers) {
+  MediaRouteProvider.prototype.setHandlers = function(handlers) {
     this.handlers_ = handlers;
     var requiredHandlers = [
       'stopObservingMediaRoutes',
@@ -388,7 +388,7 @@ define('media_router_bindings', [
    * OnSinksReceived.
    * @param {!string} sourceUrn
    */
-  MediaRouter.prototype.startObservingMediaSinks =
+  MediaRouteProvider.prototype.startObservingMediaSinks =
       function(sourceUrn) {
     this.handlers_.startObservingMediaSinks(sourceUrn);
   };
@@ -397,7 +397,7 @@ define('media_router_bindings', [
    * Stops querying for sinks capable of displaying |sourceUrn|.
    * @param {!string} sourceUrn
    */
-  MediaRouter.prototype.stopObservingMediaSinks =
+  MediaRouteProvider.prototype.stopObservingMediaSinks =
       function(sourceUrn) {
     this.handlers_.stopObservingMediaSinks(sourceUrn);
   };
@@ -416,7 +416,7 @@ define('media_router_bindings', [
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
-  MediaRouter.prototype.createRoute =
+  MediaRouteProvider.prototype.createRoute =
       function(sourceUrn, sinkId, presentationId, origin, tabId) {
     return this.handlers_.createRoute(
         sourceUrn, sinkId, presentationId, origin, tabId)
@@ -441,7 +441,7 @@ define('media_router_bindings', [
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
-  MediaRouter.prototype.joinRoute =
+  MediaRouteProvider.prototype.joinRoute =
       function(sourceUrn, presentationId, origin, tabId) {
     return this.handlers_.joinRoute(sourceUrn, presentationId, origin, tabId)
         .then(function(newRoute) {
@@ -457,7 +457,7 @@ define('media_router_bindings', [
    * Closes the route specified by |routeId|.
    * @param {!string} routeId
    */
-  MediaRouter.prototype.closeRoute = function(routeId) {
+  MediaRouteProvider.prototype.closeRoute = function(routeId) {
     this.handlers_.closeRoute(routeId);
   };
 
@@ -468,7 +468,7 @@ define('media_router_bindings', [
    * @return {!Promise.<boolean>} Resolved with true if the message was sent,
    *    or false on failure.
    */
-  MediaRouter.prototype.sendRouteMessage = function(
+  MediaRouteProvider.prototype.sendRouteMessage = function(
       routeId, message) {
     this.handlers_.sendRouteMessage(routeId, message)
         .then(function() {
@@ -484,7 +484,7 @@ define('media_router_bindings', [
    * @return {!Promise.<Array.<RouteMessage>>} Resolved with a list of messages,
    *    an empty list if an error occurred.
    */
-  MediaRouter.prototype.listenForRouteMessages = function(routeIds) {
+  MediaRouteProvider.prototype.listenForRouteMessages = function(routeIds) {
     this.handlers_.listenForRouteMessages(routeIds)
         .then(function(messages) {
           return messages.map(messageToMojo_);
@@ -497,7 +497,7 @@ define('media_router_bindings', [
    * Requests that the provider manager start sending information about active
    * media routes to the Media Router.
    */
-  MediaRouter.prototype.startObservingMediaRoutes = function() {
+  MediaRouteProvider.prototype.startObservingMediaRoutes = function() {
     this.handlers_.startObservingMediaRoutes();
   };
 
@@ -505,15 +505,15 @@ define('media_router_bindings', [
    * Requests that the provider manager stop sending information about active
    * media routes to the Media Router.
    */
-  MediaRouter.prototype.stopObservingMediaRoutes = function() {
+  MediaRouteProvider.prototype.stopObservingMediaRoutes = function() {
     this.handlers_.stopObservingMediaRoutes();
   };
 
-  mediaRouterObserver = new MediaRouterObserver(connector.bindHandleToProxy(
+  mediaRouter = new MediaRouter(connector.bindHandleToProxy(
       serviceProvider.connectToService(
-          mediaRouterMojom.MediaRouterObserver.name),
-      mediaRouterMojom.MediaRouterObserver));
+          mediaRouterMojom.MediaRouter.name),
+      mediaRouterMojom.MediaRouter));
 
-  return mediaRouterObserver;
+  return mediaRouter;
 });
 
