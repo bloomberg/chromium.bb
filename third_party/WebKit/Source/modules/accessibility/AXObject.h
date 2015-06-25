@@ -391,6 +391,8 @@ protected:
 public:
     virtual ~AXObject();
 
+    static unsigned numberOfLiveAXObjects() { return s_numberOfLiveAXObjects; }
+
     // After constructing an AXObject, it must be given a
     // unique ID, then added to AXObjectCacheImpl, and finally init() must
     // be called last.
@@ -806,6 +808,8 @@ protected:
 private:
     static bool includesARIAWidgetRole(const String&);
     static bool hasInteractiveARIAAttribute(const Element&);
+
+    static unsigned s_numberOfLiveAXObjects;
 };
 
 #define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate) \

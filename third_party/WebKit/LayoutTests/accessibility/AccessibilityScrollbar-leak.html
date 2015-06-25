@@ -21,7 +21,10 @@
     <script src="../resources/leak-check.js"></script>
     <script>
         var target = grabScriptText('targetHTML');
-        var tolerance = {'numberOfLiveDocuments': 0};
+        var tolerance = {
+          'numberOfLiveDocuments': 0,
+          'numberOfLiveAXObjects': 0
+        };
 
         doLeakTest(htmlToUrl(target), tolerance);
     </script>

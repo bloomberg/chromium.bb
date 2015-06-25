@@ -3,7 +3,10 @@
 function getCounterValues(callback) {
     testRunner.resetTestHelperControllers();
     asyncGC(function() {
-        var ret = {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
+        var ret = {
+          'numberOfLiveDocuments': window.internals.numberOfLiveDocuments(),
+          'numberOfLiveAXObjects': window.internals.numberOfLiveAXObjects()
+        };
 
         var refCountedInstances = JSON.parse(window.internals.dumpRefCountedInstanceCounts());
         for (typename in refCountedInstances)

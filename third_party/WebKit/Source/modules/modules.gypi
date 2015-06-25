@@ -1454,6 +1454,7 @@
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [
+      'accessibility/testing/InternalsAccessibility.idl',
       'geolocation/testing/InternalsGeolocation.idl',
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl',
       'serviceworkers/testing/InternalsServiceWorker.idl',
@@ -1462,6 +1463,8 @@
       'webaudio/testing/InternalsWebAudio.idl',
     ],
     'modules_testing_files': [
+      'accessibility/testing/InternalsAccessibility.cpp',
+      'accessibility/testing/InternalsAccessibility.h',
       'geolocation/testing/GeolocationClientMock.cpp',
       'geolocation/testing/GeolocationClientMock.h',
       'geolocation/testing/InternalsGeolocation.cpp',

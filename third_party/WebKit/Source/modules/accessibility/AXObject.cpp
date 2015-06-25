@@ -370,6 +370,8 @@ HTMLDialogElement* getActiveDialogElement(Node* node)
 
 } // namespace
 
+unsigned AXObject::s_numberOfLiveAXObjects = 0;
+
 AXObject::AXObject(AXObjectCacheImpl& axObjectCache)
     : m_id(0)
     , m_haveChildren(false)
@@ -386,11 +388,13 @@ AXObject::AXObject(AXObjectCacheImpl& axObjectCache)
     , m_cachedLiveRegionRoot(0)
     , m_axObjectCache(&axObjectCache)
 {
+    ++s_numberOfLiveAXObjects;
 }
 
 AXObject::~AXObject()
 {
     ASSERT(isDetached());
+    --s_numberOfLiveAXObjects;
 }
 
 void AXObject::detach()
