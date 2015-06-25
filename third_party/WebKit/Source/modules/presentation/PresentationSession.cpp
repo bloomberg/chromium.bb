@@ -90,7 +90,7 @@ PresentationSession::PresentationSession(LocalFrame* frame, const String& id, co
     : DOMWindowProperty(frame)
     , m_id(id)
     , m_url(url)
-    , m_state(WebPresentationSessionState::Disconnected)
+    , m_state(WebPresentationSessionState::Connected)
 {
 }
 
