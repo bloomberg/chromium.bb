@@ -85,16 +85,6 @@ bool IsIncludedInHoldbackFieldTrial() {
       "DataCompressionProxyHoldback") == kEnabled;
 }
 
-bool IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() {
-  return FieldTrialList::FindFullName(
-      "DataReductionProxyRemoveMissingViaHeaderOtherBypass") == kEnabled;
-}
-
-bool IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() {
-  return FieldTrialList::FindFullName(
-      "DataReductionProxyRemoveMissingViaHeaderOtherBypass") == "Relaxed";
-}
-
 bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint) {
   base::StringPiece fingerprint(build_fingerprint);
   return (fingerprint.find(kAndroidOneIdentifier) != std::string::npos);

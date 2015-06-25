@@ -946,62 +946,6 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
 }
 
 TEST_F(DataReductionProxyProtocolTest,
-       RelaxedMissingViaHeaderOtherBypassLogic) {
-  std::string primary = test_context_->config()->test_params()->DefaultOrigin();
-  std::string fallback =
-      test_context_->config()->test_params()->DefaultFallbackOrigin();
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial(
-      "DataReductionProxyRemoveMissingViaHeaderOtherBypass", "Relaxed");
-
-  ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
-      net::ProxyServer::FromURI(
-          primary, net::ProxyServer::SCHEME_HTTP).ToPacString() + "; " +
-          net::ProxyServer::FromURI(
-              fallback,
-              net::ProxyServer::SCHEME_HTTP).ToPacString() +
-              "; DIRECT"));
-
-  // This response with the DRP via header should be accepted without causing a
-  // bypass.
-  TestProxyFallback("GET",
-                    "HTTP/1.1 200 OK\r\n"
-                    "Server: proxy\r\n"
-                    "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-                    false /* expected_retry */,
-                    false /* generate_response_error */,
-                    0u /* expected_bad_proxy_count */,
-                    true /* expect_response_body */);
-  EXPECT_EQ(BYPASS_EVENT_TYPE_MAX, bypass_stats_->GetBypassType());
-  TestBadProxies(0u, -1, primary, fallback);
-
-  // This non-4xx response without the DRP via header should not cause a bypass
-  // because a DRP via header has been seen since the last network change.
-  TestProxyFallback("GET",
-                    "HTTP/1.1 200 OK\r\n\r\n",
-                    false /* expected_retry */,
-                    false /* generate_response_error */,
-                    0u /* expected_bad_proxy_count */,
-                    true /* expect_response_body */);
-  EXPECT_EQ(BYPASS_EVENT_TYPE_MAX, bypass_stats_->GetBypassType());
-  TestBadProxies(0u, -1, primary, fallback);
-
-  // The first response after a network change is missing the DRP via header, so
-  // this should cause a bypass.
-  net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-  test_context_->RunUntilIdle();
-  TestProxyFallback("GET",
-                    "HTTP/1.1 200 OK\r\n\r\n",
-                    true /* expected_retry */,
-                    false /* generate_response_error */,
-                    1u /* expected_bad_proxy_count */,
-                    true /* expect_response_body */);
-  EXPECT_EQ(BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-            bypass_stats_->GetBypassType());
-  TestBadProxies(1u, 0, primary, fallback);
-}
-
-TEST_F(DataReductionProxyProtocolTest,
        ProxyBypassIgnoredOnDirectConnection) {
   // Verify that a Chrome-Proxy header is ignored when returned from a directly
   // connected origin server.

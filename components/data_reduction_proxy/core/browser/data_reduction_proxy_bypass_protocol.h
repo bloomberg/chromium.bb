@@ -5,11 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_PROTOCOL_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_PROTOCOL_H_
 
-#include <set>
-
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/network_change_notifier.h"
 
 namespace net {
 class URLRequest;
@@ -22,8 +18,7 @@ class DataReductionProxyConfig;
 // Class responsible for determining when a response should or should not cause
 // the data reduction proxy to be bypassed, and to what degree. Owned by the
 // DataReductionProxyInterceptor.
-class DataReductionProxyBypassProtocol
-    : public net::NetworkChangeNotifier::IPAddressObserver {
+class DataReductionProxyBypassProtocol {
  public:
   // Enum values that can be reported for the
   // DataReductionProxy.ResponseProxyServerStatus histogram. These values must
@@ -41,7 +36,7 @@ class DataReductionProxyBypassProtocol
   // non-NULL and outlive |this|.
   DataReductionProxyBypassProtocol(DataReductionProxyConfig* config);
 
-  ~DataReductionProxyBypassProtocol() override;
+  ~DataReductionProxyBypassProtocol();
 
   // Decides whether to mark the data reduction proxy as temporarily bad and
   // put it on the proxy retry map, which is maintained by the ProxyService of
@@ -58,17 +53,8 @@ class DataReductionProxyBypassProtocol
   static bool IsRequestIdempotent(const net::URLRequest* request);
 
  private:
-  // Override from NetworkChangeNotifier::IPAddressObserver:
-  void OnIPAddressChanged() override;
-
   // Must outlive |this|.
   DataReductionProxyConfig* config_;
-
-  // The set of data reduction proxies through which a response has come back
-  // with the data reduction proxy via header since the last network change.
-  // This is only used if the client is part of the field trial to relax the
-  // bypass logic around missing via headers in non-4xx responses.
-  std::set<net::HostPortPair> via_header_producing_proxies_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyBypassProtocol);
 };

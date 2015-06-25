@@ -75,11 +75,9 @@ DataReductionProxyBypassProtocol::DataReductionProxyBypassProtocol(
     DataReductionProxyConfig* config)
     : config_(config) {
   DCHECK(config_);
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
 DataReductionProxyBypassProtocol::~DataReductionProxyBypassProtocol() {
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
@@ -140,30 +138,10 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   DataReductionProxyBypassStats::DetectAndRecordMissingViaHeaderResponseCode(
       !data_reduction_proxy_type_info.is_fallback, response_headers);
 
-  if (params::IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
-      HasDataReductionProxyViaHeader(response_headers, NULL)) {
-    DCHECK(config_->IsDataReductionProxy(request->proxy_server(), NULL));
-    via_header_producing_proxies_.insert(request->proxy_server());
-  }
-
   // GetDataReductionProxyBypassType will only log a net_log event if a bypass
   // command was sent via the data reduction proxy headers
   DataReductionProxyBypassType bypass_type = GetDataReductionProxyBypassType(
       response_headers, data_reduction_proxy_info);
-
-  if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER) {
-    if (params::IsIncludedInRemoveMissingViaHeaderOtherBypassFieldTrial() ||
-        (params::IsIncludedInRelaxMissingViaHeaderOtherBypassFieldTrial() &&
-         via_header_producing_proxies_.find(request->proxy_server()) !=
-             via_header_producing_proxies_.end())) {
-      // Ignore MISSING_VIA_HEADER_OTHER proxy bypass events if the client is
-      // part of the field trial to remove these kinds of bypasses, or if the
-      // client is part of the field trial to relax this bypass rule and Chrome
-      // has previously seen a data reduction proxy via header on a response
-      // through this proxy since the last network change.
-      bypass_type = BYPASS_EVENT_TYPE_MAX;
-    }
-  }
 
   if (proxy_bypass_type)
     *proxy_bypass_type = bypass_type;
@@ -211,10 +189,6 @@ bool DataReductionProxyBypassProtocol::IsRequestIdempotent(
       request->method() == "TRACE")
     return true;
   return false;
-}
-
-void DataReductionProxyBypassProtocol::OnIPAddressChanged() {
-  via_header_producing_proxies_.clear();
 }
 
 }  // namespace data_reduction_proxy
