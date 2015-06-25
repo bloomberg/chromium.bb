@@ -1049,8 +1049,12 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   render_view_host_->StopHangMonitorTimeout();
   send_before_unload_start_time_ = base::TimeTicks();
 
+  // PlzNavigate: if the ACK is for a navigation, send it to the Navigator to
+  // have the current navigation stop/proceed. Otherwise, send it to the
+  // RenderFrameHostManager which handles closing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation)) {
+          switches::kEnableBrowserSideNavigation) &&
+      unload_ack_is_for_navigation_) {
     // TODO(clamy): see if before_unload_end_time should be transmitted to the
     // Navigator.
     frame_tree_node_->navigator()->OnBeforeUnloadACK(
