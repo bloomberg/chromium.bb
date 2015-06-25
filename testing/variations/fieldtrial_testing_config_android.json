@@ -26,6 +26,9 @@
             "group_name": "Enabled"
         },
         {
+            "group_name": "DisablePrerender"
+        },
+        {
             "group_name": "Disabled"
         }
     ],
