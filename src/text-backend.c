@@ -100,7 +100,6 @@ struct text_backend {
 
 	struct {
 		char *path;
-		struct wl_resource *binding;
 		struct weston_process process;
 		struct wl_client *client;
 
@@ -831,12 +830,9 @@ static void
 unbind_input_method(struct wl_resource *resource)
 {
 	struct input_method *input_method = wl_resource_get_user_data(resource);
-	struct text_backend *text_backend = input_method->text_backend;
 
 	input_method->input_method_binding = NULL;
 	input_method->context = NULL;
-
-	text_backend->input_method.binding = NULL;
 }
 
 static void
@@ -870,8 +866,6 @@ bind_input_method(struct wl_client *client,
 	wl_resource_set_implementation(resource, NULL, input_method,
 				       unbind_input_method);
 	input_method->input_method_binding = resource;
-
-	text_backend->input_method.binding = resource;
 }
 
 static void
@@ -957,9 +951,6 @@ handle_input_method_sigchld(struct weston_process *process, int status)
 static void
 launch_input_method(struct text_backend *text_backend)
 {
-	if (text_backend->input_method.binding)
-		return;
-
 	if (!text_backend->input_method.path)
 		return;
 
