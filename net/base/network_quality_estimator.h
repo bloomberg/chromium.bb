@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <deque>
+#include <map>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -15,10 +16,9 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_quality.h"
 
 namespace net {
-
-class NetworkQuality;
 
 // NetworkQualityEstimator provides network quality estimates (quality of the
 // full paths to all origins that have been connected to).
@@ -32,7 +32,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     : public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Creates a new NetworkQualityEstimator.
-  NetworkQualityEstimator();
+  // |variation_params| is the map containing all field trial parameters
+  // related to NetworkQualityEstimator field trial.
+  explicit NetworkQualityEstimator(
+      const std::map<std::string, std::string>& variation_params);
 
   ~NetworkQualityEstimator() override;
 
@@ -64,6 +67,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestPeakKbpsFastestRTTUpdates);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestAddObservation);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, ObtainOperatingParams);
   FRIEND_TEST_ALL_PREFIXES(URLRequestTestHTTP, NetworkQualityEstimator);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            PercentileSameTimestamps);
@@ -133,6 +137,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
    private:
     FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
+    FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                             ObtainOperatingParams);
 
     // Computes the weighted observations and stores them in
     // |weighted_observations| sorted by ascending |WeightedObservation.value|.
@@ -164,10 +170,19 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // throughput is computed.
   static const int kMinRequestDurationMicroseconds = 1000;
 
+  // Minimum valid value of the variation parameter that holds RTT (in
+  // milliseconds) values.
+  static const int kMinimumRTTVariationParameterMsec = 1;
+
+  // Minimum valid value of the variation parameter that holds throughput (in
+  // kbps) values.
+  static const int kMinimumThroughputVariationParameterKbps = 1;
+
   // Construct a NetworkQualityEstimator instance allowing for test
-  // configuration.
-  // Registers for network type change notifications so estimates can be kept
-  // network specific.
+  // configuration. Registers for network type change notifications so estimates
+  // can be kept network specific.
+  // |variation_params| is the map containing all field trial parameters for the
+  // network quality estimator field trial.
   // |allow_local_host_requests_for_tests| should only be true when testing
   // against local HTTP server and allows the requests to local host to be
   // used for network quality estimation.
@@ -175,8 +190,18 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // against local HTTP server and allows the responses smaller than
   // |kMinTransferSizeInBytes| or shorter than |kMinRequestDurationMicroseconds|
   // to be used for network quality estimation.
-  NetworkQualityEstimator(bool allow_local_host_requests_for_tests,
-                          bool allow_smaller_responses_for_tests);
+  NetworkQualityEstimator(
+      const std::map<std::string, std::string>& variation_params,
+      bool allow_local_host_requests_for_tests,
+      bool allow_smaller_responses_for_tests);
+
+  // Obtains operating parameters from the field trial parameters.
+  void ObtainOperatingParams(
+      const std::map<std::string, std::string>& variation_params);
+
+  // Adds the default median RTT and downstream throughput estimate for the
+  // current connection type to the observation buffer.
+  void AddDefaultEstimates();
 
   // Returns the maximum size of the observation buffer.
   // Used for testing.
@@ -229,6 +254,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Buffer that holds RTT (in milliseconds) observations sorted by timestamp.
   ObservationBuffer rtt_msec_observations_;
+
+  // Default network quality observations obtained from the network quality
+  // estimator field trial parameters. The observations are indexed by
+  // ConnectionType.
+  NetworkQuality
+      default_observations_[NetworkChangeNotifier::CONNECTION_LAST + 1];
 
   base::ThreadChecker thread_checker_;
 

@@ -4077,7 +4077,8 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
 TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
   ASSERT_TRUE(test_server_.Start());
   // Enable requests to local host to be used for network quality estimation.
-  NetworkQualityEstimator estimator(true, true);
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimator estimator(variation_params, true, true);
 
   TestDelegate d;
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
