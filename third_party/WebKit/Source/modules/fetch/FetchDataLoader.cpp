@@ -212,6 +212,98 @@ protected:
     OwnPtr<ArrayBufferBuilder> m_rawData;
 };
 
+class FetchDataLoaderAsStream
+    : public FetchDataLoader
+    , public WebDataConsumerHandle::Client {
+public:
+    explicit FetchDataLoaderAsStream(Stream* outStream)
+        : m_client(nullptr)
+        , m_outStream(outStream) { }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        FetchDataLoader::trace(visitor);
+        visitor->trace(m_client);
+        visitor->trace(m_outStream);
+    }
+
+protected:
+    void start(FetchDataConsumerHandle* handle, FetchDataLoader::Client* client) override
+    {
+        ASSERT(!m_client);
+        ASSERT(!m_reader);
+        m_client = client;
+        m_reader = handle->obtainReader(this);
+    }
+
+    void didGetReadable() override
+    {
+        ASSERT(m_client);
+        ASSERT(m_reader);
+
+        bool needToFlush = false;
+        while (true) {
+            const void* buffer;
+            size_t available;
+            WebDataConsumerHandle::Result result = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &available);
+
+            switch (result) {
+            case WebDataConsumerHandle::Ok:
+                m_outStream->addData(static_cast<const char*>(buffer), available);
+                m_reader->endRead(available);
+                needToFlush = true;
+                break;
+
+            case WebDataConsumerHandle::Done:
+                m_reader.clear();
+                if (needToFlush)
+                    m_outStream->flush();
+                m_outStream->finalize();
+                m_client->didFetchDataLoadedStream();
+                cleanup();
+                return;
+
+            case WebDataConsumerHandle::ShouldWait:
+                if (needToFlush)
+                    m_outStream->flush();
+                return;
+
+            case WebDataConsumerHandle::Busy:
+            case WebDataConsumerHandle::ResourceExhausted:
+            case WebDataConsumerHandle::UnexpectedError:
+                // If the stream is aborted soon after the stream is registered
+                // to the StreamRegistry, ServiceWorkerURLRequestJob may not
+                // notice the error and continue waiting forever.
+                // FIXME: Add new message to report the error to the browser
+                // process.
+                m_reader.clear();
+                m_outStream->abort();
+                m_client->didFetchDataLoadFailed();
+                cleanup();
+                return;
+            }
+        }
+    }
+
+    void cancel() override
+    {
+        cleanup();
+    }
+
+    void cleanup()
+    {
+        m_reader.clear();
+        m_client.clear();
+        m_outStream.clear();
+    }
+
+    OwnPtr<FetchDataConsumerHandle::Reader> m_reader;
+    Member<FetchDataLoader::Client> m_client;
+
+    Member<Stream> m_outStream;
+};
+
+
 } // namespace
 
 FetchDataLoader* FetchDataLoader::createLoaderAsBlobHandle(const String& mimeType)
@@ -227,6 +319,11 @@ FetchDataLoader* FetchDataLoader::createLoaderAsArrayBuffer()
 FetchDataLoader* FetchDataLoader::createLoaderAsString()
 {
     return new FetchDataLoaderAsArrayBufferOrString(FetchDataLoaderAsArrayBufferOrString::LoadAsString);
+}
+
+FetchDataLoader* FetchDataLoader::createLoaderAsStream(Stream* outStream)
+{
+    return new FetchDataLoaderAsStream(outStream);
 }
 
 } // namespace blink

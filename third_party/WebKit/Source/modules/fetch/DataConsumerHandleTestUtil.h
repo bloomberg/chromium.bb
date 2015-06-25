@@ -230,6 +230,7 @@ public:
         MOCK_METHOD1(didFetchDataLoadedBlobHandleMock, void(RefPtr<BlobDataHandle>));
         MOCK_METHOD1(didFetchDataLoadedArrayBufferMock, void(RefPtr<DOMArrayBuffer>));
         MOCK_METHOD1(didFetchDataLoadedString, void(const String&));
+        MOCK_METHOD0(didFetchDataLoadStream, void());
         MOCK_METHOD0(didFetchDataLoadFailed, void());
 
         // In mock methods we use RefPtr<> rather than PassRefPtr<>.

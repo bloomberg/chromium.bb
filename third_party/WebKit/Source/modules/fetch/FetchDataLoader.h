@@ -6,6 +6,7 @@
 #define FetchDataLoader_h
 
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/streams/Stream.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
@@ -43,6 +44,12 @@ public:
         {
             ASSERT_NOT_REACHED();
         }
+        // This is called after all data are read from |handle| and written
+        // to |outStream|, and |outStream| is closed or aborted.
+        virtual void didFetchDataLoadedStream()
+        {
+            ASSERT_NOT_REACHED();
+        }
 
         virtual void didFetchDataLoadFailed() = 0;
 
@@ -52,6 +59,7 @@ public:
     static FetchDataLoader* createLoaderAsBlobHandle(const String& mimeType);
     static FetchDataLoader* createLoaderAsArrayBuffer();
     static FetchDataLoader* createLoaderAsString();
+    static FetchDataLoader* createLoaderAsStream(Stream* outStream);
 
     virtual ~FetchDataLoader() { }
 
