@@ -32,7 +32,7 @@ const char* kRasterizationFeatureName = "rasterization";
 const char* kMultipleRasterThreadsFeatureName = "multiple_raster_threads";
 
 const int kMinRasterThreads = 1;
-const int kMaxRasterThreads = 16;
+const int kMaxRasterThreads = 4;
 
 const int kMinMSAASampleCount = 0;
 
