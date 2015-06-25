@@ -751,6 +751,8 @@ public:
         DOMStringList_Item_AttributeGetter_Location = 847,
         DOMStringList_Contains_Method_IndexedDB = 848,
         DOMStringList_Contains_Method_Location = 849,
+        NavigatorVibrate = 850,
+        NavigatorVibrateSubFrame = 851,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

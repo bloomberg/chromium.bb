@@ -23,6 +23,7 @@
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "core/frame/UseCounter.h"
 #include "core/page/PageVisibilityState.h"
 #include "public/platform/Platform.h"
 
@@ -167,6 +168,10 @@ bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& p
 {
     if (!navigator.frame())
         return false;
+
+    UseCounter::count(navigator.frame(), UseCounter::NavigatorVibrate);
+    if (!navigator.frame()->isMainFrame())
+        UseCounter::count(navigator.frame(), UseCounter::NavigatorVibrateSubFrame);
 
     Page* page = navigator.frame()->page();
     if (!page)
