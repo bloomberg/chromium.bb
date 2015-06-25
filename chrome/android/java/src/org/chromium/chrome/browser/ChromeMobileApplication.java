@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.policy.PolicyManager.PolicyChangeListener;
 import org.chromium.chrome.browser.policy.providers.AppRestrictionsProvider;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PreferencesStaging;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
@@ -476,12 +475,6 @@ public class ChromeMobileApplication extends ChromiumApplication {
     @Override
     public boolean isMultiWindow(Activity activity) {
         return MultiWindowUtils.getInstance().isMultiWindow(activity);
-    }
-
-    // TODO(newt): delete this after upstreaming.
-    @Override
-    public String getSettingsActivityName() {
-        return PreferencesStaging.class.getName();
     }
 
     // TODO(aurimas): delete this after upstreaming.

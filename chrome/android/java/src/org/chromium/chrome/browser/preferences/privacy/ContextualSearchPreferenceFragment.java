@@ -10,10 +10,10 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.Preferences;
 
 /**
  * Fragment to manage the Contextual Search preference and to explain to the user what it does.
@@ -43,7 +43,7 @@ public class ContextualSearchPreferenceFragment extends PreferenceFragment {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PrefServiceBridge.getInstance().setContextualSearchState((boolean) newValue);
-                ((Preferences) getActivity()).logContextualSearchToggled((boolean) newValue);
+                ContextualSearchUma.logPreferenceChange((boolean) newValue);
                 return true;
             }
         });

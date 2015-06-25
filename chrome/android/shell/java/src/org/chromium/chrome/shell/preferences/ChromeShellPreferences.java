@@ -24,9 +24,4 @@ public class ChromeShellPreferences extends Preferences {
     protected String getTopLevelFragmentName() {
         return ChromeShellMainPreferences.class.getName();
     }
-
-    @Override
-    public void showUrl(int titleResId, int urlResId) {
-        // Not implemented.
-    }
 }

@@ -13,6 +13,7 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.EmbedContentViewActivity;
 
 /**
  * A preference that navigates to an URL.
@@ -35,7 +36,7 @@ public class HyperlinkPreference extends Preference {
 
     @Override
     protected void onClick() {
-        ((Preferences) getContext()).showUrl(mTitleResId, mUrlResId);
+        EmbedContentViewActivity.show(getContext(), mTitleResId, mUrlResId);
     }
 
     @Override

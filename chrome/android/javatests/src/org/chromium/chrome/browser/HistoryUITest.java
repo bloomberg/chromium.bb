@@ -13,7 +13,6 @@ import android.widget.Button;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.preferences.PreferencesStaging;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataDialogFragment;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -254,7 +253,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         // Trigger cleaning up all the browsing data. JS finishing events will make it synchronous
         // to us.
         final Preferences prefActivity = ActivityUtils.waitForActivity(
-                getInstrumentation(), PreferencesStaging.class, new Runnable() {
+                getInstrumentation(), Preferences.class, new Runnable() {
                     @Override
                     public void run() {
                         try {

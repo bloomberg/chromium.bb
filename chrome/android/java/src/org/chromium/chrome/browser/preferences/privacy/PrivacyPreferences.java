@@ -16,8 +16,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
@@ -124,7 +126,7 @@ public class PrivacyPreferences extends PreferenceFragment
         searchSuggestionsPref.setOnPreferenceChangeListener(this);
         searchSuggestionsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        if (!((Preferences) getActivity()).isContextualSearchEnabled()) {
+        if (!ContextualSearchFieldTrial.isEnabled(getActivity())) {
             preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
         }
 
@@ -168,12 +170,14 @@ public class PrivacyPreferences extends PreferenceFragment
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
             PrefServiceBridge.getInstance().setNetworkPredictionOptions(
                     NetworkPredictionOptions.stringToEnum((String) newValue));
-            ((Preferences) getActivity()).updatePrecachingEnabled();
+            PrecacheLauncher.updatePrecachingEnabled(
+                    PrivacyPreferencesManager.getInstance(getActivity()), getActivity());
         } else if (PREF_NETWORK_PREDICTIONS_NO_CELLULAR.equals(key)) {
             PrefServiceBridge.getInstance().setNetworkPredictionOptions((boolean) newValue
                     ? NetworkPredictionOptions.NETWORK_PREDICTION_ALWAYS
                     : NetworkPredictionOptions.NETWORK_PREDICTION_NEVER);
-            ((Preferences) getActivity()).updatePrecachingEnabled();
+            PrecacheLauncher.updatePrecachingEnabled(
+                    PrivacyPreferencesManager.getInstance(getActivity()), getActivity());
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
         } else if (PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR.equals(key)) {

@@ -77,8 +77,12 @@ public abstract class ChromiumApplication extends ContentApplication {
 
     /**
      * Returns the class name of the Settings activity.
+     *
+     * TODO(newt): delete this when ChromeShell is deleted.
      */
-    public abstract String getSettingsActivityName();
+    public String getSettingsActivityName() {
+        return Preferences.class.getName();
+    }
 
     /**
      * Returns the class name of the FirstRun activity.

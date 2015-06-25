@@ -10,9 +10,9 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.preferences.Preferences;
 
 /**
  * Fragment for settings page that allows user to view and edit a single server-provided credit
@@ -59,9 +59,8 @@ public class AutofillServerCardPreferences
     @Override
     public boolean onPreferenceClick(Preference preference) {
         if (preference.getKey().equals(PREF_SERVER_CARD_EDIT_LINK)) {
-            ((Preferences) preference.getContext())
-                    .showUrl(R.string.autofill_edit_credit_card,
-                            R.string.autofill_manage_wallet_cards_url);
+            EmbedContentViewActivity.show(preference.getContext(),
+                    R.string.autofill_edit_credit_card, R.string.autofill_manage_wallet_cards_url);
         } else {
             assert preference.getKey().equals(PREF_SERVER_CARD_LOCAL_COPY);
             PersonalDataManager.getInstance().clearUnmaskedCache(mGUID);

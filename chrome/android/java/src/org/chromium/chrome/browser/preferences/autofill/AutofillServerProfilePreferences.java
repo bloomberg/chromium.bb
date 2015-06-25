@@ -10,9 +10,9 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.preferences.Preferences;
 
 /**
  * Fragment for settings page that allows user to view and edit a single server-provided address.
@@ -50,9 +50,8 @@ public class AutofillServerProfilePreferences
     @Override
     public boolean onPreferenceClick(Preference preference) {
         assert preference.getKey().equals(PREF_SERVER_PROFILE_EDIT_LINK);
-        ((Preferences) preference.getContext())
-                .showUrl(R.string.autofill_edit_profile,
-                        R.string.autofill_manage_wallet_addresses_url);
+        EmbedContentViewActivity.show(preference.getContext(), R.string.autofill_edit_profile,
+                R.string.autofill_manage_wallet_addresses_url);
         return true;
     }
 }
