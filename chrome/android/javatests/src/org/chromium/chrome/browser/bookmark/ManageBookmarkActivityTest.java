@@ -11,10 +11,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.BookmarkTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -27,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests the ManageBookmarkActivity, which allows users to add and edit bookmarks.
  */
+@CommandLineFlags.Add(ChromeSwitches.ENABLE_ENHANCED_BOOKMARKS + "=0")
 public class ManageBookmarkActivityTest extends ChromeTabbedActivityTestBase {
     private static final String DOM_DISTILLER_SCHEME = "chrome-distiller";
 

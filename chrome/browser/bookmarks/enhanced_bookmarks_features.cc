@@ -18,21 +18,25 @@ namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
 
+#if !defined(OS_ANDROID)
+
 bool GetBookmarksExperimentExtensionID(std::string* extension_id) {
   *extension_id = variations::GetVariationParamValue(
       kFieldTrialName, "id");
   if (extension_id->empty())
     return false;
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_IOS)
   return true;
 #else
   const extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetPermissionFeatures();
   extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
   return feature && feature->IsIdInWhitelist(*extension_id);
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(OS_IOS)
 }
+
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -60,7 +64,11 @@ bool IsEnhancedBookmarksEnabled(std::string* extension_id) {
   if (opt_out)
     return false;
 
+#if defined(OS_ANDROID)
+  return true;
+#else
   return GetBookmarksExperimentExtensionID(extension_id);
+#endif  // defined(OS_ANDROID)
 }
 
 bool IsEnableDomDistillerSet() {

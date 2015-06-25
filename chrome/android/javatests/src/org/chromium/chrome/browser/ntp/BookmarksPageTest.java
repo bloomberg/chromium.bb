@@ -11,9 +11,11 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmark.AddEditBookmarkFragment;
@@ -35,6 +37,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the old bookmarks page.
  */
+@CommandLineFlags.Add(ChromeSwitches.ENABLE_ENHANCED_BOOKMARKS + "=0")
 public class BookmarksPageTest extends ChromeTabbedActivityTestBase {
 
     private static final String TEST_PAGE =
