@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/client.h"
+#include "components/proximity_auth/client_impl.h"
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -137,11 +137,11 @@ class MockClientObserver : public ClientObserver {
   DISALLOW_COPY_AND_ASSIGN(MockClientObserver);
 };
 
-class TestClient : public Client {
+class TestClient : public ClientImpl {
  public:
   TestClient()
-      : Client(make_scoped_ptr(new NiceMock<FakeConnection>()),
-               make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
+      : ClientImpl(make_scoped_ptr(new NiceMock<FakeConnection>()),
+                   make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
   ~TestClient() override {}
 
   // Simple getters for the mock objects owned by |this| client.
@@ -158,21 +158,22 @@ class TestClient : public Client {
 
 }  // namespace
 
-TEST(ProximityAuthClientTest, SupportsSignIn_ProtocolVersionThreeZero) {
+TEST(ProximityAuthClientImplTest, SupportsSignIn_ProtocolVersionThreeZero) {
   TestClient client;
   ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
       .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ZERO));
   EXPECT_FALSE(client.SupportsSignIn());
 }
 
-TEST(ProximityAuthClientTest, SupportsSignIn_ProtocolVersionThreeOne) {
+TEST(ProximityAuthClientImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
   TestClient client;
   ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
       .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ONE));
   EXPECT_TRUE(client.SupportsSignIn());
 }
 
-TEST(ProximityAuthClientTest, OnConnectionStatusChanged_ConnectionDisconnects) {
+TEST(ProximityAuthClientImplTest,
+     OnConnectionStatusChanged_ConnectionDisconnects) {
   TestClient client;
   MockClientObserver observer(&client);
 
@@ -180,7 +181,7 @@ TEST(ProximityAuthClientTest, OnConnectionStatusChanged_ConnectionDisconnects) {
   client.GetFakeConnection()->Disconnect();
 }
 
-TEST(ProximityAuthClientTest, DispatchUnlockEvent_SendsExpectedMessage) {
+TEST(ProximityAuthClientImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
   TestClient client;
   client.DispatchUnlockEvent();
 
@@ -195,7 +196,7 @@ TEST(ProximityAuthClientTest, DispatchUnlockEvent_SendsExpectedMessage) {
       message->payload());
 }
 
-TEST(ProximityAuthClientTest, DispatchUnlockEvent_SendMessageFails) {
+TEST(ProximityAuthClientImplTest, DispatchUnlockEvent_SendMessageFails) {
   TestClient client;
   MockClientObserver observer(&client);
   client.DispatchUnlockEvent();
@@ -204,7 +205,7 @@ TEST(ProximityAuthClientTest, DispatchUnlockEvent_SendMessageFails) {
   client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientTest, DispatchUnlockEvent_SendMessageSucceeds) {
+TEST(ProximityAuthClientImplTest, DispatchUnlockEvent_SendMessageSucceeds) {
   TestClient client;
   MockClientObserver observer(&client);
   client.DispatchUnlockEvent();
@@ -213,7 +214,7 @@ TEST(ProximityAuthClientTest, DispatchUnlockEvent_SendMessageSucceeds) {
   client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestDecryption_SignInUnsupported_DoesntSendMessage) {
   TestClient client;
   ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
@@ -222,7 +223,7 @@ TEST(ProximityAuthClientTest,
   EXPECT_FALSE(client.GetFakeConnection()->current_message());
 }
 
-TEST(ProximityAuthClientTest, RequestDecryption_SendsExpectedMessage) {
+TEST(ProximityAuthClientImplTest, RequestDecryption_SendsExpectedMessage) {
   TestClient client;
   client.RequestDecryption(kChallenge);
 
@@ -237,7 +238,7 @@ TEST(ProximityAuthClientTest, RequestDecryption_SendsExpectedMessage) {
       message->payload());
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestDecryption_SendsExpectedMessage_UsingBase64UrlEncoding) {
   TestClient client;
   client.RequestDecryption("\xFF\xE6");
@@ -253,7 +254,7 @@ TEST(ProximityAuthClientTest,
       message->payload());
 }
 
-TEST(ProximityAuthClientTest, RequestDecryption_SendMessageFails) {
+TEST(ProximityAuthClientImplTest, RequestDecryption_SendMessageFails) {
   TestClient client;
   MockClientObserver observer(&client);
   client.RequestDecryption(kChallenge);
@@ -262,7 +263,8 @@ TEST(ProximityAuthClientTest, RequestDecryption_SendMessageFails) {
   client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientTest, RequestDecryption_SendSucceeds_WaitsForReply) {
+TEST(ProximityAuthClientImplTest,
+     RequestDecryption_SendSucceeds_WaitsForReply) {
   TestClient client;
   MockClientObserver observer(&client);
   client.RequestDecryption(kChallenge);
@@ -271,7 +273,7 @@ TEST(ProximityAuthClientTest, RequestDecryption_SendSucceeds_WaitsForReply) {
   client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestDecryption_SendSucceeds_NotifiesObserversOnReply_NoData) {
   TestClient client;
   MockClientObserver observer(&client);
@@ -283,7 +285,7 @@ TEST(ProximityAuthClientTest,
       "{\"type\":\"decrypt_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestDecryption_SendSucceeds_NotifiesObserversOnReply_InvalidData) {
   TestClient client;
   MockClientObserver observer(&client);
@@ -298,7 +300,7 @@ TEST(ProximityAuthClientTest,
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestDecryption_SendSucceeds_NotifiesObserversOnReply_ValidData) {
   TestClient client;
   MockClientObserver observer(&client);
@@ -314,7 +316,7 @@ TEST(ProximityAuthClientTest,
 }
 
 // Verify that the client correctly parses base64url encoded data.
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestDecryption_SendSucceeds_ParsesBase64UrlEncodingInReply) {
   TestClient client;
   MockClientObserver observer(&client);
@@ -329,7 +331,7 @@ TEST(ProximityAuthClientTest,
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestUnlock_SignInUnsupported_DoesntSendMessage) {
   TestClient client;
   ON_CALL(*client.GetMockSecureContext(), GetProtocolVersion())
@@ -338,7 +340,7 @@ TEST(ProximityAuthClientTest,
   EXPECT_FALSE(client.GetFakeConnection()->current_message());
 }
 
-TEST(ProximityAuthClientTest, RequestUnlock_SendsExpectedMessage) {
+TEST(ProximityAuthClientImplTest, RequestUnlock_SendsExpectedMessage) {
   TestClient client;
   client.RequestUnlock();
 
@@ -348,7 +350,7 @@ TEST(ProximityAuthClientTest, RequestUnlock_SendsExpectedMessage) {
   EXPECT_EQ("{\"type\":\"unlock_request\"}, but encoded", message->payload());
 }
 
-TEST(ProximityAuthClientTest, RequestUnlock_SendMessageFails) {
+TEST(ProximityAuthClientImplTest, RequestUnlock_SendMessageFails) {
   TestClient client;
   MockClientObserver observer(&client);
   client.RequestUnlock();
@@ -357,7 +359,7 @@ TEST(ProximityAuthClientTest, RequestUnlock_SendMessageFails) {
   client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientTest, RequestUnlock_SendSucceeds_WaitsForReply) {
+TEST(ProximityAuthClientImplTest, RequestUnlock_SendSucceeds_WaitsForReply) {
   TestClient client;
   MockClientObserver observer(&client);
   client.RequestUnlock();
@@ -366,7 +368,7 @@ TEST(ProximityAuthClientTest, RequestUnlock_SendSucceeds_WaitsForReply) {
   client.GetFakeConnection()->FinishSendingMessageWithSuccess(true);
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      RequestUnlock_SendSucceeds_NotifiesObserversOnReply) {
   TestClient client;
   MockClientObserver observer(&client);
@@ -378,7 +380,8 @@ TEST(ProximityAuthClientTest,
       "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientTest, OnMessageReceived_RemoteStatusUpdate_Invalid) {
+TEST(ProximityAuthClientImplTest,
+     OnMessageReceived_RemoteStatusUpdate_Invalid) {
   TestClient client;
   MockClientObserver observer(&client);
 
@@ -388,7 +391,7 @@ TEST(ProximityAuthClientTest, OnMessageReceived_RemoteStatusUpdate_Invalid) {
       "{\"type\":\"status_update\"}, but encoded");
 }
 
-TEST(ProximityAuthClientTest, OnMessageReceived_RemoteStatusUpdate_Valid) {
+TEST(ProximityAuthClientImplTest, OnMessageReceived_RemoteStatusUpdate_Valid) {
   TestClient client;
   MockClientObserver observer(&client);
 
@@ -408,7 +411,7 @@ TEST(ProximityAuthClientTest, OnMessageReceived_RemoteStatusUpdate_Valid) {
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientTest, OnMessageReceived_InvalidJSON) {
+TEST(ProximityAuthClientImplTest, OnMessageReceived_InvalidJSON) {
   TestClient client;
   StrictMock<MockClientObserver> observer(&client);
   client.RequestUnlock();
@@ -419,7 +422,7 @@ TEST(ProximityAuthClientTest, OnMessageReceived_InvalidJSON) {
       "Not JSON, but encoded");
 }
 
-TEST(ProximityAuthClientTest, OnMessageReceived_MissingTypeField) {
+TEST(ProximityAuthClientImplTest, OnMessageReceived_MissingTypeField) {
   TestClient client;
   StrictMock<MockClientObserver> observer(&client);
   client.RequestUnlock();
@@ -430,7 +433,7 @@ TEST(ProximityAuthClientTest, OnMessageReceived_MissingTypeField) {
       "{\"some key that's not 'type'\":\"some value\"}, but encoded");
 }
 
-TEST(ProximityAuthClientTest, OnMessageReceived_UnexpectedReply) {
+TEST(ProximityAuthClientImplTest, OnMessageReceived_UnexpectedReply) {
   TestClient client;
   StrictMock<MockClientObserver> observer(&client);
 
@@ -439,7 +442,7 @@ TEST(ProximityAuthClientTest, OnMessageReceived_UnexpectedReply) {
       "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      OnMessageReceived_MismatchedReply_UnlockInReplyToDecrypt) {
   TestClient client;
   StrictMock<MockClientObserver> observer(&client);
@@ -452,7 +455,7 @@ TEST(ProximityAuthClientTest,
       "{\"type\":\"unlock_response\"}, but encoded");
 }
 
-TEST(ProximityAuthClientTest,
+TEST(ProximityAuthClientImplTest,
      OnMessageReceived_MismatchedReply_DecryptInReplyToUnlock) {
   TestClient client;
   StrictMock<MockClientObserver> observer(&client);
@@ -468,7 +471,7 @@ TEST(ProximityAuthClientTest,
       "}, but encoded");
 }
 
-TEST(ProximityAuthClientTest, BuffersMessages_WhileSending) {
+TEST(ProximityAuthClientImplTest, BuffersMessages_WhileSending) {
   TestClient client;
   MockClientObserver observer(&client);
 
@@ -484,7 +487,7 @@ TEST(ProximityAuthClientTest, BuffersMessages_WhileSending) {
   client.GetFakeConnection()->FinishSendingMessageWithSuccess(false);
 }
 
-TEST(ProximityAuthClientTest, BuffersMessages_WhileAwaitingReply) {
+TEST(ProximityAuthClientImplTest, BuffersMessages_WhileAwaitingReply) {
   TestClient client;
   MockClientObserver observer(&client);
 
