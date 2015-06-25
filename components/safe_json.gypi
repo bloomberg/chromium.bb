@@ -5,8 +5,8 @@
 {
   'targets': [
     {
-      # GN version: //components/safe_json_parser
-      'target_name': 'safe_json_parser',
+      # GN version: //components/safe_json
+      'target_name': 'safe_json',
       #'type': '<(component)',
       'type': 'static_library',
       'dependencies': [
@@ -20,11 +20,11 @@
         '..',
       ],
       'defines': [
-        'SAFE_JSON_PARSER_IMPLEMENTATION',
+        'SAFE_JSON_IMPLEMENTATION',
       ],
       'sources': [
-        'safe_json_parser/safe_json_parser.h',
-        'safe_json_parser/safe_json_parser.cc',
+        'safe_json/safe_json_parser.cc',
+        'safe_json/safe_json_parser.h',
       ],
     },
     {
@@ -39,10 +39,10 @@
         '..',
       ],
       'sources': [
-        'safe_json_parser/safe_json_parser_messages.cc',
-        'safe_json_parser/safe_json_parser_messages.h',
-        'safe_json_parser/safe_json_parser_message_filter.cc',
-        'safe_json_parser/safe_json_parser_message_filter.h',
+        'safe_json/safe_json_parser_message_filter.cc',
+        'safe_json/safe_json_parser_message_filter.h',
+        'safe_json/safe_json_parser_messages.cc',
+        'safe_json/safe_json_parser_messages.h',
       ],
     },
   ],

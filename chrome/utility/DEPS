@@ -3,7 +3,7 @@ include_rules = [
   "+content/public/child",
   "+content/public/utility",
   "+components/wifi",
-  "+components/safe_json_parser",
+  "+components/safe_json",
   "+courgette",
   "+extensions/common",
   "+skia/ext",

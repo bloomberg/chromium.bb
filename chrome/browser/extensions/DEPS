@@ -14,7 +14,7 @@ include_rules = [
   # For access to testing command line switches.
   "+ppapi/shared_impl",
 
-  # For safe_json_parser
-  "+components/safe_json_parser",
+  # For safe_json
+  "+components/safe_json",
   "+ui/base",
 ]

@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/safe_json_parser.gypi:safe_json_parser
-static_library("safe_json_parser") {
+# GYP version: components/safe_json.gypi:safe_json
+static_library("safe_json") {
   sources = [
     "safe_json_parser.cc",
     "safe_json_parser.h",
   ]
 
-  defines = [ "SAFE_JSON_PARSER_IMPLEMENTATION" ]
+  defines = [ "SAFE_JSON_IMPLEMENTATION" ]
 
   deps = [
     ":safe_json_parser_message_filter",

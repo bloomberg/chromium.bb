@@ -8,13 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/safe_json_parser/safe_json_parser.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 
 namespace {
 
-using safe_json_parser::SafeJsonParser;
+using safe_json::SafeJsonParser;
 
 std::string MaybeToJson(const base::Value* value) {
   if (!value)

@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/safe_json_parser/safe_json_parser.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "url/gurl.h"
 
 ChromeWebResourceService::ChromeWebResourceService(
@@ -39,8 +39,8 @@ void ChromeWebResourceService::ParseJSON(
     const SuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   // SafeJsonParser releases itself on completion.
-  scoped_refptr<safe_json_parser::SafeJsonParser> json_parser(
-      new safe_json_parser::SafeJsonParser(data, success_callback,
+  scoped_refptr<safe_json::SafeJsonParser> json_parser(
+      new safe_json::SafeJsonParser(data, success_callback,
                                            error_callback));
   json_parser->Start();
 }

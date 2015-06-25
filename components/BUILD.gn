@@ -239,7 +239,7 @@ group("all_components") {
       "//components/guest_view/browser",
       "//components/guest_view/common",
       "//components/guest_view/renderer",
-      "//components/safe_json_parser",
+      "//components/safe_json",
       "//components/scheduler",
       "//components/test_runner",
     ]

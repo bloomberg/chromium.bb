@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json_parser/safe_json_parser_message_filter.h"
+#include "components/safe_json/safe_json_parser_message_filter.h"
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
-#include "components/safe_json_parser/safe_json_parser_messages.h"
+#include "components/safe_json/safe_json_parser_messages.h"
 #include "content/public/utility/utility_thread.h"
 #include "ipc/ipc_message.h"
 
@@ -18,7 +18,7 @@ bool Send(IPC::Message* message) {
 
 }  // namespace
 
-namespace safe_json_parser {
+namespace safe_json {
 
 SafeJsonParserMessageFilter::SafeJsonParserMessageFilter() {
 }
@@ -52,4 +52,4 @@ void SafeJsonParserMessageFilter::OnParseJSON(const std::string& json) {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
-}  // namespace safe_json_parser
+}  // namespace safe_json

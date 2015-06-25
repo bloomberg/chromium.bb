@@ -4,10 +4,10 @@
 
 #include "chrome/utility/safe_json_parser_handler.h"
 
-#include "components/safe_json_parser/safe_json_parser_message_filter.h"
+#include "components/safe_json/safe_json_parser_message_filter.h"
 
 SafeJsonParserHandler::SafeJsonParserHandler()
-    : handler_(new safe_json_parser::SafeJsonParserMessageFilter) {
+    : handler_(new safe_json::SafeJsonParserMessageFilter) {
 }
 
 SafeJsonParserHandler::~SafeJsonParserHandler() {

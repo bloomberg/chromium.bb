@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "components/safe_json_parser/safe_json_parser.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -72,8 +72,8 @@ void JSONResponseFetcher::OnURLFetchComplete(
   std::string json_data;
   fetcher->GetResponseAsString(&json_data);
 
-  scoped_refptr<safe_json_parser::SafeJsonParser> parser =
-      new safe_json_parser::SafeJsonParser(
+  scoped_refptr<safe_json::SafeJsonParser> parser =
+      new safe_json::SafeJsonParser(
           json_data, base::Bind(&JSONResponseFetcher::OnJsonParseSuccess,
                                 weak_factory_.GetWeakPtr()),
           base::Bind(&JSONResponseFetcher::OnJsonParseError,

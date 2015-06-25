@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
-#include "components/safe_json_parser/safe_json_parser.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -82,8 +82,8 @@ void WebstoreDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string webstore_json_data;
   fetcher->GetResponseAsString(&webstore_json_data);
 
-  scoped_refptr<safe_json_parser::SafeJsonParser> parser =
-      new safe_json_parser::SafeJsonParser(
+  scoped_refptr<safe_json::SafeJsonParser> parser =
+      new safe_json::SafeJsonParser(
           webstore_json_data,
           base::Bind(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
           base::Bind(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));

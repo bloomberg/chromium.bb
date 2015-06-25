@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_JSON_PARSER_SAFE_JSON_PARSER_H_
-#define COMPONENTS_SAFE_JSON_PARSER_SAFE_JSON_PARSER_H_
+#ifndef COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_
+#define COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_
 
 #include <string>
 
@@ -22,7 +22,7 @@ namespace IPC {
 class Message;
 }
 
-namespace safe_json_parser {
+namespace safe_json {
 
 // SafeJsonParser parses a given JSON safely via a utility process. The object
 // is ref-counted and kept alive after Start() is called until one of the two
@@ -63,6 +63,6 @@ class SafeJsonParser : public content::UtilityProcessHostClient {
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParser);
 };
 
-}  // namespace safe_json_parser
+}  // namespace safe_json
 
-#endif  // COMPONENTS_SAFE_JSON_PARSER_SAFE_JSON_PARSER_H_
+#endif  // COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_

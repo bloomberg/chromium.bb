@@ -96,7 +96,7 @@
         'message_port.gypi',
         'navigation_interception.gypi',
         'power.gypi',
-        'safe_json_parser.gypi',
+        'safe_json.gypi',
         'visitedlink.gypi',
         'web_cache.gypi',
         'web_contents_delegate_android.gypi',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json_parser/safe_json_parser.h"
+#include "components/safe_json/safe_json_parser.h"
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/tuple.h"
 #include "base/values.h"
-#include "components/safe_json_parser/safe_json_parser_messages.h"
+#include "components/safe_json/safe_json_parser_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "grit/components_strings.h"
@@ -21,7 +21,7 @@
 using content::BrowserThread;
 using content::UtilityProcessHost;
 
-namespace safe_json_parser {
+namespace safe_json {
 
 SafeJsonParser::SafeJsonParser(const std::string& unsafe_json,
                                const SuccessCallback& success_callback,
@@ -101,4 +101,4 @@ bool SafeJsonParser::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-}  // namespace safe_json_parser
+}  // namespace safe_json

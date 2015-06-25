@@ -9,13 +9,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/utility/utility_message_handler.h"
 
-namespace safe_json_parser {
+namespace safe_json {
 class SafeJsonParserMessageFilter;
-}  // namespace safe_json_parser
+}  // namespace safe_json
 
 // Dispatches IPCs for out of process JSON parsing. This is an adapter class
-// that delegates to safe_json_parser::SafeJsonParserMessageFilter, since the
-// SafeJsonParserMessageFilter in //components/safe_json_parser can't directly
+// that delegates to safe_json::SafeJsonParserMessageFilter, since the
+// SafeJsonParserMessageFilter in //components/safe_json can't directly
 // depend on //chrome/utility.
 class SafeJsonParserHandler : public UtilityMessageHandler {
  public:
@@ -26,7 +26,7 @@ class SafeJsonParserHandler : public UtilityMessageHandler {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  scoped_ptr<safe_json_parser::SafeJsonParserMessageFilter> handler_;
+  scoped_ptr<safe_json::SafeJsonParserMessageFilter> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserHandler);
 };
