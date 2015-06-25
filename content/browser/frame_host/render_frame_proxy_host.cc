@@ -160,10 +160,14 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
         frame_tree_node_->parent()->render_manager()->GetRenderFrameProxyHost(
             site_instance_.get());
     CHECK(parent_proxy);
-    // When this is called, the parent RenderFrameProxy should already exist.
-    // The FrameNew_NewFrameProxy will crash on the renderer side if there's no
-    // parent proxy.
-    CHECK(parent_proxy->is_render_frame_proxy_live());
+
+    // Proxies that aren't live in the parent node should not be initialized
+    // here, since there is no valid parent RenderFrameProxy on the renderer
+    // side.  This can happen when adding a new child frame after an opener
+    // process crashed and was reloaded.  See https://crbug.com/501152.
+    if (!parent_proxy->is_render_frame_proxy_live())
+      return false;
+
     parent_routing_id = parent_proxy->GetRoutingID();
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
   }

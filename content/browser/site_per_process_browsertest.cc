@@ -1000,6 +1000,93 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(grandchild_rfph->is_render_frame_proxy_live());
 }
 
+// Verify that creating a child frame after killing and reloading an opener
+// process doesn't crash. See https://crbug.com/501152.
+//   1. Navigate to site A.
+//   2. Open a popup with window.open and navigate it cross-process to site B.
+//   3. Kill process A for the original tab.
+//   4. Reload the original tab to resurrect process A.
+//   5. Add a child frame to the top-level frame in the popup tab B.
+// In step 5, we try to create proxies for the child frame in all SiteInstances
+// for which its parent has proxies.  This includes A.  However, even though
+// process A is live (step 4), the parent proxy in A is not live (which was
+// incorrectly assumed previously).  This is because step 4 does not resurrect
+// proxies for popups opened before the crash.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CreateChildFrameAfterKillingOpener) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  SiteInstance* site_instance_a = root->current_frame_host()->GetSiteInstance();
+
+  // Open a popup and navigate it cross-process to b.com.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "popup = window.open('about:blank');"));
+  Shell* popup = new_shell_observer.GetShell();
+  GURL popup_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(popup, popup_url));
+
+  // Verify that each top-level frame has proxies in the other's SiteInstance.
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(popup->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+  EXPECT_EQ(
+      " Site B ------------ proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(popup_root));
+
+  // Kill the first window's renderer (a.com).
+  RenderProcessHost* child_process = root->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process->Shutdown(0, false);
+  crash_observer.Wait();
+  EXPECT_FALSE(root->current_frame_host()->IsRenderFrameLive());
+
+  // The proxy for the popup in a.com should've died.
+  RenderFrameProxyHost* rfph =
+      popup_root->render_manager()->GetRenderFrameProxyHost(site_instance_a);
+  EXPECT_FALSE(rfph->is_render_frame_proxy_live());
+
+  // Recreate the a.com renderer.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+
+  // The popup's proxy in a.com should still not be live. Re-navigating the
+  // main window to a.com doesn't reinitialize a.com proxies for popups
+  // previously opened from the main window.
+  EXPECT_FALSE(rfph->is_render_frame_proxy_live());
+
+  // Add a new child frame on the popup.
+  RenderFrameHostCreatedObserver frame_observer(popup->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(
+      popup->web_contents(),
+      "document.body.appendChild(document.createElement('iframe'));"));
+  frame_observer.Wait();
+
+  // Both the child frame's and its parent's proxies should still not be live.
+  // The main page can't reach them since it lost reference to the popup after
+  // it crashed, so there is no need to create them.
+  EXPECT_FALSE(rfph->is_render_frame_proxy_live());
+  RenderFrameProxyHost* child_rfph =
+      popup_root->child_at(0)->render_manager()->GetRenderFrameProxyHost(
+          site_instance_a);
+  EXPECT_TRUE(child_rfph);
+  EXPECT_FALSE(child_rfph->is_render_frame_proxy_live());
+}
+
 // In A-embed-B-embed-C scenario, verify that killing process B clears proxies
 // of C from the tree.
 //
