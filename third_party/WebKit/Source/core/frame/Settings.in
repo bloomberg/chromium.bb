@@ -233,6 +233,11 @@ touchEditingEnabled initial=false
 useSolidColorScrollbars initial=false
 pinchOverlayScrollbarThickness type=int, initial=0
 
+# Experiment to invert the scroll order of the layout and visual viewports
+# in some circumstances. Namely, during a pinch-zoom gesture and browser
+# generated scrolls like "scroll into view".
+invertViewportScrollOrder initial=false
+
 # The rubber-band overscroll effect is implemented in Blink and is being moved
 # to the compositor thread. This will be set to true and eventually removed.
 # crbug.com/133097

@@ -103,6 +103,7 @@ public:
     virtual void setImageAnimationPolicy(ImageAnimationPolicy) override;
     virtual void setImagesEnabled(bool) override;
     virtual void setInlineTextBoxAccessibilityEnabled(bool) override;
+    virtual void setInvertViewportScrollOrder(bool) override;
     virtual void setJavaEnabled(bool) override;
     virtual void setJavaScriptCanAccessClipboard(bool) override;
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool) override;

@@ -1723,4 +1723,34 @@ TEST_P(ParameterizedPinchViewportTest, WindowDimensionsOnLoadWideContent)
     EXPECT_EQ(std::string("2000x1500"), std::string(output->innerHTML().ascii().data()));
 }
 
+static void turnOnInvertedScrollOrder(WebSettings* settings)
+{
+    PinchViewportTest::configureSettings(settings);
+    settings->setInvertViewportScrollOrder(true);
+}
+
+TEST_F(PinchViewportTest, PinchZoomGestureScrollsVisualViewportOnly)
+{
+    initializeWithDesktopSettings(turnOnInvertedScrollOrder);
+    webViewImpl()->resize(IntSize(100, 100));
+
+    registerMockedHttpURLLoad("200-by-800-viewport.html");
+    navigateTo(m_baseURL + "200-by-800-viewport.html");
+
+    WebGestureEvent pinchUpdate;
+    pinchUpdate.type = WebInputEvent::GesturePinchUpdate;
+    pinchUpdate.x = 100;
+    pinchUpdate.y = 100;
+    pinchUpdate.data.pinchUpdate.scale = 2;
+    pinchUpdate.data.pinchUpdate.zoomDisabled = false;
+
+    webViewImpl()->handleInputEvent(pinchUpdate);
+
+    PinchViewport& pinchViewport = webViewImpl()->page()->frameHost().pinchViewport();
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 50), pinchViewport.location());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0), frameView.scrollPositionDouble());
+}
+
 } // namespace

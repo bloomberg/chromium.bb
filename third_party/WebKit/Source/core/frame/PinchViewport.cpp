@@ -239,11 +239,14 @@ bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoin
 
     // First try to use the anchor's delta to scroll the FrameView.
     FloatSize anchorDeltaUnusedByScroll = anchorDelta;
-    FrameView* view = mainFrame()->view();
-    DoublePoint oldPosition = view->scrollPositionDouble();
-    view->scrollBy(DoubleSize(anchorDelta.width(), anchorDelta.height()), UserScroll);
-    DoublePoint newPosition = view->scrollPositionDouble();
-    anchorDeltaUnusedByScroll = anchorDelta - toFloatSize(newPosition - oldPosition);
+
+    if (!frameHost().settings().invertViewportScrollOrder()) {
+        FrameView* view = mainFrame()->view();
+        DoublePoint oldPosition = view->scrollPositionDouble();
+        view->scrollBy(DoubleSize(anchorDelta.width(), anchorDelta.height()), UserScroll);
+        DoublePoint newPosition = view->scrollPositionDouble();
+        anchorDeltaUnusedByScroll -= toFloatSize(newPosition - oldPosition);
+    }
 
     // Manually bubble any remaining anchor delta up to the pinch viewport.
     FloatPoint newLocation(location() + anchorDeltaUnusedByScroll);
