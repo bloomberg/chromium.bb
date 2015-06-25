@@ -85,6 +85,7 @@ HitTestResult::HitTestResult(const HitTestRequest& otherRequest, const HitTestLo
 HitTestResult::HitTestResult(const HitTestResult& other)
     : m_hitTestLocation(other.m_hitTestLocation)
     , m_hitTestRequest(other.m_hitTestRequest)
+    , m_cacheable(other.m_cacheable)
     , m_innerNode(other.innerNode())
     , m_innerPossiblyPseudoNode(other.m_innerPossiblyPseudoNode)
     , m_pointInInnerNodeFrame(other.m_pointInInnerNodeFrame)
@@ -108,6 +109,18 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     populateFromCachedResult(other);
 
     return *this;
+}
+
+unsigned HitTestResult::equalityScore(const HitTestResult& other) const
+{
+    return (m_hitTestRequest.equalForCacheability(other.m_hitTestRequest) << 7)
+        | ((m_innerNode == other.innerNode()) << 6)
+        | ((m_innerPossiblyPseudoNode == other.innerPossiblyPseudoNode()) << 5)
+        | ((m_pointInInnerNodeFrame == other.m_pointInInnerNodeFrame) << 4)
+        | ((m_localPoint == other.localPoint()) << 3)
+        | ((m_innerURLElement == other.URLElement()) << 2)
+        | ((m_scrollbar == other.scrollbar()) << 1)
+        | (m_isOverWidget == other.isOverWidget());
 }
 
 bool HitTestResult::equalForCacheability(const HitTestResult& other) const

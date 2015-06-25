@@ -66,6 +66,7 @@ public:
     DECLARE_TRACE();
 
     bool equalForCacheability(const HitTestResult&) const;
+    unsigned equalityScore(const HitTestResult&) const;
     void cacheValues(const HitTestResult&);
 
     // Populate this object based on another HitTestResult; similar to assignment operator

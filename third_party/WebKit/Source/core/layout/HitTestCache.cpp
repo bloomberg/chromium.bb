@@ -38,6 +38,7 @@ void HitTestCache::verifyCachedResult(const HitTestResult& expected, const HitTe
     ValidityHistogramMetric metric;
     if (!actual.equalForCacheability(expected)) {
         metric = expected.hitTestLocation().isRectBasedTest() ? ValidityHistogramMetric::INCORRECT_RECT_BASED_EXACT_MATCH : ValidityHistogramMetric::INCORRECT_POINT_EXACT_MATCH;
+        Platform::current()->histogramSparse("Event.HitTestValidityScore", static_cast<int>(actual.equalityScore(expected)));
 
         // ASSERT that the cache hit is the same as the actual result.
         ASSERT_NOT_REACHED();
