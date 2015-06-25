@@ -898,7 +898,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(p2p_socket_dispatcher_host_.get());
 #endif
 
-  AddFilter(new TraceMessageFilter(GetID()));
+  AddFilter(new TraceMessageFilter());
   AddFilter(new ResolveProxyMsgHelper(
       browser_context->GetRequestContextForRenderProcess(GetID())));
   AddFilter(new QuotaDispatcherHost(

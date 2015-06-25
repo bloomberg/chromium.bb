@@ -19,7 +19,7 @@ namespace content {
 // See also: child_trace_message_filter.h
 class TraceMessageFilter : public BrowserMessageFilter {
  public:
-  explicit TraceMessageFilter(int child_process_id);
+  TraceMessageFilter();
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -60,9 +60,6 @@ class TraceMessageFilter : public BrowserMessageFilter {
 
   // ChildTraceMessageFilter exists:
   bool has_child_;
-
-  // Hash of id of the child process.
-  int tracing_process_id_;
 
   // Awaiting ack for previously sent SendEndTracing
   bool is_awaiting_end_ack_;
