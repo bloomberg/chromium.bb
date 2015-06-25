@@ -19,7 +19,7 @@ layer at (109,0) size 691x600
         LayoutText {#text} at (66,273) size 72x360
           text run at (66,273) width 90: "\x{8A2A}\x{554F}\x{3057}\x{305F}\x{30A6}"
           text run at (93,3) width 360: "\x{30A7}\x{30D6}\x{30DA}\x{30FC}\x{30B8}\x{306E}\x{30B3}\x{30F3}\x{30C6}\x{30F3}\x{30C4}\x{304B}\x{3089}\x{3082}\x{691C}\x{7D22}\x{3059}\x{308B}\x{3053}\x{3068}"
-          text run at (120,3) width 107: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
+          text run at (120,3) width 108: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
       LayoutBlockFlow (floating) {DIV} at (170,8) size 146x366 [border: (3px solid #000000)]
         LayoutText {#text} at (12,3) size 18x54
           text run at (12,3) width 54: "\x{305B}\x{3063}\x{304B}"
@@ -60,7 +60,7 @@ layer at (109,0) size 691x600
             text run at (93,3) width 162: "\x{30A7}\x{30D6}\x{30DA}\x{30FC}\x{30B8}\x{306E}\x{30B3}\x{30F3}\x{30C6}"
         LayoutText {#text} at (93,165) size 45x360
           text run at (93,165) width 198: "\x{30F3}\x{30C4}\x{304B}\x{3089}\x{3082}\x{691C}\x{7D22}\x{3059}\x{308B}\x{3053}\x{3068}"
-          text run at (120,3) width 107: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
+          text run at (120,3) width 108: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
       LayoutBlockFlow (floating) {DIV} at (332,8) size 141x366 [border: (3px solid #000000)]
         LayoutText {#text} at (7,3) size 18x54
           text run at (7,3) width 54: "\x{305B}\x{3063}\x{304B}"
@@ -101,7 +101,7 @@ layer at (109,0) size 691x600
             text run at (88,3) width 162: "\x{30A7}\x{30D6}\x{30DA}\x{30FC}\x{30B8}\x{306E}\x{30B3}\x{30F3}\x{30C6}"
         LayoutText {#text} at (88,165) size 45x360
           text run at (88,165) width 198: "\x{30F3}\x{30C4}\x{304B}\x{3089}\x{3082}\x{691C}\x{7D22}\x{3059}\x{308B}\x{3053}\x{3068}"
-          text run at (115,3) width 107: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
+          text run at (115,3) width 108: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
       LayoutBlockFlow (floating) {DIV} at (489,8) size 186x366 [border: (3px solid #000000)]
         LayoutText {#text} at (12,3) size 18x270
           text run at (12,3) width 270: "\x{305B}\x{3063}\x{304B}\x{304F}\x{898B}\x{3064}\x{3051}\x{305F}\x{3059}\x{3070}\x{3089}\x{3057}\x{3044}\x{8A18}\x{4E8B}"
@@ -118,4 +118,4 @@ layer at (109,0) size 691x600
         LayoutText {#text} at (84,273) size 90x360
           text run at (84,273) width 90: "\x{8A2A}\x{554F}\x{3057}\x{305F}\x{30A6}"
           text run at (120,3) width 360: "\x{30A7}\x{30D6}\x{30DA}\x{30FC}\x{30B8}\x{306E}\x{30B3}\x{30F3}\x{30C6}\x{30F3}\x{30C4}\x{304B}\x{3089}\x{3082}\x{691C}\x{7D22}\x{3059}\x{308B}\x{3053}\x{3068}"
-          text run at (156,3) width 107: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
+          text run at (156,3) width 108: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
