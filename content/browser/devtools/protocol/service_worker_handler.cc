@@ -89,6 +89,10 @@ scoped_refptr<ServiceWorkerVersion> CreateVersionDictionaryValue(
           client.second.process_id, client.second.route_id);
       WebContents* web_contents =
           WebContents::FromRenderFrameHost(render_frame_host);
+      // There is a possibility that the frame is already deleted because of the
+      // thread hopping.
+      if (!web_contents)
+        continue;
       scoped_refptr<DevToolsAgentHost> agent_host(
           DevToolsAgentHost::GetOrCreateFor(web_contents));
       if (agent_host)
