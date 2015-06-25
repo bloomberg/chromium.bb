@@ -415,21 +415,16 @@ void TileManager::PrepareTiles(
                         resource_pool_->acquired_memory_usage_bytes());
 }
 
-void TileManager::UpdateVisibleTiles(
-    const GlobalStateThatImpactsTilePriority& state) {
-  TRACE_EVENT0("cc", "TileManager::UpdateVisibleTiles");
+void TileManager::Flush() {
+  TRACE_EVENT0("cc", "TileManager::Flush");
 
   tile_task_runner_->CheckForCompletedTasks();
 
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
-  TRACE_EVENT_INSTANT1(
-      "cc",
-      "DidUpdateVisibleTiles",
-      TRACE_EVENT_SCOPE_THREAD,
-      "stats",
-      RasterTaskCompletionStatsAsValue(update_visible_tiles_stats_));
-  update_visible_tiles_stats_ = RasterTaskCompletionStats();
+  TRACE_EVENT_INSTANT1("cc", "DidFlush", TRACE_EVENT_SCOPE_THREAD, "stats",
+                       RasterTaskCompletionStatsAsValue(flush_stats_));
+  flush_stats_ = RasterTaskCompletionStats();
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
@@ -794,7 +789,7 @@ void TileManager::OnRasterTaskCompleted(
   tile->raster_task_ = nullptr;
 
   if (was_canceled) {
-    ++update_visible_tiles_stats_.canceled_count;
+    ++flush_stats_.canceled_count;
     resource_pool_->ReleaseResource(resource.Pass(), tile->invalidated_id());
     return;
   }
@@ -808,7 +803,7 @@ void TileManager::UpdateTileDrawInfo(
     const RasterSource::SolidColorAnalysis& analysis) {
   TileDrawInfo& draw_info = tile->draw_info();
 
-  ++update_visible_tiles_stats_.completed_count;
+  ++flush_stats_.completed_count;
 
   if (analysis.is_solid_color) {
     draw_info.set_solid_color(analysis.solid_color);

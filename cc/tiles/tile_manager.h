@@ -118,7 +118,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   // prepared, or failed to prepare due to OOM.
   void PrepareTiles(const GlobalStateThatImpactsTilePriority& state);
 
-  void UpdateVisibleTiles(const GlobalStateThatImpactsTilePriority& state);
+  // This causes any completed raster work to finalize, so that tiles get up to
+  // date draw information.
+  void Flush();
 
   ScopedTilePtr CreateTile(const gfx::Size& desired_texture_size,
                            const gfx::Rect& content_rect,
@@ -302,7 +304,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   typedef base::hash_map<int, int> LayerCountMap;
   LayerCountMap used_layer_counts_;
 
-  RasterTaskCompletionStats update_visible_tiles_stats_;
+  RasterTaskCompletionStats flush_stats_;
 
   std::vector<Tile*> released_tiles_;
 

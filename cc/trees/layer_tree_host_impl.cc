@@ -1025,10 +1025,10 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   bool ok = active_tree_->UpdateDrawProperties(update_lcd_text);
   DCHECK(ok) << "UpdateDrawProperties failed during draw";
 
-  // This will cause NotifyTileStateChanged() to be called for any visible tiles
-  // that completed, which will add damage to the frame for them so they appear
-  // as part of the current frame being drawn.
-  tile_manager_->UpdateVisibleTiles(global_tile_state_);
+  // This will cause NotifyTileStateChanged() to be called for any tiles that
+  // completed, which will add damage for visible tiles to the frame for them so
+  // they appear as part of the current frame being drawn.
+  tile_manager_->Flush();
 
   frame->render_surface_layer_list = &active_tree_->RenderSurfaceLayerList();
   frame->render_passes.clear();
