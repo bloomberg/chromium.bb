@@ -643,7 +643,8 @@ being scraped currently).""",
       # TODO: temp workaround for http;//crbug.com/348750 , remove when the bug
       # is fixed.
       if (license_name == 'BSD' and
-          self.fullnamerev.startswith('chromeos-base/')):
+          self.fullnamerev.startswith('chromeos-base/') and
+          'BSD-Google' not in ebuild_license_names):
         license_name = 'BSD-Google'
         logging.warning(
             'Fixed BSD->BSD-Google for %s because it\'s in chromeos-base. '
