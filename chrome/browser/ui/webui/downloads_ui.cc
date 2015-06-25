@@ -89,7 +89,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                      !profile->IsSupervised());
 
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("downloads.css", IDR_DOWNLOADS_CSS);
   source->AddResourcePath("item.js", IDR_DOWNLOAD_ITEM_JS);
   source->AddResourcePath("item_view.js", IDR_DOWNLOAD_ITEM_VIEW_JS);
   source->AddResourcePath("focus_row.js", IDR_DOWNLOAD_FOCUS_ROW_JS);
