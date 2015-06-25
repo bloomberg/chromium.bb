@@ -71,4 +71,10 @@ void HTMLMarqueeElement::removedFrom(ContainerNode* insertionPoint)
     }
 }
 
+bool HTMLMarqueeElement::isHorizontal() const
+{
+    AtomicString direction = getAttribute(HTMLNames::directionAttr);
+    return direction != "down" && direction != "up";
+}
+
 } // namespace blink

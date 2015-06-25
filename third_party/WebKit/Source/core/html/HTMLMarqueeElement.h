@@ -36,6 +36,8 @@ public:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) final;
     virtual void removedFrom(ContainerNode*) final;
 
+    bool isHorizontal() const;
+
 private:
     explicit HTMLMarqueeElement(Document&);
 };

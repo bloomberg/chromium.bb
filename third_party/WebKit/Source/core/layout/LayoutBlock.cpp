@@ -38,6 +38,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLMarqueeElement.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
@@ -2006,6 +2007,9 @@ void LayoutBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
     }
 
     maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
+
+    if (isHTMLMarqueeElement(node()) && toHTMLMarqueeElement(node())->isHorizontal())
+        minLogicalWidth = LayoutUnit();
 
     if (isTableCell()) {
         Length tableCellWidth = toLayoutTableCell(this)->styleOrColLogicalWidth();
