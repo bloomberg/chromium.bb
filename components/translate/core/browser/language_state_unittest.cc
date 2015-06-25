@@ -54,8 +54,6 @@ class MockTranslateDriver : public TranslateDriver {
 
   const GURL& GetLastCommittedURL() override { return GURL::EmptyGURL(); }
 
-  const GURL& GetActiveURL() override { return GURL::EmptyGURL(); }
-
   const GURL& GetVisibleURL() override { return GURL::EmptyGURL(); }
 
   bool HasCurrentPage() override { return true; }

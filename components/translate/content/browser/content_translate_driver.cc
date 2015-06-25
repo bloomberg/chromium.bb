@@ -79,8 +79,9 @@ void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
 // TranslateDriver methods
 
 bool ContentTranslateDriver::IsLinkNavigation() {
-  return navigation_controller_ && navigation_controller_->GetActiveEntry() &&
-         navigation_controller_->GetActiveEntry()->GetTransitionType() ==
+  return navigation_controller_ &&
+         navigation_controller_->GetLastCommittedEntry() &&
+         navigation_controller_->GetLastCommittedEntry()->GetTransitionType() ==
              ui::PAGE_TRANSITION_LINK;
 }
 
@@ -131,19 +132,12 @@ const GURL& ContentTranslateDriver::GetLastCommittedURL() {
   return navigation_controller_->GetWebContents()->GetLastCommittedURL();
 }
 
-const GURL& ContentTranslateDriver::GetActiveURL() {
-  content::NavigationEntry* entry = navigation_controller_->GetActiveEntry();
-  if (!entry)
-    return GURL::EmptyGURL();
-  return entry->GetURL();
-}
-
 const GURL& ContentTranslateDriver::GetVisibleURL() {
   return navigation_controller_->GetWebContents()->GetVisibleURL();
 }
 
 bool ContentTranslateDriver::HasCurrentPage() {
-  return (navigation_controller_->GetActiveEntry() != NULL);
+  return (navigation_controller_->GetLastCommittedEntry() != NULL);
 }
 
 void ContentTranslateDriver::OpenUrlInNewTab(const GURL& url) {
@@ -164,7 +158,7 @@ void ContentTranslateDriver::NavigationEntryCommitted(
   // explicitly initiated.
 
   content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   if (!entry) {
     NOTREACHED();
     return;

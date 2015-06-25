@@ -265,10 +265,9 @@ void TranslateManager::ReportLanguageDetectionError() {
 
   GURL report_error_url = GURL(kReportLanguageDetectionErrorURL);
 
-  report_error_url =
-      net::AppendQueryParameter(report_error_url,
-                                kUrlQueryName,
-                                translate_driver_->GetActiveURL().spec());
+  report_error_url = net::AppendQueryParameter(
+      report_error_url, kUrlQueryName,
+      translate_driver_->GetLastCommittedURL().spec());
 
   report_error_url =
       net::AppendQueryParameter(report_error_url,
@@ -341,7 +340,7 @@ void TranslateManager::OnTranslateScriptFetchComplete(
     if (!translate_driver_->IsOffTheRecord()) {
       TranslateErrorDetails error_details;
       error_details.time = base::Time::Now();
-      error_details.url = translate_driver_->GetActiveURL();
+      error_details.url = translate_driver_->GetLastCommittedURL();
       error_details.error = TranslateErrors::NETWORK;
       NotifyTranslateError(error_details);
     }

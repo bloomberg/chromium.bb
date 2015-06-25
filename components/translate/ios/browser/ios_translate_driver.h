@@ -59,7 +59,6 @@ class IOSTranslateDriver : public TranslateDriver,
   bool IsOffTheRecord() override;
   const std::string& GetContentsMimeType() override;
   const GURL& GetLastCommittedURL() override;
-  const GURL& GetActiveURL() override;
   const GURL& GetVisibleURL() override;
   bool HasCurrentPage() override;
   void OpenUrlInNewTab(const GURL& url) override;

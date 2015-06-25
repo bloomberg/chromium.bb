@@ -258,7 +258,7 @@ void TranslateUIDelegate::SetAlwaysTranslate(bool value) {
 std::string TranslateUIDelegate::GetPageHost() {
   if (!translate_driver_->HasCurrentPage())
     return std::string();
-  return translate_driver_->GetActiveURL().HostNoBrackets();
+  return translate_driver_->GetLastCommittedURL().HostNoBrackets();
 }
 
 }  // namespace translate

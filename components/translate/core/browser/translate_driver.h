@@ -44,9 +44,6 @@ class TranslateDriver {
   // URL.
   virtual const GURL& GetLastCommittedURL() = 0;
 
-  // Returns the active URL, or an empty GURL if there is no active URL.
-  virtual const GURL& GetActiveURL() = 0;
-
   // Returns the visible URL, or an empty GURL if there is no visible URL.
   virtual const GURL& GetVisibleURL() = 0;
 

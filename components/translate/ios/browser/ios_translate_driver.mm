@@ -157,13 +157,6 @@ const GURL& IOSTranslateDriver::GetLastCommittedURL() {
   return web_state()->GetLastCommittedURL();
 }
 
-const GURL& IOSTranslateDriver::GetActiveURL() {
-  web::NavigationItem* item = navigation_manager_->GetVisibleItem();
-  if (!item)
-    return GURL::EmptyGURL();
-  return item->GetURL();
-}
-
 const GURL& IOSTranslateDriver::GetVisibleURL() {
   return web_state()->GetVisibleURL();
 }
