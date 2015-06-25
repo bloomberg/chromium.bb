@@ -443,54 +443,6 @@ class MetaBuildWrapper(object):
 
     return ret
 
-  def RunGNIsolate(self, vals):
-    build_path = self.args.path[0]
-    inp = self.ReadInputJSON(['targets'])
-    if self.args.verbose:
-      self.Print()
-      self.Print('isolate input:')
-      self.PrintJSON(inp)
-      self.Print()
-    output_path = self.args.output_path[0]
-
-    for target in inp['targets']:
-      runtime_deps_path = self.ToAbsPath(build_path, target + '.runtime_deps')
-
-      if not self.Exists(runtime_deps_path):
-        self.WriteFailureAndRaise('"%s" does not exist' % runtime_deps_path,
-                                  output_path)
-
-      command, extra_files = self.GetIsolateCommand(target, vals)
-
-      runtime_deps = self.ReadFile(runtime_deps_path).splitlines()
-
-
-      isolate_path = self.ToAbsPath(build_path, target + '.isolate')
-      self.WriteFile(isolate_path,
-        pprint.pformat({
-          'variables': {
-            'command': command,
-            'files': sorted(runtime_deps + extra_files),
-            'read_only': 1,
-          }
-        }) + '\n')
-
-      self.WriteJSON(
-        {
-          'args': [
-            '--isolated',
-            self.ToSrcRelPath('%s/%s.isolated' % (build_path, target)),
-            '--isolate',
-            self.ToSrcRelPath('%s/%s.isolate' % (build_path, target)),
-          ],
-          'dir': self.chromium_src_dir,
-          'version': 1,
-        },
-        isolate_path + 'd.gen.json',
-      )
-
-    return 0
-
   def GetIsolateCommand(self, target, vals):
     extra_files = []
 

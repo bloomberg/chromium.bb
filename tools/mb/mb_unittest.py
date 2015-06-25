@@ -172,7 +172,6 @@ class UnitTest(unittest.TestCase):
              }"""}
     mbw = self.fake_mbw(files)
     mbw.Call = lambda cmd: (0, 'out/Default/foo_unittests\n', '')
-
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
     out = json.loads(mbw.files['/tmp/out.json'])
@@ -201,37 +200,66 @@ class UnitTest(unittest.TestCase):
       'status': 'No dependency',
     })
 
-  def test_gyp_analyze(self):
-    self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
-                '/tmp/in.json', '/tmp/out.json'],
-               ret=0)
-
-  def test_gen(self):
+  def test_gn_gen(self):
     self.check(['gen', '-c', 'gn_debug', '//out/Default'], ret=0)
     self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
 
-  def test_gen_fails(self):
+  def test_gn_gen_fails(self):
     mbw = self.fake_mbw()
     mbw.Call = lambda cmd: (1, '', '')
     self.check(['gen', '-c', 'gn_debug', '//out/Default'], mbw=mbw, ret=1)
-    self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], mbw=mbw, ret=1)
 
-  def test_goma_dir_expansion(self):
-    self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
-               out=("python build/gyp_chromium -G 'output_dir=<path>' "
-                    "-G config=Release -D goma=1 -D gomadir=/foo\n"))
+  def test_gn_gen_swarming(self):
+    files = {
+      '/tmp/swarming_targets': 'base_unittests\n',
+      '/fake_src/testing/buildbot/ninja_to_gn.pyl': (
+          "{'base_unittests': '//base:base_unittests'}\n"
+      ),
+      '/fake_src/out/Default/base_unittests.runtime_deps': (
+          "base_unittests\n"
+      ),
+    }
+    mbw = self.fake_mbw(files)
+    self.check(['gen',
+                '-c', 'gn_debug',
+                '--swarming-targets-file', '/tmp/swarming_targets',
+                '//out/Default'], mbw=mbw, ret=0)
+    self.assertIn('/fake_src/out/Default/base_unittests.isolate',
+                  mbw.files)
+    self.assertIn('/fake_src/out/Default/base_unittests.isolated.gen.json',
+                  mbw.files)
+
+  def test_gn_lookup(self):
+    self.check(['lookup', '-c', 'gn_debug'], ret=0)
+
+  def test_gn_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gn_rel_bot', '-g', '/foo'], ret=0,
                out=("/fake_src/buildtools/linux64/gn gen '<path>' "
                     "'--args=is_debug=false use_goma=true "
                     "goma_dir=\"/foo\"'\n" ))
 
+  def test_gyp_analyze(self):
+    self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
+                '/tmp/in.json', '/tmp/out.json'],
+               ret=0)
+
+  def test_gyp_gen(self):
+    self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
+
+  def test_gyp_gen_fails(self):
+    mbw = self.fake_mbw()
+    mbw.Call = lambda cmd: (1, '', '')
+    self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], mbw=mbw, ret=1)
+
+  def test_gyp_lookup_goma_dir_expansion(self):
+    self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
+               out=("python build/gyp_chromium -G 'output_dir=<path>' "
+                    "-G config=Release -D goma=1 -D gomadir=/foo\n"))
+
   def test_help(self):
     self.assertRaises(SystemExit, self.check, ['-h'])
     self.assertRaises(SystemExit, self.check, ['help'])
     self.assertRaises(SystemExit, self.check, ['help', 'gen'])
-
-  def test_lookup(self):
-    self.check(['lookup', '-c', 'gn_debug'], ret=0)
 
   def test_validate(self):
     self.check(['validate'], ret=0)
