@@ -275,10 +275,8 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
       MemoryUsage* usage);
   bool TilePriorityViolatesMemoryPolicy(const TilePriority& priority);
   bool AreRequiredTilesReadyToDraw(RasterTilePriorityQueue::Type type) const;
-  void CheckIfReadyToActivate();
-  void CheckIfReadyToDraw();
-  void CheckIfAllTileTasksCompleted();
   void CheckIfMoreTilesNeedToBePrepared();
+  void CheckAndIssueSignals();
 
   TileManagerClient* client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -313,14 +311,23 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
 
   std::vector<scoped_refptr<RasterTask>> orphan_raster_tasks_;
 
-  UniqueNotifier ready_to_activate_check_notifier_;
-  UniqueNotifier ready_to_draw_check_notifier_;
-  UniqueNotifier all_tile_tasks_completed_check_notifier_;
   UniqueNotifier more_tiles_need_prepare_check_notifier_;
 
-  bool did_notify_ready_to_activate_;
-  bool did_notify_ready_to_draw_;
-  bool did_notify_all_tile_tasks_completed_;
+  struct Signals {
+    Signals();
+
+    void reset();
+
+    bool ready_to_activate;
+    bool did_notify_ready_to_activate;
+    bool ready_to_draw;
+    bool did_notify_ready_to_draw;
+    bool all_tile_tasks_completed;
+    bool did_notify_all_tile_tasks_completed;
+  } signals_;
+
+  UniqueNotifier signals_check_notifier_;
+
   bool has_scheduled_tile_tasks_;
 
   uint64_t prepare_tiles_count_;
