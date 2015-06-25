@@ -191,7 +191,8 @@ class Profile;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;
 - (void)configureWindowLevel;
-- (void)performOneScroll:(CGFloat)delta;
+- (void)performOneScroll:(CGFloat)delta
+    updateMouseSelection:(BOOL)updateMouseSelection;
 - (BookmarkButton*)buttonThatMouseIsIn;
 // Set to YES in order to prevent animations.
 - (void)setIgnoreAnimations:(BOOL)ignore;

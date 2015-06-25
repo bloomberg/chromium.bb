@@ -530,7 +530,7 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
 
   for (int i = 0; i < 3; i++) {
     CGFloat height = NSHeight([window frame]);
-    [bbfc performOneScroll:60];
+    [bbfc performOneScroll:60 updateMouseSelection:NO];
     EXPECT_GT(NSHeight([window frame]), height);
     NSView* hit = [scrollView hitTest:hitPoint];
     // We should hit a bookmark button.
@@ -543,7 +543,7 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
   // Also confirm we never scroll the window off the screen.
   bool bothAtOnce = false;
   while ([bbfc canScrollUp]) {
-    [bbfc performOneScroll:60];
+    [bbfc performOneScroll:60 updateMouseSelection:NO];
     EXPECT_TRUE(NSContainsRect([[NSScreen mainScreen] frame], [window frame]));
     // Make sure, sometime during our scroll, we have the ability to
     // scroll in either direction.
@@ -563,7 +563,7 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_SimpleScroll) {
   // Also confirm we never scroll the window off the screen the other
   // way.
   for (int i = 0; i < nodecount+50; ++i) {
-    [bbfc performOneScroll:-60];
+    [bbfc performOneScroll:-60 updateMouseSelection:NO];
     // Once we can no longer scroll down the window height changes.
     if (![bbfc canScrollDown])
       break;
@@ -602,7 +602,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   NSUInteger buttonCounter = 0;
   NSUInteger extraButtonLimit = 3;
   while (![bbfc canScrollDown] || extraButtonLimit > 0) {
-    [bbfc performOneScroll:scrollOneBookmark];
+    [bbfc performOneScroll:scrollOneBookmark updateMouseSelection:NO];
     ++buttonCounter;
     if ([bbfc canScrollDown])
       --extraButtonLimit;
@@ -619,7 +619,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   // the top of the window has not moved, then delete a visible button and
   // make sure the top has not moved.
   while ([bbfc canScrollDown]) {
-    [bbfc performOneScroll:-scrollOneBookmark];
+    [bbfc performOneScroll:-scrollOneBookmark updateMouseSelection:NO];
     --buttonCounter;
   }
   button = [buttons objectAtIndex:buttonCounter + 3];
