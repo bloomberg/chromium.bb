@@ -301,6 +301,10 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		confine->buffer = NULL;
 		window_schedule_redraw(confine->window);
 		break;
+	case XKB_KEY_m:
+		window_set_maximized(confine->window,
+				     !window_is_maximized(window));
+		break;
 	}
 }
 
@@ -379,8 +383,17 @@ resize_handler(struct widget *widget,
 
 	confine->reset = 1;
 
-	if (confine->complex_confine_region_enabled)
+	if (confine->complex_confine_region_enabled) {
 		confine->complex_confine_region_dirty = true;
+
+		if (confine->pointer_confined) {
+			calculate_complex_confine_region(confine);
+			window_update_confine_rectangles(
+					confine->window,
+					confine->complex_confine_region,
+					NUM_COMPLEX_REGION_RECTS);
+		}
+	}
 }
 
 static void
