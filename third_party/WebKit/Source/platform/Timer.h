@@ -90,6 +90,7 @@ private:
 
         ~CancellableTimerTask() override { }
 
+        NO_LAZY_SWEEP_SANITIZE_ADDRESS
         void run() override
         {
             if (m_timer) {
