@@ -27,25 +27,26 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=. --lib=libgnu --source-base=gnulib --m4-base=gnulib/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --no-conditional-dependencies --libtool --macro-prefix=gl --no-vc-files malloc-gnu realloc-gnu strndup
+#   gnulib-tool --import --dir=. --lib=libgnutools --source-base=tools/gnulib --m4-base=tools/gnulib/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --no-conditional-dependencies --libtool --macro-prefix=gl_tools --no-vc-files getopt-gnu malloc-gnu progname version-etc
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
 gl_MODULES([
+  getopt-gnu
   malloc-gnu
-  realloc-gnu
-  strndup
+  progname
+  version-etc
 ])
 gl_AVOID([])
-gl_SOURCE_BASE([gnulib])
-gl_M4_BASE([gnulib/m4])
+gl_SOURCE_BASE([tools/gnulib])
+gl_M4_BASE([tools/gnulib/m4])
 gl_PO_BASE([])
 gl_DOC_BASE([doc])
 gl_TESTS_BASE([tests])
-gl_LIB([libgnu])
+gl_LIB([libgnutools])
 gl_MAKEFILE_NAME([])
 gl_LIBTOOL
-gl_MACRO_PREFIX([gl])
+gl_MACRO_PREFIX([gl_tools])
 gl_PO_DOMAIN([])
 gl_WITNESS_C_MACRO([])
 gl_VC_FILES([false])
