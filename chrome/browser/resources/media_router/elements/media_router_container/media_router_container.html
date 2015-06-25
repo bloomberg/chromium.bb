@@ -15,14 +15,11 @@
         class$="[[currentView_]]"
         hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
       <div id="header-text">
-        <!-- TODO(apacible): The second <span> is a workaround for
-        https://github.com/Polymer/polymer/issues/1571. Remove here and
-        elsewhere once this is fixed. -->
         <span hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
-          <span>[[headerText]]</span>
+         [[headerText]]
         </span>
         <span hidden$="[[computeCastModeHidden_(currentView_)]]">
-          <span>[[selectCastModeHeaderText_]]</span>
+          [[selectCastModeHeaderText_]]
         </span>
       </div>
       <paper-icon-button icon="[[computeArrowDropIcon_(currentView_)]]"
