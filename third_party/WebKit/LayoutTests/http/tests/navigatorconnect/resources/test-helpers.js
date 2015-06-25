@@ -45,3 +45,64 @@ function connect_from_worker(t, service) {
     ({connect: target_url, port: channel.port2}, [channel.port2]);
   return reply_as_promise(t, channel.port1);
 }
+
+// Similar to Promise.race, except that returned promise only rejects if all
+// passed promises reject. Used temporarily to support both old and new client
+// side APIs.
+function first_to_resolve(promises) {
+  return new Promise(function(resolve, reject) {
+    var remaining = promises.length;
+    var resolved = false;
+    for (var i = 0; i < promises.length; ++i) {
+      Promise.resolve(promises[i])
+        .then(function(result) {
+            if (!resolved) {
+              resolve(result);
+              resolved = true;
+            }
+          })
+        .catch(function(result) {
+            remaining--;
+            if (remaining === 0) {
+              reject(result);
+            }
+          });
+    }
+  });
+}
+
+// Takes (a promise resolving to) a ServicePort instance, and returns a Promise
+// that resolves to a MessagePort wrapping that ServicePort. Used to support
+// both old and new APIs at the same time.
+function wrap_in_port(maybe_port) {
+  return Promise.resolve(maybe_port).then(
+    function(port) {
+      var channel = new MessageChannel();
+      channel.port2.onmessage = function(event) {
+        port.postMessage(event.data, event.ports);
+      };
+      // Should use addEventListener and check source of event, but source isn't
+      // set yet, so for now just assume only one wrapped port is used at a time.
+      navigator.services.onmessage = function(event) {
+        channel.port2.postMessage(event.data, event.ports);
+      };
+      return channel.port1;
+    }
+  );
+}
+
+var promise_tests = Promise.resolve();
+// Helper function to run promise tests one after the other.
+// TODO(ortuno): Remove once https://github.com/w3c/testharness.js/pull/115/files
+// gets through.
+function sequential_promise_test(func, name) {
+  var test = async_test(name);
+  promise_tests = promise_tests.then(function() {
+    return test.step(func, test, test);
+  }).then(function() {
+    test.done();
+  }).catch(test.step_func(function(value) {
+    // step_func catches the error again so the error doesn't propagate.
+    throw value;
+  }));
+}

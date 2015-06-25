@@ -5,9 +5,11 @@
 // https://mkruisselbrink.github.io/navigator-connect/#idl-def-ServicePortCollection
 [
     Exposed=(Window,Worker),
+    GarbageCollected,
+    TypeChecking=Interface,
     RuntimeEnabled=NavigatorConnect,
 ]  interface ServicePortCollection : EventTarget {
-    [CallWith=ScriptState] Promise<ServicePort> connect(DOMString url, optional ServicePortConnectOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<ServicePort> connect(DOMString url, optional ServicePortConnectOptions options);
     [CallWith=ScriptState] Promise<ServicePort> match(ServicePortMatchOptions options);
     [CallWith=ScriptState] Promise<sequence<ServicePort>> matchAll(optional ServicePortMatchOptions options);
     // TODO(mek): The spec has [Exposed=ServiceWorker] for onconnect, this is not currently

@@ -30,7 +30,7 @@ private:
     NavigatorServices();
     static const char* supplementName();
 
-    RefPtrWillBeMember<ServicePortCollection> m_services;
+    Member<ServicePortCollection> m_services;
 };
 
 } // namespace blink

@@ -9,27 +9,39 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
+#include "public/platform/modules/navigator_services/WebServicePortProvider.h"
+#include "public/platform/modules/navigator_services/WebServicePortProviderClient.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
+class ServicePort;
 class ServicePortConnectOptions;
 class ServicePortMatchOptions;
 
 class MODULES_EXPORT ServicePortCollection final
-    : public EventTargetWithInlineData
-    , public RefCountedWillBeNoBase<ServicePortCollection>
-    , public ContextLifecycleObserver {
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<ServicePortCollection>
+    , public ContextLifecycleObserver
+    , public WebServicePortProviderClient {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(ServicePortCollection);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServicePortCollection);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServicePortCollection);
     WTF_MAKE_NONCOPYABLE(ServicePortCollection);
 public:
-    static PassRefPtrWillBeRawPtr<ServicePortCollection> create(ExecutionContext*);
+    static ServicePortCollection* create(ExecutionContext*);
     ~ServicePortCollection() override;
 
+    // Adds a port to this collection to keep track of it and allow delivering
+    // events related to it.
+    void addPort(ServicePort*);
+
+    // Called when a port is closed to signal the WebServicePortProvider as well
+    // as remove the port from this collection.
+    void closePort(ServicePort*);
+
+    WebServicePortProvider* provider() { return m_provider.get(); }
+
     // ServicePortCollection.idl
-    ScriptPromise connect(ScriptState*, const String& url, const ServicePortConnectOptions&);
+    ScriptPromise connect(ScriptState*, const String& url, const ServicePortConnectOptions&, ExceptionState&);
     ScriptPromise match(ScriptState*, const ServicePortMatchOptions&);
     ScriptPromise matchAll(ScriptState*, const ServicePortMatchOptions&);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
@@ -40,10 +52,16 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
 
+    // WebServicePortProviderClient overrides.
+    void postMessage(WebServicePortID, const WebString&, const WebMessagePortChannelArray&) override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ServicePortCollection(ExecutionContext*);
+
+    OwnPtr<WebServicePortProvider> m_provider;
+    HeapVector<Member<ServicePort>> m_ports;
 };
 
 } // namespace blink

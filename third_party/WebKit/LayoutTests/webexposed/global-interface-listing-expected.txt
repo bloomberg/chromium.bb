@@ -5236,6 +5236,13 @@ interface Selection
     method setBaseAndExtent
     method setPosition
     method toString
+interface ServicePort
+    getter data
+    getter name
+    getter targetURL
+    method close
+    method constructor
+    method postMessage
 interface ServicePortCollection
     getter onclose
     getter onconnect

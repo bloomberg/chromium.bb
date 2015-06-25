@@ -7,11 +7,12 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/testharness-helpers.js"></script>
 <script src="../serviceworker/resources/test-helpers.js"></script>
+<script src="resources/test-helpers.js"></script>
 <script src="resources/connect-tests.js"></script>
 <script>
 var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
 
 run_connect_tests(function(t, service) {
-    return navigator.connect(service);
+    return first_to_resolve([wrap_in_port(navigator.services.connect(service)), navigator.connect(service)]);
   });
 </script>
