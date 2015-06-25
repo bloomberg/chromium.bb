@@ -112,7 +112,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_.reset(ChildProcessHost::Create(this));
-  AddFilter(new TraceMessageFilter);
+  AddFilter(new TraceMessageFilter(data_.id));
   AddFilter(new ProfilerMessageFilter(process_type));
   AddFilter(new HistogramMessageFilter);
 

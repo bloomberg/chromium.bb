@@ -39,7 +39,7 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
       new PepperMessageFilter());
   channel->AddFilter(pepper_message_filter->GetFilter());
   channel->AddFilter(browser_ppapi_host->message_filter().get());
-  channel->AddFilter((new TraceMessageFilter())->GetFilter());
+  channel->AddFilter((new TraceMessageFilter(render_process_id))->GetFilter());
 
   return browser_ppapi_host;
 }
