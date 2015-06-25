@@ -11,18 +11,8 @@
 #include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
-// Interface to the CALayer that will draw the content, and will be sent to the
-// browser process via a CAContext.
-@protocol ImageTransportLayer
-// Draw a new frame whenever is appropriate (for pull-based systems, this may
-// result in the frame being drawn at some point in the future).
-- (void)drawNewFrame:(gfx::Rect)dirtyRect;
-// Draw the frame immediately (force pull models to do a pull immedately).
-- (void)drawPendingFrameImmediately;
-// This is called when the layer is no longer being used by the
-// CALayerStorageProvider.
-- (void)resetStorageProvider;
-@end
+@class ImageTransportCAOpenGLLayer;
+@class ImageTransportNSCGLSurface;
 
 namespace content {
 
@@ -47,7 +37,7 @@ class CALayerStorageProvider
   void DiscardBackbuffer() override;
   void SwapBuffersAckedByBrowser(bool disable_throttling) override;
 
-  // Interface to ImageTransportLayer:
+  // Interface to the CALayer.
   CGLContextObj LayerShareGroupContext();
   base::Closure LayerShareGroupContextDirtiedCallback();
   bool LayerHasPendingDraw() const;
@@ -100,7 +90,10 @@ class CALayerStorageProvider
 
   // The CALayer that the current frame is being drawn into.
   base::scoped_nsobject<CAContext> context_;
-  base::scoped_nsobject<CALayer<ImageTransportLayer>> layer_;
+  base::scoped_nsobject<ImageTransportCAOpenGLLayer> ca_opengl_layer_;
+  base::scoped_nsobject<ImageTransportNSCGLSurface> ns_cgl_surface_layer_;
+
+  bool ns_cgl_surface_api_attempted_and_failed_;
 
   // When a CAContext is destroyed in the GPU process, it will become a blank
   // CALayer in the browser process. Put retains on these contexts in this queue

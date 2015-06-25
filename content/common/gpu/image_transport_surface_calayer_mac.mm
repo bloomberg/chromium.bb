@@ -25,7 +25,8 @@ const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
 
-bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
+bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
+                        bool has_attempted_and_failed) {
   // Respect command line flags for the API's usage.
   static bool forced_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -36,6 +37,17 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNSCGLSurfaceApi);
   if (disabled_at_command_line)
+    return false;
+
+  // If we have attempted to use the API and it failed, don't try it again.
+  if (has_attempted_and_failed)
+    return false;
+
+  // Systems with multiple GPUs can exhibit problems where incorrect content
+  // will briefly flash during resize, and especially during transitions between
+  // the iGPU and the dGPU. These problems are exhibited by layer-backed
+  // NSOpenGLViews as well.
+  if (feature_info->workarounds().disable_ns_cgl_surface_api)
     return false;
 
   // If there are multiple displays connected, then it is possible that we will
@@ -52,14 +64,6 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
   if (count != 1)
     return false;
 
-  // Systems with multiple GPUs can exhibit problems where incorrect content
-  // will briefly flash during resize, and especially during transitions between
-  // the iGPU and the dGPU. These problems are exhibited by layer-backed
-  // NSOpenGLViews as well.
-  if (feature_info->workarounds().disable_ns_cgl_surface_api)
-    return false;
-
-  // Leave this feature disabled until a flag for it is available.
   return false;
 }
 
@@ -81,7 +85,7 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
 - (void)setContentsChanged;
 @end
 
-@interface ImageTransportCAOpenGLLayer : CAOpenGLLayer <ImageTransportLayer> {
+@interface ImageTransportCAOpenGLLayer : CAOpenGLLayer {
   content::CALayerStorageProvider* storageProvider_;
   base::Closure didDrawCallback_;
 
@@ -103,12 +107,12 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
 - (id)initWithStorageProvider:(content::CALayerStorageProvider*)storageProvider
                     pixelSize:(gfx::Size)pixelSize
                   scaleFactor:(float)scaleFactor;
-- (void)drawNewFrame:(gfx::Rect)dirtyRect;
+- (void)requestDrawNewFrame;
 - (void)drawPendingFrameImmediately;
 - (void)resetStorageProvider;
 @end
 
-@interface ImageTransportNSCGLSurface : CALayer <ImageTransportLayer> {
+@interface ImageTransportNSCGLSurface : CALayer {
   content::CALayerStorageProvider* storageProvider_;
   base::ScopedTypeRef<CGLContextObj> cglContext_;
   base::scoped_nsobject<NSCGLSurface> surface_;
@@ -118,8 +122,7 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
 - (id)initWithStorageProvider:(content::CALayerStorageProvider*)storageProvider
                     pixelSize:(gfx::Size)pixelSize
                   scaleFactor:(float)scaleFactor;
-- (void)drawNewFrame:(gfx::Rect)dirtyRect;
-- (void)drawPendingFrameImmediately;
+- (BOOL)drawNewFrame:(gfx::Rect)dirtyRect;
 - (void)resetStorageProvider;
 @end
 
@@ -135,16 +138,11 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
     [self setFrame:CGRectMake(0, 0, dipSize.width(), dipSize.height())];
     storageProvider_ = storageProvider;
     pixelSize_ = pixelSize;
-
-    // -[CAOpenGLLayer drawInCGLContext] won't get called until we're in the
-    // visible layer hierarchy, so call setLayer: immediately, to make this
-    // happen.
-    [storageProvider_->LayerCAContext() setLayer:self];
   }
   return self;
 }
 
-- (void)drawNewFrame:(gfx::Rect)dirtyRect {
+- (void)requestDrawNewFrame {
   // This tracing would be more natural to do with a pseudo-thread for each
   // layer, rather than a counter.
   // http://crbug.com/366300
@@ -295,24 +293,41 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
   return self;
 }
 
-- (void)drawNewFrame:(gfx::Rect)dirtyRect {
+- (BOOL)drawNewFrame:(gfx::Rect)dirtyRect {
   // Draw the first frame to the layer as covering the full layer. Subsequent
   // frames may use partial damage.
   if (![self contents])
     dirtyRect = gfx::Rect(pixelSize_);
 
+  // A silent failure mechanism for the NSCGLSurface API is to have the layer
+  // contents be nil.
+  if (![surface_ layerContents])
+    return NO;
+
   // Make the context current to the thread, make the surface be the current
   // drawable for the context, and draw.
+  BOOL framebuffer_was_complete = YES;
   [surface_ attachToCGLContext:cglContext_];
   {
     gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
     gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
     glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, pixelSize_.width(), pixelSize_.height());
-    storageProvider_->LayerDoDraw(dirtyRect);
-    glFlush();
+
+    // Another silent failure mechanism for the NSCGLSurface API is to provide
+    // a backbuffer that is not framebuffer complete.
+    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    if (status == GL_FRAMEBUFFER_COMPLETE_EXT) {
+      glViewport(0, 0, pixelSize_.width(), pixelSize_.height());
+      storageProvider_->LayerDoDraw(dirtyRect);
+      glFlush();
+      framebuffer_was_complete = YES;
+    } else {
+      framebuffer_was_complete = NO;
+    }
   }
   [surface_ attachToCGLContext:NULL];
+  if (!framebuffer_was_complete)
+    return NO;
   [surface_ flushRect:dirtyRect.ToCGRect()];
 
   if (![self contents]) {
@@ -327,10 +342,8 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info) {
     // This has lower power usage than calling -[CALayer setContents:].
     [self setContentsChanged];
   }
-}
 
-- (void)drawPendingFrameImmediately {
-  [self drawNewFrame:gfx::Rect(pixelSize_)];
+  return YES;
 }
 
 - (void)resetStorageProvider {
@@ -357,6 +370,7 @@ CALayerStorageProvider::CALayerStorageProvider(
       tex_location_(0),
       vertex_buffer_(0),
       vertex_array_(0),
+      ns_cgl_surface_api_attempted_and_failed_(false),
       recreate_layer_after_gpu_switch_(false),
       pending_draw_weak_factory_(this) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
@@ -565,15 +579,16 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
   // Determine if it is safe to use an NSCGLSurface, or if we should use the
   // CAOpenGLLayer fallback. If we're not using the preferred type of layer,
   // then reset the layer and re-create one of the preferred type.
-  bool can_use_ns_cgl_surface =
-      CanUseNSCGLSurface(transport_surface_->GetFeatureInfo());
-  Class expected_layer_class = can_use_ns_cgl_surface ?
-      [ImageTransportNSCGLSurface class] : [ImageTransportCAOpenGLLayer class];
-  if (![layer_ isKindOfClass:expected_layer_class])
+  bool can_use_ns_cgl_surface = CanUseNSCGLSurface(
+      transport_surface_->GetFeatureInfo(),
+      ns_cgl_surface_api_attempted_and_failed_);
+  if (can_use_ns_cgl_surface && ca_opengl_layer_)
+    ResetLayer();
+  if (!can_use_ns_cgl_surface && ns_cgl_surface_layer_)
     ResetLayer();
 
-  // Set the pending draw flag only after destroying the old layer (otherwise
-  // destroying it will un-set the flag).
+  // Set the pending draw flag only after potentially destroying the old layer
+  // (otherwise destroying it will un-set the flag).
   has_pending_draw_ = true;
 
   // Allocate a CAContext to use to transport the CALayer to the browser
@@ -586,48 +601,65 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
     [context_ retain];
   }
 
-  // Allocate a CALayer to use to draw the content and make it current to the
-  // CAContext, if needed.
-  if (!layer_) {
-    if (can_use_ns_cgl_surface) {
-      layer_.reset([[ImageTransportNSCGLSurface alloc]
-          initWithStorageProvider:this
-                        pixelSize:fbo_pixel_size_
-                      scaleFactor:fbo_scale_factor_]);
-    } else {
-      layer_.reset([[ImageTransportCAOpenGLLayer alloc]
+  // Attempt to use the NSCGLSurface API if nothing suggests that it will fail.
+  if (can_use_ns_cgl_surface) {
+    if (!ns_cgl_surface_layer_) {
+      ns_cgl_surface_layer_.reset([[ImageTransportNSCGLSurface alloc]
           initWithStorageProvider:this
                         pixelSize:fbo_pixel_size_
                       scaleFactor:fbo_scale_factor_]);
     }
+    if ([ns_cgl_surface_layer_ drawNewFrame:dirty_rect])
+      return;
+
+    // If the draw fails, then fall back to the CAOpenGLLayer path permanently.
+    ns_cgl_surface_api_attempted_and_failed_ = true;
+    ResetLayer();
   }
 
-  // Replacing the CAContext's CALayer will sometimes results in an immediate
-  // draw.
-  if (!has_pending_draw_)
-    return;
+  // If the NSCGLSurface API wasn't tried, or if it failed in a way that could
+  // only be detected after attempting to use it, then attempt to use the
+  // CAOpenGLLayer API.
+  {
+    if (!ca_opengl_layer_) {
+      ca_opengl_layer_.reset([[ImageTransportCAOpenGLLayer alloc]
+          initWithStorageProvider:this
+                        pixelSize:fbo_pixel_size_
+                      scaleFactor:fbo_scale_factor_]);
+    }
 
-  // Tell CoreAnimation to draw our frame.
-  if (gpu_vsync_disabled_ || throttling_disabled_) {
-    DrawImmediatelyAndUnblockBrowser();
-  } else {
-    [layer_ drawNewFrame:dirty_rect];
-  }
+    // -[CAOpenGLLayer drawInCGLContext] won't get called until we're in the
+    // visible layer hierarchy, so call setLayer: immediately, to make this
+    // happen.
+    [context_ setLayer:ca_opengl_layer_];
 
-  if (has_pending_draw_) {
-    // If CoreAnimation doesn't end up drawing our frame, un-block the browser
-    // after a timeout of 1/6th of a second has passed.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser,
-                   pending_draw_weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(1) / 6);
+    // Sometimes calling -[CAContext setLayer:] will result in the layer getting
+    // an immediate draw. If that happend, we're done.
+    if (!has_pending_draw_)
+      return;
+
+    // Tell CoreAnimation to draw our frame.
+    if (gpu_vsync_disabled_ || throttling_disabled_) {
+      DrawImmediatelyAndUnblockBrowser();
+    } else {
+      [ca_opengl_layer_ requestDrawNewFrame];
+    }
+
+    if (has_pending_draw_) {
+      // If CoreAnimation doesn't end up drawing our frame, un-block the browser
+      // after a timeout of 1/6th of a second has passed.
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser,
+                     pending_draw_weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(1) / 6);
+    }
   }
 }
 
 void CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser() {
   CHECK(has_pending_draw_);
-  [layer_ drawPendingFrameImmediately];
+  [ca_opengl_layer_ drawPendingFrameImmediately];
 
   // Sometimes, the setNeedsDisplay+displayIfNeeded pairs have no effect. This
   // can happen if the NSView that this layer is attached to isn't in the
@@ -789,14 +821,17 @@ void CALayerStorageProvider::UnblockBrowserIfNeeded() {
 }
 
 void CALayerStorageProvider::ResetLayer() {
-  [layer_ resetStorageProvider];
-
-  // If we are providing back-pressure by waiting for a draw, that draw will
-  // now never come, so release the pressure now.
-  UnblockBrowserIfNeeded();
-
-  // This should only ever be called by the active layer.
-  layer_.reset();
+  if (ca_opengl_layer_) {
+    [ca_opengl_layer_ resetStorageProvider];
+    // If we are providing back-pressure by waiting for a draw, that draw will
+    // now never come, so release the pressure now.
+    UnblockBrowserIfNeeded();
+    ca_opengl_layer_.reset();
+  }
+  if (ns_cgl_surface_layer_) {
+    [ns_cgl_surface_layer_ resetStorageProvider];
+    ns_cgl_surface_layer_.reset();
+  }
 }
 
 }  //  namespace content
