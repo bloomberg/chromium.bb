@@ -282,15 +282,6 @@ void HttpServerPropertiesImpl::SetAlternativeService(
     const HostPortPair& origin,
     const AlternativeService& alternative_service,
     double alternative_probability) {
-  AlternativeService complete_alternative_service(alternative_service);
-  if (complete_alternative_service.host.empty()) {
-    complete_alternative_service.host = origin.host();
-  }
-  if (IsAlternativeServiceBroken(complete_alternative_service)) {
-    DVLOG(1) << "Ignore alternative service since it is known to be broken.";
-    return;
-  }
-
   const AlternativeServiceInfo alternative_service_info(
       alternative_service, alternative_probability);
   AlternativeServiceMap::const_iterator it =

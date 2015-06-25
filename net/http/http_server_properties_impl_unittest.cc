@@ -388,6 +388,29 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   EXPECT_EQ(1234, impl_.GetAlternativeService(test_host_port_pair).port);
 }
 
+// A broken alternative service in the mapping carries meaningful information,
+// therefore it should not be ignored by SetAlternativeService().  In
+// particular, an alternative service mapped to an origin shadows alternative
+// services of canonical hosts.
+TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+  AlternativeService canonical_altsvc(QUIC, "bar.c.youtube.com", 1234);
+  impl_.SetAlternativeService(canonical_port_pair, canonical_altsvc, 1.0);
+  EXPECT_TRUE(impl_.GetAlternativeService(test_host_port_pair) ==
+              canonical_altsvc);
+
+  const AlternativeService broken_alternative_service(NPN_SPDY_4, "foo", 443);
+  impl_.MarkAlternativeServiceBroken(broken_alternative_service);
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service));
+
+  impl_.SetAlternativeService(test_host_port_pair, broken_alternative_service,
+                              1.0);
+  ASSERT_EQ(broken_alternative_service,
+            impl_.GetAlternativeService(test_host_port_pair));
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service));
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   HostPortPair test_host_port_pair("foo", 80);
   const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
