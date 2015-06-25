@@ -696,15 +696,6 @@ void PepperUDPSocketMessageFilter::SendSendToError(
 
 int32_t PepperUDPSocketMessageFilter::CanUseMulticastAPI(
     const PP_NetAddress_Private& addr) {
-  // Check for Dev API.
-  // TODO(etrunko): remove check when Multicast API reaches beta/stable.
-  // https://crbug.com/464452
-  ContentBrowserClient* content_browser_client = GetContentClient()->browser();
-  if (!content_browser_client->IsPluginAllowedToUseDevChannelAPIs(nullptr,
-                                                                  GURL())) {
-    return PP_ERROR_NOTSUPPORTED;
-  }
-
   // Check for plugin permissions.
   SocketPermissionRequest request =
       pepper_socket_utils::CreateSocketPermissionRequest(

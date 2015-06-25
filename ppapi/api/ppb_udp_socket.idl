@@ -12,7 +12,7 @@
 label Chrome {
   M29 = 1.0,
   M41 = 1.1,
-  [channel=dev] M43 = 1.2
+  M43 = 1.2
 };
 
 /**
