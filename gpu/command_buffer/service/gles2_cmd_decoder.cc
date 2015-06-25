@@ -11,12 +11,10 @@
 #include <list>
 #include <map>
 #include <queue>
-#include <stack>
-#include <string>
-#include <vector>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -62,6 +60,8 @@
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "third_party/smhasher/src/City.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"

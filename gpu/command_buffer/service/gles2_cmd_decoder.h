@@ -7,21 +7,21 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 
+#include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/logger.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_context.h"
 
 namespace gfx {
 class GLContext;
 class GLSurface;
+class Size;
 }
 
 namespace gpu {

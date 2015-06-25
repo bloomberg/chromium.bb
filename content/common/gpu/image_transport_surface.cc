@@ -15,6 +15,7 @@
 #include "content/common/gpu/null_transport_surface.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 

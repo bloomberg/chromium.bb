@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace content {

@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/gpu_timing_fake.h"

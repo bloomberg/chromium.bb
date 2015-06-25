@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace {
 
