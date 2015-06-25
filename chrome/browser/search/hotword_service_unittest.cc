@@ -158,7 +158,8 @@ INSTANTIATE_TEST_CASE_P(HotwordServiceTests,
                         ::testing::Values(
                             extension_misc::kHotwordSharedModuleId));
 
-TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
+// Disabled due to http://crbug.com/503963.
+TEST_P(HotwordServiceTest, DISABLED_IsHotwordAllowedLocale) {
   TestingProfile::Builder profile_builder;
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
 
@@ -300,7 +301,8 @@ TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
 #if defined(ENABLE_HOTWORDING)
   EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
 #else
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+  // Disabled due to http://crbug.com/503963.
+  // EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile()));
 #endif
 
   // Different but valid locale so expect uninstall.
@@ -330,7 +332,8 @@ TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
 #if defined(ENABLE_HOTWORDING)
   EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
 #else
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+  // Disabled due to http://crbug.com/503963.
+  // EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile()));
 #endif
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
   EXPECT_EQ(1, hotword_service->uninstall_count());  // no change
