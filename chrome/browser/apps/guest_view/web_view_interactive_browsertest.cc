@@ -720,7 +720,13 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_NoName) {
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Redirect) {
+// Flaky on win_chromium_rel_ng. https://crbug.com/504054
+#if defined(OS_WIN)
+#define MAYBE_NewWindow_Redirect DISABLED_NewWindow_Redirect
+#else
+#define MAYBE_NewWindow_Redirect NewWindow_Redirect
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_NewWindow_Redirect) {
   TestHelper("testNewWindowRedirect",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
