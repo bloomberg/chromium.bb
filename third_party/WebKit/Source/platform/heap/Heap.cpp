@@ -572,7 +572,7 @@ bool NormalPageHeap::pagesToBeSweptContains(Address address)
 
 void NormalPageHeap::takeFreelistSnapshot(const String& dumpName)
 {
-    if (m_freeList.takeSnapshot(dumpName) && m_firstUnsweptPage) {
+    if (m_freeList.takeSnapshot(dumpName)) {
         WebMemoryAllocatorDump* bucketsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/buckets");
         WebMemoryAllocatorDump* pagesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/pages");
         BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->AddOwnershipEdge(pagesDump->guid(), bucketsDump->guid());
