@@ -45,10 +45,7 @@ public:
     // BluetoothDiscovery Methods:
     // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothdiscovery
     // WebBluetoothRequestDeviceCallbacks ownership transferred to the client.
-    virtual void requestDevice(const WebRequestDeviceOptions&, WebBluetoothRequestDeviceCallbacks* callbacks) { requestDevice(callbacks); }
-    // TODO(jyasskin): Remove this overload after
-    // https://codereview.chromium.org/1172853004/ lands.
-    virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) { }
+    virtual void requestDevice(const WebRequestDeviceOptions&, WebBluetoothRequestDeviceCallbacks*) { }
 
     // BluetoothDevice methods:
     // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothdevice

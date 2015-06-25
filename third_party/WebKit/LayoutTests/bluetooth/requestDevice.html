@@ -39,4 +39,58 @@ sequential_promise_test(function() {
     assert_equals(device.constructor.name, "BluetoothDevice");
   });
 }, 'Mock will resolve.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ScanFilterCheckingAdapter');
+  // The work of this test is done in the ScanFilterCheckingAdapter. It asserts
+  // that this requestDevice() call tells the platform to scan for only devices
+  // that include the Battery, Glucose, or Heart Rate services.
+  return navigator.bluetooth.requestDevice({
+    filters: [
+      {services: [batteryServiceUuid]},
+      {services: [glucoseServiceUuid, heartRateServiceUuid]}
+    ],
+    // The optionalServices shouldn't affect the platform's scan.
+    optionalServices: [genericAccessServiceUuid]
+  });
+}, 'Filters restrict the platform\'s Bluetooth scan.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('MultiDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [glucoseServiceUuid]}]
+  }).then(function(device) {
+    assert_equals(device.name, "Glucose Device");
+  });
+}, 'Simple filter selects matching device.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('MultiDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid, heartRateServiceUuid]}]
+  }).then(function(device) {
+    assert_equals(device.name, "Heart Rate Device");
+  });
+}, 'Filter with 2 services returns a matching device.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('MultiDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: [batteryServiceUuid]},
+              {services: [heartRateServiceUuid]}]
+  }).then(function(device) {
+    assert_equals(device.name, "Heart Rate Device");
+  });
+}, 'An extra filter doesn\'t prevent matching.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('MultiDeviceAdapter');
+  // Both devices support the Generic Access service, but things need to
+  // support both services to pass the filter, and neither has a Battery
+  // service.
+  return assert_promise_rejects(navigator.bluetooth.requestDevice({
+    filters: [{services: [genericAccessServiceUuid, batteryServiceUuid]}]
+  }), 'NotFoundError');
+}, 'Too-strict filters do prevent matching.');
+
 </script>

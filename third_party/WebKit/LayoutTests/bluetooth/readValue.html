@@ -72,8 +72,7 @@ sequential_promise_test(function() {
   }).then(function(value) {
     var decoder = new TextDecoder('utf-8');
     var value_str = decoder.decode(value);
-    // TODO: Remove the .slice after https://crrev.com/1172853004 is in.
-    assert_equals(value_str.slice(0, 17), 'Empty Mock Device');
+    assert_equals(value_str, 'Empty Mock Device');
   });
 }, 'Request for characteristic. Should return right characteristic');
 </script>

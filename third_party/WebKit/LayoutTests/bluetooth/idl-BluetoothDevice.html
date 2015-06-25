@@ -33,7 +33,7 @@ sequential_promise_test(function() {
     device.uuids = "overwritten";
 
     assert_equals(device.instanceID, "Empty Mock Device instanceID");
-    assert_equals(device.name.slice(0, 17), "Empty Mock Device");
+    assert_equals(device.name, "Empty Mock Device");
     assert_equals(device.deviceClass, 0x1F00);
     assert_equals(device.vendorIDSource, "bluetooth");
     assert_equals(device.vendorID, 0xFFFF);
