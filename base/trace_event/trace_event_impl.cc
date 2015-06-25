@@ -1381,8 +1381,10 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
       event_callback_trace_config_.IsCategoryGroupEnabled(category_group))
     enabled_flag |= ENABLED_FOR_EVENT_CALLBACK;
 #if defined(OS_WIN)
-  if (base::trace_event::TraceEventETWExport::isETWExportEnabled())
+  if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
+          category_group)) {
     enabled_flag |= ENABLED_FOR_ETW_EXPORT;
+  }
 #endif
 
   g_category_group_enabled[category_index] = enabled_flag;
