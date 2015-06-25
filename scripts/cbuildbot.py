@@ -23,7 +23,6 @@ from chromite.cbuildbot import builders
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import repository
@@ -1187,7 +1186,7 @@ def main(argv):
     stack.Add(critical_section.ForkWatchdog)
 
     if not options.buildbot:
-      build_config = chromeos_config.OverrideConfigForTrybot(
+      build_config = config_lib.OverrideConfigForTrybot(
           build_config, options)
 
     if options.mock_tree_status is not None:

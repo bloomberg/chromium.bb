@@ -528,7 +528,6 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     """Verifies that all config boards are in _all_boards."""
     for build_name, config in self.all_configs.iteritems():
       for board in config['boards']:
-        # pylint: disable=protected-access
         self.assertIn(board, chromeos_config._all_boards,
                       'Config %s has unknown board %s.' %
                       (build_name, board))
@@ -685,46 +684,25 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
 class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
   """Test config override functionality."""
 
-  def _testWithOptions(self, **kwargs):
-    mock_options = mock.Mock()
-    for k, v in kwargs.iteritems():
-      mock_options.setattr(k, v)
-
-    for config in self.all_configs.itervalues():
-      chromeos_config.OverrideConfigForTrybot(config, mock_options)
-
-  def testLocalTrybot(self):
-    """Override each config for local trybot."""
-    self._testWithOptions(remote_trybot=False, hw_test=False)
-
-  def testRemoteTrybot(self):
-    """Override each config for remote trybot."""
-    self._testWithOptions(remote_trybot=True, hw_test=False)
-
-  def testRemoteHWTest(self):
-    """Override each config for remote trybot + hwtests."""
-    self._testWithOptions(remote_trybot=True, hw_test=True)
-
   def testVmTestOverride(self):
     """Verify that vm_tests override for trybots pay heed to original config."""
     mock_options = mock.Mock()
     old = self.all_configs['x86-mario-paladin']
-    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
+    new = config_lib.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], [constants.SMOKE_SUITE_TEST_TYPE,
                                         constants.SIMPLE_AU_TEST_TYPE,
                                         constants.CROS_VM_TEST_TYPE])
 
     # Don't override vm tests for arm boards.
     old = self.all_configs['daisy-paladin']
-    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
+    new = config_lib.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], old['vm_tests'])
 
     # Don't override vm tests for brillo boards.
     old = self.all_configs['storm-paladin']
-    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
+    new = config_lib.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], old['vm_tests'])
 
-  # pylint: disable=protected-access
   def testWaterfallManualConfigIsValid(self):
     """Verify the correctness of the manual waterfall configuration."""
     all_build_names = set(self.all_configs.iterkeys())
