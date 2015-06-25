@@ -283,7 +283,8 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_FALSE(client_->pending_manager());
 }
 
-TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedOut) {
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerOnRequireUserMediation) {
   store_->AddLogin(form_);
   store_->AddLogin(cross_origin_form_);
   RunAllPendingTasks();
@@ -295,10 +296,11 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedOut) {
   EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
   EXPECT_FALSE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
 
-  dispatcher()->OnNotifySignedOut(kRequestId);
+  dispatcher()->OnRequireUserMediation(kRequestId);
   RunAllPendingTasks();
 
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedOut::ID;
+  const uint32 kMsgID =
+      CredentialManagerMsg_AcknowledgeRequireUserMediation::ID;
   const IPC::Message* message =
       process()->sink().GetFirstMessageMatching(kMsgID);
   EXPECT_TRUE(message);

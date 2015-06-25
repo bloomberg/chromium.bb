@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/credential_manager_pending_signed_out_task.h"
+#include "components/password_manager/core/browser/credential_manager_pending_require_user_mediation_task.h"
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -10,22 +10,24 @@
 
 namespace password_manager {
 
-CredentialManagerPendingSignedOutTask::CredentialManagerPendingSignedOutTask(
-    CredentialManagerPendingSignedOutTaskDelegate* delegate,
-    const GURL& origin)
+CredentialManagerPendingRequireUserMediationTask::
+    CredentialManagerPendingRequireUserMediationTask(
+        CredentialManagerPendingRequireUserMediationTaskDelegate* delegate,
+        const GURL& origin)
     : delegate_(delegate) {
   origins_.insert(origin.spec());
 }
 
-CredentialManagerPendingSignedOutTask::
-    ~CredentialManagerPendingSignedOutTask() = default;
+CredentialManagerPendingRequireUserMediationTask::
+    ~CredentialManagerPendingRequireUserMediationTask() = default;
 
-void CredentialManagerPendingSignedOutTask::AddOrigin(const GURL& origin) {
+void CredentialManagerPendingRequireUserMediationTask::AddOrigin(
+    const GURL& origin) {
   origins_.insert(origin.spec());
 }
 
-void CredentialManagerPendingSignedOutTask::OnGetPasswordStoreResults(
-    ScopedVector<autofill::PasswordForm> results) {
+void CredentialManagerPendingRequireUserMediationTask::
+    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
   PasswordStore* store = delegate_->GetPasswordStore();
   for (autofill::PasswordForm* form : results) {
     if (origins_.count(form->origin.spec())) {
@@ -37,7 +39,7 @@ void CredentialManagerPendingSignedOutTask::OnGetPasswordStoreResults(
     }
   }
 
-  delegate_->DoneSigningOut();
+  delegate_->DoneRequiringUserMediation();
 }
 
 }  // namespace password_manager

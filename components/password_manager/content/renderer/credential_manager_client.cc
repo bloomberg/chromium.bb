@@ -41,7 +41,7 @@ CredentialManagerClient::CredentialManagerClient(
 CredentialManagerClient::~CredentialManagerClient() {
   ClearCallbacksMapWithErrors(&failed_sign_in_callbacks_);
   ClearCallbacksMapWithErrors(&signed_in_callbacks_);
-  ClearCallbacksMapWithErrors(&signed_out_callbacks_);
+  ClearCallbacksMapWithErrors(&require_user_mediation_callbacks_);
   ClearCallbacksMapWithErrors(&request_callbacks_);
 }
 
@@ -55,8 +55,8 @@ bool CredentialManagerClient::OnMessageReceived(const IPC::Message& message) {
                         OnAcknowledgeFailedSignIn)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeSignedIn,
                         OnAcknowledgeSignedIn)
-    IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeSignedOut,
-                        OnAcknowledgeSignedOut)
+    IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeRequireUserMediation,
+                        OnAcknowledgeRequireUserMediation)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_SendCredential, OnSendCredential)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_RejectCredentialRequest,
                         OnRejectCredentialRequest)
@@ -73,8 +73,9 @@ void CredentialManagerClient::OnAcknowledgeSignedIn(int request_id) {
   RespondToNotificationCallback(request_id, &signed_in_callbacks_);
 }
 
-void CredentialManagerClient::OnAcknowledgeSignedOut(int request_id) {
-  RespondToNotificationCallback(request_id, &signed_out_callbacks_);
+void CredentialManagerClient::OnAcknowledgeRequireUserMediation(
+    int request_id) {
+  RespondToNotificationCallback(request_id, &require_user_mediation_callbacks_);
 }
 
 void CredentialManagerClient::OnSendCredential(int request_id,
@@ -131,10 +132,11 @@ void CredentialManagerClient::dispatchSignedIn(
       routing_id(), request_id, info));
 }
 
-void CredentialManagerClient::dispatchSignedOut(
+void CredentialManagerClient::dispatchRequireUserMediation(
     NotificationCallbacks* callbacks) {
-  int request_id = signed_out_callbacks_.Add(callbacks);
-  Send(new CredentialManagerHostMsg_NotifySignedOut(routing_id(), request_id));
+  int request_id = require_user_mediation_callbacks_.Add(callbacks);
+  Send(new CredentialManagerHostMsg_RequireUserMediation(routing_id(),
+                                                         request_id));
 }
 
 void CredentialManagerClient::dispatchRequest(

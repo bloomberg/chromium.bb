@@ -56,7 +56,7 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   // Message handlers for messages from the browser process:
   virtual void OnAcknowledgeFailedSignIn(int request_id);
   virtual void OnAcknowledgeSignedIn(int request_id);
-  virtual void OnAcknowledgeSignedOut(int request_id);
+  virtual void OnAcknowledgeRequireUserMediation(int request_id);
   virtual void OnSendCredential(int request_id,
                                 const CredentialInfo& credential_info);
   virtual void OnRejectCredentialRequest(
@@ -70,7 +70,7 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   virtual void dispatchSignedIn(
       const blink::WebCredential& credential,
       WebCredentialManagerClient::NotificationCallbacks* callbacks);
-  virtual void dispatchSignedOut(NotificationCallbacks* callbacks);
+  virtual void dispatchRequireUserMediation(NotificationCallbacks* callbacks);
   virtual void dispatchRequest(
       bool zero_click_only,
       const blink::WebVector<blink::WebURL>& federations,
@@ -89,7 +89,7 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   // generated from Blink. This class takes ownership of these objects.
   NotificationCallbacksMap failed_sign_in_callbacks_;
   NotificationCallbacksMap signed_in_callbacks_;
-  NotificationCallbacksMap signed_out_callbacks_;
+  NotificationCallbacksMap require_user_mediation_callbacks_;
   RequestCallbacksMap request_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerClient);

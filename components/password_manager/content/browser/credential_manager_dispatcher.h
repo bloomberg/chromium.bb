@@ -12,7 +12,7 @@
 #include "base/prefs/pref_member.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
-#include "components/password_manager/core/browser/credential_manager_pending_signed_out_task.h"
+#include "components/password_manager/core/browser/credential_manager_pending_require_user_mediation_task.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -37,7 +37,7 @@ class CredentialManagerDispatcher
     : public content::WebContentsObserver,
       public CredentialManagerPasswordFormManagerDelegate,
       public CredentialManagerPendingRequestTaskDelegate,
-      public CredentialManagerPendingSignedOutTaskDelegate {
+      public CredentialManagerPendingRequireUserMediationTaskDelegate {
  public:
   CredentialManagerDispatcher(content::WebContents* web_contents,
                               PasswordManagerClient* client);
@@ -54,8 +54,8 @@ class CredentialManagerDispatcher
                                 const password_manager::CredentialInfo&);
 
   // Called in response to an IPC from the renderer, triggered by a page's call
-  // to 'navigator.credentials.notifySignedOut'.
-  virtual void OnNotifySignedOut(int request_id);
+  // to 'navigator.credentials.requireUserMediation'.
+  virtual void OnRequireUserMediation(int request_id);
 
   // Called in response to an IPC from the renderer, triggered by a page's call
   // to 'navigator.credentials.request'.
@@ -80,7 +80,7 @@ class CredentialManagerDispatcher
 
   // CredentialManagerPendingSignedOutTaskDelegate:
   PasswordStore* GetPasswordStore() override;
-  void DoneSigningOut() override;
+  void DoneRequiringUserMediation() override;
 
   // CredentialManagerPasswordFormManagerDelegate:
   void OnProvisionalSaveComplete() override;
@@ -101,7 +101,8 @@ class CredentialManagerDispatcher
   // they can properly respond to the request once the PasswordStore gives
   // us data.
   scoped_ptr<CredentialManagerPendingRequestTask> pending_request_;
-  scoped_ptr<CredentialManagerPendingSignedOutTask> pending_sign_out_;
+  scoped_ptr<CredentialManagerPendingRequireUserMediationTask>
+      pending_require_user_mediation_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);
 };

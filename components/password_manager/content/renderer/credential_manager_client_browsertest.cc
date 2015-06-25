@@ -75,9 +75,9 @@ class MAYBE_CredentialManagerClientTest : public content::RenderViewTest {
         break;
       }
 
-      case CredentialManagerHostMsg_NotifySignedOut::ID: {
+      case CredentialManagerHostMsg_RequireUserMediation::ID: {
         base::Tuple<int> param;
-        CredentialManagerHostMsg_NotifySignedOut::Read(message, &param);
+        CredentialManagerHostMsg_RequireUserMediation::Read(message, &param);
         request_id = base::get<0>(param);
         break;
       }
@@ -189,19 +189,19 @@ TEST_F(MAYBE_CredentialManagerClientTest, SendNotifySignedIn) {
   EXPECT_FALSE(callback_errored());
 }
 
-TEST_F(MAYBE_CredentialManagerClientTest, SendNotifySignedOut) {
+TEST_F(MAYBE_CredentialManagerClientTest, SendRequestUserMediation) {
   int request_id;
-  EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedOut::ID,
-                                request_id));
+  EXPECT_FALSE(ExtractRequestId(
+      CredentialManagerHostMsg_RequireUserMediation::ID, request_id));
 
   scoped_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_->dispatchSignedOut(callbacks.release());
+  client_->dispatchRequireUserMediation(callbacks.release());
 
-  EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedOut::ID,
-                               request_id));
+  EXPECT_TRUE(ExtractRequestId(
+      CredentialManagerHostMsg_RequireUserMediation::ID, request_id));
 
-  client_->OnAcknowledgeSignedOut(request_id);
+  client_->OnAcknowledgeRequireUserMediation(request_id);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
 }

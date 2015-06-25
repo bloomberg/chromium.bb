@@ -33,7 +33,7 @@ void MockCredentialManagerClient::dispatchSignedIn(
   delete callbacks;
 }
 
-void MockCredentialManagerClient::dispatchSignedOut(
+void MockCredentialManagerClient::dispatchRequireUserMediation(
     NotificationCallbacks* callbacks) {
   callbacks->onSuccess();
   delete callbacks;

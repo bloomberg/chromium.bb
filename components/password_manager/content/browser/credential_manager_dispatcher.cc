@@ -44,8 +44,8 @@ bool CredentialManagerDispatcher::OnMessageReceived(
                         OnNotifyFailedSignIn);
     IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifySignedIn,
                         OnNotifySignedIn);
-    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifySignedOut,
-                        OnNotifySignedOut);
+    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_RequireUserMediation,
+                        OnRequireUserMediation);
     IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_RequestCredential,
                         OnRequestCredential);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -94,26 +94,27 @@ void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
   }
 }
 
-void CredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
+void CredentialManagerDispatcher::OnRequireUserMediation(int request_id) {
   DCHECK(request_id);
 
   PasswordStore* store = GetPasswordStore();
   if (store) {
-    if (!pending_sign_out_) {
-      pending_sign_out_.reset(new CredentialManagerPendingSignedOutTask(
-          this, web_contents()->GetLastCommittedURL().GetOrigin()));
+    if (!pending_require_user_mediation_) {
+      pending_require_user_mediation_.reset(
+          new CredentialManagerPendingRequireUserMediationTask(
+              this, web_contents()->GetLastCommittedURL().GetOrigin()));
 
       // This will result in a callback to
-      // CredentialManagerPendingSignedOutTask::OnGetPasswordStoreResults().
-      store->GetAutofillableLogins(pending_sign_out_.get());
+      // CredentialManagerPendingRequireUserMediationTask::OnGetPasswordStoreResults().
+      store->GetAutofillableLogins(pending_require_user_mediation_.get());
     } else {
-      pending_sign_out_->AddOrigin(
+      pending_require_user_mediation_->AddOrigin(
           web_contents()->GetLastCommittedURL().GetOrigin());
     }
   }
 
   web_contents()->GetRenderViewHost()->Send(
-      new CredentialManagerMsg_AcknowledgeSignedOut(
+      new CredentialManagerMsg_AcknowledgeRequireUserMediation(
           web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 }
 
@@ -199,9 +200,9 @@ PasswordManagerClient* CredentialManagerDispatcher::client() const {
   return client_;
 }
 
-void CredentialManagerDispatcher::DoneSigningOut() {
-  DCHECK(pending_sign_out_);
-  pending_sign_out_.reset();
+void CredentialManagerDispatcher::DoneRequiringUserMediation() {
+  DCHECK(pending_require_user_mediation_);
+  pending_require_user_mediation_.reset();
 }
 
 }  // namespace password_manager

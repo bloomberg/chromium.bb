@@ -54,11 +54,11 @@ IPC_MESSAGE_ROUTED2(CredentialManagerHostMsg_NotifySignedIn,
                     int /* request_id */,
                     password_manager::CredentialInfo /* credential */)
 
-// Passes the notification from 'navigator.credentials.notifySignedOut()' up to
-// the browser process in order to clear the "zeroclick" bit on that origin's
-// stored credentials. The browser process will respond with a
-// CredentialManagerMsg_AcknowledgeSignedOut message.
-IPC_MESSAGE_ROUTED1(CredentialManagerHostMsg_NotifySignedOut,
+// Passes the notification from 'navigator.credentials.requireUserMediation()'
+// up to the browser process in order to clear the "zeroclick" bit on that
+// origin's stored credentials. The browser process will respond with a
+// CredentialManagerMsg_AcknowledgeRequireUserMediation message.
+IPC_MESSAGE_ROUTED1(CredentialManagerHostMsg_RequireUserMediation,
                     int /* request_id */)
 
 // Requests a credential from the browser process in response to a page calling
@@ -83,8 +83,8 @@ IPC_MESSAGE_ROUTED1(CredentialManagerMsg_AcknowledgeSignedIn,
                     int /* request_id */)
 
 // Notify the renderer that the browser process has finished processing a
-// CredentialManagerHostMsg_NotifySignedOut message.
-IPC_MESSAGE_ROUTED1(CredentialManagerMsg_AcknowledgeSignedOut,
+// CredentialManagerHostMsg_RequireUserMediation message.
+IPC_MESSAGE_ROUTED1(CredentialManagerMsg_AcknowledgeRequireUserMediation,
                     int /* request_id */)
 
 // Send a credential to the renderer in response to a
