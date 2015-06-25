@@ -26,9 +26,11 @@
 #include "ppapi/cpp/video_frame.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-// When compiling natively on Windows, PostMessage can be #define-d to
-// something else.
-#ifdef PostMessage
+// When compiling natively on Windows, PostMessage, min and max can be
+// #define-d to something else.
+#ifdef WIN32
+#undef min
+#undef max
 #undef PostMessage
 #endif
 
