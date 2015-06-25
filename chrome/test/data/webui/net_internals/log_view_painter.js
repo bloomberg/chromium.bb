@@ -1398,21 +1398,25 @@ function painterTestHexEncodedBytes() {
 't=1338865016957 [st= 25]      SOCKET_BYTES_SENT\n' +
 '                              --> byte_count = 780\n' +
 '                              --> hex_encoded_bytes =\n' +
-'                                47 45 54 20 2F 66 61 76 69 63 6F 6E 2E 69 ' +
-    '63 6F 20 48 54 54   GET /favicon.ico HTT\n' +
-'                                50 2F 31 2E 31 0D 0A 48 6F 73 74 3A 20 77 ' +
-    '77 77 2E 61 70 70   P/1.1..Host: www.app\n' +
-'                                6C 65 2E 63 6F 6D 0D 0A 43 6F 6E 6E 65 63 ' +
-    '74 69 6F 6E 3A 20   le.com..Connection: \n' +
+'                                47 45 54 20 2F 66 61 76  69 63 6F 6E 2E 69 ' +
+    '63 6F   GET /favicon.ico\n' +
+'                                20 48 54 54 50 2F 31 2E  31 0D 0A 48 6F 73 ' +
+    '74 3A    HTTP/1.1..Host:\n' +
+'                                20 77 77 77 2E 61 70 70  6C 65 2E 63 6F 6D ' +
+    '0D 0A    www.apple.com..\n' +
+'                                43 6F 6E 6E 65 63 74 69  6F 6E 3A 20       ' +
+    '        Connection: \n' +
 't=1338865017069 [st=137]      SOCKET_BYTES_RECEIVED\n' +
 '                              --> byte_count = 1024\n' +
 '                              --> hex_encoded_bytes =\n' +
-'                                48 54 54 50 2F 31 2E 31 20 32 30 30 20 4F ' +
-    '4B 0D 0A 4C 61 73   HTTP/1.1 200 OK..Las\n' +
-'                                74 2D 4D 6F 64 69 66 69 65 64 3A 20 4D 6F ' +
-    '6E 2C 20 31 39 20   t-Modified: Mon, 19 \n' +
-'                                44 65 63 20 32 30 31 31 20 32 32 3A 34 36 ' +
-    '3A 35 39 20 47 4D   Dec 2011 22:46:59 GM';
+'                                48 54 54 50 2F 31 2E 31  20 32 30 30 20 4F ' +
+    '4B 0D   HTTP/1.1 200 OK.\n' +
+'                                0A 4C 61 73 74 2D 4D 6F  64 69 66 69 65 64 ' +
+    '3A 20   .Last-Modified: \n' +
+'                                4D 6F 6E 2C 20 31 39 20  44 65 63 20 32 30 ' +
+    '31 31   Mon, 19 Dec 2011\n' +
+'                                20 32 32 3A 34 36 3A 35  39 20 47 4D       ' +
+    '         22:46:59 GM';
 
   return testCase;
 }

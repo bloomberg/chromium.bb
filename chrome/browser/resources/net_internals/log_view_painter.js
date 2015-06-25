@@ -116,10 +116,11 @@ function addRowWithTime(tablePrinter, eventTime, startTime) {
  * the hexadecimal characters from |hexString| on the left, in groups of
  * two, and their corresponding ASCII characters on the right.
  *
- * |asciiCharsPerLine| specifies how many ASCII characters will be put on each
- * line of the output string.
+ * 16 bytes will be placed on each line of the output string, split into two
+ * columns of 8.
  */
-function writeHexString(hexString, asciiCharsPerLine, out) {
+function writeHexString(hexString, out) {
+  var asciiCharsPerLine = 16;
   // Number of transferred bytes in a line of output.  Length of a
   // line is roughly 4 times larger.
   var hexCharsPerLine = 2 * asciiCharsPerLine;
@@ -127,6 +128,9 @@ function writeHexString(hexString, asciiCharsPerLine, out) {
     var hexLine = '';
     var asciiLine = '';
     for (var j = i; j < i + hexCharsPerLine && j < hexString.length; j += 2) {
+      // Split into two columns of 8 bytes each.
+      if (j == i + hexCharsPerLine / 2)
+        hexLine += ' ';
       var hex = hexString.substr(j, 2);
       hexLine += hex + ' ';
       var charCode = parseInt(hex, 16);
@@ -144,7 +148,8 @@ function writeHexString(hexString, asciiCharsPerLine, out) {
 
     // Make the ASCII text for the last line of output align with the previous
     // lines.
-    hexLine += makeRepeatedString(' ', 3 * asciiCharsPerLine - hexLine.length);
+    hexLine += makeRepeatedString(' ',
+                                  3 * asciiCharsPerLine + 1 - hexLine.length);
     out.writeLine('   ' + hexLine + '  ' + asciiLine);
   }
 }
@@ -304,7 +309,7 @@ function defaultWriteParameter(key, value, out) {
   // For transferred bytes, display the bytes in hex and ASCII.
   if (key == 'hex_encoded_bytes' && typeof value == 'string') {
     out.writeArrowKey(key);
-    writeHexString(value, 20, out);
+    writeHexString(value, out);
     return;
   }
 
