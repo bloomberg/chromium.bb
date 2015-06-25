@@ -269,7 +269,7 @@ class GPU_EXPORT GpuControlList {
 
     // Determines whether we needs more gpu info to make the blacklisting
     // decision.  It should only be checked if Contains() returns true.
-    bool NeedsMoreInfo(const GPUInfo& gpu_info) const;
+    bool NeedsMoreInfo(const GPUInfo& gpu_info, bool consider_exceptions) const;
 
     // Returns the OsType.
     OsType GetOsType() const;

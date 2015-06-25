@@ -1250,14 +1250,15 @@ bool GpuControlList::GpuControlListEntry::Contains(
 
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->Contains(os_type, os_version, gpu_info) &&
-        !exceptions_[i]->NeedsMoreInfo(gpu_info))
+        !exceptions_[i]->NeedsMoreInfo(gpu_info, true))
       return false;
   }
   return true;
 }
 
 bool GpuControlList::GpuControlListEntry::NeedsMoreInfo(
-    const GPUInfo& gpu_info) const {
+    const GPUInfo& gpu_info,
+    bool consider_exceptions) const {
   // We only check for missing info that might be collected with a gl context.
   // If certain info is missing due to some error, say, we fail to collect
   // vendor_id/device_id, then even if we launch GPU process and create a gl
@@ -1270,10 +1271,14 @@ bool GpuControlList::GpuControlListEntry::NeedsMoreInfo(
     return true;
   if (!gl_renderer_info_.empty() && gpu_info.gl_renderer.empty())
     return true;
-  for (size_t i = 0; i < exceptions_.size(); ++i) {
-    if (exceptions_[i]->NeedsMoreInfo(gpu_info))
-      return true;
+
+  if (consider_exceptions) {
+    for (size_t i = 0; i < exceptions_.size(); ++i) {
+      if (exceptions_[i]->NeedsMoreInfo(gpu_info, consider_exceptions))
+        return true;
+    }
   }
+
   return false;
 }
 
@@ -1395,7 +1400,12 @@ std::set<int> GpuControlList::MakeDecision(
   std::set<int> features;
 
   needs_more_info_ = false;
-  std::set<int> possible_features;
+  // Has all features permanently in the list without any possibility of
+  // removal in the future (subset of "features" set).
+  std::set<int> permanent_features;
+  // Has all features absent from "features" set that could potentially be
+  // included later with more information.
+  std::set<int> potential_features;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -1403,23 +1413,38 @@ std::set<int> GpuControlList::MakeDecision(
     os_version = base::SysInfo::OperatingSystemVersion();
 
   for (size_t i = 0; i < entries_.size(); ++i) {
-    if (entries_[i]->Contains(os, os_version, gpu_info)) {
-      bool needs_more_info = entries_[i]->NeedsMoreInfo(gpu_info);
-      if (!entries_[i]->disabled()) {
+    ScopedGpuControlListEntry entry = entries_[i];
+    if (entry->Contains(os, os_version, gpu_info)) {
+      bool needs_more_info_main = entry->NeedsMoreInfo(gpu_info, false);
+      bool needs_more_info_exception = entry->NeedsMoreInfo(gpu_info, true);
+
+      if (!entry->disabled()) {
         if (control_list_logging_enabled_)
-          entries_[i]->LogControlListMatch(control_list_logging_name_);
-        MergeFeatureSets(&possible_features, entries_[i]->features());
-        if (!needs_more_info)
-          MergeFeatureSets(&features, entries_[i]->features());
+          entry->LogControlListMatch(control_list_logging_name_);
+        // Only look at main entry info when deciding what to add to "features"
+        // set. If we don't have enough info for an exception, it's safer if we
+        // just ignore the exception and assume the exception doesn't apply.
+        for (std::set<int>::const_iterator iter = entry->features().begin();
+             iter != entry->features().end(); ++iter) {
+          if (needs_more_info_main) {
+            if (!features.count(*iter))
+              potential_features.insert(*iter);
+          } else {
+            features.insert(*iter);
+            potential_features.erase(*iter);
+            if (!needs_more_info_exception)
+              permanent_features.insert(*iter);
+          }
+        }
       }
-      if (!needs_more_info)
-        active_entries_.push_back(entries_[i]);
+
+      if (!needs_more_info_main)
+        active_entries_.push_back(entry);
     }
   }
 
-  if (possible_features.size() > features.size())
-    needs_more_info_ = true;
-
+  needs_more_info_ = permanent_features.size() < features.size() ||
+                     !potential_features.empty();
   return features;
 }
 

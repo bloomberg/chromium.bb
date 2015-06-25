@@ -218,7 +218,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
   manager->InitializeForTesting(blacklist_json, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
-  EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
+  EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
 
   // Now assume gpu process launches and full GPU info is collected.
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
@@ -536,7 +536,7 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStrings) {
 
   // Not enough GPUInfo.
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
-  EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
+  EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
 
   // Now assume browser gets GL strings from local state.
   // The entry applies, blacklist more features than from the preliminary step.

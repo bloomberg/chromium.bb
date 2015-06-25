@@ -370,7 +370,8 @@ TEST_F(GpuControlListTest, NeedsMoreInfoForExceptions) {
   // The case this entry might apply, but need more info.
   features = control_list->MakeDecision(
       GpuControlList::kOsLinux, kOsVersion, gpu_info);
-  EXPECT_EMPTY_SET(features);
+  // Ignore exceptions if main entry info matches
+  EXPECT_SINGLE_FEATURE(features, TEST_FEATURE_0);
   EXPECT_TRUE(control_list->needs_more_info());
 
   // The case we have full info, and the exception applies (so the entry
