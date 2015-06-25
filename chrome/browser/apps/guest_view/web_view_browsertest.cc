@@ -712,6 +712,15 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   content::WebContents* embedder_web_contents_;
 };
 
+// The following test suits are created to group tests based on specific
+// features of <webview>.
+// These features current would not work with --site-per-process and is
+// disabled on site isolation FYI bots.
+class WebViewNewWindowTest : public WebViewTest {};
+class WebViewSizeTest : public WebViewTest {};
+class WebViewSpeechAPITest : public WebViewTest {};
+class WebViewVisibilityTest : public WebViewTest {};
+
 // Test suite that containts tests that are meant to run with and without
 // --site-per-process.
 class WebViewCommonTest : public extensions::PlatformAppBrowserTest {};
@@ -728,7 +737,7 @@ class WebViewDPITest : public WebViewTest {
 };
 
 // This test verifies that hiding the guest triggers WebContents::WasHidden().
-IN_PROC_BROWSER_TEST_F(WebViewTest, GuestVisibilityChanged) {
+IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, GuestVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");
 
   scoped_refptr<content::MessageLoopRunner> loop_runner(
@@ -743,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GuestVisibilityChanged) {
 }
 
 // This test verifies that hiding the embedder also hides the guest.
-IN_PROC_BROWSER_TEST_F(WebViewTest, EmbedderVisibilityChanged) {
+IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, EmbedderVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");
 
   scoped_refptr<content::MessageLoopRunner> loop_runner(
@@ -807,7 +816,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest, AutoSize) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/299507
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -844,7 +853,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ExecuteScript) {
 }
 
 // http://crbug.com/326332
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestAutosizeAfterNavigation) {
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest,
+                       DISABLED_Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
@@ -856,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(WebViewDPITest, Shim_TestAutosizeHeight) {
   TestHelper("testAutosizeHeight", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeHeight) {
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeHeight) {
   TestHelper("testAutosizeHeight", "web_view/shim", NO_TEST_SERVER);
 }
 
@@ -864,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(WebViewDPITest, Shim_TestAutosizeBeforeNavigation) {
   TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeBeforeNavigation) {
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeBeforeNavigation) {
   TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
@@ -872,12 +882,12 @@ IN_PROC_BROWSER_TEST_F(WebViewDPITest, Shim_TestAutosizeRemoveAttributes) {
   TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeRemoveAttributes) {
   TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
 // This test is disabled due to being flaky. http://crbug.com/282116
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest,
                        DISABLED_Shim_TestAutosizeWithPartialAttributes) {
   TestHelper("testAutosizeWithPartialAttributes",
              "web_view/shim",
@@ -1004,7 +1014,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddAndRemoveContentScripts) {
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
                        Shim_TestAddContentScriptsWithNewWindowAPI) {
   TestHelper("testAddContentScriptsWithNewWindowAPI", "web_view/shim",
              NEEDS_TEST_SERVER);
@@ -1081,21 +1091,22 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReassignSrcAttribute) {
   TestHelper("testReassignSrcAttribute", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindow) {
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, Shim_TestNewWindow) {
   TestHelper("testNewWindow", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowTwoListeners) {
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, Shim_TestNewWindowTwoListeners) {
   TestHelper("testNewWindowTwoListeners", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoPreventDefault) {
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+                       Shim_TestNewWindowNoPreventDefault) {
   TestHelper("testNewWindowNoPreventDefault",
              "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoReferrerLink) {
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, Shim_TestNewWindowNoReferrerLink) {
   TestHelper("testNewWindowNoReferrerLink", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
@@ -1204,7 +1215,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGetProcessId) {
   TestHelper("testGetProcessId", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestHiddenBeforeNavigation) {
+IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, Shim_TestHiddenBeforeNavigation) {
   TestHelper("testHiddenBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
@@ -1269,14 +1280,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigationToExternalProtocol) {
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest,
                        Shim_TestResizeWebviewWithDisplayNoneResizesContent) {
   TestHelper("testResizeWebviewWithDisplayNoneResizesContent",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
   TestHelper("testResizeWebviewResizesContent",
              "web_view/shim",
              NO_TEST_SERVER);
@@ -1577,7 +1588,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_CurrentTab_Abort) {
             GetGuestWebContents()->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_NewWindow_Abort) {
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
   LoadAppWithGuest("web_view/simple");
 
   // Verify that OpenURLFromTab with a window disposition of NEW_BACKGROUND_TAB
@@ -2128,21 +2139,24 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentInteractive) {
                   << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognitionAPI_HasPermissionAllow) {
+IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
+                       SpeechRecognitionAPI_HasPermissionAllow) {
   ASSERT_TRUE(
       RunPlatformAppTestWithArg("platform_apps/web_view/speech_recognition_api",
                                 "allowTest"))
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognitionAPI_HasPermissionDeny) {
+IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
+                       SpeechRecognitionAPI_HasPermissionDeny) {
   ASSERT_TRUE(
       RunPlatformAppTestWithArg("platform_apps/web_view/speech_recognition_api",
                                 "denyTest"))
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognitionAPI_NoPermission) {
+IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
+                       SpeechRecognitionAPI_NoPermission) {
   ASSERT_TRUE(
       RunPlatformAppTestWithArg("platform_apps/web_view/common",
                                 "speech_recognition_api_no_permission"))
@@ -2155,7 +2169,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, UserAgent) {
               "platform_apps/web_view/common", "useragent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, UserAgent_NewWindow) {
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, UserAgent_NewWindow) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
               "platform_apps/web_view/common",
               "useragent_newwindow")) << message_;
@@ -2258,7 +2272,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadDataAPI) {
 }
 
 // This test verifies that the resize and contentResize events work correctly.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeEvents) {
+IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestResizeEvents) {
   TestHelper("testResizeEvents", "web_view/shim", NO_TEST_SERVER);
 }
 
