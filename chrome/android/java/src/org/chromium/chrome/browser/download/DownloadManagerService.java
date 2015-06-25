@@ -17,9 +17,9 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.util.LongSparseArray;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.LongSparseArray;
 import android.widget.Toast;
 
 import org.chromium.base.ThreadUtils;
