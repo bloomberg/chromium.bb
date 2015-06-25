@@ -1179,8 +1179,8 @@ fileOperationUtil.Error = function(code, data) {
  * @extends {cr.EventTarget}
  */
 fileOperationUtil.EventRouter = function() {
-  this.pendingDeletedEntries_ = [];
-  this.pendingCreatedEntries_ = [];
+  this.pendingDeletedEntries_ = {};
+  this.pendingCreatedEntries_ = {};
   this.entryChangedEventRateLimiter_ = new AsyncUtil.RateLimiter(
       this.dispatchEntryChangedEvent_.bind(this), 500);
 };
@@ -1240,9 +1240,9 @@ fileOperationUtil.EventRouter.prototype.sendProgressEvent = function(
 fileOperationUtil.EventRouter.prototype.sendEntryChangedEvent = function(
     kind, entry) {
   if (kind === util.EntryChangedKind.DELETED)
-    this.pendingDeletedEntries_.push(entry);
+    this.pendingDeletedEntries_[entry.toURL()] = entry;
   if (kind === util.EntryChangedKind.CREATED)
-    this.pendingCreatedEntries_.push(entry);
+    this.pendingCreatedEntries_[entry.toURL()] = entry;
 
   this.entryChangedEventRateLimiter_.run();
 };
@@ -1253,19 +1253,27 @@ fileOperationUtil.EventRouter.prototype.sendEntryChangedEvent = function(
  */
 fileOperationUtil.EventRouter.prototype.dispatchEntryChangedEvent_ =
     function() {
-  if (this.pendingDeletedEntries_.length > 0) {
+  var deletedEntries = [];
+  var createdEntries = [];
+  for (var url in this.pendingDeletedEntries_) {
+    deletedEntries.push(this.pendingDeletedEntries_[url]);
+  }
+  for (var url in this.pendingCreatedEntries_) {
+    createdEntries.push(this.pendingCreatedEntries_[url]);
+  }
+  if (deletedEntries.length > 0) {
     var event = new Event('entries-changed');
     event.kind = util.EntryChangedKind.DELETED;
-    event.entries = this.pendingDeletedEntries_;
+    event.entries = deletedEntries;
     this.dispatchEvent(event);
-    this.pendingDeletedEntries_ = [];
+    this.pendingDeletedEntries_ = {};
   }
-  if (this.pendingCreatedEntries_.length > 0) {
+  if (createdEntries.length > 0) {
     var event = new Event('entries-changed');
     event.kind = util.EntryChangedKind.CREATED;
-    event.entries = this.pendingCreatedEntries_;
+    event.entries = createdEntries;
     this.dispatchEvent(event);
-    this.pendingCreatedEntries_ = [];
+    this.pendingCreatedEntries_ = {};
   }
 };
 
