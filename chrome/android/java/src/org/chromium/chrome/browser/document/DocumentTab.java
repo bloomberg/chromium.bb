@@ -207,7 +207,7 @@ public class DocumentTab extends ChromeTab {
             boolean useOriginal = isSpdyProxyEnabledForUrl(url);
 
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADER : null);
+            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
             loadUrlParams.setReferrer(referrer);
             mActivity.getTabModelSelector().openNewTab(loadUrlParams,
                     TabLaunchType.FROM_LONGPRESS_BACKGROUND, DocumentTab.this, isIncognito());

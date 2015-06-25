@@ -98,7 +98,8 @@ public class ChromeTab extends Tab {
     // URL didFailLoad error code. Should match the value in net_error_list.h.
     public static final int BLOCKED_BY_ADMINISTRATOR = -22;
 
-    public static final String PAGESPEED_PASSTHROUGH_HEADER = "Chrome-Proxy: pass-through";
+    public static final String PAGESPEED_PASSTHROUGH_HEADERS =
+            "Chrome-Proxy: pass-through\nCache-Control: no-cache";
 
     private static final int MSG_ID_ENABLE_FULLSCREEN_AFTER_LOAD = 1;
 
@@ -642,7 +643,7 @@ public class ChromeTab extends Tab {
             }
 
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADER : null);
+            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
             loadUrlParams.setReferrer(referrer);
             mActivity.getTabModelSelector().openNewTab(loadUrlParams,
                     TabLaunchType.FROM_LONGPRESS_BACKGROUND, ChromeTab.this, isIncognito());
@@ -1137,7 +1138,7 @@ public class ChromeTab extends Tab {
             // a new tab. We squirrel away whether pass through mode was set, and check it in:
             // @see ChromeWebContentsDelegateAndroid#onLoadStopped()
             mLastPageLoadHasSpdyProxyPassthroughHeaders = false;
-            if (TextUtils.equals(params.getVerbatimHeaders(), PAGESPEED_PASSTHROUGH_HEADER)) {
+            if (TextUtils.equals(params.getVerbatimHeaders(), PAGESPEED_PASSTHROUGH_HEADERS)) {
                 mLastPageLoadHasSpdyProxyPassthroughHeaders = true;
             }
 
