@@ -49,7 +49,8 @@ const char kOOPIF[] = "oopifs";
 bool EnableOOPIFs() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kOOPIF);
 }
-}
+
+}  // namespace
 
 class HTMLViewer;
 

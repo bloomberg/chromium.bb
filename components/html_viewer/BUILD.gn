@@ -228,6 +228,7 @@ mojo_native_application("apptests") {
   deps = [
     "//base",
     "//components/view_manager/public/cpp/tests:test_support",
+    "//mandoline/tab/public/interfaces",
     "//mojo/application/public/cpp:test_support",
     "//net:test_support",
     "//testing/gtest",

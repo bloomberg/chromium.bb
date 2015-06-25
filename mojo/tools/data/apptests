@@ -55,6 +55,11 @@ if config.target_os != config.OS_ANDROID:
       "args": ["--use-test-config"]
     },
     {
+      "test": "mojo:html_viewer_apptests",
+      "type": "gtest_isolated",
+      "args": ["--use-test-config", "--oopifs"]
+    },
+    {
       "test": "mojo:mandoline_frame_apptests",
       "type": "gtest_isolated",
       "args": ["--use-headless-config"]

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
+#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -27,6 +29,28 @@ bool AxTreeContainsText(const Array<AxNodePtr>& tree, const String& text) {
   }
   return false;
 }
+
+// Switch to enable out of process iframes.
+const char kOOPIF[] = "oopifs";
+
+bool EnableOOPIFs() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kOOPIF);
+}
+
+class TestFrameTreeServer : public mandoline::FrameTreeServer {
+ public:
+  TestFrameTreeServer() {}
+  ~TestFrameTreeServer() override {}
+
+  // mandoline::FrameTreeServer:
+  void PostMessageEventToFrame(uint32_t frame_id,
+                               mandoline::MessageEventPtr event) override {}
+  void NavigateFrame(uint32_t frame_id) override {}
+  void ReloadFrame(uint32_t frame_id) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestFrameTreeServer);
+};
 
 }  // namespace
 
@@ -52,6 +76,23 @@ TEST_F(AXProviderTest, HelloWorld) {
   connection->ConnectToService(&view_manager_client);
   View* embed_view = window_manager()->CreateView();
   embed_view->Embed(view_manager_client.Pass());
+
+  if (EnableOOPIFs()) {
+    TestFrameTreeServer frame_tree_server;
+    mandoline::FrameTreeServerPtr frame_tree_server_ptr;
+    mojo::Binding<mandoline::FrameTreeServer> frame_tree_server_binding(
+        &frame_tree_server);
+    frame_tree_server_binding.Bind(GetProxy(&frame_tree_server_ptr).Pass());
+
+    mojo::Array<mandoline::FrameDataPtr> array(1u);
+    array[0] = mandoline::FrameData::New().Pass();
+    array[0]->frame_id = embed_view->id();
+    array[0]->parent_id = 0u;
+
+    mandoline::FrameTreeClientPtr frame_tree_client;
+    connection->ConnectToService(&frame_tree_client);
+    frame_tree_client->OnConnect(frame_tree_server_ptr.Pass(), array.Pass());
+  }
 
   // Connect to the AxProvider of the HTML document and get the AxTree.
   AxProviderPtr ax_provider;
