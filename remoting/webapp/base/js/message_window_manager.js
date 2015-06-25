@@ -15,10 +15,10 @@ var remoting = remoting || {};
  */
 remoting.MessageWindowManager = function(windowMessageDispatcher) {
   /**
-   * @type {Object<number, remoting.MessageWindow>}
+   * @type {!Object<number, remoting.MessageWindow>}
    * @private
    */
-  this.messageWindows_ = null;
+  this.messageWindows_ = {};
 
   /**
    * The next window id to auto-assign.
