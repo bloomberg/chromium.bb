@@ -1387,8 +1387,7 @@
           'target_name': 'chromoting_swarm_tests',
           'type': 'none',
           'dependencies': [
-            '../testing/chromoting/integration_tests.gyp:chromoting_integration_tests_run',
-            '../testing/chromoting/integration_tests.gyp:app_remoting_integration_tests_run',
+            '../testing/chromoting/integration_tests.gyp:*',
           ],
         }, # target_name: chromoting_swarm_tests
       ]
