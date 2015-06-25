@@ -31,7 +31,8 @@
     'jscomp_error=unknownDefines',
     'jscomp_error=uselessCode',
     'jscomp_error=visibility',
-    'language_in=ECMASCRIPT5_STRICT',
+    'language_in=ECMASCRIPT6_STRICT',
+    'language_out=ECMASCRIPT5_STRICT',
     'polymer_pass',
     'source_map_format=V3',
     'summary_detail_level=3', # compile.py depends on this for output parsing; do not override.
