@@ -18,14 +18,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/ui/android/infobars/save_password_infobar.h"
-#endif
-
-#if defined(OS_MACOSX)
-#import "chrome/browser/ui/cocoa/infobars/save_password_infobar_controller.h"
-#endif
-
 namespace {
 
 int GetCancelButtonText(password_manager::CredentialSourceType source_type) {
@@ -43,30 +35,14 @@ void SavePasswordInfoBarDelegate::Create(
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
     const std::string& uma_histogram_suffix,
     password_manager::CredentialSourceType source_type) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  const ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  SavePasswordInfoBarDelegate* infobar_delegate =
+  InfoBarService::FromWebContents(web_contents)->AddInfoBar(
+      CreateSavePasswordInfoBar(make_scoped_ptr(
       new SavePasswordInfoBarDelegate(
           form_to_save.Pass(), uma_histogram_suffix, source_type,
-          password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service));
-#if defined(OS_ANDROID)
-  // For Android in case of smart lock we need different appearance of infobar.
-  scoped_ptr<infobars::InfoBar> infobar =
-      make_scoped_ptr(new SavePasswordInfoBar(
-          scoped_ptr<SavePasswordInfoBarDelegate>(infobar_delegate)));
-#elif defined(OS_MACOSX)
-  scoped_ptr<infobars::InfoBar> infobar(
-      CreateSavePasswordInfoBar(make_scoped_ptr(infobar_delegate)));
-#else
-  // For desktop we'll keep using the ConfirmInfobar.
-  scoped_ptr<infobars::InfoBar> infobar(infobar_service->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(infobar_delegate)));
-#endif
-  infobar_service->AddInfoBar(infobar.Pass());
+          password_bubble_experiment::IsSmartLockBrandingEnabled(
+              ProfileSyncServiceFactory::GetForProfile(profile))))));
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {

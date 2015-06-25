@@ -100,4 +100,9 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };
 
+// Creates the platform-specific SavePassword InfoBar. This function is defined
+// in platform-specific .cc (or .mm) files.
+scoped_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
+    scoped_ptr<SavePasswordInfoBarDelegate> delegate);
+
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_H_

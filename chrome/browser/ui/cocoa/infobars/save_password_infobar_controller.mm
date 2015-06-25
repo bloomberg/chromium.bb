@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/infobars/save_password_infobar_controller.h"
-
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/infobars/confirm_infobar_controller.h"
