@@ -75,4 +75,28 @@ TEST_F(PositionTest, NodeAsRangeLastNodeShadow)
     EXPECT_EQ(t1, PositionInComposedTree::afterNode(host).nodeAsRangeLastNode());
 }
 
+TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
+{
+    const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
+    const char* shadowContent = "<a id='a'><content select=#one id='content'></content><content></content></a>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<Element> anchor = shadowRoot->getElementById("a");
+    RefPtrWillBeRawPtr<Element> insertionPoint = shadowRoot->getElementById("content");
+
+    EXPECT_EQ(positionInComposedTree(*anchor, 0), toPositionInComposedTree(positionInDOMTree(*anchor, 0)));
+    EXPECT_EQ(positionInComposedTree(*anchor, 1), toPositionInComposedTree(positionInDOMTree(*anchor, 1)));
+    EXPECT_EQ(PositionInComposedTree(anchor, PositionInComposedTree::PositionIsAfterChildren), toPositionInComposedTree(positionInDOMTree(*anchor, 2)));
+}
+
+TEST_F(PositionTest, ToPositionInComposedTreeWithInactiveInsertionPoint)
+{
+    const char* bodyContent = "<p id='p'><content></content></p>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<Element> anchor = document().getElementById("p");
+
+    EXPECT_EQ(positionInComposedTree(*anchor, 0), toPositionInComposedTree(positionInDOMTree(*anchor, 0)));
+    EXPECT_EQ(PositionInComposedTree(anchor, PositionInComposedTree::PositionIsAfterChildren), toPositionInComposedTree(positionInDOMTree(*anchor, 1)));
+}
+
 } // namespace blink

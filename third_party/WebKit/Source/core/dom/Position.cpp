@@ -1408,10 +1408,14 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
         Node* anchor = pos.anchorNode();
         if (anchor->offsetInCharacters())
             return PositionInComposedTree(anchor, pos.computeOffsetInContainerNode(), PositionInComposedTree::PositionIsOffsetInAnchor);
-        Node* child = NodeTraversal::childAt(*anchor, pos.computeOffsetInContainerNode());
+        ASSERT(!isActiveInsertionPoint(*anchor));
+        int offset = pos.computeOffsetInContainerNode();
+        Node* child = NodeTraversal::childAt(*anchor, offset);
         if (!child)
             return PositionInComposedTree(anchor, PositionInComposedTree::PositionIsAfterChildren);
         child->updateDistribution();
+        if (isActiveInsertionPoint(*child))
+            return PositionInComposedTree(anchor, offset, PositionInComposedTree::PositionIsOffsetInAnchor);
         return PositionInComposedTree(ComposedTreeTraversal::parent(*child), ComposedTreeTraversal::index(*child), PositionInComposedTree::PositionIsOffsetInAnchor);
     }
 
