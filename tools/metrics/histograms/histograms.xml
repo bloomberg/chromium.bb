@@ -56922,6 +56922,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1129335105" label="CPIA"/>
   <int value="1160852272" label="ESCAPE130"/>
   <int value="1179014995" label="FFWAVESYNTH"/>
+  <int value="1211250229" label="HEVC"/>
   <int value="1246975298" label="JACOSUB"/>
   <int value="1263294017" label="SMPTE_KLV"/>
   <int value="1297108018" label="MPL2"/>
