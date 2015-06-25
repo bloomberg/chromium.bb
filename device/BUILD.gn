@@ -5,6 +5,10 @@
 import("//build/config/features.gni")
 import("//testing/test.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")  # For generate_jni().
+}
+
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
@@ -110,6 +114,11 @@ test("device_unittests") {
     ]
   }
 
+  if (is_android) {
+    deps += [ ":bluetooth_test_jni_headers" ]
+    apk_deps = [ ":bluetooth_test_java" ]
+  }
+
   if (is_chromeos) {
     configs += [ "//build/config/linux:dbus" ]
 
@@ -135,5 +144,22 @@ test("device_unittests") {
     if (mac_sdk_version == "10.10") {
       ldflags = [ "-weak_framework CoreBluetooth" ]
     }
+  }
+}
+
+if (is_android) {
+  bluetooth_java_sources_needing_jni = [ "bluetooth/test/android/java/src/org/chromium/device/bluetooth/FakeBluetoothAdapter.java" ]
+
+  generate_jni("bluetooth_test_jni_headers") {
+    sources = bluetooth_java_sources_needing_jni
+    jni_package = "bluetooth"
+  }
+
+  android_library("bluetooth_test_java") {
+    java_files = bluetooth_java_sources_needing_jni
+    deps = [
+      "//base:base_java",
+      "//device/bluetooth:java",
+    ]
   }
 }

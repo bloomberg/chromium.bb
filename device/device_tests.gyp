@@ -100,6 +100,8 @@
           ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
+            'device_bluetooth_test_java',
+            'device_bluetooth_test_jni_headers',
           ],
           'sources/': [
             ['exclude', '(^|/)hid'],
@@ -165,6 +167,28 @@
             'test_suite_name': 'device_unittests',
           },
           'includes': [ '../build/apk_test.gypi' ],
+        },
+        {
+          'target_name': 'device_bluetooth_test_jni_headers',
+          'type': 'none',
+          'sources': [
+            'bluetooth/test/android/java/src/org/chromium/device/bluetooth/FakeBluetoothAdapter.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'device_bluetooth',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'device_bluetooth_test_java',
+          'type': 'none',
+          'dependencies': [
+            'bluetooth/bluetooth.gyp:device_bluetooth_java',
+          ],
+          'variables': {
+            'java_in_dir': 'bluetooth/test/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
         },
       ],
     }],

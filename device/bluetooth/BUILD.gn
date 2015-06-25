@@ -23,6 +23,8 @@ config("bluetooth_config") {
 
 component("bluetooth") {
   sources = [
+    "android/bluetooth_adapter_wrapper.cc",
+    "android/bluetooth_adapter_wrapper.h",
     "android/bluetooth_jni_registrar.cc",
     "android/bluetooth_jni_registrar.h",
     "bluetooth_adapter.cc",
@@ -132,7 +134,7 @@ component("bluetooth") {
   ]
 
   if (is_android) {
-    deps += [ ":bluetooth_jni" ]
+    deps += [ ":jni_headers" ]
   }
 
   if (is_chromeos) {
@@ -248,10 +250,20 @@ static_library("mocks") {
 }
 
 if (is_android) {
-  generate_jni("bluetooth_jni") {
-    sources = [
-      "android/java/src/org/chromium/device/bluetooth/BluetoothAdapter.java",
-    ]
+  java_sources_needing_jni = [
+    "android/java/src/org/chromium/device/bluetooth/BluetoothAdapterWrapper.java",
+    "android/java/src/org/chromium/device/bluetooth/ChromeBluetoothAdapter.java",
+  ]
+
+  generate_jni("jni_headers") {
+    sources = java_sources_needing_jni
     jni_package = "bluetooth"
+  }
+
+  android_library("java") {
+    java_files = java_sources_needing_jni
+    deps = [
+      "//base:base_java",
+    ]
   }
 }

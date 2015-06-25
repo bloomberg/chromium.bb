@@ -23,6 +23,10 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'android/bluetooth_adapter_wrapper.cc',
+        'android/bluetooth_adapter_wrapper.h',
+        'android/bluetooth_jni_registrar.cc',
+        'android/bluetooth_jni_registrar.h',
         'bluetooth_adapter.cc',
         'bluetooth_adapter.h',
         'bluetooth_adapter_android.cc',
@@ -132,10 +136,6 @@
             'device_bluetooth_java',
             'device_bluetooth_jni_headers',
           ],
-          'sources': [
-            'android/bluetooth_jni_registrar.cc',
-            'android/bluetooth_jni_registrar.h',
-          ],
         }],
         ['OS=="win"', {
           # The following two blocks are duplicated. They apply to static lib
@@ -244,7 +244,8 @@
           'target_name': 'device_bluetooth_jni_headers',
           'type': 'none',
           'sources': [
-            'android/java/src/org/chromium/device/bluetooth/BluetoothAdapter.java',
+            'android/java/src/org/chromium/device/bluetooth/BluetoothAdapterWrapper.java',
+            'android/java/src/org/chromium/device/bluetooth/ChromeBluetoothAdapter.java',
           ],
           'variables': {
             'jni_gen_package': 'device_bluetooth',

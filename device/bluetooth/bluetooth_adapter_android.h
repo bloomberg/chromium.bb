@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_ANDROID_H_
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -13,25 +14,30 @@ namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
+using base::android::ScopedJavaLocalRef;
+
 namespace device {
 
-// The BluetoothAdapterAndroid class implements BluetoothAdapter for the
-// Android platform.
+// BluetoothAdapterAndroid along with the Java class
+// org.chromium.device.bluetooth.BluetoothAdapter implement BluetoothAdapter.
+//
+// BluetoothAdapterAndroid is reference counted, and owns the lifetime of the
+// Java class BluetoothAdapter via j_bluetooth_adapter_.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
     : public BluetoothAdapter {
  public:
   // Create a BluetoothAdapterAndroid instance.
-  static base::WeakPtr<BluetoothAdapterAndroid> CreateAdapter();
-
-  // Create a BluetoothAdapterAndroid instance without Bluetooth permission.
-  static base::WeakPtr<BluetoothAdapterAndroid>
-  CreateAdapterWithoutPermissionForTesting();
+  //
+  // |java_bluetooth_adapter_wrapper| is optional. If it is NULL the adapter
+  // will return false for |IsPresent()| and not be functional.
+  //
+  // The BluetoothAdapterAndroid instance will indirectly hold a Java reference
+  // to |java_bluetooth_adapter_wrapper|.
+  static base::WeakPtr<BluetoothAdapterAndroid> Create(
+      jobject java_bluetooth_adapter_wrapper);
 
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
-
-  // True if this app has android permissions necessary for Bluetooth.
-  bool HasBluetoothPermission() const;
 
   // BluetoothAdapter:
   std::string GetAddress() const override;
