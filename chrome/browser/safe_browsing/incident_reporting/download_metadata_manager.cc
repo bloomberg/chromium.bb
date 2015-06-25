@@ -294,9 +294,8 @@ class DownloadMetadataManager::ManagerContext
   // Runs all |get_details_callbacks_| with the current metadata.
   void RunCallbacks();
 
-  // Returns the id of the download corresponding to the loaded metadata, or
-  // kInvalidId if metadata has not finished loading or is not present.
-  uint32_t GetDownloadId() const;
+  // Returns true if metadata corresponding to |item| is available.
+  bool HasMetadataFor(const content::DownloadItem* item) const;
 
   // A callback run on the main thread with the results from reading the
   // metadata file from disk.
@@ -534,7 +533,7 @@ void DownloadMetadataManager::ManagerContext::OnDownloadOpened(
   const base::Time now = base::Time::Now();
   if (state_ != LOAD_COMPLETE)
     pending_items_[download->GetId()].last_opened_time = now;
-  else if (download->GetId() == GetDownloadId())
+  else if (HasMetadataFor(download))
     UpdateLastOpenedTime(now);
 }
 
@@ -542,7 +541,7 @@ void DownloadMetadataManager::ManagerContext::OnDownloadRemoved(
     content::DownloadItem* download) {
   if (state_ != LOAD_COMPLETE)
     pending_items_[download->GetId()].removed = true;
-  else if (download->GetId() == GetDownloadId())
+  else if (HasMetadataFor(download))
     RemoveMetadata();
 }
 
@@ -628,10 +627,12 @@ void DownloadMetadataManager::ManagerContext::RunCallbacks() {
   }
 }
 
-uint32_t DownloadMetadataManager::ManagerContext::GetDownloadId() const {
-  if (state_ != LOAD_COMPLETE || !download_metadata_)
-    return content::DownloadItem::kInvalidId;
-  return download_metadata_->download_id();
+bool DownloadMetadataManager::ManagerContext::HasMetadataFor(
+    const content::DownloadItem* item) const {
+  // There must not be metadata if the load is not complete.
+  DCHECK(state_ == LOAD_COMPLETE || !download_metadata_);
+  return (download_metadata_ &&
+          download_metadata_->download_id() == item->GetId());
 }
 
 void DownloadMetadataManager::ManagerContext::OnMetadataReady(
@@ -648,8 +649,8 @@ void DownloadMetadataManager::ManagerContext::OnMetadataReady(
     download_metadata_.reset();
 
   // Process all operations that had been held while waiting for the metadata.
-  {
-    const auto& iter = pending_items_.find(GetDownloadId());
+  if (download_metadata_) {
+    const auto& iter = pending_items_.find(download_metadata_->download_id());
     if (iter != pending_items_.end()) {
       const ItemData& item_data = iter->second;
       if (item_data.removed)
