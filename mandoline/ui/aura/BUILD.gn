@@ -28,6 +28,8 @@ source_set("aura") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/surfaces",
+    "//components/resource_provider/public/cpp",
+    "//components/resource_provider/public/interfaces",
     "//components/view_manager/gles2:lib",
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/interfaces",
@@ -48,11 +50,4 @@ source_set("aura") {
     "//ui/mojo/init",
     "//ui/views",
   ]
-
-  if (is_android) {
-    deps += [
-      "//components/resource_provider/public/cpp",
-      "//components/resource_provider/public/interfaces",
-    ]
-  }
 }
