@@ -31,7 +31,7 @@ namespace {
 #if defined(ANDROID)
 const int kAudioProcessingSampleRate = 16000;
 #else
-const int kAudioProcessingSampleRate = 32000;
+const int kAudioProcessingSampleRate = 48000;
 #endif
 const int kAudioProcessingNumberOfChannel = 1;
 

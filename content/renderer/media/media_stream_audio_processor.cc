@@ -93,14 +93,6 @@ bool IsBeamformingEnabled(const MediaAudioConstraints& audio_constraints) {
          audio_constraints.GetProperty(MediaAudioConstraints::kGoogBeamforming);
 }
 
-bool IsAudioProcessing48kHzSupportEnabled(
-    const MediaAudioConstraints& audio_constraints) {
-  return base::FieldTrialList::FindFullName("AudioProcessing48kHzSupport") ==
-             "Enabled" ||
-         audio_constraints.GetProperty(
-             MediaAudioConstraints::kGoogAudioProcessing48kHzSupport);
-}
-
 }  // namespace
 
 // Wraps AudioBus to provide access to the array of channel pointers, since this
@@ -258,8 +250,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       playout_data_source_(playout_data_source),
       audio_mirroring_(false),
       typing_detected_(false),
-      stopped_(false),
-      audio_proc_48kHz_support_(false) {
+      stopped_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
@@ -475,8 +466,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   const bool goog_beamforming = IsBeamformingEnabled(audio_constraints);
   const bool goog_high_pass_filter = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogHighpassFilter);
-  audio_proc_48kHz_support_ =
-      IsAudioProcessing48kHzSupportEnabled(audio_constraints);
   // Return immediately if no goog constraint is enabled.
   if (!echo_cancellation && !goog_experimental_aec && !goog_ns &&
       !goog_high_pass_filter && !goog_typing_detection &&
@@ -497,8 +486,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     ConfigureBeamforming(&config, audio_constraints.GetPropertyAsString(
         MediaAudioConstraints::kGoogArrayGeometry));
   }
-  config.Set<webrtc::AudioProcessing48kHzSupport>(
-      new webrtc::AudioProcessing48kHzSupport(audio_proc_48kHz_support_));
 
   // Create and configure the webrtc::AudioProcessing.
   audio_processing_.reset(webrtc::AudioProcessing::Create(config));
@@ -596,9 +583,7 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
 #if defined(OS_ANDROID)
   int audio_processing_sample_rate = AudioProcessing::kSampleRate16kHz;
 #else
-  int audio_processing_sample_rate = audio_proc_48kHz_support_ ?
-                                     AudioProcessing::kSampleRate48kHz :
-                                     AudioProcessing::kSampleRate32kHz;
+  int audio_processing_sample_rate = AudioProcessing::kSampleRate48kHz;
 #endif
   const int output_sample_rate = audio_processing_ ?
                                  audio_processing_sample_rate :
