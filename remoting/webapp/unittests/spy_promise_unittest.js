@@ -30,9 +30,10 @@ function assertInitialState(/** QUnit.Assert */ assert) {
 }
 
 /**
+ * @param {!QUnit.Assert} assert
  * @return {!Promise}
  */
-function finish(/** QUnit.Assert */ assert) {
+function finish(assert) {
   return base.SpyPromise.settleAll().then(function() {
     assert.equal(
         base.SpyPromise.unsettledCount, 0,
@@ -143,11 +144,13 @@ QUnit.test('reject/catch', function(assert) {
 QUnit.test('all', function(assert) {
   var done = assert.async();
   base.SpyPromise.all([Promise.resolve(1), Promise.resolve(2)]).
-      then(function(/**string*/ value) {
-        assert.equal(base.SpyPromise.unsettledCount, 0);
-        assert.deepEqual(value, [1, 2]);
-        done();
-      });
+      then(
+          /** @param {string} value */
+          function(value) {
+            assert.equal(base.SpyPromise.unsettledCount, 0);
+            assert.deepEqual(value, [1, 2]);
+            done();
+          });
   assert.equal(base.SpyPromise.unsettledCount, 1);
   return finish(assert);
 });

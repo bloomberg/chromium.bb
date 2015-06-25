@@ -54,6 +54,7 @@ remoting.Error.prototype.getDetail = function() {
  * @param {remoting.Error.Tag} tag
  * @param {...remoting.Error.Tag} var_args
  * @return {boolean} True if this object has one of the specified tags.
+ * @suppress {reportUnknownTypes}
  */
 remoting.Error.prototype.hasTag = function(tag, var_args) {
   var thisTag = this.tag_;

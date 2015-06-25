@@ -146,6 +146,7 @@ base.Ipc.prototype.onMessage_ = function(message, sender, sendResponse) {
  * @param {...} var_args
  * @return {Promise} A Promise that would resolve to the return value of the
  *   handler or reject if the handler throws an exception.
+ * @suppress {reportUnknownTypes}
  */
 base.Ipc.invoke = function(methodName, var_args) {
   var params = Array.prototype.slice.call(arguments, 1);

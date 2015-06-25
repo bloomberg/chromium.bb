@@ -65,6 +65,7 @@ base.Disposable.prototype.dispose = function() {};
  * @constructor
  * @param {...base.Disposable} var_args
  * @implements {base.Disposable}
+ * @suppress {reportUnknownTypes}
  */
 base.Disposables = function(var_args) {
   /**
@@ -76,6 +77,7 @@ base.Disposables = function(var_args) {
 
 /**
  * @param {...base.Disposable} var_args
+ * @suppress {reportUnknownTypes}
  */
 base.Disposables.prototype.add = function(var_args) {
   var disposables = Array.prototype.slice.call(arguments, 0);
@@ -90,6 +92,7 @@ base.Disposables.prototype.add = function(var_args) {
 /**
  * @param {...base.Disposable} var_args  Dispose |var_args| and remove
  *    them from the current object.
+ * @suppress {reportUnknownTypes}
  */
 base.Disposables.prototype.remove = function(var_args) {
   var disposables = Array.prototype.slice.call(arguments, 0);

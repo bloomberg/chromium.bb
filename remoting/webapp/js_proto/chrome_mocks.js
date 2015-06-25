@@ -37,6 +37,7 @@ chromeMocks.Event.prototype.removeListener = function(callback) {
 /**
  * @param {...*} var_args
  * @return {void}
+ * @suppress {reportUnknownTypes}
  */
 chromeMocks.Event.prototype.mock$fire = function(var_args) {
   var params = Array.prototype.slice.call(arguments);

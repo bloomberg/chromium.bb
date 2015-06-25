@@ -51,6 +51,7 @@ browserTest.FakeDesktopViewport.prototype.getBumpScrollerForTesting =
   return this.bumpScroller_;
 };
 
+/** @suppress {reportUnknownTypes} */
 browserTest.FakeDesktopViewport.prototype.raiseEvent =
     function() {
   return this.bumpScroller_.raiseEvent.apply(this.bumpScroller_, arguments);
