@@ -22,6 +22,8 @@ namespace password_manager {
 class LoginDatabase;
 }
 
+// TODO(vasilii): Deprecate this class. The class should be used by
+// PasswordStoreProxyMac wrapper.
 // Implements PasswordStore on top of the OS X Keychain, with an internal
 // database for extra metadata. For an overview of the interactions with the
 // Keychain, as well as the rationale for some of the behaviors, see the
@@ -29,23 +31,19 @@ class LoginDatabase;
 // http://dev.chromium.org/developers/design-documents/os-x-password-manager-keychain-integration
 class PasswordStoreMac : public password_manager::PasswordStore {
  public:
-  // The |login_db| must not have been Init()-ed yet. It will be initialized in
-  // a deferred manner on the background thread.
   PasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
       scoped_ptr<crypto::AppleKeychain> keychain,
-      scoped_ptr<password_manager::LoginDatabase> login_db);
+      password_manager::LoginDatabase* login_db);
 
-  // Initializes |thread_|.
-  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
-
-  // Stops |thread_|.
-  void Shutdown() override;
+  // Sets the background thread.
+  void InitWithTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
 
   // To be used for testing.
   password_manager::LoginDatabase* login_metadata_db() const {
-    return login_metadata_db_.get();
+    return login_metadata_db_;
   }
 
   // To be used for testing.
@@ -54,13 +52,8 @@ class PasswordStoreMac : public password_manager::PasswordStore {
  protected:
   ~PasswordStoreMac() override;
 
-  // Opens |login_metadata_db_| on the background |thread_|.
-  void InitOnBackgroundThread();
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetBackgroundTaskRunner()
-      override;
-
  private:
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
   void ReportMetricsImpl(const std::string& sync_username,
                          bool custom_passphrase_sync_enabled) override;
   password_manager::PasswordStoreChangeList AddLoginImpl(
@@ -78,10 +71,6 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy) override;
-  void GetAutofillableLoginsImpl(
-      scoped_ptr<PasswordStore::GetLoginsRequest> request) override;
-  void GetBlacklistLoginsImpl(
-      scoped_ptr<PasswordStore::GetLoginsRequest> request) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
@@ -118,14 +107,9 @@ class PasswordStoreMac : public password_manager::PasswordStore {
 
   scoped_ptr<crypto::AppleKeychain> keychain_;
 
-  // The login metadata SQL database. The LoginDatabase instance is received via
-  // the in an uninitialized state, so as to allow injecting mocks, then Init()
-  // is called on the DB thread in a deferred manner. If opening the DB fails,
-  // |login_metadata_db_| will be reset to NULL for the lifetime of |this|.
-  scoped_ptr<password_manager::LoginDatabase> login_metadata_db_;
-
-  // Thread that the synchronous methods are run on.
-  scoped_ptr<base::Thread> thread_;
+  // The login metadata SQL database. The caller is resonsible for initializing
+  // it.
+  password_manager::LoginDatabase* login_metadata_db_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreMac);
 };

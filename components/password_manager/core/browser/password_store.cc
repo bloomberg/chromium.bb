@@ -330,6 +330,22 @@ void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
   NotifyLoginsChanged(changes);
 }
 
+void PasswordStore::GetAutofillableLoginsImpl(
+    scoped_ptr<GetLoginsRequest> request) {
+  ScopedVector<PasswordForm> obtained_forms;
+  if (!FillAutofillableLogins(&obtained_forms))
+    obtained_forms.clear();
+  request->NotifyConsumerWithResults(obtained_forms.Pass());
+}
+
+void PasswordStore::GetBlacklistLoginsImpl(
+    scoped_ptr<GetLoginsRequest> request) {
+  ScopedVector<PasswordForm> obtained_forms;
+  if (!FillBlacklistLogins(&obtained_forms))
+    obtained_forms.clear();
+  request->NotifyConsumerWithResults(obtained_forms.Pass());
+}
+
 void PasswordStore::NotifySiteStats(const GURL& origin_domain,
                                     scoped_ptr<GetLoginsRequest> request) {
   request->NotifyWithSiteStatistics(GetSiteStatsImpl(origin_domain));

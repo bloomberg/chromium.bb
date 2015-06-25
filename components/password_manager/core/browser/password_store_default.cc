@@ -125,22 +125,6 @@ ScopedVector<autofill::PasswordForm> PasswordStoreDefault::FillMatchingLogins(
   return matched_forms.Pass();
 }
 
-void PasswordStoreDefault::GetAutofillableLoginsImpl(
-    scoped_ptr<GetLoginsRequest> request) {
-  ScopedVector<PasswordForm> logins;
-  if (!FillAutofillableLogins(&logins))
-    logins.clear();
-  request->NotifyConsumerWithResults(logins.Pass());
-}
-
-void PasswordStoreDefault::GetBlacklistLoginsImpl(
-    scoped_ptr<GetLoginsRequest> request) {
-  ScopedVector<PasswordForm> logins;
-  if (!FillBlacklistLogins(&logins))
-    logins.clear();
-  request->NotifyConsumerWithResults(logins.Pass());
-}
-
 bool PasswordStoreDefault::FillAutofillableLogins(
     ScopedVector<PasswordForm>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());

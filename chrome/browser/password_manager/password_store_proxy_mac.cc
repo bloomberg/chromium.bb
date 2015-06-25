@@ -6,6 +6,7 @@
 
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/simple_password_store_mac.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/apple_keychain.h"
 
 using password_manager::PasswordStoreChangeList;
@@ -14,10 +15,12 @@ PasswordStoreProxyMac::PasswordStoreProxyMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_ptr<crypto::AppleKeychain> keychain,
     scoped_ptr<password_manager::LoginDatabase> login_db)
-    : PasswordStore(main_thread_runner, nullptr) {
+    : PasswordStore(main_thread_runner, nullptr),
+      login_metadata_db_(login_db.Pass()) {
+  DCHECK(login_metadata_db_);
   // TODO(vasilii): for now the class is just a wrapper around PasswordStoreMac.
-  password_store_mac_ = new PasswordStoreMac(main_thread_runner, nullptr,
-                                             keychain.Pass(), login_db.Pass());
+  password_store_mac_ = new PasswordStoreMac(
+      main_thread_runner, nullptr, keychain.Pass(), login_metadata_db_.get());
 }
 
 PasswordStoreProxyMac::~PasswordStoreProxyMac() {
@@ -25,11 +28,31 @@ PasswordStoreProxyMac::~PasswordStoreProxyMac() {
 
 bool PasswordStoreProxyMac::Init(
     const syncer::SyncableService::StartSyncFlare& flare) {
-  return GetBackend()->Init(flare);
+  // Set up a background thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
+
+  if (!thread_->Start()) {
+    thread_.reset();
+    return false;
+  }
+
+  ScheduleTask(
+      base::Bind(&PasswordStoreProxyMac::InitOnBackgroundThread, this));
+  password_store_mac_->InitWithTaskRunner(GetBackgroundTaskRunner());
+  return password_manager::PasswordStore::Init(flare);
 }
 
 void PasswordStoreProxyMac::Shutdown() {
-  return GetBackend()->Shutdown();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PasswordStore::Shutdown();
+  GetBackend()->Shutdown();
+  thread_->Stop();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+PasswordStoreProxyMac::GetBackgroundTaskRunner() {
+  return thread_ ? thread_->task_runner() : nullptr;
 }
 
 password_manager::PasswordStore* PasswordStoreProxyMac::GetBackend() const {
@@ -38,9 +61,12 @@ password_manager::PasswordStore* PasswordStoreProxyMac::GetBackend() const {
   return password_store_simple_.get();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-PasswordStoreProxyMac::GetBackgroundTaskRunner() {
-  return GetBackend()->GetBackgroundTaskRunner();
+void PasswordStoreProxyMac::InitOnBackgroundThread() {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  if (!login_metadata_db_->Init()) {
+    login_metadata_db_.reset();
+    LOG(ERROR) << "Could not create/open login database.";
+  }
 }
 
 void PasswordStoreProxyMac::ReportMetricsImpl(
@@ -81,16 +107,6 @@ ScopedVector<autofill::PasswordForm> PasswordStoreProxyMac::FillMatchingLogins(
     const autofill::PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy) {
   return GetBackend()->FillMatchingLogins(form, prompt_policy);
-}
-
-void PasswordStoreProxyMac::GetAutofillableLoginsImpl(
-    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  GetBackend()->GetAutofillableLoginsImpl(request.Pass());
-}
-
-void PasswordStoreProxyMac::GetBlacklistLoginsImpl(
-    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  GetBackend()->GetBlacklistLoginsImpl(request.Pass());
 }
 
 bool PasswordStoreProxyMac::FillAutofillableLogins(

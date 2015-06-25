@@ -165,6 +165,7 @@
       'browser/password_manager/password_manager_internals_service_unittest.cc',
       'browser/password_manager/password_manager_metrics_util_unittest.cc',
       'browser/password_manager/password_store_mac_unittest.cc',
+      'browser/password_manager/password_store_proxy_mac_unittest.cc',
       'browser/password_manager/password_store_win_unittest.cc',
       'browser/password_manager/password_store_x_unittest.cc',
       'browser/password_manager/save_password_infobar_delegate_unittest.cc',

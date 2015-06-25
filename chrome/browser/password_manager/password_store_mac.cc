@@ -918,53 +918,27 @@ PasswordStoreMac::PasswordStoreMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
     scoped_ptr<AppleKeychain> keychain,
-    scoped_ptr<password_manager::LoginDatabase> login_db)
+    password_manager::LoginDatabase* login_db)
     : password_manager::PasswordStore(main_thread_runner, db_thread_runner),
       keychain_(keychain.Pass()),
-      login_metadata_db_(login_db.Pass()) {
+      login_metadata_db_(login_db) {
   DCHECK(keychain_.get());
-  DCHECK(login_metadata_db_.get());
   login_metadata_db_->set_clear_password_values(true);
 }
 
 PasswordStoreMac::~PasswordStoreMac() {}
 
+void PasswordStoreMac::InitWithTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  db_thread_runner_ = background_task_runner;
+}
+
 bool PasswordStoreMac::Init(
     const syncer::SyncableService::StartSyncFlare& flare) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
-
-  if (!thread_->Start()) {
-    thread_.reset(NULL);
-    return false;
-  }
-
-  ScheduleTask(base::Bind(&PasswordStoreMac::InitOnBackgroundThread, this));
-  return password_manager::PasswordStore::Init(flare);
-}
-
-void PasswordStoreMac::InitOnBackgroundThread() {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
-  DCHECK(login_metadata_db_);
-  if (!login_metadata_db_->Init()) {
-    login_metadata_db_.reset();
-    LOG(ERROR) << "Could not create/open login database.";
-  }
-}
-
-void PasswordStoreMac::Shutdown() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  password_manager::PasswordStore::Shutdown();
-  thread_->Stop();
-}
-
-// Mac stores passwords in the system keychain, which can block for an
-// arbitrarily long time (most notably, it can block on user confirmation
-// from a dialog). Run tasks on a dedicated thread to avoid blocking the DB
-// thread.
-scoped_refptr<base::SingleThreadTaskRunner>
-PasswordStoreMac::GetBackgroundTaskRunner() {
-  return (thread_.get()) ? thread_->task_runner() : NULL;
+  // The class should be used inside PasswordStoreProxyMac only.
+  NOTREACHED();
+  return true;
 }
 
 void PasswordStoreMac::ReportMetricsImpl(const std::string& sync_username,
@@ -977,7 +951,7 @@ void PasswordStoreMac::ReportMetricsImpl(const std::string& sync_username,
 
 PasswordStoreChangeList PasswordStoreMac::AddLoginImpl(
     const PasswordForm& form) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   if (login_metadata_db_ && AddToKeychainIfNecessary(form))
     return login_metadata_db_->AddLogin(form);
   return PasswordStoreChangeList();
@@ -985,7 +959,7 @@ PasswordStoreChangeList PasswordStoreMac::AddLoginImpl(
 
 PasswordStoreChangeList PasswordStoreMac::UpdateLoginImpl(
     const PasswordForm& form) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   if (!login_metadata_db_)
     return PasswordStoreChangeList();
 
@@ -1009,7 +983,7 @@ PasswordStoreChangeList PasswordStoreMac::UpdateLoginImpl(
 
 PasswordStoreChangeList PasswordStoreMac::RemoveLoginImpl(
     const PasswordForm& form) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   PasswordStoreChangeList changes;
   if (login_metadata_db_ && login_metadata_db_->RemoveLogin(form)) {
     // See if we own a Keychain item associated with this item. We can do an
@@ -1121,25 +1095,9 @@ ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
   return matched_forms.Pass();
 }
 
-void PasswordStoreMac::GetBlacklistLoginsImpl(
-    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  ScopedVector<PasswordForm> obtained_forms;
-  if (!FillBlacklistLogins(&obtained_forms))
-    obtained_forms.clear();
-  request->NotifyConsumerWithResults(obtained_forms.Pass());
-}
-
-void PasswordStoreMac::GetAutofillableLoginsImpl(
-    scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  ScopedVector<PasswordForm> obtained_forms;
-  if (!FillAutofillableLogins(&obtained_forms))
-    obtained_forms.clear();
-  request->NotifyConsumerWithResults(obtained_forms.Pass());
-}
-
 bool PasswordStoreMac::FillAutofillableLogins(
     ScopedVector<PasswordForm>* forms) {
-  DCHECK_EQ(thread_->message_loop(), base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   forms->clear();
 
   ScopedVector<PasswordForm> database_forms;
@@ -1159,26 +1117,26 @@ bool PasswordStoreMac::FillAutofillableLogins(
 }
 
 bool PasswordStoreMac::FillBlacklistLogins(ScopedVector<PasswordForm>* forms) {
-  DCHECK_EQ(thread_->message_loop(), base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_metadata_db_ && login_metadata_db_->GetBlacklistLogins(forms);
 }
 
 void PasswordStoreMac::AddSiteStatsImpl(
     const password_manager::InteractionsStats& stats) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   if (login_metadata_db_)
     login_metadata_db_->stats_table().AddRow(stats);
 }
 
 void PasswordStoreMac::RemoveSiteStatsImpl(const GURL& origin_domain) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   if (login_metadata_db_)
     login_metadata_db_->stats_table().RemoveRow(origin_domain);
 }
 
 scoped_ptr<password_manager::InteractionsStats>
 PasswordStoreMac::GetSiteStatsImpl(const GURL& origin_domain) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_metadata_db_
              ? login_metadata_db_->stats_table().GetRow(origin_domain)
              : scoped_ptr<password_manager::InteractionsStats>();

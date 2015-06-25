@@ -247,13 +247,6 @@ class PasswordStore : protected PasswordStoreSync,
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy) = 0;
 
-  // Finds all non-blacklist PasswordForms, and notifies the consumer.
-  virtual void GetAutofillableLoginsImpl(
-      scoped_ptr<GetLoginsRequest> request) = 0;
-
-  // Finds all blacklist PasswordForms, and notifies the consumer.
-  virtual void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) = 0;
-
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
@@ -315,6 +308,12 @@ class PasswordStore : protected PasswordStoreSync,
                                           base::Time delete_end);
   void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
                                          base::Time delete_end);
+
+  // Finds all non-blacklist PasswordForms, and notifies the consumer.
+  void GetAutofillableLoginsImpl(scoped_ptr<GetLoginsRequest> request);
+
+  // Finds all blacklist PasswordForms, and notifies the consumer.
+  void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request);
 
   // Notifies |request| about the stats for |origin_domain|.
   void NotifySiteStats(const GURL& origin_domain,

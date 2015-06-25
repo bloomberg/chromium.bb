@@ -50,7 +50,6 @@ class TestPasswordStore : public PasswordStore {
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
       const autofill::PasswordForm& form,
       PasswordStore::AuthorizationPromptPolicy prompt_policy) override;
-  void GetAutofillableLoginsImpl(scoped_ptr<GetLoginsRequest> request) override;
 
   // Unused portions of PasswordStore interface
   void ReportMetricsImpl(const std::string& sync_username,
@@ -61,7 +60,6 @@ class TestPasswordStore : public PasswordStore {
   PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(

@@ -46,16 +46,6 @@ bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
       lhs.signon_realm == rhs.signon_realm;
 }
 
-void TestPasswordStore::GetAutofillableLoginsImpl(
-    scoped_ptr<GetLoginsRequest> request) {
-  ScopedVector<autofill::PasswordForm> results;
-  for (const auto& forms_for_realm : stored_passwords_) {
-    for (const autofill::PasswordForm& form : forms_for_realm.second)
-      results.push_back(new autofill::PasswordForm(form));
-  }
-  request->NotifyConsumerWithResults(results.Pass());
-}
-
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
     const autofill::PasswordForm& form) {
   PasswordStoreChangeList changes;
@@ -126,12 +116,12 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
-void TestPasswordStore::GetBlacklistLoginsImpl(
-    scoped_ptr<GetLoginsRequest> request) {
-}
-
 bool TestPasswordStore::FillAutofillableLogins(
     ScopedVector<autofill::PasswordForm>* forms) {
+  for (const auto& forms_for_realm : stored_passwords_) {
+    for (const autofill::PasswordForm& form : forms_for_realm.second)
+      forms->push_back(new autofill::PasswordForm(form));
+  }
   return true;
 }
 

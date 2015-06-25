@@ -55,8 +55,6 @@ class PasswordStoreDefault : public PasswordStore {
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy) override;
-  void GetAutofillableLoginsImpl(scoped_ptr<GetLoginsRequest> request) override;
-  void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) override;
   bool FillAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(

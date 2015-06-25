@@ -76,19 +76,6 @@ class MockPasswordStoreObserver : public PasswordStore::Observer {
                void(const password_manager::PasswordStoreChangeList& changes));
 };
 
-// A mock LoginDatabase that simulates a failing Init() method.
-class BadLoginDatabase : public password_manager::LoginDatabase {
- public:
-  BadLoginDatabase() : password_manager::LoginDatabase(base::FilePath()) {}
-  ~BadLoginDatabase() override {}
-
-  // LoginDatabase:
-  bool Init() override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BadLoginDatabase);
-};
-
 // A LoginDatabase that simulates an Init() method that takes a long time.
 class SlowToInitLoginDatabase : public password_manager::LoginDatabase {
  public:
@@ -109,26 +96,6 @@ class SlowToInitLoginDatabase : public password_manager::LoginDatabase {
   base::WaitableEvent* event_;
 
   DISALLOW_COPY_AND_ASSIGN(SlowToInitLoginDatabase);
-};
-
-class TestPasswordStoreMac : public PasswordStoreMac {
- public:
-  TestPasswordStoreMac(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      scoped_ptr<crypto::AppleKeychain> keychain,
-      scoped_ptr<password_manager::LoginDatabase> login_db)
-      : PasswordStoreMac(main_thread_runner,
-                         db_thread_runner,
-                         keychain.Pass(),
-                         login_db.Pass()) {}
-
-  using PasswordStoreMac::GetBackgroundTaskRunner;
-
- private:
-  ~TestPasswordStoreMac() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestPasswordStoreMac);
 };
 
 #pragma mark -
@@ -1210,9 +1177,14 @@ class PasswordStoreMacTest : public testing::Test {
     // Ensure that LoginDatabase will use the mock keychain if it needs to
     // encrypt/decrypt a password.
     OSCrypt::UseMockKeychain(true);
-    scoped_ptr<password_manager::LoginDatabase> login_db(
+    login_db_.reset(
         new password_manager::LoginDatabase(test_login_db_file_path()));
-    CreateAndInitPasswordStore(login_db.Pass());
+    thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
+    ASSERT_TRUE(thread_->Start());
+    ASSERT_TRUE(thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&PasswordStoreMacTest::InitLoginDatabase,
+                              base::Unretained(login_db_.get()))));
+    CreateAndInitPasswordStore(login_db_.get());
     // Make sure deferred initialization is performed before some tests start
     // accessing the |login_db| directly.
     FinishAsyncProcessing();
@@ -1220,6 +1192,8 @@ class PasswordStoreMacTest : public testing::Test {
 
   void TearDown() override {
     ClosePasswordStore();
+    thread_.reset();
+    login_db_.reset();
     // Whatever a test did, PasswordStoreMac stores only empty password values
     // in LoginDatabase. The empty valus do not require encryption and therefore
     // OSCrypt shouldn't call the Keychain. The histogram doesn't cover the
@@ -1228,13 +1202,15 @@ class PasswordStoreMacTest : public testing::Test {
         "OSX.Keychain.Access"));
   }
 
-  void CreateAndInitPasswordStore(
-      scoped_ptr<password_manager::LoginDatabase> login_db) {
-    store_ = new TestPasswordStoreMac(
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
-        make_scoped_ptr<AppleKeychain>(new MockAppleKeychain), login_db.Pass());
-    ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
+  static void InitLoginDatabase(password_manager::LoginDatabase* login_db) {
+    ASSERT_TRUE(login_db->Init());
+  }
+
+  void CreateAndInitPasswordStore(password_manager::LoginDatabase* login_db) {
+    store_ = new PasswordStoreMac(
+        base::ThreadTaskRunnerHandle::Get(), nullptr,
+        make_scoped_ptr<AppleKeychain>(new MockAppleKeychain), login_db);
+    store_->InitWithTaskRunner(thread_->task_runner());
   }
 
   void ClosePasswordStore() {
@@ -1242,8 +1218,6 @@ class PasswordStoreMacTest : public testing::Test {
       return;
 
     store_->Shutdown();
-    EXPECT_FALSE(store_->GetBackgroundTaskRunner());
-    base::MessageLoop::current()->RunUntilIdle();
     store_ = nullptr;
   }
 
@@ -1319,14 +1293,17 @@ class PasswordStoreMacTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
-  TestPasswordStoreMac* store() { return store_.get(); }
+  PasswordStoreMac* store() { return store_.get(); }
 
  protected:
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
+  // Thread that the synchronous methods are run on.
+  scoped_ptr<base::Thread> thread_;
 
   base::ScopedTempDir db_dir_;
-  scoped_refptr<TestPasswordStoreMac> store_;
+  scoped_ptr<password_manager::LoginDatabase> login_db_;
+  scoped_refptr<PasswordStoreMac> store_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -1493,7 +1470,7 @@ namespace {
 class PasswordsChangeObserver :
     public password_manager::PasswordStore::Observer {
 public:
-  PasswordsChangeObserver(TestPasswordStoreMac* store) : observer_(this) {
+ PasswordsChangeObserver(PasswordStoreMac* store) : observer_(this) {
     observer_.Add(store);
   }
 
@@ -1683,8 +1660,12 @@ TEST_F(PasswordStoreMacTest, StoreIsUsableImmediatelyAfterConstruction) {
   ClosePasswordStore();
 
   base::WaitableEvent event(false, false);
-  CreateAndInitPasswordStore(make_scoped_ptr<password_manager::LoginDatabase>(
-      new SlowToInitLoginDatabase(test_login_db_file_path(), &event)));
+  login_db_.reset(
+      new SlowToInitLoginDatabase(test_login_db_file_path(), &event));
+  ASSERT_TRUE(thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PasswordStoreMacTest::InitLoginDatabase,
+                            base::Unretained(login_db_.get()))));
+  CreateAndInitPasswordStore(login_db_.get());
 
   PasswordFormData www_form_data = {
       PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
@@ -1704,70 +1685,6 @@ TEST_F(PasswordStoreMacTest, StoreIsUsableImmediatelyAfterConstruction) {
       .WillOnce(QuitUIMessageLoop());
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(login_db());
-}
-
-// Verify that operations on a PasswordStore with a bad database cause no
-// explosions, but fail without side effect, return no data and trigger no
-// notifications.
-TEST_F(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
-  ClosePasswordStore();
-  CreateAndInitPasswordStore(
-      make_scoped_ptr<password_manager::LoginDatabase>(new BadLoginDatabase));
-  FinishAsyncProcessing();
-  EXPECT_FALSE(login_db());
-
-  testing::StrictMock<MockPasswordStoreObserver> mock_observer;
-  store()->AddObserver(&mock_observer);
-
-  // Add a new autofillable login + a blacklisted login.
-  PasswordFormData www_form_data = {
-      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
-      "http://www.facebook.com/index.html", "login", L"username", L"password",
-      L"submit", L"not_joe_user", L"12345", true, false, 1};
-  scoped_ptr<PasswordForm> form =
-      CreatePasswordFormFromDataForTesting(www_form_data);
-  scoped_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
-  blacklisted_form->signon_realm = "http://foo.example.com";
-  blacklisted_form->origin = GURL("http://foo.example.com/origin");
-  blacklisted_form->action = GURL("http://foo.example.com/action");
-  blacklisted_form->blacklisted_by_user = true;
-  store()->AddLogin(*form);
-  store()->AddLogin(*blacklisted_form);
-  FinishAsyncProcessing();
-
-  // Get all logins; autofillable logins; blacklisted logins.
-  MockPasswordStoreConsumer mock_consumer;
-  store()->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &mock_consumer);
-  ON_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(_))
-      .WillByDefault(QuitUIMessageLoop());
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  base::MessageLoop::current()->Run();
-
-  store()->GetAutofillableLogins(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  base::MessageLoop::current()->Run();
-
-  store()->GetBlacklistLogins(&mock_consumer);
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
-  base::MessageLoop::current()->Run();
-
-  // Report metrics.
-  store()->ReportMetrics("Test Username", true);
-  FinishAsyncProcessing();
-
-  // Change the login.
-  form->password_value = base::ASCIIToUTF16("a different password");
-  store()->UpdateLogin(*form);
-  FinishAsyncProcessing();
-
-  // Delete one login; a range of logins.
-  store()->RemoveLogin(*form);
-  store()->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max());
-  store()->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
-  FinishAsyncProcessing();
-
-  // Verify no notifications are fired during shutdown either.
-  ClosePasswordStore();
 }
 
 // Add a facebook form to the store but not to the keychain. The form is to be
