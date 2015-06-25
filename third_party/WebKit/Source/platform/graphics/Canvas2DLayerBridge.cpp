@@ -119,7 +119,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
 Canvas2DLayerBridge::~Canvas2DLayerBridge()
 {
     ASSERT(m_destructionInProgress);
-    ASSERT(!Canvas2DLayerManager::get().isInList(this));
+    // TODO(junov): This can go back to a regular ASSERT once crbug.com/466793 is resolved.
+    RELEASE_ASSERT(!Canvas2DLayerManager::get().isInList(this));
     if (m_canvas)
         m_canvas->setNotificationClient(nullptr);
     m_layer.clear();
