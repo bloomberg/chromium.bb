@@ -177,7 +177,12 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   var wrapper = util.createChild(container, 'drive-welcome-wrapper');
   util.createChild(wrapper, 'drive-welcome-icon');
 
-  var close = util.createChild(wrapper, 'cr-dialog-close');
+  if (type === 'header') {
+    util.createChild(wrapper, 'banner-cloud-bg');
+    util.createChild(wrapper, 'banner-people');
+  }
+
+  var close = util.createChild(wrapper, 'banner-close');
   close.addEventListener('click', this.closeWelcomeBanner_.bind(this));
 
   var message = util.createChild(wrapper, 'drive-welcome-message');
@@ -187,7 +192,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   var text = util.createChild(message, 'drive-welcome-text');
   text.innerHTML = str(messageId);
 
-  var links = util.createChild(message, 'drive-welcome-links');
+  var links = util.createChild(wrapper, 'drive-welcome-links');
 
   var more;
   if (this.usePromoWelcomeBanner_) {
@@ -195,10 +200,12 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
     if (util.boardIs('link'))
       welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE_1TB');
     title.textContent = welcomeTitle;
-    more = util.createChild(links,
-        'drive-welcome-button drive-welcome-start', 'a');
-    more.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
+    more = util.createChild(links, '', 'a');
     more.href = str('GOOGLE_DRIVE_REDEEM_URL');
+    var moreInnerButton = util.createChild(
+        more, 'imitate-paper-button primary', 'button');
+    moreInnerButton.tabIndex = '-1';
+    moreInnerButton.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
   } else {
     title.textContent = str('DRIVE_WELCOME_TITLE');
     more = util.createChild(links, 'plain-link', 'a');
@@ -210,10 +217,12 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   more.target = '_blank';
 
   var dismiss;
-  if (this.usePromoWelcomeBanner_)
-    dismiss = util.createChild(links, 'drive-welcome-button');
-  else
+  if (this.usePromoWelcomeBanner_) {
+    dismiss = util.createChild(
+        links, 'imitate-paper-button secondary', 'button');
+  } else {
     dismiss = util.createChild(links, 'plain-link');
+  }
 
   dismiss.classList.add('drive-welcome-dismiss');
   dismiss.textContent = str('DRIVE_WELCOME_DISMISS');
@@ -267,14 +276,16 @@ Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
     box.appendChild(text);
 
     var link = this.document_.createElement('a');
-    link.className = 'plain-link';
-    link.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
     link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
     link.target = '_blank';
+    var button = this.document_.createElement('button');
+    button.className = 'imitate-paper-button';
+    button.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
+    link.appendChild(button);
     box.appendChild(link);
 
     var close = this.document_.createElement('div');
-    close.className = 'cr-dialog-close';
+    close.className = 'banner-close';
     box.appendChild(close);
     close.addEventListener('click', function(total) {
       var values = {};
@@ -592,8 +603,12 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
   if (box.hidden == !show) return;
 
   if (show) {
-    var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
-    box.innerHTML = html;
+    var icon = this.document_.createElement('div');
+    icon.className = 'warning-icon';
+    var message = this.document_.createElement('div');
+    message.innerHTML = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
+    box.appendChild(icon);
+    box.appendChild(message);
     box.querySelector('a').addEventListener('click', function(e) {
       util.visitURL(str('DOWNLOADS_LOW_SPACE_WARNING_HELP_URL'));
       e.preventDefault();

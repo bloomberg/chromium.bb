@@ -245,8 +245,7 @@ div.splitter {
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   align-items: center;
-  background: rgba(33, 150, 243, 1.0);
-  border-bottom: 1px solid rgb(56, 179, 244);
+  background: rgb(33, 150, 243);
   color: white;
   display: flex;
   flex: none;
@@ -258,7 +257,6 @@ div.splitter {
 
 body.check-select .dialog-header {
   background: white;
-  border-bottom: 1px solid rgb(219, 219, 219);
   color: rgb(90, 90, 90);
 }
 
@@ -1049,21 +1047,32 @@ html[dir='rtl'] .breadcrumbs .separator {
 
 .downloads-warning {
   align-items: center;
-  background-color: #f0f0f0;
-  background-image: -webkit-image-set(
-    url(../images/files/ui/warning_icon_square.png) 1x,
-    url(../images/files/ui/2x/warning_icon_square.png) 2x);
-  background-position: 15px center;
-  background-repeat: no-repeat;
-  color: #666;
+  background-color: rgb(49, 102, 212);
+  color: white;
   display: flex;
   flex: none;
   flex-direction: row;
-  font-size: 13px;
-  height: 44px;
+  font-size: 14px;
+  height: 64px;
   overflow: hidden;
-  padding-left: 57px;  /* Make space for the icon. */
   transition: height 70ms linear;
+}
+
+.downloads-warning a:link,
+.volume-warning a:link {
+  color: white;
+  flex: none;
+}
+
+.downloads-warning .warning-icon {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/warning_white.png) 1x,
+      url(../images/files/ui/2x/warning_white.png) 2x);
+  background-size: 16px 16px;
+  flex: none;
+  height: 16px;
+  margin: 0 14px;
+  width: 16px;
 }
 
 .downloads-warning[hidden] {
@@ -1082,15 +1091,13 @@ html[dir='rtl'] .breadcrumbs .separator {
 .volume-warning {
   -webkit-animation: heightAnimation 70ms linear;
   align-items: center;
-  background-image: url(chrome://resources/images/clouds.png);
-  background-repeat: repeat-x;
-  background-size: 150px 44px;
-  color: #333;
+  background-color: rgb(49, 102, 212);
+  color: white;
   display: flex;
   flex: none;
   flex-direction: row;
   font-size: 13px;
-  height: 44px;
+  height: 64px;
   overflow: hidden;
   position: relative;
 }
@@ -1101,20 +1108,58 @@ html[dir='rtl'] .breadcrumbs .separator {
 }
 
 .volume-warning .drive-icon {
-  background-image: -webkit-image-set(
-    url(../images/files/ui/drive_logo.png) 1x,
-    url(../images/files/ui/2x/drive_logo.png) 2x);
-  background-position: center;
-  background-repeat: no-repeat;
+  background: white -webkit-image-set(
+      url(../images/files/ui/drive_logo.png) 1x,
+      url(../images/files/ui/2x/drive_logo.png) 2x) no-repeat center;
   background-size: 25px 22px;
+  border-radius: 2px;
   flex: none;
-  height: 44px;
-  width: 50px;
+  height: 36px;
+  margin: 0 14px;
+  width: 36px;
 }
 
 .volume-warning .drive-text {
+  -webkit-margin-end: 51px;
   flex: none;
-  margin-right: 11px;
+  font-size: 16px;
+}
+
+.volume-warning .imitate-paper-button {
+  background-color: white;
+  border-radius: 2px;
+  color: rgb(49, 102, 212);
+  font-size: 13px;
+  font-weight: bold;
+  height: 32px;
+}
+
+.banner-close {
+  background: -webkit-image-set(
+      url(../images/files/ui/close_button_white.png) 1x,
+      url(../images/files/ui/2x/close_button_white.png) 2x) no-repeat center;
+  cursor: pointer;
+  display: inline-block;
+  height: 40px;
+  position: absolute;
+  top: 12px;
+  width: 40px;
+}
+
+html[dir='ltr'] .banner-close {
+  right: 0;
+}
+
+html[dir='rtl'] .banner-close {
+  left: 0;
+}
+
+.banner-cloud-bg {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/drive_banner_clouds.png) 1x,
+      url(../images/files/ui/2x/drive_banner_clouds.png) 2x);
+  background-position: bottom left;
+  background-repeat: repeat-x;
 }
 
 /* The cr.ui.Grid representing the detailed file list. */

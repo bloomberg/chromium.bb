@@ -3,13 +3,6 @@
  * found in the LICENSE file. */
 
 /* Google Drive welcome banners.*/
-.drive-welcome-wrapper {
-  background-color: white;
-  /* This image looks good in high DPI as is. */
-  background-image: url(chrome://resources/images/clouds.png);
-  background-repeat: repeat-x;
-  color: #333;
-}
 
 .drive-welcome-icon {
   background-image: -webkit-image-set(
@@ -19,60 +12,20 @@
 }
 
 .drive-welcome-links {
-  display: flex;
-  flex-direction: row;
+  flex: none;
 }
 
-.drive-welcome-button {
-  -webkit-user-select: none;
-  background-image: linear-gradient(to bottom, #f5f5f5, #f1f1f1);
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 2px;
-  color: #444;
-  cursor: default;
-  display: inline-block;
+.drive-welcome .imitate-paper-button {
+  background-color: white;
+  color: rgb(49, 102, 212);
   font-size: 13px;
   font-weight: bold;
-  height: 27px;
-  line-height: 27px;
-  padding: 0 8px;
-  text-align: center;
-  transition: all 218ms;
-}
-
-.drive-welcome-button:hover {
-  background-image: linear-gradient(to bottom, #f8f8f8, #f1f1f1);
-  border-color: #C6C6C6;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-  color: #222;
-  transition: all 0ms;
-}
-
-.drive-welcome-button:active {
-  background-image: linear-gradient(to bottom, #f6f6f6, #f1f1f1);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-}
-
-
-.drive-welcome-button.drive-welcome-start {
-  background-image:
-    linear-gradient(to bottom, rgb(77, 144, 254), rgb(71, 135, 237));
-  border-color: rgb(48, 121, 237);
-  color: white;
-  text-decoration: none;
-}
-
-.drive-welcome-button.drive-welcome-start:hover {
-  background-image:
-    linear-gradient(to bottom, rgb(77, 144, 254), rgb(53, 122, 232));
-  border-color: rgb(47, 91, 183);
-  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }
 
 /* Header welcome banner. */
 .drive-welcome.header {
   flex: none;
-  height: 100px;
+  height: 128px;
   overflow: hidden;
   position: relative;
   transition: height 180ms ease, visibility 0ms linear 180ms;
@@ -84,8 +37,10 @@
 }
 
 .drive-welcome.header .drive-welcome-wrapper {
-  background-size: 308px 100px;
+  align-items: center;
+  background-color: rgb(49, 102, 212);
   bottom: 0;
+  color: white;
   display: flex;
   flex-direction: row;
   left: 0;
@@ -95,29 +50,35 @@
 }
 
 .drive-welcome.header .drive-welcome-icon {
-  background-position: center 18px;
-  background-size: 51px 44px;
+  background-color: white;
+  background-position: center;
+  background-size: 62px 52px;
+  border-radius: 4px;
   flex: none;
-  width: 120px;
+  height: 78px;
+  margin: 25px;
+  width: 78px;
 }
 
 .drive-welcome.header .drive-welcome-message {
+  -webkit-margin-end: 50px;
+  -webkit-margin-start: 20px;
   display: flex;
-  flex: auto;
   flex-direction: column;
+  z-index: 1;
 }
 
 .drive-welcome.header .drive-welcome-title {
-  font-size: 140%;
+  font-size: 21px;
+  font-weight: bold;
   margin-bottom: 4px;
-  margin-top: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .drive-welcome.header .drive-welcome-text {
-  margin-bottom: 6px;
+  font-size: 16px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -125,6 +86,51 @@
 
 .drive-welcome.header .drive-welcome-dismiss {
   display: none;
+}
+
+.drive-welcome.header .drive-welcome-links {
+  z-index: 1;
+}
+
+.drive-welcome.header .drive-welcome-links > a {
+  display: inline-block;
+}
+
+.drive-welcome.header .banner-close {
+  top: 0;
+}
+
+.drive-welcome.header .banner-people {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/drive_banner_people.png) 1x,
+      url(../images/files/ui/2x/drive_banner_people.png) 2x);
+  height: 128px;
+  position: absolute;
+  top: 0;
+  width: 106px;
+}
+
+html[dir='ltr'] .drive-welcome.header .banner-people {
+  right: 38px;
+}
+
+html[dir='rtl'] .drive-welcome.header .banner-people {
+  left: 38px;
+}
+
+.drive-welcome.header .banner-cloud-bg {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: scaleY(-1);
+}
+
+.drive-welcome.header .plain-link {
+  color: white;
+  font-size: 16px;
+  text-decoration: underline;
 }
 
 /* Full page welcome banner. */
@@ -147,8 +153,13 @@
 
 .drive-welcome.page .drive-welcome-wrapper {
   align-items: center;
+  background-color: white;
+  /* This image looks good in high DPI as is. */
+  background-image: url(chrome://resources/images/clouds.png);
+  background-repeat: repeat-x;
   background-size: 520px 173px;
   bottom: 0;
+  color: #333;
   display: flex;
   flex-direction: column;
   font-size: 120%;
@@ -161,7 +172,7 @@
 
 .drive-welcome.page .drive-welcome-icon {
   background-position: center center;
-  height: 240px;
+  height: 200px;
   left: 0;
   right: 0;
   top: 0;
@@ -181,11 +192,35 @@
 }
 
 .drive-welcome.page .drive-welcome-text {
+  font-size: 13px;
   margin-bottom: 24px;
 }
 
 .drive-welcome.page .drive-welcome-dismiss {
   margin-left: 20px;
+}
+
+.drive-welcome.page .drive-welcome-links {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin: 12px 10px;
+  max-width: 525px;
+  width: 100%;
+}
+
+.drive-welcome.page .primary,
+.drive-welcome.page .primary:hover {
+  background-color: rgb(33, 150, 243);
+  color: white;
+}
+
+.drive-welcome.page .secondary {
+  color: rgb(100, 100, 100);
+}
+
+.drive-welcome.page .secondary:hover {
+  color: rgb(33, 150, 243);
 }
 
 body:not([type='full-page']) .drive-welcome.page .drive-welcome-wrapper {
