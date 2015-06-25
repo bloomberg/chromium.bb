@@ -2,9 +2,9 @@
 <title>Service Worker: getRegistrations()</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
 <script src="resources/test-helpers.js"></script>
 <script src="../resources/get-host-info.js"></script>
-<script src="../fetch/resources/fetch-test-helpers.js"></script>
 <script>
 // Purge the existing registrations for the origin.
 // getRegistrations() is used in order to avoid adding additional complexity
@@ -139,6 +139,5 @@ sequential_promise_test(function(t) {
         });
   }, 'getRegistrations promise resolves only with same origin registrations.');
 
-sequential_promise_test_done();
 done();
 </script>

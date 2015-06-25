@@ -1,6 +1,7 @@
 <!doctype html>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testharness-helpers.js"></script>
 <script src="../resources/fetch-test-helpers.js"></script>
 <script>
 sequential_promise_test(function(t) {
@@ -41,6 +42,4 @@ sequential_promise_test(function(t) {
     return fetch('http://localhost:8000/fetch/resources/redirect-loop.php?Count=100&ACAOrigin=*')
       .then(t.unreached_func('must reject'), function() {});
   }, 'A didFailRedirectCheck() error should output an error message');
-
-sequential_promise_test_done();
 </script>

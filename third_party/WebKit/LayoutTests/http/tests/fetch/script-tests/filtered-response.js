@@ -121,5 +121,4 @@ sequential_promise_test(function() {
 
 // Opaque filtered response is tested in fetch-access-control*
 
-sequential_promise_test_done();
 done();

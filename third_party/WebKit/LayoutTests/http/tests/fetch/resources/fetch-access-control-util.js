@@ -403,5 +403,4 @@ function executeTests(test_targets) {
       }.bind(this, i),
       "executeTest-" + i);
   }
-  sequential_promise_test_done();
 }

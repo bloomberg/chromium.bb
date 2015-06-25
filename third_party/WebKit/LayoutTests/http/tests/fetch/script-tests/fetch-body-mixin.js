@@ -148,5 +148,4 @@ sequential_promise_test(function(test) {
         })
     }, 'PartiallyReadFromStreamAndReadArrayBufferTest');
 
-sequential_promise_test_done();
 done();

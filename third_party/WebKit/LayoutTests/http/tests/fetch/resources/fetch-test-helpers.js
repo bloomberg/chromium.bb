@@ -1,5 +1,6 @@
 if (self.importScripts) {
   importScripts('/resources/testharness.js');
+  importScripts('/resources/testharness-helpers.js');
   importScripts('/serviceworker/resources/test-helpers.js');
   importScripts('../resources/fetch-test-options.js');
 }
@@ -12,47 +13,6 @@ function getContentType(headers) {
   }
   return content_type;
 }
-
-
-(function () {
-  var sequential_promise = Promise.resolve();
-
-  // |sequential_test| is a dummy test to prevent tests from terminating early.
-  // Without this, the number of pending tests recognized by testharness can
-  // be zero, which leads to early unexpected test termination.
-  var sequential_test = undefined;
-
-  // sequential_promise_test() is similar to promise_test(), but multiple tests
-  // are executed one by one sequentially.
-  // Also call sequential_promise_test_done() after all
-  // sequential_promise_test() are called.
-  function sequential_promise_test(func, name) {
-    if (sequential_test === undefined) {
-      sequential_test = async_test('Sequential');
-    }
-    sequential_promise = sequential_promise
-      .then(function() {
-          var promise = undefined;
-          promise_test(function(t) {
-              promise = func(t);
-              return promise;
-            }, name);
-          return promise;
-        })
-      .catch(function(e) {
-          // The error was already reported. Continue to the next test.
-        });
-  }
-
-  function sequential_promise_test_done() {
-    if (sequential_test !== undefined) {
-      sequential_promise.then(function() {sequential_test.done();});
-    }
-  }
-
-  self.sequential_promise_test = sequential_promise_test;
-  self.sequential_promise_test_done = sequential_promise_test_done;
-})();
 
 // token [RFC 2616]
 // "token          = 1*<any CHAR except CTLs or separators>"

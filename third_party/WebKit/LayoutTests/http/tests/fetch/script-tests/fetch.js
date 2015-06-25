@@ -208,5 +208,4 @@ test(function(t) {
   'Destroying the execution context while fetch is happening should not ' +
   'cause a crash.');
 
-sequential_promise_test_done();
 done();

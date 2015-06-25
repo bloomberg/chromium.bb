@@ -167,5 +167,4 @@ sequential_promise_test(function(t) {
       });
   }, 'Accessing body when processing text().');
 
-sequential_promise_test_done();
 done();
