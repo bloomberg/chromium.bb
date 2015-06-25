@@ -6,11 +6,9 @@ import atexit
 import itertools
 import logging
 import os
-import shutil
 import signal
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 import urlparse
@@ -57,6 +55,7 @@ class AndroidShell(object):
     self.device = None
     self.shell_args = []
     self.target_package = apk_helper.GetPackageName(self.paths.apk_path)
+    self.temp_gdb_dir = None
     # This is used by decive_utils.Install to check if the apk needs updating.
     constants.SetOutputDirectory(self.paths.build_dir)
 
@@ -207,13 +206,8 @@ class AndroidShell(object):
                                                                  pid]))
     atexit.register(_ExitIfNeeded, gdbserver_process)
 
-    temp_dir = tempfile.mkdtemp()
-    atexit.register(shutil.rmtree, temp_dir, True)
-
-    gdbinit_path = os.path.join(temp_dir, 'gdbinit')
-    _CreateGdbInit(temp_dir, gdbinit_path, self.paths.build_dir)
-
-    _CreateSOLinks(temp_dir, self.paths.build_dir)
+    gdbinit_path = os.path.join(self.temp_gdb_dir, 'gdbinit')
+    _CreateGdbInit(self.temp_gdb_dir, gdbinit_path, self.paths.build_dir)
 
     # Wait a second for gdb to start up on the device. Without this the local
     # gdb starts before the remote side has registered the port.
@@ -223,7 +217,7 @@ class AndroidShell(object):
     local_gdb_process = subprocess.Popen([self._GetLocalGdbPath(),
                                           "-x",
                                           gdbinit_path],
-                                         cwd=temp_dir)
+                                         cwd=self.temp_gdb_dir)
     atexit.register(_ExitIfNeeded, local_gdb_process)
     local_gdb_process.wait()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -233,11 +227,12 @@ class AndroidShell(object):
                     arguments,
                     stdout,
                     on_fifo_closed,
-                    gdb=False):
+                    temp_gdb_dir=None):
     """
     Starts the shell with the given |arguments|, directing output to |stdout|.
     |on_fifo_closed| will be run if the FIFO can't be found or when it's closed.
-    |gdb| is a flag that attaches gdb to the device's remote process on startup.
+    |temp_gdb_dir| is set to a location with appropriate symlinks for gdb to
+    find when attached to the device's remote process on startup.
     """
     assert self.device
     arguments += self.shell_args
@@ -253,7 +248,8 @@ class AndroidShell(object):
                                activity_name)])
 
     logcat_process = None
-    if gdb:
+    if temp_gdb_dir:
+      self.temp_gdb_dir = temp_gdb_dir
       arguments.append('--wait-for-debugger')
       # Remote debugging needs a port forwarded.
       self.device.adb.Forward('tcp:5039', 'tcp:5039')
@@ -325,21 +321,3 @@ def _CreateGdbInit(tmp_dir, gdb_init_path, build_dir):
              'crash.\\n\\n' % (tmp_dir, build_dir, tmp_dir))
   with open(gdb_init_path, 'w') as f:
     f.write(gdbinit)
-
-
-def _CreateSOLinks(dest_dir, build_dir):
-  """Creates links from files (eg. *.mojo) to the real .so for gdb to find."""
-  # The files to create links for. The key is the name as seen on the device,
-  # and the target an array of path elements as to where the .so lives (relative
-  # to the output directory).
-  # TODO(sky): come up with some way to automate this.
-  files_to_link = {
-    'html_viewer.mojo': ['libhtml_viewer_library.so'],
-    'libmandoline_runner.so': ['mandoline_runner'],
-  }
-  for android_name, so_path in files_to_link.iteritems():
-    src = os.path.join(build_dir, *so_path)
-    if not os.path.isfile(src):
-      print 'Expected file not found', src
-      sys.exit(-1)
-    os.symlink(src, os.path.join(dest_dir, android_name))
