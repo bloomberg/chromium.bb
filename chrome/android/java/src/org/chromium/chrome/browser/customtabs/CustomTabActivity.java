@@ -33,7 +33,9 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationEntry;
 
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
@@ -253,6 +255,17 @@ public class CustomTabActivity extends ChromeActivity {
 
         ApiCompatibilityUtils.setStatusBarColor(getWindow(),
                 BrandColorUtils.computeStatusBarColor(color));
+    }
+
+    @Override
+    public boolean createContextualSearchTab(ContentViewCore searchContentViewCore) {
+        if (mTab == null) return false;
+        NavigationEntry entry =
+                searchContentViewCore.getWebContents().getNavigationController().getPendingEntry();
+        String url = entry != null
+                ? entry.getUrl() : searchContentViewCore.getWebContents().getUrl();
+        mTab.loadUrl(new LoadUrlParams(url));
+        return false;
     }
 
     @Override
