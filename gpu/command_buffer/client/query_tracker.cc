@@ -226,25 +226,37 @@ QueryTracker::Query* QueryTracker::CreateQuery(GLuint id, GLenum target) {
   FreeCompletedQueries();
   QuerySyncManager::QueryInfo info;
   if (!query_sync_manager_.Alloc(&info)) {
-    return NULL;
+    return nullptr;
   }
   Query* query = new Query(id, target, info);
-  std::pair<QueryMap::iterator, bool> result =
+  std::pair<QueryIdMap::iterator, bool> result =
       queries_.insert(std::make_pair(id, query));
   DCHECK(result.second);
   return query;
 }
 
-QueryTracker::Query* QueryTracker::GetQuery(
-    GLuint client_id) {
-  QueryMap::iterator it = queries_.find(client_id);
-  return it != queries_.end() ? it->second : NULL;
+QueryTracker::Query* QueryTracker::GetQuery(GLuint client_id) {
+  QueryIdMap::iterator it = queries_.find(client_id);
+  return it != queries_.end() ? it->second : nullptr;
+}
+
+QueryTracker::Query* QueryTracker::GetCurrentQuery(GLenum target) {
+  QueryTargetMap::iterator it = current_queries_.find(target);
+  return it != current_queries_.end() ? it->second : nullptr;
 }
 
 void QueryTracker::RemoveQuery(GLuint client_id) {
-  QueryMap::iterator it = queries_.find(client_id);
+  QueryIdMap::iterator it = queries_.find(client_id);
   if (it != queries_.end()) {
     Query* query = it->second;
+
+    // Erase from current targets map if it is the current target.
+    const GLenum target = query->target();
+    QueryTargetMap::iterator target_it = current_queries_.find(target);
+    if (target_it != current_queries_.end() && target_it->second == query) {
+      current_queries_.erase(target_it);
+    }
+
     // When you delete a query you can't mark its memory as unused until it's
     // completed.
     // Note: If you don't do this you won't mess up the service but you will
@@ -275,6 +287,42 @@ void QueryTracker::FreeCompletedQueries() {
     it = removed_queries_.erase(it);
     delete query;
   }
+}
+
+bool QueryTracker::BeginQuery(GLuint id, GLenum target,
+                              GLES2Implementation* gl) {
+  QueryTracker::Query* query = GetQuery(id);
+  if (!query) {
+    query = CreateQuery(id, target);
+    if (!query) {
+      gl->SetGLError(GL_OUT_OF_MEMORY,
+                     "glBeginQueryEXT",
+                     "transfer buffer allocation failed");
+      return false;
+    }
+  } else if (query->target() != target) {
+    gl->SetGLError(GL_INVALID_OPERATION,
+                   "glBeginQueryEXT",
+                   "target does not match");
+    return false;
+  }
+
+  current_queries_[query->target()] = query;
+  query->Begin(gl);
+  return true;
+}
+
+bool QueryTracker::EndQuery(GLenum target, GLES2Implementation* gl) {
+  QueryTargetMap::iterator target_it = current_queries_.find(target);
+  if (target_it == current_queries_.end()) {
+    gl->SetGLError(GL_INVALID_OPERATION,
+                   "glEndQueryEXT", "no active query");
+    return false;
+  }
+
+  target_it->second->End(gl);
+  current_queries_.erase(target_it);
+  return true;
 }
 
 }  // namespace gles2

@@ -280,6 +280,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
  private:
   friend class GLES2ImplementationTest;
   friend class VertexArrayObjectManager;
+  friend class QueryTracker;
 
   // Used to track whether an extension is available
   enum ExtensionStatus {
@@ -797,8 +798,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   ShareGroupContextData share_group_context_data_;
 
   scoped_ptr<QueryTracker> query_tracker_;
-  typedef std::map<GLuint, QueryTracker::Query*> QueryMap;
-  QueryMap current_queries_;
   scoped_ptr<IdAllocator> query_id_allocator_;
 
   scoped_ptr<BufferTracker> buffer_tracker_;

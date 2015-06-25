@@ -4785,8 +4785,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
                  << ", " << id << ")");
 
   // if any outstanding queries INV_OP
-  QueryMap::iterator it = current_queries_.find(target);
-  if (it != current_queries_.end()) {
+  if (query_tracker_->GetCurrentQuery(target)) {
     SetGLError(
         GL_INVALID_OPERATION, "glBeginQueryEXT", "query already in progress");
     return;
@@ -4804,26 +4803,8 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
     return;
   }
 
-  // if id does not have an object
-  QueryTracker::Query* query = query_tracker_->GetQuery(id);
-  if (!query) {
-    query = query_tracker_->CreateQuery(id, target);
-    if (!query) {
-      SetGLError(GL_OUT_OF_MEMORY,
-                 "glBeginQueryEXT",
-                 "transfer buffer allocation failed");
-      return;
-    }
-  } else if (query->target() != target) {
-    SetGLError(
-        GL_INVALID_OPERATION, "glBeginQueryEXT", "target does not match");
-    return;
-  }
-
-  current_queries_[target] = query;
-
-  query->Begin(this);
-  CheckGLError();
+  if (query_tracker_->BeginQuery(id, target, this))
+    CheckGLError();
 }
 
 void GLES2Implementation::EndQueryEXT(GLenum target) {
@@ -4835,16 +4816,8 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
     return;
   }
 
-  QueryMap::iterator it = current_queries_.find(target);
-  if (it == current_queries_.end()) {
-    SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT", "no active query");
-    return;
-  }
-
-  QueryTracker::Query* query = it->second;
-  query->End(this);
-  current_queries_.erase(it);
-  CheckGLError();
+  if (query_tracker_->EndQuery(target, this))
+    CheckGLError();
 }
 
 void GLES2Implementation::GetQueryivEXT(
@@ -4859,13 +4832,8 @@ void GLES2Implementation::GetQueryivEXT(
     SetGLErrorInvalidEnum("glGetQueryivEXT", pname, "pname");
     return;
   }
-  QueryMap::iterator it = current_queries_.find(target);
-  if (it != current_queries_.end()) {
-    QueryTracker::Query* query = it->second;
-    *params = query->id();
-  } else {
-    *params = 0;
-  }
+  QueryTracker::Query* query = query_tracker_->GetCurrentQuery(target);
+  *params = query ? query->id() : 0;
   GPU_CLIENT_LOG("  " << *params);
   CheckGLError();
 }
@@ -4883,8 +4851,7 @@ void GLES2Implementation::GetQueryObjectuivEXT(
     return;
   }
 
-  QueryMap::iterator it = current_queries_.find(query->target());
-  if (it != current_queries_.end()) {
+  if (query->Active()) {
     SetGLError(
         GL_INVALID_OPERATION,
         "glQueryObjectuivEXT", "query active. Did you to call glEndQueryEXT?");

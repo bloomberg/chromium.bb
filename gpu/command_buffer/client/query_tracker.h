@@ -91,7 +91,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
       return target_;
     }
 
-    GLenum id() const {
+    GLuint id() const {
       return id_;
     }
 
@@ -125,6 +125,10 @@ class GLES2_IMPL_EXPORT QueryTracker {
       return state_ == kUninitialized;
     }
 
+    bool Active() const {
+      return state_ == kActive;
+    }
+
     bool Pending() const {
       return state_ == kPending;
     }
@@ -133,12 +137,12 @@ class GLES2_IMPL_EXPORT QueryTracker {
 
     uint32 GetResult() const;
 
-    void Begin(GLES2Implementation* gl);
-    void End(GLES2Implementation* gl);
-
    private:
     friend class QueryTracker;
     friend class QueryTrackerTest;
+
+    void Begin(GLES2Implementation* gl);
+    void End(GLES2Implementation* gl);
 
     GLuint id_;
     GLenum target_;
@@ -156,15 +160,21 @@ class GLES2_IMPL_EXPORT QueryTracker {
 
   Query* CreateQuery(GLuint id, GLenum target);
   Query* GetQuery(GLuint id);
+  Query* GetCurrentQuery(GLenum target);
   void RemoveQuery(GLuint id);
   void Shrink();
   void FreeCompletedQueries();
 
+  bool BeginQuery(GLuint id, GLenum target, GLES2Implementation* gl);
+  bool EndQuery(GLenum target, GLES2Implementation* gl);
+
  private:
-  typedef base::hash_map<GLuint, Query*> QueryMap;
+  typedef base::hash_map<GLuint, Query*> QueryIdMap;
+  typedef base::hash_map<GLenum, Query*> QueryTargetMap;
   typedef std::list<Query*> QueryList;
 
-  QueryMap queries_;
+  QueryIdMap queries_;
+  QueryTargetMap current_queries_;
   QueryList removed_queries_;
   QuerySyncManager query_sync_manager_;
 
