@@ -1,14 +1,13 @@
-// A test using Ahem font includes this file to ensure that the
-// font is loaded before window.onload fires and test finishes.
-// Note: this doesn't work if the test doesn't contain any visible
-// element with 'font-family: Ahem' style.
+// This file is included by tests using Ahem font to ensure that the font is
+// loaded before window.onload fires and the test finishes.
+// Note: this doesn't work if the test doesn't contain any visible element with
+// 'font-family: Ahem' style.
 (function() {
   var scripts = document.getElementsByTagName('script');
-  var src = scripts[scripts.length - 1].src;
-  var lastSlash = src.lastIndexOf('/');
-  var relativePath = src.substr(0, lastSlash);
+  var scriptSrc = scripts[scripts.length - 1].src;
+  var relativePath = scriptSrc.substr(0, scriptSrc.lastIndexOf('/'));
 
-  window.addEventListener('DOMContentLoad', function() {
+  window.addEventListener('DOMContentLoaded', function() {
     var style = document.createElement('style');
     style.appendChild(document.createTextNode(
       '@font-face { font-family: Ahem; src: url(' + relativePath + '/Ahem.ttf'));
