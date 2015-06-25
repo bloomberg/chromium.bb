@@ -589,24 +589,6 @@
                 "cros_vm_test"
             ]
         },
-        "project-sdk": {
-            "_template": "project-sdk",
-            "build_type": "project-sdk",
-            "chrome_sdk": false,
-            "description": "Produce Project SDK build artifacts.",
-            "factory": false,
-            "factory_install_netboot": false,
-            "factory_toolkit": false,
-            "hw_tests": [],
-            "important": false,
-            "lkgm_manifest": "project-sdk/latest.xml",
-            "manifest": "project_sdk.xml",
-            "sync_chrome": false,
-            "uprev": false,
-            "use_lkgm": true,
-            "usepkg_build_packages": false,
-            "vm_tests": []
-        },
         "release": {
             "_template": "release",
             "afdo_use": true,
@@ -7637,14 +7619,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "gizmo-project-sdk": {
-        "_template": "project-sdk",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "gizmo"
-        ],
-        "name": "gizmo-project-sdk"
-    },
     "gizmo-release": {
         "_template": "release",
         "active_waterfall": "chromeos",
@@ -14069,14 +14043,6 @@
             "chrome_internal"
         ],
         "vm_tests": []
-    },
-    "panther_embedded-project-sdk": {
-        "_template": "project-sdk",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "panther_embedded"
-        ],
-        "name": "panther_embedded-project-sdk"
     },
     "panther_embedded-release": {
         "_template": "release",
@@ -21553,14 +21519,6 @@
         "useflags": [
             "-chrome_internal"
         ]
-    },
-    "trybot-project-sdk": {
-        "_template": "project-sdk",
-        "boards": [
-            "panther_embedded"
-        ],
-        "name": "trybot-project-sdk",
-        "use_lkgm": false
     },
     "veyron-b-full-group": {
         "_template": "full",

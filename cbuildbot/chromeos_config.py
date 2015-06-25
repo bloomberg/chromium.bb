@@ -30,13 +30,11 @@ def OverrideConfigForTrybot(build_config, options):
   """
   copy_config = copy.deepcopy(build_config)
   for my_config in [copy_config] + copy_config['child_configs']:
-    # For all builds except PROJECT_SDK, force uprev. This is so patched in
-    # changes are always built. PROEJCT_SDK_TYPE uses a minilayout, and uprev
-    # doesn't work for minilayout (crbug.com/458661).
-    if my_config['build_type'] != constants.PROJECT_SDK_TYPE:
-      my_config['uprev'] = True
-      if my_config['internal']:
-        my_config['overlays'] = constants.BOTH_OVERLAYS
+    # Force uprev. This is so patched in changes are always
+    # built.
+    my_config['uprev'] = True
+    if my_config['internal']:
+      my_config['overlays'] = constants.BOTH_OVERLAYS
 
     # Use the local manifest which only requires elevated access if it's really
     # needed to build.
@@ -337,12 +335,6 @@ TRADITIONAL_VM_TESTS_SUPPORTED = [constants.SMOKE_SUITE_TEST_TYPE,
 #
 # Define assorted constants describing various sets of boards.
 #
-
-_project_sdk_boards = frozenset([
-    'panther_embedded',
-    'gizmo',
-])
-
 
 # Base per-board configuration.
 # Every board must appear in exactly 1 of the following sets.
@@ -675,10 +667,6 @@ _waterfall_config_map = {
         # Firmware Builders.
         'link-depthcharge-full-firmware',
 
-        # SDK Builders.
-        'panther_embedded-project-sdk',
-        'gizmo-project-sdk',
-
         # Toolchain Builders.
         'internal-toolchain-major',
         'internal-toolchain-minor',
@@ -803,37 +791,6 @@ def GetConfig():
   moblab = config_lib.BuildConfig(
       image_test=False,
       vm_tests=[],
-  )
-
-  # Builds for the Project SDK.
-  project_sdk = site_config.AddTemplate(
-      'project-sdk',
-      build_type=constants.PROJECT_SDK_TYPE,
-      description='Produce Project SDK build artifacts.',
-
-      # These are test builds, they shouldn't break anything (yet).
-      important=False,
-
-      usepkg_build_packages=False,
-      sync_chrome=False,
-      chrome_sdk=False,
-      uprev=False,
-
-      # Proper manifest for TOT builds. Not used, outside of tryjobs.
-      manifest=constants.PROJECT_MANIFEST,
-
-      # Use the SDK manifest published by the Canary master for most builds.
-      lkgm_manifest=constants.LATEST_PROJECT_SDK_MANIFEST,
-      use_lkgm=True,
-
-      # Tests probably don't work yet.
-      vm_tests=[],
-      hw_tests=[],
-
-      # Factory stuff not needed here.
-      factory_install_netboot=False,
-      factory_toolkit=False,
-      factory=False,
   )
 
   beaglebone = brillo.derive(image_test=False, rootfs_verification=False)
@@ -2789,23 +2746,6 @@ def GetConfig():
       site_config.AddConfig(_payloads, name, boards=[board])
 
   _AddPayloadConfigs()
-
-  def _AddProjectSdkConfigs():
-    for board in _project_sdk_boards:
-      name = '%s-project-sdk' % board
-      site_config.AddConfig(project_sdk, name, boards=[board])
-
-  _AddProjectSdkConfigs()
-
-  # LKGM builds don't work for tryjobs. Add this as a workaround, for now.
-  site_config.AddConfig(
-      project_sdk,
-      'trybot-project-sdk',
-      boards=['panther_embedded'],
-
-      # Don't use LKGM
-      use_lkgm=False,
-  )
 
   # On release branches, x86-mario is the release master.
   #
