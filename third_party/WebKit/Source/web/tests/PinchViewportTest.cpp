@@ -290,7 +290,7 @@ TEST_P(ParameterizedPinchViewportTest, TestResizeAtFullyScrolledPreservesViewpor
 
 // Test that the PinchViewport works as expected in case of a scaled
 // and scrolled viewport - scroll down.
-TEST_F(PinchViewportTest, TestResizeAfterVerticalScroll)
+TEST_P(ParameterizedPinchViewportTest, TestResizeAfterVerticalScroll)
 {
     /*
                  200                                 200
@@ -332,7 +332,7 @@ TEST_F(PinchViewportTest, TestResizeAfterVerticalScroll)
 
     // Scroll main frame to the bottom of the document
     webViewImpl()->mainFrame()->setScrollOffset(WebSize(0, 400));
-    EXPECT_POINT_EQ(IntPoint(0, 400), frame()->view()->scrollPosition());
+    EXPECT_POINT_EQ(IntPoint(0, 400), frame()->view()->layoutViewportScrollableArea()->scrollPosition());
 
     webViewImpl()->setPageScaleFactor(2.0);
 
@@ -350,7 +350,7 @@ TEST_F(PinchViewportTest, TestResizeAfterVerticalScroll)
     // After resizing the scale changes 2.0 -> 4.0
     EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), pinchViewport.visibleRect().size());
 
-    EXPECT_POINT_EQ(IntPoint(0, 625), frame()->view()->scrollPosition());
+    EXPECT_POINT_EQ(IntPoint(0, 625), frame()->view()->layoutViewportScrollableArea()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 75), pinchViewport.location());
 }
 

@@ -357,6 +357,7 @@ private:
     void loadJavaScriptURL(const KURL&);
 
     WebPlugin* focusedPluginIfInputMethodSupported();
+    ScrollableArea* layoutViewportScrollableArea() const;
 
     FrameLoaderClientImpl m_frameLoaderClientImpl;
 

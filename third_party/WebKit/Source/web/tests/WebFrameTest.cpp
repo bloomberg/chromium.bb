@@ -2164,7 +2164,7 @@ TEST_P(ParameterizedWebFrameTest, DesktopPageCanBeZoomedInWhenWideViewportIsTurn
     EXPECT_NEAR(5.0f, webViewHelper.webViewImpl()->maximumPageScaleFactor(), 0.01f);
 }
 
-class WebFrameResizeTest : public WebFrameTest {
+class WebFrameResizeTest : public ParameterizedWebFrameTest {
 protected:
 
     static FloatSize computeRelativeOffset(const IntPoint& absoluteOffset, const LayoutRect& rect)
@@ -2184,7 +2184,7 @@ protected:
 
         const float aspectRatio = static_cast<float>(viewportSize.width) / viewportSize.height;
 
-        FrameTestHelpers::WebViewHelper webViewHelper;
+        FrameTestHelpers::WebViewHelper webViewHelper(this);
         webViewHelper.initializeAndLoad(m_baseURL + url, true, 0, 0, enableViewportSettings);
         webViewHelper.webViewImpl()->setDefaultPageScaleLimits(0.25f, 5);
 
@@ -2217,7 +2217,11 @@ protected:
     }
 };
 
-TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth)
+INSTANTIATE_TEST_CASE_P(All, WebFrameResizeTest, ::testing::Values(
+    ParameterizedWebFrameTestConfig::Default,
+    ParameterizedWebFrameTestConfig::RootLayerScrolls));
+
+TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth)
 {
     // With width=device-width, pageScaleFactor is preserved across resizes as
     // long as the content adjusts according to the device-width.
@@ -2231,7 +2235,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDevice
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
-TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForMinimumScale)
+TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForMinimumScale)
 {
     // This tests a scenario where minimum-scale is set to 1.0, but some element
     // on the page is slightly larger than the portrait width, so our "natural"
@@ -2247,7 +2251,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForMinimumScale)
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
-TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth)
+TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth)
 {
     // With a fixed width, pageScaleFactor scales by the relative change in viewport width.
     const char* url = "resize_scroll_fixed_width.html";
@@ -2260,7 +2264,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth)
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
-TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
+TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
 {
     // With a fixed layout, pageScaleFactor scales by the relative change in viewport width.
     const char* url = "resize_scroll_fixed_layout.html";

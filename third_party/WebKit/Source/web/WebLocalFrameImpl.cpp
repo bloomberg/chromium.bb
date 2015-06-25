@@ -669,34 +669,38 @@ void WebLocalFrameImpl::setSharedWorkerRepositoryClient(WebSharedWorkerRepositor
     m_sharedWorkerRepositoryClient = SharedWorkerRepositoryClientImpl::create(client);
 }
 
+ScrollableArea* WebLocalFrameImpl::layoutViewportScrollableArea() const
+{
+    if (FrameView* view = frameView())
+        return view->layoutViewportScrollableArea();
+    return nullptr;
+}
+
 WebSize WebLocalFrameImpl::scrollOffset() const
 {
-    FrameView* view = frameView();
-    if (!view)
-        return WebSize();
-    return view->scrollOffset();
+    if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
+        return toIntSize(scrollableArea->scrollPosition());
+    return WebSize();
 }
 
 WebSize WebLocalFrameImpl::minimumScrollOffset() const
 {
-    FrameView* view = frameView();
-    if (!view)
-        return WebSize();
-    return toIntSize(view->minimumScrollPosition());
+    if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
+        return toIntSize(scrollableArea->minimumScrollPosition());
+    return WebSize();
 }
 
 WebSize WebLocalFrameImpl::maximumScrollOffset() const
 {
-    FrameView* view = frameView();
-    if (!view)
-        return WebSize();
-    return toIntSize(view->maximumScrollPosition());
+    if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
+        return toIntSize(scrollableArea->maximumScrollPosition());
+    return WebSize();
 }
 
 void WebLocalFrameImpl::setScrollOffset(const WebSize& offset)
 {
-    if (FrameView* view = frameView())
-        view->setScrollPosition(IntPoint(offset.width, offset.height), ProgrammaticScroll);
+    if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
+        scrollableArea->setScrollPosition(IntPoint(offset.width, offset.height), ProgrammaticScroll);
 }
 
 WebSize WebLocalFrameImpl::contentsSize() const
