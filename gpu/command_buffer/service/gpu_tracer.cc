@@ -217,6 +217,7 @@ bool GPUTracer::BeginDecoding() {
     // Begin a Trace for all active markers
     for (int n = 0; n < NUM_TRACER_SOURCES; n++) {
       for (size_t i = 0; i < markers_[n].size(); i++) {
+        began_device_traces_ |= (*gpu_trace_dev_category != 0);
         TraceMarker& trace_marker = markers_[n][i];
         trace_marker.trace_ =
             new GPUTrace(outputter_, gpu_timing_client_.get(),
@@ -269,6 +270,7 @@ bool GPUTracer::Begin(const std::string& category, const std::string& name,
 
   // Create trace
   if (IsTracing()) {
+    began_device_traces_ |= (*gpu_trace_dev_category != 0);
     scoped_refptr<GPUTrace> trace = new GPUTrace(
         outputter_, gpu_timing_client_.get(), source, category, name,
         *gpu_trace_srv_category != 0,
@@ -386,23 +388,19 @@ void GPUTracer::ProcessTraces() {
 
 bool GPUTracer::CheckDisjointStatus() {
   const int64 current_time = gpu_timing_client_->GetCurrentCPUTime();
-  bool status = gpu_timing_client_->CheckAndResetTimerErrors();
-  if (status) {
-    // Log disjoint event if we have active traces.
-    bool active = !finished_traces_.empty();
-    for (int n = 0; n < NUM_TRACER_SOURCES; n++) {
-      active |= !markers_[n].empty();
-    }
+  if (*gpu_trace_dev_category == 0)
+    return false;
 
-    if (active) {
-      const std::string unique_disjoint_name =
-          base::StringPrintf("DisjointEvent-%p", this);
-      outputter_->TraceDevice(kTraceDisjoint,
-                              "DisjointEvent",
-                              unique_disjoint_name,
-                              disjoint_time_,
-                              current_time);
-    }
+  bool status = gpu_timing_client_->CheckAndResetTimerErrors();
+  if (status && began_device_traces_) {
+    // Log disjoint event if we have active traces.
+    const std::string unique_disjoint_name =
+        base::StringPrintf("DisjointEvent-%p", this);
+    outputter_->TraceDevice(kTraceDisjoint,
+                            "DisjointEvent",
+                            unique_disjoint_name,
+                            disjoint_time_,
+                            current_time);
   }
   disjoint_time_ = current_time;
   return status;

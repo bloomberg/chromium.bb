@@ -104,6 +104,7 @@ class GPU_EXPORT GPUTracer
 
   bool gpu_executing_ = false;
   bool process_posted_ = false;
+  bool began_device_traces_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUTracer);

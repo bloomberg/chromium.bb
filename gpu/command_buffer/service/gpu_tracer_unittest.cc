@@ -179,6 +179,12 @@ class BaseGpuTest : public GpuServiceTest {
           .Times(Exactly(1));
   }
 
+  void ExpectNoDisjointOutputMocks(MockOutputter* outputter) {
+    EXPECT_CALL(*outputter,
+                TraceDevice(kTraceDisjoint, "DisjointEvent", _, _, _))
+          .Times(Exactly(0));
+  }
+
   void ExpectOutputterMocks(MockOutputter* outputter,
                             bool tracing_service,
                             bool tracing_device,
@@ -342,6 +348,23 @@ class BaseGpuTracerTest : public BaseGpuTest {
     outputter_ref_ = NULL;
   }
 
+  void DoDisabledTracingTest() {
+    ExpectTracerOffsetQueryMocks();
+
+    const GpuTracerSource source = static_cast<GpuTracerSource>(0);
+
+    MockGLES2Decoder decoder;
+    EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
+    GPUTracerTester tracer(&decoder);
+    tracer.SetTracingEnabled(false);
+    tracer.SetOutputter(outputter_ref_);
+
+    ASSERT_TRUE(tracer.BeginDecoding());
+    ASSERT_TRUE(tracer.Begin("disabled_category", "disabled_name", source));
+    ASSERT_TRUE(tracer.End(source));
+    ASSERT_TRUE(tracer.EndDecoding());
+  }
+
   void DoTracerMarkersTest() {
     ExpectTracerOffsetQueryMocks();
     gl_fake_queries_.ExpectGetErrorCalls(*gl_);
@@ -417,12 +440,85 @@ class BaseGpuTracerTest : public BaseGpuTest {
     outputter_ref_ = NULL;
   }
 
+  void DoOngoingTracerMarkerTest() {
+    ExpectTracerOffsetQueryMocks();
+    gl_fake_queries_.ExpectGetErrorCalls(*gl_);
+
+    const std::string category_name("trace_category");
+    const std::string trace_name("trace_test");
+    const GpuTracerSource source = static_cast<GpuTracerSource>(0);
+    const int64 offset_time = 3231;
+    const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
+    const int64 expect_start_time =
+        (start_timestamp / base::Time::kNanosecondsPerMicrosecond) +
+        offset_time;
+    const bool valid_timer = gpu_timing_client_->IsAvailable();
+
+    MockGLES2Decoder decoder;
+    EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
+    GPUTracerTester tracer(&decoder);
+    tracer.SetOutputter(outputter_ref_);
+
+    // Create trace marker while traces are disabled.
+    gl_fake_queries_.SetCurrentGLTime(start_timestamp);
+    g_fakeCPUTime = expect_start_time;
+
+    tracer.SetTracingEnabled(false);
+    ASSERT_TRUE(tracer.BeginDecoding());
+    ASSERT_TRUE(tracer.Begin(category_name, trace_name, source));
+    ASSERT_TRUE(tracer.EndDecoding());
+
+    // Enable traces now.
+    tracer.SetTracingEnabled(true);
+    ExpectTraceQueryMocks();
+
+    // trace should happen when decoding begins, at time start+1.
+    gl_fake_queries_.SetCurrentGLTime(
+        start_timestamp +
+        (1 * base::Time::kNanosecondsPerMicrosecond));
+    g_fakeCPUTime = expect_start_time + 1;
+    ASSERT_TRUE(tracer.BeginDecoding());
+
+    // End decoding at time start+2.
+    ExpectOutputterEndMocks(outputter_ref_.get(), source, category_name,
+                            trace_name, expect_start_time + 1,
+                            expect_start_time + 2, true, valid_timer);
+    gl_fake_queries_.SetCurrentGLTime(
+        start_timestamp +
+        (2 * base::Time::kNanosecondsPerMicrosecond));
+    g_fakeCPUTime = expect_start_time + 2;
+    ASSERT_TRUE(tracer.EndDecoding());
+
+    // Begin decoding again at time start+3.
+    gl_fake_queries_.SetCurrentGLTime(
+        start_timestamp +
+        (3 * base::Time::kNanosecondsPerMicrosecond));
+    g_fakeCPUTime = expect_start_time + 3;
+    ASSERT_TRUE(tracer.BeginDecoding());
+
+    // End trace at time start+4
+    gl_fake_queries_.SetCurrentGLTime(
+        start_timestamp +
+        (4 * base::Time::kNanosecondsPerMicrosecond));
+    g_fakeCPUTime = expect_start_time + 4;
+    ExpectOutputterEndMocks(outputter_ref_.get(), source, category_name,
+                            trace_name, expect_start_time + 3,
+                            expect_start_time + 4, true, valid_timer);
+    ASSERT_TRUE(tracer.End(source));
+
+    // Increment time before we end decoding to test trace does not stop here.
+    gl_fake_queries_.SetCurrentGLTime(
+        start_timestamp +
+        (5 * base::Time::kNanosecondsPerMicrosecond));
+    g_fakeCPUTime = expect_start_time + 5;
+    ASSERT_TRUE(tracer.EndDecoding());
+  }
+
   void DoDisjointTest() {
     // Cause a disjoint in a middle of a trace and expect no output calls.
     ExpectTracerOffsetQueryMocks();
     gl_fake_queries_.ExpectGetErrorCalls(*gl_);
 
-    const GpuTracerSource tracer_source = kTraceGroupMarker;
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const GpuTracerSource source = static_cast<GpuTracerSource>(0);
@@ -449,7 +545,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
     ExpectTraceQueryMocks();
 
-    ExpectOutputterBeginMocks(outputter_ref_.get(), tracer_source,
+    ExpectOutputterBeginMocks(outputter_ref_.get(), source,
                               category_name, trace_name);
     ASSERT_TRUE(tracer.Begin(category_name, trace_name, source));
 
@@ -470,7 +566,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ExpectDisjointOutputMocks(outputter_ref_.get(),
                               expect_start_time, expect_end_time);
 
-    ExpectOutputterEndMocks(outputter_ref_.get(), tracer_source,
+    ExpectOutputterEndMocks(outputter_ref_.get(), source,
                             category_name, trace_name,
                             expect_start_time, expect_end_time, true, false);
 
@@ -478,6 +574,60 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ASSERT_TRUE(tracer.EndDecoding());
 
     outputter_ref_ = NULL;
+  }
+
+  void DoOutsideDisjointTest() {
+    ExpectTracerOffsetQueryMocks();
+    gl_fake_queries_.ExpectGetErrorCalls(*gl_);
+
+    const std::string category_name("trace_category");
+    const std::string trace_name("trace_test");
+    const GpuTracerSource source = static_cast<GpuTracerSource>(0);
+    const int64 offset_time = 3231;
+    const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
+    const GLint64 end_timestamp = 32 * base::Time::kNanosecondsPerMicrosecond;
+    const int64 expect_start_time =
+        (start_timestamp / base::Time::kNanosecondsPerMicrosecond) +
+        offset_time;
+    const int64 expect_end_time =
+        (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
+
+    MockGLES2Decoder decoder;
+    EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
+    EXPECT_CALL(decoder, MakeCurrent()).WillRepeatedly(Return(true));
+    GPUTracerTester tracer(&decoder);
+    tracer.SetOutputter(outputter_ref_);
+
+    // Start a trace before tracing is enabled.
+    tracer.SetTracingEnabled(false);
+    ASSERT_TRUE(tracer.BeginDecoding());
+    ASSERT_TRUE(tracer.Begin(category_name, trace_name, source));
+    ASSERT_TRUE(tracer.EndDecoding());
+
+    // Enabling traces now, trace should be ongoing.
+    tracer.SetTracingEnabled(true);
+    gl_fake_queries_.SetCurrentGLTime(start_timestamp);
+    g_fakeCPUTime = expect_start_time;
+
+    // Disjoints before we start tracing anything should not do anything.
+    ExpectNoDisjointOutputMocks(outputter_ref_.get());
+    gl_fake_queries_.SetDisjoint();
+
+    ExpectTraceQueryMocks();
+    ExpectOutputterBeginMocks(outputter_ref_.get(), source,
+                              category_name, trace_name);
+    ASSERT_TRUE(tracer.BeginDecoding());
+
+    // Set times so each source has a different time.
+    gl_fake_queries_.SetCurrentGLTime(end_timestamp);
+    g_fakeCPUTime = expect_end_time;
+
+    ExpectOutputterEndMocks(outputter_ref_.get(), source, category_name,
+                            trace_name, expect_start_time,
+                            expect_end_time, true, true);
+
+    ASSERT_TRUE(tracer.End(source));
+    ASSERT_TRUE(tracer.EndDecoding());
   }
 };
 
@@ -520,6 +670,22 @@ TEST_F(GpuDisjointTimerTracerTest, DisjointTimerBasicTracerTest) {
   DoBasicTracerTest();
 }
 
+TEST_F(InvalidTimerTracerTest, InvalidTimerDisabledTest) {
+  DoDisabledTracingTest();
+}
+
+TEST_F(GpuEXTTimerTracerTest, EXTTimerDisabledTest) {
+  DoDisabledTracingTest();
+}
+
+TEST_F(GpuARBTimerTracerTest, ARBTimerDisabledTest) {
+  DoDisabledTracingTest();
+}
+
+TEST_F(GpuDisjointTimerTracerTest, DisjointTimerDisabledTest) {
+  DoDisabledTracingTest();
+}
+
 TEST_F(InvalidTimerTracerTest, InvalidTimerTracerMarkersTest) {
   DoTracerMarkersTest();
 }
@@ -528,7 +694,7 @@ TEST_F(GpuEXTTimerTracerTest, EXTTimerTracerMarkersTest) {
   DoTracerMarkersTest();
 }
 
-TEST_F(GpuARBTimerTracerTest, ARBTimerBasicTracerMarkersTest) {
+TEST_F(GpuARBTimerTracerTest, ARBTimerTracerMarkersTest) {
   DoTracerMarkersTest();
 }
 
@@ -536,8 +702,28 @@ TEST_F(GpuDisjointTimerTracerTest, DisjointTimerBasicTracerMarkersTest) {
   DoTracerMarkersTest();
 }
 
+TEST_F(InvalidTimerTracerTest, InvalidTimerOngoingTracerMarkersTest) {
+  DoOngoingTracerMarkerTest();
+}
+
+TEST_F(GpuEXTTimerTracerTest, EXTTimerOngoingTracerMarkersTest) {
+  DoOngoingTracerMarkerTest();
+}
+
+TEST_F(GpuARBTimerTracerTest, ARBTimerBasicOngoingTracerMarkersTest) {
+  DoOngoingTracerMarkerTest();
+}
+
+TEST_F(GpuDisjointTimerTracerTest, DisjointTimerOngoingTracerMarkersTest) {
+  DoOngoingTracerMarkerTest();
+}
+
 TEST_F(GpuDisjointTimerTracerTest, DisjointTimerDisjointTraceTest) {
   DoDisjointTest();
+}
+
+TEST_F(GpuDisjointTimerTracerTest, NonrelevantDisjointTraceTest) {
+  DoOutsideDisjointTest();
 }
 
 class GPUTracerTest : public GpuServiceTest {
