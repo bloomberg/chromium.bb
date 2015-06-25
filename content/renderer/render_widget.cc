@@ -491,6 +491,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       display_mode_(blink::WebDisplayModeUndefined),
       has_focus_(false),
       handling_input_event_(false),
+      handling_event_overscroll_(nullptr),
       handling_ime_event_(false),
       handling_event_type_(WebInputEvent::Undefined),
       ignore_ack_for_mouse_move_from_debugger_(false),
@@ -1067,12 +1068,20 @@ void RenderWidget::OnSwapBuffersComplete() {
 void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
                                       const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
-  base::AutoReset<bool> handling_input_event_resetter(
-      &handling_input_event_, true);
   if (!input_event)
     return;
+  base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
+                                                      true);
   base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
       &handling_event_type_, input_event->type);
+
+  // Calls into |didOverscroll()| while handling this event will populate
+  // |event_overscroll|, which in turn will be bundled with the event ack.
+  scoped_ptr<DidOverscrollParams> event_overscroll;
+  base::AutoReset<scoped_ptr<DidOverscrollParams>*>
+      handling_event_overscroll_resetter(&handling_event_overscroll_,
+                                         &event_overscroll);
+
 #if defined(OS_ANDROID)
   // On Android, when a key is pressed or sent from the Keyboard using IME,
   // |AdapterInputConnection| generates input key events to make sure all JS
@@ -1226,6 +1235,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   if (WebInputEventTraits::WillReceiveAckFromRenderer(*input_event) &&
       !no_ack) {
     InputEventAck ack(input_event->type, ack_result, swap_latency_info,
+                      event_overscroll.Pass(),
                       WebInputEventTraits::GetUniqueTouchEventId(*input_event));
     scoped_ptr<IPC::Message> response(
         new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
@@ -1251,6 +1261,8 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     } else {
       Send(response.release());
     }
+  } else {
+    DCHECK(!event_overscroll) << "Unexpected overscroll for un-acked event";
   }
   if (!no_ack && RenderThreadImpl::current()) {
     RenderThreadImpl::current()
@@ -2221,8 +2233,6 @@ void RenderWidget::didOverscroll(
     const blink::WebFloatPoint& position,
     const blink::WebFloatSize& velocity) {
   DidOverscrollParams params;
-  // TODO(jdduke): Consider bundling the overscroll with the input event ack to
-  // save an IPC.
   params.accumulated_overscroll = gfx::Vector2dF(
       accumulatedRootOverScroll.width, accumulatedRootOverScroll.height);
   params.latest_overscroll_delta =
@@ -2232,6 +2242,14 @@ void RenderWidget::didOverscroll(
   params.current_fling_velocity =
       gfx::Vector2dF(-velocity.width, -velocity.height);
   params.causal_event_viewport_point = gfx::PointF(position.x, position.y);
+
+  // If we're currently handling an event, stash the overscroll data such that
+  // it can be bundled in the event ack.
+  if (handling_event_overscroll_) {
+    handling_event_overscroll_->reset(new DidOverscrollParams(params));
+    return;
+  }
+
   Send(new InputHostMsg_DidOverscroll(routing_id_, params));
 }
 

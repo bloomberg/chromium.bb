@@ -87,6 +87,7 @@ class RenderWidgetCompositor;
 class RenderWidgetTest;
 class ResizingModeSelector;
 struct ContextMenuParams;
+struct DidOverscrollParams;
 struct WebPluginGeometry;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -677,6 +678,12 @@ class CONTENT_EXPORT RenderWidget
 
   // Are we currently handling an input event?
   bool handling_input_event_;
+
+  // Used to intercept overscroll notifications while an event is being
+  // handled. If the event causes overscroll, the overscroll metadata can be
+  // bundled in the event ack, saving an IPC.  Note that we must continue
+  // supporting overscroll IPC notifications due to fling animation updates.
+  scoped_ptr<DidOverscrollParams>* handling_event_overscroll_;
 
   // Are we currently handling an ime event?
   bool handling_ime_event_;
