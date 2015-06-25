@@ -6789,12 +6789,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION" desc="Description of about:flags option to enable Enhanced Bookmarks extension.">
         Provides an off switch for enhanced bookmarks experiment
       </message>
-      <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME" desc="Title for the flag to enable showing permissions requests in bubbles.">
-        Use Bubbles for Permission Requests
-      </message>
-      <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION" desc="Description for the flag to enable showing permissions requests in bubbles.">
-        Show content permission requests (e.g. notifications, quota, camera use, microphone use) in bubbles instead of info bars.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_NAME" desc="Title for the flag to enable the site engagement service.">
         Enable Site Engagement Service
       </message>

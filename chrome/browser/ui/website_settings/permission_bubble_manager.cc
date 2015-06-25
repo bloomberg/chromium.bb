@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
@@ -14,11 +13,6 @@
 #include "content/public/browser/user_metrics.h"
 
 namespace {
-
-// String constants to control whether bubbles are enabled by default.
-const char kTrialName[] = "PermissionBubbleRollout";
-const char kEnabled[] = "Enabled";
-const char kDisabled[] = "Disabled";
 
 class CancelledRequest : public PermissionBubbleRequest {
  public:
@@ -69,21 +63,13 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
 
 // static
 bool PermissionBubbleManager::Enabled() {
-  // Command line flags take precedence.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePermissionsBubbles))
-    return true;
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  return false;
+#endif
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePermissionsBubbles))
     return false;
-
-  std::string group(base::FieldTrialList::FindFullName(kTrialName));
-  if (group == kEnabled)
-    return true;
-  if (group == kDisabled)
-    return false;
-
-  return false;
+  return true;
 }
 
 PermissionBubbleManager::PermissionBubbleManager(

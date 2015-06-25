@@ -94,13 +94,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       manager->Closing();
   }
 
-  // Use either the bubble or the infobar.
-  void StartUsingPermissionBubble() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePermissionsBubbles);
-    EXPECT_TRUE(PermissionBubbleManager::Enabled());
-  }
-
   void TestAskAndGrant_TestContent() {
     TestPermissionContext permission_context(
         profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
@@ -237,15 +230,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 // saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndGrant) {
   TestAskAndGrant_TestContent();
-  StartUsingPermissionBubble();
-  TestAskAndGrant_TestContent();
 }
 
 // Simulates clicking Dismiss (X) in the infobar/bubble.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestAskAndDismiss) {
-  TestAskAndDismiss_TestContent();
-  StartUsingPermissionBubble();
   TestAskAndDismiss_TestContent();
 }
 
@@ -262,15 +251,15 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
 #endif
 }
 
-TEST_F(PermissionContextBaseTests, TestGrantAndRevoke) {
+#if defined(OS_ANDROID)
+// This test is specific to Android because other platforms use bubbles.
+TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithInfobars) {
   TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
   TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                                  CONTENT_SETTING_ASK);
-#if defined(OS_ANDROID)
   TestGrantAndRevoke_TestContent(
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, CONTENT_SETTING_ASK);
-#endif
   // TODO(timvolodine): currently no test for
   // CONTENT_SETTINGS_TYPE_NOTIFICATIONS because notification permissions work
   // differently with infobars as compared to bubbles (crbug.com/453784).
@@ -278,10 +267,12 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevoke) {
   // CONTENT_SETTINGS_TYPE_PUSH_MESSAGING because infobars do not implement push
   // messaging permissions (crbug.com/453788).
 }
+#endif
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Simulates granting and revoking of permissions using permission bubbles.
+// This test shouldn't run on mobile because mobile platforms use infobars.
 TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
-  StartUsingPermissionBubble();
   TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                  CONTENT_SETTING_ASK);
 #if defined(ENABLE_NOTIFICATIONS)
@@ -292,8 +283,5 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevokeWithBubbles) {
                                  CONTENT_SETTING_ASK);
   TestGrantAndRevoke_TestContent(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                                  CONTENT_SETTING_ASK);
-#if defined(OS_ANDROID)
-  TestGrantAndRevoke_TestContent(
-      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, CONTENT_SETTING_ASK);
-#endif
 }
+#endif

@@ -116,10 +116,10 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(PermissionBubbleManagerTest, TestFlag) {
-  EXPECT_FALSE(PermissionBubbleManager::Enabled());
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnablePermissionsBubbles);
   EXPECT_TRUE(PermissionBubbleManager::Enabled());
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePermissionsBubbles);
+  EXPECT_FALSE(PermissionBubbleManager::Enabled());
 }
 
 TEST_F(PermissionBubbleManagerTest, SingleRequest) {
@@ -559,4 +559,3 @@ TEST_F(PermissionBubbleManagerTest, RequestsDontNeedUserGesture) {
 
   EXPECT_TRUE(view_.shown_);
 }
-

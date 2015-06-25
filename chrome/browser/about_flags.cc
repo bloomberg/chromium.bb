@@ -1520,12 +1520,6 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          autofill::switches::kEnableSingleClickAutofill,
          autofill::switches::kDisableSingleClickAutofill)},
-    {"enable-permissions-bubbles",
-     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
-     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,
-     kOsCrOS | kOsMac | kOsWin | kOsLinux,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePermissionsBubbles,
-                               switches::kDisablePermissionsBubbles)},
     {"enable-site-engagement-service",
      IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_NAME,
      IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_DESCRIPTION,
