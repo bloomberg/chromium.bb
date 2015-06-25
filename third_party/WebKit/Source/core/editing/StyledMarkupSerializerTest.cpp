@@ -5,65 +5,28 @@
 #include "config.h"
 #include "core/editing/StyledMarkupSerializer.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/Range.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/markup.h"
-#include "core/frame/FrameView.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/geometry/IntSize.h"
-#include "wtf/Compiler.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/testing/WTFTestHelpers.h"
-#include <gtest/gtest.h>
-#include <string>
+#include "core/editing/EditingTestBase.h"
 
 namespace blink {
 
 // This is smoke test of |StyledMarkupSerializer|. Full testing will be done
 // in layout tests.
-class StyledMarkupSerializerTest : public ::testing::Test {
+class StyledMarkupSerializerTest : public EditingTestBase {
 protected:
-    void SetUp() override;
-
-    HTMLDocument& document() const { return *m_document; }
-
     template <typename Tree>
     std::string serialize(EAnnotateForInterchange = DoNotAnnotateForInterchange);
 
     template <typename Tree>
     std::string serializePart(const typename Tree::PositionType& start, const typename Tree::PositionType& end, EAnnotateForInterchange = DoNotAnnotateForInterchange);
-
-    void setBodyContent(const char*);
-    PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char*);
-
-private:
-    OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    HTMLDocument* m_document;
 };
-
-void StyledMarkupSerializerTest::SetUp()
-{
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_document = toHTMLDocument(&m_dummyPageHolder->document());
-    ASSERT(m_document);
-}
 
 template <typename Tree>
 std::string StyledMarkupSerializerTest::serialize(EAnnotateForInterchange shouldAnnotate)
 {
     using PositionType = typename Tree::PositionType;
-    PositionType start = PositionType(m_document->body(), PositionType::PositionIsBeforeChildren);
-    PositionType end = PositionType(m_document->body(), PositionType::PositionIsAfterChildren);
+    PositionType start = PositionType(document().body(), PositionType::PositionIsBeforeChildren);
+    PositionType end = PositionType(document().body(), PositionType::PositionIsAfterChildren);
     return createMarkup(start, end, shouldAnnotate).utf8().data();
 }
 
@@ -71,25 +34,6 @@ template <typename Tree>
 std::string StyledMarkupSerializerTest::serializePart(const typename Tree::PositionType& start, const typename Tree::PositionType& end, EAnnotateForInterchange shouldAnnotate)
 {
     return createMarkup(start, end, shouldAnnotate).utf8().data();
-}
-
-static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
-{
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
-    shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
-    return shadowRoot.release();
-}
-
-void StyledMarkupSerializerTest::setBodyContent(const char* bodyContent)
-{
-    document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
-}
-
-PassRefPtrWillBeRawPtr<ShadowRoot> StyledMarkupSerializerTest::setShadowContent(const char* shadowContent)
-{
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-    document().recalcDistribution();
-    return shadowRoot;
 }
 
 TEST_F(StyledMarkupSerializerTest, TextOnly)
