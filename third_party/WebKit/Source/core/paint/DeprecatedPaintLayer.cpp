@@ -594,6 +594,9 @@ void DeprecatedPaintLayer::dirtyVisibleContentStatus()
     m_visibleContentStatusDirty = true;
     if (parent())
         parent()->dirtyAncestorChainVisibleDescendantStatus();
+    // Non-self-painting layers paint into their ancestor layer, and count as part of the "visible contents" of the parent, so we need to dirty it.
+    if (!isSelfPaintingLayer())
+        parent()->dirtyVisibleContentStatus();
 }
 
 void DeprecatedPaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visibility)
@@ -664,12 +667,12 @@ void DeprecatedPaintLayer::updateDescendantDependentFlags()
             m_hasVisibleContent = false;
             LayoutObject* r = layoutObject()->slowFirstChild();
             while (r) {
-                if (r->style()->visibility() == VISIBLE && !r->hasLayer()) {
+                if (r->style()->visibility() == VISIBLE && (!r->hasLayer() || !r->enclosingLayer()->isSelfPaintingLayer())) {
                     m_hasVisibleContent = true;
                     break;
                 }
                 LayoutObject* layoutObjectFirstChild = r->slowFirstChild();
-                if (layoutObjectFirstChild && !r->hasLayer()) {
+                if (layoutObjectFirstChild && (!r->hasLayer() || !r->enclosingLayer()->isSelfPaintingLayer())) {
                     r = layoutObjectFirstChild;
                 } else if (r->nextSibling()) {
                     r = r->nextSibling();
@@ -1156,6 +1159,10 @@ void DeprecatedPaintLayer::addChild(DeprecatedPaintLayer* child, DeprecatedPaint
         // off dirty in that case anyway.
         child->stackingNode()->dirtyStackingContextZOrderLists();
     }
+
+    // Non-self-painting children paint into this layer, so the visible contents status of this layer is affected.
+    if (!child->isSelfPaintingLayer())
+        dirtyVisibleContentStatus();
 
     dirtyAncestorChainVisibleDescendantStatus();
     dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
