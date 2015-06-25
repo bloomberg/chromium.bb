@@ -81,6 +81,7 @@ private:
     void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
 
+    FrameSelection& selection() const;
 
     RawPtrWillBeMember<LocalFrame> const m_frame;
     bool m_mouseDownMayStartSelect;

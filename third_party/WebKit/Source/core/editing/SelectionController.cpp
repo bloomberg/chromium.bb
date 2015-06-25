@@ -123,7 +123,7 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node
         m_selectionState = SelectionState::PlacedCaret;
     }
 
-    m_frame->selection().setNonDirectionalSelectionIfNeeded(selection, granularity);
+    this->selection().setNonDirectionalSelectionIfNeeded(selection, granularity);
 
     return true;
 }
@@ -213,7 +213,7 @@ bool SelectionController::handleMousePressEventDoubleClick(const MouseEventWithH
     if (event.event().button() != LeftButton)
         return false;
 
-    if (m_frame->selection().isRange()) {
+    if (selection().isRange()) {
         // A double-click when range is already selected
         // should not change the selection.  So, do not call
         // selectClosestWordFromMouseEvent, but do set
@@ -278,7 +278,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     // existing selection so we can allow for text dragging.
     if (FrameView* view = m_frame->view()) {
         LayoutPoint vPoint = view->rootFrameToContents(event.event().position());
-        if (!extendSelection && m_frame->selection().contains(vPoint)) {
+        if (!extendSelection && selection().contains(vPoint)) {
             m_mouseDownWasSingleClickInSelection = true;
             return false;
         }
@@ -290,7 +290,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
         visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode), DOWNSTREAM);
     PositionType pos = Strategy::toPositionType(visiblePos.deepEquivalent());
 
-    VisibleSelection newSelection = m_frame->selection().selection();
+    VisibleSelection newSelection = selection().selection();
     TextGranularity granularity = CharacterGranularity;
 
     if (extendSelection && newSelection.isCaretOrRange()) {
@@ -319,9 +319,9 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
             newSelection.setExtent(pos);
         }
 
-        if (m_frame->selection().granularity() != CharacterGranularity) {
-            granularity = m_frame->selection().granularity();
-            expandSelectionUsingGranularity(newSelection, m_frame->selection().granularity());
+        if (selection().granularity() != CharacterGranularity) {
+            granularity = selection().granularity();
+            expandSelectionUsingGranularity(newSelection, selection().granularity());
         }
     } else {
         newSelection = expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePos));
@@ -397,7 +397,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
     if (!target)
         return;
 
-    PositionWithAffinity rawTargetPosition = m_frame->selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
+    PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
     VisiblePosition targetPosition = VisiblePosition(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
@@ -405,7 +405,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
 
     // Restart the selection if this is the first mouse move. This work is usually
     // done in handleMousePressEvent, but not if the mouse press was on an existing selection.
-    VisibleSelection newSelection = m_frame->selection().selection();
+    VisibleSelection newSelection = selection().selection();
 
     // Special case to limit selection to the containing block for SVG text.
     // FIXME: Isn't there a better non-SVG-specific way to do this?
@@ -453,10 +453,10 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         newSelection.setExtent(targetPosition);
     }
 
-    if (m_frame->selection().granularity() != CharacterGranularity)
-        expandSelectionUsingGranularity(newSelection, m_frame->selection().granularity());
+    if (selection().granularity() != CharacterGranularity)
+        expandSelectionUsingGranularity(newSelection, selection().granularity());
 
-    m_frame->selection().setNonDirectionalSelectionIfNeeded(newSelection, m_frame->selection().granularity(),
+    selection().setNonDirectionalSelectionIfNeeded(newSelection, selection().granularity(),
         FrameSelection::AdjustEndpointsAtBidiBoundary);
 }
 
@@ -470,7 +470,7 @@ bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestRes
     // editing, place the caret.
     if (m_mouseDownWasSingleClickInSelection && m_selectionState != SelectionState::ExtendedSelection
         && dragStartPos == event.event().position()
-        && m_frame->selection().isRange()
+        && selection().isRange()
         && event.event().button() != RightButton) {
         VisibleSelection newSelection;
         Node* node = event.innerNode();
@@ -480,14 +480,14 @@ bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestRes
             newSelection = VisibleSelection(pos);
         }
 
-        setSelectionIfNeeded(m_frame->selection(), newSelection);
+        setSelectionIfNeeded(selection(), newSelection);
 
         handled = true;
     }
 
-    m_frame->selection().notifyLayoutObjectOfSelectionChange(UserTriggered);
+    selection().notifyLayoutObjectOfSelectionChange(UserTriggered);
 
-    m_frame->selection().selectFrameElementInParentIfFullySelected();
+    selection().selectFrameElementInParentIfFullySelected();
 
     if (event.event().button() == MiddleButton && !event.isOverLink()) {
         // Ignore handled, since we want to paste to where the caret was placed anyway.
@@ -546,7 +546,7 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
 #endif
             )) {
             selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend);
-            if (m_frame->selection().isRange())
+            if (selection().isRange())
                 return true;
         }
     }
@@ -555,12 +555,12 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
 
 void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResults& mev, const LayoutPoint& position)
 {
-    if (!m_frame->selection().contains(position)
+    if (!selection().contains(position)
         && !mev.scrollbar()
         // FIXME: In the editable case, word selection sometimes selects content that isn't underneath the mouse.
         // If the selection is non-editable, we do word selection to make it easier to use the contextual menu items
         // available for text selections.  But only if we're above text.
-        && (m_frame->selection().isContentEditable() || (mev.innerNode() && mev.innerNode()->isTextNode()))) {
+        && (selection().isContentEditable() || (mev.innerNode() && mev.innerNode()->isTextNode()))) {
         m_mouseDownMayStartSelect = true; // context menu events are always allowed to perform a selection
 
         if (mev.hitTestResult().isMisspelled())
@@ -577,11 +577,11 @@ void SelectionController::passMousePressEventToSubframe(const MouseEventWithHitT
     // really strange (having the whole frame be greyed out), so we deselect the
     // selection.
     IntPoint p = m_frame->view()->rootFrameToContents(mev.event().position());
-    if (m_frame->selection().contains(p)) {
+    if (selection().contains(p)) {
         VisiblePosition visiblePos(
             mev.innerNode()->layoutObject()->positionForPoint(mev.localPoint()));
         VisibleSelection newSelection(visiblePos);
-        m_frame->selection().setSelection(newSelection);
+        selection().setSelection(newSelection);
     }
 }
 
@@ -603,6 +603,11 @@ bool SelectionController::mouseDownMayStartSelect() const
 bool SelectionController::mouseDownWasSingleClickInSelection() const
 {
     return m_mouseDownWasSingleClickInSelection;
+}
+
+FrameSelection& SelectionController::selection() const
+{
+    return m_frame->selection();
 }
 
 } // namespace blink
