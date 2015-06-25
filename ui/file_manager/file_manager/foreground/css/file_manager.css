@@ -1936,8 +1936,10 @@ list.autocomplete-suggestions > [lead] {
   background-color: rgba(0, 0, 0, 0.08);
 }
 
-#gear-menu {
-  margin-top: 8px;
+#gear-menu,
+#sort-menu,
+#tasks-menu {
+  margin-top: 2px;
 }
 
 #gear-menu > cr-menu-item:not(.menuitem-button),
