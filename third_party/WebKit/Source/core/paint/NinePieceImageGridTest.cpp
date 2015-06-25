@@ -21,7 +21,7 @@ public:
 
     PassRefPtr<StyleImage> generatedImage()
     {
-        RefPtr<CSSLinearGradientValue> gradient = CSSLinearGradientValue::create(Repeating);
+        RefPtrWillBeRawPtr<CSSLinearGradientValue> gradient = CSSLinearGradientValue::create(Repeating);
         RefPtr<StyleGeneratedImage> image = StyleGeneratedImage::create(gradient.get());
         return image;
     }
@@ -268,4 +268,3 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting)
 
 } // namespace
 } // namespace blink
-
