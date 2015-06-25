@@ -5,7 +5,10 @@
   'variables': {
     'variables': {
       'native_lib_placeholders_file%': '',
-      'chrome_apk_use_relocation_packer%': 1,
+      # Temporarily turn off all relocation packing, pending fixes for
+      # breakpad problems revealed by moving to Android-style packing.
+      # See http://crbug.com/499747.
+      'chrome_apk_use_relocation_packer%': 0,
       'conditions': [
         # Use the chromium linker unless cygprofile instrumentation is active.
         # Chromium linker causes instrumentation to return incorrect results.
