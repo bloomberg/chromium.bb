@@ -29,71 +29,98 @@ namespace {
 
 // The default list of languages the Google translation server supports.
 // We use this list until we receive the list that the server exposes.
-// For information, here is the list of languages that Chrome can be run in
-// but that the translation server does not support:
-// am Amharic
-// bn Bengali
-// gu Gujarati
-// kn Kannada
-// ml Malayalam
-// mr Marathi
-// ta Tamil
-// te Telugu
+// Server also supports "hmm" (Hmong) and "jw" (Javanese), but these are
+// excluded because Chrome l10n library does not support it.
 const char* const kDefaultSupportedLanguages[] = {
   "af",     // Afrikaans
-  "sq",     // Albanian
   "ar",     // Arabic
+  "az",     // Azerbaijani
   "be",     // Belarusian
   "bg",     // Bulgarian
+  "bn",     // Bengali
+  "bs",     // Bosnian
   "ca",     // Catalan
-  "zh-CN",  // Chinese (Simplified)
-  "zh-TW",  // Chinese (Traditional)
-  "hr",     // Croatian
+  "ceb",    // Cebuano
   "cs",     // Czech
+  "cy",     // Welsh
   "da",     // Danish
-  "nl",     // Dutch
-  "en",     // English
-  "eo",     // Esperanto
-  "et",     // Estonian
-  "tl",     // Filipino
-  "fi",     // Finnish
-  "fr",     // French
-  "gl",     // Galician
   "de",     // German
   "el",     // Greek
-  "ht",     // Haitian Creole
-  "iw",     // Hebrew
-  "hi",     // Hindi
-  "hu",     // Hungarian
-  "is",     // Icelandic
-  "id",     // Indonesian
+  "en",     // English
+  "eo",     // Esperanto
+  "es",     // Spanish
+  "et",     // Estonian
+  "eu",     // Basque
+  "fa",     // Persian
+  "fi",     // Finnish
+  "fr",     // French
   "ga",     // Irish
+  "gl",     // Galician
+  "gu",     // Gujarati
+  "ha",     // Hausa
+  "hi",     // Hindi
+  "hr",     // Croatian
+  "ht",     // Haitian Creole
+  "hu",     // Hungarian
+  "hy",     // Armenian
+  "id",     // Indonesian
+  "ig",     // Igbo
+  "is",     // Icelandic
   "it",     // Italian
+  "iw",     // Hebrew
   "ja",     // Japanese
+  "ka",     // Georgian
+  "kk",     // Kazakh
+  "km",     // Khmer
+  "kn",     // Kannada
   "ko",     // Korean
-  "lv",     // Latvian
+  "la",     // Latin
+  "lo",     // Lao
   "lt",     // Lithuanian
+  "lv",     // Latvian
+  "mg",     // Malagasy
+  "mi",     // Maori
   "mk",     // Macedonian
+  "ml",     // Malayalam
+  "mn",     // Mongolian
+  "mr",     // Marathi
   "ms",     // Malay
   "mt",     // Maltese
+  "my",     // Burmese
+  "ne",     // Nepali
+  "nl",     // Dutch
   "no",     // Norwegian
-  "fa",     // Persian
+  "ny",     // Nyanja
+  "pa",     // Punjabi
   "pl",     // Polish
   "pt",     // Portuguese
   "ro",     // Romanian
   "ru",     // Russian
-  "sr",     // Serbian
+  "si",     // Sinhala
   "sk",     // Slovak
   "sl",     // Slovenian
-  "es",     // Spanish
-  "sw",     // Swahili
+  "so",     // Somali
+  "sq",     // Albanian
+  "sr",     // Serbian
+  "st",     // Southern Sotho
+  "su",     // Sundanese
   "sv",     // Swedish
+  "sw",     // Swahili
+  "ta",     // Tamil
+  "te",     // Telugu
+  "tg",     // Tajik
   "th",     // Thai
+  "tl",     // Tagalog
   "tr",     // Turkish
   "uk",     // Ukrainian
+  "ur",     // Urdu
+  "uz",     // Uzbek
   "vi",     // Vietnamese
-  "cy",     // Welsh
   "yi",     // Yiddish
+  "yo",     // Yoruba
+  "zh-CN",  // Chinese (Simplified)
+  "zh-TW",  // Chinese (Traditional)
+  "zu",     // Zulu
 };
 
 // Constant URL string to fetch server supporting language list.
