@@ -47,7 +47,9 @@ class AudioManagerHelper : public base::PowerObserver {
  public:
   AudioManagerHelper()
       : max_hung_task_time_(base::TimeDelta::FromMinutes(1)),
-        hang_detection_enabled_(true) {}
+        hang_detection_enabled_(true),
+        io_task_running_(false),
+        audio_task_running_(false) {}
   ~AudioManagerHelper() override {}
 
   void StartHangTimer(
@@ -56,6 +58,7 @@ class AudioManagerHelper : public base::PowerObserver {
     monitor_task_runner_ = monitor_task_runner;
     base::PowerMonitor::Get()->AddObserver(this);
     hang_failures_ = 0;
+    io_task_running_ = audio_task_running_ = true;
     UpdateLastAudioThreadTimeTick();
     CrashOnAudioThreadHang();
   }
@@ -73,6 +76,21 @@ class AudioManagerHelper : public base::PowerObserver {
     hang_detection_enabled_ = true;
     last_audio_thread_timer_tick_ = base::TimeTicks::Now();
     hang_failures_ = 0;
+
+    // If either of the tasks were stopped during suspend, start them now.
+    if (!audio_task_running_) {
+      audio_task_running_ = true;
+
+      base::AutoUnlock unlock(hang_lock_);
+      UpdateLastAudioThreadTimeTick();
+    }
+
+    if (!io_task_running_) {
+      io_task_running_ = true;
+
+      base::AutoUnlock unlock(hang_lock_);
+      CrashOnAudioThreadHang();
+    }
   }
 
   // Runs on |monitor_task_runner| typically, but may be started on any thread.
@@ -80,21 +98,20 @@ class AudioManagerHelper : public base::PowerObserver {
     {
       base::AutoLock lock(hang_lock_);
 
-      // Don't attempt to verify the tick time if the system is in the process
-      // of suspending or resuming.
-      if (hang_detection_enabled_) {
-        const base::TimeTicks now = base::TimeTicks::Now();
-        const base::TimeDelta tick_delta = now - last_audio_thread_timer_tick_;
-        if (tick_delta > max_hung_task_time_) {
-          if (++hang_failures_ >= kMaxHangFailureCount) {
-            base::debug::Alias(&now);
-            base::debug::Alias(&tick_delta);
-            base::debug::Alias(&last_audio_thread_timer_tick_);
-            CHECK(false);
-          }
-        } else {
-          hang_failures_ = 0;
-        }
+      // Don't attempt to verify the tick time or post our task if the system is
+      // in the process of suspending or resuming.
+      if (!hang_detection_enabled_) {
+        io_task_running_ = false;
+        return;
+      }
+
+      DCHECK(io_task_running_);
+      const base::TimeTicks now = base::TimeTicks::Now();
+      const base::TimeDelta tick_delta = now - last_audio_thread_timer_tick_;
+      if (tick_delta > max_hung_task_time_) {
+        CHECK_LT(++hang_failures_, kMaxHangFailureCount);
+      } else {
+        hang_failures_ = 0;
       }
     }
 
@@ -111,6 +128,14 @@ class AudioManagerHelper : public base::PowerObserver {
       base::AutoLock lock(hang_lock_);
       last_audio_thread_timer_tick_ = base::TimeTicks::Now();
       hang_failures_ = 0;
+
+      // Don't post our task if the system is or will be suspended.
+      if (!hang_detection_enabled_) {
+        audio_task_running_ = false;
+        return;
+      }
+
+      DCHECK(audio_task_running_);
     }
 
     // Don't hold the lock while posting the next task.
@@ -118,7 +143,7 @@ class AudioManagerHelper : public base::PowerObserver {
         FROM_HERE,
         base::Bind(&AudioManagerHelper::UpdateLastAudioThreadTimeTick,
                    base::Unretained(this)),
-        max_hung_task_time_ / 10);
+        max_hung_task_time_ / 5);
   }
 
   AudioLogFactory* fake_log_factory() { return &fake_log_factory_; }
@@ -141,6 +166,8 @@ class AudioManagerHelper : public base::PowerObserver {
   bool hang_detection_enabled_;
   base::TimeTicks last_audio_thread_timer_tick_;
   int hang_failures_;
+  bool io_task_running_;
+  bool audio_task_running_;
 
 #if defined(OS_WIN)
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_for_testing_;
