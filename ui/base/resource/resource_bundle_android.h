@@ -28,6 +28,10 @@ UI_BASE_EXPORT int GetMainAndroidPackFd(
 UI_BASE_EXPORT int GetCommonResourcesPackFd(
     base::MemoryMappedFile::Region* out_region);
 
+// Tell ResourceBundle to locate locale pak files via
+// GetPathForAndroidLocalePakWithinApk rather than looking for them on disk.
+UI_BASE_EXPORT void SetLocalePaksStoredInApk(bool value);
+
 // Returns the path within the apk for the given locale's .pak file, or an
 // empty string if it doesn't exist.
 // Only locale paks for the active Android language can be retrieved.

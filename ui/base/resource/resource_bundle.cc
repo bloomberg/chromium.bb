@@ -198,14 +198,11 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
   return *g_shared_instance_;
 }
 
+#if !defined(OS_ANDROID)
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-#if defined(OS_ANDROID)
-  if (!GetPathForAndroidLocalePakWithinApk(locale).empty()) {
-    return true;
-  }
-#endif
   return !GetLocaleFilePath(locale, true).empty();
 }
+#endif  // !defined(OS_ANDROID)
 
 void ResourceBundle::AddDataPackFromPath(const base::FilePath& path,
                                          ScaleFactor scale_factor) {

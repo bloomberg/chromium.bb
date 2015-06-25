@@ -59,6 +59,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   // fail) just to create the ResourceBundle instance. We should refactor
   // ResourceBundle/GetApplicationLocale to not require an instance to be
   // initialized.
+  ui::SetLocalePaksStoredInApk(true);
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       base::android::GetDefaultLocale(),
       NULL,

@@ -17,6 +17,7 @@ namespace ui {
 
 namespace {
 
+bool g_locale_paks_in_apk = false;
 // It is okay to cache and share these file descriptors since the
 // ResourceBundle singleton never closes the handles.
 int g_chrome_100_percent_fd = -1;
@@ -60,10 +61,21 @@ void ResourceBundle::LoadCommonResources() {
   }
 }
 
+bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
+  if (g_locale_paks_in_apk) {
+    return !GetPathForAndroidLocalePakWithinApk(locale).empty();
+  }
+  return !GetLocaleFilePath(locale, true).empty();
+}
+
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   // Flipped image is not used on Android.
   DCHECK_EQ(rtl, RTL_DISABLED);
   return GetImageNamed(resource_id);
+}
+
+void SetLocalePaksStoredInApk(bool value) {
+  g_locale_paks_in_apk = value;
 }
 
 void LoadMainAndroidPackFile(const char* path_within_apk,
