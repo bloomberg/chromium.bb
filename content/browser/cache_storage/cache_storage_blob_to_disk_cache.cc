@@ -4,6 +4,7 @@
 
 #include "cache_storage_blob_to_disk_cache.h"
 
+#include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -22,6 +23,8 @@ CacheStorageBlobToDiskCache::CacheStorageBlobToDiskCache()
 }
 
 CacheStorageBlobToDiskCache::~CacheStorageBlobToDiskCache() {
+  if (blob_request_)
+    request_context_getter_->RemoveObserver(this);
 }
 
 void CacheStorageBlobToDiskCache::StreamBlobToCache(
@@ -40,16 +43,18 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
 
   entry_ = entry.Pass();
   callback_ = callback;
+  request_context_getter_ = request_context_getter;
 
   blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
       blob_data_handle.Pass(), request_context_getter->GetURLRequestContext(),
       this);
+  request_context_getter_->AddObserver(this);
   blob_request_->Start();
 }
 
 void CacheStorageBlobToDiskCache::OnResponseStarted(net::URLRequest* request) {
   if (!request->status().is_success()) {
-    callback_.Run(entry_.Pass(), false);
+    RunCallbackAndRemoveObserver(false);
     return;
   }
 
@@ -59,12 +64,12 @@ void CacheStorageBlobToDiskCache::OnResponseStarted(net::URLRequest* request) {
 void CacheStorageBlobToDiskCache::OnReadCompleted(net::URLRequest* request,
                                                   int bytes_read) {
   if (!request->status().is_success()) {
-    callback_.Run(entry_.Pass(), false);
+    RunCallbackAndRemoveObserver(false);
     return;
   }
 
   if (bytes_read == 0) {
-    callback_.Run(entry_.Pass(), true);
+    RunCallbackAndRemoveObserver(true);
     return;
   }
 
@@ -107,6 +112,11 @@ void CacheStorageBlobToDiskCache::OnBeforeNetworkStart(net::URLRequest* request,
   NOTREACHED();
 }
 
+void CacheStorageBlobToDiskCache::OnContextShuttingDown() {
+  DCHECK(blob_request_);
+  RunCallbackAndRemoveObserver(false);
+}
+
 void CacheStorageBlobToDiskCache::ReadFromBlob() {
   int bytes_read = 0;
   bool done = blob_request_->Read(buffer_.get(), buffer_->size(), &bytes_read);
@@ -117,12 +127,20 @@ void CacheStorageBlobToDiskCache::ReadFromBlob() {
 void CacheStorageBlobToDiskCache::DidWriteDataToEntry(int expected_bytes,
                                                       int rv) {
   if (rv != expected_bytes) {
-    callback_.Run(entry_.Pass(), false);
+    RunCallbackAndRemoveObserver(false);
     return;
   }
 
   cache_entry_offset_ += rv;
   ReadFromBlob();
+}
+
+void CacheStorageBlobToDiskCache::RunCallbackAndRemoveObserver(bool success) {
+  DCHECK(request_context_getter_);
+
+  request_context_getter_->RemoveObserver(this);
+  blob_request_.reset();
+  callback_.Run(entry_.Pass(), success);
 }
 
 }  // namespace content

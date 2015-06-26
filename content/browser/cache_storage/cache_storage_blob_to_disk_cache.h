@@ -6,11 +6,13 @@
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_BLOB_TO_DISK_CACHE_H_
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context_getter_observer.h"
 
 namespace net {
 class IOBufferWithSize;
@@ -25,7 +27,8 @@ namespace content {
 
 // Streams data from a blob and writes it to a given disk_cache::Entry.
 class CONTENT_EXPORT CacheStorageBlobToDiskCache
-    : public net::URLRequest::Delegate {
+    : public net::URLRequest::Delegate,
+      public net::URLRequestContextGetterObserver {
  public:
   using EntryAndBoolCallback =
       base::Callback<void(disk_cache::ScopedEntryPtr, bool)>;
@@ -62,12 +65,21 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
                              bool fatal) override;
   void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override;
 
+  // URLRequestContextGetterObserver override for canceling requests just
+  // before the URLRequestContext is destroyed.
+  void OnContextShuttingDown() override;
+
+ protected:
+  // Virtual for testing.
+  virtual void ReadFromBlob();
+
  private:
-  void ReadFromBlob();
   void DidWriteDataToEntry(int expected_bytes, int rv);
+  void RunCallbackAndRemoveObserver(bool success);
 
   int cache_entry_offset_;
   disk_cache::ScopedEntryPtr entry_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   int disk_cache_body_index_;
   scoped_ptr<net::URLRequest> blob_request_;
   EntryAndBoolCallback callback_;
