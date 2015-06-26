@@ -49,9 +49,9 @@ void EventPageWakeComplete(bool success) {
 scoped_ptr<content::PresentationSessionMessage>
 ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
   DCHECK(!input.is_null());
-  // TODO(haibinlu): get presentation_url&id from route_id
-  std::string presentation_url;
-  std::string presentation_id;
+  const auto& id_and_url = GetPresentationIdAndUrl(input->route_id);
+  const std::string& presentation_id = id_and_url.first;
+  const std::string& presentation_url = id_and_url.second;
   scoped_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
     case interfaces::RouteMessage::Type::TYPE_TEXT: {

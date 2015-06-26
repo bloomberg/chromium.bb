@@ -666,9 +666,8 @@ void PresentationServiceDelegateImpl::OnRouteCreated(const MediaRoute& route) {
   if (!main_frame)
     return;
   RenderFrameHostId render_frame_host_id(GetRenderFrameHostId(main_frame));
-  // TODO(imcheng): Pass in valid default presentation ID once it is
-  // available from MediaRoute URN. BUG=493365
-  std::string presentation_id;
+  std::string presentation_id =
+      GetPresentationIdAndUrl(route.media_route_id()).first;
   frame_manager_->OnPresentationSessionStarted(
       render_frame_host_id, true,
       content::PresentationSessionInfo(PresentationUrlFromMediaSource(source),

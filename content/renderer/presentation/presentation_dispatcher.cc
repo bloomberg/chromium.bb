@@ -344,6 +344,9 @@ void PresentationDispatcher::OnSessionCreated(
 
   DCHECK(!session_info.is_null());
   callback->onSuccess(new PresentationSessionClient(session_info.Pass()));
+  presentation_service_->ListenForSessionMessages(
+      base::Bind(&PresentationDispatcher::OnSessionMessagesReceived,
+                 base::Unretained(this)));
 }
 
 void PresentationDispatcher::OnSessionStateChange(
@@ -403,9 +406,6 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
       base::Unretained(this)));
   presentation_service_->ListenForSessionStateChange(base::Bind(
       &PresentationDispatcher::OnSessionStateChange,
-      base::Unretained(this)));
-  presentation_service_->ListenForSessionMessages(
-      base::Bind(&PresentationDispatcher::OnSessionMessagesReceived,
       base::Unretained(this)));
   */
 }

@@ -79,6 +79,11 @@ class MediaRoute {
   MediaRouteState state_;
 };
 
+// Return a pair of Presentation ID and URL. If the input route ID is invalid,
+// a pair of empty strings is returned.
+std::pair<std::string, std::string> GetPresentationIdAndUrl(
+    const MediaRoute::Id& id);
+
 }  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTE_H_

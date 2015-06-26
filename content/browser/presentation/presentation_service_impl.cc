@@ -457,18 +457,23 @@ void PresentationServiceImpl::ListenForSessionMessages(
 
 void PresentationServiceImpl::OnSessionMessages(
     scoped_ptr<ScopedVector<PresentationSessionMessage>> messages) {
-  DCHECK(messages.get() && !messages->empty());
   if (!on_session_messages_callback_.get()) {
     // The Reset method of this class was invoked.
     return;
   }
 
-  mojo::Array<presentation::SessionMessagePtr> mojoMessages(messages->size());
-  for (size_t i = 0; i < messages->size(); ++i) {
-    mojoMessages[i] = ToMojoSessionMessage((*messages)[i]);
+  if (!messages.get() || messages->empty()) {
+    // Error handling. Session is either closed or in error state.
+    on_session_messages_callback_->Run(
+        mojo::Array<presentation::SessionMessagePtr>());
+  } else {
+    mojo::Array<presentation::SessionMessagePtr> mojoMessages(messages->size());
+    for (size_t i = 0; i < messages->size(); ++i) {
+      mojoMessages[i] = ToMojoSessionMessage((*messages)[i]);
+    }
+    on_session_messages_callback_->Run(mojoMessages.Pass());
   }
 
-  on_session_messages_callback_->Run(mojoMessages.Pass());
   on_session_messages_callback_.reset();
 }
 

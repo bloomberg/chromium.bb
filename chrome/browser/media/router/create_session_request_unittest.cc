@@ -12,8 +12,10 @@ namespace media_router {
 
 namespace {
 
-const char kPresentationUrl[] = "http://fooUrl";
+const char kPresentationUrl[] = "http://foo.com";
 const char kPresentationId[] = "presentationId";
+const char kRouteId[] =
+    "urn:x-org.chromium:media:route:presentationId/cast-sink1/http://foo.com";
 
 }  // namespace
 
@@ -79,7 +81,7 @@ TEST_F(CreateSessionRequestTest, SuccessCallback) {
                  session_info),
       base::Bind(&CreateSessionRequestTest::FailOnError,
                  base::Unretained(this)));
-  context.MaybeInvokeSuccessCallback("routeid");
+  context.MaybeInvokeSuccessCallback(kRouteId);
   // No-op since success callback is already invoked.
   context.MaybeInvokeErrorCallback(content::PresentationError(
       content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS, "Error message"));
@@ -101,7 +103,7 @@ TEST_F(CreateSessionRequestTest, ErrorCallback) {
                  error));
   context.MaybeInvokeErrorCallback(error);
   // No-op since error callback is already invoked.
-  context.MaybeInvokeSuccessCallback("routeid");
+  context.MaybeInvokeSuccessCallback(kRouteId);
   EXPECT_TRUE(cb_invoked_);
 }
 

@@ -63,13 +63,13 @@ define('media_router_bindings', [
     if ("string" == typeof message.message) {
       return new mediaRouterMojom.RouteMessage({
         'route_id': message.routeId,
-        'type': RouteMessage.Type.TEXT,
+        'type': mediaRouterMojom.RouteMessage.Type.TEXT,
         'message': message.message,
       });
     } else {
       return new mediaRouterMojom.RouteMessage({
         'route_id': message.routeId,
-        'type': RouteMessage.Type.BINARY,
+        'type': mediaRouterMojom.RouteMessage.Type.BINARY,
         'data': message.message,
       });
     }
@@ -470,7 +470,7 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.sendRouteMessage = function(
       routeId, message) {
-    this.handlers_.sendRouteMessage(routeId, message)
+    return this.handlers_.sendRouteMessage(routeId, message)
         .then(function() {
           return true;
         }, function() {
@@ -485,11 +485,11 @@ define('media_router_bindings', [
    *    an empty list if an error occurred.
    */
   MediaRouteProvider.prototype.listenForRouteMessages = function(routeIds) {
-    this.handlers_.listenForRouteMessages(routeIds)
+    return this.handlers_.listenForRouteMessages(routeIds)
         .then(function(messages) {
-          return messages.map(messageToMojo_);
+          return {'messages': messages.map(messageToMojo_)};
         }, function() {
-          return [];
+          return {'messages': []};
         });
   };
 
