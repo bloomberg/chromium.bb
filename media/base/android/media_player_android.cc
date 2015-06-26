@@ -98,4 +98,8 @@ void MediaPlayerAndroid::SetAudible(bool is_audible) {
   }
 }
 
+base::WeakPtr<MediaPlayerAndroid> MediaPlayerAndroid::WeakPtrForUIThread() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace media

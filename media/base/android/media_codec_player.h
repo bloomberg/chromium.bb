@@ -9,34 +9,116 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "base/time/default_tick_clock.h"
 #include "media/base/android/demuxer_android.h"
 #include "media/base/android/media_player_android.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
+#include "media/base/time_delta_interpolator.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/android/scoped_java_surface.h"
+
+// The MediaCodecPlayer class implements the media player by using Android's
+// MediaCodec. It differs from MediaSourcePlayer in that it removes most
+// processing away from the UI thread: it uses a dedicated Media thread to
+// receive the data and to handle the commands.
+
+// The player works as a state machine. Here are relationships between states:
+//
+//   [ Paused ] ------------------------                         (Any state)
+//        |                             |                             |
+//        |                             v                             v
+//        | <------------------[ WaitingForConfig ]               [ Error ]
+//        |
+//        |
+//        |
+//        v
+//   [ Prefetching ] -------------------
+//        |                             |
+//        |                             v
+//        | <-----------------[ WaitingForSurface ]
+//        v
+//   [ Playing ]
+//        |
+//        |
+//        v
+//   [ Stopping ]
+
+
+//  Events and actions for pause/resume workflow.
+//  ---------------------------------------------
+//
+//                                         Start, no config:
+//    ------------------------> [ Paused ] -----------------> [   Waiting   ]
+//    |  StopDone:                                            [ for configs ]
+//    |                            ^  |                              /
+//    |                            |  |                             /
+//    |                    Pause:  |  | Start w/config:            /
+//    |                            |  |    dec.Prefetch           /
+//    |                            |  |                          /
+//    |                            |  |                         /
+//    |                            |  |                        /
+//    |                            |  |                       / DemuxerConfigs:
+//    |                            |  |                      /    dec.Prefetch
+//    |                            |  |                     /
+//    |                            |  |                    /
+//    |                            |  v                   /
+//    |                                                  /
+//    |   ------------------> [ Prefetching ]  <--------/      [   Waiting   ]
+//    |   |                   [             ] -------------->  [ for surface ]
+//    |   |                          |         PrefetchDone,         /
+//    |   |                          |          no surface:         /
+//    |   |                          |                             /
+//    |   |                          |                            /
+//    |   | StopDone w/              |                           /
+//    |   | pending start:           | PrefetchDone:            /
+//    |   |    dec.Prefetch          |   dec.Start             /
+//    |   |                          |                        / SetSurface:
+//    |   |                          |                       /     dec.Start
+//    |   |                          |                      /
+//    |   |                          v                     /
+//    |   |                                               /
+//    |   |                     [ Playing ]   <----------/
+//    |   |
+//    |   |                          |
+//    |   |                          |
+//    |   |                          | Pause: dec.RequestToStop
+//    |   |                          |
+//    |   |                          |
+//    |   |                          v
+//    |   |
+//    ------------------------- [ Stopping ]
 
 namespace media {
 
 class BrowserCdm;
+class MediaCodecAudioDecoder;
+class MediaCodecVideoDecoder;
 
 // Returns the task runner for the media thread
 MEDIA_EXPORT scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
-
-// This class implements the media player using Android's MediaCodec.
-// It differs from MediaSourcePlayer in that it removes most
-// processing away from UI thread: it uses a dedicated Media thread
-// to receive the data and to handle commands.
 class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
                                       public DemuxerAndroidClient {
  public:
+  // Typedefs for the notification callbacks
+  typedef base::Callback<void(base::TimeDelta, const gfx::Size&)>
+      MetadataChangedCallback;
+
+  typedef base::Callback<void(base::TimeDelta, base::TimeTicks)>
+      TimeUpdateCallback;
+
   // Constructs a player with the given ID and demuxer. |manager| must outlive
   // the lifetime of this object.
   MediaCodecPlayer(int player_id,
-                   MediaPlayerManager* manager,
+                   base::WeakPtr<MediaPlayerManager> manager,
                    const RequestMediaResourcesCB& request_media_resources_cb,
                    scoped_ptr<DemuxerAndroid> demuxer,
                    const GURL& frame_url);
   ~MediaCodecPlayer() override;
+
+  // A helper method that performs the media thread part of initialization.
+  void Initialize();
 
   // MediaPlayerAndroid implementation.
   void DeleteOnCorrectThread() override;
@@ -63,19 +145,123 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   void OnDemuxerSeekDone(base::TimeDelta actual_browser_seek_time) override;
   void OnDemuxerDurationChanged(base::TimeDelta duration) override;
 
-  // Helper methods
-  void Initialize();
-  void DestroySelf();
-
  private:
+  // The state machine states.
+  enum PlayerState {
+    STATE_PAUSED,
+    STATE_WAITING_FOR_CONFIG,
+    STATE_PREFETCHING,
+    STATE_PLAYING,
+    STATE_STOPPING,
+    STATE_WAITING_FOR_SURFACE,
+    STATE_ERROR,
+  };
+
+  // Cached values for the manager.
+  struct MediaMetadata {
+    base::TimeDelta duration;
+    gfx::Size video_size;
+  };
+
+  // MediaPlayerAndroid implementation.
+  // This method caches the data and calls manager's OnMediaMetadataChanged().
+  void OnMediaMetadataChanged(base::TimeDelta duration,
+                              const gfx::Size& video_size) override;
+
+  // This method caches the current time and calls manager's OnTimeUpdate().
+  void OnTimeUpdate(base::TimeDelta current_timestamp,
+                    base::TimeTicks current_time_ticks) override;
+
+  // Callbacks from decoders
+  void RequestDemuxerData(DemuxerStream::Type stream_type);
+  void OnPrefetchDone();
+  void OnStopDone();
+  void OnError();
+  void OnStarvation(DemuxerStream::Type stream_type);
+  void OnTimeIntervalUpdate(DemuxerStream::Type stream_type,
+                            base::TimeDelta now_playing,
+                            base::TimeDelta last_buffered);
+
+  // Callbacks from video decoder
+  void OnVideoCodecCreated();
+  void OnVideoResolutionChanged(const gfx::Size& size);
+
+  // Operations called from the state machine.
+  void SetState(PlayerState new_state);
+  void SetPendingSurface(gfx::ScopedJavaSurface surface);
+  bool HasPendingSurface();
+  void SetPendingStart(bool need_to_start);
+  bool HasPendingStart();
+  bool HasVideo();
+  bool HasAudio();
+  void SetDemuxerConfigs(const DemuxerConfigs& configs);
+  void StartPrefetchDecoders();
+  void StartPlaybackDecoders();
+  void StopDecoders();
+  void RequestToStopDecoders();
+  void ReleaseDecoderResources();
+
+  // Helper methods.
+  void CreateDecoders();
+  bool AudioFinished();
+  bool VideoFinished();
+  base::TimeDelta GetInterpolatedTime();
+
+  static const char* AsString(PlayerState state);
+
+  // Data.
+
   // Object for posting tasks on UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
+  // Major components: demuxer, audio and video decoders.
   scoped_ptr<DemuxerAndroid> demuxer_;
+  scoped_ptr<MediaCodecAudioDecoder> audio_decoder_;
+  scoped_ptr<MediaCodecVideoDecoder> video_decoder_;
 
-  base::WeakPtr<MediaCodecPlayer> weak_this_;
+  // The state of the state machine.
+  PlayerState state_;
+
+  // Notification callbacks, they call MediaPlayerManager.
+  base::Closure request_resources_cb_;
+  TimeUpdateCallback time_update_cb_;
+  base::Closure completion_cb_;
+
+  // A callback that updates metadata cache and calls the manager.
+  MetadataChangedCallback metadata_changed_cb_;
+
+  // We call the base class' AttachListener() and DetachListener() methods on UI
+  // thread with these callbacks.
+  base::Closure attach_listener_cb_;
+  base::Closure detach_listener_cb_;
+
+  // Error callback is posted by decoders or by this class itself if we cannot
+  // configure or start decoder.
+  base::Closure error_cb_;
+
+  // Total duration reported by demuxer.
+  base::TimeDelta duration_;
+
+  // base::TickClock used by |interpolator_|.
+  base::DefaultTickClock default_tick_clock_;
+
+  // Tracks the most recent media time update and provides interpolated values
+  // as playback progresses.
+  TimeDeltaInterpolator interpolator_;
+
+  // Pending data to be picked up by the upcoming state.
+  gfx::ScopedJavaSurface pending_surface_;
+  bool pending_start_;
+
+  // Configuration data for the manager, accessed on the UI thread.
+  MediaMetadata metadata_cache_;
+
+  // Cached current time, accessed on UI thread.
+  base::TimeDelta current_time_cache_;
+
+  base::WeakPtr<MediaCodecPlayer> media_weak_this_;
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaCodecPlayer> weak_factory_;
+  base::WeakPtrFactory<MediaCodecPlayer> media_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecPlayer);
 };

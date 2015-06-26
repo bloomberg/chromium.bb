@@ -135,7 +135,6 @@ ContentViewCore* BrowserMediaPlayerManager::GetContentViewCore() const {
 MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     const MediaPlayerHostMsg_Initialize_Params& media_player_params,
     bool hide_url_log,
-    MediaPlayerManager* manager,
     BrowserDemuxerAndroid* demuxer) {
   switch (media_player_params.type) {
     case MEDIA_PLAYER_TYPE_URL: {
@@ -146,22 +145,20 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
           media_player_params.first_party_for_cookies,
           user_agent,
           hide_url_log,
-          manager,
+          this,
           base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
                      weak_ptr_factory_.GetWeakPtr()),
           media_player_params.frame_url,
           media_player_params.allow_credentials);
-      BrowserMediaPlayerManager* browser_media_player_manager =
-          static_cast<BrowserMediaPlayerManager*>(manager);
       ContentViewCoreImpl* content_view_core_impl =
           static_cast<ContentViewCoreImpl*>(ContentViewCore::FromWebContents(
-              browser_media_player_manager->web_contents_));
+              web_contents_));
       if (!content_view_core_impl) {
         // May reach here due to prerendering. Don't extract the metadata
         // since it is expensive.
         // TODO(qinmin): extract the metadata once the user decided to load
         // the page.
-        browser_media_player_manager->OnMediaMetadataChanged(
+        OnMediaMetadataChanged(
             media_player_params.player_id, base::TimeDelta(), 0, 0, false);
       } else if (!content_view_core_impl->ShouldBlockMediaRequest(
             media_player_params.url)) {
@@ -175,7 +172,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
           HasSwitch(switches::kEnableMediaThreadForMediaPlayback)) {
         return new MediaCodecPlayer(
             media_player_params.player_id,
-            manager,
+            weak_ptr_factory_.GetWeakPtr(),
             base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
                        weak_ptr_factory_.GetWeakPtr()),
             demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
@@ -183,7 +180,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
       } else {
         return new MediaSourcePlayer(
             media_player_params.player_id,
-            manager,
+            this,
             base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
                        weak_ptr_factory_.GetWeakPtr()),
             demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
@@ -535,9 +532,7 @@ void BrowserMediaPlayerManager::OnInitialize(
       web_contents()->GetRenderProcessHost());
   MediaPlayerAndroid* player =
       CreateMediaPlayer(media_player_params,
-
                         host->GetBrowserContext()->IsOffTheRecord(),
-                        this,
                         host->browser_demuxer_android().get());
 
   if (!player)

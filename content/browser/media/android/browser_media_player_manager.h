@@ -165,7 +165,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   media::MediaPlayerAndroid* CreateMediaPlayer(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params,
       bool hide_url_log,
-      media::MediaPlayerManager* manager,
       BrowserDemuxerAndroid* demuxer);
 
   // MediaPlayerAndroid must call this before it is going to decode
