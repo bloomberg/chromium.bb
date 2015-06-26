@@ -175,6 +175,29 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 
 #endif  // OS(POSIX)
 
+#if defined(OS_MACOSX)
+class IOSurfaceManagerFilter : public IPC::MessageFilter {
+ public:
+  // Overridden from IPC::MessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(IOSurfaceManagerFilter, message)
+      IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIOSurfaceManagerToken,
+                          OnSetIOSurfaceManagerToken)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+ protected:
+  ~IOSurfaceManagerFilter() override {}
+
+  void OnSetIOSurfaceManagerToken(const IOSurfaceManagerToken& token) {
+    ChildIOSurfaceManager::GetInstance()->set_token(token);
+  }
+};
+#endif
+
 #if defined(OS_ANDROID)
 // A class that allows for triggering a clean shutdown from another
 // thread through draining the main thread's msg loop.
@@ -415,6 +438,10 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
 #endif
 
+#if defined(OS_MACOSX)
+  channel_->AddFilter(new IOSurfaceManagerFilter());
+#endif
+
   // Add filters passed here via options.
   for (auto startup_filter : options.startup_filters) {
     channel_->AddFilter(startup_filter);
@@ -596,10 +623,6 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIOSurfaceManagerToken,
-                        OnSetIOSurfaceManagerToken)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -653,13 +676,6 @@ void ChildThreadImpl::OnGetTcmallocStats() {
   base::allocator::GetStats(buffer, sizeof(buffer));
   result.append(buffer);
   Send(new ChildProcessHostMsg_TcmallocStats(result));
-}
-#endif
-
-#if defined(OS_MACOSX)
-void ChildThreadImpl::OnSetIOSurfaceManagerToken(
-    const IOSurfaceManagerToken& token) {
-  ChildIOSurfaceManager::GetInstance()->set_token(token);
 }
 #endif
 

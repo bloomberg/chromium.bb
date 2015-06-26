@@ -551,6 +551,14 @@ bool GpuProcessHost::Init() {
   if (!Send(new GpuMsg_Initialize()))
     return false;
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  io_surface_manager_token_ =
+      BrowserIOSurfaceManager::GetInstance()->GenerateGpuProcessToken();
+  // Note: A valid IOSurface manager token needs to be sent to the Gpu process
+  // before any GpuMemoryBuffer allocation requests can be sent.
+  Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
+#endif
+
   return true;
 }
 
@@ -616,12 +624,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 
 void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnChannelConnected");
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  io_surface_manager_token_ =
-      BrowserIOSurfaceManager::GetInstance()->GenerateGpuProcessToken();
-  Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
-#endif
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
@@ -887,6 +889,13 @@ void GpuProcessHost::ForceShutdown() {
   // for another GpuProcessHost.
   if (g_gpu_process_hosts[kind_] == this)
     g_gpu_process_hosts[kind_] = NULL;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (!io_surface_manager_token_.IsZero()) {
+    BrowserIOSurfaceManager::GetInstance()->InvalidateGpuProcessToken();
+    io_surface_manager_token_.SetZero();
+  }
+#endif
 
   process_->ForceShutdown();
 }
