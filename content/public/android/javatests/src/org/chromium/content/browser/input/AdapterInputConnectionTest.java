@@ -237,6 +237,11 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         public void onKeyboardBoundsUnchanged() {}
 
         @Override
+        public boolean performContextMenuAction(int id) {
+            return false;
+        }
+
+        @Override
         public View getAttachedView() {
             return null;
         }

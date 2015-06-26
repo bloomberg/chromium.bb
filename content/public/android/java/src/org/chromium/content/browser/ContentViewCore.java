@@ -753,6 +753,27 @@ public class ContentViewCore implements
                     }
 
                     @Override
+                    public boolean performContextMenuAction(int id) {
+                        assert mWebContents != null;
+                        switch (id) {
+                            case android.R.id.selectAll:
+                                mWebContents.selectAll();
+                                return true;
+                            case android.R.id.cut:
+                                mWebContents.cut();
+                                return true;
+                            case android.R.id.copy:
+                                mWebContents.copy();
+                                return true;
+                            case android.R.id.paste:
+                                mWebContents.paste();
+                                return true;
+                            default:
+                                return false;
+                        }
+                    }
+
+                    @Override
                     public View getAttachedView() {
                         return mContainerView;
                     }
@@ -1439,8 +1460,8 @@ public class ContentViewCore implements
                 int selectionEnd = Selection.getSelectionEnd(mEditable);
                 mInputConnection.setSelection(selectionEnd, selectionEnd);
             }
-        } else if (mImeAdapter != null) {
-            mImeAdapter.unselect();
+        } else if (mWebContents != null) {
+            mWebContents.unselect();
         }
     }
 
@@ -2001,22 +2022,22 @@ public class ContentViewCore implements
             mActionHandler = new SelectActionModeCallback.ActionHandler() {
                 @Override
                 public void selectAll() {
-                    mImeAdapter.selectAll();
+                    mWebContents.selectAll();
                 }
 
                 @Override
                 public void cut() {
-                    mImeAdapter.cut();
+                    mWebContents.cut();
                 }
 
                 @Override
                 public void copy() {
-                    mImeAdapter.copy();
+                    mWebContents.copy();
                 }
 
                 @Override
                 public void paste() {
-                    mImeAdapter.paste();
+                    mWebContents.paste();
                 }
 
                 @Override
@@ -2130,7 +2151,7 @@ public class ContentViewCore implements
         mUnselectAllOnActionModeDismiss = true;
         if (mActionMode == null) {
             // There is no ActionMode, so remove the selection.
-            mImeAdapter.unselect();
+            clearSelection();
         } else {
             getContentViewClient().onContextualActionBarShown();
         }
@@ -2149,7 +2170,8 @@ public class ContentViewCore implements
      * Clears the current text selection.
      */
     public void clearSelection() {
-        mImeAdapter.unselect();
+        // This method can be called during shutdown, guard against null accordingly.
+        if (mWebContents != null) mWebContents.unselect();
     }
 
     /**
@@ -2586,7 +2608,7 @@ public class ContentViewCore implements
                 new PastePopupMenuDelegate() {
                     @Override
                     public void paste() {
-                        mImeAdapter.paste();
+                        mWebContents.paste();
                         dismissTextHandles();
                     }
                 });

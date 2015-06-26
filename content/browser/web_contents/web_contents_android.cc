@@ -244,6 +244,26 @@ void WebContentsAndroid::Stop(JNIEnv* env, jobject obj) {
   web_contents_->Stop();
 }
 
+void WebContentsAndroid::Cut(JNIEnv* env, jobject obj) {
+  web_contents_->Cut();
+}
+
+void WebContentsAndroid::Copy(JNIEnv* env, jobject obj) {
+  web_contents_->Copy();
+}
+
+void WebContentsAndroid::Paste(JNIEnv* env, jobject obj) {
+  web_contents_->Paste();
+}
+
+void WebContentsAndroid::SelectAll(JNIEnv* env, jobject obj) {
+  web_contents_->SelectAll();
+}
+
+void WebContentsAndroid::Unselect(JNIEnv* env, jobject obj) {
+  web_contents_->Unselect();
+}
+
 void WebContentsAndroid::InsertCSS(
     JNIEnv* env, jobject jobj, jstring jcss) {
   web_contents_->InsertCSS(base::android::ConvertJavaStringToUTF8(env, jcss));

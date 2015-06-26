@@ -46,6 +46,11 @@ class CONTENT_EXPORT WebContentsAndroid
   bool IsLoadingToDifferentDocument(JNIEnv* env, jobject obj) const;
 
   void Stop(JNIEnv* env, jobject obj);
+  void Cut(JNIEnv* env, jobject obj);
+  void Copy(JNIEnv* env, jobject obj);
+  void Paste(JNIEnv* env, jobject obj);
+  void SelectAll(JNIEnv* env, jobject obj);
+  void Unselect(JNIEnv* env, jobject obj);
   jint GetBackgroundColor(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetURL(JNIEnv* env, jobject) const;
   base::android::ScopedJavaLocalRef<jstring> GetLastCommittedURL(JNIEnv* env,

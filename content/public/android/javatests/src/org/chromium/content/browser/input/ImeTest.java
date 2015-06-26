@@ -1014,51 +1014,51 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private void copy() {
-        final ImeAdapter adapter = mImeAdapter;
+        final WebContents webContents = mWebContents;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.copy();
+                webContents.copy();
             }
         });
     }
 
     private void cut() {
-        final ImeAdapter adapter = mImeAdapter;
+        final WebContents webContents = mWebContents;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.cut();
+                webContents.cut();
             }
         });
     }
 
     private void paste() {
-        final ImeAdapter adapter = mImeAdapter;
+        final WebContents webContents = mWebContents;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.paste();
+                webContents.paste();
             }
         });
     }
 
     private void selectAll() {
-        final ImeAdapter adapter = mImeAdapter;
+        final WebContents webContents = mWebContents;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.selectAll();
+                webContents.selectAll();
             }
         });
     }
 
     private void unselect() {
-        final ImeAdapter adapter = mImeAdapter;
+        final WebContents webContents = mWebContents;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.unselect();
+                webContents.unselect();
             }
         });
     }

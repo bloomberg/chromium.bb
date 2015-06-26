@@ -54,11 +54,6 @@ class ImeAdapterAndroid {
   void SetEditableSelectionOffsets(JNIEnv*, jobject, int start, int end);
   void SetComposingRegion(JNIEnv*, jobject, int start, int end);
   void DeleteSurroundingText(JNIEnv*, jobject, int before, int after);
-  void Unselect(JNIEnv*, jobject);
-  void SelectAll(JNIEnv*, jobject);
-  void Cut(JNIEnv*, jobject);
-  void Copy(JNIEnv*, jobject);
-  void Paste(JNIEnv*, jobject);
   void ResetImeAdapter(JNIEnv*, jobject);
 
   // Called from native -> java

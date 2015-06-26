@@ -166,6 +166,35 @@ import java.util.UUID;
     }
 
     @Override
+    public void cut() {
+        nativeCut(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void copy() {
+        nativeCopy(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void paste() {
+        nativePaste(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void selectAll() {
+        nativeSelectAll(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void unselect() {
+        // Unselect may get triggered when certain selection-related widgets
+        // are destroyed. As the timing for such destruction is unpredictable,
+        // safely guard against this case.
+        if (mNativeWebContentsAndroid == 0) return;
+        nativeUnselect(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public void insertCSS(String css) {
         if (mNativeWebContentsAndroid == 0) return;
         nativeInsertCSS(mNativeWebContentsAndroid, css);
@@ -346,6 +375,11 @@ import java.util.UUID;
     private native boolean nativeIsLoading(long nativeWebContentsAndroid);
     private native boolean nativeIsLoadingToDifferentDocument(long nativeWebContentsAndroid);
     private native void nativeStop(long nativeWebContentsAndroid);
+    private native void nativeCut(long nativeWebContentsAndroid);
+    private native void nativeCopy(long nativeWebContentsAndroid);
+    private native void nativePaste(long nativeWebContentsAndroid);
+    private native void nativeSelectAll(long nativeWebContentsAndroid);
+    private native void nativeUnselect(long nativeWebContentsAndroid);
     private native void nativeInsertCSS(long nativeWebContentsAndroid, String css);
     private native void nativeOnHide(long nativeWebContentsAndroid);
     private native void nativeOnShow(long nativeWebContentsAndroid);

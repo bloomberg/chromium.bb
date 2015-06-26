@@ -293,18 +293,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     @Override
     public boolean performContextMenuAction(int id) {
         if (DEBUG) Log.w(TAG, "performContextMenuAction [%d]", id);
-        switch (id) {
-            case android.R.id.selectAll:
-                return mImeAdapter.selectAll();
-            case android.R.id.cut:
-                return mImeAdapter.cut();
-            case android.R.id.copy:
-                return mImeAdapter.copy();
-            case android.R.id.paste:
-                return mImeAdapter.paste();
-            default:
-                return false;
-        }
+        return mImeAdapter.performContextMenuAction(id);
     }
 
     /**

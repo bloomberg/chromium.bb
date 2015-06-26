@@ -269,36 +269,6 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*, jobject,
     rfh->ExtendSelectionAndDelete(before, after);
 }
 
-void ImeAdapterAndroid::Unselect(JNIEnv* env, jobject) {
-  WebContents* wc = GetWebContents();
-  if (wc)
-    wc->Unselect();
-}
-
-void ImeAdapterAndroid::SelectAll(JNIEnv* env, jobject) {
-  WebContents* wc = GetWebContents();
-  if (wc)
-    wc->SelectAll();
-}
-
-void ImeAdapterAndroid::Cut(JNIEnv* env, jobject) {
-  WebContents* wc = GetWebContents();
-  if (wc)
-    wc->Cut();
-}
-
-void ImeAdapterAndroid::Copy(JNIEnv* env, jobject) {
-  WebContents* wc = GetWebContents();
-  if (wc)
-    wc->Copy();
-}
-
-void ImeAdapterAndroid::Paste(JNIEnv* env, jobject) {
-  WebContents* wc = GetWebContents();
-  if (wc)
-    wc->Paste();
-}
-
 void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env, jobject) {
   java_ime_adapter_.reset();
 }

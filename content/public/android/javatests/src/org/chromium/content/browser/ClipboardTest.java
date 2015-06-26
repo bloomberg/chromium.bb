@@ -13,9 +13,9 @@ import android.text.TextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.concurrent.Callable;
@@ -57,9 +57,9 @@ public class ClipboardTest extends ContentShellTestBase {
         clipboardManager.setPrimaryClip(ClipData.newPlainText(null, ""));
         assertFalse(hasPrimaryClip(clipboardManager));
 
-        ImeAdapter adapter = getContentViewCore().getImeAdapterForTest();
-        selectAll(adapter);
-        copy(adapter);
+        final WebContents webContents = getContentViewCore().getWebContents();
+        selectAll(webContents);
+        copy(webContents);
 
         // Waits until data has been made available on the Android clipboard.
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
@@ -84,20 +84,20 @@ public class ClipboardTest extends ContentShellTestBase {
         assertTrue(htmlText.contains(EXPECTED_HTML_NEEDLE));
     }
 
-    private void copy(final ImeAdapter adapter) {
+    private void copy(final WebContents webContents) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.copy();
+                webContents.copy();
             }
         });
     }
 
-    private void selectAll(final ImeAdapter adapter) {
+    private void selectAll(final WebContents webContents) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                adapter.selectAll();
+                webContents.selectAll();
             }
         });
     }

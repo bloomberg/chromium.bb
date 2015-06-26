@@ -75,6 +75,31 @@ public interface WebContents extends Parcelable {
     void stop();
 
     /**
+     * Cut the selected content.
+     */
+    void cut();
+
+    /**
+     * Copy the selected content.
+     */
+    void copy();
+
+    /**
+     * Paste content from the clipboard.
+     */
+    void paste();
+
+    /**
+     * Select all content.
+     */
+    void selectAll();
+
+    /**
+     * Clear the selection.
+     */
+    void unselect();
+
+    /**
      * Inserts css into main frame's document.
      */
     void insertCSS(String css);

@@ -71,6 +71,11 @@ public class ImeAdapter {
         void onKeyboardBoundsUnchanged();
 
         /**
+         * @see BaseInputConnection#performContextMenuAction(int)
+         */
+        boolean performContextMenuAction(int id);
+
+        /**
          * @return View that the keyboard should be attached to.
          */
         View getAttachedView();
@@ -351,6 +356,13 @@ public class ImeAdapter {
         return null;  // No printing characters were found.
     }
 
+    /**
+     * @see BaseInputConnection#performContextMenuAction(int)
+     */
+    public boolean performContextMenuAction(int id) {
+        return mViewEmbedder.performContextMenuAction(id);
+    }
+
     @VisibleForTesting
     public static KeyEvent getTypedKeyEventGuess(String oldtext, String newtext) {
         // Starting typing a new composition should add only a single character.  Any composition
@@ -554,56 +566,6 @@ public class ImeAdapter {
         return true;
     }
 
-    /**
-     * Send a request to the native counterpart to unselect text.
-     * @return Whether the native counterpart of ImeAdapter received the call.
-     */
-    public boolean unselect() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        nativeUnselect(mNativeImeAdapterAndroid);
-        return true;
-    }
-
-    /**
-     * Send a request to the native counterpart of ImeAdapter to select all the text.
-     * @return Whether the native counterpart of ImeAdapter received the call.
-     */
-    public boolean selectAll() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        nativeSelectAll(mNativeImeAdapterAndroid);
-        return true;
-    }
-
-    /**
-     * Send a request to the native counterpart of ImeAdapter to cut the selected text.
-     * @return Whether the native counterpart of ImeAdapter received the call.
-     */
-    public boolean cut() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        nativeCut(mNativeImeAdapterAndroid);
-        return true;
-    }
-
-    /**
-     * Send a request to the native counterpart of ImeAdapter to copy the selected text.
-     * @return Whether the native counterpart of ImeAdapter received the call.
-     */
-    public boolean copy() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        nativeCopy(mNativeImeAdapterAndroid);
-        return true;
-    }
-
-    /**
-     * Send a request to the native counterpart of ImeAdapter to paste the text from the clipboard.
-     * @return Whether the native counterpart of ImeAdapter received the call.
-     */
-    public boolean paste() {
-        if (mNativeImeAdapterAndroid == 0) return false;
-        nativePaste(mNativeImeAdapterAndroid);
-        return true;
-    }
-
     // Calls from C++ to Java
 
     @CalledByNative
@@ -672,10 +634,5 @@ public class ImeAdapter {
     private native void nativeDeleteSurroundingText(long nativeImeAdapterAndroid,
             int before, int after);
 
-    private native void nativeUnselect(long nativeImeAdapterAndroid);
-    private native void nativeSelectAll(long nativeImeAdapterAndroid);
-    private native void nativeCut(long nativeImeAdapterAndroid);
-    private native void nativeCopy(long nativeImeAdapterAndroid);
-    private native void nativePaste(long nativeImeAdapterAndroid);
     private native void nativeResetImeAdapter(long nativeImeAdapterAndroid);
 }
