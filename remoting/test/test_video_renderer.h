@@ -5,10 +5,21 @@
 #ifndef REMOTING_TEST_TEST_VIDEO_RENDERER_H_
 #define REMOTING_TEST_TEST_VIDEO_RENDERER_H_
 
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "media/base/video_frame.h"
 #include "remoting/client/video_renderer.h"
+#include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_stub.h"
+
+namespace base {
+class Thread;
+class SingleThreadTaskRunner;
+}
+
+namespace webrtc {
+class DesktopFrame;
+}
 
 namespace remoting {
 namespace test {
@@ -24,13 +35,26 @@ class TestVideoRenderer : public VideoRenderer, public protocol::VideoStub {
   ChromotingStats* GetStats() override;
   protocol::VideoStub* GetVideoStub() override;
 
- private:
   // protocol::VideoStub interface.
   void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override;
 
-  // Track the number of populated video frames which have been received.
-  int video_frames_processed_;
+  // Returns a copy of the current buffer.
+  scoped_ptr<webrtc::DesktopFrame> GetBufferForTest() const;
+
+ private:
+  // The actual implementation resides in Core class.
+  class Core;
+  scoped_ptr<Core> core_;
+
+  // Used to ensure TestVideoRenderer methods are called on the same thread.
+  base::ThreadChecker thread_checker_;
+
+  // Used to decode and process video packets.
+  scoped_ptr<base::Thread>  video_decode_thread_;
+
+  // Used to post tasks to video decode thread.
+  scoped_refptr<base::SingleThreadTaskRunner> video_decode_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVideoRenderer);
 };
