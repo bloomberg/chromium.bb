@@ -26,19 +26,24 @@ class FakeGCMStatsRecorder : public GCMStatsRecorder {
   void RecordConnectionResetSignaled(
       ConnectionFactory::ConnectionResetReason reason) override;
   void RecordRegistrationSent(const std::string& app_id,
-                              const std::string& senders) override;
+                              const std::string& source) override;
   void RecordRegistrationResponse(const std::string& app_id,
-                                  const std::string& senders,
+                                  const std::string& source,
                                   RegistrationRequest::Status status) override;
-  void RecordRegistrationRetryRequested(
+  void RecordRegistrationRetryDelayed(
       const std::string& app_id,
-      const std::string& senders,
+      const std::string& source,
+      int64 delay_msec,
       int retries_left) override;
-  void RecordUnregistrationSent(const std::string& app_id) override;
+  void RecordUnregistrationSent(
+      const std::string& app_id,
+      const std::string& source) override;
   void RecordUnregistrationResponse(
       const std::string& app_id,
+      const std::string& source,
       UnregistrationRequest::Status status) override;
   void RecordUnregistrationRetryDelayed(const std::string& app_id,
+                                        const std::string& source,
                                         int64 delay_msec,
                                         int retries_left) override;
   void RecordDataMessageReceived(const std::string& app_id,

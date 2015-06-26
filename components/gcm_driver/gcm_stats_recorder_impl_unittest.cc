@@ -66,9 +66,10 @@ static const char kRegistrationSentDetails[] = "";
 static const char kRegistrationResponseEvent[] =
     "Registration response received";
 static const char kRegistrationResponseDetails[] = "SUCCESS";
-static const char kRegistrationRetryRequestedEvent[] =
-    "Registration retry requested";
-static const char kRegistrationRetryRequestedDetails[] = "Retries left: 3";
+static const char kRegistrationRetryDelayedEvent[] =
+    "Registration retry delayed";
+static const char kRegistrationRetryDelayedDetails[] =
+    "Delayed for 15000 msec, retries left: 3";
 static const char kUnregistrationSentEvent[] = "Unregistration request sent";
 static const char kUnregistrationSentDetails[] = "";
 static const char kUnregistrationResponseEvent[] =
@@ -213,14 +214,14 @@ class GCMStatsRecorderImplTest : public testing::Test {
   void VerifyRegistrationRetryRequested(const std::string& remark) {
     VerifyRegistration(recorder_.registration_activities(),
                        kSenderIds,
-                       kRegistrationRetryRequestedEvent,
-                       kRegistrationRetryRequestedDetails,
+                       kRegistrationRetryDelayedEvent,
+                       kRegistrationRetryDelayedDetails,
                        remark);
   }
 
   void VerifyUnregistrationSent(const std::string& remark) {
     VerifyRegistration(recorder_.registration_activities(),
-                       std::string(),
+                       kSenderIds,
                        kUnregistrationSentEvent,
                        kUnregistrationSentDetails,
                        remark);
@@ -228,7 +229,7 @@ class GCMStatsRecorderImplTest : public testing::Test {
 
   void VerifyUnregistrationResponse(const std::string& remark) {
     VerifyRegistration(recorder_.registration_activities(),
-                       std::string(),
+                       kSenderIds,
                        kUnregistrationResponseEvent,
                        kUnregistrationResponseDetails,
                        remark);
@@ -236,7 +237,7 @@ class GCMStatsRecorderImplTest : public testing::Test {
 
   void VerifyUnregistrationRetryDelayed(const std::string& remark) {
     VerifyRegistration(recorder_.registration_activities(),
-                       std::string(),
+                       kSenderIds,
                        kUnregistrationRetryDelayedEvent,
                        kUnregistrationRetryDelayedDetails,
                        remark);
@@ -305,12 +306,12 @@ class GCMStatsRecorderImplTest : public testing::Test {
 
   void VerifyRegistration(
       const std::deque<RegistrationActivity>& queue,
-      const std::string& sender_ids,
+      const std::string& source,
       const std::string& event,
       const std::string& details,
       const std::string& remark) {
     EXPECT_EQ(kAppId, queue.front().app_id) << remark;
-    EXPECT_EQ(sender_ids, queue.front().sender_ids) << remark;
+    EXPECT_EQ(source, queue.front().source) << remark;
     EXPECT_EQ(event, queue.front().event) << remark;
     EXPECT_EQ(details, queue.front().details) << remark;
   }
@@ -338,7 +339,7 @@ class GCMStatsRecorderImplTest : public testing::Test {
     EXPECT_EQ(details, queue.front().details) << remark;
   }
 
-  std::string sender_ids_;
+  std::string source_;
   GCMStatsRecorderImpl recorder_;
 };
 
@@ -348,7 +349,7 @@ GCMStatsRecorderImplTest::GCMStatsRecorderImplTest(){
 GCMStatsRecorderImplTest::~GCMStatsRecorderImplTest() {}
 
 void GCMStatsRecorderImplTest::SetUp(){
-  sender_ids_ = "s1,s2";
+  source_ = "s1,s2";
   recorder_.SetRecording(true);
 }
 
@@ -378,12 +379,13 @@ TEST_F(GCMStatsRecorderImplTest, StartStopRecordingTest) {
   VerifyAllActivityQueueEmpty("no registration");
 
   recorder_.RecordRegistrationSent(kAppId, kSenderIds);
-  recorder_.RecordRegistrationResponse(kAppId, sender_ids_,
+  recorder_.RecordRegistrationResponse(kAppId, source_,
                                        kRegistrationStatus);
-  recorder_.RecordRegistrationRetryRequested(kAppId, sender_ids_, kRetries);
-  recorder_.RecordUnregistrationSent(kAppId);
-  recorder_.RecordUnregistrationResponse(kAppId, kUnregistrationStatus);
-  recorder_.RecordUnregistrationRetryDelayed(kAppId, kDelay, kRetries);
+  recorder_.RecordRegistrationRetryDelayed(kAppId, source_, kDelay, kRetries);
+  recorder_.RecordUnregistrationSent(kAppId, source_);
+  recorder_.RecordUnregistrationResponse(
+      kAppId, source_, kUnregistrationStatus);
+  recorder_.RecordUnregistrationRetryDelayed(kAppId, source_, kDelay, kRetries);
   VerifyAllActivityQueueEmpty("no unregistration");
 
   recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
@@ -461,24 +463,25 @@ TEST_F(GCMStatsRecorderImplTest, RegistrationTest) {
   VerifyRecordedRegistrationCount(1);
   VerifyRegistrationSent("1st call");
 
-  recorder_.RecordRegistrationResponse(kAppId, sender_ids_,
+  recorder_.RecordRegistrationResponse(kAppId, source_,
                                        kRegistrationStatus);
   VerifyRecordedRegistrationCount(2);
   VerifyRegistrationResponse("2nd call");
 
-  recorder_.RecordRegistrationRetryRequested(kAppId, sender_ids_, kRetries);
+  recorder_.RecordRegistrationRetryDelayed(kAppId, source_, kDelay, kRetries);
   VerifyRecordedRegistrationCount(3);
   VerifyRegistrationRetryRequested("3rd call");
 
-  recorder_.RecordUnregistrationSent(kAppId);
+  recorder_.RecordUnregistrationSent(kAppId, source_);
   VerifyRecordedRegistrationCount(4);
   VerifyUnregistrationSent("4th call");
 
-  recorder_.RecordUnregistrationResponse(kAppId, kUnregistrationStatus);
+  recorder_.RecordUnregistrationResponse(
+      kAppId, source_, kUnregistrationStatus);
   VerifyRecordedRegistrationCount(5);
   VerifyUnregistrationResponse("5th call");
 
-  recorder_.RecordUnregistrationRetryDelayed(kAppId, kDelay, kRetries);
+  recorder_.RecordUnregistrationRetryDelayed(kAppId, source_, kDelay, kRetries);
   VerifyRecordedRegistrationCount(6);
   VerifyUnregistrationRetryDelayed("6th call");
 }

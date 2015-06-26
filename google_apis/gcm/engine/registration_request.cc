@@ -167,6 +167,11 @@ void RegistrationRequest::RetryWithBackoff(bool update_backoff) {
              << request_info_.app_id << ", for "
              << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
              << " milliseconds.";
+    recorder_->RecordRegistrationRetryDelayed(
+        request_info_.app_id,
+        source_to_record_,
+        backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
+        retries_left_ + 1);
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&RegistrationRequest::RetryWithBackoff,
@@ -236,10 +241,6 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
-      recorder_->RecordRegistrationRetryRequested(
-          request_info_.app_id,
-          source_to_record_,
-          retries_left_);
       RetryWithBackoff(true);
       return;
     }

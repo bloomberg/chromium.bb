@@ -40,7 +40,8 @@ struct RegistrationActivity : Activity {
   ~RegistrationActivity() override;
 
   std::string app_id;
-  std::string sender_ids;  // Comma separated sender ids.
+  // For GCM, comma separated sender ids. For Instance ID, authorized entity.
+  std::string source;
 };
 
 // Contains relevant data of a message receiving event.

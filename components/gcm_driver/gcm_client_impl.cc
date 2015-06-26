@@ -906,7 +906,8 @@ void GCMClientImpl::Register(
           instance_id_token_info->scope,
           ConstructGCMVersion(chrome_build_info_.version),
           instance_id_token_info->options));
-    source_to_record = instance_id_token_info->authorized_entity;
+    source_to_record = instance_id_token_info->authorized_entity + "/" +
+                       instance_id_token_info->scope;
   }
 
   RegistrationRequest::RequestInfo request_info(
@@ -970,6 +971,7 @@ void GCMClientImpl::Unregister(
   DCHECK_EQ(state_, READY);
 
   scoped_ptr<UnregistrationRequest::CustomRequestHandler> request_handler;
+  std::string source_to_record;
 
   const GCMRegistrationInfo* gcm_registration_info =
       GCMRegistrationInfo::FromRegistrationInfo(registration_info.get());
@@ -993,6 +995,8 @@ void GCMClientImpl::Unregister(
         instance_id_token_info->authorized_entity,
         instance_id_token_info->scope,
         ConstructGCMVersion(chrome_build_info_.version)));
+    source_to_record = instance_id_token_info->authorized_entity + "/" +
+                       instance_id_token_info->scope;
   }
 
   // Remove the registration/token(s) from the cache and the store.
@@ -1052,7 +1056,8 @@ void GCMClientImpl::Unregister(
           request_handler.Pass(), GetGCMBackoffPolicy(),
           base::Bind(&GCMClientImpl::OnUnregisterCompleted,
                      weak_ptr_factory_.GetWeakPtr(), registration_info),
-          kMaxUnregistrationRetries, url_request_context_getter_, &recorder_));
+          kMaxUnregistrationRetries, url_request_context_getter_, &recorder_,
+          source_to_record));
   unregistration_request->Start();
   pending_unregistration_requests_.insert(registration_info,
                                           unregistration_request.Pass());

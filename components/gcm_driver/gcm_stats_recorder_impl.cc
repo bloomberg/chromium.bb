@@ -272,14 +272,14 @@ void GCMStatsRecorderImpl::RecordConnectionResetSignaled(
 
 void GCMStatsRecorderImpl::RecordRegistration(
     const std::string& app_id,
-    const std::string& senders,
+    const std::string& source,
     const std::string& event,
     const std::string& details) {
   RegistrationActivity data;
   RegistrationActivity* inserted_data = InsertCircularBuffer(
       &registration_activities_, data);
   inserted_data->app_id = app_id;
-  inserted_data->sender_ids = senders;
+  inserted_data->source = source;
   inserted_data->event = event;
   inserted_data->details = details;
   NotifyActivityRecorded();
@@ -297,55 +297,62 @@ void GCMStatsRecorderImpl::RecordRegistrationSent(
 
 void GCMStatsRecorderImpl::RecordRegistrationResponse(
     const std::string& app_id,
-    const std::string& senders,
+    const std::string& source,
     RegistrationRequest::Status status) {
   if (!is_recording_)
     return;
-  RecordRegistration(app_id, senders,
+  RecordRegistration(app_id, source,
                      "Registration response received",
                      GetRegistrationStatusString(status));
 }
 
-void GCMStatsRecorderImpl::RecordRegistrationRetryRequested(
+void GCMStatsRecorderImpl::RecordRegistrationRetryDelayed(
     const std::string& app_id,
-    const std::string& senders,
-    int retries_left) {
-  if (!is_recording_)
-    return;
-  RecordRegistration(app_id, senders,
-                     "Registration retry requested",
-                     base::StringPrintf("Retries left: %d", retries_left));
-}
-
-void GCMStatsRecorderImpl::RecordUnregistrationSent(
-    const std::string& app_id) {
-  UMA_HISTOGRAM_COUNTS("GCM.UnregistrationRequest", 1);
-  if (!is_recording_)
-    return;
-  RecordRegistration(app_id, std::string(), "Unregistration request sent",
-                     std::string());
-}
-
-void GCMStatsRecorderImpl::RecordUnregistrationResponse(
-    const std::string& app_id,
-    UnregistrationRequest::Status status) {
-  if (!is_recording_)
-    return;
-  RecordRegistration(app_id,
-                     std::string(),
-                     "Unregistration response received",
-                     GetUnregistrationStatusString(status));
-}
-
-void GCMStatsRecorderImpl::RecordUnregistrationRetryDelayed(
-    const std::string& app_id,
+    const std::string& source,
     int64 delay_msec,
     int retries_left) {
   if (!is_recording_)
     return;
   RecordRegistration(
       app_id,
-      std::string(),
+      source,
+      "Registration retry delayed",
+      base::StringPrintf("Delayed for %" PRId64 " msec, retries left: %d",
+                         delay_msec,
+                         retries_left));
+}
+
+void GCMStatsRecorderImpl::RecordUnregistrationSent(
+    const std::string& app_id, const std::string& source) {
+  UMA_HISTOGRAM_COUNTS("GCM.UnregistrationRequest", 1);
+  if (!is_recording_)
+    return;
+  RecordRegistration(app_id, source, "Unregistration request sent",
+                     std::string());
+}
+
+void GCMStatsRecorderImpl::RecordUnregistrationResponse(
+    const std::string& app_id,
+    const std::string& source,
+    UnregistrationRequest::Status status) {
+  if (!is_recording_)
+    return;
+  RecordRegistration(app_id,
+                     source,
+                     "Unregistration response received",
+                     GetUnregistrationStatusString(status));
+}
+
+void GCMStatsRecorderImpl::RecordUnregistrationRetryDelayed(
+    const std::string& app_id,
+    const std::string& source,
+    int64 delay_msec,
+    int retries_left) {
+  if (!is_recording_)
+    return;
+  RecordRegistration(
+      app_id,
+      source,
       "Unregistration retry delayed",
       base::StringPrintf("Delayed for %" PRId64 " msec, retries left: %d",
                          delay_msec,

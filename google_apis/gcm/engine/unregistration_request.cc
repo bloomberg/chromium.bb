@@ -59,7 +59,8 @@ UnregistrationRequest::UnregistrationRequest(
     const UnregistrationCallback& callback,
     int max_retry_count,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    GCMStatsRecorder* recorder)
+    GCMStatsRecorder* recorder,
+    const std::string& source_to_record)
     : callback_(callback),
       request_info_(request_info),
       custom_request_handler_(custom_request_handler.Pass()),
@@ -68,6 +69,7 @@ UnregistrationRequest::UnregistrationRequest(
       request_context_getter_(request_context_getter),
       retries_left_(max_retry_count),
       recorder_(recorder),
+      source_to_record_(source_to_record),
       weak_ptr_factory_(this) {
   DCHECK_GE(max_retry_count, 0);
 }
@@ -95,7 +97,7 @@ void UnregistrationRequest::Start() {
   url_fetcher_->SetUploadData(kRequestContentType, body);
 
   DVLOG(1) << "Performing unregistration for: " << request_info_.app_id;
-  recorder_->RecordUnregistrationSent(request_info_.app_id);
+  recorder_->RecordUnregistrationSent(request_info_.app_id, source_to_record_);
   request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
 }
@@ -159,6 +161,7 @@ void UnregistrationRequest::RetryWithBackoff(bool update_backoff) {
              << " milliseconds.";
     recorder_->RecordUnregistrationRetryDelayed(
         request_info_.app_id,
+        source_to_record_,
         backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
         retries_left_ + 1);
     base::MessageLoop::current()->PostDelayedTask(
@@ -184,7 +187,8 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       backoff_entry_.failure_count(),
       base::TimeTicks::Now() - request_start_time_);
 
-  recorder_->RecordUnregistrationResponse(request_info_.app_id, status);
+  recorder_->RecordUnregistrationResponse(
+      request_info_.app_id, source_to_record_, status);
 
   if (status == URL_FETCHING_FAILED ||
       status == HTTP_NOT_OK ||
@@ -199,7 +203,8 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     }
 
     status = REACHED_MAX_RETRIES;
-    recorder_->RecordUnregistrationResponse(request_info_.app_id, status);
+    recorder_->RecordUnregistrationResponse(
+        request_info_.app_id, source_to_record_, status);
 
     // Only REACHED_MAX_RETRIES is reported because the function will skip
     // reporting count and time when status is not SUCCESS.

@@ -44,32 +44,35 @@ void FakeGCMStatsRecorder::RecordConnectionResetSignaled(
 
 void FakeGCMStatsRecorder::RecordRegistrationSent(
     const std::string& app_id,
-    const std::string& senders) {
+    const std::string& source) {
 }
 
 void FakeGCMStatsRecorder::RecordRegistrationResponse(
     const std::string& app_id,
-    const std::string& senders,
+    const std::string& source,
     RegistrationRequest::Status status) {
 }
 
-void FakeGCMStatsRecorder::RecordRegistrationRetryRequested(
+void FakeGCMStatsRecorder::RecordRegistrationRetryDelayed(
     const std::string& app_id,
-    const std::string& senders,
+    const std::string& source,
+    int64 delay_msec,
     int retries_left) {
 }
 
 void FakeGCMStatsRecorder::RecordUnregistrationSent(
-    const std::string& app_id) {
+    const std::string& app_id, const std::string& source) {
 }
 
 void FakeGCMStatsRecorder::RecordUnregistrationResponse(
     const std::string& app_id,
+    const std::string& source,
     UnregistrationRequest::Status status) {
 }
 
 void FakeGCMStatsRecorder::RecordUnregistrationRetryDelayed(
     const std::string& app_id,
+    const std::string& source,
     int64 delay_msec,
     int retries_left) {
 }

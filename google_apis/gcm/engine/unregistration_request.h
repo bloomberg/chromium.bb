@@ -105,7 +105,8 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
       const UnregistrationCallback& callback,
       int max_retry_count,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-      GCMStatsRecorder* recorder);
+      GCMStatsRecorder* recorder,
+      const std::string& source_to_record);
   ~UnregistrationRequest() override;
 
   // Starts an unregistration request.
@@ -136,6 +137,7 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;
+  std::string source_to_record_;
 
   base::WeakPtrFactory<UnregistrationRequest> weak_ptr_factory_;
 

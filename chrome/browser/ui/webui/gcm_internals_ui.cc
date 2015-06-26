@@ -66,7 +66,7 @@ void SetRegistrationInfo(
 
     row->AppendDouble(it->time.ToJsTime());
     row->AppendString(it->app_id);
-    row->AppendString(it->sender_ids);
+    row->AppendString(it->source);
     row->AppendString(it->event);
     row->AppendString(it->details);
   }

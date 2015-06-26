@@ -149,7 +149,8 @@ void GCMUnregistrationRequestTest::CreateRequest() {
                  base::Unretained(this)),
       max_retry_count_,
       url_request_context_getter_.get(),
-      &recorder_));
+      &recorder_,
+      std::string()));
 }
 
 TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
@@ -401,7 +402,8 @@ void InstaceIDDeleteTokenRequestTest::CreateRequest(
                  base::Unretained(this)),
       max_retry_count(),
       url_request_context_getter_.get(),
-      &recorder_));
+      &recorder_,
+      std::string()));
 }
 
 TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
