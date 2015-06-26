@@ -591,8 +591,6 @@ void SupervisedUserService::OnSupervisedUserIdChanged() {
 }
 
 void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
-  DCHECK(ProfileIsSupervised());
-
   int behavior_value = profile_->GetPrefs()->GetInteger(
       prefs::kDefaultSupervisedUserFilteringBehavior);
   SupervisedUserURLFilter::FilteringBehavior behavior =

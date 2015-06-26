@@ -146,8 +146,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             type.setOnPreferenceChangeListener(this);
         }
 
-        ChildAccountService.getInstance(getActivity()).waitUntilFinished();
-
         mSyncSwitchPreference = (ChromeSwitchPreference) findPreference(PREF_SYNC_SWITCH);
         mSyncSwitchPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override

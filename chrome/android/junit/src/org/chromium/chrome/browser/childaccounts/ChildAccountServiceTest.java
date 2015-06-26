@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.childaccounts;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -54,19 +56,14 @@ public class ChildAccountServiceTest {
     private class TestingChildAccountService extends ChildAccountService {
         private Boolean mLastStatus;
 
+        public TestingChildAccountService(Context context) {
+            super(context);
+        }
+
         @Override
         protected void onChildAccountStatusUpdated(Boolean oldValue) {
             assertEquals(mLastStatus, oldValue);
             mLastStatus = hasChildAccount();
-        }
-
-        @Override
-        protected boolean isChildAccountDetectionEnabled() {
-            return true;
-        }
-
-        public TestingChildAccountService(Context context) {
-            super(context);
         }
     }
 
@@ -82,6 +79,9 @@ public class ChildAccountServiceTest {
         MockitoAnnotations.initMocks(this);
 
         mService = spy(new TestingChildAccountService(mContext));
+
+        doReturn(true).when(mService).nativeIsChildAccountDetectionEnabled();
+        doThrow(new AssertionError()).when(mService).nativeGetIsChildAccount();
         mAccountManager = new MockAccountManager(mContext, mContext);
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
 
@@ -180,32 +180,6 @@ public class ChildAccountServiceTest {
     }
 
     @Test
-    public void testWaitUntilFinished() {
-        // Add one regular account.
-        mAccountManager.addAccountHolderExplicitly(
-                AccountHolder.create().account(USER_ACCOUNT).build());
-
-        HasChildAccountCallback callback = spy(new MockChildAccountCallback());
-        mService.checkHasChildAccount(callback);
-
-        // The account features have been fetched, but the AccountManager promise resolves
-        // asynchronously, so the child account status is still indeterminate.
-        verify(mService, never()).onChildAccountStatusUpdated(Matchers.any(Boolean.class));
-        verify(callback, never()).onChildAccountChecked(Matchers.anyBoolean());
-
-        // Waiting until the child account check has finished will *synchronously* update the child
-        // account status.
-        mService.waitUntilFinished();
-        assertFalse(mService.hasChildAccount());
-        verify(mService).onChildAccountStatusUpdated(null);
-        verify(callback, never()).onChildAccountChecked(Matchers.anyBoolean());
-
-        // The callback is only run on the next turn of the event loop, however.
-        Robolectric.idleMainLooper(0);
-        verify(callback).onChildAccountChecked(false);
-    }
-
-    @Test
     public void testCheckAfterChildAccountStatusHasBeenDetermined() {
         // Add one child account.
         Account account = CHILD_ACCOUNT;
@@ -230,6 +204,16 @@ public class ChildAccountServiceTest {
         Robolectric.idleMainLooper(0);
 
         verify(callback2).onChildAccountChecked(true);
+    }
+
+    @Test
+    public void testCachedHasChildAccount() {
+        // If the child account status has not been determined, the native method will be called.
+        // Using the inverted `do...().when()...` syntax to ensure that the non-overridden method
+        // is not called.
+        doReturn(true).when(mService).nativeGetIsChildAccount();
+
+        assertTrue(mService.hasChildAccount());
     }
 
     @Test

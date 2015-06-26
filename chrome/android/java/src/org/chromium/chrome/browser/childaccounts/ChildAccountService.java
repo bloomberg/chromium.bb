@@ -12,7 +12,6 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
-import android.os.AsyncTask;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
@@ -153,7 +151,7 @@ public class ChildAccountService {
      */
     @Nullable
     private Boolean getPredeterminedChildStatus() {
-        if (!isChildAccountDetectionEnabled()) {
+        if (!nativeIsChildAccountDetectionEnabled()) {
             Log.v(TAG, "Child account detection disabled");
             return false;
         }
@@ -235,55 +233,19 @@ public class ChildAccountService {
     }
 
     /**
-     * Returns whether there is a child account on the device. This method should
-     * only be called after the result has been determined (usually using
-     * {@link #checkHasChildAccount} or {@link #waitUntilFinished} to block).
+     * Returns whether there is a child account on the device. If the initial check has not
+     * completed yet, this will return a cached value from the last run (which might be stale now).
+     * Because this method might call into native code, it may only be called after the native
+     * library and the profile have been loaded.
      *
      * @return Whether there is a child account on the device.
      */
     public boolean hasChildAccount() {
         ThreadUtils.assertOnUiThread();
 
+        if (mHasChildAccount == null) return nativeGetIsChildAccount();
+
         return mHasChildAccount;
-    }
-
-    /**
-     * Waits until we have determined the child account status. Usually you should use callbacks
-     * instead of this method, see {@link #checkHasChildAccount}.
-     */
-    public void waitUntilFinished() {
-        ThreadUtils.assertOnUiThread();
-
-        if (mHasChildAccount != null) return;
-        assert mAccountManagerFuture != null;
-
-        TraceEvent.begin("ChildAccountService.waitUntilFinished");
-        // This will block in getFutureResult(), but that may only happen on a background thread.
-        try {
-            AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-                @Override
-                protected Boolean doInBackground(Void... params) {
-                    return getFutureResult();
-                }
-            };
-            setHasChildAccount(task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR).get());
-        } catch (ExecutionException e) {
-            Log.w(TAG, "Error while fetching child account flag: ", e);
-        } catch (InterruptedException e) {
-            Log.w(TAG, "Interrupted while fetching child account flag: ", e);
-        }
-        TraceEvent.end("ChildAccountService.waitUntilFinished");
-    }
-
-    /**
-     * If this returns false, Chrome will assume there are no child accounts on the device,
-     * and no further checks will be made, which has the effect of a kill switch.
-     * Can be overridden by subclasses to avoid native calls in testing.
-     *
-     * @return Whether child account detection is enabled.
-     */
-    protected boolean isChildAccountDetectionEnabled() {
-        return nativeIsChildAccountDetectionEnabled();
     }
 
     private void setHasChildAccount(boolean hasChildAccount) {
@@ -355,7 +317,22 @@ public class ChildAccountService {
         sChildAccountService.recheckChildAccountStatus();
     }
 
-    private native boolean nativeIsChildAccountDetectionEnabled();
+    /**
+     * If this returns false, Chrome will assume there are no child accounts on the device,
+     * and no further checks will be made, which has the effect of a kill switch.
+     * Can be overridden by subclasses to avoid native calls in testing.
+     *
+     * @return Whether child account detection is enabled.
+     */
+    protected native boolean nativeIsChildAccountDetectionEnabled();
+
+    /**
+     * Returns the previously determined value of whether there is a child account on the device.
+     * Can be overridden by subclasses to avoid native calls in testing.
+     *
+     * @return The previously determined value of whether there is a child account on the device.
+     */
+    protected native boolean nativeGetIsChildAccount();
 
     private native void nativeSetIsChildAccount(boolean isChild);
 }

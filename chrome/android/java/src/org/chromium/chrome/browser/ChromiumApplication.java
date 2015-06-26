@@ -23,7 +23,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.childaccounts.ChildAccountService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
@@ -160,16 +159,10 @@ public abstract class ChromiumApplication extends ContentApplication {
             throws ProcessInitException {
         ThreadUtils.assertOnUiThread();
         initCommandLine();
-        final Context context = getApplicationContext();
+        Context context = getApplicationContext();
         LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
         libraryLoader.ensureInitialized(context, true);
         libraryLoader.asyncPrefetchLibrariesToMemory();
-        // Kick off checking for a child account with an empty callback.
-        ChildAccountService.getInstance(context).checkHasChildAccount(
-                new ChildAccountService.HasChildAccountCallback() {
-                    @Override
-                    public void onChildAccountChecked(boolean hasChildAccount) {}
-                });
         BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
                 .startBrowserProcessesSync(false);
         if (initGoogleServicesManager) initializeGoogleServicesManager();

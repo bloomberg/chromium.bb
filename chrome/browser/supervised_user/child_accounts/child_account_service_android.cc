@@ -21,6 +21,11 @@ jboolean IsChildAccountDetectionEnabled(JNIEnv* env, jobject obj) {
   return ChildAccountService::IsChildAccountDetectionEnabled();
 }
 
+jboolean GetIsChildAccount(JNIEnv* env, jobject obj) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->GetLastUsedProfile()->IsChild();
+}
+
 void SetIsChildAccount(JNIEnv* env, jobject obj, jboolean is_child) {
   VLOG(1) << "OnChildAccountSigninComplete";
 
