@@ -385,8 +385,10 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_FATAL_ERROR_PASSWORD_VERIFICATION);
   builder->Add("fatalErrorMessageInsecureURL",
                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL);
-  builder->Add("fatalErrorInstructions", IDS_LOGIN_FATAL_ERROR_INSTRUCTIONS);
   builder->Add("fatalErrorDismissButton", IDS_OK);
+  builder->Add("fatalErrorDoneButton", IDS_DONE);
+  builder->Add("fatalErrorTryAgainButton",
+               IDS_LOGIN_FATAL_ERROR_TRY_AGAIN_BUTTON);
 
   builder->AddF("offlineLoginWelcome", IDS_NEWGAIA_OFFLINE_WELCOME,
                 GetChromeDeviceType());

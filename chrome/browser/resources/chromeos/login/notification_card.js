@@ -38,5 +38,9 @@ Polymer({
   linkClicked_: function(e) {
     this.fire('linkclick');
     e.preventDefault();
+  },
+
+  get submitButton() {
+    return this.$.submitButton;
   }
 });

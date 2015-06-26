@@ -648,7 +648,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       } else {
         chrome.send('scrapedPasswordVerificationFailed');
         this.showFatalAuthError(
-            loadTimeData.getString('fatalErrorMessageVerificationFailed'));
+            loadTimeData.getString('fatalErrorMessageVerificationFailed'),
+            loadTimeData.getString('fatalErrorTryAgainButton'));
+      }
+      if (this.isNewGaiaFlow) {
+        this.classList.toggle('no-right-panel', false);
+        this.classList.toggle('full-width', false);
       }
     },
 
@@ -670,8 +675,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {string} email The authenticated user's e-mail.
      */
     onAuthNoPassword_: function(email) {
-      this.showFatalAuthError(loadTimeData.getString(
-          'fatalErrorMessageNoPassword'));
+      this.showFatalAuthError(
+          loadTimeData.getString('fatalErrorMessageNoPassword'),
+          loadTimeData.getString('fatalErrorTryAgainButton'));
       chrome.send('scrapedPasswordCount', [0]);
     },
 
@@ -683,17 +689,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {string} url The URL that was blocked.
      */
     onInsecureContentBlocked_: function(url) {
-      this.showFatalAuthError(loadTimeData.getStringF(
-          'fatalErrorMessageInsecureURL',
-          url));
+      this.showFatalAuthError(
+          loadTimeData.getStringF('fatalErrorMessageInsecureURL', url),
+          loadTimeData.getString('fatalErrorDoneButton'));
     },
 
     /**
      * Shows the fatal auth error.
      * @param {string} message The error message to show.
+     * @param {string} buttonLabel The label to display on dismiss button.
      */
-    showFatalAuthError: function(message) {
-      login.FatalErrorScreen.show(message, Oobe.showSigninUI);
+    showFatalAuthError: function(message, buttonLabel) {
+      login.FatalErrorScreen.show(message, buttonLabel, Oobe.showSigninUI);
     },
 
     /**
@@ -701,7 +708,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     missingGaiaInfo_: function() {
       this.showFatalAuthError(
-          loadTimeData.getString('fatalErrorMessageNoAccountDetails'));
+          loadTimeData.getString('fatalErrorMessageNoAccountDetails'),
+          loadTimeData.getString('fatalErrorTryAgainButton'));
     },
 
     /**

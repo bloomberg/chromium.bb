@@ -20,6 +20,10 @@ Polymer({
     }
   },
 
+  focus: function() {
+   this.$.button.focus();
+  },
+
   focusedChanged_: function() {
     if (this.type == 'link' || this.type == 'dialog')
       return;
@@ -53,6 +57,10 @@ Polymer({
     icon: String,
 
     ariaLabel: String
+  },
+
+  focus: function() {
+    this.$.iconButton.focus();
   },
 
   onClick_: function(e) {

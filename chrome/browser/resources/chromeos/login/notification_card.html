@@ -43,7 +43,8 @@
         </div>
       </div>
       <div class="self-stretch horizontal-reverse layout justified center">
-        <gaia-button on-tap="buttonClicked_" hidden$="[[!buttonLabel]]">
+        <gaia-button id="submitButton" on-tap="buttonClicked_"
+            hidden$="[[!buttonLabel]]">
           <span>[[buttonLabel]]</span>
         </gaia-button>
         <a href="#" on-click="linkClicked_" hidden$="{{!linkLabel}}">

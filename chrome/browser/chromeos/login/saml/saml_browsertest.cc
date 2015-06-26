@@ -384,12 +384,14 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
 
   std::string WaitForAndGetFatalErrorMessage() {
     OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+    std::string message_element =
+        use_webview() ? "$('fatal-error-card')" : "$('fatal-error-message')";
     std::string error_message;
     if (!content::ExecuteScriptAndExtractString(
-          GetLoginUI()->GetWebContents(),
-          "window.domAutomationController.send("
-              "$('fatal-error-message').textContent);",
-          &error_message)) {
+            GetLoginUI()->GetWebContents(),
+            "window.domAutomationController.send(" + message_element +
+                ".textContent);",
+            &error_message)) {
       ADD_FAILURE();
     }
     return error_message;

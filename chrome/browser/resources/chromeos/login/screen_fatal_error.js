@@ -27,11 +27,17 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() { return {
     decorate: function() {
       $('fatal-error-dismiss-button').addEventListener(
           'click', this.onDismiss_.bind(this));
+      $('fatal-error-card').addEventListener(
+          'buttonclick', this.onDismiss_.bind(this));
     },
 
     /** @override */
     get defaultControl() {
-      return $('fatal-error-dismiss-button');
+      if (Oobe.isNewGaiaFlow()) {
+        return $('fatal-error-card').submitButton;
+      } else {
+        return $('fatal-error-dismiss-button');
+      }
     },
 
     /** @override */
@@ -62,8 +68,13 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() { return {
      * @param {function()} callback The callback to be invoked when the
      *     screen is dismissed.
      */
-    show: function(message, callback) {
-      $('fatal-error-message').textContent = message;
+    show: function(message, buttonLabel, callback) {
+      if (Oobe.isNewGaiaFlow()) {
+        $('fatal-error-card').textContent = message;
+        $('fatal-error-card').buttonLabel = buttonLabel;
+      } else {
+        $('fatal-error-message').textContent = message;
+      }
       this.callback_ = callback;
       Oobe.showScreen({id: SCREEN_FATAL_ERROR});
     }

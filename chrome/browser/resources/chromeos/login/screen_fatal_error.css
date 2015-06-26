@@ -28,3 +28,24 @@
 #fatal-error-button-strip-space-filler {
   -webkit-box-flex: 1;
 }
+
+.new-gaia-flow #fatal-error {
+  height: 528px;
+  width: 448px;
+}
+
+.new-gaia-flow #fatal-error-message-container,
+.new-gaia-flow #fatal-error-button-strip,
+.fatal-error .new-gaia-flow #step-logo,
+#fatal-error-card {
+  display: none;
+}
+
+.new-gaia-flow #fatal-error-card {
+  bottom: 0;
+  display: block;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
