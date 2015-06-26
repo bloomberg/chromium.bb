@@ -29,12 +29,12 @@ function test()
     InspectorTest._deviceEmulationResults = [];
     var originalMetrics;
 
-    InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", InspectorTest.getPageMetrics.bind(InspectorTest, true, saveMetrics));
+    InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", null, InspectorTest.getPageMetrics.bind(InspectorTest, true, saveMetrics));
 
     function saveMetrics(metrics)
     {
         originalMetrics = metrics.value;
-        InspectorTest.emulateAndGetMetrics(1200, 1000, 1, "w=320", restore);
+        InspectorTest.emulateAndGetMetrics(1200, 1000, 1, "w=320", null, restore);
     }
 
     function restore()
@@ -50,7 +50,7 @@ function test()
             InspectorTest.completeTest();
         }
 
-        InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", InspectorTest.getPageMetrics.bind(InspectorTest, true, callback));
+        InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", null, InspectorTest.getPageMetrics.bind(InspectorTest, true, callback));
     }
 }
 </script>

@@ -187,9 +187,24 @@ InspectorTest.getPageMetrics = function(full, callback)
     InspectorTest.evaluateInPage("dumpMetrics(" + full + ")", callback);
 }
 
-InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceScaleFactor, viewport, callback)
+InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceScaleFactor, viewport, insets, callback)
 {
+    function PageResizer()
+    {
+    }
+
+    PageResizer.prototype =
+    {
+        update: function(dipWidth, dipHeight, scale) { },
+        __proto__: WebInspector.Object.prototype
+    }
+
     InspectorTest.addSniffer(WebInspector.overridesSupport, "_deviceMetricsOverrideAppliedForTest", emulateCallback);
+    if (insets)
+        WebInspector.overridesSupport.setPageResizer(new PageResizer(), new Size(10, 10), insets);
+    else
+        WebInspector.overridesSupport.setPageResizer(null, new Size(0, 0), new Insets(0, 0));
+
     if (enabled) {
         var device = {title: "", width: width, height: height, deviceScaleFactor: deviceScaleFactor, userAgent: "", touch: false, mobile: true};
         WebInspector.overridesSupport.emulateDevice(device);
@@ -207,11 +222,11 @@ InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceS
     }
 };
 
-InspectorTest.emulateAndGetMetrics = function(width, height, deviceScaleFactor, viewport, callback)
+InspectorTest.emulateAndGetMetrics = function(width, height, deviceScaleFactor, viewport, insets, callback)
 {
     InspectorTest._deviceEmulationResults.push("Emulating device: " + width + "x" + height + "x" + deviceScaleFactor + " viewport='" + viewport + "'");
     var full = !!width && !!height && !!deviceScaleFactor;
-    InspectorTest.applyEmulationAndReload(true, width, height, deviceScaleFactor, viewport, InspectorTest.getPageMetrics.bind(InspectorTest, full, printMetrics));
+    InspectorTest.applyEmulationAndReload(true, width, height, deviceScaleFactor, viewport, insets, InspectorTest.getPageMetrics.bind(InspectorTest, full, printMetrics));
 
     function printMetrics(metrics)
     {
@@ -220,11 +235,11 @@ InspectorTest.emulateAndGetMetrics = function(width, height, deviceScaleFactor, 
     }
 };
 
-InspectorTest.testDeviceEmulation = function(pageUrl, width, height, deviceScaleFactor, viewport)
+InspectorTest.testDeviceEmulation = function(pageUrl, width, height, deviceScaleFactor, viewport, insets)
 {
     InspectorTest._deviceEmulationPageUrl = pageUrl;
     InspectorTest._deviceEmulationResults = [];
-    InspectorTest.emulateAndGetMetrics(width, height, deviceScaleFactor, viewport, callback);
+    InspectorTest.emulateAndGetMetrics(width, height, deviceScaleFactor, viewport, insets, callback);
 
     function callback()
     {
