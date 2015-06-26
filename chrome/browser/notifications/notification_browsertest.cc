@@ -17,7 +17,6 @@
 #include "base/time/clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/infobars/infobar_responder.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification.h"
@@ -32,8 +31,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -52,12 +49,6 @@
 namespace {
 
 const char kExpectedIconUrl[] = "/notifications/no_such_file.png";
-
-enum InfobarAction {
-  DISMISS = 0,
-  ALLOW,
-  DENY,
-};
 
 class NotificationChangeObserver {
 public:
@@ -115,25 +106,17 @@ class MessageCenterChangeObserver
 };
 
 // Used to observe the creation of permission prompt without responding.
-class PermissionRequestObserver : public infobars::InfoBarManager::Observer,
-                                  public PermissionBubbleManager::Observer {
+class PermissionRequestObserver : public PermissionBubbleManager::Observer {
  public:
   explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : infobar_service_(InfoBarService::FromWebContents(web_contents)),
-        bubble_manager_(PermissionBubbleManager::FromWebContents(web_contents)),
+      : bubble_manager_(PermissionBubbleManager::FromWebContents(web_contents)),
         request_shown_(false),
         message_loop_runner_(new content::MessageLoopRunner) {
-    if (PermissionBubbleManager::Enabled())
-      bubble_manager_->AddObserver(this);
-    else
-      infobar_service_->AddObserver(this);
+    bubble_manager_->AddObserver(this);
   }
   ~PermissionRequestObserver() override {
     // Safe to remove twice if it happens.
-    if (PermissionBubbleManager::Enabled())
-      bubble_manager_->RemoveObserver(this);
-    else
-      infobar_service_->RemoveObserver(this);
+    bubble_manager_->RemoveObserver(this);
   }
 
   void Wait() { message_loop_runner_->Run(); }
@@ -141,23 +124,13 @@ class PermissionRequestObserver : public infobars::InfoBarManager::Observer,
   bool request_shown() { return request_shown_; }
 
  private:
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override {
-    DCHECK(!PermissionBubbleManager::Enabled());
-    request_shown_ = true;
-    infobar_service_->RemoveObserver(this);
-    message_loop_runner_->Quit();
-  }
-
   // PermissionBubbleManager::Observer
   void OnBubbleAdded() override {
-    DCHECK(PermissionBubbleManager::Enabled());
     request_shown_ = true;
     bubble_manager_->RemoveObserver(this);
     message_loop_runner_->Quit();
   }
 
-  InfoBarService* infobar_service_;
   PermissionBubbleManager* bubble_manager_;
   bool request_shown_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -183,7 +156,6 @@ class NotificationsTest : public InProcessBrowserTest {
   void AllowAllOrigins();
   void SetDefaultContentSetting(ContentSetting setting);
 
-  void VerifyInfoBar(const Browser* browser, int index);
   std::string CreateNotification(Browser* browser,
                                  bool wait_for_new_balloon,
                                  const char* icon,
@@ -219,8 +191,7 @@ class NotificationsTest : public InProcessBrowserTest {
   void DropOriginPreference(const GURL& origin);
   std::string RequestAndRespondToPermission(
       Browser* browser,
-      PermissionBubbleManager::AutoResponseType bubble_response,
-      InfoBarResponder::AutoResponseType infobar_response);
+      PermissionBubbleManager::AutoResponseType bubble_response);
 };
 
 int NotificationsTest::GetNotificationCount() {
@@ -265,19 +236,6 @@ void NotificationsTest::SetDefaultContentSetting(ContentSetting setting) {
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
-void NotificationsTest::VerifyInfoBar(const Browser* browser, int index) {
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser->tab_strip_model()->GetWebContentsAt(index));
-
-  ASSERT_EQ(1U, infobar_service->infobar_count());
-  ConfirmInfoBarDelegate* confirm_infobar =
-      infobar_service->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(confirm_infobar);
-  int buttons = confirm_infobar->GetButtons();
-  EXPECT_TRUE(buttons & ConfirmInfoBarDelegate::BUTTON_OK);
-  EXPECT_TRUE(buttons & ConfirmInfoBarDelegate::BUTTON_CANCEL);
-}
-
 std::string NotificationsTest::CreateNotification(
     Browser* browser,
     bool wait_for_new_balloon,
@@ -310,18 +268,11 @@ std::string NotificationsTest::CreateSimpleNotification(
 
 std::string NotificationsTest::RequestAndRespondToPermission(
     Browser* browser,
-    PermissionBubbleManager::AutoResponseType bubble_response,
-    InfoBarResponder::AutoResponseType infobar_response) {
+    PermissionBubbleManager::AutoResponseType bubble_response) {
   std::string result;
   content::WebContents* web_contents = GetActiveWebContents(browser);
-  scoped_ptr<InfoBarResponder> infobar_responder;
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager::FromWebContents(web_contents)
-        ->set_auto_response_for_test(bubble_response);
-  } else {
-    infobar_responder.reset(new InfoBarResponder(
-        InfoBarService::FromWebContents(web_contents), infobar_response));
-  }
+  PermissionBubbleManager::FromWebContents(web_contents)
+      ->set_auto_response_for_test(bubble_response);
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents, "requestPermission();", &result));
   return result;
@@ -329,19 +280,19 @@ std::string NotificationsTest::RequestAndRespondToPermission(
 
 bool NotificationsTest::RequestAndAcceptPermission(Browser* browser) {
   std::string result = RequestAndRespondToPermission(
-      browser, PermissionBubbleManager::ACCEPT_ALL, InfoBarResponder::ACCEPT);
+      browser, PermissionBubbleManager::ACCEPT_ALL);
   return "request-callback-granted" == result;
 }
 
 bool NotificationsTest::RequestAndDenyPermission(Browser* browser) {
-  std::string result = RequestAndRespondToPermission(
-      browser, PermissionBubbleManager::DENY_ALL, InfoBarResponder::DENY);
+  std::string result =
+      RequestAndRespondToPermission(browser, PermissionBubbleManager::DENY_ALL);
   return "request-callback-denied" == result;
 }
 
 bool NotificationsTest::RequestAndDismissPermission(Browser* browser) {
-  std::string result = RequestAndRespondToPermission(
-      browser, PermissionBubbleManager::DISMISS, InfoBarResponder::DISMISS);
+  std::string result =
+      RequestAndRespondToPermission(browser, PermissionBubbleManager::DISMISS);
   return "request-callback-default" == result;
 }
 
@@ -543,9 +494,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestAllowNotificationsFromAllSites) {
   EXPECT_NE("-1", result);
 
   ASSERT_EQ(1, GetNotificationCount());
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
-  EXPECT_EQ(0U, infobar_service->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyNotificationsFromAllSites) {
@@ -611,9 +559,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestDenyAndThenAllowDomain) {
   EXPECT_NE("-1", result);
 
   ASSERT_EQ(1, GetNotificationCount());
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
-  EXPECT_EQ(0U, infobar_service->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
@@ -684,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionRequestUI) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
-  // Test that user can close tab when infobar or bubble present.
+  // Test that user can close tab when bubble present.
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   EXPECT_TRUE(RequestPermissionAndWait(browser()));
   content::WebContentsDestroyedWatcher destroyed_watcher(
@@ -692,31 +637,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionRequestUI) {
   browser()->tab_strip_model()->CloseWebContentsAt(0,
                                                    TabStripModel::CLOSE_NONE);
   destroyed_watcher.Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNavigateAwayWithInfobar) {
-  // This test currently fails for permission bubbles because the same bubble
-  // will span the reload, unlike infobars where the bubble is dismissed during
-  // navigation. See crbug.com/493468.
-  if (PermissionBubbleManager::Enabled())
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Test navigating away when an infobar is present,
-  // then trying to create a notification from the same page.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("about:blank"),
-      NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-  ASSERT_TRUE(RequestPermissionAndWait(browser()));
-  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-  ASSERT_TRUE(RequestAndAcceptPermission(browser()));
-  CreateSimpleNotification(browser(), true);
-  ASSERT_EQ(1, GetNotificationCount());
 }
 
 // See crbug.com/248470

@@ -9,8 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_responder.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -74,8 +72,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 
  private:
   std::string RequestAndRespondToPermission(
-      PermissionBubbleManager::AutoResponseType bubble_response,
-      InfoBarResponder::AutoResponseType infobar_response);
+      PermissionBubbleManager::AutoResponseType bubble_response);
 
   content::WebContents* GetActiveWebContents(Browser* browser) {
     return browser->tab_strip_model()->GetActiveWebContents();
@@ -157,31 +154,24 @@ GURL PlatformNotificationServiceBrowserTest::TestPageUrl() const {
 
 std::string
 PlatformNotificationServiceBrowserTest::RequestAndRespondToPermission(
-    PermissionBubbleManager::AutoResponseType bubble_response,
-    InfoBarResponder::AutoResponseType infobar_response) {
+    PermissionBubbleManager::AutoResponseType bubble_response) {
   std::string result;
   content::WebContents* web_contents = GetActiveWebContents(browser());
-  scoped_ptr<InfoBarResponder> infobar_responder;
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager::FromWebContents(web_contents)
-        ->set_auto_response_for_test(bubble_response);
-  } else {
-    infobar_responder.reset(new InfoBarResponder(
-        InfoBarService::FromWebContents(web_contents), infobar_response));
-  }
+  PermissionBubbleManager::FromWebContents(web_contents)
+      ->set_auto_response_for_test(bubble_response);
   EXPECT_TRUE(RunScript("RequestPermission();", &result));
   return result;
 }
 
 bool PlatformNotificationServiceBrowserTest::RequestAndAcceptPermission() {
-  std::string result = RequestAndRespondToPermission(
-      PermissionBubbleManager::ACCEPT_ALL, InfoBarResponder::ACCEPT);
+  std::string result =
+      RequestAndRespondToPermission(PermissionBubbleManager::ACCEPT_ALL);
   return "granted" == result;
 }
 
 bool PlatformNotificationServiceBrowserTest::RequestAndDenyPermission() {
-  std::string result = RequestAndRespondToPermission(
-      PermissionBubbleManager::DENY_ALL, InfoBarResponder::DENY);
+  std::string result =
+      RequestAndRespondToPermission(PermissionBubbleManager::DENY_ALL);
   return "denied" == result;
 }
 
