@@ -45,14 +45,9 @@ var videoPlayerApp = new RemoteCall(VIDEO_PLAYER_APP_ID);
  * @param {Promise} promise Promise.
  */
 function testPromise(promise) {
-  promise.then(function() {
-    return new Promise(checkIfNoErrorsOccured);
-  }).then(chrome.test.callbackPass(function() {
-    // The callbacPass is necessary to avoid prematurely finishing tests.
-    // Don't put chrome.test.succeed() here to avoid doubled success log.
-  }), function(error) {
-    chrome.test.fail(error.stack || error);
-  });
+  return testPromiseAndApps(
+      promise,
+      [remoteCall, galleryApp, audioPlayerApp, videoPlayerApp]);
 };
 
 /**
@@ -338,10 +333,7 @@ function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
  * @param {function()} Completion callback.
  */
 function checkIfNoErrorsOccured(callback) {
-  remoteCall.callRemoteTestUtil('getErrorCount', null, [], function(count) {
-    chrome.test.assertEq(0, count, 'The error count is not 0.');
-    callback();
-  });
+  checkIfNoErrorsOccuredOnApp(remoteCall, callback);
 }
 
 /**
