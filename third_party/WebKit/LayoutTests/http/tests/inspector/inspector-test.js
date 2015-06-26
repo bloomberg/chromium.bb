@@ -816,6 +816,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.PageAgent = target.pageAgent();
         InspectorTest.ProfilerAgent = target.profilerAgent();
         InspectorTest.RuntimeAgent = target.runtimeAgent();
+        InspectorTest.ScreenOrientationAgent = target.screenOrientationAgent();
         InspectorTest.WorkerAgent = target.workerAgent();
 
         InspectorTest.consoleModel = target.consoleModel;
