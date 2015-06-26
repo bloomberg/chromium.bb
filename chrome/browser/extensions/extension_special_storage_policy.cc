@@ -62,9 +62,9 @@ void LogHostedAppUnlimitedStorageUsage(
     // We only have to query for kStorageTypePersistent data usage, because apps
     // cannot ask for any more temporary storage, according to
     // https://developers.google.com/chrome/whitepapers/storage.
-    BrowserThread::PostTask(
-        BrowserThread::IO,
+    BrowserThread::PostAfterStartupTask(
         FROM_HERE,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
         base::Bind(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
                    partition->GetQuotaManager(),
                    launch_url,

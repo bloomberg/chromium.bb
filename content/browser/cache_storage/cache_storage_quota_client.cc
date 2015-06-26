@@ -23,7 +23,6 @@ storage::QuotaClient::ID CacheStorageQuotaClient::id() const {
 }
 
 void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   delete this;
 }
 
