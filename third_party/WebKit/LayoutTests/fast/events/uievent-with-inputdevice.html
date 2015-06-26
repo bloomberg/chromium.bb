@@ -29,4 +29,14 @@
     shouldBeNonNull("mouseevent.sourceDevice");
     shouldBeFalse("mouseevent.sourceDevice.firesTouchEvents");
 
+    
+    // Creating KeyboardEvent.
+    var keyboardevent = new KeyboardEvent("keydown");
+    shouldBeNonNull("keyboardevent");
+    shouldBeNull("keyboardevent.sourceDevice");
+    
+    keyboardevent = new KeyboardEvent("keydown", { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
+    shouldBeNonNull("keyboardevent.sourceDevice");
+    shouldBeFalse("keyboardevent.sourceDevice.firesTouchEvents");
+
 </script>
