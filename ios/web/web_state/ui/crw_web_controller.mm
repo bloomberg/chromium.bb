@@ -1863,10 +1863,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
              (void (^)(scoped_ptr<base::Value>, NSError*))handler {
   [self evaluateJavaScript:script
        stringResultHandler:^(NSString* stringResult, NSError* error) {
+         DCHECK(stringResult || error);
          if (handler) {
            scoped_ptr<base::Value> result(
                base::JSONReader::Read(base::SysNSStringToUTF8(stringResult)));
-           DCHECK(result || error);
            handler(result.Pass(), error);
          }
        }];
