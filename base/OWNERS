@@ -17,8 +17,9 @@ thestig@chromium.org
 # writing the stuff you want to log in a regular logging statement, even
 # if it makes your calling code longer. Just add it to your own code.
 
-per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
+per-file *.isolate=tandrii@chromium.org
+per-file *.isolate=vadimsh@chromium.org
 per-file security_unittest.cc=jln@chromium.org
 
 # For Android-specific changes:

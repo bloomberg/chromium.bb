@@ -323,8 +323,9 @@ per-file webui_generator_strings.grdp=dzhioev@chromium.org
 
 per-file wifi.gypi=mef@chromium.org
 
-per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
+per-file *.isolate=tandrii@chromium.org
+per-file *.isolate=vadimsh@chromium.org
 
 # These are for the common case of adding or removing tests. If you're making
 # structural changes, please get a review from one of the overall components

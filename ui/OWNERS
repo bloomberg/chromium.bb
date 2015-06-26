@@ -5,8 +5,9 @@ sky@chromium.org
 avi@chromium.org
 thakis@chromium.org
 
-per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
+per-file *.isolate=tandrii@chromium.org
+per-file *.isolate=vadimsh@chromium.org
 
 # If you're doing structural changes get a review from one of the OWNERS.
 per-file *.gyp*=*

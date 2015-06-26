@@ -12,8 +12,9 @@ thestig@chromium.org
 # These are for the common case of adding or renaming files. If you're doing
 # structural changes, please get a review from a reviewer in this file.
 per-file *.gypi=*
-per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
+per-file *.isolate=tandrii@chromium.org
+per-file *.isolate=vadimsh@chromium.org
 
 # Android OWNERS from chrome/android/OWNERS
 per-file chrome_android*.gypi=aruslan@chromium.org

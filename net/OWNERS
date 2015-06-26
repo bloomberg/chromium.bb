@@ -16,8 +16,9 @@ rtenneti@chromium.org
 rvargas@chromium.org
 ttuttle@chromium.org
 
-per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
+per-file *.isolate=tandrii@chromium.org
+per-file *.isolate=vadimsh@chromium.org
 
 # Don't use as a reviewer for new CLs, but still here
 # so he can continue to review some already in-progress

@@ -47,5 +47,6 @@ vollick@chromium.org
 vollick@chromium.org
 ajuma@chromium.org
 
-per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
+per-file *.isolate=tandrii@chromium.org
+per-file *.isolate=vadimsh@chromium.org
