@@ -59,7 +59,7 @@
         '--densities=hdpi,xhdpi,xxhdpi,xxxhdpi,tvdpi',
       ],
     }],
-    ['language_splits != 1', {
+    ['language_splits != []', {
       'message': 'Signing/aligning <(_target_name) language splits',
       'inputs': [
         "<!@(python <(DEPTH)/build/apply_locales.py '<(resource_packaged_apk_path)_ZZLOCALE' <(language_splits))",
