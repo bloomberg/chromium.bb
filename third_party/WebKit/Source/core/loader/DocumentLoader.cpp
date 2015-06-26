@@ -219,9 +219,9 @@ void DocumentLoader::stopLoading()
     RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
     RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
 
-    m_fetcher->stopFetching();
     if (isLoading())
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+    m_fetcher->stopFetching();
 }
 
 void DocumentLoader::commitIfReady()
