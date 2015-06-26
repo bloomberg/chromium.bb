@@ -1939,6 +1939,14 @@ def GetConfig():
       afdo_generate_min=True,
       afdo_use=False,
       afdo_update_ebuild=True,
+
+      hw_tests=[HWTestList.AFDORecordTest()],
+      hw_tests_override=[HWTestList.AFDORecordTest(
+          num=constants.HWTEST_TRYBOT_NUM,
+          pool=constants.HWTEST_TRYBOT_POOL,
+          file_bugs=False,
+          priority=constants.HWTEST_DEFAULT_PRIORITY,
+      )],
   )
 
   release_afdo_use = site_config.AddTemplate(
