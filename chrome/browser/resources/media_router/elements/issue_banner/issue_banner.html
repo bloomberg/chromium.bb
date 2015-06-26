@@ -26,13 +26,11 @@
     <div id="non-blocking-issue"
         hidden$="[[computeIsNonBlockingIssueHidden_(issue)]]">
       <div>[[issue.message]]</div>
-      <span class="issue-action" on-click="onClickOptAction_"
-          hidden$="[[computeOptionalActionHidden_(issue)]]">
-        [[secondaryActionButtonText_]]
-      </span>
-      <span class="issue-action" on-click="onClickDefaultAction_">
-        [[defaultActionButtonText_]]
-      </span>
+      <span on-click="onClickOptAction_"
+          hidden$="[[computeOptionalActionHidden_(issue)]]"
+          class="issue-action">[[secondaryActionButtonText_]]</span>
+      <span on-click="onClickDefaultAction_"
+          class="issue-action">[[defaultActionButtonText_]]</span>
     </div>
   </template>
 <script src="issue_banner.js"></script>

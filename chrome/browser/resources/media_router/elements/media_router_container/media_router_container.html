@@ -15,12 +15,10 @@
         class$="[[currentView_]]"
         hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
       <div id="header-text">
-        <span hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
-         [[headerText]]
-        </span>
-        <span hidden$="[[computeCastModeHidden_(currentView_)]]">
-          [[selectCastModeHeaderText_]]
-        </span>
+        <span hidden$="[[computeSinkListHidden_(currentView_, issue)]]"
+            >[[headerText]]</span>
+        <span hidden$="[[computeCastModeHidden_(currentView_)]]"
+            >[[selectCastModeHeaderText_]]</span>
       </div>
       <paper-icon-button icon="[[computeArrowDropIcon_(currentView_)]]"
           on-click="toggleCastModeHidden_">
