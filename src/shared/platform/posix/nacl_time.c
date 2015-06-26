@@ -9,15 +9,15 @@
  * This is the host-OS-dependent implementation.
  */
 
+#include <errno.h>
 #include <sys/time.h>
 #include <time.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/posix/nacl_time_types.h"
-
-#include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
 
 #define NANOS_PER_UNIT  (1000*1000*1000)
 
@@ -49,6 +49,10 @@ void NaClTimeFini(void) {
 
 uint64_t NaClTimerResolutionNanoseconds(void) {
   return NaClTimerResolutionNsInternal(&gNaClTimeState);
+}
+
+static intptr_t NaClXlateSysRet(intptr_t rv) {
+  return (rv != -1) ? rv : -NaClXlateErrno(errno);
 }
 
 int NaClGetTimeOfDay(struct nacl_abi_timeval *tv) {
