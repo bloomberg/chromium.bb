@@ -77,6 +77,12 @@ class SyncService : public DataTypeEncryptionHandler {
   // TODO(sync): The methods below were pulled from ProfileSyncService, and
   // should be evaluated to see if they should stay.
 
+  // Called when a datatype (SyncableService) has a need for sync to start
+  // ASAP, presumably because a local change event has occurred but we're
+  // still in deferred start mode, meaning the SyncableService hasn't been
+  // told to MergeDataAndStartSyncing yet.
+  virtual void OnDataTypeRequestsSyncStartup(syncer::ModelType type) = 0;
+
   // Returns true if sync is allowed, requested, and the user is logged in.
   // (being logged in does not mean that tokens are available - tokens may
   // be missing because they have not loaded yet, or because they were deleted

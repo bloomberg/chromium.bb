@@ -29,6 +29,7 @@ class SyncServiceMock : public sync_driver::SyncService {
   MOCK_METHOD1(RemoveObserver, void(sync_driver::SyncServiceObserver*));
   MOCK_CONST_METHOD1(HasObserver,
                      bool(const sync_driver::SyncServiceObserver*));
+  MOCK_METHOD1(OnDataTypeRequestsSyncStartup, void(syncer::ModelType type));
   MOCK_CONST_METHOD0(CanSyncStart, bool());
   MOCK_METHOD1(RequestStop, void(sync_driver::SyncService::SyncStopDataFate));
   MOCK_METHOD0(RequestStart, void());

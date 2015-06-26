@@ -42,6 +42,9 @@ bool FakeSyncService::CanSyncStart() const {
   return false;
 }
 
+void FakeSyncService::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
+}
+
 void FakeSyncService::RequestStop(
     sync_driver::SyncService::SyncStopDataFate data_fate) {
 }

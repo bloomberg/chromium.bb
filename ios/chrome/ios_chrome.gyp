@@ -255,6 +255,8 @@
         'browser/suggestions/image_fetcher_impl.mm',
         'browser/suggestions/suggestions_service_factory.h',
         'browser/suggestions/suggestions_service_factory.mm',
+        'browser/sync/glue/sync_start_util.cc',
+        'browser/sync/glue/sync_start_util.h',
         'browser/sync/sync_observer_bridge.h',
         'browser/sync/sync_observer_bridge.mm',
         'browser/sync/sync_setup_service.cc',

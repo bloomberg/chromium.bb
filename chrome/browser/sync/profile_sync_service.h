@@ -277,6 +277,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool HasSyncSetupCompleted() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
+  void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
   bool CanSyncStart() const override;
   void RequestStop(SyncStopDataFate data_fate) override;
   void RequestStart() override;
@@ -664,12 +665,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
-
-  // Called when a datatype (SyncableService) has a need for sync to start
-  // ASAP, presumably because a local change event has occurred but we're
-  // still in deferred start mode, meaning the SyncableService hasn't been
-  // told to MergeDataAndStartSyncing yet.
-  void OnDataTypeRequestsSyncStartup(syncer::ModelType type);
 
   // Return sync token status.
   SyncTokenStatus GetSyncTokenStatus() const;

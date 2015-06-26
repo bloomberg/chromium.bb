@@ -25,6 +25,7 @@ class FakeSyncService : public sync_driver::SyncService {
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
+  void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
   bool CanSyncStart() const override;
   void RequestStop(
       sync_driver::SyncService::SyncStopDataFate data_fate) override;
