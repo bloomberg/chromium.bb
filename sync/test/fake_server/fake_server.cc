@@ -366,8 +366,6 @@ string FakeServer::CommitEntity(
   FakeServerEntity* entity;
   if (client_entity.deleted()) {
     entity = TombstoneEntity::Create(client_entity.id_string());
-    // TODO(pvalenzuela): Change the behavior of DeleteChilden so that it does
-    // not modify server data if it fails.
     if (!DeleteChildren(client_entity.id_string())) {
       return string();
     }
@@ -430,21 +428,23 @@ bool FakeServer::IsChild(const string& id, const string& potential_parent_id) {
 }
 
 bool FakeServer::DeleteChildren(const string& id) {
-  vector<string> child_ids;
-  for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
-       ++it) {
-    if (IsChild(it->first, id)) {
-      child_ids.push_back(it->first);
+  vector<FakeServerEntity*> tombstones;
+  for (auto& entity : entities_) {
+    if (IsChild(entity.first, id)) {
+      FakeServerEntity* tombstone = TombstoneEntity::Create(entity.first);
+      tombstones.push_back(tombstone);
+      if (tombstone == NULL) {
+        LOG(WARNING) << "Tombstone creation failed for entity with ID "
+                     << entity.first;
+        for (auto* tombstone : tombstones) {
+          delete tombstone;
+        }
+        return false;
+      }
     }
   }
 
-  for (vector<string>::iterator it = child_ids.begin(); it != child_ids.end();
-       ++it) {
-    FakeServerEntity* tombstone = TombstoneEntity::Create(*it);
-    if (tombstone == NULL) {
-      LOG(WARNING) << "Tombstone creation failed for entity with ID " << *it;
-      return false;
-    }
+  for (auto* tombstone : tombstones) {
     SaveEntity(tombstone);
   }
 
