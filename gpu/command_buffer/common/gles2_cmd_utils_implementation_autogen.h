@@ -529,10 +529,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_UNIFORM_BLOCK_DATA_SIZE",
     },
     {
-     0x9242,
-     "GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM",
-    },
-    {
      0x821D,
      "GL_NUM_EXTENSIONS",
     },
@@ -2197,10 +2193,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_RG8UI",
     },
     {
-     0x9240,
-     "GL_UNPACK_FLIP_Y_CHROMIUM",
-    },
-    {
      0x8DF6,
      "GL_UNSIGNED_INT_10_10_10_2_OES",
     },
@@ -3463,10 +3455,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     {
      0x8B65,
      "GL_FLOAT_MAT2x3_NV",
-    },
-    {
-     0x9241,
-     "GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM",
     },
     {
      0x00010000,
