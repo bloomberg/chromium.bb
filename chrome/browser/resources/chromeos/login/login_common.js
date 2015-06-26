@@ -346,6 +346,19 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Returns true if enrollment was successful. Dismisses the enrollment
+   * attribute screen if it's present.
+   */
+  Oobe.isEnrollmentSuccessfulForTest = function() {
+    if (document.querySelector(
+        '.oauth-enroll-state-attribute-prompt') != undefined) {
+      chrome.send('oauthEnrollAttributes', ['', '']);
+    }
+
+    return document.querySelector('.oauth-enroll-state-success') != undefined;
+  };
+
+  /**
    * Shows/hides login UI control bar with buttons like [Shut down].
    */
   Oobe.showControlBar = function(show) {
