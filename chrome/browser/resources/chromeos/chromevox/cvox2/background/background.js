@@ -61,7 +61,7 @@ Background = function() {
   this.mode_ = ChromeVoxMode.CLASSIC;
 
   /** @type {!ClassicCompatibility} @private */
-  this.compat_ = new ClassicCompatibility(this.mode_ === ChromeVoxMode.COMPAT);
+  this.compat_ = new ClassicCompatibility();
 
   // Manually bind all functions to |this|.
   for (var func in this) {
@@ -86,8 +86,6 @@ Background = function() {
     valueChanged: this.onValueChanged
   };
 
-  // Register listeners for ...
-  // Desktop.
   chrome.automation.getDesktop(this.onGotDesktop);
 };
 
@@ -127,17 +125,14 @@ Background.prototype = {
    * @param {string} command
    * @param {boolean=} opt_skipCompat Whether to skip compatibility checks.
    */
-    onGotCommand: function(command, opt_skipCompat) {
+  onGotCommand: function(command, opt_skipCompat) {
     if (!this.currentRange_)
       return;
 
-    if (!opt_skipCompat) {
+    if (!opt_skipCompat && this.mode_ === ChromeVoxMode.COMPAT) {
       if (this.compat_.onGotCommand(command))
         return;
     }
-
-    if (this.mode_ === ChromeVoxMode.CLASSIC)
-      return;
 
     var current = this.currentRange_;
     var dir = Dir.FORWARD;
@@ -328,10 +323,14 @@ Background.prototype = {
 
     if (current) {
       // TODO(dtseng): Figure out what it means to focus a range.
-      current.getStart().getNode().focus();
+      var actionNode = current.getStart().getNode();
+      if (actionNode.role == chrome.automation.RoleType.inlineTextBox)
+        actionNode = actionNode.parent;
+      actionNode.focus();
 
       var prevRange = this.currentRange_;
       this.currentRange_ = current;
+
       new Output().withSpeechAndBraille(
               this.currentRange_, prevRange, Output.EventType.NAVIGATE)
           .go();
@@ -352,10 +351,12 @@ Background.prototype = {
 
     this.currentRange_ = cursors.Range.fromNode(node);
 
-    // Check to see if we've crossed roots. Only care about focused roots.
-    if (!prevRange ||
+    // Check to see if we've crossed roots. Continue if we've crossed roots or
+    // are not within web content.
+    if (node.root.role == 'desktop' ||
+        !prevRange ||
         (prevRange.getStart().getNode().root != node.root &&
-         node.root.focused))
+        node.state.focused))
       this.setupChromeVoxVariants_(node.root.docUrl || '');
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
@@ -364,6 +365,12 @@ Background.prototype = {
       chrome.accessibilityPrivate.setFocusRing([]);
       return;
     }
+
+    // Don't output if focused node hasn't changed.
+    if (prevRange &&
+        evt.type == 'focus' &&
+        this.currentRange_.equals(prevRange))
+      return;
 
     new Output().withSpeechAndBraille(
             this.currentRange_, prevRange, evt.type)
@@ -512,7 +519,7 @@ Background.prototype = {
    * @private
    */
   isWhitelistedForCompat_: function(url) {
-    return url.indexOf('chrome://md-settings') != -1;
+    return url.indexOf('chrome://md-settings') != -1 || url === '';
   },
 
   /**
@@ -532,14 +539,15 @@ Background.prototype = {
    * @private
    */
   setupChromeVoxVariants_: function(url) {
-    this.compat_.active = this.isWhitelistedForCompat_(url);
     var mode = this.mode_;
-    if (this.compat_.active)
-      mode = ChromeVoxMode.COMPAT;
-    else if (this.isWhitelistedForNext_(url))
-      mode = ChromeVoxMode.NEXT;
-    else if (mode != ChromeVoxMode.FORCE_NEXT)
-      mode = ChromeVoxMode.CLASSIC;
+    if (mode != ChromeVoxMode.FORCE_NEXT) {
+      if (this.isWhitelistedForCompat_(url))
+        mode = ChromeVoxMode.COMPAT;
+      else if (this.isWhitelistedForNext_(url))
+        mode = ChromeVoxMode.NEXT;
+      else
+        mode = ChromeVoxMode.CLASSIC;
+    }
 
     this.setChromeVoxMode(mode);
   },
@@ -577,13 +585,17 @@ Background.prototype = {
         // for tabs, re-enable.
         // cvox.ChromeVox.injectChromeVoxIntoTabs(tabs);
       } else {
+        // When in compat mode, if the focus is within the desktop tree proper,
+        // then do not disable content scripts.
+        if (this.currentRange_.getStart().getNode().root.role == 'desktop')
+          return;
+
         tabs.forEach(function(tab) {
           this.disableClassicChromeVox_(tab.id);
         }.bind(this));
       }
     }.bind(this));
 
-    this.compat_.active = mode === ChromeVoxMode.COMPAT;
     this.mode_ = mode;
   }
 };

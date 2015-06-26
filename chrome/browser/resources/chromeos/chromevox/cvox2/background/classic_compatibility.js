@@ -9,19 +9,16 @@
 
 goog.provide('ClassicCompatibility');
 
+goog.require('cvox.ExtensionBridge');
 goog.require('cvox.KeyMap');
 goog.require('cvox.KeySequence');
 goog.require('cvox.KeyUtil');
 goog.require('cvox.SimpleKeyEvent');
 
 /**
- * @param {boolean=} opt_active Whether compatibility is currently active.
  * @constructor
  */
-var ClassicCompatibility = function(opt_active) {
-  /** @type {boolean} */
-  this.active = !!opt_active;
-
+var ClassicCompatibility = function() {
   /**
    * @type {!Array<{description: string, name: string, shortcut: string}>}
    * @private
@@ -31,9 +28,15 @@ var ClassicCompatibility = function(opt_active) {
   /** @type {!cvox.KeyMap} */
   this.keyMap = cvox.KeyMap.fromCurrentKeyMap();
 
-  chrome.commands.getAll(function(commands) {
-    this.commands_ = commands;
-  }.bind(this));
+  // We grab the list of commands from the manifest because
+  // chrome.commands.getAll is buggy.
+  /** @type {!Object} */
+  var commands = chrome.runtime.getManifest()['commands'];
+  for (var key in commands) {
+    /** @type {{suggested_key: {chromeos: string}}} */
+    var command = commands[key];
+    this.commands_.push({name: key, shortcut: command.suggested_key.chromeos});
+  }
 };
 
 ClassicCompatibility.prototype = {
@@ -43,31 +46,66 @@ ClassicCompatibility.prototype = {
    * @return {boolean} Whether the command was successfully processed.
    */
   onGotCommand: function(command) {
-    if (!this.active)
+    var evt = this.buildKeyEvent_(command);
+    if (!evt)
       return false;
+    this.simulateKeyDownNext_(evt);
+    return true;
+  },
 
+  /**
+   * Processes a ChromeVox Next command while in CLASSIC mode.
+   * @param {string} command
+   * @return {boolean} Whether the command was successfully processed.
+   */
+  onGotClassicCommand: function(command) {
+    var evt = this.buildKeyEvent_(command);
+    if (!evt)
+      return false;
+    this.simulateKeyDownClassic_(evt);
+    return true;
+  },
+
+  /**
+   * @param {string} command
+   * @return {cvox.SimpleKeyEvent?}
+   */
+  buildKeyEvent_: function(command) {
     var commandInfo = this.commands_.filter(function(c) {
       return c.name == command;
     }.bind(this))[0];
     if (!commandInfo)
-      return false;
+      return null;
     var shortcut = commandInfo.shortcut;
-    var evt = this.convertCommandShortcutToKeyEvent_(shortcut);
-    this.simulateKeyDown_(evt);
-    return true;
+    return this.convertCommandShortcutToKeyEvent_(shortcut);
   },
 
   /**
    * @param {cvox.SimpleKeyEvent} evt
    * @private
    */
-  simulateKeyDown_: function(evt) {
+  simulateKeyDownNext_: function(evt) {
     var keySequence = cvox.KeyUtil.keyEventToKeySequence(evt);
     var classicCommand = this.keyMap.commandForKey(keySequence);
     if (classicCommand) {
       var nextCommand = this.getNextCommand_(classicCommand);
       if (nextCommand)
         global.backgroundObj.onGotCommand(nextCommand, true);
+    }
+  },
+
+  /**
+   * @param {cvox.SimpleKeyEvent} evt
+   * @private
+   */
+  simulateKeyDownClassic_: function(evt) {
+    var keySequence = cvox.KeyUtil.keyEventToKeySequence(evt);
+    var classicCommand = this.keyMap.commandForKey(keySequence);
+    if (classicCommand) {
+      cvox.ExtensionBridge.send({
+        'message': 'USER_COMMAND',
+        'command': classicCommand
+      });
     }
   },
 
@@ -96,16 +134,16 @@ ClassicCompatibility.prototype = {
         case 'Space':
           evt.keyCode = 32;
           break;
-        case 'Left Arrow':
+        case 'Left':
           evt.keyCode = 37;
           break;
-        case 'Up Arrow':
+        case 'Up':
           evt.keyCode = 38;
           break;
-        case 'Right Arrow':
+        case 'Right':
           evt.keyCode = 39;
           break;
-        case 'Down Arrow':
+        case 'Down':
           evt.keyCode = 40;
           break;
         default:
