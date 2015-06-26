@@ -709,8 +709,9 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     }
   }
 
-  // In --site-per-process, just use the WebRemoteFrame as the main frame.
-  if (command_line.HasSwitch(switches::kSitePerProcess) && proxy) {
+  // When not using swapped out state, just use the WebRemoteFrame as the main
+  // frame.
+  if (proxy && RenderFrameProxy::IsSwappedOutStateForbidden()) {
     webview()->setMainFrame(proxy->web_frame());
     // Initialize the WebRemoteFrame with information replicated from the
     // browser process.

@@ -509,6 +509,11 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
          navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
+bool IsSwappedOutStateForbidden() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+}
+
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
@@ -691,16 +696,18 @@ RenderFrameImpl::~RenderFrameImpl() {
 #endif
 
   if (!is_subframe_) {
-    // When not using --site-per-process, RenderFrameProxy is "owned" by
-    // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
-    // along with this object.
-    if (render_frame_proxy_ &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess)) {
-      // The following method calls back into this object and clears
-      // |render_frame_proxy_|.
-      render_frame_proxy_->frameDetached(
-          blink::WebRemoteFrameClient::DetachType::Remove);
+    if (!IsSwappedOutStateForbidden()) {
+      // When using swapped out frames, RenderFrameProxy is "owned" by
+      // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
+      // along with this object.
+      if (render_frame_proxy_ &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kSitePerProcess)) {
+        // The following method calls back into this object and clears
+        // |render_frame_proxy_|.
+        render_frame_proxy_->frameDetached(
+            blink::WebRemoteFrameClient::DetachType::Remove);
+      }
     }
 
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
@@ -1118,6 +1125,9 @@ void RenderFrameImpl::OnSwapOut(
       switches::kSitePerProcess);
   bool is_main_frame = !frame_->parent();
 
+  // This codepath should only be hit for subframes when in --site-per-process.
+  CHECK_IMPLIES(!is_main_frame, is_site_per_process);
+
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_) {
     // Swap this RenderFrame out so the frame can navigate to a page rendered by
@@ -1158,7 +1168,7 @@ void RenderFrameImpl::OnSwapOut(
     // TODO(creis): Should we be stopping all frames here and using
     // StopAltErrorPageFetcher with RenderView::OnStop, or just stopping this
     // frame?
-    if (!is_site_per_process)
+    if (!IsSwappedOutStateForbidden())
       OnStop();
 
     // Transfer settings such as initial drawing parameters to the remote frame,
@@ -1170,7 +1180,7 @@ void RenderFrameImpl::OnSwapOut(
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
-    if (!is_site_per_process)
+    if (!IsSwappedOutStateForbidden())
       NavigateToSwappedOutURL();
 
     // Let WebKit know that this view is hidden so it can drop resources and
@@ -1193,13 +1203,11 @@ void RenderFrameImpl::OnSwapOut(
 
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
-  if (proxy) {
-    if (is_site_per_process || !is_main_frame) {
-      frame_->swap(proxy->web_frame());
+  if (proxy && IsSwappedOutStateForbidden()) {
+    frame_->swap(proxy->web_frame());
 
-      if (is_loading)
-        proxy->OnDidStartLoading();
-    }
+    if (is_loading)
+      proxy->OnDidStartLoading();
   }
 
   // In --site-per-process, initialize the WebRemoteFrame with the replication
@@ -1210,7 +1218,7 @@ void RenderFrameImpl::OnSwapOut(
   // in proxy->web_frame(), the RemoteFrame will not exist for main frames.
   // When we do an unconditional swap for all frames, we can remove
   // !is_main_frame below.
-  if (is_site_per_process && proxy)
+  if (proxy && IsSwappedOutStateForbidden())
     proxy->SetReplicatedState(replicated_frame_state);
 
   // Safe to exit if no one else is using the process.

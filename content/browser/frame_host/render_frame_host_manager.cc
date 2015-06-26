@@ -886,8 +886,7 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
 }
 
 void RenderFrameHostManager::OnDidUpdateOrigin(const url::Origin& origin) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess))
+  if (!IsSwappedOutStateForbidden())
     return;
 
   for (const auto& pair : proxy_hosts_) {
@@ -1544,12 +1543,11 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
         if (render_view_host->GetView())
           render_view_host->GetView()->Hide();
       }
-      // With --site-per-process, RenderViewHost for |instance| might exist
-      // prior to calling CreateRenderFrame, due to a subframe in
-      // |instance|. In such a case, InitRenderView will not create the
+      // RenderViewHost for |instance| might exist prior to calling
+      // CreateRenderFrame. In such a case, InitRenderView will not create the
       // RenderFrame in the renderer process and it needs to be done
       // explicitly.
-      if (is_site_per_process) {
+      if (swapped_out_forbidden) {
         // Init the RFH, so a RenderFrame is created in the renderer.
         DCHECK(new_render_frame_host);
         success = InitRenderFrame(new_render_frame_host.get());
