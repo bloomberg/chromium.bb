@@ -34,7 +34,6 @@
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/leadership_daemon_manager_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
-#include "chromeos/dbus/metronome_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_device_client.h"
@@ -215,10 +214,6 @@ DBusThreadManager::GetLorgnetteManagerClient() {
   return client_bundle_->lorgnette_manager_client();
 }
 
-MetronomeClient* DBusThreadManager::GetMetronomeClient() {
-  return client_bundle_->metronome_client();
-}
-
 ShillDeviceClient*
 DBusThreadManager::GetShillDeviceClient() {
   return client_bundle_->shill_device_client();
@@ -343,7 +338,6 @@ void DBusThreadManager::InitializeClients() {
   GetIntrospectableClient()->Init(GetSystemBus());
   GetLeadershipDaemonManagerClient()->Init(GetSystemBus());
   GetLorgnetteManagerClient()->Init(GetSystemBus());
-  GetMetronomeClient()->Init(GetSystemBus());
   GetModemMessagingClient()->Init(GetSystemBus());
   GetPermissionBrokerClient()->Init(GetSystemBus());
   GetPeerDaemonManagerClient()->Init(GetSystemBus());
@@ -597,11 +591,6 @@ void DBusThreadManagerSetter::SetLorgnetteManagerClient(
     scoped_ptr<LorgnetteManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->lorgnette_manager_client_ =
       client.Pass();
-}
-
-void DBusThreadManagerSetter::SetMetronomeClient(
-    scoped_ptr<MetronomeClient> client) {
-  DBusThreadManager::Get()->client_bundle_->metronome_client_ = client.Pass();
 }
 
 void DBusThreadManagerSetter::SetShillDeviceClient(

@@ -76,7 +76,6 @@
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/leadership_daemon_manager_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
-#include "chromeos/dbus/metronome_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_device_client.h"
@@ -119,7 +118,6 @@ const struct {
     { "easy_unlock",  DBusClientBundle::EASY_UNLOCK },
     { "leadership_daemon",  DBusClientBundle::LEADERSHIP_DAEMON },
     { "lorgnette_manager",  DBusClientBundle::LORGNETTE_MANAGER },
-    { "metronome",  DBusClientBundle::METRONOME },
     { "shill",  DBusClientBundle::SHILL },
     { "gsm_sms",  DBusClientBundle::GSM_SMS },
     { "image_burner",  DBusClientBundle::IMAGE_BURNER },
@@ -231,10 +229,6 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
   else
     lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
-
-  metronome_client_.reset(MetronomeClient::Create(
-      IsUsingStub(METRONOME) ? STUB_DBUS_CLIENT_IMPLEMENTATION
-                             : REAL_DBUS_CLIENT_IMPLEMENTATION));
 
   if (!IsUsingStub(SHILL)) {
     shill_manager_client_.reset(ShillManagerClient::Create());

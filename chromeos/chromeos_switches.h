@@ -102,7 +102,6 @@ CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kSystemDevMode[];
 CHROMEOS_EXPORT extern const char kTestAutoUpdateUI[];
-CHROMEOS_EXPORT extern const char kTestMetronomeTimer[];
 CHROMEOS_EXPORT extern const char kWakeOnPackets[];
 CHROMEOS_EXPORT extern const char kDisableCaptivePortalBypassProxy[];
 CHROMEOS_EXPORT extern const char kDisableTimeZoneTrackingOption[];

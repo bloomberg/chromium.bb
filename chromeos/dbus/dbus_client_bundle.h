@@ -37,7 +37,6 @@ class ImageBurnerClient;
 class IntrospectableClient;
 class LeadershipDaemonManagerClient;
 class LorgnetteManagerClient;
-class MetronomeClient;
 class ModemMessagingClient;
 class NfcAdapterClient;
 class NfcDeviceClient;
@@ -91,11 +90,10 @@ class CHROMEOS_EXPORT DBusClientBundle {
     UPDATE_ENGINE =        1 << 18,
     PEER_DAEMON =          1 << 19,
     LEADERSHIP_DAEMON =    1 << 20,
-    METRONOME =            1 << 21,
-    AP_MANAGER =           1 << 22,
-    PRIVET_DAEMON =        1 << 23,
-    AMPLIFIER =            1 << 24,
-    AUDIO_DSP =            1 << 25,
+    AP_MANAGER =           1 << 21,
+    PRIVET_DAEMON =        1 << 22,
+    AMPLIFIER =            1 << 23,
+    AUDIO_DSP =            1 << 24,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -196,8 +194,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
   LorgnetteManagerClient* lorgnette_manager_client() {
     return lorgnette_manager_client_.get();
   }
-
-  MetronomeClient* metronome_client() { return metronome_client_.get(); }
 
   ShillDeviceClient* shill_device_client() {
     return shill_device_client_.get();
@@ -322,7 +318,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<EasyUnlockClient> easy_unlock_client_;
   scoped_ptr<LeadershipDaemonManagerClient> leadership_daemon_manager_client_;
   scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
-  scoped_ptr<MetronomeClient> metronome_client_;
   scoped_ptr<PeerDaemonManagerClient> peer_daemon_manager_client_;
   scoped_ptr<PrivetDaemonManagerClient> privet_daemon_manager_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;

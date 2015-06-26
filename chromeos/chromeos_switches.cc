@@ -298,9 +298,6 @@ const char kForceFirstRunUI[] = "force-first-run-ui";
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 
-// Enables testing Metronome client with a periodic timer.
-const char kTestMetronomeTimer[] = "test-metronome-timer";
-
 // Enables waking the device based on the receipt of some network packets.
 const char kWakeOnPackets[] = "wake-on-packets";
 

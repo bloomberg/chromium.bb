@@ -51,7 +51,6 @@ class ImageBurnerClient;
 class IntrospectableClient;
 class LeadershipDaemonManagerClient;
 class LorgnetteManagerClient;
-class MetronomeClient;
 class ModemMessagingClient;
 class NfcAdapterClient;
 class NfcDeviceClient;
@@ -148,7 +147,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   IntrospectableClient* GetIntrospectableClient();
   LeadershipDaemonManagerClient* GetLeadershipDaemonManagerClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
-  MetronomeClient* GetMetronomeClient();
   ModemMessagingClient* GetModemMessagingClient();
   NfcAdapterClient* GetNfcAdapterClient();
   NfcDeviceClient* GetNfcDeviceClient();
@@ -242,7 +240,6 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetLeadershipDaemonManagerClient(
       scoped_ptr<LeadershipDaemonManagerClient> client);
   void SetLorgnetteManagerClient(scoped_ptr<LorgnetteManagerClient> client);
-  void SetMetronomeClient(scoped_ptr<MetronomeClient> client);
   void SetShillDeviceClient(scoped_ptr<ShillDeviceClient> client);
   void SetShillIPConfigClient(scoped_ptr<ShillIPConfigClient> client);
   void SetShillManagerClient(scoped_ptr<ShillManagerClient> client);
