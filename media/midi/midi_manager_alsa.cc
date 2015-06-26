@@ -566,9 +566,7 @@ void MidiManagerAlsa::TemporaryMidiPortState::Insert(
   ports().push_back(port.release());
 }
 
-MidiManagerAlsa::MidiPortState::MidiPortState()
-    : num_input_ports_(0), num_output_ports_(0) {
-}
+MidiManagerAlsa::MidiPortState::MidiPortState() = default;
 
 uint32 MidiManagerAlsa::MidiPortState::Insert(scoped_ptr<MidiPort> port) {
   // Add the web midi index.
@@ -586,8 +584,7 @@ uint32 MidiManagerAlsa::MidiPortState::Insert(scoped_ptr<MidiPort> port) {
   return web_port_index;
 }
 
-MidiManagerAlsa::AlsaSeqState::AlsaSeqState() : card_client_count_(0) {
-}
+MidiManagerAlsa::AlsaSeqState::AlsaSeqState() = default;
 
 MidiManagerAlsa::AlsaSeqState::~AlsaSeqState() = default;
 
@@ -643,8 +640,6 @@ scoped_ptr<MidiManagerAlsa::TemporaryMidiPortState>
 MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
   scoped_ptr<MidiManagerAlsa::TemporaryMidiPortState> midi_ports(
       new TemporaryMidiPortState);
-  // TODO(agoode): Use more information from udev, to allow hardware matching.
-  // See http://crbug.com/486471.
   auto card_it = alsa_cards.begin();
 
   int card_midi_device = -1;

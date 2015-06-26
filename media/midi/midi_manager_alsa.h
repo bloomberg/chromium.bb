@@ -219,8 +219,8 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     uint32 Insert(scoped_ptr<MidiPort> port);
 
    private:
-    uint32 num_input_ports_;
-    uint32 num_output_ports_;
+    uint32 num_input_ports_ = 0;
+    uint32 num_output_ports_ = 0;
   };
 
   class AlsaSeqState {
@@ -296,7 +296,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
     // cards. When this number matches alsa_card_midi_count_, we know
     // we are in sync between ALSA and udev. Until then, we cannot generate
     // MIDIConnectionEvents to web clients.
-    int card_client_count_;
+    int card_client_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(AlsaSeqState);
   };
