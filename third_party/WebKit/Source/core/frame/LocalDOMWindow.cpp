@@ -289,7 +289,7 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
 #endif
 {
 #if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(*this);
+    ThreadState::current()->registerPreFinalizer(this);
 #endif
 }
 

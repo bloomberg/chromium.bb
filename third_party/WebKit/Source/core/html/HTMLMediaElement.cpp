@@ -368,7 +368,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 #endif
 {
 #if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(*this);
+    ThreadState::current()->registerPreFinalizer(this);
 #endif
     ASSERT(RuntimeEnabledFeatures::mediaEnabled());
 

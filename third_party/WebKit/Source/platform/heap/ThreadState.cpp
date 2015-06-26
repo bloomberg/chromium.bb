@@ -1299,16 +1299,6 @@ void ThreadState::unlockThreadAttachMutex()
     threadAttachMutex().unlock();
 }
 
-void ThreadState::unregisterPreFinalizerInternal(void* target)
-{
-    checkThread();
-    if (sweepForbidden())
-        return;
-    auto it = m_preFinalizers.find(target);
-    ASSERT(it != m_preFinalizers.end());
-    m_preFinalizers.remove(it);
-}
-
 void ThreadState::invokePreFinalizers()
 {
     checkThread();
@@ -1320,9 +1310,20 @@ void ThreadState::invokePreFinalizers()
 
     SweepForbiddenScope forbiddenScope(this);
     Vector<void*> deadObjects;
-    for (auto& entry : m_preFinalizers) {
-        if (entry.value(entry.key))
-            deadObjects.append(entry.key);
+    for (auto& it : m_preFinalizers) {
+        void* object = it.key;
+        Vector<PreFinalizerCallback>* callbackVector = it.value.get();
+        size_t preFinalizerCount = callbackVector->size();
+        ASSERT(preFinalizerCount >= 1);
+        // Call the pre-finalizers in the reverse order in which they
+        // are registered.
+        if (!(callbackVector->at(preFinalizerCount - 1))(object))
+            continue;
+        deadObjects.append(object);
+        for (int i = preFinalizerCount - 2; i >= 0; --i) {
+            bool ret = (callbackVector->at(i))(object);
+            ASSERT_UNUSED(ret, ret);
+        }
     }
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.
     m_preFinalizers.removeAll(deadObjects);

@@ -648,7 +648,7 @@ protected:
         BookEnd()
             : m_store(nullptr)
         {
-            ThreadState::current()->registerPreFinalizer(*this);
+            ThreadState::current()->registerPreFinalizer(this);
         }
 
         void initialize(PersistentStore* store)
@@ -1192,7 +1192,7 @@ private:
 
 bool Observable::s_willFinalizeWasCalled = false;
 
-class ObservableWithPreFinalizer : public GarbageCollected<ObservableWithPreFinalizer> {
+class ObservableWithPreFinalizer : public GarbageCollectedFinalized<ObservableWithPreFinalizer> {
     USING_PRE_FINALIZER(ObservableWithPreFinalizer, dispose);
 public:
     static ObservableWithPreFinalizer* create() { return new ObservableWithPreFinalizer();  }
@@ -1200,23 +1200,95 @@ public:
     DEFINE_INLINE_TRACE() { }
     void dispose()
     {
-        ThreadState::current()->unregisterPreFinalizer(*this);
+        ThreadState::current()->unregisterPreFinalizer(this);
         EXPECT_FALSE(m_wasDestructed);
         s_disposeWasCalled = true;
     }
     static bool s_disposeWasCalled;
 
-private:
-    explicit ObservableWithPreFinalizer()
+protected:
+    ObservableWithPreFinalizer()
         : m_wasDestructed(false)
     {
-        ThreadState::current()->registerPreFinalizer(*this);
+        ThreadState::current()->registerPreFinalizer(this);
     }
 
     bool m_wasDestructed;
 };
 
 bool ObservableWithPreFinalizer::s_disposeWasCalled = false;
+
+bool s_disposeWasCalledForPreFinalizerBase = false;
+bool s_disposeWasCalledForPreFinalizerMixin = false;
+bool s_disposeWasCalledForPreFinalizerSubClass = false;
+
+class PreFinalizerBase : public GarbageCollectedFinalized<PreFinalizerBase> {
+    USING_PRE_FINALIZER(PreFinalizerBase, dispose);
+public:
+    static PreFinalizerBase* create() { return new PreFinalizerBase();  }
+    ~PreFinalizerBase() { m_wasDestructed = true; }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    void dispose()
+    {
+        EXPECT_FALSE(s_disposeWasCalledForPreFinalizerBase);
+        EXPECT_TRUE(s_disposeWasCalledForPreFinalizerSubClass);
+        EXPECT_FALSE(m_wasDestructed);
+        s_disposeWasCalledForPreFinalizerBase = true;
+    }
+
+protected:
+    PreFinalizerBase()
+        : m_wasDestructed(false)
+    {
+        ThreadState::current()->registerPreFinalizer(this);
+    }
+    bool m_wasDestructed;
+};
+
+class PreFinalizerMixin : public GarbageCollectedMixin {
+    USING_PRE_FINALIZER(PreFinalizerMixin, dispose);
+public:
+    ~PreFinalizerMixin() { m_wasDestructed = true; }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    void dispose()
+    {
+        EXPECT_FALSE(s_disposeWasCalledForPreFinalizerMixin);
+        EXPECT_FALSE(m_wasDestructed);
+        s_disposeWasCalledForPreFinalizerMixin = true;
+    }
+
+protected:
+    PreFinalizerMixin()
+        : m_wasDestructed(false)
+    {
+        ThreadState::current()->registerPreFinalizer(this);
+    }
+    bool m_wasDestructed;
+};
+
+class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
+    USING_GARBAGE_COLLECTED_MIXIN(PreFinalizerSubClass);
+    USING_PRE_FINALIZER(PreFinalizerSubClass, dispose);
+public:
+    static PreFinalizerSubClass* create() { return new PreFinalizerSubClass();  }
+    ~PreFinalizerSubClass() { m_wasDestructed = true; }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    void dispose()
+    {
+        EXPECT_FALSE(s_disposeWasCalledForPreFinalizerBase);
+        EXPECT_FALSE(s_disposeWasCalledForPreFinalizerSubClass);
+        EXPECT_FALSE(m_wasDestructed);
+        s_disposeWasCalledForPreFinalizerSubClass = true;
+    }
+
+protected:
+    PreFinalizerSubClass()
+        : m_wasDestructed(false)
+    {
+        ThreadState::current()->registerPreFinalizer(this);
+    }
+    bool m_wasDestructed;
+};
 
 template <typename T> class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
 public:
@@ -1603,7 +1675,7 @@ public:
     PreFinalizationAllocator(Persistent<IntWrapper>* wrapper)
         : m_wrapper(wrapper)
     {
-        ThreadState::current()->registerPreFinalizer(*this);
+        ThreadState::current()->registerPreFinalizer(this);
     }
 
     void dispose()
@@ -3616,7 +3688,7 @@ TEST(HeapTest, PreFinalizer)
     Observable::s_willFinalizeWasCalled = false;
     {
         Observable* foo = Observable::create(Bar::create());
-        ThreadState::current()->registerPreFinalizer(*foo);
+        ThreadState::current()->registerPreFinalizer(foo);
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     EXPECT_TRUE(Observable::s_willFinalizeWasCalled);
@@ -3627,8 +3699,8 @@ TEST(HeapTest, PreFinalizerIsNotCalledIfUnregistered)
     Observable::s_willFinalizeWasCalled = false;
     {
         Observable* foo = Observable::create(Bar::create());
-        ThreadState::current()->registerPreFinalizer(*foo);
-        ThreadState::current()->unregisterPreFinalizer(*foo);
+        ThreadState::current()->registerPreFinalizer(foo);
+        ThreadState::current()->unregisterPreFinalizer(foo);
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     EXPECT_FALSE(Observable::s_willFinalizeWasCalled);
@@ -3640,6 +3712,19 @@ TEST(HeapTest, PreFinalizerUnregistersItself)
     ObservableWithPreFinalizer::create();
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     EXPECT_TRUE(ObservableWithPreFinalizer::s_disposeWasCalled);
+    // Don't crash, and assertions don't fail.
+}
+
+TEST(HeapTest, NestedPreFinalizer)
+{
+    s_disposeWasCalledForPreFinalizerBase = false;
+    s_disposeWasCalledForPreFinalizerSubClass = false;
+    s_disposeWasCalledForPreFinalizerMixin = false;
+    PreFinalizerSubClass::create();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_TRUE(s_disposeWasCalledForPreFinalizerBase);
+    EXPECT_TRUE(s_disposeWasCalledForPreFinalizerSubClass);
+    EXPECT_TRUE(s_disposeWasCalledForPreFinalizerMixin);
     // Don't crash, and assertions don't fail.
 }
 

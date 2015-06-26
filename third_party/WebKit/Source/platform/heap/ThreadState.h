@@ -71,16 +71,21 @@ using VisitorCallback = void (*)(Visitor*, void* self);
 using TraceCallback = VisitorCallback;
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
+using PreFinalizerCallback = bool(*)(void*);
 
-// Declare that a class has a pre-finalizer function. The function is called in
-// the object's owner thread. The pre-finalizer is called before any object gets
-// swept, so it is allowed to touch on-heap objects that may be collected in the
-// GC cycle. If you cannot avoid touching on-heap objects in a destructor (which
-// is not allowed), you can consider using the pre-finalizer or
-// EARGERY_FINALIZED. The only restriction is that the pre-finalizer must not
-// resurrect dead objects (e.g., store unmarked objects into Members etc).
+// Declare that a class has a pre-finalizer. The pre-finalizer is called
+// before any object gets swept, so it is safe to touch on-heap objects
+// that may be collected in the same GC cycle. If you cannot avoid touching
+// on-heap objects in a destructor (which is not allowed), you can consider
+// using the pre-finalizer. The only restriction is that the pre-finalizer
+// must not resurrect dead objects (e.g., store unmarked objects into
+// Members etc). The pre-finalizer is called on the thread that registered
+// the pre-finalizer.
 //
-// This feature is similar to the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
+// Since a pre-finalizer adds pressure on GC performance, you should use it
+// only if necessary.
+//
+// A pre-finalizer is similar to the HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>>
 // idiom.  The difference between this and the idiom is that pre-finalizer
 // function is called whenever an object is destructed with this feature.  The
 // HeapHashMap<WeakMember<Foo>, OwnPtr<Disposer>> idiom requires an assumption
@@ -89,8 +94,6 @@ using EphemeronCallback = VisitorCallback;
 // idiom usages with the pre-finalizer if the replacement won't cause
 // performance regressions.
 //
-// See ThreadState::registerPreFinalizer.
-//
 // Usage:
 //
 // class Foo : GarbageCollected<Foo> {
@@ -98,28 +101,26 @@ using EphemeronCallback = VisitorCallback;
 // public:
 //     Foo()
 //     {
-//         ThreadState::current()->registerPreFinalizer(*this);
+//         ThreadState::current()->registerPreFinalizer(this, dispose);
 //     }
 // private:
-//     void dispose();
+//     void dispose()
+//     {
+//         m_bar->...; // It is safe to touch other on-heap objects.
+//     }
 //     Member<Bar> m_bar;
 // };
-//
-// void Foo::dispose()
-// {
-//     m_bar->...
-// }
-#define USING_PRE_FINALIZER(Class, method)   \
-    public: \
-        static bool invokePreFinalizer(void* object)   \
-        { \
-            Class* self = reinterpret_cast<Class*>(object); \
-            if (Heap::isHeapObjectAlive(self))              \
-                return false; \
-            self->method(); \
-            return true; \
-        } \
-        using UsingPreFinazlizerMacroNeedsTrailingSemiColon = char
+#define USING_PRE_FINALIZER(Class, preFinalizer)    \
+public:                                             \
+static bool invokePreFinalizer(void* object)        \
+{                                                   \
+    Class* self = reinterpret_cast<Class*>(object); \
+    if (Heap::isHeapObjectAlive(self))              \
+        return false;                               \
+    self->Class::preFinalizer();                    \
+    return true;                                    \
+}                                                   \
+using UsingPreFinazlizerMacroNeedsTrailingSemiColon = char
 
 #if ENABLE(OILPAN)
 #define WILL_BE_USING_PRE_FINALIZER(Class, method) USING_PRE_FINALIZER(Class, method)
@@ -536,29 +537,42 @@ public:
     size_t objectPayloadSizeForTesting();
     void prepareHeapForTermination();
 
-    // Request to call a pref-finalizer of the target object before the object
-    // is destructed.  The class T must have USING_PRE_FINALIZER().  The
-    // argument should be |*this|.  Registering a lot of objects affects GC
-    // performance.  We should register an object only if the object really
-    // requires pre-finalizer, and we should unregister the object if
-    // pre-finalizer is unnecessary.
+    // Register the pre-finalizer for the |self| object. This method is normally
+    // called in the constructor of the |self| object. The class T must have
+    // USING_PRE_FINALIZER().
     template<typename T>
-    void registerPreFinalizer(T& target)
+    void registerPreFinalizer(T* self)
     {
+        static_assert(sizeof(&T::invokePreFinalizer) > 0, "USING_PRE_FINALIZER(T) must be defined.");
         checkThread();
-        ASSERT(!m_preFinalizers.contains(&target));
         ASSERT(!sweepForbidden());
-        m_preFinalizers.add(&target, &T::invokePreFinalizer);
+        auto it = m_preFinalizers.find(self);
+        Vector<PreFinalizerCallback>* callbackVector;
+        if (it == m_preFinalizers.end()) {
+            callbackVector = m_preFinalizers.add(self, adoptPtr(new Vector<PreFinalizerCallback>)).storedValue->value.get();
+        } else {
+            callbackVector = it->value.get();
+        }
+        ASSERT(!callbackVector->contains(&T::invokePreFinalizer));
+        callbackVector->append(&T::invokePreFinalizer);
     }
 
-    // Cancel above requests.  The argument should be |*this|.  This function is
-    // ignored if it is called in pre-finalizer functions.
+    // Unregister the pre-finalizer for the |self| object.
     template<typename T>
-    void unregisterPreFinalizer(T& target)
+    void unregisterPreFinalizer(T* self)
     {
-        static_assert(sizeof(&T::invokePreFinalizer) > 0, "Declaration of USING_PRE_FINALIZER()'s prefinalizer trampoline not in scope.");
+        static_assert(sizeof(&T::invokePreFinalizer) > 0, "USING_PRE_FINALIZER(T) must be defined.");
         checkThread();
-        unregisterPreFinalizerInternal(&target);
+        // Ignore pre-finalizers called during pre-finalizers or destructors.
+        if (sweepForbidden())
+            return;
+        auto it = m_preFinalizers.find(self);
+        ASSERT(it != m_preFinalizers.end());
+        Vector<PreFinalizerCallback>* callbackVector = it->value.get();
+        ASSERT(it->value->contains(&T::invokePreFinalizer));
+        callbackVector->remove(callbackVector->find(&T::invokePreFinalizer));
+        if (callbackVector->isEmpty())
+            m_preFinalizers.remove(it);
     }
 
     Vector<PageMemoryRegion*>& allocatedRegionsSinceLastGC() { return m_allocatedRegionsSinceLastGC; }
@@ -691,7 +705,6 @@ private:
     void cleanup();
     void cleanupPages();
 
-    void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers();
 
     void takeSnapshot(SnapshotType);
@@ -744,7 +757,7 @@ private:
     GCState m_gcState;
 
     CallbackStack* m_threadLocalWeakCallbackStack;
-    HashMap<void*, bool (*)(void*)> m_preFinalizers;
+    HashMap<void*, OwnPtr<Vector<PreFinalizerCallback>>> m_preFinalizers;
 
     v8::Isolate* m_isolate;
     void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);

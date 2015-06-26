@@ -75,7 +75,6 @@ public:
     }
 
     virtual ~LocalDOMWindow();
-    void dispose();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -234,6 +233,7 @@ private:
     friend WTF::OwnedPtrDeleter<WindowFrameObserver>;
 
     explicit LocalDOMWindow(LocalFrame&);
+    void dispose();
 
     Page* page();
 
