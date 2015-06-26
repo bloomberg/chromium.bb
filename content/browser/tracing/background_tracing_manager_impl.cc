@@ -465,9 +465,7 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
     BackgroundTracingConfig::CategoryPreset preset) const {
   switch (preset) {
     case BackgroundTracingConfig::CategoryPreset::BENCHMARK:
-      return "benchmark,"
-             "disabled-by-default-toplevel.flow,"
-             "disabled-by-default-ipc.flow";
+      return "benchmark,toplevel";
     case BackgroundTracingConfig::CategoryPreset::BENCHMARK_DEEP:
       return "*,disabled-by-default-benchmark.detailed";
   }
