@@ -195,6 +195,9 @@ class AccessibilityManager
   // chromeos/audio/chromeos_sounds.h.
   void PlayEarcon(int sound_key);
 
+  // Profile having the a11y context.
+  Profile* profile() { return profile_; }
+
  protected:
   AccessibilityManager();
   ~AccessibilityManager() override;
