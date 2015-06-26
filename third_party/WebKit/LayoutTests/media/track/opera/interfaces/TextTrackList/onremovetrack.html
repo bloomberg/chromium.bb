@@ -5,7 +5,10 @@
 <div id=log></div>
 <script>
 setup(function(){
-    window.tracks = document.createElement('video').textTracks;
+    // TODO(philipj): Remove this test in favor of those in web-platform-tests
+    // once Oilpan has shipped. https://crbug.com/503852
+    window.video = document.createElement('video');
+    window.tracks = video.textTracks;
     window.ev = new Event('removetrack');
     window.ran = false;
     window.cb = function() { ran = true; };
