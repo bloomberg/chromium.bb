@@ -34,7 +34,10 @@ PASS new Option('somedata', 'somevalue').value is "somevalue"
 PASS new Option().defaultSelected is false
 PASS new Option('somedata', 'somevalue').defaultSelected is false
 PASS new Option('somedata', 'somevalue', false).defaultSelected is false
+PASS new Option('somedata', 'somevalue', false, false).defaultSelected is false
 PASS new Option('somedata', 'somevalue', true).defaultSelected is true
+PASS new Option('somedata', 'somevalue', true, false).defaultSelected is true
+PASS new Option('somedata', 'somevalue', true, true).defaultSelected is true
 PASS new Option().selected is false
 PASS new Option('somedata', 'somevalue').selected is false
 PASS new Option('somedata', 'somevalue', false).selected is false

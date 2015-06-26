@@ -20,12 +20,11 @@
 
 // https://html.spec.whatwg.org/#the-option-element
 
-// TODO(philipj): The constructor arguments default values are not per spec.
 [
     NamedConstructor=Option(optional DOMString data = null,
                             optional DOMString value = null,
-                            [Default=Undefined] optional boolean defaultSelected,
-                            [Default=Undefined] optional boolean selected),
+                            optional boolean defaultSelected = false,
+                            optional boolean selected = false),
     ConstructorCallWith=Document,
     RaisesException=Constructor
 ] interface HTMLOptionElement : HTMLElement {

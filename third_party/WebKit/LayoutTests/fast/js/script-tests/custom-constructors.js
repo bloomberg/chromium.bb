@@ -43,7 +43,10 @@ shouldBeEqualToString("new Option('somedata', 'somevalue').value", "somevalue");
 shouldBeFalse("new Option().defaultSelected");
 shouldBeFalse("new Option('somedata', 'somevalue').defaultSelected");
 shouldBeFalse("new Option('somedata', 'somevalue', false).defaultSelected");
+shouldBeFalse("new Option('somedata', 'somevalue', false, false).defaultSelected");
 shouldBeTrue("new Option('somedata', 'somevalue', true).defaultSelected");
+shouldBeTrue("new Option('somedata', 'somevalue', true, false).defaultSelected");
+shouldBeTrue("new Option('somedata', 'somevalue', true, true).defaultSelected");
 
 shouldBeFalse("new Option().selected");
 shouldBeFalse("new Option('somedata', 'somevalue').selected");
