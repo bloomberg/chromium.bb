@@ -12,14 +12,14 @@ mojo_native_application("omnibox") {
   deps = [
     ":lib",
     "//mandoline/services/navigation/public/interfaces",
+    "//mandoline/ui/common/resources",
     "//mojo/application/public/cpp",
     "//third_party/icu:icudata",
-    "//ui/views/resources",
   ]
 
   resources = [
     "$root_out_dir/icudtl.dat",
-    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
+    "$root_out_dir/mandoline_ui.pak",
   ]
 }
 

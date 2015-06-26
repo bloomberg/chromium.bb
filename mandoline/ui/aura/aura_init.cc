@@ -21,7 +21,7 @@ namespace {
 
 // Paths resources are loaded from.
 const char kResourceIcudtl[] = "icudtl.dat";
-const char kResourceUIPak[] = "views_resources_100_percent.pak";
+const char kResourceUIPak[] = "mandoline_ui.pak";
 
 std::set<std::string> GetResourcePaths() {
   std::set<std::string> paths;
