@@ -77,6 +77,10 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
     if (!m_document->loader())
         return;
     FetchRequest request = preload->resourceRequest(m_document);
+    // TODO(dgozman): This check should go to HTMLPreloadScanner, but this requires
+    // making Document::completeURLWithOverride logic to be statically accessible.
+    if (request.url().protocolIsData())
+        return;
     if (preload->resourceType() == Resource::Script || preload->resourceType() == Resource::CSSStyleSheet || preload->resourceType() == Resource::ImportResource)
         request.setCharset(preload->charset().isEmpty() ? m_document->charset().string() : preload->charset());
     request.setForPreload(true);
