@@ -184,6 +184,8 @@ public:
 private:
     Animation(ExecutionContext*, AnimationTimeline&, AnimationEffect*);
 
+    void clearOutdated();
+
     double sourceEnd() const;
     bool limited(double currentTime) const;
 

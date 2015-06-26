@@ -93,7 +93,8 @@ public:
     void pauseAnimationsForTesting(double);
 
     void setOutdatedAnimation(Animation*);
-    bool hasOutdatedAnimation() const;
+    void clearOutdatedAnimation(Animation*);
+    bool hasOutdatedAnimation() const { return m_outdatedAnimationCount > 0; }
     bool needsAnimationTimingUpdate();
 
     void setPlaybackRate(double);
@@ -116,6 +117,7 @@ private:
     RawPtrWillBeMember<Document> m_document;
     double m_zeroTime;
     bool m_zeroTimeInitialized;
+    unsigned m_outdatedAnimationCount;
     // Animations which will be updated on the next frame
     // i.e. current, in effect, or had timing changed
     WillBeHeapHashSet<RefPtrWillBeMember<Animation>> m_animationsNeedingUpdate;

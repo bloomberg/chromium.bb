@@ -367,8 +367,7 @@ void Animation::notifyStartTime(double timelineTime)
 
         // FIXME: This avoids marking this animation as outdated needlessly when a start time
         // is notified, but we should refactor how outdating works to avoid this.
-        m_outdated = false;
-
+        clearOutdated();
         m_currentTimePending = false;
     }
 }
@@ -683,8 +682,19 @@ void Animation::setPlaybackRateInternal(double playbackRate)
     setCurrentTimeInternal(storedCurrentTime, TimingUpdateOnDemand);
 }
 
+void Animation::clearOutdated()
+{
+    if (!m_outdated)
+        return;
+    m_outdated = false;
+    if (m_timeline)
+        m_timeline->clearOutdatedAnimation(this);
+}
+
 void Animation::setOutdated()
 {
+    if (m_outdated)
+        return;
     m_outdated = true;
     if (m_timeline)
         m_timeline->setOutdatedAnimation(this);
@@ -787,7 +797,7 @@ bool Animation::update(TimingUpdateReason reason)
 
     PlayStateUpdateScope updateScope(*this, reason, DoNotSetCompositorPending);
 
-    m_outdated = false;
+    clearOutdated();
     bool idle = playStateInternal() == Idle;
 
     if (m_content) {
