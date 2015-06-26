@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signin/token_handle_fetcher.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,7 +26,8 @@ TokenHandleFetcher::TokenHandleFetcher(TokenHandleUtil* util,
       user_id_(user_id),
       token_service_(nullptr),
       waiting_for_refresh_token_(false),
-      profile_(nullptr) {
+      profile_(nullptr),
+      tokeninfo_response_start_time_(base::TimeTicks()) {
 }
 
 TokenHandleFetcher::~TokenHandleFetcher() {
@@ -95,6 +97,7 @@ void TokenHandleFetcher::FillForAccessToken(const std::string& access_token) {
   if (!gaia_client_.get())
     gaia_client_.reset(
         new gaia::GaiaOAuthClient(profile_->GetRequestContext()));
+  tokeninfo_response_start_time_ = base::TimeTicks::Now();
   gaia_client_->GetTokenInfo(access_token, kMaxRetries, this);
 }
 
@@ -116,5 +119,8 @@ void TokenHandleFetcher::OnGetTokenInfoResponse(
       token_handle_util_->StoreTokenHandle(user_id_, handle);
     }
   }
+  const base::TimeDelta duration =
+      base::TimeTicks::Now() - tokeninfo_response_start_time_;
+  UMA_HISTOGRAM_TIMES("Login.TokenObtainResponseTime", duration);
   callback_.Run(user_id_, success);
 }

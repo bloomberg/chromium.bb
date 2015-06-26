@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -124,6 +125,7 @@ TokenHandleUtil::TokenDelegate::TokenDelegate(
     : owner_(owner),
       user_id_(user_id),
       token_(token),
+      tokeninfo_response_start_time_(base::TimeTicks::Now()),
       callback_(callback) {
 }
 
@@ -135,6 +137,7 @@ void TokenHandleUtil::TokenDelegate::OnOAuthError() {
   NotifyDone();
 }
 
+// Warning: NotifyDone() deletes |this|
 void TokenHandleUtil::TokenDelegate::NotifyDone() {
   if (owner_)
       owner_->OnValidationComplete(token_);
@@ -148,11 +151,15 @@ void TokenHandleUtil::TokenDelegate::OnNetworkError(int response_code) {
 void TokenHandleUtil::TokenDelegate::OnGetTokenInfoResponse(
     scoped_ptr<base::DictionaryValue> token_info) {
   TokenHandleStatus outcome = UNKNOWN;
-    if (!token_info->HasKey("error")) {
-      int expires_in = 0;
-      if (token_info->GetInteger("expires_in", &expires_in))
-        outcome = (expires_in < 0) ? INVALID : VALID;
-    }
+  if (!token_info->HasKey("error")) {
+    int expires_in = 0;
+    if (token_info->GetInteger("expires_in", &expires_in))
+      outcome = (expires_in < 0) ? INVALID : VALID;
+  }
+
+  const base::TimeDelta duration =
+      base::TimeTicks::Now() - tokeninfo_response_start_time_;
+  UMA_HISTOGRAM_TIMES("Login.TokenCheckResponseTime", duration);
   callback_.Run(user_id_, outcome);
   NotifyDone();
 }

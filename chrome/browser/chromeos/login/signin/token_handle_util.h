@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/user_manager/user_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
@@ -77,6 +78,7 @@ class TokenHandleUtil {
     base::WeakPtr<TokenHandleUtil> owner_;
     user_manager::UserID user_id_;
     std::string token_;
+    base::TimeTicks tokeninfo_response_start_time_;
     TokenValidationCallback callback_;
 
     DISALLOW_COPY_AND_ASSIGN(TokenDelegate);

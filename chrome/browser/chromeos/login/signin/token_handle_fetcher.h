@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/user_manager/user_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -69,6 +70,7 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate,
   bool waiting_for_refresh_token_;
   std::string account_without_token_;
   Profile* profile_;
+  base::TimeTicks tokeninfo_response_start_time_;
   TokenFetchingCallback callback_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_client_;
   scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
