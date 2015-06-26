@@ -1025,8 +1025,9 @@ class WizardControllerProxyAuthOnSigninTest
   DISALLOW_COPY_AND_ASSIGN(WizardControllerProxyAuthOnSigninTest);
 };
 
+// Disabled, see https://crbug.com/504928.
 IN_PROC_BROWSER_TEST_P(WizardControllerProxyAuthOnSigninTest,
-                       ProxyAuthDialogOnSigninScreen) {
+                       DISABLED_ProxyAuthDialogOnSigninScreen) {
   content::WindowedNotificationObserver auth_needed_waiter(
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::NotificationService::AllSources());
