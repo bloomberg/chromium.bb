@@ -169,6 +169,12 @@ bool AwaitCountBookmarksWithTitlesMatching(int profile,
                                            int expected_count)
     WARN_UNUSED_RESULT;
 
+// Blocks the caller until the given |profile| contains |expected_count|
+// bookmarks with |url| or until waiting times out.
+bool AwaitCountBookmarksWithUrlsMatching(int profile,
+                                         const GURL& url,
+                                         int expected_count) WARN_UNUSED_RESULT;
+
 // Checks if the bookmark model of profile |profile| contains any instances of
 // two bookmarks with the same URL under the same parent folder. Returns true
 // if even one instance is found.
@@ -190,6 +196,11 @@ int CountAllBookmarks(int profile) WARN_UNUSED_RESULT;
 int CountBookmarksWithTitlesMatching(
     int profile,
     const std::string& title) WARN_UNUSED_RESULT;
+
+// Returns the number of bookmarks in bookmark model of profile |profile|
+// whose URLs match the |url|.
+int CountBookmarksWithUrlsMatching(int profile,
+                                   const GURL& url) WARN_UNUSED_RESULT;
 
 // Returns the number of bookmark folders in the bookmark model of profile
 // |profile| whose titles contain the query string |title|.

@@ -31,6 +31,7 @@ using std::string;
 using std::vector;
 
 using syncer::GetModelType;
+using syncer::GetModelTypeFromSpecifics;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 
@@ -220,9 +221,13 @@ bool FakeServer::CreateDefaultPermanentItems() {
   return true;
 }
 
+void FakeServer::UpdateEntityVersion(FakeServerEntity* entity) {
+  entity->SetVersion(++version_);
+}
+
 void FakeServer::SaveEntity(FakeServerEntity* entity) {
   delete entities_[entity->GetId()];
-  entity->SetVersion(++version_);
+  UpdateEntityVersion(entity);
   entities_[entity->GetId()] = entity;
 }
 
@@ -545,6 +550,23 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
 void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SaveEntity(entity.release());
+}
+
+bool FakeServer::ModifyEntitySpecifics(
+    const std::string& id,
+    const sync_pb::EntitySpecifics& updated_specifics) {
+  if (entities_.find(id) == entities_.end()) {
+    return false;
+  }
+
+  FakeServerEntity* entity = entities_[id];
+  if (entity->GetModelType() != GetModelTypeFromSpecifics(updated_specifics)) {
+    return false;
+  }
+
+  entity->SetSpecifics(updated_specifics);
+  UpdateEntityVersion(entity);
+  return true;
 }
 
 bool FakeServer::SetNewStoreBirthday(const string& store_birthday) {

@@ -68,6 +68,19 @@ class FakeServer {
   // result in successful server operations.
   void InjectEntity(scoped_ptr<FakeServerEntity> entity);
 
+  // Modifies the entity on the server with the given |id|. The entity's
+  // EntitySpecifics are replaced with |updated_specifics| and its version is
+  // updated. If the given |id| does not exist or the ModelType of
+  // |updated_specifics| does not match the entity, false is returned.
+  // Otherwise, true is returned to represent a successful modification.
+  //
+  // TODO(pvalenzuela): This method should support updating entity data beyond
+  // EntitySpecifics. For example, in the case of a bookmark, changing the
+  // BookmarkSpecifics title field currently does not modify the top-level
+  // entity's name field.
+  bool ModifyEntitySpecifics(const std::string& id,
+                             const sync_pb::EntitySpecifics& updated_specifics);
+
   // Sets a new store birthday so that tests may trigger a NOT_MY_BIRTHDAY
   // error. If |store_birthday| is the same as |store_birthday_|, false is
   // returned and this method has no effect.
@@ -175,6 +188,10 @@ class FakeServer {
 
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;
+
+  // Updates the |entity| to a new version and increments the version counter
+  // that the server uses to assign versions.
+  void UpdateEntityVersion(FakeServerEntity* entity);
 
   // This is the last version number assigned to an entity. The next entity will
   // have a version number of version_ + 1.

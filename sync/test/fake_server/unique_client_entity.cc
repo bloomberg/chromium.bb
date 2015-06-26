@@ -45,9 +45,10 @@ UniqueClientEntity::UniqueClientEntity(
     int64 last_modified_time)
     : FakeServerEntity(id, model_type, version, name),
       client_defined_unique_tag_(client_defined_unique_tag),
-      specifics_(specifics),
       creation_time_(creation_time),
-      last_modified_time_(last_modified_time) { }
+      last_modified_time_(last_modified_time) {
+  SetSpecifics(specifics);
+}
 
 UniqueClientEntity::~UniqueClientEntity() { }
 
@@ -98,14 +99,11 @@ std::string UniqueClientEntity::EffectiveIdForClientTaggedEntity(
 string UniqueClientEntity::GetParentId() const {
   // The parent ID for this type of entity should always be its ModelType's
   // root node.
-  return FakeServerEntity::GetTopLevelId(model_type_);
+  return FakeServerEntity::GetTopLevelId(GetModelType());
 }
 
 void UniqueClientEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
   FakeServerEntity::SerializeBaseProtoFields(proto);
-
-  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
-  specifics->CopyFrom(specifics_);
 
   proto->set_parent_id_string(GetParentId());
   proto->set_client_defined_unique_tag(client_defined_unique_tag_);

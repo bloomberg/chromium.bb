@@ -98,11 +98,12 @@ BookmarkEntity::BookmarkEntity(
       originator_cache_guid_(originator_cache_guid),
       originator_client_item_id_(originator_client_item_id),
       unique_position_(unique_position),
-      specifics_(specifics),
       is_folder_(is_folder),
       parent_id_(parent_id),
       creation_time_(creation_time),
-      last_modified_time_(last_modified_time) { }
+      last_modified_time_(last_modified_time) {
+  SetSpecifics(specifics);
+}
 
 string BookmarkEntity::GetParentId() const {
   return parent_id_;
@@ -110,9 +111,6 @@ string BookmarkEntity::GetParentId() const {
 
 void BookmarkEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
   FakeServerEntity::SerializeBaseProtoFields(proto);
-
-  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
-  specifics->CopyFrom(specifics_);
 
   proto->set_originator_cache_guid(originator_cache_guid_);
   proto->set_originator_client_item_id(originator_client_item_id_);

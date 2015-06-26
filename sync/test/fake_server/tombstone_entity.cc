@@ -26,7 +26,11 @@ FakeServerEntity* TombstoneEntity::Create(const string& id) {
 
 TombstoneEntity::TombstoneEntity(const string& id,
                                  const ModelType& model_type)
-    : FakeServerEntity(id, model_type, 0, string()) { }
+    : FakeServerEntity(id, model_type, 0, string()) {
+  sync_pb::EntitySpecifics specifics;
+  AddDefaultFieldValue(model_type, &specifics);
+  SetSpecifics(specifics);
+}
 
 string TombstoneEntity::GetParentId() const {
   return string();
@@ -34,9 +38,6 @@ string TombstoneEntity::GetParentId() const {
 
 void TombstoneEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
   FakeServerEntity::SerializeBaseProtoFields(proto);
-
-  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
-  AddDefaultFieldValue(FakeServerEntity::GetModelType(), specifics);
 }
 
 bool TombstoneEntity::IsDeleted() const {

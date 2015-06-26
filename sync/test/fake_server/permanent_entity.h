@@ -53,7 +53,6 @@ class PermanentEntity : public FakeServerEntity {
   // All member values have equivalent fields in SyncEntity.
   std::string server_defined_unique_tag_;
   std::string parent_id_;
-  sync_pb::EntitySpecifics specifics_;
 };
 
 }  // namespace fake_server

@@ -21,7 +21,9 @@ using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AwaitCountBookmarksWithTitlesMatching;
+using bookmarks_helper::AwaitCountBookmarksWithUrlsMatching;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
+using bookmarks_helper::CountBookmarksWithUrlsMatching;
 using bookmarks_helper::Create1xFaviconFromPNGFile;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetBookmarkModel;
@@ -362,4 +364,45 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   const int kExpectedCountAfterDeletion = 0;
   ASSERT_TRUE(AwaitCountBookmarksWithTitlesMatching(
       kSingleProfileIndex, title, kExpectedCountAfterDeletion));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
+                       DownloadModifiedBookmark) {
+  std::string title = "Syrup";
+  GURL original_url = GURL("https://en.wikipedia.org/?title=Maple_syrup");
+  GURL updated_url = GURL("https://en.wikipedia.org/wiki/Xylem");
+
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  scoped_ptr<fake_server::FakeServerEntity> entity =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          title, original_url).Build();
+  fake_server_->InjectEntity(entity.Pass());
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+
+  ASSERT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+  ASSERT_EQ(1, CountBookmarksWithUrlsMatching(kSingleProfileIndex,
+                                              original_url));
+  ASSERT_EQ(0, CountBookmarksWithUrlsMatching(kSingleProfileIndex,
+                                              updated_url));
+
+  std::vector<sync_pb::SyncEntity> server_bookmarks =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  ASSERT_EQ(1ul, server_bookmarks.size());
+  std::string entity_id = server_bookmarks[0].id_string();
+
+  sync_pb::EntitySpecifics specifics = server_bookmarks[0].specifics();
+  sync_pb::BookmarkSpecifics* bookmark_specifics = specifics.mutable_bookmark();
+  bookmark_specifics->set_url(updated_url.spec());
+  ASSERT_TRUE(GetFakeServer()->ModifyEntitySpecifics(entity_id, specifics));
+
+  const syncer::ModelTypeSet kBookmarksType(syncer::BOOKMARKS);
+  TriggerSyncForModelTypes(kSingleProfileIndex, kBookmarksType);
+
+  ASSERT_TRUE(AwaitCountBookmarksWithUrlsMatching(
+      kSingleProfileIndex, updated_url, 1));
+  ASSERT_EQ(0, CountBookmarksWithUrlsMatching(kSingleProfileIndex,
+                                              original_url));
+  ASSERT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
 }

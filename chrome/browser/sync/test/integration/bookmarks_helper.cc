@@ -26,6 +26,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -813,6 +814,8 @@ bool AwaitAllModelsMatch() {
 
 namespace {
 
+// TODO(pvalenzuela): Remove this class and instead use
+// AwaitMatchStatusChangeChecker.
 class CountBookmarksWithTitlesMatchingChecker
     : public SingleClientStatusChangeChecker {
  public:
@@ -824,7 +827,7 @@ class CountBookmarksWithTitlesMatchingChecker
         profile_index_(profile_index),
         title_(title),
         expected_count_(expected_count) {
-    DCHECK_GE(0, expected_count) << "expected_count must be non-negative.";
+    DCHECK_GE(expected_count, 0) << "expected_count must be non-negative.";
   }
 
   bool IsExitConditionSatisfied() override {
@@ -853,6 +856,32 @@ bool AwaitCountBookmarksWithTitlesMatching(int profile,
                                                   profile,
                                                   title,
                                                   expected_count);
+  checker.Wait();
+  return !checker.TimedOut();
+}
+
+
+bool BookmarkCountsByUrlMatch(int profile,
+                              const GURL& url,
+                              int expected_count) {
+  int actual_count = CountBookmarksWithUrlsMatching(profile, url);
+  if (expected_count != actual_count) {
+    DVLOG(1) << base::StringPrintf("Expected %d URL(s), but there were %d.",
+                                   expected_count,
+                                   actual_count);
+    return false;
+  }
+  return true;
+}
+
+bool AwaitCountBookmarksWithUrlsMatching(int profile,
+                                         const GURL& url,
+                                         int expected_count) {
+  AwaitMatchStatusChangeChecker checker(base::Bind(BookmarkCountsByUrlMatch,
+                                                   profile,
+                                                   base::ConstRef(url),
+                                                   expected_count),
+                                        "Bookmark URL counts match.");
   checker.Wait();
   return !checker.TimedOut();
 }
@@ -902,6 +931,12 @@ int CountBookmarksWithTitlesMatching(int profile, const std::string& title) {
   return CountNodesWithTitlesMatching(GetBookmarkModel(profile),
                                       BookmarkNode::URL,
                                       base::UTF8ToUTF16(title));
+}
+
+int CountBookmarksWithUrlsMatching(int profile, const GURL& url) {
+  std::vector<const BookmarkNode*> nodes;
+  GetBookmarkModel(profile)->GetNodesByURL(url, &nodes);
+  return nodes.size();
 }
 
 int CountFoldersWithTitlesMatching(int profile, const std::string& title) {

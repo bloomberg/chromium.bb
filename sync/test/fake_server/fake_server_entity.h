@@ -36,6 +36,10 @@ class FakeServerEntity {
   void SetVersion(int64 version);
   const std::string& GetName() const;
 
+  // Replaces |specifics_| with |updated_specifics|. This method is meant to be
+  // used to mimic a client commit.
+  void SetSpecifics(const sync_pb::EntitySpecifics& updated_specifics);
+
   // Common data items needed by server
   virtual std::string GetParentId() const = 0;
   virtual void SerializeAsProto(sync_pb::SyncEntity* proto) = 0;
@@ -54,18 +58,21 @@ class FakeServerEntity {
 
   void SerializeBaseProtoFields(sync_pb::SyncEntity* sync_entity);
 
-  // The ModelType that categorizes this entity.
-  syncer::ModelType model_type_;
-
  private:
   // The entity's ID.
   std::string id_;
+
+  // The ModelType that categorizes this entity.
+  syncer::ModelType model_type_;
 
   // The version of this entity.
   int64 version_;
 
   // The name of the entity.
   std::string name_;
+
+  // The EntitySpecifics for the entity.
+  sync_pb::EntitySpecifics specifics_;
 };
 
 }  // namespace fake_server

@@ -91,8 +91,9 @@ PermanentEntity::PermanentEntity(const string& id,
                                  const sync_pb::EntitySpecifics& specifics)
     : FakeServerEntity(id, model_type, 0, name),
       server_defined_unique_tag_(server_defined_unique_tag),
-      parent_id_(parent_id),
-      specifics_(specifics) { }
+      parent_id_(parent_id) {
+  SetSpecifics(specifics);
+}
 
 string PermanentEntity::GetParentId() const {
   return parent_id_;
@@ -100,9 +101,6 @@ string PermanentEntity::GetParentId() const {
 
 void PermanentEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
   FakeServerEntity::SerializeBaseProtoFields(proto);
-
-  sync_pb::EntitySpecifics* specifics = proto->mutable_specifics();
-  specifics->CopyFrom(specifics_);
 
   proto->set_parent_id_string(parent_id_);
   proto->set_server_defined_unique_tag(server_defined_unique_tag_);

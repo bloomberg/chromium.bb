@@ -57,6 +57,11 @@ const std::string& FakeServerEntity::GetName() const {
   return name_;
 }
 
+void FakeServerEntity::SetSpecifics(
+    const sync_pb::EntitySpecifics& updated_specifics) {
+  specifics_ = updated_specifics;
+}
+
 // static
 string FakeServerEntity::CreateId(const ModelType& model_type,
                                   const string& inner_id) {
@@ -91,13 +96,16 @@ FakeServerEntity::FakeServerEntity(const string& id,
                                    const ModelType& model_type,
                                    int64 version,
                                    const string& name)
-      : model_type_(model_type),
-        id_(id),
+      : id_(id),
+        model_type_(model_type),
         version_(version),
         name_(name) {}
 
 void FakeServerEntity::SerializeBaseProtoFields(
     sync_pb::SyncEntity* sync_entity) {
+  sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
+  specifics->CopyFrom(specifics_);
+
   // FakeServerEntity fields
   sync_entity->set_id_string(id_);
   sync_entity->set_version(version_);

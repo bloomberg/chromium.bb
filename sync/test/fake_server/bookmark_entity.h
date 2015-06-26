@@ -59,7 +59,6 @@ class BookmarkEntity : public FakeServerEntity {
   std::string originator_cache_guid_;
   std::string originator_client_item_id_;
   sync_pb::UniquePosition unique_position_;
-  sync_pb::EntitySpecifics specifics_;
   bool is_folder_;
   std::string parent_id_;
   int64 creation_time_;
