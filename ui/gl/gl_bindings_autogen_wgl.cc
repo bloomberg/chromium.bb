@@ -55,6 +55,9 @@ void DriverWGL::InitializeStaticBindings() {
   fn.wglSwapIntervalEXTFn = 0;
   fn.wglSwapLayerBuffersFn = reinterpret_cast<wglSwapLayerBuffersProc>(
       GetGLProcAddress("wglSwapLayerBuffers"));
+}
+
+void DriverWGL::InitializeExtensionBindings() {
   std::string extensions(GetPlatformExtensions());
   extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);

@@ -26,6 +26,7 @@ UNCONDITIONALLY_BOUND_EXTENSIONS = set([
   'WGL_EXT_extensions_string',
   'GL_CHROMIUM_gles_depth_binding_hack', # crbug.com/448206
   'GL_CHROMIUM_glgetstringi_hack', # crbug.com/470396
+  'GL_CHROMIUM_egl_khr_fence_sync_hack', # crbug.com/504758
 ])
 
 """Function binding conditions can be specified manually by supplying a versions
@@ -1202,7 +1203,10 @@ EGL_FUNCTIONS = [
                'EGLint config_size, EGLint* num_config', },
 { 'return_type': 'EGLint',
   'versions': [{ 'name': 'eglClientWaitSyncKHR',
-                 'extensions': ['EGL_KHR_fence_sync'] }],
+                 'extensions': [
+                   'EGL_KHR_fence_sync',
+                   'GL_CHROMIUM_egl_khr_fence_sync_hack'
+                 ] }],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, '
       'EGLTimeKHR timeout' },
 { 'return_type': 'EGLBoolean',
@@ -1234,7 +1238,10 @@ EGL_FUNCTIONS = [
                'const EGLint* attrib_list', },
 { 'return_type': 'EGLSyncKHR',
   'versions': [{ 'name': 'eglCreateSyncKHR',
-                 'extensions': ['EGL_KHR_fence_sync'] }],
+                 'extensions': [
+                   'EGL_KHR_fence_sync',
+                   'GL_CHROMIUM_egl_khr_fence_sync_hack'
+                 ] }],
   'arguments': 'EGLDisplay dpy, EGLenum type, const EGLint* attrib_list' },
 { 'return_type': 'EGLSurface',
   'names': ['eglCreateWindowSurface'],
@@ -1252,7 +1259,10 @@ EGL_FUNCTIONS = [
   'arguments': 'EGLDisplay dpy, EGLSurface surface', },
 { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglDestroySyncKHR',
-                 'extensions': ['EGL_KHR_fence_sync'] }],
+                 'extensions': [
+                   'EGL_KHR_fence_sync',
+                   'GL_CHROMIUM_egl_khr_fence_sync_hack'
+                 ] }],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync' },
 { 'return_type': 'EGLBoolean',
   'names': ['eglGetConfigAttrib'],
@@ -1288,7 +1298,10 @@ EGL_FUNCTIONS = [
   'arguments': 'const char* procname', },
 { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglGetSyncAttribKHR',
-                 'extensions': ['EGL_KHR_fence_sync'] }],
+                 'extensions': [
+                   'EGL_KHR_fence_sync',
+                   'GL_CHROMIUM_egl_khr_fence_sync_hack'
+                 ] }],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, '
       'EGLint* value' },
 { 'return_type': 'EGLBoolean',
@@ -1905,29 +1918,12 @@ namespace gfx {
       return True
     return False
 
-  if set_name == 'egl':
-    file.write("""std::string client_extensions(GetClientExtensions());
-  client_extensions += " ";
-  ALLOW_UNUSED_LOCAL(client_extensions);
-
-""")
-    for extension in sorted(used_client_extensions):
-      # Extra space at the end of the extension name is intentional,
-      # it is used as a separator
-      file.write(
-          '  ext.b_%s = client_extensions.find("%s ") != std::string::npos;\n' %
-          (extension, extension))
-    for func in functions:
-      if not 'static_binding' in func and IsClientExtensionFunc(func):
-        file.write('\n')
-        file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
-        WriteConditionalFuncBinding(file, func)
+  file.write("}\n\n");
 
   if set_name == 'gl':
-    # Write the deferred bindings for GL that need a current context and depend
-    # on GL_VERSION and GL_EXTENSIONS.
-    file.write('}\n\n')
-    file.write("""void DriverGL::InitializeDynamicBindings(GLContext* context) {
+    file.write("""\
+void DriverGL::InitializeDynamicBindings(
+    GLContext* context) {
   DCHECK(context && context->IsCurrent(NULL));
   const GLVersionInfo* ver = context->GetVersionInfo();
   ALLOW_UNUSED_LOCAL(ver);
@@ -1935,24 +1931,53 @@ namespace gfx {
   ALLOW_UNUSED_LOCAL(extensions);
 
 """)
+  elif set_name == 'egl':
+    file.write("""\
+void DriverEGL::InitializeExtensionBindings() {
+  std::string client_extensions(GetClientExtensions());
+  client_extensions += " ";
+  ALLOW_UNUSED_LOCAL(client_extensions);
+
+""")
   else:
-    file.write("""std::string extensions(GetPlatformExtensions());
+    file.write("""\
+void Driver%s::InitializeExtensionBindings() {
+  std::string extensions(GetPlatformExtensions());
+  extensions += " ";
+  ALLOW_UNUSED_LOCAL(extensions);
+
+""" % (set_name.upper(),))
+
+  def OutputExtensionBindings(extension_var, extensions, extension_funcs):
+    # Extra space at the end of the extension name is intentional,
+    # it is used as a separator
+    for extension in extensions:
+      file.write('  ext.b_%s = %s.find("%s ") != std::string::npos;\n' %
+                 (extension, extension_var, extension))
+
+    for func in extension_funcs:
+      if not 'static_binding' in func:
+        file.write('\n')
+        file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
+        WriteConditionalFuncBinding(file, func)
+
+  OutputExtensionBindings(
+    'client_extensions',
+    sorted(used_client_extensions),
+    [ f for f in functions if IsClientExtensionFunc(f) ])
+
+  if set_name == 'egl':
+    file.write("""\
+  std::string extensions(GetPlatformExtensions());
   extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);
 
 """)
 
-  for extension in sorted(used_extensions):
-    # Extra space at the end of the extension name is intentional, it is used
-    # as a separator
-    file.write('  ext.b_%s = extensions.find("%s ") != std::string::npos;\n' %
-        (extension, extension))
-
-  for func in functions:
-    if not 'static_binding' in func and not IsClientExtensionFunc(func):
-      file.write('\n')
-      file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
-      WriteConditionalFuncBinding(file, func)
+  OutputExtensionBindings(
+    'extensions',
+    sorted(used_extensions),
+    [ f for f in functions if not IsClientExtensionFunc(f) ])
 
   # Some new function pointers have been added, so update them in debug bindings
   file.write('\n')

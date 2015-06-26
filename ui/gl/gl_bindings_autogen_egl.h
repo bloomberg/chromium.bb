@@ -168,6 +168,7 @@ struct ExtensionsEGL {
   bool b_EGL_KHR_reusable_sync;
   bool b_EGL_KHR_wait_sync;
   bool b_EGL_NV_post_sub_buffer;
+  bool b_GL_CHROMIUM_egl_khr_fence_sync_hack;
 };
 
 struct ProcsEGL {

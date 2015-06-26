@@ -16,6 +16,7 @@ void InitializeStaticGLBindingsWGL() {
   }
   g_real_wgl->Initialize(&g_driver_wgl);
   g_current_wgl_context = g_real_wgl;
+  g_driver_wgl.InitializeExtensionBindings();
 }
 
 void InitializeDebugGLBindingsWGL() {

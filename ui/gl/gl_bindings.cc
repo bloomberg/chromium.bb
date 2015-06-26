@@ -44,17 +44,13 @@ std::string DriverEGL::GetPlatformExtensions() {
   EGLDisplay display = GLSurfaceEGL::InitializeDisplay();
   if (display == EGL_NO_DISPLAY)
     return "";
-
-  DCHECK(g_driver_egl.fn.eglQueryStringFn);
-  const char* str = g_driver_egl.fn.eglQueryStringFn(display, EGL_EXTENSIONS);
+  const char* str = eglQueryString(display, EGL_EXTENSIONS);
   return str ? std::string(str) : "";
 }
 
 // static
 std::string DriverEGL::GetClientExtensions() {
-  DCHECK(g_driver_egl.fn.eglQueryStringFn);
-  const char* str =
-      g_driver_egl.fn.eglQueryStringFn(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+  const char* str = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   return str ? std::string(str) : "";
 }
 #endif

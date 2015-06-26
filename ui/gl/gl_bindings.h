@@ -345,6 +345,7 @@ struct GL_EXPORT DriverGL {
 
 struct GL_EXPORT DriverOSMESA {
   void InitializeStaticBindings();
+  void InitializeExtensionBindings();
   void InitializeDebugBindings();
   void ClearBindings();
 
@@ -359,6 +360,7 @@ struct GL_EXPORT DriverOSMESA {
 #if defined(OS_WIN)
 struct GL_EXPORT DriverWGL {
   void InitializeStaticBindings();
+  void InitializeExtensionBindings();
   void InitializeDebugBindings();
   void ClearBindings();
 
@@ -374,6 +376,7 @@ struct GL_EXPORT DriverWGL {
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || defined(USE_OZONE)
 struct GL_EXPORT DriverEGL {
   void InitializeStaticBindings();
+  void InitializeExtensionBindings();
   void InitializeDebugBindings();
   void ClearBindings();
 
@@ -389,6 +392,7 @@ struct GL_EXPORT DriverEGL {
 #if defined(USE_X11)
 struct GL_EXPORT DriverGLX {
   void InitializeStaticBindings();
+  void InitializeExtensionBindings();
   void InitializeDebugBindings();
   void ClearBindings();
 

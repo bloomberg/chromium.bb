@@ -112,6 +112,9 @@ void DriverGLX::InitializeStaticBindings() {
       reinterpret_cast<glXWaitGLProc>(GetGLProcAddress("glXWaitGL"));
   fn.glXWaitVideoSyncSGIFn = 0;
   fn.glXWaitXFn = reinterpret_cast<glXWaitXProc>(GetGLProcAddress("glXWaitX"));
+}
+
+void DriverGLX::InitializeExtensionBindings() {
   std::string extensions(GetPlatformExtensions());
   extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);

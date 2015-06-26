@@ -16,6 +16,7 @@ void InitializeStaticGLBindingsGLX() {
   }
   g_real_glx->Initialize(&g_driver_glx);
   g_current_glx_context = g_real_glx;
+  g_driver_glx.InitializeExtensionBindings();
 }
 
 void InitializeDebugGLBindingsGLX() {

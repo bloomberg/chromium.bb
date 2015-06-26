@@ -39,7 +39,6 @@ class EGLApiTest : public testing::Test {
       api_->InitializeWithCommandLine(&g_driver_egl, command_line);
     else
       api_->Initialize(&g_driver_egl);
-    api_->InitializeFilteredExtensions();
   }
 
   void SetFakeExtensionString(const char* fake_string) {

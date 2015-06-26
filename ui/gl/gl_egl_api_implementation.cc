@@ -10,19 +10,36 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
+namespace {
+std::string FilterExtensionList(
+    const char* extensions,
+    const std::vector<std::string>& disabled_extensions) {
+  if (extensions == NULL)
+    return "";
+  std::vector<std::string> extension_vec;
+  base::SplitString(extensions, ' ', &extension_vec);
+  extension_vec.erase(std::remove_if(
+      extension_vec.begin(), extension_vec.end(),
+      [&disabled_extensions](const std::string& ext) {
+        return std::find(disabled_extensions.begin(), disabled_extensions.end(),
+                         ext) != disabled_extensions.end();
+      }), extension_vec.end());
+  return JoinString(extension_vec, " ");
+}
+}
+
 namespace gfx {
 
 RealEGLApi* g_real_egl;
 
 void InitializeStaticGLBindingsEGL() {
+  g_driver_egl.InitializeStaticBindings();
   if (!g_real_egl) {
     g_real_egl = new RealEGLApi();
   }
   g_real_egl->Initialize(&g_driver_egl);
   g_current_egl_context = g_real_egl;
-  g_driver_egl.InitializeStaticBindings();
-
-  g_real_egl->InitializeFilteredExtensions();
+  g_driver_egl.InitializeExtensionBindings();
 }
 
 void InitializeDebugGLBindingsEGL() {
@@ -72,44 +89,22 @@ void RealEGLApi::InitializeWithCommandLine(DriverEGL* driver,
 
   const std::string disabled_extensions = command_line->GetSwitchValueASCII(
       switches::kDisableGLExtensions);
+  disabled_exts_.clear();
+  filtered_exts_.clear();
   if (!disabled_extensions.empty()) {
     Tokenize(disabled_extensions, ", ;", &disabled_exts_);
   }
 }
 
-void RealEGLApi::InitializeFilteredExtensions() {
-  if (!disabled_exts_.empty() && filtered_exts_.empty()) {
-    std::vector<std::string> platform_extensions_vec;
-    std::string platform_ext = DriverEGL::GetPlatformExtensions();
-    base::SplitString(platform_ext, ' ', &platform_extensions_vec);
-
-    std::vector<std::string> client_extensions_vec;
-    std::string client_ext = DriverEGL::GetClientExtensions();
-    base::SplitString(client_ext, ' ', &client_extensions_vec);
-
-    // Filter out extensions from the command line.
-    for (const std::string& disabled_ext : disabled_exts_) {
-      platform_extensions_vec.erase(std::remove(platform_extensions_vec.begin(),
-                                                platform_extensions_vec.end(),
-                                                disabled_ext),
-                                    platform_extensions_vec.end());
-      client_extensions_vec.erase(std::remove(client_extensions_vec.begin(),
-                                              client_extensions_vec.end(),
-                                              disabled_ext),
-                                  client_extensions_vec.end());
-    }
-
-    // Construct filtered extensions string for GL_EXTENSIONS string lookups.
-    filtered_exts_ = JoinString(platform_extensions_vec, " ");
-    if (!platform_extensions_vec.empty() && !client_extensions_vec.empty())
-      filtered_exts_ += " ";
-    filtered_exts_ += JoinString(client_extensions_vec, " ");
-  }
-}
-
 const char* RealEGLApi::eglQueryStringFn(EGLDisplay dpy, EGLint name) {
-  if (!filtered_exts_.empty() && name == EGL_EXTENSIONS) {
-    return filtered_exts_.c_str();
+  if (name == EGL_EXTENSIONS) {
+    auto it = filtered_exts_.find(dpy);
+    if (it == filtered_exts_.end()) {
+      it = filtered_exts_.insert(std::make_pair(
+          dpy, FilterExtensionList(EGLApiBase::eglQueryStringFn(dpy, name),
+                                   disabled_exts_))).first;
+    }
+    return (*it).second.c_str();
   }
   return EGLApiBase::eglQueryStringFn(dpy, name);
 }

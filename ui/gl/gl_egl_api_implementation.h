@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_EGL_API_IMPLEMENTATION_H_
 #define UI_GL_GL_EGL_API_IMPLEMENTATION_H_
 
+#include <map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -46,14 +47,13 @@ class GL_EXPORT RealEGLApi : public EGLApiBase {
   void Initialize(DriverEGL* driver);
   void InitializeWithCommandLine(DriverEGL* driver,
                                  base::CommandLine* command_line);
-  void InitializeFilteredExtensions();
 
   const char* eglQueryStringFn(EGLDisplay dpy, EGLint name) override;
 
  private:
   // Filtered EGL_EXTENSIONS we return to eglQueryStringFn() calls.
   std::vector<std::string> disabled_exts_;
-  std::string filtered_exts_;
+  std::map<EGLDisplay, std::string> filtered_exts_;
 };
 
 

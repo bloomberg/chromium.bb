@@ -15,6 +15,7 @@ void InitializeStaticGLBindingsOSMESA() {
   }
   g_real_osmesa->Initialize(&g_driver_osmesa);
   g_current_osmesa_context = g_real_osmesa;
+  g_driver_osmesa.InitializeExtensionBindings();
 }
 
 void InitializeDebugGLBindingsOSMESA() {
