@@ -1151,15 +1151,6 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/fra
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-with-async-callstack.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-async/async-callstack-get-as-string.html [ Crash ]
 
-# Try @font-face to load Ahem font to see it produces different flakiness from pre-registered Ahem font.
-crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/repaint/text-emphasis-v-try-ahem.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/text/whitespace/002-try-ahem.html [ Pass Failure ]
-crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/text/whitespace/003-try-ahem.html [ Pass Failure ]
-crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/text/whitespace/004-try-ahem.html [ Pass Failure ]
-crbug.com/331583 crbug.com/392046 virtual/antialiasedtext/fast/text/whitespace/002-try-ahem.html [ Skip ]
-crbug.com/331583 crbug.com/392046 virtual/antialiasedtext/fast/text/whitespace/003-try-ahem.html [ Skip ]
-crbug.com/331583 crbug.com/392046 virtual/antialiasedtext/fast/text/whitespace/004-try-ahem.html [ Skip ]
-
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
