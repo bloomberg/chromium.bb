@@ -283,6 +283,13 @@ component("base") {
     "work_area_watcher_observer.h",
   ]
 
+  if (is_chromeos || is_linux || is_win) {
+    sources += [
+      "resource/material_design/material_design_controller.cc",
+      "resource/material_design/material_design_controller.h",
+    ]
+  }
+
   if (is_win) {
     sources += [ "touch/touch_device_win.cc" ]
   } else if (is_android) {
@@ -595,6 +602,13 @@ source_set("test_support") {
     deps += [ "//ui/base/ime" ]
   }
 
+  if (is_chromeos || is_linux || is_win) {
+    sources += [
+      "test/material_design_controller_test_api.cc",
+      "test/material_design_controller_test_api.h",
+    ]
+  }
+
   if (!use_aura) {
     sources -= [ "test/ui_controls_aura.cc" ]
   } else if (is_win) {
@@ -633,6 +647,11 @@ test("ui_base_unittests") {
     "test/test_clipboard_unittest.cc",
     "user_activity/user_activity_detector_unittest.cc",
   ]
+
+  if (is_chromeos || is_linux || is_win) {
+    sources +=
+        [ "resource/material_design/material_design_controller_unittest.cc" ]
+  }
 
   if (is_android) {
     sources -= [ "user_activity/user_activity_detector_unittest.cc" ]

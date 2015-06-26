@@ -29,6 +29,14 @@ UI_BASE_EXPORT extern const char kEnableLinkDisambiguationPopup[];
 UI_BASE_EXPORT extern const char kEnableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kEnableTouchEditing[];
 UI_BASE_EXPORT extern const char kLang[];
+
+#if defined(ENABLE_TOPCHROME_MD)
+UI_BASE_EXPORT extern const char kTopChromeMD[];
+UI_BASE_EXPORT extern const char kTopChromeMDMaterial[];
+UI_BASE_EXPORT extern const char kTopChromeMDMaterialHybrid[];
+UI_BASE_EXPORT extern const char kTopChromeMDNonMaterial[];
+#endif  // defined(ENABLE_TOPCHROME_MD)
+
 UI_BASE_EXPORT extern const char kViewerConnect[];
 
 }  // namespace switches

@@ -438,6 +438,17 @@ const Experiment::Choice kAshScreenRotationAnimationChoices[] = {
 };
 #endif
 
+#if defined(ENABLE_TOPCHROME_MD)
+const Experiment::Choice kTopChromeMaterialDesignChoices[] = {
+    {IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL, "", ""},
+    {IDS_FLAGS_TOP_CHROME_MD_MATERIAL,
+     switches::kTopChromeMD,
+     switches::kTopChromeMDMaterial},
+    {IDS_FLAGS_TOP_CHROME_MD_MATERIAL_HYBRID,
+     switches::kTopChromeMD,
+     switches::kTopChromeMDMaterialHybrid}};
+#endif
+
 #if defined(OS_CHROMEOS)
 const Experiment::Choice kDataSaverPromptChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -809,8 +820,7 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_TOP_CHROME_MD,
      IDS_FLAGS_TOP_CHROME_MD_DESCRIPTION,
      kOsWin | kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kTopChromeMDEnabled,
-                               switches::kTopChromeMDDisabled)},
+     MULTI_VALUE_TYPE(kTopChromeMaterialDesignChoices)},
 #endif
     {"touch-events",
      IDS_TOUCH_EVENTS_NAME,

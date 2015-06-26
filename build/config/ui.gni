@@ -67,4 +67,4 @@ use_clipboard_aurax11 = is_linux && use_aura && use_x11
 
 enable_hidpi = is_mac || is_chromeos || is_win || is_linux
 
-enable_topchrome_md = is_chromeos || is_win
+enable_topchrome_md = is_chromeos || is_win || is_linux

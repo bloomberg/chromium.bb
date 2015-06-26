@@ -94,6 +94,11 @@
         '../..',
       ],
       'conditions': [
+        ['OS=="chromeos" or OS=="linux" or OS=="win"', {
+          'sources': [
+            'resource/material_design/material_design_controller_unittest.cc',
+          ]
+        }],
         ['OS!="ios"', {
           'sources' : [ '<@(_all_sources)' ],
         }, {  # OS=="ios"

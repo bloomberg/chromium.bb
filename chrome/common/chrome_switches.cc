@@ -1079,12 +1079,6 @@ const char kSyncDisableRollback[] = "disable-sync-rollback";
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
-#ifdef ENABLE_TOPCHROME_MD
-const char kTopChromeMD[]                   = "topchrome-md";
-const char kTopChromeMDEnabled[]            = "enable-topchrome-md";
-const char kTopChromeMDDisabled[]           = "disable-topchrome-md";
-#endif
-
 // Disables same-origin check on HTTP resources pushed via a SPDY proxy.
 // The value is the host:port of the trusted proxy.
 const char kTrustedSpdyProxy[]              = "trusted-spdy-proxy";

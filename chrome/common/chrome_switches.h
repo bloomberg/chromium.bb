@@ -296,11 +296,6 @@ extern const char kSyncEnableClearDataOnPassphraseEncryption[];
 extern const char kSyncDisableBackup[];
 extern const char kSyncDisableRollback[];
 extern const char kTestName[];
-#ifdef ENABLE_TOPCHROME_MD
-extern const char kTopChromeMD[];
-extern const char kTopChromeMDEnabled[];
-extern const char kTopChromeMDDisabled[];
-#endif
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUnlimitedStorage[];

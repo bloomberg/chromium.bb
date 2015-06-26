@@ -54,6 +54,21 @@ const char kEnableTouchEditing[] = "enable-touch-editing";
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
 
+#if defined(ENABLE_TOPCHROME_MD)
+// Enables top Chrome material design elements.
+const char kTopChromeMD[] = "top-chrome-md";
+
+// Material design mode for the |kTopChromeMD| switch.
+const char kTopChromeMDMaterial[] = "material";
+
+// Material design hybrid mode for the |kTopChromeMD| switch. Targeted for
+// mouse/touch hybrid devices.
+const char kTopChromeMDMaterialHybrid[] = "material-hybrid";
+
+// Classic, non-material, mode for the |kTopChromeMD| switch.
+const char kTopChromeMDNonMaterial[] = "";
+#endif  // defined(ENABLE_TOPCHROME_MD)
+
 // On Windows only: requests that Chrome connect to the running Metro viewer
 // process.
 const char kViewerConnect[] = "connect-to-metro-viewer";
