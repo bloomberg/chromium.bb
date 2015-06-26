@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,6 +21,8 @@ class GLSurface;
 }
 
 namespace gpu {
+class AsyncPixelTransferDelegate;
+
 namespace gles2 {
 
 class ContextGroup;

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/command_buffer/service/logger.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_switches.h"

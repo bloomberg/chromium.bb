@@ -10,13 +10,17 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/common_decoder.h"
-#include "gpu/command_buffer/service/logger.h"
+#include "gpu/gpu_export.h"
 
 namespace gfx {
 class GLContext;
@@ -26,7 +30,6 @@ class Size;
 
 namespace gpu {
 
-class AsyncPixelTransferDelegate;
 class AsyncPixelTransferManager;
 struct Mailbox;
 
