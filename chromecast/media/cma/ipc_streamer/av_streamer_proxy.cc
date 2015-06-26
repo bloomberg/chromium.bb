@@ -56,6 +56,8 @@ void AvStreamerProxy::Start() {
 }
 
 void AvStreamerProxy::StopAndFlush(const base::Closure& done_cb) {
+  DCHECK(!done_cb.is_null());
+
   pending_av_data_ = false;
   pending_audio_config_ = ::media::AudioDecoderConfig();
   pending_video_config_ = ::media::VideoDecoderConfig();
@@ -70,7 +72,15 @@ void AvStreamerProxy::StopAndFlush(const base::Closure& done_cb) {
   // guarantees Flush be called when there is no pending tasks.
   if (is_running_) {
     frame_provider_->Flush(done_cb);
+  } else {
+    // TODO(yucliu): This is a temporary fix where seek never finish because EOS
+    // reset is_running_ to false. Potential solution is to keep a list of
+    // callbacks. Do not call Flush if the list isn't empty and fire them when
+    // DemuxerStreamAdapter::Flush is done, so that we won't change the order of
+    // the callbacks.
+    done_cb.Run();
   }
+
   is_running_ = false;
 }
 
