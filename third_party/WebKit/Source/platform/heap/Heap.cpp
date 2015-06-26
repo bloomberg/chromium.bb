@@ -1709,10 +1709,10 @@ void LargeObjectPage::takeSnapshot(String dumpName, size_t pageIndex)
     HeapObjectHeader* header = heapObjectHeader();
     if (header->isMarked()) {
         liveCount = 1;
-        liveSize += header->size();
+        liveSize += header->payloadSize();
     } else {
         deadCount = 1;
-        deadSize += header->size();
+        deadSize += header->payloadSize();
     }
 
     pageDump->AddScalar("live_count", "objects", liveCount);
