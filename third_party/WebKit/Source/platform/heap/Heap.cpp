@@ -1318,8 +1318,8 @@ void NormalPage::makeConsistentForMutator()
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
-        // Check if a free list entry first since we cannot call
-        // isMarked on a free list entry.
+        if (header->isPromptlyFreed())
+            heapForNormalPage()->decreasePromptlyFreedSize(header->size());
         if (header->isFree()) {
             headerAddress += header->size();
             continue;
@@ -1328,9 +1328,8 @@ void NormalPage::makeConsistentForMutator()
 
         if (startOfGap != headerAddress)
             heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
-        if (header->isMarked()) {
+        if (header->isMarked())
             header->unmark();
-        }
         headerAddress += header->size();
         startOfGap = headerAddress;
     }
