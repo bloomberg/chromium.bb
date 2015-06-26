@@ -457,7 +457,6 @@ void OAuth2TokenFetched(
     JNIEnv* env,
     jclass clazz,
     jstring authToken,
-    jboolean result,
     jlong nativeCallback) {
   std::string token;
   if (authToken)
@@ -466,7 +465,7 @@ void OAuth2TokenFetched(
       reinterpret_cast<FetchOAuth2TokenCallback*>(nativeCallback));
   // Android does not provide enough information to know if the credentials are
   // wrong, so assume any error is transient by using CONNECTION_FAILED.
-  GoogleServiceAuthError err(result ?
+  GoogleServiceAuthError err(authToken ?
                              GoogleServiceAuthError::NONE :
                              GoogleServiceAuthError::CONNECTION_FAILED);
   heap_callback->Run(err, token, base::Time());

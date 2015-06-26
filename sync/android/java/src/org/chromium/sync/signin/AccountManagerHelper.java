@@ -292,32 +292,29 @@ public class AccountManagerHelper {
             final ConnectionRetry retry) {
         // Return null token for no USE_CREDENTIALS permission.
         if (!hasUseCredentialsPermission()) {
-            callback.tokenAvailable(null);
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.tokenAvailable(null);
+                }
+            });
             return;
         }
         final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(
                 account, authTokenType, true, null, null);
         errorEncountered.set(false);
 
-        // On ICS onPostExecute is never called when running an AsyncTask from a different thread
-        // than the UI thread.
-        if (ThreadUtils.runningOnUiThread()) {
-            new AsyncTask<Void, Void, String>() {
-                @Override
-                public String doInBackground(Void... params) {
-                    return getAuthTokenInner(future, errorEncountered);
-                }
-                @Override
-                public void onPostExecute(String authToken) {
-                    onGotAuthTokenResult(account, authTokenType, authToken, callback, numTries,
-                            errorEncountered, retry);
-                }
-            }.execute();
-        } else {
-            String authToken = getAuthTokenInner(future, errorEncountered);
-            onGotAuthTokenResult(account, authTokenType, authToken, callback, numTries,
-                    errorEncountered, retry);
-        }
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            public String doInBackground(Void... params) {
+                return getAuthTokenInner(future, errorEncountered);
+            }
+            @Override
+            public void onPostExecute(String authToken) {
+                onGotAuthTokenResult(account, authTokenType, authToken, callback, numTries,
+                        errorEncountered, retry);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void onGotAuthTokenResult(Account account, String authTokenType, String authToken,

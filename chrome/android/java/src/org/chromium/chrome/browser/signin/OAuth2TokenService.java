@@ -131,7 +131,12 @@ public final class OAuth2TokenService {
             Context context, String username, String scope, final long nativeCallback) {
         Account account = getAccountOrNullFromUsername(context, username);
         if (account == null) {
-            nativeOAuth2TokenFetched(null, false, nativeCallback);
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    nativeOAuth2TokenFetched(null, nativeCallback);
+                }
+            });
             return;
         }
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
@@ -141,7 +146,7 @@ public final class OAuth2TokenService {
                 null, account, oauth2Scope, new AccountManagerHelper.GetAuthTokenCallback() {
                     @Override
                     public void tokenAvailable(String token) {
-                        nativeOAuth2TokenFetched(token, token != null, nativeCallback);
+                        nativeOAuth2TokenFetched(token, nativeCallback);
                     }
                 });
     }
@@ -301,7 +306,7 @@ public final class OAuth2TokenService {
 
     private static native Object nativeGetForProfile(Profile profile);
     private static native void nativeOAuth2TokenFetched(
-            String authToken, boolean result, long nativeCallback);
+            String authToken, long nativeCallback);
     private native void nativeValidateAccounts(
             long nativeAndroidProfileOAuth2TokenService,
             String currentlySignedInAccount,

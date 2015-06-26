@@ -99,9 +99,9 @@ OAuth2TokenService::ScopedBatchChange::~ScopedBatchChange() {
 //
 // The Fetcher will call back the service by calling
 // OAuth2TokenService::OnFetchComplete() when it completes fetching, if it is
-// not destructed before it completes fetching; if the Fetcher is destructed
+// not destroyed before it completes fetching; if the Fetcher is destroyed
 // before it completes fetching, the service will never be called back. The
-// Fetcher destructs itself after calling back the service when finishes
+// Fetcher destroys itself after calling back the service when it finishes
 // fetching.
 //
 // Requests that are waiting for the fetching results of this Fetcher can be
@@ -110,13 +110,13 @@ OAuth2TokenService::ScopedBatchChange::~ScopedBatchChange() {
 // completes fetching.
 //
 // The waiting requests are taken as weak pointers and they can be deleted.
-// The waiting requests will be called back with fetching results if they are
-// not deleted
-// - when the Fetcher completes fetching, if the Fetcher is not destructed
-//   before it completes fetching, or
-// - when the Fetcher is destructed if the Fetcher is destructed before it
-//   completes fetching (in this case, the waiting requests will be called
-//   back with error).
+// They will be called back with the result when either the Fetcher completes
+// fetching or is destroyed, whichever comes first. In the latter case, the
+// waiting requests will be called back with an error.
+//
+// The OAuth2TokenService and the waiting requests will never be called back on
+// the same turn of the message loop as when the fetcher is started, even if an
+// immediate error occurred.
 class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
  public:
   // Creates a Fetcher and starts fetching an OAuth2 access token for
@@ -256,10 +256,13 @@ void OAuth2TokenService::Fetcher::Start() {
   fetcher_.reset(oauth2_token_service_->CreateAccessTokenFetcher(
       account_id_, getter_.get(), this));
   DCHECK(fetcher_);
+
+  // Stop the timer before starting the fetch, as defense in depth against the
+  // fetcher calling us back synchronously (which might restart the timer).
+  retry_timer_.Stop();
   fetcher_->Start(client_id_,
                   client_secret_,
                   std::vector<std::string>(scopes_.begin(), scopes_.end()));
-  retry_timer_.Stop();
 }
 
 void OAuth2TokenService::Fetcher::OnGetTokenSuccess(
