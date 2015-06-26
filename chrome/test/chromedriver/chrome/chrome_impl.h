@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,6 +25,9 @@ class PortReservation;
 class Status;
 class WebView;
 class WebViewImpl;
+struct WebViewInfo;
+
+typedef base::Callback<void(const WebViewInfo&)> WebViewCallback;
 
 class ChromeImpl : public Chrome {
  public:
@@ -47,6 +51,9 @@ class ChromeImpl : public Chrome {
       scoped_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<PortReservation> port_reservation);
+
+  Status UpdateWebViewIds(std::list<std::string>* web_view_ids,
+                          const WebViewCallback& callback);
 
   virtual Status QuitImpl() = 0;
 

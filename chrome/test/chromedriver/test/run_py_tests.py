@@ -237,6 +237,25 @@ class ChromeDriverBaseTest(unittest.TestCase):
     self._drivers += [driver]
     return driver
 
+  def WaitForNewWindow(self, driver, old_handles):
+    """Wait for at least one new window to show up in 20 seconds.
+
+    Args:
+      old_handles: Handles to all old windows before the new window is added.
+
+    Returns:
+      Handle to a new window. None if timeout.
+    """
+    deadline = time.time() + 20
+    while time.time() < deadline:
+      new_handles = driver.GetWindowHandles()
+      if len(new_handles) > len(old_handles):
+        for index, old_handle in enumerate(old_handles):
+          self.assertEquals(old_handle, new_handles[index])
+        return new_handles[len(old_handles)]
+      time.sleep(0.01)
+    return None
+
 
 class ChromeDriverTest(ChromeDriverBaseTest):
   """End to end tests for ChromeDriver."""
@@ -276,30 +295,11 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testGetCurrentWindowHandle(self):
     self._driver.GetCurrentWindowHandle()
 
-  def _WaitForNewWindow(self, old_handles):
-    """Wait for at least one new window to show up in 20 seconds.
-
-    Args:
-      old_handles: Handles to all old windows before the new window is added.
-
-    Returns:
-      Handle to a new window. None if timeout.
-    """
-    deadline = time.time() + 20
-    while time.time() < deadline:
-      new_handles = self._driver.GetWindowHandles()
-      if len(new_handles) > len(old_handles):
-        for index, old_handle in enumerate(old_handles):
-          self.assertEquals(old_handle, new_handles[index])
-        return new_handles[len(old_handles)]
-      time.sleep(0.01)
-    return None
-
   def testCloseWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
-    new_window_handle = self._WaitForNewWindow(old_handles)
+    new_window_handle = self.WaitForNewWindow(driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
@@ -320,7 +320,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
-    self.assertNotEqual(None, self._WaitForNewWindow(old_handles))
+    self.assertNotEqual(None, WaitForNewWindow(driver, old_handles))
 
   def testSwitchToWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
@@ -329,7 +329,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     window1_handle = self._driver.GetCurrentWindowHandle()
     old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
-    new_window_handle = self._WaitForNewWindow(old_handles)
+    new_window_handle = WaitForNewWindow(driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
@@ -644,7 +644,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self._http_server.GetUrl() + '/newwindow')
     old_windows = self._driver.GetWindowHandles()
     self._driver.FindElement('tagName', 'a').Click()
-    new_window = self._WaitForNewWindow(old_windows)
+    new_window = self.WaitForNewWindow(driver, old_windows)
     self.assertNotEqual(None, new_window)
 
     self.assertFalse(self._driver.IsLoading())
@@ -657,7 +657,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     old_handles = self._driver.GetWindowHandles()
     self._driver.ExecuteScript('window.open("about:blank")')
-    new_window_handle = self._WaitForNewWindow(old_handles)
+    new_window_handle = WaitForNewWindow(driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
 
   def testNoSuchFrame(self):
@@ -1086,7 +1086,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     old_handles = self._driver.GetWindowHandles()
     self.assertEquals(1, len(old_handles))
     self._driver.ExecuteScript('setTimeout(function(){window.print();}, 0);')
-    new_window_handle = self._WaitForNewWindow(old_handles)
+    new_window_handle = WaitForNewWindow(driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals('chrome://print/', self._driver.GetCurrentUrl())
@@ -1239,6 +1239,19 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
         chrome_switches=['user-agent=' + server.GetUrl()],
         chrome_extensions=[self._PackExtension(crx)])
     self.assertTrue(did_load_event.is_set())
+
+  def testCanLaunchApp(self):
+    app_path = os.path.join(_TEST_DATA_DIR, 'test_app')
+    driver = self.CreateDriver(chrome_switches=['load-extension=%s' % app_path])
+    old_handles = driver.GetWindowHandles()
+    self.assertEqual(1, len(old_handles))
+    driver.LaunchApp('gegjcdcfeiojglhifpmibkadodekakpc')
+    new_window_handle = self.WaitForNewWindow(driver, old_handles)
+    current_window_handle = driver.GetCurrentWindowHandle()
+    self.assertEqual(new_window_handle, current_window_handle,
+        "focus should switch to the window that the app launches in")
+    body_element = driver.FindElement('tag name', 'body')
+    self.assertEqual('It works!', body_element.GetText())
 
 
 class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
