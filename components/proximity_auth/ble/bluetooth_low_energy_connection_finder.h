@@ -51,6 +51,8 @@ class BluetoothLowEnergyConnectionFinder
                                  Connection::Status new_status) override;
 
   // device::BluetoothAdapter::Observer:
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override;
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* device) override;
   void DeviceChanged(device::BluetoothAdapter* adapter,
@@ -116,6 +118,9 @@ class BluetoothLowEnergyConnectionFinder
 
   // Restarts the discovery session after creating |connection_| fails.
   void RestartDiscoverySessionWhenReady();
+
+  // Returns the device with |device_address|.
+  device::BluetoothDevice* GetDevice(std::string device_address);
 
   // The uuid of the service it looks for to establish a GattConnection.
   device::BluetoothUUID remote_service_uuid_;

@@ -90,7 +90,7 @@ class BluetoothLowEnergyConnection : public Connection,
 
   ~BluetoothLowEnergyConnection() override;
 
-  // proximity_auth::Connection
+  // proximity_auth::Connection:
   void Connect() override;
   void Disconnect() override;
 
@@ -106,12 +106,12 @@ class BluetoothLowEnergyConnection : public Connection,
       const BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
           error_callback);
 
-  // proximity_auth::Connection
+  // proximity_auth::Connection:
   void SendMessageImpl(scoped_ptr<WireMessage> message) override;
   scoped_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message) override;
 
-  // device::BluetoothAdapter::Observer
+  // device::BluetoothAdapter::Observer:
   void DeviceChanged(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
@@ -189,15 +189,13 @@ class BluetoothLowEnergyConnection : public Connection,
   // accordingly the following flow:
   // 1) |request| is enqueued;
   // 2) |request| will be processed by ProcessNextWriteRequest() when there is
-  // no pending
-  // write request;
+  // no pending write request;
   // 3) |request| will be dequeued when it's successfully processed
   // (OnRemoteCharacteristicWritten());
   // 4) |request| is not dequeued if it fails
-  // (OnWriteRemoteCharacteristicError()),
-  // it remains on the queue and will be retried.
-  // |request| will remain on the queue until it succeeds or it triggers a
-  // Disconnect() call (after |max_number_of_tries_|).
+  // (OnWriteRemoteCharacteristicError()), it remains on the queue and will be
+  // retried. |request| will remain on the queue until it succeeds or it
+  // triggers a Disconnect() call (after |max_number_of_tries_|).
   void WriteRemoteCharacteristic(WriteRequest request);
 
   // Processes the next request in |write_requests_queue_|.

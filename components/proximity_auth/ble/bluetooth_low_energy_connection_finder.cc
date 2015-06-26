@@ -77,19 +77,50 @@ void BluetoothLowEnergyConnectionFinder::Find(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+// It's not necessary to observe |AdapterPresentChanged| too. When |adapter_| is
+// present, but not powered, it's not possible to scan for new devices.
+void BluetoothLowEnergyConnectionFinder::AdapterPoweredChanged(
+    BluetoothAdapter* adapter,
+    bool powered) {
+  DCHECK_EQ(adapter_.get(), adapter);
+  VLOG(1) << "Adapter powered: " << powered;
+
+  // Important: do not rely on |adapter->IsDiscoverying()| to verify if there is
+  // an active discovery session. We need to create our own with an specific
+  // filter.
+  if (powered && (!discovery_session_ || !discovery_session_->IsActive()))
+    StartDiscoverySession();
+}
+
 void BluetoothLowEnergyConnectionFinder::DeviceAdded(BluetoothAdapter* adapter,
                                                      BluetoothDevice* device) {
+  DCHECK_EQ(adapter_.get(), adapter);
   DCHECK(device);
   VLOG(1) << "Device added: " << device->GetAddress();
-  HandleDeviceUpdated(device);
+
+  // Note: Only consider |device| when it was actually added/updated during a
+  // scanning, otherwise the device is stale and the GATT connection will fail.
+  // For instance, when |adapter_| change status from unpowered to powered,
+  // |DeviceAdded| is called for each paired |device|.
+  if (adapter_->IsPowered() && discovery_session_ &&
+      discovery_session_->IsActive())
+    HandleDeviceUpdated(device);
 }
 
 void BluetoothLowEnergyConnectionFinder::DeviceChanged(
     BluetoothAdapter* adapter,
     BluetoothDevice* device) {
+  DCHECK_EQ(adapter_.get(), adapter);
   DCHECK(device);
   VLOG(1) << "Device changed: " << device->GetAddress();
-  HandleDeviceUpdated(device);
+
+  // Note: Only consider |device| when it was actually added/updated during a
+  // scanning, otherwise the device is stale and the GATT connection will fail.
+  // For instance, when |adapter_| change status from unpowered to powered,
+  // |DeviceAdded| is called for each paired |device|.
+  if (adapter_->IsPowered() && discovery_session_ &&
+      discovery_session_->IsActive())
+    HandleDeviceUpdated(device);
 }
 
 void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
@@ -223,6 +254,13 @@ void BluetoothLowEnergyConnectionFinder::OnCreateGattConnectionError(
     BluetoothDevice::ConnectErrorCode error_code) {
   VLOG(1) << "Error creating connection to device " << device_address
           << " : error code = " << error_code;
+
+  BluetoothDevice* device = GetDevice(device_address);
+  const auto& i = pending_connections_.find(device);
+  if (i != pending_connections_.end()) {
+    VLOG(1) << "Remove pending connection to  " << device->GetAddress();
+    pending_connections_.erase(i);
+  }
 }
 
 void BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated(
@@ -315,26 +353,13 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
 }
 
 void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionWhenReady() {
-  // It's not possible to simply use
-  // |adapter_->GetDevice(GetRemoteDeviceAddress())| to find the device with MAC
-  // address |GetRemoteDeviceAddress()|. For paired devices,
-  // BluetoothAdapter::GetDevice(XXX) searches for the temporary MAC address
-  // XXX, whereas |remote_device_.bluetooth_address| is the real MAC address.
-  // This is a bug in the way device::BluetoothAdapter is storing the devices
-  // (see crbug.com/497841).
-  BluetoothDevice* device = nullptr;
-  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
-  for (const auto& dev : devices) {
-    if (dev->GetAddress() == remote_device_.bluetooth_address)
-      device = dev;
-  }
-
   // To restart scanning for devices, it's necessary to ensure that:
   // (i) the GATT connection to |remove_device_| is closed;
   // (ii) there is no pending call to
   // |device::BluetoothDiscoverySession::Stop()|.
   // The second condition is satisfied when |OnDiscoveryStopped| is called and
   // |discovery_session_| is reset.
+  BluetoothDevice* device = GetDevice(remote_device_.bluetooth_address);
   if ((!device || !device->IsConnected()) && !discovery_session_) {
     DCHECK(!gatt_connection_);
     connection_.reset();
@@ -351,6 +376,23 @@ void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionWhenReady() {
 void BluetoothLowEnergyConnectionFinder::SetDelayForTesting(
     base::TimeDelta delay) {
   delay_after_gatt_connection_ = delay;
+}
+
+BluetoothDevice* BluetoothLowEnergyConnectionFinder::GetDevice(
+    std::string device_address) {
+  // It's not possible to simply use
+  // |adapter_->GetDevice(GetRemoteDeviceAddress())| to find the device with MAC
+  // address |GetRemoteDeviceAddress()|. For paired devices,
+  // BluetoothAdapter::GetDevice(XXX) searches for the temporary MAC address
+  // XXX, whereas |remote_device_.bluetooth_address| is the real MAC address.
+  // This is a bug in the way device::BluetoothAdapter is storing the devices
+  // (see crbug.com/497841).
+  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
+  for (const auto& device : devices) {
+    if (device->GetAddress() == device_address)
+      return device;
+  }
+  return nullptr;
 }
 
 }  // namespace proximity_auth
