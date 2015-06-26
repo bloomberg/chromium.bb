@@ -19,7 +19,7 @@
 
             var pass = document.getElementById("accountpassword");
             pass.focus();
-            var titleUIElement = accessibilityController.focusedElement.titleUIElement();
+            var titleUIElement = accessibilityController.focusedElement.deprecatedTitleUIElement();
             var titleText = titleUIElement.childAtIndex(0);
             if (titleText.stringValue == "AXValue: Password") {
                 result.innerText += "Test passed\n";

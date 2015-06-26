@@ -1,12 +1,12 @@
 This tests that if aria-labelledby is used, then aria-label attributes are not used.
 
 Alpha Beta Delta Eta Epsilon Theta
-usingNone.title: [AXTitle: Alpha]
-usingNone.description: [AXDescription: ]
-usingLabel.title: [AXTitle: Beta]
-usingLabel.description: [AXDescription: Gamma]
-usingLabelledby.title: [AXTitle: Delta]
-usingLabelledby.description: [AXDescription: Epsilon]
-usingLabeledby.title: [AXTitle: Eta]
-usingLabeledby.description: [AXDescription: Theta]
+usingNone.deprecatedTitle: [AXTitle: Alpha]
+usingNone.deprecatedDescription: [AXDescription: ]
+usingLabel.deprecatedTitle: [AXTitle: Beta]
+usingLabel.deprecatedDescription: [AXDescription: Gamma]
+usingLabelledby.deprecatedTitle: [AXTitle: Delta]
+usingLabelledby.deprecatedDescription: [AXDescription: Epsilon]
+usingLabeledby.deprecatedTitle: [AXTitle: Eta]
+usingLabeledby.deprecatedDescription: [AXDescription: Theta]
 

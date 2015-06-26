@@ -27,10 +27,10 @@
         document.getElementById("svgimage").focus();
         var svgImage = accessibilityController.focusedElement;
         shouldBe("svgImage.role", "realImage.role");
-        shouldBe("svgImage.description", "realImage.description");
+        shouldBe("svgImage.deprecatedDescription", "realImage.deprecatedDescription");
        
         debug("SVG Image Role: " + svgImage.role);
-        debug("SVG Image Description: " + svgImage.description);
+        debug("SVG Image Description: " + svgImage.deprecatedDescription);
     }
 
 </script>

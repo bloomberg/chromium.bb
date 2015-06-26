@@ -32,51 +32,51 @@ if (window.testRunner && window.accessibilityController) {
     link.focus();
     shouldBe("document.activeElement == link", "true");
     window.axLink = accessibilityController.focusedElement;
-    shouldBe("lastChar(axLink.title)", "\"A\"");
+    shouldBe("lastChar(axLink.deprecatedTitle)", "\"A\"");
 
     var div = document.getElementById('div');
     div.focus();
     shouldBe("document.activeElement == div", "true");
     window.axDiv = accessibilityController.focusedElement;
-    shouldBe("lastChar(axDiv.title)", "\"B\"");
+    shouldBe("lastChar(axDiv.deprecatedTitle)", "\"B\"");
 
     var div2 = document.getElementById('div2');
     div2.focus();
     shouldBe("document.activeElement == div2", "true");
     window.axDiv2 = accessibilityController.focusedElement;
-    shouldBe("lastChar(axDiv2.title)", "\"C\"");
+    shouldBe("lastChar(axDiv2.deprecatedTitle)", "\"C\"");
 
     var div3 = document.getElementById('div3');
     div3.focus();
     shouldBe("document.activeElement == div3", "true");
     window.axDiv3 = accessibilityController.focusedElement;
-    shouldBe("lastChar(axDiv3.description)", "\"D\"");
+    shouldBe("lastChar(axDiv3.deprecatedDescription)", "\"D\"");
 
     var div4 = document.getElementById('div4');
     div4.focus();
     shouldBe("document.activeElement == div4", "true");
     window.axDiv4 = accessibilityController.focusedElement;
-    shouldBe("axDiv4.title.indexOf('Link')", "-1");
+    shouldBe("axDiv4.deprecatedTitle.indexOf('Link')", "-1");
 
     var div5 = document.getElementById('div5');
     div5.focus();
     shouldBe("document.activeElement == div5", "true");
     window.axDiv5 = accessibilityController.focusedElement;
-    shouldBe("axDiv5.title.indexOf('Link')", "-1");
-    shouldBe("axDiv5.title.indexOf('Initial text before link') >= 0", "true");
+    shouldBe("axDiv5.deprecatedTitle.indexOf('Link')", "-1");
+    shouldBe("axDiv5.deprecatedTitle.indexOf('Initial text before link') >= 0", "true");
 
     var div6 = document.getElementById('div6');
     div6.focus();
     shouldBe("document.activeElement == div6", "true");
     window.axDiv6 = accessibilityController.focusedElement;
-    shouldBe("axDiv6.title.indexOf('List item')", "-1");
+    shouldBe("axDiv6.deprecatedTitle.indexOf('List item')", "-1");
 
     var div7 = document.getElementById('div7');
     div7.focus();
     shouldBe("document.activeElement == div7", "true");
     window.axDiv7 = accessibilityController.focusedElement;
-    shouldBe("axDiv7.title.indexOf('List item')", "-1");
-    shouldBe("axDiv7.title.indexOf('Initial text before list') >= 0", "true");
+    shouldBe("axDiv7.deprecatedTitle.indexOf('List item')", "-1");
+    shouldBe("axDiv7.deprecatedTitle.indexOf('Initial text before list') >= 0", "true");
 }
 
 </script>

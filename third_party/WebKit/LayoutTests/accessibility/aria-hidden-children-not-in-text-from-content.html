@@ -26,10 +26,10 @@ description('This tests that aria-hidden elements within an element are ' +
 
 if (window.testRunner && window.accessibilityController) {
     var checkbox1 = accessibilityController.accessibleElementById('checkbox1');
-    shouldBe('checkbox1.title.trim()', "'AXTitle:'");
+    shouldBe('checkbox1.deprecatedTitle.trim()', "'AXTitle:'");
 
     var checkbox2 = accessibilityController.accessibleElementById('checkbox2');
-    shouldBe('checkbox2.title.trim()',
+    shouldBe('checkbox2.deprecatedTitle.trim()',
              "'AXTitle: Non-hidden descendant content'");
 
     document.getElementById('content').style.visibility = 'hidden';

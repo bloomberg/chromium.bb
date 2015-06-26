@@ -81,8 +81,8 @@ if (window.testRunner && window.accessibilityController) {
             return;
         }
         shouldBe("axElement2.role", "axElement1.role");
-        shouldBe("collapseWhitespace(axElement2.title)", "collapseWhitespace(axElement1.title)");
-        shouldBe("axElement2.titleUIElement", "axElement1.titleUIElement");
+        shouldBe("collapseWhitespace(axElement2.deprecatedTitle)", "collapseWhitespace(axElement1.deprecatedTitle)");
+        shouldBe("axElement2.deprecatedTitleUIElement", "axElement1.deprecatedTitleUIElement");
         debug("");
     }
 

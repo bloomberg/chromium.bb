@@ -42,7 +42,7 @@ if (window.testRunner && window.accessibilityController) {
 
     function accessibleTitle(id) {
       var axObject = accessibilityController.accessibleElementById(id);
-      return axObject.title.replace('AXTitle: ', '');
+      return axObject.deprecatedTitle.replace('AXTitle: ', '');
     }
 
     shouldBe('accessibleTitle("n1")', '"HelloWorld"');
