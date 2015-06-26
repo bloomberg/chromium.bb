@@ -348,6 +348,7 @@ static int amdgpu_ioctl_wait_cs(amdgpu_context_handle context,
 				uint32_t ring,
 				uint64_t handle,
 				uint64_t timeout_ns,
+				uint64_t flags,
 				bool *busy)
 {
 	amdgpu_device_handle dev = context->dev;
@@ -359,8 +360,12 @@ static int amdgpu_ioctl_wait_cs(amdgpu_context_handle context,
 	args.in.ip_type = ip;
 	args.in.ip_instance = ip_instance;
 	args.in.ring = ring;
-	args.in.timeout = amdgpu_cs_calculate_timeout(timeout_ns);
 	args.in.ctx_id = context->id;
+
+	if (flags & AMDGPU_QUERY_FENCE_TIMEOUT_IS_ABSOLUTE)
+		args.in.timeout = timeout_ns;
+	else
+		args.in.timeout = amdgpu_cs_calculate_timeout(timeout_ns);
 
 	/* Handle errors manually here because of timeout */
 	r = ioctl(dev->fd, DRM_IOCTL_AMDGPU_WAIT_CS, &args);
@@ -429,7 +434,8 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 	pthread_mutex_unlock(&context->sequence_mutex);
 
 	r = amdgpu_ioctl_wait_cs(context, ip_type, ip_instance, ring,
-				 fence->fence, fence->timeout_ns, &busy);
+				 fence->fence, fence->timeout_ns,
+				 fence->flags, &busy);
 	if (!r && !busy) {
 		*expired = true;
 		pthread_mutex_lock(&context->sequence_mutex);

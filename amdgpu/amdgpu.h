@@ -52,10 +52,15 @@ struct drm_amdgpu_info_hw_ip;
 #define AMDGPU_CS_MAX_IBS_PER_SUBMIT		4
 
 /**
- *
+ * Special timeout value meaning that the timeout is infinite.
  */
 #define AMDGPU_TIMEOUT_INFINITE			0xffffffffffffffffull
 
+/**
+ * Used in amdgpu_cs_query_fence::flags, meaning that the given timeout
+ * is absolute.
+ */
+#define AMDGPU_QUERY_FENCE_TIMEOUT_IS_ABSOLUTE     (1 << 0)
 
 /*--------------------------------------------------------------------------*/
 /* ----------------------------- Enums ------------------------------------ */
