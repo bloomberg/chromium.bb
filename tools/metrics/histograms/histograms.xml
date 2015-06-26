@@ -7887,6 +7887,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.AttributesTPMConsistency"
+    enum="EnterpriseAttributesTPMConsistencyType">
+  <owner>tnagel@chromium.org</owner>
+  <summary>
+    Consistency between TPM lock state and absence/presence of install
+    attributes at boot.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.AutoEnrollmentExtraTime" units="milliseconds">
   <owner>mnissler@chromium.org</owner>
   <summary>
@@ -52828,6 +52837,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Managed EDU"/>
   <int value="2" label="Managed non-EDU"/>
   <int value="3" label="Error"/>
+</enum>
+
+<enum name="EnterpriseAttributesTPMConsistencyType" type="int">
+  <int value="0" label="no attributes, other mode, TPM unlocked">
+    valid: machine in pristine state
+  </int>
+  <int value="1" label="locked attributes, other mode, TPM unlocked">
+    rare: install attributes locked but TPM clear (could happen if taking TPM
+    ownership carries over a reboot)
+  </int>
+  <int value="2" label="no attributes, enterprise mode, TPM unlocked">
+    impossible: non-existent install attributes cannot yield enterprise mode
+  </int>
+  <int value="3" label="locked attributes, enterprise mode, TPM unlocked">
+    rare: install attributes locked but TPM clear (could happen if taking TPM
+    ownership carries over a reboot)
+  </int>
+  <int value="4" label="no attributes, other mode, TPM locked">
+    inconsistent: install attributes clear but TPM locked
+  </int>
+  <int value="5" label="locked attributes, other mode, TPM locked">
+    valid: consumer owned
+  </int>
+  <int value="6" label="no attributes, enterprise mode, TPM locked">
+    impossible: non-existent install attributes cannot yield enterprise mode
+  </int>
+  <int value="7" label="locked attributes, enterprise mode, TPM locked">
+    valid: enterprise enrolled
+  </int>
+  <int value="8" label="TPM unreachable">error: cryptohomed unreachable</int>
 </enum>
 
 <enum name="EnterpriseCheckError" type="int">

@@ -11,6 +11,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -21,6 +24,12 @@ namespace policy {
 namespace cryptohome_util = chromeos::cryptohome_util;
 
 namespace {
+
+// Number of TPM lock state query retries during consistency check.
+int kDbusRetryCount = 12;
+
+// Interval of TPM lock state query retries during consistency check.
+int kDbusRetryIntervalInSeconds = 5;
 
 bool ReadMapKey(const std::map<std::string, std::string>& map,
                 const std::string& key,
@@ -56,6 +65,8 @@ EnterpriseInstallAttributes::GetEnterpriseOwnedInstallAttributesBlobForTesting(
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeClient* cryptohome_client)
     : device_locked_(false),
+      consistency_check_running_(false),
+      device_lock_running_(false),
       registration_mode_(DEVICE_MODE_PENDING),
       cryptohome_client_(cryptohome_client),
       weak_ptr_factory_(this) {
@@ -63,9 +74,14 @@ EnterpriseInstallAttributes::EnterpriseInstallAttributes(
 
 EnterpriseInstallAttributes::~EnterpriseInstallAttributes() {}
 
-void EnterpriseInstallAttributes::ReadCacheFile(
-    const base::FilePath& cache_file) {
-  if (device_locked_ || !base::PathExists(cache_file))
+void EnterpriseInstallAttributes::Init(const base::FilePath& cache_file) {
+  DCHECK_EQ(false, device_locked_);
+
+  // The actual check happens asynchronously, thus it is ok to trigger it before
+  // Init() has completed.
+  TriggerConsistencyCheck(kDbusRetryCount * kDbusRetryIntervalInSeconds);
+
+  if (!base::PathExists(cache_file))
     return;
 
   device_locked_ = true;
@@ -149,6 +165,7 @@ void EnterpriseInstallAttributes::LockDevice(
     const std::string& device_id,
     const LockResultCallback& callback) {
   DCHECK(!callback.is_null());
+  CHECK_EQ(device_lock_running_, false);
   CHECK_NE(device_mode, DEVICE_MODE_PENDING);
   CHECK_NE(device_mode, DEVICE_MODE_NOT_SET);
 
@@ -186,6 +203,21 @@ void EnterpriseInstallAttributes::LockDevice(
     return;
   }
 
+  // In case the consistency check is still running, postpone the device locking
+  // until it has finished.  This should not introduce additional delay since
+  // device locking must wait for TPM initialization anyways.
+  if (consistency_check_running_) {
+    CHECK(post_check_action_.is_null());
+    post_check_action_ = base::Bind(&EnterpriseInstallAttributes::LockDevice,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    user,
+                                    device_mode,
+                                    device_id,
+                                    callback);
+    return;
+  }
+
+  device_lock_running_ = true;
   cryptohome_client_->InstallAttributesIsReady(
       base::Bind(&EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -203,6 +235,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
     chromeos::DBusMethodCallStatus call_status,
     bool result) {
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS || !result) {
+    device_lock_running_ = false;
     callback.Run(LOCK_NOT_READY);
     return;
   }
@@ -217,12 +250,14 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   // Make sure we really have a working InstallAttrs.
   if (cryptohome_util::InstallAttributesIsInvalid()) {
     LOG(ERROR) << "Install attributes invalid.";
+    device_lock_running_ = false;
     callback.Run(LOCK_BACKEND_INVALID);
     return;
   }
 
   if (!cryptohome_util::InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Install attributes already installed.";
+    device_lock_running_ = false;
     callback.Run(LOCK_ALREADY_LOCKED);
     return;
   }
@@ -237,6 +272,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
     if (!cryptohome_util::InstallAttributesSet(kAttrConsumerKioskEnabled,
                                                "true")) {
       LOG(ERROR) << "Failed writing attributes.";
+      device_lock_running_ = false;
       callback.Run(LOCK_SET_ERROR);
       return;
     }
@@ -252,6 +288,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
         !cryptohome_util::InstallAttributesSet(kAttrEnterpriseDeviceId,
                                                device_id)) {
       LOG(ERROR) << "Failed writing attributes.";
+      device_lock_running_ = false;
       callback.Run(LOCK_SET_ERROR);
       return;
     }
@@ -260,6 +297,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   if (!cryptohome_util::InstallAttributesFinalize() ||
       cryptohome_util::InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Failed locking.";
+    device_lock_running_ = false;
     callback.Run(LOCK_FINALIZE_ERROR);
     return;
   }
@@ -277,10 +315,12 @@ void EnterpriseInstallAttributes::OnReadImmutableAttributes(
 
   if (GetRegistrationUser() != registration_user) {
     LOG(ERROR) << "Locked data doesn't match.";
+    device_lock_running_ = false;
     callback.Run(LOCK_READBACK_ERROR);
     return;
   }
 
+  device_lock_running_ = false;
   callback.Run(LOCK_SUCCESS);
 }
 
@@ -316,6 +356,46 @@ std::string EnterpriseInstallAttributes::GetDeviceId() {
 
 DeviceMode EnterpriseInstallAttributes::GetMode() {
   return registration_mode_;
+}
+
+void EnterpriseInstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
+  consistency_check_running_ = true;
+  cryptohome_client_->TpmIsOwned(
+      base::Bind(&EnterpriseInstallAttributes::OnTpmOwnerCheckCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 dbus_retries));
+}
+
+void EnterpriseInstallAttributes::OnTpmOwnerCheckCompleted(
+    int dbus_retries_remaining,
+    chromeos::DBusMethodCallStatus call_status,
+    bool result) {
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS &&
+      dbus_retries_remaining) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&EnterpriseInstallAttributes::TriggerConsistencyCheck,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   dbus_retries_remaining - 1),
+        base::TimeDelta::FromSeconds(kDbusRetryIntervalInSeconds));
+    return;
+  }
+
+  base::HistogramBase::Sample state = device_locked_;
+  state |= 0x2 * (registration_mode_ == DEVICE_MODE_ENTERPRISE);
+  if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS)
+    state |= 0x4 * result;
+  else
+    state = 0x8;  // This case is not a bit mask.
+  UMA_HISTOGRAM_ENUMERATION("Enterprise.AttributesTPMConsistency", state, 9);
+
+  // Run any action (LockDevice call) that might have queued behind the
+  // consistency check.
+  consistency_check_running_ = false;
+  if (!post_check_action_.is_null()) {
+    post_check_action_.Run();
+    post_check_action_.Reset();
+  }
 }
 
 // Warning: The values for these keys (but not the keys themselves) are stored

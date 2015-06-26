@@ -111,14 +111,17 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
 
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+
+    // Don't initialize install attributes if g_testing_install_attributes have
+    // been injected.
     if (!install_attributes_) {
       install_attributes_.reset(
           new EnterpriseInstallAttributes(cryptohome_client));
+      base::FilePath install_attrs_file;
+      CHECK(PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES,
+                             &install_attrs_file));
+      install_attributes_->Init(install_attrs_file);
     }
-    base::FilePath install_attrs_file;
-    CHECK(PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES,
-                           &install_attrs_file));
-    install_attributes_->ReadCacheFile(install_attrs_file);
 
     const base::CommandLine* command_line =
         base::CommandLine::ForCurrentProcess();

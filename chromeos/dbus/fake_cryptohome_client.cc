@@ -262,7 +262,7 @@ bool FakeCryptohomeClient::InstallAttributesFinalize(bool* successful) {
   // The cryptohome::SerializedInstallAttributes protobuf lives in
   // chrome/browser/chromeos, so it can't be used directly here; use the
   // low-level protobuf API instead to just write the name-value pairs.
-  // The cache file is read by EnterpriseInstallAttributes::ReadCacheFile.
+  // The cache file is read by EnterpriseInstallAttributes::Init.
   base::FilePath cache_path;
   if (!PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path))
     return false;

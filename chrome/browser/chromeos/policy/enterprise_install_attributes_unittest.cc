@@ -126,7 +126,7 @@ TEST_F(EnterpriseInstallAttributesTest, LockCanonicalize) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, IsEnterpriseDevice) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_FALSE(install_attributes_->IsEnterpriseDevice());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
@@ -137,7 +137,7 @@ TEST_F(EnterpriseInstallAttributesTest, IsEnterpriseDevice) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, GetDomain) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(std::string(), install_attributes_->GetDomain());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
@@ -148,7 +148,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetDomain) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, GetRegistrationUser) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(std::string(), install_attributes_->GetRegistrationUser());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
@@ -159,7 +159,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetRegistrationUser) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, GetDeviceId) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(std::string(), install_attributes_->GetDeviceId());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
@@ -170,7 +170,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetDeviceId) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, GetMode) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_->GetMode());
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(kTestUser, DEVICE_MODE_ENTERPRISE,
@@ -179,7 +179,7 @@ TEST_F(EnterpriseInstallAttributesTest, GetMode) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, ConsumerDevice) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_->GetMode());
   // Lock the attributes empty.
   ASSERT_TRUE(cryptohome_util::InstallAttributesFinalize());
@@ -192,7 +192,7 @@ TEST_F(EnterpriseInstallAttributesTest, ConsumerDevice) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, ConsumerKioskDevice) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_->GetMode());
   // Lock the attributes for consumer kiosk.
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
@@ -208,7 +208,7 @@ TEST_F(EnterpriseInstallAttributesTest, ConsumerKioskDevice) {
 }
 
 TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_->GetMode());
   // Lock the attributes as if it was done from older Chrome version.
   ASSERT_TRUE(cryptohome_util::InstallAttributesSet(
@@ -227,7 +227,7 @@ TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
   EXPECT_EQ("", install_attributes_->GetDeviceId());
 }
 
-TEST_F(EnterpriseInstallAttributesTest, ReadCacheFile) {
+TEST_F(EnterpriseInstallAttributesTest, Init) {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
   SetAttribute(&install_attrs_proto,
                EnterpriseInstallAttributes::kAttrEnterpriseOwned, "true");
@@ -236,21 +236,21 @@ TEST_F(EnterpriseInstallAttributesTest, ReadCacheFile) {
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
             base::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_->GetMode());
   EXPECT_EQ(kTestDomain, install_attributes_->GetDomain());
   EXPECT_EQ(kTestUser, install_attributes_->GetRegistrationUser());
   EXPECT_EQ("", install_attributes_->GetDeviceId());
 }
 
-TEST_F(EnterpriseInstallAttributesTest, ReadCacheFileForConsumerKiosk) {
+TEST_F(EnterpriseInstallAttributesTest, InitForConsumerKiosk) {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
   SetAttribute(&install_attrs_proto,
                EnterpriseInstallAttributes::kAttrConsumerKioskEnabled, "true");
   const std::string blob(install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(blob.size()),
             base::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,
             install_attributes_->GetMode());
   EXPECT_EQ("", install_attributes_->GetDomain());
@@ -260,10 +260,10 @@ TEST_F(EnterpriseInstallAttributesTest, ReadCacheFileForConsumerKiosk) {
 
 TEST_F(EnterpriseInstallAttributesTest, VerifyFakeInstallAttributesCache) {
   // This test verifies that FakeCryptohomeClient::InstallAttributesFinalize
-  // writes a cache that EnterpriseInstallAttributes::ReadCacheFile accepts.
+  // writes a cache that EnterpriseInstallAttributes::Init accepts.
 
   // Verify that no attributes are initially set.
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ("", install_attributes_->GetRegistrationUser());
 
   // Write test values.
@@ -275,7 +275,7 @@ TEST_F(EnterpriseInstallAttributesTest, VerifyFakeInstallAttributesCache) {
 
   // Verify that EnterpriseInstallAttributes correctly decodes the stub
   // cache file.
-  install_attributes_->ReadCacheFile(GetTempPath());
+  install_attributes_->Init(GetTempPath());
   EXPECT_EQ(kTestUser, install_attributes_->GetRegistrationUser());
 }
 
