@@ -26,10 +26,14 @@ TEST_F(VisiblePositionTest, ShadowDistributedNodes)
     RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
     EXPECT_EQ(positionInDOMTree(*one->firstChild(), 0), canonicalPositionOf(positionInDOMTree(*one, 0)));
+    EXPECT_EQ(positionInDOMTree(*one->firstChild(), 0), VisiblePosition(positionInDOMTree(*one, 0)).deepEquivalent());
     EXPECT_EQ(positionInDOMTree(*one->firstChild(), 2), canonicalPositionOf(positionInDOMTree(*two, 0)));
+    EXPECT_EQ(positionInDOMTree(*one->firstChild(), 2), VisiblePosition(positionInDOMTree(*two, 0)).deepEquivalent());
 
     EXPECT_EQ(positionInComposedTree(*five->firstChild(), 2), canonicalPositionOf(positionInComposedTree(*one, 0)));
+    EXPECT_EQ(positionInDOMTree(*five->firstChild(), 2), VisiblePosition(positionInComposedTree(*one, 0)).deepEquivalent());
     EXPECT_EQ(positionInComposedTree(*four->firstChild(), 2), canonicalPositionOf(positionInComposedTree(*two, 0)));
+    EXPECT_EQ(positionInDOMTree(*four->firstChild(), 2), VisiblePosition(positionInComposedTree(*two, 0)).deepEquivalent());
 }
 
 } // namespace blink

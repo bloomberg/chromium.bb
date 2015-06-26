@@ -54,8 +54,8 @@ VisiblePosition::VisiblePosition(const Position &pos, EAffinity affinity)
 }
 
 VisiblePosition::VisiblePosition(const PositionInComposedTree& pos, EAffinity affinity)
-    : VisiblePosition(toPositionInDOMTree(pos), affinity)
 {
+    init(pos, affinity);
 }
 
 VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinity)
@@ -652,7 +652,8 @@ void VisiblePosition::init(const PositionType& position, EAffinity affinity)
 {
     m_affinity = affinity;
 
-    m_deepPosition = canonicalPosition(position);
+    PositionType deepPosition = canonicalPosition(position);
+    m_deepPosition = toPositionInDOMTree(deepPosition);
 
     if (m_affinity != UPSTREAM)
         return;
@@ -663,7 +664,8 @@ void VisiblePosition::init(const PositionType& position, EAffinity affinity)
     }
 
     // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
-    if (!inSameLine(PositionWithAffinity(m_deepPosition, DOWNSTREAM), PositionWithAffinity(m_deepPosition, UPSTREAM)))
+    using PositionWithAffinityType = PositionWithAffinityTemplate<PositionType>;
+    if (!inSameLine(PositionWithAffinityType(deepPosition, DOWNSTREAM), PositionWithAffinityType(deepPosition, UPSTREAM)))
         return;
     m_affinity = DOWNSTREAM;
 }

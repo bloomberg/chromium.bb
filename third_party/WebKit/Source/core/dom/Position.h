@@ -452,6 +452,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::lastPositionInOrAft
 }
 
 PositionInComposedTree toPositionInComposedTree(const Position&);
+Position toPositionInDOMTree(const Position&);
 Position toPositionInDOMTree(const PositionInComposedTree&);
 
 } // namespace blink

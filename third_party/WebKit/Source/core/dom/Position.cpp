@@ -1193,7 +1193,7 @@ template <typename Strategy>
 void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
 {
     caretOffset = deprecatedEditingOffset();
-    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    LayoutObject* layoutObject = m_anchorNode->isShadowRoot() ? toShadowRoot(m_anchorNode)->host()->layoutObject() : m_anchorNode->layoutObject();
 
     if (!layoutObject->isText()) {
         inlineBox = 0;
@@ -1415,6 +1415,11 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
     }
 
     return PositionInComposedTree(pos.anchorNode(), static_cast<PositionInComposedTree::AnchorType>(pos.anchorType()));
+}
+
+Position toPositionInDOMTree(const Position& position)
+{
+    return position;
 }
 
 Position toPositionInDOMTree(const PositionInComposedTree& position)

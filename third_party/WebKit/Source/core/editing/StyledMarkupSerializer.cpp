@@ -110,11 +110,6 @@ private:
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
 };
 
-static Position toPositionInDOMTree(const Position& position)
-{
-    return position;
-}
-
 template<typename Strategy>
 bool StyledMarkupTraverser<Strategy>::shouldAnnotate() const
 {
