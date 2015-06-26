@@ -43,13 +43,16 @@ class DnsSdRegistry : public DnsSdDelegate {
   explicit DnsSdRegistry(local_discovery::ServiceDiscoverySharedClient* client);
   virtual ~DnsSdRegistry();
 
+  // Broadcasts the device list for |service_type| to event listeners.
+  virtual void Refresh(const std::string& service_type);
+
   // Observer registration for parties interested in discovery events.
   virtual void AddObserver(DnsSdObserver* observer);
   virtual void RemoveObserver(DnsSdObserver* observer);
 
   // DNS-SD-related discovery functionality.
-  virtual void RegisterDnsSdListener(std::string service_type);
-  virtual void UnregisterDnsSdListener(std::string service_type);
+  virtual void RegisterDnsSdListener(const std::string& service_type);
+  virtual void UnregisterDnsSdListener(const std::string& service_type);
 
  protected:
   // Data class for managing all the resources and information related to a

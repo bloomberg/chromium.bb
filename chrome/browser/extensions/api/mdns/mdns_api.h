@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MDNS_MDNS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MDNS_MDNS_API_H_
 
+#include <map>
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
@@ -46,7 +48,14 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   // Retrieve an instance of the registry. Lazily created when needed.
   virtual DnsSdRegistry* dns_sd_registry();
 
+  // Gets the list of mDNS event listeners.
+  virtual const extensions::EventListenerMap::ListenerList& GetEventListeners();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(MDnsAPIDiscoveryTest,
+                           ServiceListenersAddedAndRemoved);
+
+  typedef std::map<std::string, int> ServiceTypeCounts;
   friend class BrowserContextKeyedAPIFactory<MDnsAPI>;
 
   // EventRouter::Observer:
@@ -66,7 +75,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   static const bool kServiceIsNULLWhileTesting = true;
 
   // Update the current list of service types and update the registry.
-  void UpdateMDnsListeners(const EventListenerInfo& details);
+  void UpdateMDnsListeners();
 
   // Write a message to the consoles of extensions listening to a given service
   // type.
@@ -74,21 +83,29 @@ class MDnsAPI : public BrowserContextKeyedAPI,
                       content::ConsoleMessageLevel level,
                       const std::string& message);
 
+  // Returns true if an extension or platform app |extension_id| is allowed to
+  // listen to mDNS events for |service_type|.
+  virtual bool IsMDnsAllowed(const std::string& extension_id,
+                             const std::string& service_type) const;
+
   // Finds all all the valid listeners of the mdns.onServiceList event and
-  // filters them by service type if |service_type_filter| is non-empty.  The
-  // extension ids and matched service types are output to |extension_ids| and
-  // |service_types|, respectively, if the supplied pointers is non-null.
+  // filters them by service type if |service_type_filter| is non-empty.
+  // The list of extensions with active listeners is written to |extension_ids|,
+  // if non-null.
+  // The counts for each service type are output to |service_type_counts|, if
+  // non-null.
   void GetValidOnServiceListListeners(const std::string& service_type_filter,
                                       std::set<std::string>* extension_ids,
-                                      std::set<std::string>* service_types);
+                                      ServiceTypeCounts* service_type_counts);
 
   // Ensure methods are only called on UI thread.
   base::ThreadChecker thread_checker_;
   content::BrowserContext* const browser_context_;
   // Lazily created on first access and destroyed with this API class.
   scoped_ptr<DnsSdRegistry> dns_sd_registry_;
-  // Current set of service types registered with the registry.
-  std::set<std::string> service_types_;
+  // Count of active listeners per service type, saved from the previous
+  // invocation of UpdateMDnsListeners().
+  ServiceTypeCounts prev_service_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(MDnsAPI);
 };

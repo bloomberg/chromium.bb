@@ -12,8 +12,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::DnsSdRegistry;
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
 
 namespace api = extensions::api;
 
@@ -26,8 +26,8 @@ class MockDnsSdRegistry : public DnsSdRegistry {
 
   MOCK_METHOD1(AddObserver, void(DnsSdObserver* observer));
   MOCK_METHOD1(RemoveObserver, void(DnsSdObserver* observer));
-  MOCK_METHOD1(RegisterDnsSdListener, void(std::string service_type));
-  MOCK_METHOD1(UnregisterDnsSdListener, void(std::string service_type));
+  MOCK_METHOD1(RegisterDnsSdListener, void(const std::string& service_type));
+  MOCK_METHOD1(UnregisterDnsSdListener, void(const std::string& service_type));
 
   void DispatchMDnsEvent(const std::string& service_type,
                          const DnsSdServiceList& services) {
@@ -154,10 +154,8 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterMultipleListeners) {
 IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterTooManyListeners) {
   SetUpTestDnsSdRegistry();
 
-  EXPECT_CALL(*dns_sd_registry_, RegisterDnsSdListener(A<std::string>()))
-      .Times(10);
-  EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(A<std::string>()))
-      .Times(10);
+  EXPECT_CALL(*dns_sd_registry_, RegisterDnsSdListener(_)).Times(10);
+  EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(_)).Times(10);
   EXPECT_CALL(*dns_sd_registry_,
               RemoveObserver(A<extensions::DnsSdRegistry::DnsSdObserver*>()))
       .Times(1);

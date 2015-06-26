@@ -79,38 +79,58 @@ DnsSdRegistry* MDnsAPI::dns_sd_registry() {
 
 void MDnsAPI::OnListenerAdded(const EventListenerInfo& details) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UpdateMDnsListeners(details);
+  UpdateMDnsListeners();
 }
 
 void MDnsAPI::OnListenerRemoved(const EventListenerInfo& details) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UpdateMDnsListeners(details);
+  UpdateMDnsListeners();
 }
 
-void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
+void MDnsAPI::UpdateMDnsListeners() {
   std::set<std::string> new_service_types;
+  ServiceTypeCounts current_service_counts;
   GetValidOnServiceListListeners(
       "" /* service_type_filter - blank = all services */,
-      nullptr /* extension_ids */,
-      &new_service_types);
+      nullptr /* extension_ids */, &current_service_counts);
 
-  // Find all the added and removed service types since last update.
-  std::set<std::string> added_service_types =
-      base::STLSetDifference<std::set<std::string> >(
-          new_service_types, service_types_);
-  std::set<std::string> removed_service_types =
-      base::STLSetDifference<std::set<std::string> >(
-          service_types_, new_service_types);
-
-  // Update the registry.
   DnsSdRegistry* registry = dns_sd_registry();
-  for (const auto& srv : added_service_types) {
-    registry->RegisterDnsSdListener(srv);
+
+  // Check if the counts of per-service-type event handlers has changed since
+  // the previous invocation, and take appropriate action if a change was
+  // detected.
+  //
+  // mDNS registration is performed for difference(cur, previous).
+  // mDNS unregistration is performed for difference(previous, cur).
+  // The mDNS device list is refreshed if the listener count has grown for
+  // a service type in union(cur, previous).
+  ServiceTypeCounts::iterator i_cur = current_service_counts.begin();
+  ServiceTypeCounts::iterator i_prev = prev_service_counts_.begin();
+  while (i_cur != current_service_counts.end() ||
+         i_prev != prev_service_counts_.end()) {
+    if (i_prev == prev_service_counts_.end() ||
+        (i_cur != current_service_counts.end() &&
+         i_cur->first < i_prev->first)) {
+      DVLOG(2) << "Registering listener for mDNS service " << i_cur->first;
+      registry->RegisterDnsSdListener(i_cur->first);
+      i_cur++;
+    } else if (i_cur == current_service_counts.end() ||
+               (i_prev != prev_service_counts_.end() &&
+                i_prev->first < i_cur->first)) {
+      DVLOG(2) << "Unregistering listener for mDNS service " << i_prev->first;
+      registry->UnregisterDnsSdListener(i_prev->first);
+      i_prev++;
+    } else {
+      if (i_cur->second > i_prev->second) {
+        DVLOG(2) << "Additional listeners added for mDNS service "
+                 << i_cur->first;
+        registry->Refresh(i_cur->first);
+      }
+      ++i_cur;
+      ++i_prev;
+    }
   }
-  for (const auto& srv : removed_service_types) {
-    registry->UnregisterDnsSdListener(srv);
-  }
-  service_types_ = new_service_types;
+  prev_service_counts_.swap(current_service_counts);
 }
 
 void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
@@ -120,7 +140,7 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   std::vector<linked_ptr<mdns::MDnsService> > args;
   for (DnsSdRegistry::DnsSdServiceList::const_iterator it = services.begin();
        it != services.end(); ++it) {
-    if (static_cast<long>(args.size()) ==
+    if (static_cast<int>(args.size()) ==
         api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT) {
       // TODO(reddaly): This is not the most meaningful way of notifying the
       // application that something bad happened.  It will go to the user's
@@ -158,13 +178,27 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   extensions::EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
+const extensions::EventListenerMap::ListenerList& MDnsAPI::GetEventListeners() {
+  return extensions::EventRouter::Get(browser_context_)
+      ->listeners()
+      .GetEventListenersByName(mdns::OnServiceList::kEventName);
+}
+
+bool MDnsAPI::IsMDnsAllowed(const std::string& extension_id,
+                            const std::string& service_type) const {
+  const extensions::Extension* extension =
+      ExtensionRegistry::Get(browser_context_)
+          ->enabled_extensions()
+          .GetByID(extension_id);
+  return (extension && (extension->is_platform_app() ||
+                        IsServiceTypeWhitelisted(service_type)));
+}
+
 void MDnsAPI::GetValidOnServiceListListeners(
     const std::string& service_type_filter,
     std::set<std::string>* extension_ids,
-    std::set<std::string>* service_types) {
-  for (const auto& listener :
-         extensions::EventRouter::Get(browser_context_)->listeners()
-         .GetEventListenersByName(mdns::OnServiceList::kEventName)) {
+    ServiceTypeCounts* service_type_counts) {
+  for (const auto& listener : GetEventListeners()) {
     base::DictionaryValue* filter = listener->filter();
 
     std::string service_type;
@@ -176,22 +210,16 @@ void MDnsAPI::GetValidOnServiceListListeners(
     if (!service_type_filter.empty() && service_type_filter != service_type)
       continue;
 
-    const Extension* extension = ExtensionRegistry::Get(browser_context_)->
-        enabled_extensions().GetByID(listener->extension_id());
-    // Don't listen for services associated only with disabled extensions.
-    if (!extension)
-      continue;
-
-    // Platform apps may query for all services; other types of extensions are
-    // restricted to a whitelist.
-    if (!extension->is_platform_app() &&
-        !IsServiceTypeWhitelisted(service_type))
+    // Don't listen for services associated only with disabled extensions
+    // or non-whitelisted, non-platform-app extensions.
+    if (!IsMDnsAllowed(listener->extension_id(), service_type))
       continue;
 
     if (extension_ids)
       extension_ids->insert(listener->extension_id());
-    if (service_types)
-      service_types->insert(service_type);
+    if (service_type_counts) {
+      (*service_type_counts)[service_type]++;
+    }
   }
 }
 
@@ -201,9 +229,9 @@ void MDnsAPI::WriteToConsole(const std::string& service_type,
   // Get all the extensions with an onServiceList listener for a particular
   // service type.
   std::set<std::string> extension_ids;
-  GetValidOnServiceListListeners(service_type,
-                                 &extension_ids,
-                                 nullptr /* service_types */);
+  ServiceTypeCounts counts;
+  GetValidOnServiceListListeners(service_type, &extension_ids,
+                                 nullptr /* service_type_counts */);
 
   std::string logged_message(std::string("[chrome.mdns] ") + message);
 
