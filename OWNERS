@@ -12,7 +12,7 @@ pgervais@chromium.org
 rogerta@chromium.org
 stip@chromium.org
 
-per-file commit_queue.py=akuegel@chromium.org
-per-file commit_queue.py=phajdan.jr@chromium.org
-per-file commit_queue.py=sergiyb@chromium.org
-per-file commit_queue.py=tandrii@chromium.org
+per-file commit_queue*=akuegel@chromium.org
+per-file commit_queue*=phajdan.jr@chromium.org
+per-file commit_queue*=sergiyb@chromium.org
+per-file commit_queue*=tandrii@chromium.org
