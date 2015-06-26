@@ -106,6 +106,8 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   base::MessageLoop* GetSyncLoopForTesting() override;
 
+  void RefreshTypesForTest(syncer::ModelTypeSet types) override;
+
   void set_fail_initial_download(bool should_fail);
 
  private:

@@ -2734,6 +2734,11 @@ base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
   }
 }
 
+void ProfileSyncService::RefreshTypesForTest(syncer::ModelTypeSet types) {
+  if (backend_initialized_)
+    backend_->RefreshTypesForTest(types);
+}
+
 void ProfileSyncService::RemoveClientFromServer() const {
   if (!backend_initialized_) return;
   const std::string cache_guid = local_device_->GetLocalSyncCacheGUID();

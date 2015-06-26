@@ -119,6 +119,8 @@ base::MessageLoop* SyncBackendHostMock::GetSyncLoopForTesting() {
   return NULL;
 }
 
+void SyncBackendHostMock::RefreshTypesForTest(syncer::ModelTypeSet types) {}
+
 void SyncBackendHostMock::RequestBufferedProtocolEventsAndEnableForwarding() {}
 
 void SyncBackendHostMock::DisableProtocolEventForwarding() {}

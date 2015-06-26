@@ -134,6 +134,7 @@ class SyncBackendHostImpl
       base::Callback<void(const std::vector<syncer::ModelType>&,
                           ScopedVector<base::ListValue>)> type) override;
   base::MessageLoop* GetSyncLoopForTesting() override;
+  void RefreshTypesForTest(syncer::ModelTypeSet types) override;
 
  protected:
   // The types and functions below are protected so that test

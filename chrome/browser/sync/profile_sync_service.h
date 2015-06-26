@@ -704,6 +704,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Sometimes we need to wait for tasks on the sync thread in tests.
   base::MessageLoop* GetSyncLoopForTest() const;
 
+  // Triggers sync cycle with request to update specified |types|.
+  void RefreshTypesForTest(syncer::ModelTypeSet types);
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();

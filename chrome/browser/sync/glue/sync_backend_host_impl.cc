@@ -867,6 +867,14 @@ base::MessageLoop* SyncBackendHostImpl::GetSyncLoopForTesting() {
   return registrar_->sync_thread()->message_loop();
 }
 
+void SyncBackendHostImpl::RefreshTypesForTest(syncer::ModelTypeSet types) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  registrar_->sync_thread()->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncBackendHostCore::DoRefreshTypes, core_.get(), types));
+}
+
 }  // namespace browser_sync
 
 #undef SDVLOG

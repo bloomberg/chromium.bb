@@ -219,6 +219,9 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
 
   virtual base::MessageLoop* GetSyncLoopForTesting() = 0;
 
+  // Triggers sync cycle to update |types|.
+  virtual void RefreshTypesForTest(syncer::ModelTypeSet types) = 0;
+
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };
 
