@@ -334,6 +334,12 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
                             params.container,
                             extensions::NUM_LAUNCH_CONTAINERS);
 
+  if (extension->from_bookmark()) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
+                              params.container,
+                              extensions::NUM_LAUNCH_CONTAINERS);
+  }
+
   // Record v1 app launch. Platform app launch is recorded when dispatching
   // the onLaunched event.
   prefs->SetLastLaunchTime(extension->id(), base::Time::Now());

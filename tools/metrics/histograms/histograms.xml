@@ -9606,6 +9606,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BookmarkAppLaunchContainer"
+    enum="AppLaunchContainer">
+  <owner>benwells@chromium.org</owner>
+  <summary>Records the container used for a bookmark app launch.</summary>
+</histogram>
+
 <histogram name="Extensions.CheckForExternalUpdatesTime" units="milliseconds">
   <owner>rkaplow@chromium.org</owner>
   <summary>
