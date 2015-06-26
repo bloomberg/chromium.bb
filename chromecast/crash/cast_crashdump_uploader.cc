@@ -58,7 +58,7 @@ bool CastCrashdumpUploader::CheckRequiredParametersArePresent() {
 }
 
 bool CastCrashdumpUploader::Upload(std::string* response) {
-  if (http_layer_->Init()) {
+  if (!http_layer_->Init()) {
     LOG(ERROR) << "http layer Init failed";
     return false;
   }
