@@ -797,13 +797,13 @@ if (is_win) {
   # Keep this in sync with the similar block in build/common.gypi
   if (is_clang) {
     default_warning_flags += [
-      # TODO(hans): Make this list shorter eventually.
-      "-Qunused-arguments",
-      "-Wno-c++11-compat-deprecated-writable-strings",
-      "-Wno-deprecated-declarations",
-      "-Wno-empty-body",
-      "-Wno-enum-conversion",
-      "-Wno-extra-tokens",
+      # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
+      "-Qunused-arguments",  # http://crbug.com/504658
+      "-Wno-c++11-compat-deprecated-writable-strings",  # http://crbug.com/504659
+      "-Wno-deprecated-declarations",  # http://crbug.com/504660
+      "-Wno-empty-body",  # http://crbug.com/504661
+      "-Wno-enum-conversion",  # http://crbug.com/504662
+      "-Wno-extra-tokens",  # http://crbug.com/504663
       "-Wno-ignored-attributes",
       "-Wno-incompatible-pointer-types",
       "-Wno-int-to-void-pointer-cast",

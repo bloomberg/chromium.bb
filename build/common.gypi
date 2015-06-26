@@ -5698,13 +5698,13 @@
                   # TODO(hans): Fix those files, or move this to sub-GYPs.
                   '/FIIntrin.h',
 
-                  # TODO(hans): Make this list shorter eventually.
-                  '-Qunused-arguments',
-                  '-Wno-c++11-compat-deprecated-writable-strings',
-                  '-Wno-deprecated-declarations',
-                  '-Wno-empty-body',
-                  '-Wno-enum-conversion',
-                  '-Wno-extra-tokens',
+                  # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
+                  '-Qunused-arguments',  # http://crbug.com/504658
+                  '-Wno-c++11-compat-deprecated-writable-strings',  # http://crbug.com/504659
+                  '-Wno-deprecated-declarations',  # http://crbug.com/504660
+                  '-Wno-empty-body',  # http://crbug.com/504661
+                  '-Wno-enum-conversion',  # http://crbug.com/504662
+                  '-Wno-extra-tokens',  # http://crbug.com/504663
                   '-Wno-ignored-attributes',
                   '-Wno-incompatible-pointer-types',
                   '-Wno-int-to-void-pointer-cast',
@@ -5731,7 +5731,7 @@
                   '-Wno-unused-value',
                   '-Wno-unused-variable',
                   '-Wno-unused-local-typedef',  # http://crbug.com/411648
-                  '-Wno-inconsistent-missing-override', #http://crbug.com/428099
+                  '-Wno-inconsistent-missing-override',  # http://crbug.com/428099
                 ],
               },
             }],
