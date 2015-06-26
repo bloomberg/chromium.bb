@@ -112,7 +112,6 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_HIRAGANA, L"ms pgothic"},
         {USCRIPT_KATAKANA, L"ms pgothic"},
         {USCRIPT_KATAKANA_OR_HIRAGANA, L"ms pgothic"},
-        {USCRIPT_HANGUL, L"gulim"},
         {USCRIPT_THAI, L"tahoma"},
         {USCRIPT_HEBREW, L"david"},
         {USCRIPT_ARABIC, L"tahoma"},
@@ -160,6 +159,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* syriacFonts[] = {L"Estrangelo Edessa", L"Estrangelo Nisibin", L"Code2000", 0};
     static const UChar* myanmarFonts[] = {L"Myanmar Text", L"Padauk", L"Parabaik", L"Myanmar3", L"Code2000", 0};
     static const UChar* gothicFonts[] = {L"Segoe UI Symbol", 0};
+    static const UChar* hangulFonts[] = {L"gulim", L"Malgun Gothic", 0};
 
     static const ScriptToFontFamilies scriptToFontFamilies[] = {
         {USCRIPT_MALAYALAM, malayalamFonts},
@@ -173,6 +173,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_SYRIAC, syriacFonts},
         {USCRIPT_MYANMAR, myanmarFonts},
         {USCRIPT_GOTHIC, gothicFonts},
+        {USCRIPT_HANGUL, hangulFonts},
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
