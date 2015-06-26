@@ -804,11 +804,11 @@ if (is_win) {
       "-Wno-empty-body",  # http://crbug.com/504661
       "-Wno-enum-conversion",  # http://crbug.com/504662
       "-Wno-extra-tokens",  # http://crbug.com/504663
-      "-Wno-ignored-attributes",
-      "-Wno-incompatible-pointer-types",
-      "-Wno-int-to-void-pointer-cast",
-      "-Wno-invalid-noreturn",
-      "-Wno-logical-op-parentheses",
+      "-Wno-ignored-attributes",  # http://crbug.com/504695
+      "-Wno-incompatible-pointer-types",  # http://crbug.com/504696
+      "-Wno-int-to-void-pointer-cast",  # http://crbug.com/504697
+      "-Wno-invalid-noreturn",  # http://crbug.com/504698
+      "-Wno-logical-op-parentheses",  # http://crbug.com/504699
       "-Wno-microsoft",
       "-Wno-missing-braces",
       "-Wno-missing-declarations",
