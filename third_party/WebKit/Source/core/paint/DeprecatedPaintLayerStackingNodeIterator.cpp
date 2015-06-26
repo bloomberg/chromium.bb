@@ -31,9 +31,20 @@
 #include "config.h"
 #include "core/paint/DeprecatedPaintLayerStackingNodeIterator.h"
 
+// FIXME: We should build our primitive on top of
+// DeprecatedLayerStackingNode and remove this include.
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerStackingNode.h"
 
 namespace blink {
+
+DeprecatedPaintLayerStackingNodeIterator::DeprecatedPaintLayerStackingNodeIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren)
+    : m_root(root)
+    , m_remainingChildren(whichChildren)
+    , m_index(0)
+{
+    m_currentNormalFlowChild = root.layer()->firstChild();
+}
 
 DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next()
 {
@@ -47,11 +58,16 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
-        if (normalFlowList && m_index < normalFlowList->size())
-            return normalFlowList->at(m_index++);
+        for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling()) {
+            if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsStackingContextForPainting() && !m_currentNormalFlowChild->isReflection()) {
+                DeprecatedPaintLayer* normalFlowChild = m_currentNormalFlowChild;
+                m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling();
+                return normalFlowChild->stackingNode();
+            }
+        }
 
-        m_index = 0;
+        // We reset the iterator in case we reuse it.
+        m_currentNormalFlowChild = m_root.layer()->firstChild();
         m_remainingChildren &= ~NormalFlowChildren;
     }
 
@@ -79,9 +95,13 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeReverseIterato
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
-        if (normalFlowList && m_index >= 0)
-            return normalFlowList->at(m_index--);
+        for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling()) {
+            if (!m_currentNormalFlowChild->stackingNode()->isTreatedAsStackingContextForPainting() && !m_currentNormalFlowChild->isReflection()) {
+                DeprecatedPaintLayer* normalFlowChild = m_currentNormalFlowChild;
+                m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling();
+                return normalFlowChild->stackingNode();
+            }
+        }
 
         m_remainingChildren &= ~NormalFlowChildren;
         setIndexToLastItem();
@@ -112,13 +132,8 @@ void DeprecatedPaintLayerStackingNodeReverseIterator::setIndexToLastItem()
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
-        if (normalFlowList) {
-            m_index = normalFlowList->size() - 1;
-            return;
-        }
-
-        m_remainingChildren &= ~NormalFlowChildren;
+        m_currentNormalFlowChild = m_root.layer()->lastChild();
+        return;
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {

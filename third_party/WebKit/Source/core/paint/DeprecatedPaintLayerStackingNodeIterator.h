@@ -43,18 +43,14 @@ enum ChildrenIteration {
 };
 
 class DeprecatedPaintLayerStackingNode;
+class DeprecatedPaintLayer;
 
 // This iterator walks the DeprecatedPaintLayerStackingNode lists in the following order:
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
 class DeprecatedPaintLayerStackingNodeIterator {
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNodeIterator);
 public:
-    DeprecatedPaintLayerStackingNodeIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren)
-        : m_root(root)
-        , m_remainingChildren(whichChildren)
-        , m_index(0)
-    {
-    }
+    DeprecatedPaintLayerStackingNodeIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren);
 
     DeprecatedPaintLayerStackingNode* next();
 
@@ -62,6 +58,7 @@ private:
     const DeprecatedPaintLayerStackingNode& m_root;
     unsigned m_remainingChildren;
     unsigned m_index;
+    DeprecatedPaintLayer* m_currentNormalFlowChild;
 };
 
 // This iterator is similar to DeprecatedPaintLayerStackingNodeIterator but it walks the lists in reverse order
@@ -84,6 +81,7 @@ private:
     const DeprecatedPaintLayerStackingNode& m_root;
     unsigned m_remainingChildren;
     int m_index;
+    DeprecatedPaintLayer* m_currentNormalFlowChild;
 };
 
 } // namespace blink

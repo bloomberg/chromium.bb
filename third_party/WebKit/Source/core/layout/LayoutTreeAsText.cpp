@@ -642,6 +642,15 @@ static void write(TextStream& ts, DeprecatedPaintLayer& layer,
         write(ts, *layer.layoutObject(), indent + 1, behavior);
 }
 
+static Vector<DeprecatedPaintLayerStackingNode*> normalFlowListFor(DeprecatedPaintLayerStackingNode* node)
+{
+    DeprecatedPaintLayerStackingNodeIterator it(*node, NormalFlowChildren);
+    Vector<DeprecatedPaintLayerStackingNode*> vector;
+    while (DeprecatedPaintLayerStackingNode* normalFlowChild = it.next())
+        vector.append(normalFlowChild);
+    return vector;
+}
+
 void LayoutTreeAsText::writeLayers(TextStream& ts, const DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* layer,
     const LayoutRect& paintRect, int indent, LayoutAsTextBehavior behavior)
 {
@@ -674,15 +683,16 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const DeprecatedPaintLayer* r
     if (shouldPaint)
         write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), outlineRect.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
 
-    if (Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList = layer->stackingNode()->normalFlowList()) {
+    Vector<DeprecatedPaintLayerStackingNode*> normalFlowList = normalFlowListFor(layer->stackingNode());
+    if (!normalFlowList.isEmpty()) {
         int currIndent = indent;
         if (behavior & LayoutAsTextShowLayerNesting) {
             writeIndent(ts, indent);
-            ts << " normal flow list(" << normalFlowList->size() << ")\n";
+            ts << " normal flow list(" << normalFlowList.size() << ")\n";
             ++currIndent;
         }
-        for (unsigned i = 0; i != normalFlowList->size(); ++i)
-            writeLayers(ts, rootLayer, normalFlowList->at(i)->layer(), paintRect, currIndent, behavior);
+        for (unsigned i = 0; i != normalFlowList.size(); ++i)
+            writeLayers(ts, rootLayer, normalFlowList.at(i)->layer(), paintRect, currIndent, behavior);
     }
 
     if (Vector<DeprecatedPaintLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {

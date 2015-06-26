@@ -80,12 +80,8 @@ public:
     bool hasPositiveZOrderList() const { return posZOrderList() && posZOrderList()->size(); }
     bool hasNegativeZOrderList() const { return negZOrderList() && negZOrderList()->size(); }
 
-    // FIXME: should check for dirtiness here?
-    bool isNormalFlowOnly() const { return !isTreatedAsStackingContextForPainting(); }
     bool isTreatedAsStackingContextForPainting() const { return m_isTreatedAsStackingContextForPainting; }
     void updateIsTreatedAsStackingContextForPainting();
-    bool normalFlowListDirty() const { return m_normalFlowListDirty; }
-    void dirtyNormalFlowList();
 
     void updateStackingNodesAfterStyleChange(const ComputedStyle* oldStyle);
 
@@ -112,12 +108,6 @@ private:
         return m_posZOrderList.get();
     }
 
-    Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList() const
-    {
-        ASSERT(!m_normalFlowListDirty);
-        return m_normalFlowList.get();
-    }
-
     Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
@@ -129,15 +119,11 @@ private:
 
 #if ENABLE(ASSERT)
     bool isInStackingParentZOrderLists() const;
-    bool isInStackingParentNormalFlowList() const;
     void updateStackingParentForZOrderLists(DeprecatedPaintLayerStackingNode* stackingParent);
-    void updateStackingParentForNormalFlowList(DeprecatedPaintLayerStackingNode* stackingParent);
     void setStackingParent(DeprecatedPaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
     bool shouldBeTreatedAsStackingContextForPainting() const { return layoutObject().style()->isTreatedAsStackingContextForPainting(); }
-
-    void updateNormalFlowList();
 
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
@@ -154,11 +140,7 @@ private:
     OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_posZOrderList;
     OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_negZOrderList;
 
-    // This list contains child nodes that cannot create stacking contexts.
-    OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_normalFlowList;
-
     unsigned m_zOrderListsDirty : 1;
-    unsigned m_normalFlowListDirty: 1;
     unsigned m_isTreatedAsStackingContextForPainting : 1;
 
 #if ENABLE(ASSERT)

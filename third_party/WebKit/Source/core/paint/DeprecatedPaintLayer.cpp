@@ -1150,8 +1150,8 @@ void DeprecatedPaintLayer::addChild(DeprecatedPaintLayer* child, DeprecatedPaint
 
     setNeedsCompositingInputsUpdate();
 
-    if (!child->stackingNode()->isTreatedAsStackingContextForPainting())
-        m_stackingNode->dirtyNormalFlowList();
+    if (!child->stackingNode()->isTreatedAsStackingContextForPainting() && !layoutObject()->documentBeingDestroyed())
+        compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
     if (child->stackingNode()->isTreatedAsStackingContextForPainting() || child->firstChild()) {
         // Dirty the z-order list in which we are contained. The ancestorStackingContextNode() can be null in the
@@ -1182,8 +1182,9 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::removeChild(DeprecatedPaintLayer* ol
     if (m_last == oldChild)
         m_last = oldChild->previousSibling();
 
-    if (!oldChild->stackingNode()->isTreatedAsStackingContextForPainting())
-        m_stackingNode->dirtyNormalFlowList();
+    if (!oldChild->stackingNode()->isTreatedAsStackingContextForPainting() && !layoutObject()->documentBeingDestroyed())
+        compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+
     if (oldChild->stackingNode()->isTreatedAsStackingContextForPainting() || oldChild->firstChild()) {
         // Dirty the z-order list in which we are contained.  When called via the
         // reattachment process in removeOnlyThisLayer, the layer may already be disconnected
@@ -2399,7 +2400,7 @@ bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& l
     // FIXME: Remove this check.
     // This function should not be called when layer-lists are dirty.
     // It is somehow getting triggered during style update.
-    if (m_stackingNode->zOrderListsDirty() || m_stackingNode->normalFlowListDirty())
+    if (m_stackingNode->zOrderListsDirty())
         return false;
 
     // FIXME: We currently only check the immediate layoutObject,
