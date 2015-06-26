@@ -23,11 +23,6 @@
   },
   'targets': [
     {
-      # TODO(newt): delete this once all references are gone.
-      'target_name': 'chrome_staging_test_support_java',
-      'type': 'none',
-    },
-    {
       # GN: //chrome/android:custom_tabs_service_aidl
       'target_name': 'custom_tabs_service_aidl',
       'type': 'none',
