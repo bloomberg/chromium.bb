@@ -2616,7 +2616,7 @@ FilterOperations DeprecatedPaintLayer::computeFilterOperations(const ComputedSty
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
             RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(style.effectiveZoom());
-            referenceFilter->setLastEffect(ReferenceFilterBuilder::build(referenceFilter.get(), *layoutObject(), referenceFilter->sourceGraphic(),
+            referenceFilter->setLastEffect(ReferenceFilterBuilder::build(referenceFilter.get(), toElement(enclosingElement()), referenceFilter->sourceGraphic(),
                 referenceOperation));
             referenceOperation.setFilter(referenceFilter.release());
         }
@@ -2658,7 +2658,8 @@ void DeprecatedPaintLayer::updateOrRemoveFilterEffectBuilder()
 
     // If the filter fails to build, remove it from the layer. It will still attempt to
     // go through regular processing (e.g. compositing), but never apply anything.
-    if (!filterInfo->builder()->build(layoutObject(), computeFilterOperations(layoutObject()->styleRef())))
+    float zoom = layoutObject()->style() ? layoutObject()->style()->effectiveZoom() : 1.0f;
+    if (!filterInfo->builder()->build(toElement(enclosingElement()), computeFilterOperations(layoutObject()->styleRef()), zoom))
         filterInfo->setBuilder(nullptr);
 }
 

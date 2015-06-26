@@ -644,6 +644,25 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
     modifiableState().setGlobalComposite(xfermode);
 }
 
+String CanvasRenderingContext2D::filter() const
+{
+    return state().unparsedFilter();
+}
+
+void CanvasRenderingContext2D::setFilter(const String& filterString)
+{
+    if (filterString == state().unparsedFilter())
+        return;
+
+    RefPtrWillBeRawPtr<CSSValue> filterValue = CSSParser::parseSingleValue(CSSPropertyWebkitFilter, filterString, CSSParserContext(HTMLStandardMode, 0));
+
+    if (!filterValue || filterValue->isInitialValue() || filterValue->isInheritedValue())
+        return;
+
+    modifiableState().setUnparsedFilter(filterString);
+    modifiableState().setFilter(filterValue.release());
+}
+
 PassRefPtrWillBeRawPtr<SVGMatrixTearOff> CanvasRenderingContext2D::currentTransform() const
 {
     return SVGMatrixTearOff::create(state().transform());
@@ -815,31 +834,53 @@ static bool isFullCanvasCompositeMode(SkXfermode::Mode op)
 }
 
 template<typename DrawFunc>
-void CanvasRenderingContext2D::fullCanvasCompositedDraw(const DrawFunc& drawFunc, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
+void CanvasRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
 {
-    ASSERT(isFullCanvasCompositeMode(state().globalComposite()));
+    SkImageFilter* filter = state().getFilter(canvas(), accessFont());
+    ASSERT(isFullCanvasCompositeMode(state().globalComposite()) || filter);
     ASSERT(drawingCanvas());
-
-    SkPaint layerPaint;
-    layerPaint.setXfermodeMode(state().globalComposite());
+    SkMatrix ctm = drawingCanvas()->getTotalMatrix();
+    drawingCanvas()->resetMatrix();
+    SkPaint compositePaint;
+    compositePaint.setXfermodeMode(state().globalComposite());
     if (state().shouldDrawShadows()) {
         // unroll into two independently composited passes if drawing shadows
-        drawingCanvas()->saveLayer(nullptr, &layerPaint);
         SkPaint shadowPaint = *state().getPaint(paintType, DrawShadowOnly, imageType);
-        shadowPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-        drawFunc(&shadowPaint);
+        int saveCount = drawingCanvas()->getSaveCount();
+        if (filter) {
+            SkPaint filterPaint;
+            filterPaint.setImageFilter(filter);
+            // TODO(junov): crbug.com/502921 We could use primitive bounds if we knew that the filter
+            // does not affect transparent black regions.
+            drawingCanvas()->saveLayer(nullptr, &shadowPaint);
+            drawingCanvas()->saveLayer(nullptr, &filterPaint);
+            SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, imageType);
+            drawingCanvas()->setMatrix(ctm);
+            drawFunc(&foregroundPaint);
+        } else {
+            ASSERT(isFullCanvasCompositeMode(state().globalComposite()));
+            drawingCanvas()->saveLayer(nullptr, &compositePaint);
+            shadowPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+            drawingCanvas()->setMatrix(ctm);
+            drawFunc(&shadowPaint);
+        }
         if (!drawingCanvas())
             return;
-        drawingCanvas()->restore();
+        drawingCanvas()->restoreToCount(saveCount);
     }
 
-    drawingCanvas()->saveLayer(nullptr, &layerPaint);
+    compositePaint.setImageFilter(filter);
+    // TODO(junov): crbug.com/502921 We could use primitive bounds if we knew that the filter
+    // does not affect transparent black regions *and* !isFullCanvasCompositeMode
+    drawingCanvas()->saveLayer(nullptr, &compositePaint);
     SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, imageType);
     foregroundPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    drawingCanvas()->setMatrix(ctm);
     drawFunc(&foregroundPaint);
     if (!drawingCanvas())
         return;
     drawingCanvas()->restore();
+    drawingCanvas()->setMatrix(ctm);
 }
 
 template<typename DrawFunc, typename ContainsFunc>
@@ -860,8 +901,8 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
             return false;
     }
 
-    if (isFullCanvasCompositeMode(state().globalComposite())) {
-        fullCanvasCompositedDraw(drawFunc, paintType, imageType);
+    if (isFullCanvasCompositeMode(state().globalComposite()) || state().hasFilter()) {
+        compositedDraw(drawFunc, paintType, imageType);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
         clearCanvas(); // takes care of checkOvewrdraw()

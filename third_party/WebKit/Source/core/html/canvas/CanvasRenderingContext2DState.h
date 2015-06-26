@@ -14,6 +14,8 @@
 namespace blink {
 
 class CanvasStyle;
+class CSSValue;
+class Element;
 
 class CanvasRenderingContext2DState final : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext2DState>, public CSSFontSelectorClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
@@ -77,6 +79,12 @@ public:
     bool hasRealizedFont() const { return m_realizedFont; }
     void setUnparsedFont(const String& font) { m_unparsedFont = font; }
     const String& unparsedFont() const { return m_unparsedFont; }
+
+    void setFilter(PassRefPtrWillBeRawPtr<CSSValue>);
+    void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
+    const String& unparsedFilter() const { return m_unparsedFilter; }
+    SkImageFilter* getFilter(Element*, const Font&) const;
+    bool hasFilter() const { return m_filterValue; }
 
     void setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
     CanvasStyle* strokeStyle() const { return m_strokeStyle.get(); }
@@ -190,6 +198,10 @@ private:
 
     String m_unparsedFont;
     Font m_font;
+
+    String m_unparsedFilter;
+    RefPtrWillBeRawPtr<CSSValue> m_filterValue;
+    mutable RefPtr<SkImageFilter> m_resolvedFilter;
 
     // Text state.
     TextAlign m_textAlign;

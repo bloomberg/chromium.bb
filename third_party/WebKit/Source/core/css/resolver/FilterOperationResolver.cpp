@@ -183,7 +183,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             CSSShadowValue* item = toCSSShadowValue(cssValue);
             IntPoint location(item->x->computeLength<int>(conversionData), item->y->computeLength<int>(conversionData));
             int blur = item->blur ? item->blur->computeLength<int>(conversionData) : 0;
-            Color shadowColor = Color::transparent;
+            Color shadowColor = Color::black;
             if (item->color)
                 shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->color());
 

@@ -90,10 +90,10 @@ testComputedFilterRule("Color then three values with zero length",
     "drop-shadow(#abc 0 0 0)", "drop-shadow(rgb(170, 187, 204) 0px 0px 0px)");
 
 testComputedFilterRule("Three values with zero length",
-    "drop-shadow(0 0 0)", "drop-shadow(rgba(0, 0, 0, 0) 0px 0px 0px)");
+    "drop-shadow(0 0 0)", "drop-shadow(rgb(0, 0, 0) 0px 0px 0px)");
 
 testComputedFilterRule("Two values no color",
-    "drop-shadow(1px 2px)", "drop-shadow(rgba(0, 0, 0, 0) 1px 2px 0px)");
+    "drop-shadow(1px 2px)", "drop-shadow(rgb(0, 0, 0) 1px 2px 0px)");
 
 testComputedFilterRule("Multiple operations",
     "grayscale(0.5) sepia(0.25) saturate(0.75) hue-rotate(35deg) invert(0.2) opacity(0.9) blur(5px)");

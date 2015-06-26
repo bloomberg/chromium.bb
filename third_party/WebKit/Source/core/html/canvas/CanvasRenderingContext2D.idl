@@ -58,6 +58,7 @@ enum CanvasFillRule { "nonzero", "evenodd" };
     // compositing
     attribute unrestricted float globalAlpha; // (default 1.0)
     [TreatNullAs=NullString] attribute DOMString globalCompositeOperation; // (default source-over)
+    [RuntimeEnabled=ExperimentalCanvasFeatures] attribute DOMString filter; // (default 'none') 
 
     // image smoothing
     [ImplementedAs=imageSmoothingEnabled, DeprecateAs=PrefixedImageSmoothingEnabled] attribute boolean webkitImageSmoothingEnabled;

@@ -1108,6 +1108,7 @@ public:
     void setTableLayout(ETableLayout v) { noninherited_flags.tableLayout = v; }
 
     bool setFontDescription(const FontDescription&);
+    void setFont(const Font&);
 
     void setTextAutosizingMultiplier(float);
 

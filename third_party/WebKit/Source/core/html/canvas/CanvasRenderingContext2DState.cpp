@@ -7,15 +7,22 @@
 #include "core/html/canvas/CanvasRenderingContext2DState.h"
 
 #include "core/css/CSSFontSelector.h"
+#include "core/css/resolver/FilterOperationResolver.h"
+#include "core/css/resolver/StyleBuilder.h"
+#include "core/css/resolver/StyleResolverState.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
+#include "core/paint/FilterEffectBuilder.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/graphics/DrawLooperBuilder.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
 static const char defaultFont[] = "10px sans-serif";
+static const char defaultFilter[] = "none";
 
 namespace blink {
 
@@ -28,6 +35,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
     , m_globalAlpha(1)
     , m_lineDashOffset(0)
     , m_unparsedFont(defaultFont)
+    , m_unparsedFilter(defaultFilter)
     , m_textAlign(StartTextAlign)
     , m_textBaseline(AlphabeticTextBaseline)
     , m_direction(DirectionInherit)
@@ -75,6 +83,9 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(const CanvasRenderi
     , m_lineDashOffset(other.m_lineDashOffset)
     , m_unparsedFont(other.m_unparsedFont)
     , m_font(other.m_font)
+    , m_unparsedFilter(other.m_unparsedFilter)
+    , m_filterValue(other.m_filterValue)
+    , m_resolvedFilter(other.m_resolvedFilter)
     , m_textAlign(other.m_textAlign)
     , m_textBaseline(other.m_textBaseline)
     , m_direction(other.m_direction)
@@ -156,6 +167,9 @@ void CanvasRenderingContext2DState::fontsNeedUpdate(CSSFontSelector* fontSelecto
     ASSERT(m_realizedFont);
 
     m_font.update(fontSelector);
+    // FIXME: We only really need to invalidate the resolved filter if the font
+    // update above changed anything and the filter uses font-dependent units.
+    m_resolvedFilter.clear();
 }
 
 DEFINE_TRACE(CanvasRenderingContext2DState)
@@ -286,6 +300,9 @@ void CanvasRenderingContext2DState::setFont(const Font& font, CSSFontSelector* s
     m_font.update(selector);
     m_realizedFont = true;
     selector->registerForInvalidationCallbacks(this);
+    // FIXME: We only really need to invalidate the resolved filter if it
+    // uses font-relative units.
+    m_resolvedFilter.clear();
 }
 
 const Font& CanvasRenderingContext2DState::font() const
@@ -304,6 +321,34 @@ void CanvasRenderingContext2DState::resetTransform()
 {
     m_transform.makeIdentity();
     m_isTransformInvertible = true;
+}
+
+SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolutionHost, const Font& font) const
+{
+    if (!m_filterValue)
+        return nullptr;
+
+    if (!m_resolvedFilter) {
+        RefPtr<ComputedStyle> filterStyle = ComputedStyle::create();
+        // Must set font in case the filter uses any font-relative units (em, ex)
+        filterStyle->setFont(font);
+
+        StyleResolverState resolverState(styleResolutionHost->document(), styleResolutionHost, filterStyle.get());
+        resolverState.setStyle(filterStyle);
+
+        // TODO(junov): crbug.com/502877 Feed m_fillStyle and m_strokeStyle into FillPaint and
+        // StrokePaint respectively for filters that reference SVG.
+        StyleBuilder::applyProperty(CSSPropertyWebkitFilter, resolverState, m_filterValue.get());
+        RefPtrWillBeRawPtr<FilterEffectBuilder> filterEffectBuilder = FilterEffectBuilder::create();
+        const float effectiveZoom = 1.0f; // Deliberately ignore zoom on the canvas element
+        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom);
+
+        SkiaImageFilterBuilder imageFilterBuilder;
+        RefPtrWillBeRawPtr<FilterEffect> lastEffect = filterEffectBuilder->lastEffect();
+        m_resolvedFilter = imageFilterBuilder.build(lastEffect.get(), ColorSpaceDeviceRGB);
+    }
+
+    return m_resolvedFilter.get();
 }
 
 SkDrawLooper* CanvasRenderingContext2DState::emptyDrawLooper() const
@@ -386,6 +431,12 @@ void CanvasRenderingContext2DState::setShadowColor(SkColor shadowColor)
     shadowParameterChanged();
 }
 
+void CanvasRenderingContext2DState::setFilter(PassRefPtrWillBeRawPtr<CSSValue> filterValue)
+{
+    m_filterValue = filterValue;
+    m_resolvedFilter.clear();
+}
+
 void CanvasRenderingContext2DState::setGlobalComposite(SkXfermode::Mode mode)
 {
     m_strokePaint.setXfermodeMode(mode);
@@ -454,7 +505,7 @@ const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, Shad
     }
 
     if (shadowMode == DrawShadowOnly) {
-        if (imageType == NonOpaqueImage) {
+        if (imageType == NonOpaqueImage || m_filterValue) {
             paint->setLooper(0);
             paint->setImageFilter(shadowOnlyImageFilter());
             return paint;

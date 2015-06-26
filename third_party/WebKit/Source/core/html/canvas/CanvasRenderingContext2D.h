@@ -119,6 +119,9 @@ public:
     String globalCompositeOperation() const;
     void setGlobalCompositeOperation(const String&);
 
+    String filter() const;
+    void setFilter(const String&);
+
     void save();
     void restore();
 
@@ -263,7 +266,7 @@ private:
     void inflateStrokeRect(FloatRect&) const;
 
     template<typename DrawFunc>
-    void fullCanvasCompositedDraw(const DrawFunc&, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType);
+    void compositedDraw(const DrawFunc&, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType);
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);

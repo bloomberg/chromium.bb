@@ -1,0 +1,39 @@
+<script src="../../resources/js-test.js"></script>
+<script>
+
+var canvas = document.createElement('canvas');
+var ctx = canvas.getContext('2d');
+
+shouldBe('ctx.filter', '"none"');
+ctx.filter = 'blur(5px)';
+shouldBe('ctx.filter', '"blur(5px)"');
+
+ctx.save();
+ctx.filter = 'none';
+shouldBe('ctx.filter', '"none"');
+ctx.restore();
+shouldBe('ctx.filter', '"blur(5px)"');
+
+// Invalid filter should be ignored
+ctx.filter = 'blur(10)';
+shouldBe('ctx.filter', '"blur(5px)"');
+ctx.filter = 'blur 10px';
+shouldBe('ctx.filter', '"blur(5px)"');
+
+ctx.filter = 'inherit';
+shouldBe('ctx.filter', '"blur(5px)"');
+ctx.filter = 'initial';
+shouldBe('ctx.filter', '"blur(5px)"');
+
+ctx.filter = '';
+shouldBe('ctx.filter', '"blur(5px)"');
+ctx.filter = null;
+shouldBe('ctx.filter', '"blur(5px)"');
+ctx.filter = undefined;
+shouldBe('ctx.filter', '"blur(5px)"');
+
+// verify that exact string is preserved
+ctx.filter = 'blur(  5px)';
+shouldBe('ctx.filter', '"blur(  5px)"');
+
+</script>

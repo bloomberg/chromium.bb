@@ -1254,6 +1254,11 @@ bool ComputedStyle::setFontDescription(const FontDescription& v)
     return false;
 }
 
+void ComputedStyle::setFont(const Font& font)
+{
+    inherited.access()->font = font;
+}
+
 const Length& ComputedStyle::specifiedLineHeight() const { return inherited->line_height; }
 Length ComputedStyle::lineHeight() const
 {
