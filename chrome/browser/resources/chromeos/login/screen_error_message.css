@@ -139,3 +139,16 @@
 #connecting-indicator-ellipsis-3 {
   -webkit-animation: connecting-indicator-ellipsis 3s 1s infinite;
 }
+
+#error-close-button {
+  color: rgba(0, 0, 0, .54);
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 1;
+}
+
+html[dir=rtl] #error-close-button {
+  left: 10px;
+  right: auto;
+}

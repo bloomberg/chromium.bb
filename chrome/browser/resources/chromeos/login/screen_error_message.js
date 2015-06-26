@@ -118,6 +118,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       this.context.addObserver(CONTEXT_KEY_UI_STATE, function(ui_state) {
         self.setUIState(ui_state);
       });
+      $('error-close-button').addEventListener('click', this.cancel.bind(this));
     },
 
     /**
@@ -219,6 +220,9 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     onBeforeShow: function(data) {
       cr.ui.Oobe.clearErrors();
       cr.ui.DropDown.show('offline-networks-list', false);
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ERROR;
+      $('error-close-button').hidden =
+          !(Oobe.isNewGaiaFlow() && $('login-header-bar').allowCancel);
     },
 
     /**
@@ -226,6 +230,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     onBeforeHide: function() {
       cr.ui.DropDown.hide('offline-networks-list');
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
     },
 
     /**
@@ -418,9 +423,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      * Cancels error screen and drops to user pods.
      */
     cancel: function() {
-      // TODO(achuith): Replace with cancel button on this
-      // screen instead of header bar. crbug.com/478547.
-      if (!$('cancel-add-user-button').hidden)
+      if ($('login-header-bar').allowCancel)
         Oobe.showUserPods();
     }
   };

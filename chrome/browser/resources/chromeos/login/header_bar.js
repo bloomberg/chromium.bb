@@ -292,6 +292,10 @@ cr.define('login', function() {
       this.updateUI_();
     },
 
+    get allowCancel() {
+      return !!this.allowCancel_;
+    },
+
     /**
      * Update whether there are kiosk apps.
      *
@@ -335,6 +339,8 @@ cr.define('login', function() {
       var supervisedUserCreationDialogIsActiveAndNotIntro =
           supervisedUserCreationDialogIsActive &&
           $('supervised-user-creation').currentPage_ != 'intro';
+      var errorScreenIsActive =
+          (this.signinUIState_ == SIGNIN_UI_STATE.ERROR);
 
       $('add-user-button').hidden =
           (!this.isNewGaiaFlow_ && !accountPickerIsActive) ||
@@ -342,14 +348,16 @@ cr.define('login', function() {
           enrollmentIsActive ||
           isMultiProfilesUI ||
           isLockScreen ||
-          supervisedUserCreationDialogIsActiveAndNotIntro;
+          supervisedUserCreationDialogIsActiveAndNotIntro ||
+          errorScreenIsActive;
       $('more-settings-header-bar-item').hidden =
           !this.showCreateSupervised_ ||
           isNewGaiaScreenWithBackButton ||
           supervisedUserCreationDialogIsActive;
       $('cancel-add-user-button').hidden =
-          ((gaiaIsActive || isPasswordChangedUI || isSamlPasswordConfirm) &&
-              this.isNewGaiaFlow_) ||
+          ((gaiaIsActive || isPasswordChangedUI || isSamlPasswordConfirm ||
+            errorScreenIsActive) &&
+           this.isNewGaiaFlow_) ||
           accountPickerIsActive ||
           !this.allowCancel_ ||
           wrongHWIDWarningIsActive ||
