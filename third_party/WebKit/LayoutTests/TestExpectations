@@ -1151,10 +1151,6 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/fra
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-with-async-callstack.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-async/async-callstack-get-as-string.html [ Crash ]
 
-# The following tests have wrong baselines when they are flaky.
-crbug.com/392046 virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ NeedsRebaseline ]
-crbug.com/392046 fast/repaint/transform-inline-layered-child.html [ NeedsRebaseline ]
-
 # Try @font-face to load Ahem font to see it produces different flakiness from pre-registered Ahem font.
 crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/repaint/text-emphasis-v-try-ahem.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 crbug.com/392046 [ Mac Win7 ] fast/text/whitespace/002-try-ahem.html [ Pass Failure ]
