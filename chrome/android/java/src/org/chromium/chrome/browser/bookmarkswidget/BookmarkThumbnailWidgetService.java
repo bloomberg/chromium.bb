@@ -14,7 +14,6 @@ import android.graphics.BitmapFactory.Options;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
-import android.provider.Browser.BookmarkColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -29,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.sync.AndroidSyncSettings;
 
@@ -70,7 +70,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
 
     static void changeFolder(Context context, Intent intent) {
         int widgetId = IntentUtils.safeGetIntExtra(intent, AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
-        long folderId = IntentUtils.safeGetLongExtra(intent, BookmarkColumns._ID,
+        long folderId = IntentUtils.safeGetLongExtra(intent, BookmarkColumns.ID,
                 ChromeBrowserProviderClient.INVALID_BOOKMARK_ID);
         if (widgetId >= 0 && folderId >= 0) {
             SharedPreferences prefs = getWidgetState(context, widgetId);
@@ -160,7 +160,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
             mContext.sendBroadcast(new Intent(getChangeFolderAction(mContext))
                         .setClass(mContext, BookmarkWidgetProxy.class)
                         .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId)
-                        .putExtra(BookmarkColumns._ID, folderId));
+                        .putExtra(BookmarkColumns.ID, folderId));
         }
 
         // Performs the required checks to trigger an update of the widget after changing the sync
@@ -371,7 +371,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
             if (!bookmark.isUrl()) {
                 fillIn = new Intent(getChangeFolderAction(mContext))
                         .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId)
-                        .putExtra(BookmarkColumns._ID, id);
+                        .putExtra(BookmarkColumns.ID, id);
             } else {
                 fillIn = new Intent(Intent.ACTION_VIEW);
                 if (!TextUtils.isEmpty(url)) {

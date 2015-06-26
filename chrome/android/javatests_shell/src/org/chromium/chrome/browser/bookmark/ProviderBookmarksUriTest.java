@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.test;
+package org.chromium.chrome.browser.bookmark;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.Browser.BookmarkColumns;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
@@ -283,7 +282,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
     @DisabledTest
     public void testBookmarksTable() {
         final String[] bookmarksProjection = new String[] {
-                BookmarkColumns._ID, BookmarkColumns.URL, BookmarkColumns.VISITS,
+                BookmarkColumns.ID, BookmarkColumns.URL, BookmarkColumns.VISITS,
                 BookmarkColumns.DATE, BookmarkColumns.CREATED, BookmarkColumns.BOOKMARK,
                 BookmarkColumns.TITLE, BookmarkColumns.FAVICON };
         final int idIndex = 0;
@@ -345,7 +344,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         cursor = getContentResolver().query(
                 mBookmarksUri,
                 bookmarksProjection,
-                BookmarkColumns._ID + " = " + Id,
+                BookmarkColumns.ID + " = " + Id,
                 null, null);
         assertTrue(cursor.moveToNext());
         assertEquals(updateBookmarkTitle, cursor.getString(titleIndex));
@@ -364,7 +363,7 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         cursor = getContentResolver().query(
                 mBookmarksUri,
                 bookmarksProjection,
-                BookmarkColumns._ID + " = " + Id,
+                BookmarkColumns.ID + " = " + Id,
                 null, null);
         assertEquals(0, cursor.getCount());
     }

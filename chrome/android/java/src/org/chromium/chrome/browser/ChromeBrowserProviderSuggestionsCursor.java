@@ -8,10 +8,10 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.database.AbstractCursor;
 import android.database.Cursor;
-import android.provider.BaseColumns;
-import android.provider.Browser.BookmarkColumns;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmark.BaseColumns;
+import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 
 /**
  * For bookmarks/history suggestions, wrap the cursor returned in one that can feed
@@ -20,7 +20,7 @@ import org.chromium.chrome.R;
 class ChromeBrowserProviderSuggestionsCursor extends AbstractCursor {
 
     private static final String[] COLS = new String [] {
-        BaseColumns._ID,
+        BaseColumns.ID,
         SearchManager.SUGGEST_COLUMN_INTENT_ACTION,
         SearchManager.SUGGEST_COLUMN_INTENT_DATA,
         SearchManager.SUGGEST_COLUMN_TEXT_1,
@@ -59,7 +59,7 @@ class ChromeBrowserProviderSuggestionsCursor extends AbstractCursor {
     public String getString(int column) {
         switch (column) {
             case COLUMN_ID:
-                return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns._ID));
+                return mCursor.getString(mCursor.getColumnIndex(BookmarkColumns.ID));
             case COLUMN_SUGGEST_INTENT_ACTION:
                 return Intent.ACTION_VIEW;
             case COLUMN_SUGGEST_INTENT_DATA:

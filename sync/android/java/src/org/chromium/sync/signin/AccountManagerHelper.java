@@ -5,7 +5,6 @@
 package org.chromium.sync.signin;
 
 
-import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -261,7 +260,7 @@ public class AccountManagerHelper {
 
     private boolean hasUseCredentialsPermission() {
         return BuildInfo.isMncOrLater()
-                || mApplicationContext.checkPermission(Manifest.permission.USE_CREDENTIALS,
+                || mApplicationContext.checkPermission("android.permission.USE_CREDENTIALS",
                         Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
     }
 

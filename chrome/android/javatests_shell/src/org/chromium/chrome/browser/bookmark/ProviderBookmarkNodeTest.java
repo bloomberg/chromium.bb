@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.test;
+package org.chromium.chrome.browser.bookmark;
 
 import android.os.Parcel;
 import android.test.suitebuilder.annotation.SmallTest;

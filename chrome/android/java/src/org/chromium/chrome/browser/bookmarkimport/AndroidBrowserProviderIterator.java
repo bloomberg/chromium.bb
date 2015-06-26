@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.bookmarkimport;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.provider.Browser;
-import android.provider.Browser.BookmarkColumns;
+import android.net.Uri;
+
+import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 
 import java.util.NoSuchElementException;
 
@@ -18,12 +19,20 @@ import java.util.NoSuchElementException;
 class AndroidBrowserProviderIterator implements BookmarkImporter.BookmarkIterator {
     private static final String SELECT_IS_BOOKMARK = BookmarkColumns.BOOKMARK + "=1";
 
+    /**
+     * A table containing both bookmarks and history items. The columns of the table are defined in
+     * {@link BookmarkColumns}. Reading this table requires the
+     * {@link android.Manifest.permission#READ_HISTORY_BOOKMARKS} permission and writing to it
+     * requires the {@link android.Manifest.permission#WRITE_HISTORY_BOOKMARKS} permission.
+     */
+    public static final Uri BOOKMARKS_URI = Uri.parse("content://browser/bookmarks");
+
     private final Cursor mCursor;
     private long mNextId = BookmarkImporter.ROOT_FOLDER_ID + 1;
 
     static boolean isProviderAvailable(ContentResolver contentResolver) {
         ContentProviderClient providerClient = contentResolver.acquireContentProviderClient(
-                Browser.BOOKMARKS_URI);
+                BOOKMARKS_URI);
         if (providerClient != null) {
             providerClient.release();
             return true;
@@ -33,7 +42,7 @@ class AndroidBrowserProviderIterator implements BookmarkImporter.BookmarkIterato
 
     static AndroidBrowserProviderIterator createIfAvailable(
             ContentResolver contentResolver) {
-        Cursor cursor = contentResolver.query(Browser.BOOKMARKS_URI, null, SELECT_IS_BOOKMARK,
+        Cursor cursor = contentResolver.query(BOOKMARKS_URI, null, SELECT_IS_BOOKMARK,
                 null, null);
         return cursor == null ? null : new AndroidBrowserProviderIterator(cursor);
     }

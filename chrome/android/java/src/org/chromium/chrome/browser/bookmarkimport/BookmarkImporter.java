@@ -9,12 +9,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.Browser;
-import android.provider.Browser.BookmarkColumns;
 import android.util.Log;
 
 import org.chromium.chrome.browser.ChromeBrowserProvider;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -82,9 +81,9 @@ public abstract class BookmarkImporter {
 
     // Auxiliary query constants.
     private static final Integer VALUE_IS_BOOKMARK = 1;
-    private static final String SELECT_IS_BOOKMARK = Browser.BookmarkColumns.BOOKMARK + "="
+    private static final String SELECT_IS_BOOKMARK = BookmarkColumns.BOOKMARK + "="
             + VALUE_IS_BOOKMARK.toString();
-    private static final String HAS_URL = Browser.BookmarkColumns.URL + "=?";
+    private static final String HAS_URL = BookmarkColumns.URL + "=?";
     private static final String[] EXISTS_PROJECTION = new String[]{ BookmarkColumns.URL };
 
     protected final Context mContext;

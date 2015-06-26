@@ -14,7 +14,6 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Browser;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -388,9 +387,9 @@ public class AddEditBookmarkFragment extends AsyncTaskFragment implements OnClic
 
             ContentValues bookmarkValues = new ContentValues();
             if (!mActivityMode.isFolder()) {
-                bookmarkValues.put(Browser.BookmarkColumns.URL, url);
+                bookmarkValues.put(BookmarkColumns.URL, url);
             }
-            bookmarkValues.put(Browser.BookmarkColumns.TITLE, title);
+            bookmarkValues.put(BookmarkColumns.TITLE, title);
             bookmarkValues.put(
                     ChromeBrowserProvider.BOOKMARK_PARENT_ID_PARAM, mParentFolderId);
             bookmarkValues.put(

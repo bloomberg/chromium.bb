@@ -9,7 +9,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
-import android.provider.Browser.BookmarkColumns;
 import android.test.mock.MockContentProvider;
 import android.test.mock.MockContentResolver;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -17,6 +16,7 @@ import android.util.Log;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
+import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.BookmarkTestUtils;
 import org.chromium.content.browser.test.NativeLibraryTestBase;

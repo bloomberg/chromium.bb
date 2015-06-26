@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.test;
+package org.chromium.chrome.browser.bookmark;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.Browser;
-import android.provider.Browser.SearchColumns;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
@@ -157,13 +155,13 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
 
         Uri insertUri = getContentResolver().insert(mSearchesUri, value);
         Cursor cursor = getContentResolver().query(mSearchesUri,
-                Browser.SEARCHES_PROJECTION, SearchColumns.SEARCH + " = ?",
+                ChromeBrowserProvider.SEARCHES_PROJECTION, SearchColumns.SEARCH + " = ?",
                 new String[] { insertSearch }, null);
         assertTrue(cursor.moveToNext());
         assertEquals(insertSearch,
-                cursor.getString(Browser.SEARCHES_PROJECTION_SEARCH_INDEX));
+                cursor.getString(ChromeBrowserProvider.SEARCHES_PROJECTION_SEARCH_INDEX));
         assertEquals(createDate,
-                cursor.getLong(Browser.SEARCHES_PROJECTION_DATE_INDEX));
+                cursor.getLong(ChromeBrowserProvider.SEARCHES_PROJECTION_DATE_INDEX));
         int id = cursor.getInt(idIndex);
         cursor.close();
 
@@ -174,22 +172,22 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
         value.put(SearchColumns.DATE, updateDate);
 
         getContentResolver().update(mSearchesUri, value,
-                SearchColumns._ID + " = " + id, null);
+                SearchColumns.ID + " = " + id, null);
         cursor = getContentResolver().query(mSearchesUri,
-                Browser.SEARCHES_PROJECTION,
-                SearchColumns._ID + " = " + id, null, null);
+                ChromeBrowserProvider.SEARCHES_PROJECTION,
+                SearchColumns.ID + " = " + id, null, null);
         assertTrue(cursor.moveToNext());
         assertEquals(updateSearch,
-                cursor.getString(Browser.SEARCHES_PROJECTION_SEARCH_INDEX));
+                cursor.getString(ChromeBrowserProvider.SEARCHES_PROJECTION_SEARCH_INDEX));
         assertEquals(updateDate,
-                cursor.getLong(Browser.SEARCHES_PROJECTION_DATE_INDEX));
+                cursor.getLong(ChromeBrowserProvider.SEARCHES_PROJECTION_DATE_INDEX));
         assertEquals(id, cursor.getInt(idIndex));
 
         // Test: delete
         getContentResolver().delete(insertUri, null, null);
         cursor = getContentResolver().query(mSearchesUri,
-                Browser.SEARCHES_PROJECTION,
-                SearchColumns._ID + " = " + id, null, null);
+                ChromeBrowserProvider.SEARCHES_PROJECTION,
+                SearchColumns.ID + " = " + id, null, null);
         assertEquals(0, cursor.getCount());
     }
 }
