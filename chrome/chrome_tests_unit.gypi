@@ -127,8 +127,8 @@
       'browser/logging_chrome_unittest.cc',
       'browser/mac/keystone_glue_unittest.mm',
       'browser/manifest/manifest_icon_selector_unittest.cc',
-      'browser/media/native_desktop_media_list_unittest.cc',
       'browser/media/midi_permission_context_unittest.cc',
+      'browser/media/native_desktop_media_list_unittest.cc',
       'browser/memory/oom_priority_manager_chromeos_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',
@@ -747,6 +747,7 @@
       'browser/extensions/extension_management_test_util.h',
       'browser/extensions/extension_management_unittest.cc',
       'browser/extensions/extension_message_bubble_controller_unittest.cc',
+      'browser/extensions/extension_migrator_unittest.cc',
       'browser/extensions/extension_path_util_unittest.cc',
       'browser/extensions/extension_prefs_unittest.cc',
       'browser/extensions/extension_prefs_unittest.h',
@@ -937,10 +938,10 @@
       'browser/ui/window_sizer/window_sizer_ash_unittest.cc',
     ],
     'chrome_test_support_unit_ash_sources': [
-      'browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.cc',
-      'browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.h',
       'browser/ui/ash/launcher/test/launcher_application_menu_item_model_test_api.cc',
       'browser/ui/ash/launcher/test/launcher_application_menu_item_model_test_api.h',
+      'browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.cc',
+      'browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.h',
     ],
     'chrome_unit_tests_task_manager_sources': [
       # New Task Manager Tests Sources:
@@ -1463,9 +1464,9 @@
       'browser/media/router/create_session_request_unittest.cc',
       'browser/media/router/issue_manager_unittest.cc',
       'browser/media/router/issue_unittest.cc',
+      'browser/media/router/media_route_unittest.cc',
       'browser/media/router/media_router_mojo_impl_unittest.cc',
       'browser/media/router/media_router_type_converters_unittest.cc',
-      'browser/media/router/media_route_unittest.cc',
       'browser/media/router/media_sink_unittest.cc',
       'browser/media/router/media_source_helper_unittest.cc',
       'browser/media/router/media_source_unittest.cc',
@@ -2597,13 +2598,13 @@
           ],
           'sources': [
             '<@(chrome_unit_tests_win_sources)',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
           ],
           'link_settings': {

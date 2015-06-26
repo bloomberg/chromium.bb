@@ -34,6 +34,10 @@
   // Google Slides
   "felcaaldnbdncclmgdcncolpebgiejap" : {
     "external_update_url": "https://clients2.google.com/service/update2/crx"
+  },
+  // Drive extension
+  "ghbmnnjooekpmoecnnnilnnbdlolhkhi" : {
+    "external_update_url": "https://clients2.google.com/service/update2/crx"
   }
 }
 
