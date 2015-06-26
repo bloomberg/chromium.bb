@@ -3189,10 +3189,10 @@
               },
             },
             {
-              'target_name': 'telemetry_isolate_base',
+              'target_name': 'telemetry_chrome_test_base',
               'type': 'none',
               'dependencies': [
-                '../tools/telemetry/telemetry.gyp:bitmaptools#host',
+                '../content/content_shell_and_tests.gyp:telemetry_base',
               ],
               'conditions': [
                 ['OS=="linux" or OS=="mac"', {
@@ -3246,7 +3246,7 @@
               'dependencies': [
                 'chrome_run',
                 'gpu_tests_base',
-                'telemetry_isolate_base',
+                'telemetry_chrome_test_base',
               ],
               'sources': [
                 'telemetry_gpu_test.isolate',

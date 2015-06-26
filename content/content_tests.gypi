@@ -1228,6 +1228,26 @@
             }],
           ],
         },
+        {
+          'target_name': 'telemetry_base',
+          'type': 'none',
+          'dependencies': [
+            '../tools/telemetry/telemetry.gyp:bitmaptools#host',
+          ],
+        },
+        {
+          'target_name': 'telemetry_gpu_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'telemetry_base',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'telemetry_gpu_unittests.isolate',
+          ],
+        },
       ],
       'conditions': [
         ['archive_gpu_tests==1', {
