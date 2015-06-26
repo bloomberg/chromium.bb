@@ -273,6 +273,8 @@
         'browser/cast_download_manager_delegate.h',
         'browser/cast_http_user_agent_settings.cc',
         'browser/cast_http_user_agent_settings.h',
+        'browser/cast_net_log.cc',
+        'browser/cast_net_log.h',
         'browser/cast_network_delegate.cc',
         'browser/cast_network_delegate.h',
         'browser/cast_permission_manager.cc',

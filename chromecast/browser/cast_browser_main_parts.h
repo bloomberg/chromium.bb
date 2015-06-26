@@ -15,6 +15,10 @@ namespace media {
 class AudioManagerFactory;
 }
 
+namespace net {
+class NetLog;
+}
+
 namespace chromecast {
 namespace shell {
 class CastBrowserProcess;
@@ -42,6 +46,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   const content::MainFunctionParams parameters_;  // For running browser tests.
   URLRequestContextFactory* const url_request_context_factory_;
   scoped_ptr<::media::AudioManagerFactory> audio_manager_factory_;
+  scoped_ptr<net::NetLog> net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);
 };

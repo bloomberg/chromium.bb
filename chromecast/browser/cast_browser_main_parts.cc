@@ -25,6 +25,7 @@
 #include "chromecast/base/metrics/grouped_histogram.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
@@ -209,7 +210,8 @@ CastBrowserMainParts::CastBrowserMainParts(
       cast_browser_process_(new CastBrowserProcess()),
       parameters_(parameters),
       url_request_context_factory_(url_request_context_factory),
-      audio_manager_factory_(audio_manager_factory.Pass()) {
+      audio_manager_factory_(audio_manager_factory.Pass()),
+      net_log_(new CastNetLog()) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
 }
@@ -305,7 +307,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::IO)));
 
-  url_request_context_factory_->InitializeOnUIThread();
+  url_request_context_factory_->InitializeOnUIThread(net_log_.get());
 
   cast_browser_process_->SetBrowserContext(
       make_scoped_ptr(new CastBrowserContext(url_request_context_factory_)));

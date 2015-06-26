@@ -11,6 +11,7 @@
 namespace net {
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
+class NetLog;
 class ProxyConfigService;
 class URLRequestJobFactory;
 }  // namespace net
@@ -25,7 +26,7 @@ class URLRequestContextFactory {
   ~URLRequestContextFactory();
 
   // Some members must be initialized on UI thread.
-  void InitializeOnUIThread();
+  void InitializeOnUIThread(net::NetLog* net_log);
 
   // Since main context requires a bunch of input params, if these get called
   // multiple times, either multiple main contexts should be supported/managed
@@ -113,6 +114,8 @@ class URLRequestContextFactory {
 
   bool media_dependencies_initialized_;
   scoped_ptr<net::HttpTransactionFactory> media_transaction_factory_;
+
+  net::NetLog* net_log_;
 };
 
 }  // namespace shell

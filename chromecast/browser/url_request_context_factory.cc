@@ -143,7 +143,7 @@ URLRequestContextFactory::URLRequestContextFactory()
 URLRequestContextFactory::~URLRequestContextFactory() {
 }
 
-void URLRequestContextFactory::InitializeOnUIThread() {
+void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Cast http user agent settings must be initialized in UI thread
   // because it registers itself to pref notification observer which is not
@@ -157,6 +157,8 @@ void URLRequestContextFactory::InitializeOnUIThread() {
           content::BrowserThread::IO),
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE)));
+
+  net_log_ = net_log;
 }
 
 net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
@@ -328,6 +330,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   system_context->set_cookie_store(
       content::CreateCookieStore(content::CookieStoreConfig()));
   system_context->set_network_delegate(system_network_delegate_.get());
+  system_context->set_net_log(net_log_);
   return system_context;
 }
 
@@ -347,6 +350,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMediaRequestContext() {
   media_context->CopyFrom(main_context);
   media_context->set_http_transaction_factory(
       media_transaction_factory_.get());
+  media_context->set_net_log(net_log_);
   return media_context;
 }
 
@@ -399,6 +403,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
       main_transaction_factory_.get());
   main_context->set_job_factory(main_job_factory_.get());
   main_context->set_network_delegate(app_network_delegate_.get());
+  main_context->set_net_log(net_log_);
   return main_context;
 }
 
