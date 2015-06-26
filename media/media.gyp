@@ -1579,7 +1579,7 @@
     },
   ],
   'conditions': [
-    ['target_arch!="arm"', {
+    ['target_arch=="ia32" or target_arch=="x64"', {
       'targets': [
        {
           'target_name': 'media_asm',
