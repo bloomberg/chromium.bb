@@ -27,6 +27,7 @@
 #include <string.h> //memcpy
 #include "qcmsint.h"
 #include "chain.h"
+#include "halffloat.h"
 #include "matrix.h"
 #include "transform_util.h"
 

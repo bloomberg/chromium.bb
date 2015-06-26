@@ -55,17 +55,4 @@ void build_output_lut(struct curveType *trc,
 struct matrix matrix_invert(struct matrix mat);
 qcms_bool compute_precache(struct curveType *trc, uint8_t *output);
 
-static inline unsigned short float_to_half_float(float f)
-{
-	extern const unsigned short qcms_half_float_base_table[512];
-	extern const unsigned char qcms_half_float_shift_table[512];
-
-	// See Blink::Source/platform/graphics/gpu/WebGLImageConversion.cpp::convertFloatToHalfFloat()
-	// and http://crbug.com/491784
-
-	unsigned temp = *((unsigned *)(&f));
-	unsigned signexp = (temp >> 23) & 0x1ff;
-	return qcms_half_float_base_table[signexp] + ((temp & 0x007fffff) >> qcms_half_float_shift_table[signexp]);
-}
-
 #endif
