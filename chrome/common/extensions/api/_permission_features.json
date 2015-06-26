@@ -773,7 +773,7 @@
     "extension_types": ["platform_app"]
   },
   "platformKeys": {
-    "channel": "dev",
+    "channel": "stable",
     "platforms": ["chromeos"],
     "extension_types": ["extension", "platform_app"]
   },
