@@ -763,7 +763,7 @@
           4018,
         ],
         'target_conditions': [
-          ['OS == "mac"', {
+          ['OS == "mac" or OS == "ios"', {
             'sources!': [
               'memory/shared_memory_posix.cc',
             ],

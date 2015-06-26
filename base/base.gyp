@@ -699,7 +699,9 @@
         }],
         ['OS == "ios" and _toolset != "host"', {
           'sources/': [
-            # Only test the iOS-meaningful portion of process_utils.
+            # Only test the iOS-meaningful portion of memory and process_utils.
+            ['exclude', '^memory/discardable_shared_memory_unittest\\.cc$'],
+            ['exclude', '^memory/shared_memory_unittest\\.cc$'],
             ['exclude', '^process/memory_unittest'],
             ['exclude', '^process/process_unittest\\.cc$'],
             ['exclude', '^process/process_util_unittest\\.cc$'],
