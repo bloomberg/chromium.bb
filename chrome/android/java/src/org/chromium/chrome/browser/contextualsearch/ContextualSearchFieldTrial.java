@@ -20,34 +20,33 @@ import java.util.Locale;
  * Provides Field Trial support for the Contextual Search application within Chrome for Android.
  */
 public class ContextualSearchFieldTrial {
-    private static final String CONTEXTUAL_SEARCH_FIELD_TRIAL_NAME = "ContextualSearch";
-    private static final String CONTEXTUAL_SEARCH_ENABLED_PARAM = "enabled";
-    private static final String CONTEXTUAL_SEARCH_ENABLED_VALUE = "true";
-    private static final String CONTEXTUAL_SEARCH_DISABLE_FOR_CJK = "disable_for_cjk";
-    private static final String CONTEXTUAL_SEARCH_DISABLE_FOR_NON_ENGLISH =
-            "disable_for_non_english";
-    private static final String CONTEXTUAL_SEARCH_PROMO_ON_LONGPRESS_ONLY =
-            "promo_on_longpress_only";
-    static final String CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS =
-            "promo_on_limited_taps";
-    static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_LIMIT =
-            "tap_triggered_promo_limit";
-    private static final String CONTEXTUAL_SEARCH_NAVIGATION_DETECTION_DELAY =
-            "tap_navigation_detection_delay";
-    static final String CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_DECIDED =
-            "tap_resolve_limit_for_decided";
-    static final String CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_DECIDED =
-            "tap_prefetch_limit_for_decided";
-    static final String CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_UNDECIDED =
-            "tap_resolve_limit_for_undecided";
-    static final String CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_UNDECIDED =
-            "tap_prefetch_limit_for_undecided";
+    private static final String FIELD_TRIAL_NAME = "ContextualSearch";
+    private static final String ENABLED_PARAM = "enabled";
+    private static final String ENABLED_VALUE = "true";
 
-    private static final String[] CJK_LANGUAGE_CODES = {"zh", "ja", "ko"};
-    private static final String ENGLISH_LANGUAGE_CODE = "en";
+    private static final String DISABLE_FOR_CJK = "disable_for_cjk";
+    private static final String DISABLE_FOR_CHINESE = "disable_for_chinese";
+    private static final String DISABLE_FOR_JAPANESE = "disable_for_japanese";
+    private static final String DISABLE_FOR_KOREAN = "disable_for_korean";
+
+    // TODO(pedrosimonetti): Confirm if we can delete promo_on_longpress_only now.
+    private static final String PROMO_ON_LONGPRESS_ONLY = "promo_on_longpress_only";
+    static final String PROMO_ON_LIMITED_TAPS = "promo_on_limited_taps";
+    static final String TAP_TRIGGERED_PROMO_LIMIT = "tap_triggered_promo_limit";
+    static final String TAP_RESOLVE_LIMIT_FOR_DECIDED = "tap_resolve_limit_for_decided";
+    static final String TAP_PREFETCH_LIMIT_FOR_DECIDED = "tap_prefetch_limit_for_decided";
+    static final String TAP_RESOLVE_LIMIT_FOR_UNDECIDED = "tap_resolve_limit_for_undecided";
+    static final String TAP_PREFETCH_LIMIT_FOR_UNDECIDED = "tap_prefetch_limit_for_undecided";
+
+    private static final String CHINESE_LANGUAGE_CODE = "zh";
+    private static final String JAPANESE_LANGUAGE_CODE = "ja";
+    private static final String KOREAN_LANGUAGE_CODE = "ko";
+    private static final String[] CJK_LANGUAGE_CODES = {CHINESE_LANGUAGE_CODE,
+        JAPANESE_LANGUAGE_CODE, KOREAN_LANGUAGE_CODE};
 
     // The default navigation-detection-delay in milliseconds.
     private static final int DEFAULT_TAP_NAVIGATION_DETECTION_DELAY = 16;
+    private static final String NAVIGATION_DETECTION_DELAY = "tap_navigation_detection_delay";
 
     private static final int UNLIMITED_TAPS = -1;
     private static final int DEFAULT_TAP_RESOLVE_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
@@ -100,19 +99,36 @@ public class ContextualSearchFieldTrial {
         }
 
         String languageCode = Locale.getDefault().getLanguage();
-        if (getBooleanParam(CONTEXTUAL_SEARCH_DISABLE_FOR_NON_ENGLISH)
-                && !languageCode.equals(ENGLISH_LANGUAGE_CODE)) {
-            return false;
-        }
-
-        if (getBooleanParam(CONTEXTUAL_SEARCH_DISABLE_FOR_CJK)
-                && Arrays.asList(CJK_LANGUAGE_CODES).contains(languageCode)) {
-            return false;
-        }
+        if (!isLanguageSupported(languageCode)) return false;
 
         if (ChromeVersionInfo.isLocalBuild()) return true;
 
-        return getBooleanParam(CONTEXTUAL_SEARCH_ENABLED_PARAM);
+        return getBooleanParam(ENABLED_PARAM);
+    }
+
+    /**
+     * @param languageCode The language code of the system.
+     * @return Whether the language is supported, given the language code.
+     */
+    static boolean isLanguageSupported(String languageCode) {
+        if (Arrays.asList(CJK_LANGUAGE_CODES).contains(languageCode)
+                && getBooleanParam(DISABLE_FOR_CJK)) {
+            return false;
+        }
+
+        if (languageCode.equals(CHINESE_LANGUAGE_CODE) && getBooleanParam(DISABLE_FOR_CHINESE)) {
+            return false;
+        }
+
+        if (languageCode.equals(JAPANESE_LANGUAGE_CODE) && getBooleanParam(DISABLE_FOR_JAPANESE)) {
+            return false;
+        }
+
+        if (languageCode.equals(KOREAN_LANGUAGE_CODE) && getBooleanParam(DISABLE_FOR_KOREAN)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -120,14 +136,14 @@ public class ContextualSearchFieldTrial {
      * @return {@code true} iff Finch says we should trigger the promo only on touch-and-hold.
      */
     static boolean isPromoLongpressTriggeredOnly() {
-        return getBooleanParam(CONTEXTUAL_SEARCH_PROMO_ON_LONGPRESS_ONLY);
+        return getBooleanParam(PROMO_ON_LONGPRESS_ONLY);
     }
 
     /**
      * @return Whether the promo should be triggered by a limited number of taps.
      */
     public static boolean isPromoLimitedByTapCounts() {
-        return getBooleanParam(CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS);
+        return getBooleanParam(PROMO_ON_LIMITED_TAPS);
     }
 
     /**
@@ -136,15 +152,14 @@ public class ContextualSearchFieldTrial {
      * configuration.
      */
     static int getPromoTapTriggeredLimit() {
-        return getIntParamValueOrDefault(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_LIMIT,
-                UNLIMITED_TAPS);
+        return getIntParamValueOrDefault(TAP_TRIGGERED_PROMO_LIMIT, UNLIMITED_TAPS);
     }
 
     /**
      * @return The delay to use for navigation-detection when triggering on a Tap.
      */
     static int getNavigationDetectionDelay() {
-        return getIntParamValueOrDefault(CONTEXTUAL_SEARCH_NAVIGATION_DETECTION_DELAY,
+        return getIntParamValueOrDefault(NAVIGATION_DETECTION_DELAY,
                 DEFAULT_TAP_NAVIGATION_DETECTION_DELAY);
     }
 
@@ -153,16 +168,14 @@ public class ContextualSearchFieldTrial {
      *         users.
      */
     static boolean isTapResolveLimitedForDecided() {
-        return getTapResolveLimitForDecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+        return getTapResolveLimitForDecided() != ContextualSearchFieldTrial.UNLIMITED_TAPS;
     }
 
     /**
      * @return Whether prefetch in response to a Tap gesture is limited for decided users.
      */
     static boolean isTapPrefetchLimitedForDecided() {
-        return getTapPrefetchLimitForDecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+        return getTapPrefetchLimitForDecided() != ContextualSearchFieldTrial.UNLIMITED_TAPS;
     }
 
     /**
@@ -170,23 +183,21 @@ public class ContextualSearchFieldTrial {
      *         users.
      */
     static boolean isTapResolveLimitedForUndecided() {
-        return getTapResolveLimitForUndecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+        return getTapResolveLimitForUndecided() != ContextualSearchFieldTrial.UNLIMITED_TAPS;
     }
 
     /**
      * @return Whether prefetch in response to a Tap gesture is limited for undecided users.
      */
     static boolean isTapPrefetchLimitedForUndecided() {
-        return getTapPrefetchLimitForUndecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+        return getTapPrefetchLimitForUndecided() != ContextualSearchFieldTrial.UNLIMITED_TAPS;
     }
     /**
      * @return The limit on the number of taps to resolve for decided users, or the default if no
      *         value is present in the Finch configuration.
      */
     static int getTapResolveLimitForDecided() {
-        return getIntParamValueOrDefault(CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_DECIDED,
+        return getIntParamValueOrDefault(TAP_RESOLVE_LIMIT_FOR_DECIDED,
                 DEFAULT_TAP_RESOLVE_LIMIT_FOR_DECIDED);
     }
 
@@ -195,7 +206,7 @@ public class ContextualSearchFieldTrial {
      *         if no value is present.
      */
     static int getTapPrefetchLimitForDecided() {
-        return getIntParamValueOrDefault(CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_DECIDED,
+        return getIntParamValueOrDefault(TAP_PREFETCH_LIMIT_FOR_DECIDED,
                 DEFAULT_TAP_PREFETCH_LIMIT_FOR_DECIDED);
     }
 
@@ -204,7 +215,7 @@ public class ContextualSearchFieldTrial {
      *         value is present in the Finch configuration.
      */
     static int getTapResolveLimitForUndecided() {
-        return getIntParamValueOrDefault(CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_UNDECIDED,
+        return getIntParamValueOrDefault(TAP_RESOLVE_LIMIT_FOR_UNDECIDED,
                 DEFAULT_TAP_RESOLVE_LIMIT_FOR_UNDECIDED);
     }
 
@@ -213,7 +224,7 @@ public class ContextualSearchFieldTrial {
      *         if no value is present.
      */
     static int getTapPrefetchLimitForUndecided() {
-        return getIntParamValueOrDefault(CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_UNDECIDED,
+        return getIntParamValueOrDefault(TAP_PREFETCH_LIMIT_FOR_UNDECIDED,
                 DEFAULT_TAP_PREFETCH_LIMIT_FOR_UNDECIDED);
     }
 
@@ -232,9 +243,8 @@ public class ContextualSearchFieldTrial {
         if (CommandLine.getInstance().hasSwitch(paramName)) {
             return true;
         }
-        return TextUtils.equals(CONTEXTUAL_SEARCH_ENABLED_VALUE,
-                VariationsAssociatedData.getVariationParamValue(CONTEXTUAL_SEARCH_FIELD_TRIAL_NAME,
-                        paramName));
+        return TextUtils.equals(ENABLED_VALUE,
+                VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName));
     }
 
     /**
@@ -247,8 +257,7 @@ public class ContextualSearchFieldTrial {
     private static int getIntParamValueOrDefault(String paramName, int defaultValue) {
         String value = CommandLine.getInstance().getSwitchValue(paramName);
         if (TextUtils.isEmpty(value)) {
-            value = VariationsAssociatedData.getVariationParamValue(
-                    CONTEXTUAL_SEARCH_FIELD_TRIAL_NAME, paramName);
+            value = VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
         }
         if (!TextUtils.isEmpty(value)) {
             try {

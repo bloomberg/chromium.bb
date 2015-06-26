@@ -1193,7 +1193,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
+            ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
     @FlakyTest
     public void testTapResolveLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerSearchTermResolution();
@@ -1221,7 +1221,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add({
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2"})
+            ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2"})
     @FlakyTest
     public void testTapResolveLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
@@ -1251,7 +1251,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
+            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
     @FlakyTest
     public void testTapPrefetchLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerPrefetch();
@@ -1279,7 +1279,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
+            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
     @FlakyTest
     public void testTapPrefetchLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
@@ -1309,8 +1309,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add({
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS + "=true",
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_LIMIT + "=2"})
+            ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
+            ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
     @FlakyTest
     public void testTapTriggeredPromoLimitForOptOut()
             throws InterruptedException, TimeoutException {
@@ -1356,7 +1356,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
+            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
     @FlakyTest
     public void testDisembodiedBar() throws InterruptedException, TimeoutException {
         clickToTriggerPrefetch();
@@ -1555,8 +1555,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add({
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS + "=true",
-            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_LIMIT + "=2"})
+            ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
+            ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
     @FlakyTest
     public void testPromoTapCount() throws InterruptedException, TimeoutException {
         // Note that this tests the basic underlying counter used by
