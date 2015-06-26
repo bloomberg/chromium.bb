@@ -1579,6 +1579,12 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
     case KoreanHangulFormal:
         m_value.valueID = CSSValueKoreanHangulFormal;
         break;
+    case KoreanHanjaFormal:
+        m_value.valueID = CSSValueKoreanHanjaFormal;
+        break;
+    case KoreanHanjaInformal:
+        m_value.valueID = CSSValueKoreanHanjaInformal;
+        break;
     case Hebrew:
         m_value.valueID = CSSValueHebrew;
         break;

@@ -102,6 +102,8 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     case Hangul:
     case HangulConsonant:
     case KoreanHangulFormal:
+    case KoreanHanjaFormal:
+    case KoreanHanjaInformal:
     case Hiragana:
     case HiraganaIroha:
     case Kannada:

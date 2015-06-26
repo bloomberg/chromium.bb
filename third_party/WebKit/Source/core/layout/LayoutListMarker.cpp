@@ -370,11 +370,15 @@ static String toCJKIdeographic(int number, const UChar table[26], CJKStyle cjkSt
         // Put in the four digits and digit markers for any non-zero digits.
         int digitValue = (groupValue % 10);
         bool trailingZero = table[Lang] == Chinese && !digitValue;
-        if (digitValue)
-            group[6] = static_cast<AbstractCJKChar>(Digit0 + (groupValue % 10));
+        if (digitValue) {
+            bool dropOne = table[Lang] == Korean && cjkStyle == Informal && digitValue == 1 && i > 0;
+            if (!dropOne)
+                group[6] = static_cast<AbstractCJKChar>(Digit0 + (groupValue % 10));
+        }
         if (number != 0 || groupValue > 9) {
             digitValue = ((groupValue / 10) % 10);
-            if (digitValue || !trailingZero)
+            bool dropOne = table[Lang] == Korean && cjkStyle == Informal && digitValue == 1;
+            if ((digitValue && !dropOne) || (!digitValue && !trailingZero))
                 group[4] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
             trailingZero &= !digitValue;
             if (digitValue)
@@ -382,7 +386,8 @@ static String toCJKIdeographic(int number, const UChar table[26], CJKStyle cjkSt
         }
         if (number != 0 || groupValue > 99) {
             digitValue = ((groupValue / 100) % 10);
-            if (digitValue || !trailingZero)
+            bool dropOne = table[Lang] == Korean && cjkStyle == Informal && digitValue == 1;
+            if ((digitValue && !dropOne) || (!digitValue && !trailingZero))
                 group[2] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
             trailingZero &= !digitValue;
             if (digitValue)
@@ -390,7 +395,8 @@ static String toCJKIdeographic(int number, const UChar table[26], CJKStyle cjkSt
         }
         if (number != 0 || groupValue > 999) {
             digitValue = groupValue / 1000;
-            if (digitValue || !trailingZero)
+            bool dropOne = table[Lang] == Korean && cjkStyle == Informal && digitValue == 1;
+            if ((digitValue && !dropOne) || (!digitValue && !trailingZero))
                 group[0] = static_cast<AbstractCJKChar>(Digit0 + digitValue);
             if (digitValue)
                 group[1] = FourthDigitMarker;
@@ -473,6 +479,8 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case Tibetan:
     case Urdu:
     case KoreanHangulFormal:
+    case KoreanHanjaFormal:
+    case KoreanHanjaInformal:
     case CJKIdeographic:
     case SimpChineseFormal:
     case SimpChineseInformal:
@@ -580,6 +588,8 @@ UChar LayoutListMarker::listMarkerSuffix(EListStyleType type, int value)
     case TradChineseFormal:
     case TradChineseInformal:
     case KoreanHangulFormal:
+    case KoreanHanjaFormal:
+    case KoreanHanjaInformal:
         return 0x3001;
     }
 
@@ -866,6 +876,28 @@ String listMarkerText(EListStyleType type, int value)
         };
         return toCJKIdeographic(value, koreanHangulFormalTable, Formal);
     }
+    case KoreanHanjaFormal: {
+        static const UChar koreanHanjaFormalTable[26] = {
+            Korean,
+            0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000,
+            0x62FE, 0x767E, 0x4EDF,
+            0x96F6, 0x58F9, 0x8CB3, 0x53C3, 0x56DB,
+            0x4E94, 0x516D, 0x4E03, 0x516B, 0x4E5D,
+            0xB9C8, 0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000
+        };
+        return toCJKIdeographic(value, koreanHanjaFormalTable, Formal);
+    }
+    case KoreanHanjaInformal: {
+        static const UChar koreanHanjaInformalTable[26] = {
+            Korean,
+            0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000,
+            0x5341, 0x767E, 0x5343,
+            0x96F6, 0x4E00, 0x4E8C, 0x4E09, 0x56DB,
+            0x4E94, 0x516D, 0x4E03, 0x516B, 0x4E5D,
+            0xB9C8, 0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000
+        };
+        return toCJKIdeographic(value, koreanHanjaInformalTable, Informal);
+    }
     case CJKIdeographic:
     case TradChineseInformal: {
         static const UChar traditionalChineseInformalTable[22] = {
@@ -1106,6 +1138,8 @@ void LayoutListMarker::updateContent()
     case Hangul:
     case HangulConsonant:
     case KoreanHangulFormal:
+    case KoreanHanjaFormal:
+    case KoreanHanjaInformal:
     case Hebrew:
     case Hiragana:
     case HiraganaIroha:
@@ -1186,6 +1220,8 @@ void LayoutListMarker::computePreferredLogicalWidths()
     case Hangul:
     case HangulConsonant:
     case KoreanHangulFormal:
+    case KoreanHanjaFormal:
+    case KoreanHanjaInformal:
     case Hebrew:
     case Hiragana:
     case HiraganaIroha:
@@ -1361,6 +1397,8 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
     case Gurmukhi:
     case Hangul:
     case KoreanHangulFormal:
+    case KoreanHanjaFormal:
+    case KoreanHanjaInformal:
     case HangulConsonant:
     case Hebrew:
     case Hiragana:
