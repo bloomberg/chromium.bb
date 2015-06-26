@@ -29,6 +29,7 @@
 
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
@@ -44,7 +45,7 @@ TimerBase::TimerBase()
     : m_nextFireTime(0)
     , m_unalignedNextFireTime(0)
     , m_repeatInterval(0)
-    , m_cancellableTaskFactory(WTF::bind(&TimerBase::run, this))
+    , m_cancellableTimerTask(nullptr)
     , m_webScheduler(Platform::current()->currentThread()->scheduler())
 #if ENABLE(ASSERT)
     , m_thread(currentThread())
@@ -72,7 +73,9 @@ void TimerBase::stop()
 
     m_repeatInterval = 0;
     m_nextFireTime = 0;
-    m_cancellableTaskFactory.cancel();
+    if (m_cancellableTimerTask)
+        m_cancellableTimerTask->cancel();
+    m_cancellableTimerTask = nullptr;
 }
 
 double TimerBase::nextFireInterval() const
@@ -98,12 +101,15 @@ void TimerBase::setNextFireTime(double now, double delay)
         long long delayMs = static_cast<long long>(ceil((newTime - now) * 1000.0));
         if (delayMs < 0)
             delayMs = 0;
-        m_webScheduler->postTimerTask(m_location, m_cancellableTaskFactory.cancelAndCreate(), delayMs);
+        if (m_cancellableTimerTask)
+            m_cancellableTimerTask->cancel();
+        m_cancellableTimerTask = new CancellableTimerTask(this);
+        m_webScheduler->postTimerTask(m_location, m_cancellableTimerTask, delayMs);
     }
 }
 
 NO_LAZY_SWEEP_SANITIZE_ADDRESS
-void TimerBase::run()
+void TimerBase::runInternal()
 {
     if (!canFire())
         return;
