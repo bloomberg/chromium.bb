@@ -224,6 +224,26 @@ function extractFieldsFromControlElements_(controlElements, requirements,
 }
 
 /**
+ * Check if the node is visible.
+ *
+ * @param {Node} node The node to be processed.
+ * @return {boolean} Whether the node is visible or not.
+ */
+function isVisibleNode_(node) {
+  if (!node)
+    return false;
+
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    var style = window.getComputedStyle(/** @type {Element} */(node));
+    if (style.visibility == 'hidden' || style.display == 'none')
+      return false;
+  }
+
+  // Verify all ancestors are focusable.
+  return !node.parentNode || isVisibleNode_(node.parentNode);
+}
+
+/**
  * For each label element, get the corresponding form control element, use the
  * form control element along with |controlElements| and |elementArray| to find
  * the previously created AutofillFormFieldData and set the
@@ -1616,8 +1636,8 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
           __gCrWeb.autofill.isTextAreaElement(element)) {
     field['is_autofilled'] = element.isAutofilled;
     field['should_autocomplete'] = __gCrWeb.common.autoComplete(element);
-    // TODO(chenyu): compute this item properly.
-    // field['is_focusable'] = element.isFocusable;
+    field['is_focusable'] = !element.disabled && !element.readOnly &&
+        element.tabIndex >= 0 && isVisibleNode_(element);
   }
 
   if (__gCrWeb.autofill.isAutofillableInputElement(element)) {
