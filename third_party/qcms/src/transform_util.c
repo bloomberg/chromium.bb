@@ -360,6 +360,14 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
                     return 0;
         }
 
+        // For input 0, return that to maintain black level. Note the binary search
+        // does not. For example, it inverts the standard sRGB gamma curve to 7 at
+        // the origin, causing a black level error.
+
+        if (Value == 0 && NumZeroes) {
+            return 0;
+        }
+
         // Seems not a degenerated case... apply binary search
 
         while (r > l) {

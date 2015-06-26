@@ -79,6 +79,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=458024
  - Make half float code self-contained: add halffloat.h
    - https://code.google.com/p/chromium/issues/detail?id=491784
+ - lut_inverse_interp16: fix black level inversion error
+   - https://code.google.com/p/chromium/issues/detail?id=504681
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
