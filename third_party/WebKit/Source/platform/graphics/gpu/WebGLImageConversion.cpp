@@ -17,6 +17,31 @@ namespace blink {
 
 namespace {
 
+const float maxInt8Value = INT8_MAX;
+const float maxUInt8Value = UINT8_MAX;
+const float maxInt16Value = INT16_MAX;
+const float maxUInt16Value = UINT16_MAX;
+const double maxInt32Value = INT32_MAX;
+const double maxUInt32Value = UINT32_MAX;
+
+int8_t ClampMin(int8_t value)
+{
+    const static int8_t minInt8Value = INT8_MIN + 1;
+    return value < minInt8Value ? minInt8Value : value;
+}
+
+int16_t ClampMin(int16_t value)
+{
+    const static int16_t minInt16Value = INT16_MIN + 1;
+    return value < minInt16Value ? minInt16Value : value;
+}
+
+int32_t ClampMin(int32_t value)
+{
+    const static int32_t minInt32Value = INT32_MIN + 1;
+    return value < minInt32Value ? minInt32Value : value;
+}
+
 WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat, GLenum destinationType)
 {
     WebGLImageConversion::DataFormat dstFormat = WebGLImageConversion::DataFormatRGBA8;
@@ -541,10 +566,19 @@ template<> void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(cons
     }
 }
 
-template<> void unpack<WebGLImageConversion::DataFormatRGBA2_10_10_10, uint32_t, uint16_t>(const uint32_t* source, uint16_t* destination, unsigned pixelsPerRow)
+template<> void unpack<WebGLImageConversion::DataFormatRGBA2_10_10_10, uint32_t, float>(const uint32_t* source, float* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    static const float rgbScaleFactor = 1.0f / 1023.0f;
+    static const float alphaScaleFactor = 1.0f / 3.0f;
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        uint32_t packedValue = source[0];
+        destination[0] = static_cast<float>(packedValue & 0x3FF) * rgbScaleFactor;
+        destination[1] = static_cast<float>((packedValue >> 10) & 0x3FF) * rgbScaleFactor;
+        destination[2] = static_cast<float>((packedValue >> 20) & 0x3FF) * rgbScaleFactor;
+        destination[3] = static_cast<float>(packedValue >> 30) * alphaScaleFactor;
+        source += 1;
+        destination += 4;
+    }
 }
 
 //----------------------------------------------------------------------
@@ -1132,156 +1166,180 @@ template<> void pack<WebGLImageConversion::DataFormatA16F, WebGLImageConversion:
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA8_S, WebGLImageConversion::AlphaDoPremultiply, int8_t, int8_t>(const int8_t* source, int8_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-// FIXME: this routine is lossy and must be removed.
-template<> void pack<WebGLImageConversion::DataFormatRGBA8_S, WebGLImageConversion::AlphaDoUnmultiply, int8_t, int8_t>(const int8_t* source, int8_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        destination[3] = ClampMin(source[3]);
+        float scaleFactor = static_cast<float>(destination[3]) / maxInt8Value;
+        destination[0] = static_cast<int8_t>(static_cast<float>(ClampMin(source[0])) * scaleFactor);
+        destination[1] = static_cast<int8_t>(static_cast<float>(ClampMin(source[1])) * scaleFactor);
+        destination[2] = static_cast<int8_t>(static_cast<float>(ClampMin(source[2])) * scaleFactor);
+        source += 4;
+        destination += 4;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA16, WebGLImageConversion::AlphaDoPremultiply, uint16_t, uint16_t>(const uint16_t* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-// FIXME: this routine is lossy and must be removed.
-template<> void pack<WebGLImageConversion::DataFormatRGBA16, WebGLImageConversion::AlphaDoUnmultiply, uint16_t, uint16_t>(const uint16_t* source, uint16_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        float scaleFactor = static_cast<float>(source[3]) / maxUInt16Value;
+        destination[0] = static_cast<uint16_t>(static_cast<float>(source[0]) * scaleFactor);
+        destination[1] = static_cast<uint16_t>(static_cast<float>(source[1]) * scaleFactor);
+        destination[2] = static_cast<uint16_t>(static_cast<float>(source[2]) * scaleFactor);
+        destination[3] = source[3];
+        source += 4;
+        destination += 4;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA16_S, WebGLImageConversion::AlphaDoPremultiply, int16_t, int16_t>(const int16_t* source, int16_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-// FIXME: this routine is lossy and must be removed.
-template<> void pack<WebGLImageConversion::DataFormatRGBA16_S, WebGLImageConversion::AlphaDoUnmultiply, int16_t, int16_t>(const int16_t* source, int16_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        destination[3] = ClampMin(source[3]);
+        float scaleFactor = static_cast<float>(destination[3]) / maxInt16Value;
+        destination[0] = static_cast<int16_t>(static_cast<float>(ClampMin(source[0])) * scaleFactor);
+        destination[1] = static_cast<int16_t>(static_cast<float>(ClampMin(source[1])) * scaleFactor);
+        destination[2] = static_cast<int16_t>(static_cast<float>(ClampMin(source[2])) * scaleFactor);
+        source += 4;
+        destination += 4;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA32, WebGLImageConversion::AlphaDoPremultiply, uint32_t, uint32_t>(const uint32_t* source, uint32_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-// FIXME: this routine is lossy and must be removed.
-template<> void pack<WebGLImageConversion::DataFormatRGBA32, WebGLImageConversion::AlphaDoUnmultiply, uint32_t, uint32_t>(const uint32_t* source, uint32_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        double scaleFactor = static_cast<double>(source[3]) / maxUInt32Value;
+        destination[0] = static_cast<uint32_t>(static_cast<double>(source[0]) * scaleFactor);
+        destination[1] = static_cast<uint32_t>(static_cast<double>(source[1]) * scaleFactor);
+        destination[2] = static_cast<uint32_t>(static_cast<double>(source[2]) * scaleFactor);
+        destination[3] = source[3];
+        source += 4;
+        destination += 4;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRGBA32_S, WebGLImageConversion::AlphaDoPremultiply, int32_t, int32_t>(const int32_t* source, int32_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        destination[3] = ClampMin(source[3]);
+        double scaleFactor = static_cast<double>(destination[3]) / maxInt32Value;
+        destination[0] = static_cast<int32_t>(static_cast<double>(ClampMin(source[0])) * scaleFactor);
+        destination[1] = static_cast<int32_t>(static_cast<double>(ClampMin(source[1])) * scaleFactor);
+        destination[2] = static_cast<int32_t>(static_cast<double>(ClampMin(source[2])) * scaleFactor);
+        source += 4;
+        destination += 4;
+    }
 }
 
-// FIXME: this routine is lossy and must be removed.
-template<> void pack<WebGLImageConversion::DataFormatRGBA32_S, WebGLImageConversion::AlphaDoUnmultiply, int32_t, int32_t>(const int32_t* source, int32_t* destination, unsigned pixelsPerRow)
+template<> void pack<WebGLImageConversion::DataFormatRGBA2_10_10_10, WebGLImageConversion::AlphaDoPremultiply, float, uint32_t>(const float* source, uint32_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-template<> void pack<WebGLImageConversion::DataFormatRGBA2_10_10_10, WebGLImageConversion::AlphaDoPremultiply, uint16_t, uint32_t>(const uint16_t* source, uint32_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-// FIXME: this routine is lossy and must be removed.
-template<> void pack<WebGLImageConversion::DataFormatRGBA2_10_10_10, WebGLImageConversion::AlphaDoUnmultiply, uint16_t, uint32_t>(const uint16_t* source, uint32_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-template<> void pack<WebGLImageConversion::DataFormatRGB10F11F11F, WebGLImageConversion::AlphaDoNothing, float, uint32_t>(const float* source, uint32_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-template<> void pack<WebGLImageConversion::DataFormatRGB10F11F11F, WebGLImageConversion::AlphaDoPremultiply, float, uint32_t>(const float* source, uint32_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
-}
-
-// FIXME: this routine is lossy and must be removed.
-template<> void pack<WebGLImageConversion::DataFormatRGB10F11F11F, WebGLImageConversion::AlphaDoUnmultiply, float, uint32_t>(const float* source, uint32_t* destination, unsigned pixelsPerRow)
-{
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        uint32_t r = static_cast<uint32_t>(source[0] * source[3] * 1023.0f);
+        uint32_t g = static_cast<uint32_t>(source[1] * source[3] * 1023.0f);
+        uint32_t b = static_cast<uint32_t>(source[2] * source[3] * 1023.0f);
+        uint32_t a = static_cast<uint32_t>(source[3] * 3.0f);
+        destination[0] = (a << 30) | (b << 20) | (g << 10) | r;
+        source += 4;
+        destination += 1;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRG8, WebGLImageConversion::AlphaDoNothing, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        destination[0] = source[0];
+        destination[1] = source[1];
+        source += 4;
+        destination += 2;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRG8, WebGLImageConversion::AlphaDoPremultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        float scaleFactor = static_cast<float>(source[3]) / maxUInt8Value;
+        destination[0] = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
+        destination[1] = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
+        source += 4;
+        destination += 2;
+    }
 }
 
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRG8, WebGLImageConversion::AlphaDoUnmultiply, uint8_t, uint8_t>(const uint8_t* source, uint8_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        float scaleFactor = source[3] ? maxUInt8Value / static_cast<float>(source[3]) : 1.0f;
+        destination[0] = static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
+        destination[1] = static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
+        source += 4;
+        destination += 2;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRG16F, WebGLImageConversion::AlphaDoNothing, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        destination[0] = convertFloatToHalfFloat(source[0]);
+        destination[1] = convertFloatToHalfFloat(source[1]);
+        source += 4;
+        destination += 2;
+    }
+
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRG16F, WebGLImageConversion::AlphaDoPremultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        float scaleFactor = source[3];
+        destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
+        destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
+        source += 4;
+        destination += 2;
+    }
 }
 
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRG16F, WebGLImageConversion::AlphaDoUnmultiply, float, uint16_t>(const float* source, uint16_t* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
+        destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
+        destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
+        source += 4;
+        destination += 2;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRG32F, WebGLImageConversion::AlphaDoNothing, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        destination[0] = source[0];
+        destination[1] = source[1];
+        source += 4;
+        destination += 2;
+    }
 }
 
 template<> void pack<WebGLImageConversion::DataFormatRG32F, WebGLImageConversion::AlphaDoPremultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        float scaleFactor = source[3];
+        destination[0] = source[0] * scaleFactor;
+        destination[1] = source[1] * scaleFactor;
+        source += 4;
+        destination += 2;
+    }
 }
 
 // FIXME: this routine is lossy and must be removed.
 template<> void pack<WebGLImageConversion::DataFormatRG32F, WebGLImageConversion::AlphaDoUnmultiply, float, float>(const float* source, float* destination, unsigned pixelsPerRow)
 {
-    // FIXME: Implement this.
-    ASSERT_NOT_REACHED();
+    for (unsigned i = 0; i < pixelsPerRow; ++i) {
+        float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
+        destination[0] = source[0] * scaleFactor;
+        destination[1] = source[1] * scaleFactor;
+        source += 4;
+        destination += 2;
+    }
 }
 
 bool HasAlpha(int format)
@@ -1528,6 +1586,7 @@ struct UsesFloatIntermediateFormat {
     static const bool Value =
         IsFloatFormat<Format>::Value
         || IsHalfFloatFormat<Format>::Value
+        || Format == WebGLImageConversion::DataFormatRGBA2_10_10_10
         || Format == WebGLImageConversion::DataFormatRGB10F11F11F
         || Format == WebGLImageConversion::DataFormatRGB5999;
 };
@@ -1579,6 +1638,7 @@ unsigned TexelBytesForFormat(WebGLImageConversion::DataFormat format)
     case WebGLImageConversion::DataFormatRA16F:
     case WebGLImageConversion::DataFormatRGBA2_10_10_10:
     case WebGLImageConversion::DataFormatRGB10F11F11F:
+    case WebGLImageConversion::DataFormatRGB5999:
     case WebGLImageConversion::DataFormatRG16:
     case WebGLImageConversion::DataFormatRG16_S:
     case WebGLImageConversion::DataFormatRG16F:
@@ -1702,7 +1762,6 @@ void FormatConverter::convert(WebGLImageConversion::DataFormat dstFormat, WebGLI
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32)
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32_S)
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA2_10_10_10)
-            FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGB10F11F11F)
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG8)
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG16F)
             FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG32F)
@@ -1730,6 +1789,29 @@ void FormatConverter::convert(WebGLImageConversion::AlphaOp alphaOp)
 #undef FORMATCONVERTER_CASE_ALPHAOP
 }
 
+template<int Format>
+struct SupportsConversionFromDomElements {
+    static const bool Value =
+        Format == WebGLImageConversion::DataFormatRGBA8
+        || Format == WebGLImageConversion::DataFormatRGB8
+        || Format == WebGLImageConversion::DataFormatRG8
+        || Format == WebGLImageConversion::DataFormatRA8
+        || Format == WebGLImageConversion::DataFormatR8
+        || Format == WebGLImageConversion::DataFormatRGBA32F
+        || Format == WebGLImageConversion::DataFormatRGB32F
+        || Format == WebGLImageConversion::DataFormatRG32F
+        || Format == WebGLImageConversion::DataFormatRA32F
+        || Format == WebGLImageConversion::DataFormatR32F
+        || Format == WebGLImageConversion::DataFormatRGBA16F
+        || Format == WebGLImageConversion::DataFormatRGB16F
+        || Format == WebGLImageConversion::DataFormatRG16F
+        || Format == WebGLImageConversion::DataFormatRA16F
+        || Format == WebGLImageConversion::DataFormatR16F
+        || Format == WebGLImageConversion::DataFormatRGBA5551
+        || Format == WebGLImageConversion::DataFormatRGBA4444
+        || Format == WebGLImageConversion::DataFormatRGB565;
+};
+
 template<WebGLImageConversion::DataFormat SrcFormat, WebGLImageConversion::DataFormat DstFormat, WebGLImageConversion::AlphaOp alphaOp>
 void FormatConverter::convert()
 {
@@ -1755,7 +1837,18 @@ void FormatConverter::convert()
         ASSERT_NOT_REACHED();
         return;
     }
+    if (srcFormatComesFromDOMElementOrImageData && alphaOp == WebGLImageConversion::AlphaDoUnmultiply && !SupportsConversionFromDomElements<DstFormat>::Value) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
     if ((!HasAlpha(SrcFormat) || !HasColor(SrcFormat) || !HasColor(DstFormat)) && alphaOp != WebGLImageConversion::AlphaDoNothing) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
+    // If converting DOM element data to UNSIGNED_INT_5_9_9_9_REV or UNSIGNED_INT_10F_11F_11F_REV,
+    // we should always switch to FLOAT instead to avoid unpack/pack to these two types.
+    if (srcFormatComesFromDOMElementOrImageData && SrcFormat != DstFormat
+        && (DstFormat == WebGLImageConversion::DataFormatRGB5999 || DstFormat == WebGLImageConversion::DataFormatRGB10F11F11F)) {
         ASSERT_NOT_REACHED();
         return;
     }
