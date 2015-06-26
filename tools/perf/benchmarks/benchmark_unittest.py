@@ -12,7 +12,7 @@ from core import perf_benchmark
 
 from telemetry import benchmark as benchmark_module
 from telemetry.core import browser_options
-from telemetry.util import classes_util
+from telemetry.core import discover
 from telemetry.unittest_util import progress_reporter
 
 
@@ -22,8 +22,9 @@ def _GetPerfDir(*subdirs):
 
 
 def _GetAllPerfBenchmarks():
-  return classes_util.DiscoverClasses(
-      _GetPerfDir('benchmarks'), _GetPerfDir(), benchmark_module.Benchmark)
+  return discover.DiscoverClasses(
+      _GetPerfDir('benchmarks'), _GetPerfDir(), benchmark_module.Benchmark,
+      index_by_class_name=True).values()
 
 def _BenchmarkOptionsTestGenerator(benchmark):
   def testBenchmarkOptions(self):  # pylint: disable=W0613

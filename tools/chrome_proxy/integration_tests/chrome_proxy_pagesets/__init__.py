@@ -6,8 +6,8 @@ import inspect
 import os
 import sys
 
+from telemetry.core import discover
 from telemetry.page import page_set
-from telemetry.util import classes_util
 import video
 
 
@@ -15,7 +15,8 @@ import video
 start_dir = os.path.dirname(os.path.abspath(__file__))
 top_level_dir = os.path.abspath(os.path.join(start_dir, os.pardir, os.pardir))
 base_class = page_set.PageSet
-for cls in classes_util.DiscoverClasses(start_dir, top_level_dir, base_class):
+for cls in discover.DiscoverClasses(
+    start_dir, top_level_dir, base_class).values():
   setattr(sys.modules[__name__], cls.__name__, cls)
 
 # DiscoverClasses makes the assumption that there is exactly one matching
