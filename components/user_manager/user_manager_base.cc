@@ -1020,6 +1020,8 @@ bool UserManagerBase::FindKnownUserPrefs(
   // Local State may not be initialized in tests.
   if (!local_state)
     return false;
+  if (IsUserNonCryptohomeDataEphemeral(user_id))
+    return false;
 
   const base::ListValue* known_users = local_state->GetList(kKnownUsers);
   for (size_t i = 0; i < known_users->GetSize(); ++i) {
@@ -1041,6 +1043,9 @@ void UserManagerBase::UpdateKnownUserPrefs(const UserID& user_id,
 
   // Local State may not be initialized in tests.
   if (!local_state)
+    return;
+
+  if (IsUserNonCryptohomeDataEphemeral(user_id))
     return;
 
   ListPrefUpdate update(local_state, kKnownUsers);
