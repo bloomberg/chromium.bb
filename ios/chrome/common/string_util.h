@@ -21,17 +21,13 @@ NSString* ParseStringWithLink(NSString* text, NSRange* out_link_range);
 // and drawing characters (but not including the Braille Patterns characters).
 NSCharacterSet* GraphicCharactersSet();
 
-// Cleans an NSString by collapsing whitespace and (if |trim| is true)
-// removing leading and trailing spaces. If |removeGraphicChars| is true,
-// unicode graphic characters will also be removed from the string.
-NSString* CleanNSStringForDisplay(NSString* dirty,
-                                  BOOL removeGraphicChars,
-                                  BOOL trim);
+// Cleans an NSString by collapsing whitespace and removing leading and trailing
+// spaces. If |removeGraphicChars| is true, unicode graphic characters will also
+// be removed from the string.
+NSString* CleanNSStringForDisplay(NSString* dirty, BOOL removeGraphicChars);
 
 // Cleans a std::string identically to CleanNSStringForDisplay()
-std::string CleanStringForDisplay(std::string dirty,
-                                  BOOL removeGraphicChars,
-                                  BOOL trim);
+std::string CleanStringForDisplay(std::string dirty, BOOL removeGraphicChars);
 
 // Find the longest leading substring of |string| that, when rendered with
 // |attributes|, will fit on a single line inside |targetWidth|. If |trailing|

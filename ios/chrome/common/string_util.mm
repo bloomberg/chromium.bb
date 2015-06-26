@@ -96,10 +96,7 @@ NSCharacterSet* GraphicCharactersSet() {
   return graphicalCharsSet;
 }
 
-// TODO(marq): Add unit tests for this function.
-NSString* CleanNSStringForDisplay(NSString* dirty,
-                                  BOOL removeGraphicChars,
-                                  BOOL trim) {
+NSString* CleanNSStringForDisplay(NSString* dirty, BOOL removeGraphicChars) {
   NSCharacterSet* wspace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
   NSString* cleanString = dirty;
   if (removeGraphicChars) {
@@ -116,18 +113,14 @@ NSString* CleanNSStringForDisplay(NSString* dirty,
       removeObjectsAtIndexes:[spaceSeparatedCompoments
                                  indexesOfObjectsPassingTest:filter]];
   cleanString = [spaceSeparatedCompoments componentsJoinedByString:@" "];
-  return trim ? [cleanString stringByTrimmingCharactersInSet:wspace]
-              : cleanString;
+  return cleanString;
 }
 
-std::string CleanStringForDisplay(std::string dirty,
-                                  BOOL removeGraphicChars,
-                                  BOOL trim) {
+std::string CleanStringForDisplay(std::string dirty, BOOL removeGraphicChars) {
   return base::SysNSStringToUTF8(CleanNSStringForDisplay(
-      base::SysUTF8ToNSString(dirty), removeGraphicChars, trim));
+      base::SysUTF8ToNSString(dirty), removeGraphicChars));
 }
 
-// TODO(marq): Add unit tests for this function.
 NSString* SubstringOfWidth(NSString* string,
                            NSDictionary* attributes,
                            CGFloat targetWidth,
@@ -165,7 +158,7 @@ NSString* SubstringOfWidth(NSString* string,
     substring = getSubstring.get()(characters);
     CGFloat thisWidth = [substring sizeWithAttributes:attributes].width;
     if (prevWidth > targetWidth) {
-      if (thisWidth < targetWidth)
+      if (thisWidth <= targetWidth)
         break;  // Shrinking the string, found the right size.
       else
         increment = -1;  // Shrink the string
