@@ -31,8 +31,8 @@ function test()
         var callsLeft = 2;
         nodeId = node.id;
         InspectorTest.addSniffer(InspectorBackend.connection(), "_wrapCallbackAndSendMessageObject", onBackendCall, true);
-        InspectorTest.cssModel.getComputedStyleAsync(nodeId, styleCallback);
-        InspectorTest.cssModel.getComputedStyleAsync(nodeId, styleCallback);
+        InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
+        InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
         function styleCallback()
         {
             if (--callsLeft)
@@ -44,7 +44,7 @@ function test()
 
     function step2()
     {
-        InspectorTest.cssModel.getComputedStyleAsync(nodeId, callback);
+        InspectorTest.cssModel.computedStylePromise(nodeId).then(callback);
         function callback()
         {
             InspectorTest.addResult("# of backend calls sent [style update + another request]: " + backendCallCount);

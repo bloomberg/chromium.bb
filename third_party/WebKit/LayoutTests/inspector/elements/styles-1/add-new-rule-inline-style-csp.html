@@ -71,7 +71,7 @@ function test()
 
         function testModifyInlineStyle(next)
         {
-            InspectorTest.cssModel.getInlineStylesAsync(nodeId, stylesCallback);
+            InspectorTest.cssModel.inlineStylesPromise(nodeId).then(stylesCallback);
 
             function stylesCallback(inlineStyleResult)
             {

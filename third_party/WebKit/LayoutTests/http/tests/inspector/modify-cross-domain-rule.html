@@ -32,7 +32,7 @@ function test()
                     return;
                 }
 
-                InspectorTest.cssModel.getMatchedStylesAsync(nodeId, false, false, callback);
+                InspectorTest.cssModel.matchedStylesPromise(nodeId, false, false).then(callback);
             }
 
             function callback(rules)

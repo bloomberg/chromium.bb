@@ -27,7 +27,7 @@ function test()
 
     function onNodeFound(node)
     {
-        InspectorTest.cssModel.getMatchedStylesAsync(node.id, true, false, onMatchedStyles);
+        InspectorTest.cssModel.matchedStylesPromise(node.id, true, false).then(onMatchedStyles);
     }
 
     function onMatchedStyles(styles)
