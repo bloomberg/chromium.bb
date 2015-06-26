@@ -4,16 +4,27 @@
 var scope = 'scope-for-getregistrations';
 var script = 'empty-worker.js';
 var registration;
-
-navigator.serviceWorker.register(script, { scope: scope })
-  .then(function(r) { registration = r; });
+var port;
 
 self.onmessage = function(e) {
-  if (e.data == 'unregister') {
-    registration.unregister()
-      .then(function() {
-          e.ports[0].postMessage('unregistered');
-        });
+  if (e.data == 'register') {
+    port = e.ports[0];
+    port.onmessage = function(e) {
+      if (e.data == 'unregister') {
+        registration.unregister()
+          .then(function() {
+              port.postMessage('unregistered');
+            });
+      }
+    };
   }
+
+  // Frame registers a registration scoped
+  // http://localhost:8000/serviceworker/resources/scope-for-getregistrations
+  navigator.serviceWorker.register(script, { scope: scope })
+    .then(function(r) {
+        registration = r;
+        e.ports[0].postMessage('registered');
+      });
 };
 </script>

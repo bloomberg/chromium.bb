@@ -424,7 +424,6 @@ crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ P
 
 crbug.com/503175 [ Linux Win ] http/tests/fetch/serviceworker/request-base-https-other-https.html [ Pass Failure ]
 crbug.com/503175 [ Linux Win ] http/tests/fetch/serviceworker/request.html [ Pass Failure ]
-crbug.com/503175 http/tests/serviceworker/getregistrations.html [ Pass Failure ]
 crbug.com/503175 [ Linux Win ] http/tests/fetch/window/request-base-https-other-https.html [ Pass Failure ]
 
 # Untriaged Linux-specific Aura failures
@@ -1726,7 +1725,7 @@ crbug.com/450493 [ Win ] inspector/console/console-trace-arguments.html [ Failur
 crbug.com/450493 [ Win ] virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 
 # Very flaky on Win Debug since it was last updated in r191233
-crbug.com/461903 [ Win Debug ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Failure ] 
+crbug.com/461903 [ Win Debug ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Failure ]
 
 # Slow expected on debug builds
 crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
