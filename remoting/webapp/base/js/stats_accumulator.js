@@ -43,7 +43,7 @@ remoting.StatsAccumulator.prototype.add = function(newValues) {
   for (var key in newValues) {
     this.getValueList(key).push(newValues[key]);
   }
-  if (!this.timeOfFirstValue_) {
+  if (this.timeOfFirstValue_ === null) {
     this.timeOfFirstValue_ = new Date().getTime();
   }
 };
@@ -63,7 +63,7 @@ remoting.StatsAccumulator.prototype.empty = function() {
  * @return {number} milliseconds since the first value
  */
 remoting.StatsAccumulator.prototype.getTimeSinceFirstValue = function() {
-  if (!this.timeOfFirstValue_) {
+  if (this.timeOfFirstValue_ === null) {
     return 0;
   }
   return new Date().getTime() - this.timeOfFirstValue_;
@@ -129,7 +129,7 @@ remoting.StatsAccumulator.prototype.getValueList = function(key) {
  */
 remoting.StatsAccumulator.prototype.getPerfStats = function() {
   var stats = new remoting.ClientSession.PerfStats();
-  stats.videoBandWidth = this.calcMean('videoBandwidth');
+  stats.videoBandwidth = this.calcMean('videoBandwidth');
   stats.captureLatency = this.calcMean('captureLatency');
   stats.encodeLatency = this.calcMean('encodeLatency');
   stats.decodeLatency = this.calcMean('decodeLatency');

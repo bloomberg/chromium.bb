@@ -96,6 +96,7 @@
       'webapp/base/js/l10n_unittest.js',
       'webapp/base/js/platform_unittest.js',
       'webapp/base/js/protocol_extension_manager_unittest.js',
+      'webapp/base/js/session_logger_unittest.js',
       'webapp/base/js/telemetry_event_writer_unittest.js',
       'webapp/base/js/typecheck_unittest.js',
       'webapp/base/js/viewport_unittest.js',
@@ -205,6 +206,7 @@
       'webapp/base/js/format_iq.js',
       'webapp/base/js/log_to_server.js',
       'webapp/base/js/server_log_entry.js',
+      'webapp/base/js/session_logger.js',
       'webapp/base/js/stats_accumulator.js',
     ],
     # Remoting signaling files.
@@ -460,7 +462,6 @@
     #
     # All the JavaScript files required by credits.html
     #
-    
     'remoting_webapp_credits_html_all_js_files': [
       'webapp/base/js/credits_js.js',
     ],

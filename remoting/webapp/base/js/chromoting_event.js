@@ -132,15 +132,6 @@ remoting.ChromotingEvent.prototype.setConnectionType = function(type) {
 };
 
 /**
- * Strips the member functions from the event and returns a simple JavaScript
- * object.  This object will be used as the JSON content of the XHR request.
- * @return {!Object}
- */
-remoting.ChromotingEvent.prototype.serialize = function() {
-  return /** @type {!Object} */ (base.deepCopy(this));
-};
-
-/**
  * TODO(kelvinp): Consolidate the two enums (crbug.com/504200)
  * @param {remoting.ClientSession.State} state
  * @return {remoting.ChromotingEvent.SessionState}
@@ -167,7 +158,7 @@ function toSessionState(state) {
     case remoting.ClientSession.State.CONNECTION_CANCELED:
       return SessionState.CONNECTION_CANCELED;
     default:
-      throw new Error('Unknown session state :=' + state);
+      throw new Error('Unknown session state : ' + state);
   }
 }
 
@@ -203,7 +194,7 @@ function toConnectionError(error) {
     case remoting.Error.Tag.UNEXPECTED:
       return ConnectionError.UNEXPECTED;
     default:
-      throw new Error('Unknown error Tag :=' + error.getTag());
+      throw new Error('Unknown error Tag : ' + error.getTag());
   }
 }
 
@@ -215,10 +206,10 @@ function toSignalStrategyType(type) {
   switch (type) {
     case remoting.SignalStrategy.Type.XMPP:
       return remoting.ChromotingEvent.SignalStrategyType.XMPP;
-    case remoting.SignalStrategy.Type.XMPP:
+    case remoting.SignalStrategy.Type.WCS:
       return remoting.ChromotingEvent.SignalStrategyType.WCS;
     default:
-      throw new Error('Unknown signal strategy type :=' + type);
+      throw new Error('Unknown signal strategy type : ' + type);
   }
 }
 

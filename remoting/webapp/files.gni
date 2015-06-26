@@ -90,6 +90,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/l10n_unittest.js",
   "base/js/platform_unittest.js",
   "base/js/protocol_extension_manager_unittest.js",
+  "base/js/session_logger_unittest.js",
   "base/js/telemetry_event_writer_unittest.js",
   "base/js/typecheck_unittest.js",
   "base/js/viewport_unittest.js",
@@ -197,6 +198,7 @@ remoting_webapp_shared_js_logging_files = [
   "base/js/format_iq.js",
   "base/js/log_to_server.js",
   "base/js/server_log_entry.js",
+  "base/js/session_logger.js",
   "base/js/stats_accumulator.js",
 ]
 

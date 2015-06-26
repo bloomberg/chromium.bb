@@ -29,6 +29,21 @@ sinon.assert.calledWith = function(f, data) {};
 sinon.assert.notCalled = function(f) {};
 
 /** @constructor */
+sinon.Clock = function() {};
+
+/** @param {number} ms */
+sinon.Clock.prototype.tick = function(ms) {};
+
+/** @return {void} */
+sinon.Clock.prototype.restore = function() {};
+
+/**
+ * @param {number=} opt_now
+ * @return {sinon.Clock}
+ */
+sinon.useFakeTimers = function(opt_now) {};
+
+/** @constructor */
 sinon.Expectation = function() {};
 
 /** @return {sinon.Expectation} */
