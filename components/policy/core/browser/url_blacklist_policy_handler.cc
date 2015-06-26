@@ -72,13 +72,12 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     for (base::ListValue::const_iterator entry(url_blacklist->begin());
          entry != url_blacklist->end(); ++entry) {
       if ((*entry)->IsType(base::Value::TYPE_STRING))
-        merged_url_blacklist->Append((*entry)->DeepCopy());
+        merged_url_blacklist->Append((*entry)->CreateDeepCopy());
     }
   }
 
   if (disabled_schemes || url_blacklist) {
-    prefs->SetValue(policy_prefs::kUrlBlacklist,
-                    merged_url_blacklist.release());
+    prefs->SetValue(policy_prefs::kUrlBlacklist, merged_url_blacklist.Pass());
   }
 }
 

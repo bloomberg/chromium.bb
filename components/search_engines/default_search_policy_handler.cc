@@ -230,7 +230,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (DefaultSearchProviderIsDisabled(policies)) {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->SetBoolean(DefaultSearchManager::kDisabledByPolicy, true);
-    DefaultSearchManager::AddPrefValueToMap(dict.release(), prefs);
+    DefaultSearchManager::AddPrefValueToMap(dict.Pass(), prefs);
     return;
   }
 
@@ -294,7 +294,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (keyword.empty())
     dict->SetString(DefaultSearchManager::kKeyword, host);
 
-  DefaultSearchManager::AddPrefValueToMap(dict.release(), prefs);
+  DefaultSearchManager::AddPrefValueToMap(dict.Pass(), prefs);
 }
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
@@ -363,7 +363,7 @@ void DefaultSearchPolicyHandler::EnsureListPrefExists(
   base::Value* value;
   base::ListValue* list_value;
   if (!prefs->GetValue(path, &value) || !value->GetAsList(&list_value))
-    prefs->SetValue(path, new base::ListValue());
+    prefs->SetValue(path, make_scoped_ptr(new base::ListValue()));
 }
 
 }  // namespace policy

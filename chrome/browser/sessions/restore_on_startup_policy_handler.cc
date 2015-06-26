@@ -66,11 +66,11 @@ void RestoreOnStartupPolicyHandler::ApplyPolicySettingsFromHomePage(
       // enforcing what the homepage should be. Don't set any prefs.
       return;
     }
-    base::ListValue* url_list = new base::ListValue();
-    url_list->Append(homepage_value->DeepCopy());
+    scoped_ptr<base::ListValue> url_list(new base::ListValue());
+    url_list->Append(homepage_value->CreateDeepCopy());
     prefs->SetInteger(prefs::kRestoreOnStartup,
                       SessionStartupPref::kPrefValueURLs);
-    prefs->SetValue(prefs::kURLsToRestoreOnStartup, url_list);
+    prefs->SetValue(prefs::kURLsToRestoreOnStartup, url_list.Pass());
   }
 }
 

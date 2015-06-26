@@ -169,10 +169,11 @@ scoped_ptr<LevelDBPrefStore::ReadingResults> LevelDBPrefStore::DoReading(
     JSONStringValueDeserializer deserializer(value_string);
     std::string error_message;
     int error_code;
-    base::Value* json_value =
-        deserializer.Deserialize(&error_code, &error_message);
+    scoped_ptr<base::Value> json_value(
+        deserializer.Deserialize(&error_code, &error_message));
     if (json_value) {
-      reading_results->value_map->SetValue(it->key().ToString(), json_value);
+      reading_results->value_map->SetValue(it->key().ToString(),
+                                           json_value.Pass());
     } else {
       DLOG(ERROR) << "Invalid json for key " << it->key().ToString()
                   << ": " << error_message;
@@ -268,15 +269,15 @@ void LevelDBPrefStore::ScheduleWrite() {
 }
 
 void LevelDBPrefStore::SetValue(const std::string& key,
-                                base::Value* value,
+                                scoped_ptr<base::Value> value,
                                 uint32 flags) {
-  SetValueInternal(key, value, true /*notify*/);
+  SetValueInternal(key, value.Pass(), true /*notify*/);
 }
 
 void LevelDBPrefStore::SetValueSilently(const std::string& key,
-                                        base::Value* value,
+                                        scoped_ptr<base::Value> value,
                                         uint32 flags) {
-  SetValueInternal(key, value, false /*notify*/);
+  SetValueInternal(key, value.Pass(), false /*notify*/);
 }
 
 static std::string Serialize(base::Value* value) {
@@ -288,16 +289,15 @@ static std::string Serialize(base::Value* value) {
 }
 
 void LevelDBPrefStore::SetValueInternal(const std::string& key,
-                                        base::Value* value,
+                                        scoped_ptr<base::Value> value,
                                         bool notify) {
   DCHECK(initialized_);
   DCHECK(value);
-  scoped_ptr<base::Value> new_value(value);
   base::Value* old_value = NULL;
   prefs_.GetValue(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
-    std::string value_string = Serialize(value);
-    prefs_.SetValue(key, new_value.release());
+    std::string value_string = Serialize(value.get());
+    prefs_.SetValue(key, value.Pass());
     MarkForInsertion(key, value_string);
     if (notify)
       NotifyObservers(key);

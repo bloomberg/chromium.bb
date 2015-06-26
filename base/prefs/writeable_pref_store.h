@@ -30,10 +30,10 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
 
   WriteablePrefStore() {}
 
-  // Sets a |value| for |key| in the store. Assumes ownership of |value|, which
-  // must be non-NULL. |flags| is a bitmask of PrefWriteFlags.
+  // Sets a |value| for |key| in the store. |value| must be non-NULL. |flags| is
+  // a bitmask of PrefWriteFlags.
   virtual void SetValue(const std::string& key,
-                        base::Value* value,
+                        scoped_ptr<base::Value> value,
                         uint32 flags) = 0;
 
   // Removes the value for |key|.
@@ -56,7 +56,7 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   // tests rely on the number of notifications generated. |flags| is a bitmask
   // of PrefWriteFlags.
   virtual void SetValueSilently(const std::string& key,
-                                base::Value* value,
+                                scoped_ptr<base::Value> value,
                                 uint32 flags) = 0;
 
  protected:

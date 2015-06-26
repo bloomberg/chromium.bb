@@ -115,7 +115,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     for (const auto& entry : kSupervisedUserSettingsPrefMapping) {
       const base::Value* value = NULL;
       if (settings->GetWithoutPathExpansion(entry.settings_name, &value))
-        prefs_->SetValue(entry.pref_name, value->DeepCopy());
+        prefs_->SetValue(entry.pref_name, value->CreateDeepCopy());
     }
 
     // Manually set preferences that aren't direct copies of the settings value.
@@ -133,8 +133,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
       // Reconstruct bookmarks from split settings.
       prefs_->SetValue(
           bookmarks::prefs::kSupervisedBookmarks,
-          SupervisedUserBookmarksHandler::BuildBookmarksTree(*settings)
-              .release());
+          SupervisedUserBookmarksHandler::BuildBookmarksTree(*settings).Pass());
     }
   }
 

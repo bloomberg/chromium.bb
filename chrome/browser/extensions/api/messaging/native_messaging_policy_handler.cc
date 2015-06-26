@@ -37,7 +37,7 @@ void NativeMessagingHostListPolicyHandler::ApplyPolicySettings(
   scoped_ptr<base::ListValue> list;
   policy::PolicyErrorMap errors;
   if (CheckAndGetList(policies, &errors, &list) && list)
-    prefs->SetValue(pref_path(), list.release());
+    prefs->SetValue(pref_path(), list.Pass());
 }
 
 const char* NativeMessagingHostListPolicyHandler::pref_path() const {

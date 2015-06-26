@@ -96,19 +96,21 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
   for (size_t i = 0; i < arraysize(string_switch_map_); ++i) {
     if (command_line_->HasSwitch(string_switch_map_[i].switch_name)) {
       SetValue(string_switch_map_[i].preference_path,
-               new base::StringValue(command_line_->GetSwitchValueASCII(
-                   string_switch_map_[i].switch_name)),
+               make_scoped_ptr(
+                   new base::StringValue(command_line_->GetSwitchValueASCII(
+                       string_switch_map_[i].switch_name))),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
 
   for (size_t i = 0; i < arraysize(path_switch_map_); ++i) {
     if (command_line_->HasSwitch(path_switch_map_[i].switch_name)) {
-      SetValue(path_switch_map_[i].preference_path,
-               new base::StringValue(
-                   command_line_->GetSwitchValuePath(
-                                      path_switch_map_[i].switch_name).value()),
-               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+      SetValue(
+          path_switch_map_[i].preference_path,
+          make_scoped_ptr(new base::StringValue(
+              command_line_->GetSwitchValuePath(path_switch_map_[i].switch_name)
+                  .value())),
+          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
 
@@ -124,7 +126,7 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
         continue;
       }
       SetValue(integer_switch_map_[i].preference_path,
-               new base::FundamentalValue(int_value),
+               make_scoped_ptr(new base::FundamentalValue(int_value)),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -132,7 +134,8 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
   for (size_t i = 0; i < arraysize(boolean_switch_map_); ++i) {
     if (command_line_->HasSwitch(boolean_switch_map_[i].switch_name)) {
       SetValue(boolean_switch_map_[i].preference_path,
-               new base::FundamentalValue(boolean_switch_map_[i].set_value),
+               make_scoped_ptr(new base::FundamentalValue(
+                   boolean_switch_map_[i].set_value)),
                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
@@ -140,24 +143,28 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
 
 void CommandLinePrefStore::ApplyProxyMode() {
   if (command_line_->HasSwitch(switches::kNoProxyServer)) {
-    SetValue(prefs::kProxy, ProxyConfigDictionary::CreateDirect(),
+    SetValue(prefs::kProxy,
+             make_scoped_ptr(ProxyConfigDictionary::CreateDirect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
     std::string pac_script_url =
         command_line_->GetSwitchValueASCII(switches::kProxyPacUrl);
     SetValue(prefs::kProxy,
-             ProxyConfigDictionary::CreatePacScript(pac_script_url, false),
+             make_scoped_ptr(
+                 ProxyConfigDictionary::CreatePacScript(pac_script_url, false)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
-    SetValue(prefs::kProxy, ProxyConfigDictionary::CreateAutoDetect(),
+    SetValue(prefs::kProxy,
+             make_scoped_ptr(ProxyConfigDictionary::CreateAutoDetect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyServer)) {
     std::string proxy_server =
         command_line_->GetSwitchValueASCII(switches::kProxyServer);
     std::string bypass_list =
         command_line_->GetSwitchValueASCII(switches::kProxyBypassList);
-    SetValue(prefs::kProxy, ProxyConfigDictionary::CreateFixedServers(
-                                proxy_server, bypass_list),
+    SetValue(prefs::kProxy,
+             make_scoped_ptr(ProxyConfigDictionary::CreateFixedServers(
+                 proxy_server, bypass_list)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
@@ -168,18 +175,19 @@ void CommandLinePrefStore::ApplySSLSwitches() {
         command_line_->GetSwitchValueASCII(switches::kCipherSuiteBlacklist);
     std::vector<std::string> cipher_strings;
     base::SplitString(cipher_suites, ',', &cipher_strings);
-    base::ListValue* list_value = new base::ListValue();
+    scoped_ptr<base::ListValue> list_value(new base::ListValue());
     for (std::vector<std::string>::const_iterator it = cipher_strings.begin();
          it != cipher_strings.end(); ++it) {
-      list_value->Append(new base::StringValue(*it));
+      list_value->AppendString(*it);
     }
-    SetValue(prefs::kCipherSuiteBlacklist, list_value,
+    SetValue(prefs::kCipherSuiteBlacklist, list_value.Pass(),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 
 void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
   if (command_line_->HasSwitch(switches::kDisableExtensions))
-    SetValue(prefs::kBackgroundModeEnabled, new base::FundamentalValue(false),
+    SetValue(prefs::kBackgroundModeEnabled,
+             make_scoped_ptr(new base::FundamentalValue(false)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }

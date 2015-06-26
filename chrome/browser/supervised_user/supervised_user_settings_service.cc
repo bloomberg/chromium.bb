@@ -334,7 +334,8 @@ base::DictionaryValue* SupervisedUserSettingsService::GetOrCreateDictionary(
     DCHECK(success);
   } else {
     dict = new base::DictionaryValue;
-    store_->SetValue(key, dict, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+    store_->SetValue(key, make_scoped_ptr(dict),
+                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 
   return dict;

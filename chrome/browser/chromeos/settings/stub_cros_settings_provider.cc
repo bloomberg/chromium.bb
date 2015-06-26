@@ -55,7 +55,7 @@ void StubCrosSettingsProvider::SetCurrentUserIsOwner(bool owner) {
 void StubCrosSettingsProvider::DoSet(const std::string& path,
                                      const base::Value& value) {
   if (current_user_is_owner_)
-    values_.SetValue(path, value.DeepCopy());
+    values_.SetValue(path, value.CreateDeepCopy());
   else
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
   NotifyObservers(path);
@@ -66,10 +66,11 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetBoolean(kAccountsPrefAllowNewUser, true);
   values_.SetBoolean(kAccountsPrefSupervisedUsersEnabled, true);
   values_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, true);
-  values_.SetValue(kAccountsPrefUsers, new base::ListValue);
+  values_.SetValue(kAccountsPrefUsers, make_scoped_ptr(new base::ListValue));
   values_.SetBoolean(kAttestationForContentProtectionEnabled, true);
   values_.SetBoolean(kStatsReportingPref, true);
-  values_.SetValue(kAccountsPrefDeviceLocalAccounts, new base::ListValue);
+  values_.SetValue(kAccountsPrefDeviceLocalAccounts,
+                   make_scoped_ptr(new base::ListValue));
   // |kDeviceOwner| will be set to the logged-in user by |UserManager|.
 }
 

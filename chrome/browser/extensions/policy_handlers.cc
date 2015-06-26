@@ -43,7 +43,7 @@ void ExtensionListPolicyHandler::ApplyPolicySettings(
   scoped_ptr<base::ListValue> list;
   policy::PolicyErrorMap errors;
   if (CheckAndGetList(policies, &errors, &list) && list)
-    prefs->SetValue(pref_path(), list.release());
+    prefs->SetValue(pref_path(), list.Pass());
 }
 
 const char* ExtensionListPolicyHandler::pref_path() const {
@@ -122,7 +122,7 @@ void ExtensionInstallForcelistPolicyHandler::ApplyPolicySettings(
   if (CheckAndGetValue(policies, NULL, &value) &&
       value &&
       ParseList(value, dict.get(), NULL)) {
-    prefs->SetValue(pref_names::kInstallForceList, dict.release());
+    prefs->SetValue(pref_names::kInstallForceList, dict.Pass());
   }
 }
 
@@ -244,7 +244,7 @@ void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->DeepCopy());
+    prefs->SetValue(pref_path_, value->CreateDeepCopy());
 }
 
 // ExtensionSettingsPolicyHandler implementation  ------------------------------
@@ -320,7 +320,7 @@ void ExtensionSettingsPolicyHandler::ApplyPolicySettings(
   scoped_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, NULL, &policy_value) || !policy_value)
     return;
-  prefs->SetValue(pref_names::kExtensionManagement, policy_value.release());
+  prefs->SetValue(pref_names::kExtensionManagement, policy_value.Pass());
 }
 
 }  // namespace extensions

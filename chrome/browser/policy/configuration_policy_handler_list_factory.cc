@@ -519,8 +519,8 @@ class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {
     }
     const base::Value* value = policies.GetValue(policy_name());
     if (value) {
-      prefs->SetValue(prefs::kForceGoogleSafeSearch, value->DeepCopy());
-      prefs->SetValue(prefs::kForceYouTubeSafetyMode, value->DeepCopy());
+      prefs->SetValue(prefs::kForceGoogleSafeSearch, value->CreateDeepCopy());
+      prefs->SetValue(prefs::kForceYouTubeSafetyMode, value->CreateDeepCopy());
     }
   }
 

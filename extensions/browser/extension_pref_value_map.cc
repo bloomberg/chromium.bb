@@ -52,7 +52,7 @@ void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,
                                              base::Value* value) {
   PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, scope);
 
-  if (prefs->SetValue(key, value))
+  if (prefs->SetValue(key, make_scoped_ptr(value)))
     NotifyPrefValueChanged(key);
 }
 

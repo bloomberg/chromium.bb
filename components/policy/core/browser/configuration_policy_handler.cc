@@ -179,7 +179,7 @@ void StringMappingListPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   scoped_ptr<base::ListValue> list(new base::ListValue());
   if (value && Convert(value, list.get(), NULL))
-    prefs->SetValue(pref_path_, list.release());
+    prefs->SetValue(pref_path_, list.Pass());
 }
 
 bool StringMappingListPolicyHandler::Convert(const base::Value* input,
@@ -312,7 +312,7 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->DeepCopy());
+    prefs->SetValue(pref_path_, value->CreateDeepCopy());
 }
 
 
@@ -421,7 +421,7 @@ void SimpleSchemaValidatingPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->DeepCopy());
+    prefs->SetValue(pref_path_, value->CreateDeepCopy());
 }
 
 // LegacyPoliciesDeprecatingPolicyHandler implementation -----------------------

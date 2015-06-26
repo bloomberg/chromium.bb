@@ -104,9 +104,10 @@ void DefaultSearchManager::RegisterProfilePrefs(
 }
 
 // static
-void DefaultSearchManager::AddPrefValueToMap(base::DictionaryValue* value,
-                                             PrefValueMap* pref_value_map) {
-  pref_value_map->SetValue(kDefaultSearchProviderDataPrefName, value);
+void DefaultSearchManager::AddPrefValueToMap(
+    scoped_ptr<base::DictionaryValue> value,
+    PrefValueMap* pref_value_map) {
+  pref_value_map->SetValue(kDefaultSearchProviderDataPrefName, value.Pass());
 }
 
 // static

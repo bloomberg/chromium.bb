@@ -77,7 +77,7 @@ class DefaultSearchManager {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Save default search provider pref values into the map provided.
-  static void AddPrefValueToMap(base::DictionaryValue* value,
+  static void AddPrefValueToMap(scoped_ptr<base::DictionaryValue> value,
                                 PrefValueMap* pref_value_map);
 
   // Testing code can call this with |disabled| set to true to cause

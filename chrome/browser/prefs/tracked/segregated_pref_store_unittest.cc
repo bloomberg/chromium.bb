@@ -102,9 +102,11 @@ TEST_F(SegregatedPrefStoreTest, StoreValues) {
             segregated_store_->ReadPrefs());
 
   // Properly stores new values.
-  segregated_store_->SetValue(kSelectedPref, new base::StringValue(kValue1),
+  segregated_store_->SetValue(kSelectedPref,
+                              make_scoped_ptr(new base::StringValue(kValue1)),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  segregated_store_->SetValue(kUnselectedPref, new base::StringValue(kValue2),
+  segregated_store_->SetValue(kUnselectedPref,
+                              make_scoped_ptr(new base::StringValue(kValue2)),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   ASSERT_TRUE(selected_store_->GetValue(kSelectedPref, NULL));
@@ -125,9 +127,11 @@ TEST_F(SegregatedPrefStoreTest, StoreValues) {
 }
 
 TEST_F(SegregatedPrefStoreTest, ReadValues) {
-  selected_store_->SetValue(kSelectedPref, new base::StringValue(kValue1),
+  selected_store_->SetValue(kSelectedPref,
+                            make_scoped_ptr(new base::StringValue(kValue1)),
                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  default_store_->SetValue(kUnselectedPref, new base::StringValue(kValue2),
+  default_store_->SetValue(kUnselectedPref,
+                           make_scoped_ptr(new base::StringValue(kValue2)),
                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   // Works properly with values that are already there.
@@ -151,10 +155,12 @@ TEST_F(SegregatedPrefStoreTest, Observer) {
   EXPECT_TRUE(observer_.initialized);
   EXPECT_TRUE(observer_.initialization_success);
   EXPECT_TRUE(observer_.changed_keys.empty());
-  segregated_store_->SetValue(kSelectedPref, new base::StringValue(kValue1),
+  segregated_store_->SetValue(kSelectedPref,
+                              make_scoped_ptr(new base::StringValue(kValue1)),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   observer_.VerifyAndResetChangedKey(kSelectedPref);
-  segregated_store_->SetValue(kUnselectedPref, new base::StringValue(kValue2),
+  segregated_store_->SetValue(kUnselectedPref,
+                              make_scoped_ptr(new base::StringValue(kValue2)),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   observer_.VerifyAndResetChangedKey(kUnselectedPref);
 }

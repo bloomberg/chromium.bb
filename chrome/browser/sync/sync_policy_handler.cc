@@ -24,7 +24,7 @@ void SyncPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
   const base::Value* value = policies.GetValue(policy_name());
   bool disable_sync;
   if (value && value->GetAsBoolean(&disable_sync) && disable_sync)
-    prefs->SetValue(sync_driver::prefs::kSyncManaged, value->DeepCopy());
+    prefs->SetValue(sync_driver::prefs::kSyncManaged, value->CreateDeepCopy());
 }
 
 }  // namespace browser_sync

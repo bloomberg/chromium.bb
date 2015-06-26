@@ -88,7 +88,7 @@ scoped_ptr<base::Value> GetValue(const base::DictionaryValue* dict,
   const base::Value* value = NULL;
   if (!dict->Get(key, &value))
     return scoped_ptr<base::Value>();
-  return scoped_ptr<base::Value>(value->DeepCopy());
+  return value->CreateDeepCopy();
 }
 
 scoped_ptr<base::Value> GetAction(const base::DictionaryValue* dict,
@@ -253,7 +253,7 @@ void NetworkConfigurationPolicyHandler::ApplyPolicySettings(
 
   // Currently, only the per-network configuration is stored in a pref. Ignore
   // |global_network_config| and |certificates|.
-  prefs->SetValue(pref_path_, network_configs.release());
+  prefs->SetValue(pref_path_, network_configs.Pass());
 }
 
 void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
@@ -317,7 +317,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
   const base::Value* policy_value = policies.GetValue(policy_name());
   const base::ListValue* policy_list = NULL;
   if (policy_value && policy_value->GetAsList(&policy_list) && policy_list) {
-    base::ListValue* pinned_apps_list = new base::ListValue();
+    scoped_ptr<base::ListValue> pinned_apps_list(new base::ListValue());
     for (base::ListValue::const_iterator entry(policy_list->begin());
          entry != policy_list->end(); ++entry) {
       std::string id;
@@ -327,7 +327,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
         pinned_apps_list->Append(app_dict);
       }
     }
-    prefs->SetValue(pref_path(), pinned_apps_list);
+    prefs->SetValue(pref_path(), pinned_apps_list.Pass());
   }
 }
 
@@ -345,10 +345,9 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, NULL)) {
-    prefs->SetValue(prefs::kAccessibilityScreenMagnifierEnabled,
-                    new base::FundamentalValue(value_in_range != 0));
-    prefs->SetValue(prefs::kAccessibilityScreenMagnifierType,
-                    new base::FundamentalValue(value_in_range));
+    prefs->SetBoolean(prefs::kAccessibilityScreenMagnifierEnabled,
+                      value_in_range != 0);
+    prefs->SetInteger(prefs::kAccessibilityScreenMagnifierType, value_in_range);
   }
 }
 
@@ -383,9 +382,9 @@ void DeprecatedIdleActionHandler::ApplyPolicySettings(const PolicyMap& policies,
   const base::Value* value = policies.GetValue(policy_name());
   if (value && EnsureInRange(value, NULL, NULL)) {
     if (!prefs->GetValue(prefs::kPowerAcIdleAction, NULL))
-      prefs->SetValue(prefs::kPowerAcIdleAction, value->DeepCopy());
+      prefs->SetValue(prefs::kPowerAcIdleAction, value->CreateDeepCopy());
     if (!prefs->GetValue(prefs::kPowerBatteryIdleAction, NULL))
-      prefs->SetValue(prefs::kPowerBatteryIdleAction, value->DeepCopy());
+      prefs->SetValue(prefs::kPowerBatteryIdleAction, value->CreateDeepCopy());
   }
 }
 
@@ -416,35 +415,35 @@ void PowerManagementIdleSettingsPolicyHandler::ApplyPolicySettings(
 
   value = GetValue(dict, kScreenDimDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenDimDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerAcScreenDimDelayMs, value.Pass());
   value = GetValue(dict, kScreenOffDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenOffDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerAcScreenOffDelayMs, value.Pass());
   value = GetValue(dict, kIdleWarningDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleWarningDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerAcIdleWarningDelayMs, value.Pass());
   value = GetValue(dict, kIdleDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerAcIdleDelayMs, value.Pass());
   value = GetAction(dict, kIdleActionAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleAction, value.release());
+    prefs->SetValue(prefs::kPowerAcIdleAction, value.Pass());
 
   value = GetValue(dict, kScreenDimDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenDimDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerBatteryScreenDimDelayMs, value.Pass());
   value = GetValue(dict, kScreenOffDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenOffDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerBatteryScreenOffDelayMs, value.Pass());
   value = GetValue(dict, kIdleWarningDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleWarningDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerBatteryIdleWarningDelayMs, value.Pass());
   value = GetValue(dict, kIdleDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerBatteryIdleDelayMs, value.Pass());
   value = GetAction(dict, kIdleActionBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleAction, value.release());
+    prefs->SetValue(prefs::kPowerBatteryIdleAction, value.Pass());
 }
 
 ScreenLockDelayPolicyHandler::ScreenLockDelayPolicyHandler(
@@ -473,10 +472,10 @@ void ScreenLockDelayPolicyHandler::ApplyPolicySettings(
 
   value = GetValue(dict, kScreenLockDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenLockDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerAcScreenLockDelayMs, value.Pass());
   value = GetValue(dict, kScreenLockDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenLockDelayMs, value.release());
+    prefs->SetValue(prefs::kPowerBatteryScreenLockDelayMs, value.Pass());
 }
 
 }  // namespace policy

@@ -98,11 +98,11 @@ base::DictionaryValue* GetPersistentStoreDictionaryMap(
 // above schema, removing anything previously in the store under
 // kPreferenceName.
 void InitializePrefStore(WriteablePrefStore* store) {
-  base::DictionaryValue* empty_store(new base::DictionaryValue);
+  scoped_ptr<base::DictionaryValue> empty_store(new base::DictionaryValue);
   empty_store->SetInteger(kVersionKey, kVersion);
   empty_store->Set(kDictionariesKey,
                    make_scoped_ptr(new base::DictionaryValue));
-  store->SetValue(kPreferenceName, empty_store,
+  store->SetValue(kPreferenceName, empty_store.Pass(),
                   WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 

@@ -83,9 +83,9 @@ bool SegregatedPrefStore::GetValue(const std::string& key,
 }
 
 void SegregatedPrefStore::SetValue(const std::string& key,
-                                   base::Value* value,
+                                   scoped_ptr<base::Value> value,
                                    uint32 flags) {
-  StoreForKey(key)->SetValue(key, value, flags);
+  StoreForKey(key)->SetValue(key, value.Pass(), flags);
 }
 
 void SegregatedPrefStore::RemoveValue(const std::string& key, uint32 flags) {
@@ -103,9 +103,9 @@ void SegregatedPrefStore::ReportValueChanged(const std::string& key,
 }
 
 void SegregatedPrefStore::SetValueSilently(const std::string& key,
-                                           base::Value* value,
+                                           scoped_ptr<base::Value> value,
                                            uint32 flags) {
-  StoreForKey(key)->SetValueSilently(key, value, flags);
+  StoreForKey(key)->SetValueSilently(key, value.Pass(), flags);
 }
 
 bool SegregatedPrefStore::ReadOnly() const {

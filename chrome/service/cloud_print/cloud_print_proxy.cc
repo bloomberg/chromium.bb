@@ -87,7 +87,7 @@ void CloudPrintProxy::EnableForUserWithRobot(
     service_prefs_->SetString(prefs::kCloudPrintProxyId, proxy_id);
   }
   service_prefs_->SetValue(prefs::kCloudPrintUserSettings,
-                           user_settings.DeepCopy());
+                           user_settings.CreateDeepCopy());
   service_prefs_->WritePrefs();
 
   if (!CreateBackend())

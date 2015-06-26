@@ -47,12 +47,11 @@ class LevelDBPrefStore : public PersistentPrefStore {
 
   // PersistentPrefStore overrides:
   bool GetMutableValue(const std::string& key, base::Value** result) override;
-  // Takes ownership of value.
   void SetValue(const std::string& key,
-                base::Value* value,
+                scoped_ptr<base::Value> value,
                 uint32 flags) override;
   void SetValueSilently(const std::string& key,
-                        base::Value* value,
+                        scoped_ptr<base::Value> value,
                         uint32 flags) override;
   void RemoveValue(const std::string& key, uint32 flags) override;
   bool ReadOnly() const override;
@@ -79,7 +78,7 @@ class LevelDBPrefStore : public PersistentPrefStore {
   void ScheduleWrite();
 
   void SetValueInternal(const std::string& key,
-                        base::Value* value,
+                        scoped_ptr<base::Value> value,
                         bool notify);
   void NotifyObservers(const std::string& key);
   void MarkForInsertion(const std::string& key, const std::string& value);

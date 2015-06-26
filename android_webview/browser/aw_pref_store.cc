@@ -38,17 +38,17 @@ bool AwPrefStore::IsInitializationComplete() const {
 }
 
 void AwPrefStore::SetValue(const std::string& key,
-                           base::Value* value,
+                           scoped_ptr<base::Value> value,
                            uint32 flags) {
   DCHECK(value);
-  if (prefs_.SetValue(key, value))
+  if (prefs_.SetValue(key, value.Pass()))
     ReportValueChanged(key, flags);
 }
 
 void AwPrefStore::SetValueSilently(const std::string& key,
-                                   base::Value* value,
+                                   scoped_ptr<base::Value> value,
                                    uint32 flags) {
-  prefs_.SetValue(key, value);
+  prefs_.SetValue(key, value.Pass());
 }
 
 void AwPrefStore::RemoveValue(const std::string& key, uint32 flags) {
