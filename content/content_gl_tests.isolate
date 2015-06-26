@@ -34,6 +34,23 @@
         ],
       },
     }],
+    # These PDBs are needed in order to get reasonable stack traces if
+    # an assertion fires or a crash occurs. Add more as necessary.
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/content_gl_tests.exe.pdb',
+        ],
+      },
+    }],
+    ['OS=="win" and component=="shared_library" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/base.dll.pdb',
+          '<(PRODUCT_DIR)/content.dll.pdb',
+        ],
+      },
+    }],
   ],
   'includes': [
     '../base/base.isolate',
