@@ -5,17 +5,6 @@
 <script src="../resources/test-helpers.js"></script>
 <body>
 <script>
-
-function with_sandboxed_iframe(url, sandbox) {
-  return new Promise(function(resolve) {
-      var frame = document.createElement('iframe');
-      frame.sandbox = sandbox;
-      frame.src = url;
-      frame.onload = function() { resolve(frame); };
-      document.body.appendChild(frame);
-    });
-}
-
 var lastCallbackId = 0;
 var callbacks = {};
 function postMassageAndWaitResult(frame) {
