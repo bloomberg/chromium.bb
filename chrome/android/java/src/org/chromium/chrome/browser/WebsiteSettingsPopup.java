@@ -421,7 +421,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         if (mParsedUrl == null || mParsedUrl.getScheme() == null
                 || !(mParsedUrl.getScheme().equals("http")
                            || mParsedUrl.getScheme().equals("https"))) {
-            mSiteSettingsButton.setEnabled(false);
+            mSiteSettingsButton.setVisibility(View.GONE);
         }
     }
 

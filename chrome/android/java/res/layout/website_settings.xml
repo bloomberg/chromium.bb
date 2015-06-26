@@ -8,6 +8,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingBottom="8dp"
     android:background="#ffffff"
     android:orientation="vertical" >
 
@@ -53,7 +54,6 @@
         android:layout_width="wrap_content"
         android:layout_height="@dimen/website_settings_popup_button_height"
         android:layout_gravity="end"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="@dimen/website_settings_popup_padding_sides"
         android:layout_marginStart="@dimen/website_settings_popup_padding_sides"
         android:layout_marginTop="8dp"
