@@ -228,8 +228,6 @@
       'browser/android/signin/account_management_screen_helper.h',
       'browser/android/signin/signin_manager_android.cc',
       'browser/android/signin/signin_manager_android.h',
-      'browser/android/staging_jni_registrar.cc',
-      'browser/android/staging_jni_registrar.h',
       'browser/android/tab/background_content_view_helper.cc',
       'browser/android/tab/background_content_view_helper.h',
       'browser/android/tab/thumbnail_tab_helper_android.cc',
