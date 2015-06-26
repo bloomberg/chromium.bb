@@ -265,6 +265,7 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
 }
 #endif
 
+#if !defined(OS_ANDROID)
 std::string ResourceBundle::LoadLocaleResources(
     const std::string& pref_locale) {
   DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
@@ -275,7 +276,7 @@ std::string ResourceBundle::LoadLocaleResources(
 
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
-    LOG(WARNING) << "locale_file_path.empty()";
+    LOG(WARNING) << "locale_file_path.empty() for locale " << app_locale;
     return std::string();
   }
 
@@ -292,6 +293,7 @@ std::string ResourceBundle::LoadLocaleResources(
   locale_resources_data_.reset(data_pack.release());
   return app_locale;
 }
+#endif  // defined(OS_ANDROID)
 
 void ResourceBundle::LoadTestResources(const base::FilePath& path,
                                        const base::FilePath& locale_path) {

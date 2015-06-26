@@ -19,6 +19,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -196,7 +197,9 @@ public class ChromeMobileApplication extends ChromiumApplication {
         // The ResourceExtractor is only needed by the browser process, but this will have no
         // impact on the renderer process construction.
         ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
-        ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
+        if (!BuildInfo.hasApkSplits(this)) {
+            ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
+        }
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 

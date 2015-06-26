@@ -8,8 +8,11 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "jni/ResourceBundle_jni.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -22,8 +25,10 @@ bool g_locale_paks_in_apk = false;
 // ResourceBundle singleton never closes the handles.
 int g_chrome_100_percent_fd = -1;
 int g_resources_pack_fd = -1;
+int g_locale_pack_fd = -1;
 base::MemoryMappedFile::Region g_chrome_100_percent_region;
 base::MemoryMappedFile::Region g_resources_pack_region;
+base::MemoryMappedFile::Region g_locale_pack_region;
 
 bool LoadFromApkOrFile(const char* apk_path,
                        const base::FilePath* disk_path,
@@ -68,6 +73,53 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale, true).empty();
 }
 
+std::string ResourceBundle::LoadLocaleResources(
+    const std::string& pref_locale) {
+  DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
+  if (g_locale_pack_fd != -1) {
+    LOG(WARNING)
+        << "Unexpected (outside of tests): Loading a second locale pak file.";
+  }
+  std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+  if (g_locale_paks_in_apk) {
+    std::string locale_path_within_apk =
+        GetPathForAndroidLocalePakWithinApk(app_locale);
+    if (locale_path_within_apk.empty()) {
+      LOG(WARNING) << "locale_path_within_apk.empty() for locale "
+                   << app_locale;
+      return std::string();
+    }
+    g_locale_pack_fd = base::android::OpenApkAsset(locale_path_within_apk,
+                                                   &g_locale_pack_region);
+  } else {
+    base::FilePath locale_file_path = GetOverriddenPakPath();
+    if (locale_file_path.empty())
+      locale_file_path = GetLocaleFilePath(app_locale, true);
+
+    if (locale_file_path.empty()) {
+      // It's possible that there is no locale.pak.
+      LOG(WARNING) << "locale_file_path.empty() for locale " << app_locale;
+      return std::string();
+    }
+    int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+    g_locale_pack_fd = base::File(locale_file_path, flags).TakePlatformFile();
+    g_locale_pack_region = base::MemoryMappedFile::Region::kWholeFile;
+  }
+
+  scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+  if (!data_pack->LoadFromFileRegion(base::File(g_locale_pack_fd),
+                                     g_locale_pack_region)) {
+    UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
+                              logging::GetLastSystemErrorCode(), 16000);
+    LOG(ERROR) << "failed to load locale.pak";
+    NOTREACHED();
+    return std::string();
+  }
+
+  locale_resources_data_.reset(data_pack.release());
+  return app_locale;
+}
+
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   // Flipped image is not used on Android.
   DCHECK_EQ(rtl, RTL_DISABLED);
@@ -100,6 +152,12 @@ int GetCommonResourcesPackFd(base::MemoryMappedFile::Region* out_region) {
   DCHECK_GE(g_chrome_100_percent_fd, 0);
   *out_region = g_chrome_100_percent_region;
   return g_chrome_100_percent_fd;
+}
+
+int GetLocalePackFd(base::MemoryMappedFile::Region* out_region) {
+  DCHECK_GE(g_locale_pack_fd, 0);
+  *out_region = g_locale_pack_region;
+  return g_locale_pack_fd;
 }
 
 std::string GetPathForAndroidLocalePakWithinApk(const std::string& locale) {

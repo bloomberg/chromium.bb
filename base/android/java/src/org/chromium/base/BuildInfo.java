@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -131,5 +132,15 @@ public class BuildInfo {
         // TODO(bauerb): Update this once the SDK is updated.
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1
                  || TextUtils.equals("MNC", Build.VERSION.CODENAME);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @CalledByNative
+    public static boolean hasApkSplits(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return false;
+        }
+        ApplicationInfo appInfo = context.getApplicationInfo();
+        return appInfo.splitSourceDirs != null && appInfo.splitSourceDirs.length > 0;
     }
 }

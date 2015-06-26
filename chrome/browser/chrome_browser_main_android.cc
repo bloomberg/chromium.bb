@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_browser_main_android.h"
 
+#include "base/android/build_info.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
@@ -22,6 +23,7 @@
 #include "media/base/android/media_client_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
 
 ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(
@@ -58,6 +60,9 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dump_dir));
   }
+
+  bool has_splits = base::android::BuildInfo::GetInstance()->has_apk_splits();
+  ui::SetLocalePaksStoredInApk(has_splits);
 
   return ChromeBrowserMainParts::PreCreateThreads();
 }

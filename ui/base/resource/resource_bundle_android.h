@@ -24,8 +24,12 @@ UI_BASE_EXPORT void LoadMainAndroidPackFile(
 UI_BASE_EXPORT int GetMainAndroidPackFd(
     base::MemoryMappedFile::Region* out_region);
 
-// Returns the file descriptor and region for chrome_100_percent.pak
+// Returns the file descriptor and region for chrome_100_percent.pak.
 UI_BASE_EXPORT int GetCommonResourcesPackFd(
+    base::MemoryMappedFile::Region* out_region);
+
+// Returns the file descriptor and region for the locale .pak file.
+UI_BASE_EXPORT int GetLocalePackFd(
     base::MemoryMappedFile::Region* out_region);
 
 // Tell ResourceBundle to locate locale pak files via

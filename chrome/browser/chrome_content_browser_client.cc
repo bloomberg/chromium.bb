@@ -2290,18 +2290,13 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       &(*regions)[kAndroidChrome100PercentPakDescriptor]);
   mappings->Share(kAndroidChrome100PercentPakDescriptor, fd);
 
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  const std::string locale = GetApplicationLocale();
-  base::FilePath locale_pak = ResourceBundle::GetSharedInstance().
-      GetLocaleFilePath(locale, false);
-  base::File file(locale_pak, flags);
-  DCHECK(file.IsValid());
-  mappings->Transfer(kAndroidLocalePakDescriptor,
-                     base::ScopedFD(file.TakePlatformFile()));
+  fd = ui::GetLocalePackFd(&(*regions)[kAndroidLocalePakDescriptor]);
+  mappings->Share(kAndroidLocalePakDescriptor, fd);
 
   if (breakpad::IsCrashReporterEnabled()) {
-    file = breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
-               child_process_id);
+    base::File file =
+        breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
+            child_process_id);
     if (file.IsValid()) {
       mappings->Transfer(kAndroidMinidumpDescriptor,
                          base::ScopedFD(file.TakePlatformFile()));
