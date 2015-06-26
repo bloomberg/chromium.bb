@@ -151,7 +151,8 @@ TEST_F(BrowsingDataStoreTest, InitialModeAndNoPendingOperations) {
 
 // Tests that CRWBrowsingDataStore handles several consecutive calls to
 // |makeActive| and |makeInactive| correctly.
-TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
+// TODO(shreyasv): This test is flaky. http://crbug.com/504812
+TEST_F(BrowsingDataStoreTest, FLAKY_MakeActiveAndInactiveOperations) {
   if (!base::ios::IsRunningOnIOS8OrLater()) {
     return;
   }
