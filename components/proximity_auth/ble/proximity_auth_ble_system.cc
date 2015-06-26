@@ -14,6 +14,7 @@
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -82,7 +83,7 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
       cryptauth_client_factory_(cryptauth_client_factory.Pass()),
       is_polling_screen_state_(false),
       weak_ptr_factory_(this) {
-  VLOG(1) << "Starting Proximity Auth over Bluetooth Low Energy.";
+  PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
   screenlock_bridge_->AddObserver(this);
 }
 
@@ -93,12 +94,12 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
       browser_context_(browser_context),
       is_polling_screen_state_(false),
       weak_ptr_factory_(this) {
-  VLOG(1) << "Starting Proximity Auth over Bluetooth Low Energy.";
+  PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
   screenlock_bridge_->AddObserver(this);
 }
 
 ProximityAuthBleSystem::~ProximityAuthBleSystem() {
-  VLOG(1) << "Stopping Proximity over Bluetooth Low Energy.";
+  PA_LOG(INFO) << "Stopping Proximity over Bluetooth Low Energy.";
   screenlock_bridge_->RemoveObserver(this);
   if (connection_)
     connection_->RemoveObserver(this);
@@ -106,7 +107,8 @@ ProximityAuthBleSystem::~ProximityAuthBleSystem() {
 
 void ProximityAuthBleSystem::OnGetMyDevices(
     const cryptauth::GetMyDevicesResponse& response) {
-  VLOG(1) << "Found " << response.devices_size() << " devices on CryptAuth.";
+  PA_LOG(INFO) << "Found " << response.devices_size()
+               << " devices on CryptAuth.";
   unlock_keys_.clear();
   for (const auto& device : response.devices()) {
     // Cache BLE devices (|bluetooth_address().empty() == true|) that are
@@ -116,15 +118,15 @@ void ProximityAuthBleSystem::OnGetMyDevices(
       Base64UrlEncode(device.public_key(), &base64_public_key);
       unlock_keys_[base64_public_key] = device.friendly_device_name();
 
-      VLOG(1) << "friendly_name = " << device.friendly_device_name();
-      VLOG(1) << "public_key = " << base64_public_key;
+      PA_LOG(INFO) << "friendly_name = " << device.friendly_device_name();
+      PA_LOG(INFO) << "public_key = " << base64_public_key;
     }
   }
-  VLOG(1) << "Found " << unlock_keys_.size() << " unlock keys.";
+  PA_LOG(INFO) << "Found " << unlock_keys_.size() << " unlock keys.";
 }
 
 void ProximityAuthBleSystem::OnGetMyDevicesError(const std::string& error) {
-  VLOG(1) << "GetMyDevices failed: " << error;
+  PA_LOG(INFO) << "GetMyDevices failed: " << error;
 }
 
 // This should be called exclusively after the user has logged in. For instance,
@@ -144,7 +146,7 @@ void ProximityAuthBleSystem::GetUnlockKeys() {
 
 void ProximityAuthBleSystem::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  VLOG(1) << "OnScreenDidLock: " << screen_type;
+  PA_LOG(INFO) << "OnScreenDidLock: " << screen_type;
   switch (screen_type) {
     case ScreenlockBridge::LockHandler::SIGNIN_SCREEN:
       connection_finder_.reset();
@@ -170,7 +172,7 @@ ConnectionFinder* ProximityAuthBleSystem::CreateConnectionFinder() {
 
 void ProximityAuthBleSystem::OnScreenDidUnlock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  VLOG(1) << "OnScreenDidUnlock: " << screen_type;
+  PA_LOG(INFO) << "OnScreenDidUnlock: " << screen_type;
 
   // Fetch the unlock keys when the user signs in.
   // TODO(sacomoto): refetch the keys periodically, in case a new device was
@@ -192,12 +194,13 @@ void ProximityAuthBleSystem::OnScreenDidUnlock(
 }
 
 void ProximityAuthBleSystem::OnFocusedUserChanged(const std::string& user_id) {
-  VLOG(1) << "OnFocusedUserChanged: " << user_id;
+  PA_LOG(INFO) << "OnFocusedUserChanged: " << user_id;
 }
 
 void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
                                                const WireMessage& message) {
-  VLOG(1) << "Message received: " << message.payload();
+  // TODO(sacomoto): change this when WireMessage is fully implemented.
+  PA_LOG(INFO) << "Message received: " << message.payload();
 
   // Unlock the screen when the remote device sends an unlock signal.
   //
@@ -205,14 +208,14 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
   // This user experience for this operation will be greately improved once
   // the Proximity Auth Unlock Manager migration to C++ is done.
   if (message.payload() == kScreenUnlocked) {
-    VLOG(1) << "Device unlocked. Unlock.";
+    PA_LOG(INFO) << "Device unlocked. Unlock.";
     screenlock_bridge_->Unlock(browser_context_);
   }
 }
 
 void ProximityAuthBleSystem::OnConnectionFound(
     scoped_ptr<Connection> connection) {
-  VLOG(1) << "Connection found.";
+  PA_LOG(INFO) << "Connection found.";
 
   connection_ = connection.Pass();
   if (connection_) {
@@ -246,7 +249,7 @@ void ProximityAuthBleSystem::OnConnectionStatusChanged(
 void ProximityAuthBleSystem::StartPollingScreenState() {
   if (is_polling_screen_state_) {
     if (!connection_ || !connection_->IsConnected()) {
-      VLOG(1) << "Polling stopped";
+      PA_LOG(INFO) << "Polling stopped.";
       is_polling_screen_state_ = false;
       return;
     }

@@ -122,6 +122,9 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
         last_discovery_session_alias_(nullptr) {
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
+    std::vector<const device::BluetoothDevice*> devices;
+    ON_CALL(*adapter_, GetDevices()).WillByDefault(Return(devices));
+
     ON_CALL(*adapter_, IsPresent()).WillByDefault(Return(true));
     ON_CALL(*adapter_, IsPowered()).WillByDefault(Return(true));
   }

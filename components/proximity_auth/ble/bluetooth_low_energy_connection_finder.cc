@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/connection.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -65,10 +66,10 @@ BluetoothLowEnergyConnectionFinder::~BluetoothLowEnergyConnectionFinder() {
 void BluetoothLowEnergyConnectionFinder::Find(
     const ConnectionCallback& connection_callback) {
   if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
-    VLOG(1) << "Bluetooth is unsupported on this platform. Aborting.";
+    PA_LOG(WARNING) << "Bluetooth is unsupported on this platform. Aborting.";
     return;
   }
-  VLOG(1) << "Finding connection";
+  PA_LOG(INFO) << "Finding connection";
 
   connection_callback_ = connection_callback;
 
@@ -83,7 +84,7 @@ void BluetoothLowEnergyConnectionFinder::AdapterPoweredChanged(
     BluetoothAdapter* adapter,
     bool powered) {
   DCHECK_EQ(adapter_.get(), adapter);
-  VLOG(1) << "Adapter powered: " << powered;
+  PA_LOG(INFO) << "Adapter powered: " << powered;
 
   // Important: do not rely on |adapter->IsDiscoverying()| to verify if there is
   // an active discovery session. We need to create our own with an specific
@@ -96,7 +97,7 @@ void BluetoothLowEnergyConnectionFinder::DeviceAdded(BluetoothAdapter* adapter,
                                                      BluetoothDevice* device) {
   DCHECK_EQ(adapter_.get(), adapter);
   DCHECK(device);
-  VLOG(1) << "Device added: " << device->GetAddress();
+  PA_LOG(INFO) << "Device added: " << device->GetAddress();
 
   // Note: Only consider |device| when it was actually added/updated during a
   // scanning, otherwise the device is stale and the GATT connection will fail.
@@ -112,7 +113,7 @@ void BluetoothLowEnergyConnectionFinder::DeviceChanged(
     BluetoothDevice* device) {
   DCHECK_EQ(adapter_.get(), adapter);
   DCHECK(device);
-  VLOG(1) << "Device changed: " << device->GetAddress();
+  PA_LOG(INFO) << "Device changed: " << device->GetAddress();
 
   // Note: Only consider |device| when it was actually added/updated during a
   // scanning, otherwise the device is stale and the GATT connection will fail.
@@ -129,11 +130,11 @@ void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
     return;
   const auto& i = pending_connections_.find(device);
   if (i != pending_connections_.end()) {
-    VLOG(1) << "Pending connection to device " << device->GetAddress();
+    PA_LOG(INFO) << "Pending connection to device " << device->GetAddress();
     return;
   }
   if (HasService(device) && device->IsPaired()) {
-    VLOG(1) << "Connecting to paired device " << device->GetAddress();
+    PA_LOG(INFO) << "Connecting to paired device " << device->GetAddress();
     pending_connections_.insert(device);
     CreateGattConnection(device);
   }
@@ -147,14 +148,14 @@ void BluetoothLowEnergyConnectionFinder::DeviceRemoved(
 
   const auto& i = pending_connections_.find(device);
   if (i != pending_connections_.end()) {
-    VLOG(1) << "Remove pending connection to  " << device->GetAddress();
+    PA_LOG(INFO) << "Remove pending connection to  " << device->GetAddress();
     pending_connections_.erase(i);
   }
 }
 
 void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
     scoped_refptr<BluetoothAdapter> adapter) {
-  VLOG(1) << "Adapter ready";
+  PA_LOG(INFO) << "Adapter ready";
 
   adapter_ = adapter;
   adapter_->AddObserver(this);
@@ -163,12 +164,10 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
   // temporary MAC may not be resolved automatically (see crbug.com/495402). The
   // Bluetooth adapter will fire |OnDeviceChanged| notifications for all
   // Bluetooth Low Energy devices that are advertising.
-  if (VLOG_IS_ON(1)) {
-    std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
-    for (auto* device : devices) {
-      VLOG(1) << "Ignoring device " << device->GetAddress()
-              << " present when adapter was initialized.";
-    }
+  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
+  for (auto* device : devices) {
+    PA_LOG(INFO) << "Ignoring device " << device->GetAddress()
+                 << " present when adapter was initialized.";
   }
 
   StartDiscoverySession();
@@ -176,18 +175,18 @@ void BluetoothLowEnergyConnectionFinder::OnAdapterInitialized(
 
 void BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStarted(
     scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
-  VLOG(1) << "Discovery session started";
+  PA_LOG(INFO) << "Discovery session started";
   discovery_session_ = discovery_session.Pass();
 }
 
 void BluetoothLowEnergyConnectionFinder::OnStartDiscoverySessionError() {
-  VLOG(1) << "Error starting discovery session";
+  PA_LOG(WARNING) << "Error starting discovery session";
 }
 
 void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
   DCHECK(adapter_);
   if (discovery_session_ && discovery_session_->IsActive()) {
-    VLOG(1) << "Discovery session already active";
+    PA_LOG(INFO) << "Discovery session already active";
     return;
   }
 
@@ -206,23 +205,23 @@ void BluetoothLowEnergyConnectionFinder::StartDiscoverySession() {
 }
 
 void BluetoothLowEnergyConnectionFinder::OnDiscoverySessionStopped() {
-  VLOG(1) << "Discovery session stopped";
+  PA_LOG(INFO) << "Discovery session stopped";
   discovery_session_.reset();
 }
 
 void BluetoothLowEnergyConnectionFinder::OnStopDiscoverySessionError() {
-  VLOG(1) << "Error stopping discovery session";
+  PA_LOG(WARNING) << "Error stopping discovery session";
 }
 
 void BluetoothLowEnergyConnectionFinder::StopDiscoverySession() {
-  VLOG(1) << "Stopping discovery sesison";
+  PA_LOG(INFO) << "Stopping discovery sesison";
 
   if (!adapter_) {
-    VLOG(1) << "Adapter not initialized";
+    PA_LOG(WARNING) << "Adapter not initialized";
     return;
   }
   if (!discovery_session_ || !discovery_session_->IsActive()) {
-    VLOG(1) << "No Active discovery session";
+    PA_LOG(INFO) << "No Active discovery session";
     return;
   }
 
@@ -237,8 +236,8 @@ void BluetoothLowEnergyConnectionFinder::StopDiscoverySession() {
 bool BluetoothLowEnergyConnectionFinder::HasService(
     BluetoothDevice* remote_device) {
   if (remote_device) {
-    VLOG(1) << "Device " << remote_device->GetAddress() << " has "
-            << remote_device->GetUUIDs().size() << " services.";
+    PA_LOG(INFO) << "Device " << remote_device->GetAddress() << " has "
+                 << remote_device->GetUUIDs().size() << " services.";
     std::vector<device::BluetoothUUID> uuids = remote_device->GetUUIDs();
     for (const auto& service_uuid : uuids) {
       if (remote_service_uuid_ == service_uuid) {
@@ -252,13 +251,13 @@ bool BluetoothLowEnergyConnectionFinder::HasService(
 void BluetoothLowEnergyConnectionFinder::OnCreateGattConnectionError(
     std::string device_address,
     BluetoothDevice::ConnectErrorCode error_code) {
-  VLOG(1) << "Error creating connection to device " << device_address
-          << " : error code = " << error_code;
+  PA_LOG(WARNING) << "Error creating connection to device " << device_address
+                  << " : error code = " << error_code;
 
   BluetoothDevice* device = GetDevice(device_address);
   const auto& i = pending_connections_.find(device);
   if (i != pending_connections_.end()) {
-    VLOG(1) << "Remove pending connection to  " << device->GetAddress();
+    PA_LOG(INFO) << "Remove pending connection to  " << device->GetAddress();
     pending_connections_.erase(i);
   }
 }
@@ -270,7 +269,7 @@ void BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated(
     return;
   }
 
-  VLOG(1) << "GATT connection created";
+  PA_LOG(INFO) << "GATT connection created";
   connected_ = true;
   pending_connections_.clear();
 
@@ -296,10 +295,10 @@ void BluetoothLowEnergyConnectionFinder::CompleteConnection() {
 
 void BluetoothLowEnergyConnectionFinder::CreateGattConnection(
     device::BluetoothDevice* remote_device) {
-  VLOG(1) << "SmartLock service found ("
-          << remote_service_uuid_.canonical_value() << ")\n"
-          << "device = " << remote_device->GetAddress()
-          << ", name = " << remote_device->GetName();
+  PA_LOG(INFO) << "SmartLock service found ("
+               << remote_service_uuid_.canonical_value() << ")\n"
+               << "device = " << remote_device->GetAddress()
+               << ", name = " << remote_device->GetName();
   remote_device->CreateGattConnection(
       base::Bind(&BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -315,7 +314,7 @@ void BluetoothLowEnergyConnectionFinder::CloseGattConnection(
   gatt_connection.reset();
   BluetoothDevice* device = adapter_->GetDevice(device_address);
   if (device) {
-    VLOG(1) << "Disconnect from device " << device->GetAddress();
+    PA_LOG(INFO) << "Disconnect from device " << device->GetAddress();
     device->Disconnect(base::Bind(&base::DoNothing),
                        base::Bind(&base::DoNothing));
   }
@@ -347,7 +346,7 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
     connection_callback_.Run(connection_.Pass());
     connection_callback_.Reset();
   } else if (old_status == Connection::IN_PROGRESS) {
-    VLOG(1) << "Connection failed. Retrying.";
+    PA_LOG(WARNING) << "Connection failed. Retrying.";
     RestartDiscoverySessionWhenReady();
   }
 }

@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
 
+#include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -60,7 +61,8 @@ BluetoothLowEnergyCharacteristicsFinder::
 void BluetoothLowEnergyCharacteristicsFinder::GattCharacteristicAdded(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic) {
-  VLOG(1) << "New char found: " << characteristic->GetUUID().canonical_value();
+  PA_LOG(INFO) << "New char found: "
+               << characteristic->GetUUID().canonical_value();
   HandleCharacteristicUpdate(characteristic);
 }
 
@@ -68,8 +70,8 @@ void BluetoothLowEnergyCharacteristicsFinder::GattDiscoveryCompleteForService(
     BluetoothAdapter* adapter,
     BluetoothGattService* service) {
   if (service && service->GetUUID() == remote_service_.uuid) {
-    VLOG(1) << "All characteristics discovered for "
-            << remote_service_.uuid.canonical_value();
+    PA_LOG(INFO) << "All characteristics discovered for "
+                 << remote_service_.uuid.canonical_value();
 
     if (to_peripheral_char_.id.empty() || from_peripheral_char_.id.empty()) {
       if (!error_callback_.is_null()) {

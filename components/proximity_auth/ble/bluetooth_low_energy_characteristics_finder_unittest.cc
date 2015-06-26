@@ -106,11 +106,11 @@ class ProximityAuthBluetoothLowEnergyCharacteristicFinderTest
             service_.get(), id, uuid, true, kCharacteristicProperties,
             device::BluetoothGattCharacteristic::PERMISSION_NONE));
 
-    EXPECT_CALL(*characteristic.get(), GetUUID()).WillOnce(Return(uuid));
+    ON_CALL(*characteristic.get(), GetUUID()).WillByDefault(Return(uuid));
     if (valid)
-      EXPECT_CALL(*characteristic.get(), GetIdentifier()).WillOnce(Return(id));
-    EXPECT_CALL(*characteristic.get(), GetService())
-        .WillOnce(Return(service_.get()));
+      ON_CALL(*characteristic.get(), GetIdentifier()).WillByDefault(Return(id));
+    ON_CALL(*characteristic.get(), GetService())
+        .WillByDefault(Return(service_.get()));
     return characteristic.Pass();
   }
 
