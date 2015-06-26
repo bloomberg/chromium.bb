@@ -106,6 +106,9 @@ class ResultsUploader(object):
       buildbot_branch = os.environ.get('BUILDBOT_BRANCH')
       if not buildbot_branch:
         buildbot_branch = 'master'
+      else:
+        # Ensure there's no leading "origin/"
+        buildbot_branch = buildbot_branch[buildbot_branch.find('/') + 1:]
       self._master_name = '%s-%s' % (self._build_name, buildbot_branch)
 
     self._test_results_map = {}
