@@ -54,5 +54,7 @@ crbug.com/504837 virtual/gpu/fast/canvas/canvas-composite.html [ NeedsManualReba
 crbug.com/504837 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsManualRebaseline ]
 crbug.com/504837 virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ NeedsManualRebaseline ]
 crbug.com/504837 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+crbug.com/504837 svg/batik/filters/feTile.svg [ NeedsManualRebaseline ]
+crbug.com/504837 svg/filters/feTile.svg [ NeedsManualRebaseline ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
