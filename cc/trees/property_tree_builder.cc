@@ -364,7 +364,12 @@ void AddOpacityNodeIfNeeded(
 
   OpacityNode node;
   node.owner_id = layer->id();
-  node.data = layer->opacity();
+  node.data.opacity = layer->opacity();
+  node.data.screen_space_opacity = layer->opacity();
+  if (!is_root)
+    node.data.screen_space_opacity *=
+        data_from_ancestor.opacity_tree->Node(parent_id)
+            ->data.screen_space_opacity;
   data_for_children->opacity_tree_parent =
       data_for_children->opacity_tree->Insert(node, parent_id);
   layer->SetOpacityTreeIndex(data_for_children->opacity_tree_parent);
@@ -462,6 +467,7 @@ void BuildPropertyTreesTopLevelInternal(
   // building.
   property_trees->transform_tree.set_needs_update(false);
   property_trees->clip_tree.set_needs_update(true);
+  property_trees->opacity_tree.set_needs_update(false);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(

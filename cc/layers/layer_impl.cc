@@ -791,7 +791,8 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     OpacityTree& opacity_tree =
         layer_tree_impl()->property_trees()->opacity_tree;
     OpacityNode* node = opacity_tree.Node(opacity_tree_index_);
-    node->data = opacity_;
+    node->data.opacity = opacity_;
+    opacity_tree.set_needs_update(true);
   }
 }
 

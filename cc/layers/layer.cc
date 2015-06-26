@@ -1412,8 +1412,10 @@ void Layer::OnOpacityAnimated(float opacity) {
     if (OpacityNode* node =
             layer_tree_host_->property_trees()->opacity_tree.Node(
                 opacity_tree_index())) {
-      if (node->owner_id == id())
-        node->data = opacity;
+      if (node->owner_id == id()) {
+        node->data.opacity = opacity;
+        layer_tree_host_->property_trees()->opacity_tree.set_needs_update(true);
+      }
     }
   }
 }

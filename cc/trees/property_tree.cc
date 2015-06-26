@@ -96,6 +96,9 @@ void TransformNodeData::update_post_local_transform(
 ClipNodeData::ClipNodeData() : transform_id(-1), target_id(-1) {
 }
 
+OpacityNodeData::OpacityNodeData() : opacity(1.f), screen_space_opacity(1.f) {
+}
+
 bool TransformTree::ComputeTransform(int source_id,
                                      int dest_id,
                                      gfx::Transform* transform) const {
@@ -419,6 +422,15 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
                                                 -translation.y(), 0);
 
   node->data.scroll_snap = translation;
+}
+
+void OpacityTree::UpdateOpacities(int id) {
+  OpacityNode* node = Node(id);
+  node->data.screen_space_opacity = node->data.opacity;
+
+  OpacityNode* parent_node = parent(node);
+  if (parent_node)
+    node->data.screen_space_opacity *= parent_node->data.screen_space_opacity;
 }
 
 PropertyTrees::PropertyTrees() : needs_rebuild(true), sequence_number(0) {

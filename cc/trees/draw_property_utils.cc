@@ -430,6 +430,14 @@ void ComputeTransforms(TransformTree* transform_tree) {
   transform_tree->set_needs_update(false);
 }
 
+void ComputeOpacities(OpacityTree* opacity_tree) {
+  if (!opacity_tree->needs_update())
+    return;
+  for (int i = 1; i < static_cast<int>(opacity_tree->size()); ++i)
+    opacity_tree->UpdateOpacities(i);
+  opacity_tree->set_needs_update(false);
+}
+
 template <typename LayerType>
 void ComputeVisibleRectsUsingPropertyTreesInternal(
     LayerType* root_layer,
@@ -582,7 +590,7 @@ float DrawOpacityFromPropertyTreesInternal(LayerType layer,
 
   float draw_opacity = 1.f;
   while (node != target_node) {
-    draw_opacity *= node->data;
+    draw_opacity *= node->data.opacity;
     node = tree.parent(node);
   }
   return draw_opacity;

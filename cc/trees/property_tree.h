@@ -140,7 +140,14 @@ struct CC_EXPORT ClipNodeData {
 
 typedef TreeNode<ClipNodeData> ClipNode;
 
-typedef TreeNode<float> OpacityNode;
+struct CC_EXPORT OpacityNodeData {
+  OpacityNodeData();
+
+  float opacity;
+  float screen_space_opacity;
+};
+
+typedef TreeNode<OpacityNodeData> OpacityNode;
 
 template <typename T>
 class CC_EXPORT PropertyTree {
@@ -290,7 +297,10 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};
 
-class CC_EXPORT OpacityTree final : public PropertyTree<OpacityNode> {};
+class CC_EXPORT OpacityTree final : public PropertyTree<OpacityNode> {
+ public:
+  void UpdateOpacities(int id);
+};
 
 class CC_EXPORT PropertyTrees final {
  public:

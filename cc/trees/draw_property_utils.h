@@ -33,6 +33,9 @@ ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree);
 // tree. This must be done prior to calling |ComputeClips|.
 void CC_EXPORT ComputeTransforms(TransformTree* transform_tree);
 
+// Computes screen space opacity for every node in the opacity tree.
+void CC_EXPORT ComputeOpacities(OpacityTree* opacity_tree);
+
 // Computes the visible content rect for every layer under |root_layer|. The
 // visible content rect is the clipped content space rect that will be used for
 // recording.

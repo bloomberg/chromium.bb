@@ -464,4 +464,24 @@ TEST(PropertyTreeTest, FlatteningWhenDestinationHasOnlyFlatAncestors) {
                                   grand_child_to_parent);
 }
 
+TEST(PropertyTreeTest, ScreenSpaceOpacityUpdateTest) {
+  // This tests that screen space opacity is updated for the subtree when
+  // opacity of a node changes.
+  OpacityTree tree;
+
+  int parent = tree.Insert(OpacityNode(), 0);
+  int child = tree.Insert(OpacityNode(), parent);
+
+  EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 1.f);
+  tree.Node(parent)->data.opacity = 0.5f;
+  tree.set_needs_update(true);
+  ComputeOpacities(&tree);
+  EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.5f);
+
+  tree.Node(child)->data.opacity = 0.5f;
+  tree.set_needs_update(true);
+  ComputeOpacities(&tree);
+  EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.25f);
+}
+
 }  // namespace cc
