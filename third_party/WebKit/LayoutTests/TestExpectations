@@ -1722,3 +1722,6 @@ crbug.com/450493 [ Win ] virtual/threaded/fast/scroll-behavior/subframe-interrup
 
 # Very flaky on Win Debug since it was last updated in r191233
 crbug.com/461903 [ Win Debug ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Failure ] 
+
+# Slow expected on debug builds
+crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
