@@ -180,8 +180,14 @@ void canonicalizeAngle(float* startAngle, float* endAngle)
 {
     // Make 0 <= startAngle < 2*PI
     float newStartAngle = fmodf(*startAngle, twoPiFloat);
-    if (newStartAngle < 0)
+
+    if (newStartAngle < 0) {
         newStartAngle += twoPiFloat;
+        // Check for possible catastrophic cancellation in cases where
+        // newStartAngle was a tiny negative number (c.f. crbug.com/503422)
+        if (newStartAngle >= twoPiFloat)
+            newStartAngle -= twoPiFloat;
+    }
 
     float delta = newStartAngle - *startAngle;
     *startAngle = newStartAngle;
