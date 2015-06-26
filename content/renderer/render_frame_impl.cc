@@ -4992,7 +4992,7 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
   if (!cdm_factory_) {
     DCHECK(frame_);
 
-#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+#if defined(ENABLE_MOJO_MEDIA)
     cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceProvider()));
 #else
     cdm_factory_.reset(new RenderCdmFactory(
@@ -5002,7 +5002,7 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
         cdm_manager_
 #endif
         ));
-#endif  //  defined(ENABLE_MEDIA_MOJO_RENDERER)
+#endif  //  defined(ENABLE_MOJO_MEDIA)
   }
 
   return cdm_factory_.get();
