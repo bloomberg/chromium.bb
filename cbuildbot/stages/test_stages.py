@@ -19,6 +19,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gs
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
@@ -75,6 +76,9 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
   config_name = 'vm_tests'
 
   VM_TEST_TIMEOUT = 60 * 60
+  # Check if the GCS target is available every 15 seconds.
+  CHECK_GCS_PERIOD = 15
+  CHECK_GCS_TIMEOUT = VM_TEST_TIMEOUT
 
   def _PrintFailedTests(self, results_path, test_basename):
     """Print links to failed tests.
@@ -153,6 +157,18 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           prefix = ''
         self.PrintDownloadLink(filename, prefix)
 
+  def _WaitForGceTarball(self, image_path):
+    """Waits until GCE tarball is available."""
+    gce_tar_generated = self.GetParallel('gce_tarball_generated')
+    if not gce_tar_generated:
+      return
+    # Still need to check its availability as artifacts are uploaded in the
+    # background.
+    gs_ctx = gs.GSContext()
+    logging.info('Waiting for GCE tarball to be uploaded at %s.' % image_path)
+    gs_ctx.WaitForGsPaths([image_path], self.CHECK_GCS_TIMEOUT,
+                          self.CHECK_GCS_PERIOD)
+
   def _RunTest(self, test_type, test_results_dir):
     """Run a VM test.
 
@@ -166,9 +182,18 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       commands.RunDevModeTest(
           self._build_root, self._current_board, self.GetImageDirSymlink())
     else:
+      if test_type == constants.GCE_VM_TEST_TYPE:
+        # If tests are to run on GCE, use the uploaded tar ball.
+        image_path = ('%s/%s' % (self.download_url.rstrip('/'),
+                                 constants.TEST_IMAGE_GCE_TAR))
+
+        self._WaitForGceTarball(image_path)
+      else:
+        image_path = os.path.join(self.GetImageDirSymlink(),
+                                  constants.TEST_IMAGE_BIN)
       commands.RunTestSuite(self._build_root,
                             self._current_board,
-                            self.GetImageDirSymlink(),
+                            image_path,
                             os.path.join(test_results_dir,
                                          'test_harness'),
                             test_type=test_type,

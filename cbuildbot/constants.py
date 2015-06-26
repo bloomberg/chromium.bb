@@ -572,9 +572,12 @@ SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
 TELEMETRY_SUITE_TEST_TYPE = 'telemetry_suite'
 CROS_VM_TEST_TYPE = 'cros_vm_test'
 DEV_MODE_TEST_TYPE = 'dev_mode_test'
+# Special test type for the GCE test lab. It runs all tests in the smoke suite,
+# but runs them on GCE.
+GCE_VM_TEST_TYPE = 'gce_vm_test'
 VALID_VM_TEST_TYPES = [FULL_AU_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
                        SMOKE_SUITE_TEST_TYPE, TELEMETRY_SUITE_TEST_TYPE,
-                       CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE]
+                       CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE, GCE_VM_TEST_TYPE]
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
 VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
@@ -805,6 +808,10 @@ COMMON_CACHE = 'common'
 def _SlashToUnderscore(string):
   return string.replace('/', '_')
 
+# GCE tar ball constants.
+def _ImageBinToGceTar(image_bin):
+  return '%s_gce.tar.gz' % os.path.splitext(image_bin)[0]
+
 DEFAULT_ARCHIVE_BUCKET = 'gs://chromeos-image-archive'
 RELEASE_BUCKET = 'gs://chromeos-releases'
 TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
@@ -814,6 +821,7 @@ CHROME_ENV_FILE = 'environment'
 BASE_IMAGE_NAME = 'chromiumos_base_image'
 BASE_IMAGE_TAR = '%s.tar.xz' % BASE_IMAGE_NAME
 BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME
+BASE_IMAGE_GCE_TAR = _ImageBinToGceTar(BASE_IMAGE_BIN)
 IMAGE_SCRIPTS_NAME = 'image_scripts'
 IMAGE_SCRIPTS_TAR = '%s.tar.xz' % IMAGE_SCRIPTS_NAME
 VM_IMAGE_NAME = 'chromiumos_qemu_image'
@@ -825,6 +833,7 @@ VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
 TEST_IMAGE_NAME = 'chromiumos_test_image'
 TEST_IMAGE_TAR = '%s.tar.xz' % TEST_IMAGE_NAME
 TEST_IMAGE_BIN = '%s.bin' % TEST_IMAGE_NAME
+TEST_IMAGE_GCE_TAR = _ImageBinToGceTar(TEST_IMAGE_BIN)
 
 DEV_IMAGE_NAME = 'chromiumos_image'
 DEV_IMAGE_BIN = '%s.bin' % DEV_IMAGE_NAME
@@ -839,6 +848,8 @@ IMAGE_TYPE_TO_NAME = {
     'test': TEST_IMAGE_BIN,
 }
 IMAGE_NAME_TO_TYPE = dict((v, k) for k, v in IMAGE_TYPE_TO_NAME.iteritems())
+IMAGE_BIN_TO_GCE_TAR = dict(
+    (k, _ImageBinToGceTar(k)) for k in (BASE_IMAGE_BIN, TEST_IMAGE_BIN))
 
 METADATA_JSON = 'metadata.json'
 PARTIAL_METADATA_JSON = 'partial-metadata.json'

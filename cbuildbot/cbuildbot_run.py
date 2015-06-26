@@ -165,6 +165,7 @@ class RunAttributes(object):
       'instruction_urls_per_channel', # Set by ArchiveStage
       'success',                    # Set by cbuildbot.py:Builder
       'packages_under_test',        # Set by BuildPackagesStage.
+      'gce_tarball_generated',       # Set by ArchiveStage.
   ))
 
   # Attributes that need to be set by stages that can run in parallel

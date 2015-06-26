@@ -607,7 +607,7 @@ def RunUnitTests(buildroot, board, blacklist=None, extra_env=None):
                  extra_env=extra_env or {})
 
 
-def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
+def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
                  whitelist_chrome_crashes, archive_dir):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
@@ -615,11 +615,11 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   osutils.RmDir(results_dir_in_chroot, ignore_missing=True)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  image_path = os.path.join(image_dir, constants.TEST_IMAGE_BIN)
+  dut_type = 'gce' if test_type == constants.GCE_VM_TEST_TYPE else 'vm'
 
   cmd = ['bin/ctest',
          '--board=%s' % board,
-         '--type=vm',
+         '--type=%s' % dut_type,
          '--no_graphics',
          '--target_image=%s' % image_path,
          '--test_results_root=%s' % results_dir_in_chroot
@@ -631,7 +631,8 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   if test_type == constants.FULL_AU_TEST_TYPE:
     cmd.append('--archive_dir=%s' % archive_dir)
   else:
-    if test_type == constants.SMOKE_SUITE_TEST_TYPE:
+    if (test_type == constants.SMOKE_SUITE_TEST_TYPE or test_type ==
+        constants.GCE_VM_TEST_TYPE):
       cmd.append('--only_verify')
       cmd.append('--suite=smoke')
     elif test_type == constants.TELEMETRY_SUITE_TEST_TYPE:
@@ -1898,7 +1899,7 @@ def BuildGceTarball(archive_dir, image_dir, image):
   """
   with osutils.TempDir() as tempdir:
     temp_disk_raw = os.path.join(tempdir, 'disk.raw')
-    output = '%s_gce.tar.gz' % os.path.splitext(image)[0]
+    output = constants.IMAGE_BIN_TO_GCE_TAR[image]
     output_file = os.path.join(archive_dir, output)
     os.symlink(os.path.join(image_dir, image), temp_disk_raw)
 

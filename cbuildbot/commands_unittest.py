@@ -110,7 +110,7 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   BUILD_ROOT = '/fake/root'
 
   def _RunTestSuite(self, test_type):
-    commands.RunTestSuite(self.tempdir, self.TEST_BOARD, self.BUILD_ROOT,
+    commands.RunTestSuite(self.BUILD_ROOT, self.TEST_BOARD, self.tempdir,
                           '/tmp/taco', archive_dir='/fake/root',
                           whitelist_chrome_crashes=False,
                           test_type=test_type)
@@ -130,6 +130,13 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     """Test SMOKE config."""
     self._RunTestSuite(constants.SMOKE_SUITE_TEST_TYPE)
     self.assertCommandContains(['--only_verify'])
+
+  def testGceVmTestType(self):
+    """Test GCE_VM_TEST_TYPE."""
+    self._RunTestSuite(constants.GCE_VM_TEST_TYPE)
+    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--type=gce'])
+    self.assertCommandContains(['--suite=smoke'])
 
 
 class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
@@ -820,8 +827,8 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     """Verifies BuildGceTarball produces correct archives"""
     image_dir = os.path.join(self.tempdir, 'inputs')
     archive_dir = os.path.join(self.tempdir, 'outputs')
-    image = 'a.bin'
-    output = 'a_gce.tar.gz'
+    image = constants.TEST_IMAGE_BIN
+    output = constants.TEST_IMAGE_GCE_TAR
 
     osutils.SafeMakedirs(image_dir)
     osutils.SafeMakedirs(archive_dir)

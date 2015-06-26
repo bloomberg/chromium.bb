@@ -284,6 +284,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
             archive_path, image_dir, image_bin)
         self._release_upload_queue.put([output_file])
 
+      self.board_runattrs.SetParallel('gce_tarball_generated', True)
+
     def ArchiveZipFiles():
       """Build and archive zip files.
 

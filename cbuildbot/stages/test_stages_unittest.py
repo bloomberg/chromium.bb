@@ -12,15 +12,17 @@ import os
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import lab_status
 from chromite.cbuildbot.stages import artifact_stages
-from chromite.cbuildbot.stages import test_stages
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
@@ -68,6 +70,36 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
     self._run.config['vm_tests'] = [constants.SIMPLE_AU_TEST_TYPE]
     self.RunStage()
+
+  def testGceTests(self):
+    """Tests if GCE_VM_TEST_TYPE tests are run on GCE."""
+    self._run.config['vm_tests'] = [constants.GCE_VM_TEST_TYPE]
+    gce_path = constants.TEST_IMAGE_GCE_TAR
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+
+    def _MockRunTestSuite(buildroot, board, image_path, results_dir, test_type,
+                          *args, **kwargs):
+      self.assertEndsWith(image_path, gce_path)
+      self.assertEqual(test_type, constants.GCE_VM_TEST_TYPE)
+
+    def _MockWaitForGsPaths(_, paths, *args, **kwargs):
+      self.assertEndsWith(paths[0], gce_path)
+
+    self.PatchObject(generic_stages.BoardSpecificBuilderStage, 'GetParallel',
+                     autospec=True)
+    self.PatchObject(gs.GSContext, 'WaitForGsPaths',
+                     side_effect=_MockWaitForGsPaths, autospec=True)
+    commands.RunTestSuite.side_effect = _MockRunTestSuite
+    board_runattrs.SetParallel('gce_tarball_generated', True)
+
+    self.RunStage()
+
+    generic_stages.BoardSpecificBuilderStage.GetParallel.assert_any_call(
+        mock.ANY, 'gce_tarball_generated')
+    self.assertTrue(gs.GSContext.WaitForGsPaths.called and
+                    gs.GSContext.WaitForGsPaths.call_count == 1)
+    self.assertTrue(commands.RunTestSuite.called and
+                    commands.RunTestSuite.call_count == 1)
 
   def testFailedTest(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
