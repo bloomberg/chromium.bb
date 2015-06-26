@@ -103,6 +103,7 @@ const char kChromeUICertificateManagerDialogURL[] =
     "chrome://certificate-manager/";
 const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
+const char kChromeUIDeviceEmulatorURL[] = "chrome://device-emulator/";
 const char kChromeUIDiscardsURL[] = "chrome://discards/";
 const char kChromeUIFirstRunURL[] = "chrome://first-run/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
@@ -272,6 +273,7 @@ const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICryptohomeHost[] = "cryptohome";
+const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
 const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIFirstRunHost[] = "first-run";
 const char kChromeUIImageBurnerHost[] = "imageburner";

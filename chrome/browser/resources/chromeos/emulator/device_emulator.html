@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Device Emulator</title>
+  <link rel="stylesheet" href="device_emulator.css">
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="strings.js"></script>
+  <script src="device_emulator.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>ChromeOS Device Emulator</h1>
+    <hr>
+
+    <div class="form-group">
+      <div class="group-header">
+        <h2>Battery/Power Settings</h2>
+      </div>
+      <div class="group-body">
+        <form id="power-settings-form">
+          <div class="control-group">
+            <label>
+              Battery Present
+              <input id="battery-present-checkbox" type="checkbox">
+            </label>
+          </div>
+
+          <div class="control-group">
+            <label>
+              Battery Percentage
+              <input id="battery-percent-slider" type="range" min="0" max="100">
+            </label>
+            <input id="battery-percent-text" type="number" min="0" max="100">
+          </div>
+
+          <div class="control-group">
+            <label>
+              Power Source
+              <select id="power-source-select">
+              </select>
+            </label>
+          </div>
+
+          <div class="control-group">
+            <label>
+              <p>Set Battery Timing</p>
+              <label>
+                <p>
+                  <input id="time-until-empty-radio" type="radio" 
+                      name="time-until-radio">
+                  Time Until Battery Empty
+                </p>
+              </label>
+
+              <label>
+                <p>
+                  <input id="time-until-full-radio" type="radio" 
+                      name="time-until-radio">
+                  Time Until Battery Full
+                </p>
+              </label>
+              <input id="time-until-text" type="text">
+
+            </label>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
