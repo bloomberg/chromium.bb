@@ -1864,10 +1864,14 @@ void Document::updateStyle(StyleRecalcChange change)
     ASSERT(inStyleRecalc());
     ASSERT(styleResolver() == &resolver);
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
-    RefPtr<TracedValue> counters = shouldRecordStats ? resolver.stats()->toTracedValue() : nullptr;
-    TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
-        "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount,
-        "counters", counters);
+    if (shouldRecordStats) {
+        TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
+            "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount,
+            "counters", resolver.stats()->toTracedValue());
+    } else {
+        TRACE_EVENT_END1("blink,blink_style", "Document::updateStyle",
+            "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
+    }
 }
 
 void Document::notifyLayoutTreeOfSubtreeChanges()
