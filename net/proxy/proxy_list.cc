@@ -187,16 +187,13 @@ void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
                                     int net_error,
                                     const BoundNetLog& net_log) const {
   // Mark this proxy as bad.
+  TimeTicks bad_until = TimeTicks::Now() + retry_delay;
   std::string proxy_key = proxy_to_retry.ToURI();
   ProxyRetryInfoMap::iterator iter = proxy_retry_info->find(proxy_key);
-  if (iter != proxy_retry_info->end()) {
-    // TODO(nsylvain): This is not the first time we get this. We should
-    // double the retry time. Bug 997660.
-    iter->second.bad_until = TimeTicks::Now() + iter->second.current_delay;
-  } else {
+  if (iter == proxy_retry_info->end() || bad_until > iter->second.bad_until) {
     ProxyRetryInfo retry_info;
     retry_info.current_delay = retry_delay;
-    retry_info.bad_until = TimeTicks().Now() + retry_info.current_delay;
+    retry_info.bad_until = bad_until;
     retry_info.try_while_bad = try_while_bad;
     retry_info.net_error = net_error;
     (*proxy_retry_info)[proxy_key] = retry_info;
