@@ -27,8 +27,8 @@ protected:
     void setSelection(VisibleSelection& selection, int base, int extend)
     {
         Node* node = document().body()->firstChild();
-        selection.setBase(Position(node, base, Position::PositionIsOffsetInAnchor));
-        selection.setExtent(Position(node, extend, Position::PositionIsOffsetInAnchor));
+        selection.setBase(Position(node, base));
+        selection.setExtent(Position(node, extend));
     }
 
     static bool equalPositions(const Position&, const PositionInComposedTree&);
@@ -83,9 +83,9 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot.get()));
 
     EXPECT_EQ(Position(host.get(), Position::PositionIsBeforeAnchor), selection.start());
-    EXPECT_EQ(Position(one->firstChild(), 0, Position::PositionIsOffsetInAnchor), selection.end());
-    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0, PositionInComposedTree::PositionIsOffsetInAnchor), selection.startInComposedTree());
-    EXPECT_EQ(PositionInComposedTree(six->firstChild(), 2, PositionInComposedTree::PositionIsOffsetInAnchor), selection.endInComposedTree());
+    EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
+    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0), selection.startInComposedTree());
+    EXPECT_EQ(PositionInComposedTree(six->firstChild(), 2), selection.endInComposedTree());
 }
 
 TEST_F(VisibleSelectionTest, ShadowDistributedNodes)
@@ -102,10 +102,10 @@ TEST_F(VisibleSelectionTest, ShadowDistributedNodes)
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(two.get()));
 
-    EXPECT_EQ(Position(one->firstChild(), 0, Position::PositionIsOffsetInAnchor), selection.start());
-    EXPECT_EQ(Position(two->firstChild(), 2, Position::PositionIsOffsetInAnchor), selection.end());
-    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 0, PositionInComposedTree::PositionIsOffsetInAnchor), selection.startInComposedTree());
-    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2, PositionInComposedTree::PositionIsOffsetInAnchor), selection.endInComposedTree());
+    EXPECT_EQ(Position(one->firstChild(), 0), selection.start());
+    EXPECT_EQ(Position(two->firstChild(), 2), selection.end());
+    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 0), selection.startInComposedTree());
+    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), selection.endInComposedTree());
 }
 
 TEST_F(VisibleSelectionTest, ShadowNested)
@@ -125,9 +125,9 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot2.get()));
 
     EXPECT_EQ(Position(host.get(), Position::PositionIsBeforeAnchor), selection.start());
-    EXPECT_EQ(Position(one->firstChild(), 0, Position::PositionIsOffsetInAnchor), selection.end());
-    EXPECT_EQ(PositionInComposedTree(eight->firstChild(), 2, PositionInComposedTree::PositionIsOffsetInAnchor), selection.startInComposedTree());
-    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0, PositionInComposedTree::PositionIsOffsetInAnchor), selection.endInComposedTree());
+    EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
+    EXPECT_EQ(PositionInComposedTree(eight->firstChild(), 2), selection.startInComposedTree());
+    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0), selection.endInComposedTree());
 }
 
 TEST_F(VisibleSelectionTest, WordGranularity)

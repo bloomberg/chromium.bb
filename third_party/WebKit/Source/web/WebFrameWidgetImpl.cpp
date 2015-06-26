@@ -472,7 +472,7 @@ void WebFrameWidgetImpl::setFocus(bool enable)
                     // contentseditable DIVs. So we set the selection explicitly
                     // instead. Note that this has the side effect of moving the
                     // caret back to the beginning of the text.
-                    Position position(element, 0, Position::PositionIsOffsetInAnchor);
+                    Position position(element, 0);
                     localFrame->selection().setSelection(VisibleSelection(position, SEL_DEFAULT_AFFINITY));
                 }
             }

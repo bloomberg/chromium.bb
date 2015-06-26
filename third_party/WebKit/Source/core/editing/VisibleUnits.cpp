@@ -1197,7 +1197,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
 
     if (type == Position::PositionIsOffsetInAnchor) {
         ASSERT(type == Position::PositionIsOffsetInAnchor || !offset);
-        return VisiblePosition(Position(node, offset, type), DOWNSTREAM);
+        return VisiblePosition(Position(node, offset), DOWNSTREAM);
     }
 
     return VisiblePosition(Position(node, type), DOWNSTREAM);
@@ -1274,7 +1274,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
     }
 
     if (type == Position::PositionIsOffsetInAnchor)
-        return VisiblePosition(Position(node, offset, type), DOWNSTREAM);
+        return VisiblePosition(Position(node, offset), DOWNSTREAM);
 
     return VisiblePosition(Position(node, type), DOWNSTREAM);
 }

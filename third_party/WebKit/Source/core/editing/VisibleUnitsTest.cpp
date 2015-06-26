@@ -14,12 +14,12 @@ namespace {
 
 PositionWithAffinity positionWithAffinityInDOMTree(Node& anchor, int offset, EAffinity affinity = DOWNSTREAM)
 {
-    return PositionWithAffinity(canonicalPositionOf(Position(&anchor, offset, Position::PositionIsOffsetInAnchor)), affinity);
+    return PositionWithAffinity(canonicalPositionOf(Position(&anchor, offset)), affinity);
 }
 
 PositionInComposedTreeWithAffinity positionWithAffinityInComposedTree(Node& anchor, int offset, EAffinity affinity = DOWNSTREAM)
 {
-    return PositionInComposedTreeWithAffinity(canonicalPositionOf(PositionInComposedTree(&anchor, offset, PositionInComposedTree::PositionIsOffsetInAnchor)), affinity);
+    return PositionInComposedTreeWithAffinity(canonicalPositionOf(PositionInComposedTree(&anchor, offset)), affinity);
 }
 
 } // namespace

@@ -93,11 +93,10 @@ public:
 
     // For creating before/after positions:
     PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType);
-    PositionAlgorithm(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset);
 
     // For creating offset positions:
     // FIXME: This constructor should eventually go away. See bug 63040.
-    PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType);
+    PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
 
     PositionAlgorithm(const PositionAlgorithm&);
 
@@ -317,7 +316,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::inParentBeforeNode(
     // At least one caller currently hits this ASSERT though, which indicates
     // that the caller is trying to make a position relative to a disconnected node (which is likely an error)
     // Specifically, editing/deleting/delete-ligature-001.html crashes with ASSERT(node->parentNode())
-    return PositionType(Strategy::parent(node), Strategy::index(node), PositionIsOffsetInAnchor);
+    return PositionType(Strategy::parent(node), Strategy::index(node));
 }
 
 inline Position positionInParentBeforeNode(const Node& node)
@@ -329,7 +328,7 @@ template <typename Strategy>
 typename Strategy::PositionType PositionAlgorithm<Strategy>::inParentAfterNode(const Node& node)
 {
     ASSERT(node.parentNode());
-    return PositionType(Strategy::parent(node), Strategy::index(node) + 1, PositionIsOffsetInAnchor);
+    return PositionType(Strategy::parent(node), Strategy::index(node) + 1);
 }
 
 inline Position positionInParentAfterNode(const Node& node)
@@ -378,7 +377,7 @@ template <typename Strategy>
 typename Strategy::PositionType PositionAlgorithm<Strategy>::firstPositionInNode(Node* anchorNode)
 {
     if (anchorNode->isTextNode())
-        return PositionType(anchorNode, 0, PositionIsOffsetInAnchor);
+        return PositionType(anchorNode, 0);
     return PositionType(anchorNode, PositionIsBeforeChildren);
 }
 
@@ -391,7 +390,7 @@ template <typename Strategy>
 typename Strategy::PositionType PositionAlgorithm<Strategy>::lastPositionInNode(Node* anchorNode)
 {
     if (anchorNode->isTextNode())
-        return PositionType(anchorNode, lastOffsetInNode(anchorNode), PositionIsOffsetInAnchor);
+        return PositionType(anchorNode, lastOffsetInNode(anchorNode));
     return PositionType(anchorNode, PositionIsAfterChildren);
 }
 

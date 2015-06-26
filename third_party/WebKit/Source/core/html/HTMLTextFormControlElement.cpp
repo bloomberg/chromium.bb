@@ -287,8 +287,8 @@ static Position positionForIndex(HTMLElement* innerEditor, int index)
     if (index == 0) {
         Node* node = NodeTraversal::next(*innerEditor, innerEditor);
         if (node && node->isTextNode())
-            return Position(node, 0, Position::PositionIsOffsetInAnchor);
-        return Position(innerEditor, 0, Position::PositionIsOffsetInAnchor);
+            return Position(node, 0);
+        return Position(innerEditor, 0);
     }
     int remainingCharactersToMoveForward = index;
     Node* lastBrOrText = innerEditor;
@@ -777,7 +777,7 @@ static Position innerNodePosition(const Position& innerPosition)
     ASSERT(element);
     RefPtrWillBeRawPtr<NodeList> childNodes = element->childNodes();
     if (!childNodes->length())
-        return Position(element, 0, Position::PositionIsOffsetInAnchor);
+        return Position(element, 0);
 
     unsigned offset = 0;
 
@@ -940,7 +940,7 @@ static Position previousIfPositionIsAfterLineBreak(const Position& position, HTM
 
 static inline Position startOfInnerText(const HTMLTextFormControlElement* textFormControl)
 {
-    return Position(textFormControl->innerEditorElement(), 0, Position::PositionIsOffsetInAnchor);
+    return Position(textFormControl->innerEditorElement(), 0);
 }
 
 Position HTMLTextFormControlElement::startOfSentence(const Position& position)
@@ -976,7 +976,7 @@ Position HTMLTextFormControlElement::startOfSentence(const Position& position)
 static Position endOfInnerText(const HTMLTextFormControlElement* textFormControl)
 {
     HTMLElement* innerEditor = textFormControl->innerEditorElement();
-    return Position(innerEditor, innerEditor->childNodes()->length(), Position::PositionIsOffsetInAnchor);
+    return Position(innerEditor, innerEditor->childNodes()->length());
 }
 
 Position HTMLTextFormControlElement::endOfSentence(const Position& position)

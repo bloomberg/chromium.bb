@@ -110,24 +110,13 @@ PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anch
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType anchorType)
+PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset)
     : m_anchorNode(anchorNode)
     , m_offset(offset)
-    , m_anchorType(anchorType)
-    , m_isLegacyEditingPosition(false)
-{
-    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
-    ASSERT(anchorType == PositionIsOffsetInAnchor);
-}
-
-template <typename Strategy>
-PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
-    : m_anchorNode(textNode)
-    , m_offset(static_cast<int>(offset))
     , m_anchorType(PositionIsOffsetInAnchor)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT(m_anchorNode);
+    ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
 }
 
 template <typename Strategy>
@@ -239,7 +228,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::parentAnchoredEquiv
     if (m_offset <= 0 && (m_anchorType != PositionIsAfterAnchor && m_anchorType != PositionIsAfterChildren)) {
         if (Strategy::parent(*m_anchorNode) && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get())))
             return inParentBeforeNode(*m_anchorNode);
-        return PositionType(m_anchorNode.get(), 0, PositionIsOffsetInAnchor);
+        return PositionType(m_anchorNode.get(), 0);
     }
     if (!m_anchorNode->offsetInCharacters()
         && (m_anchorType == PositionIsAfterAnchor || m_anchorType == PositionIsAfterChildren || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
@@ -248,7 +237,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::parentAnchoredEquiv
         return inParentAfterNode(*m_anchorNode);
     }
 
-    return PositionType(containerNode(), computeOffsetInContainerNode(), PositionIsOffsetInAnchor);
+    return PositionType(containerNode(), computeOffsetInContainerNode());
 }
 
 template <typename Strategy>
@@ -257,7 +246,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::toOffsetInAnchor() 
     if (isNull())
         return PositionType();
 
-    return PositionType(containerNode(), computeOffsetInContainerNode(), PositionIsOffsetInAnchor);
+    return PositionType(containerNode(), computeOffsetInContainerNode());
 }
 
 template <typename Strategy>
@@ -1407,7 +1396,7 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
     if (pos.anchorType() == Position::PositionIsOffsetInAnchor) {
         Node* anchor = pos.anchorNode();
         if (anchor->offsetInCharacters())
-            return PositionInComposedTree(anchor, pos.computeOffsetInContainerNode(), PositionInComposedTree::PositionIsOffsetInAnchor);
+            return PositionInComposedTree(anchor, pos.computeOffsetInContainerNode());
         ASSERT(!isActiveInsertionPoint(*anchor));
         int offset = pos.computeOffsetInContainerNode();
         Node* child = NodeTraversal::childAt(*anchor, offset);
@@ -1419,10 +1408,10 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
         child->updateDistribution();
         if (isActiveInsertionPoint(*child)) {
             if (anchor->isShadowRoot())
-                return PositionInComposedTree(anchor->shadowHost(), offset, PositionInComposedTree::PositionIsOffsetInAnchor);
-            return PositionInComposedTree(anchor, offset, PositionInComposedTree::PositionIsOffsetInAnchor);
+                return PositionInComposedTree(anchor->shadowHost(), offset);
+            return PositionInComposedTree(anchor, offset);
         }
-        return PositionInComposedTree(ComposedTreeTraversal::parent(*child), ComposedTreeTraversal::index(*child), PositionInComposedTree::PositionIsOffsetInAnchor);
+        return PositionInComposedTree(ComposedTreeTraversal::parent(*child), ComposedTreeTraversal::index(*child));
     }
 
     return PositionInComposedTree(pos.anchorNode(), static_cast<PositionInComposedTree::AnchorType>(pos.anchorType()));
@@ -1448,10 +1437,10 @@ Position toPositionInDOMTree(const PositionInComposedTree& position)
     case PositionInComposedTree::PositionIsOffsetInAnchor: {
         int offset = position.offsetInContainerNode();
         if (anchorNode->offsetInCharacters())
-            return Position(anchorNode, offset, Position::PositionIsOffsetInAnchor);
+            return Position(anchorNode, offset);
         Node* child = ComposedTreeTraversal::childAt(*anchorNode, offset);
         if (child)
-            return Position(child->parentNode(), child->nodeIndex(), Position::PositionIsOffsetInAnchor);
+            return Position(child->parentNode(), child->nodeIndex());
         if (!position.offsetInContainerNode())
             return Position(anchorNode, Position::PositionIsBeforeChildren);
 

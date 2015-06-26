@@ -66,8 +66,8 @@ std::string TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 {
     RefPtrWillBeRawPtr<Element> body = document().body();
     using PositionType = typename Tree::PositionType;
-    auto start = PositionType(body, 0, PositionType::PositionIsOffsetInAnchor);
-    auto end = PositionType(body, Tree::countChildren(*body), PositionType::PositionIsOffsetInAnchor);
+    auto start = PositionType(body, 0);
+    auto end = PositionType(body, Tree::countChildren(*body));
     typename Tree::TextIteratorType iterator(start, end, iteratorBehavior);
     return iterateWithIterator<Tree>(iterator);
 }

@@ -58,12 +58,12 @@ void EditingTestBase::updateLayoutAndStyleForPainting()
 
 Position EditingTestBase::positionInDOMTree(Node& anchor, int offset)
 {
-    return Position(&anchor, offset, Position::PositionIsOffsetInAnchor);
+    return Position(&anchor, offset);
 }
 
 PositionInComposedTree EditingTestBase::positionInComposedTree(Node& anchor, int offset)
 {
-    return PositionInComposedTree(&anchor, offset, PositionInComposedTree::PositionIsOffsetInAnchor);
+    return PositionInComposedTree(&anchor, offset);
 }
 
 } // namespace blink

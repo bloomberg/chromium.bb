@@ -572,7 +572,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
                     extraCharacters = selectionToDelete.end().computeOffsetInContainerNode() - selectionToDelete.start().computeOffsetInContainerNode();
                 else
                     extraCharacters = selectionToDelete.end().computeOffsetInContainerNode();
-                extent = Position(extent.containerNode(), extent.computeOffsetInContainerNode() + extraCharacters, Position::PositionIsOffsetInAnchor);
+                extent = Position(extent.containerNode(), extent.computeOffsetInContainerNode() + extraCharacters);
             }
             selectionAfterUndo.setWithoutValidation(startingSelection().start(), extent);
         }

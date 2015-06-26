@@ -1320,8 +1320,8 @@ bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start,
 
         int startOffsetAdjustment = startChild->nodeIndex();
         int endOffsetAdjustment = startNode == end.deprecatedNode() ? startOffsetAdjustment : 0;
-        updateStartEnd(Position(startNode, startOffsetAdjustment, Position::PositionIsOffsetInAnchor),
-                       Position(end.deprecatedNode(), end.deprecatedEditingOffset() + endOffsetAdjustment, Position::PositionIsOffsetInAnchor));
+        updateStartEnd(Position(startNode, startOffsetAdjustment),
+            Position(end.deprecatedNode(), end.deprecatedEditingOffset() + endOffsetAdjustment));
         return true;
     }
 
@@ -1356,8 +1356,8 @@ bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const
 
         bool shouldUpdateStart = start.containerNode() == endNode;
         int endOffset = nextChild ? nextChild->nodeIndex() : nextElement->childNodes()->length();
-        updateStartEnd(shouldUpdateStart ? Position(nextElement, start.offsetInContainerNode(), Position::PositionIsOffsetInAnchor) : start,
-                       Position(nextElement, endOffset, Position::PositionIsOffsetInAnchor));
+        updateStartEnd(shouldUpdateStart ? Position(nextElement, start.offsetInContainerNode()) : start,
+            Position(nextElement, endOffset));
         return true;
     }
 
