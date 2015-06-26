@@ -50,6 +50,7 @@ const char* kTypeNames[] = {
   "protected-media-identifier",
 #endif
   "app-banner",
+  "site-engagement",
 };
 static_assert(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
               "kTypeNames should have CONTENT_SETTINGS_NUM_TYPES elements");

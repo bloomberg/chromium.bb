@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/test/simple_test_clock.h"
+#include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
@@ -42,6 +43,47 @@ class SiteEngagementScoreTest : public testing::Test {
   SiteEngagementScoreTest() : score_(&test_clock_) {}
 
  protected:
+  void VerifyScore(const SiteEngagementScore& score,
+                   double expected_raw_score,
+                   double expected_points_added_today,
+                   base::Time expected_last_engagement_time) {
+    EXPECT_EQ(expected_raw_score, score.raw_score_);
+    EXPECT_EQ(expected_points_added_today, score.points_added_today_);
+    EXPECT_EQ(expected_last_engagement_time, score.last_engagement_time_);
+  }
+
+  void UpdateScore(SiteEngagementScore* score,
+                   double raw_score,
+                   double points_added_today,
+                   base::Time last_engagement_time) {
+    score->raw_score_ = raw_score;
+    score->points_added_today_ = points_added_today;
+    score->last_engagement_time_ = last_engagement_time;
+  }
+
+  void TestScoreInitializesAndUpdates(
+      base::DictionaryValue* settings_dict,
+      double expected_raw_score,
+      double expected_points_added_today,
+      base::Time expected_last_engagement_time) {
+    SiteEngagementScore initial_score(&test_clock_, *settings_dict);
+    VerifyScore(initial_score, expected_raw_score, expected_points_added_today,
+                expected_last_engagement_time);
+
+    // Updating the settings dict should return false, as the score shouldn't
+    // have changed at this point.
+    EXPECT_FALSE(initial_score.UpdateSettings(settings_dict));
+
+    // Update the score to new values and verify it updates the settings dict
+    // correctly.
+    base::Time different_day =
+        GetReferenceTime() + base::TimeDelta::FromDays(1);
+    UpdateScore(&initial_score, 5, 10, different_day);
+    EXPECT_TRUE(initial_score.UpdateSettings(settings_dict));
+    SiteEngagementScore updated_score(&test_clock_, *settings_dict);
+    VerifyScore(updated_score, 5, 10, different_day);
+  }
+
   base::SimpleTestClock test_clock_;
   SiteEngagementScore score_;
 };
@@ -236,6 +278,34 @@ TEST_F(SiteEngagementScoreTest, GoBackInTime) {
   }
 
   EXPECT_EQ(2 * SiteEngagementScore::kMaxPointsPerDay, score_.Score());
+}
+
+// Test that scores are read / written correctly from / to empty settings
+// dictionaries.
+TEST_F(SiteEngagementScoreTest, EmptyDictionary) {
+  base::DictionaryValue dict;
+  TestScoreInitializesAndUpdates(&dict, 0, 0, base::Time());
+}
+
+// Test that scores are read / written correctly from / to partially empty
+// settings dictionaries.
+TEST_F(SiteEngagementScoreTest, PartiallyEmptyDictionary) {
+  base::DictionaryValue dict;
+  dict.SetDouble(SiteEngagementScore::kPointsAddedTodayKey, 2);
+
+  TestScoreInitializesAndUpdates(&dict, 0, 2, base::Time());
+}
+
+// Test that scores are read / written correctly from / to populated settings
+// dictionaries.
+TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
+  base::DictionaryValue dict;
+  dict.SetDouble(SiteEngagementScore::kRawScoreKey, 1);
+  dict.SetDouble(SiteEngagementScore::kPointsAddedTodayKey, 2);
+  dict.SetDouble(SiteEngagementScore::kLastEngagementTimeKey,
+                  GetReferenceTime().ToInternalValue());
+
+  TestScoreInitializesAndUpdates(&dict, 1, 2, GetReferenceTime());
 }
 
 using SiteEngagementServiceTest = BrowserWithTestWindowTest;

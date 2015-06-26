@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
       BrowsingDataRemover::REMOVE_PASSWORDS) &
       // TODO(benwells): implement clearing of site usage data via the browsing
       // data API. https://crbug.com/500801.
-      ~BrowsingDataRemover::REMOVE_APP_BANNER_DATA &
+      ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA &
       // We can't remove plugin data inside a test profile.
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
 }
@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSimple) {
 // Test cookie and app data settings.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSiteData) {
   int site_data_no_usage = BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_APP_BANNER_DATA;
+      ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA;
   int site_data_no_plugins = site_data_no_usage &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 
@@ -521,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSiteData) {
 // Test an arbitrary assortment of settings.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionAssorted) {
   int site_data_no_plugins = BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_APP_BANNER_DATA &
+      ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 
   SetPrefsAndVerifySettings(

@@ -79,6 +79,8 @@ const char kDefaultProtectedMediaIdentifierSetting[] =
 #endif
 const char kDefaultAppBannerSetting[] =
     "profile.default_content_setting_values.app_banner";
+const char kDefaultSiteEngagementSetting[] =
+    "profile.default_content_setting_values.site_engagement";
 
 // Boolean indicating whether the media stream default setting had been
 // migrated into two separate microphone and camera settings.
@@ -140,6 +142,8 @@ const char kContentSettingsProtectedMediaIdentifierPatternPairs[] =
 #endif
 const char kContentSettingsAppBannerPatternPairs[] =
     "profile.content_settings.exceptions.app_banner";
+const char kContentSettingsSiteEngagementPatternPairs[] =
+    "profile.content_settings.exceptions.site_engagement";
 
 // Whether the patern pairs have been migrated from the deprecated aggregate
 // preference |kContentSettingsPatternPairs| to the separate preferences

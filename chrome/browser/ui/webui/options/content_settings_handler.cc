@@ -777,6 +777,11 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       // track whether app banners should be shown or not, and is not a user
       // visible content setting.
       break;
+    case CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT:
+      // The content settings type CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT is used
+      // to track engagement with various origins, and is not a user visible
+      // content setting.
+      break;
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;
@@ -800,6 +805,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
     case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
     case CONTENT_SETTINGS_TYPE_APP_BANNER:
+    case CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);

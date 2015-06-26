@@ -36,9 +36,8 @@ struct DefaultContentSettingInfo {
   const ContentSetting default_value;
 };
 
-// The corresponding preference, default value and syncability for each
-// default content setting. This array must be kept in sync with the enum
-// |ContentSettingsType|.
+// The corresponding preference and default value for each default content
+// setting. This array must be kept in sync with the enum |ContentSettingsType|.
 const DefaultContentSettingInfo kDefaultSettings[] = {
   {prefs::kDefaultCookiesSetting, CONTENT_SETTING_ALLOW},
   {prefs::kDefaultImagesSetting, CONTENT_SETTING_ALLOW},
@@ -65,7 +64,8 @@ const DefaultContentSettingInfo kDefaultSettings[] = {
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
   {prefs::kDefaultProtectedMediaIdentifierSetting, CONTENT_SETTING_ASK},
 #endif
-  {prefs::kDefaultAppBannerSetting, CONTENT_SETTING_DEFAULT}
+  {prefs::kDefaultAppBannerSetting, CONTENT_SETTING_DEFAULT},
+  {prefs::kDefaultSiteEngagementSetting, CONTENT_SETTING_DEFAULT},
 };
 static_assert(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
               "kDefaultSettings should have CONTENT_SETTINGS_NUM_TYPES "

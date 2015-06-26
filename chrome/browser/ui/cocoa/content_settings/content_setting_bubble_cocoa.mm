@@ -286,6 +286,7 @@ class ContentSettingBubbleWebContentsObserverBridge
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
     case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
     case CONTENT_SETTINGS_TYPE_APP_BANNER:
+    case CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT:
       NOTREACHED();
   }
   if ((self = [super initWithWindowNibPath:nibPath

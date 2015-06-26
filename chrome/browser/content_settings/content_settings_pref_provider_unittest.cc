@@ -483,11 +483,16 @@ TEST_F(PrefProviderTest, SyncingOldToNew) {
   base::DictionaryValue* exceptions = new base::DictionaryValue();
   base::DictionaryValue* plugin_resources = new base::DictionaryValue();
 
-  // Add exceptions for images and app banner.
+  // Add exceptions for images and app banner which did not need to be migrated.
   exceptions->SetIntegerWithoutPathExpansion(
       GetTypeName(CONTENT_SETTINGS_TYPE_IMAGES), CONTENT_SETTING_ALLOW);
   exceptions->SetIntegerWithoutPathExpansion(
       GetTypeName(CONTENT_SETTINGS_TYPE_APP_BANNER), CONTENT_SETTING_ALLOW);
+
+  // Add exceptions for new content settings types added after the migration.
+  exceptions->SetIntegerWithoutPathExpansion(
+      GetTypeName(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT),
+      CONTENT_SETTING_ALLOW);
 
   // Add a regular exception for plugins, then one with a resource identifier.
   exceptions->SetIntegerWithoutPathExpansion(
@@ -763,7 +768,7 @@ TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
 
   // Non-OTR provider, Non-OTR iterator has one setting (pattern 1).
   {
-    scoped_ptr<RuleIterator> it (normal_provider.GetRuleIterator(
+    scoped_ptr<RuleIterator> it(normal_provider.GetRuleIterator(
         CONTENT_SETTINGS_TYPE_IMAGES, std::string(), false));
     EXPECT_TRUE(it->HasNext());
     EXPECT_EQ(pattern_1, it->Next().primary_pattern);

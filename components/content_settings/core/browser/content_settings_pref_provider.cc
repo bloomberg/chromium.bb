@@ -93,7 +93,8 @@ const char* kContentSettingsExceptionsPrefs[] = {
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
     prefs::kContentSettingsProtectedMediaIdentifierPatternPairs,
 #endif
-    prefs::kContentSettingsAppBannerPatternPairs
+    prefs::kContentSettingsAppBannerPatternPairs,
+    prefs::kContentSettingsSiteEngagementPatternPairs,
 };
 static_assert(arraysize(kContentSettingsExceptionsPrefs)
               == CONTENT_SETTINGS_NUM_TYPES,

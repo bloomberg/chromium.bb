@@ -550,9 +550,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 #endif
 
-  if (remove_mask & REMOVE_APP_BANNER_DATA || remove_mask & REMOVE_HISTORY) {
+  if (remove_mask & REMOVE_SITE_USAGE_DATA || remove_mask & REMOVE_HISTORY) {
     profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
         CONTENT_SETTINGS_TYPE_APP_BANNER);
+    profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
+        CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

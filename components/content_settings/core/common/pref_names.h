@@ -42,6 +42,7 @@ extern const char kDefaultMetroSwitchToDesktopSetting[];
 extern const char kDefaultProtectedMediaIdentifierSetting[];
 #endif
 extern const char kDefaultAppBannerSetting[];
+extern const char kDefaultSiteEngagementSetting[];
 
 extern const char kMigratedDefaultMediaStreamSetting[];
 
@@ -72,6 +73,7 @@ extern const char kContentSettingsMetroSwitchToDesktopPatternPairs[];
 extern const char kContentSettingsProtectedMediaIdentifierPatternPairs[];
 #endif
 extern const char kContentSettingsAppBannerPatternPairs[];
+extern const char kContentSettingsSiteEngagementPatternPairs[];
 
 extern const char kMigratedContentSettingsPatternPairs[];
 
