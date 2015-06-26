@@ -65,7 +65,7 @@ class TcpCubicSenderTest : public ::testing::Test {
  protected:
   TcpCubicSenderTest()
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
-        sender_(new TcpCubicSenderPeer(&clock_, true, kMaxTcpCongestionWindow)),
+        sender_(new TcpCubicSenderPeer(&clock_, true, kMaxResumptionCwnd)),
         sequence_number_(1),
         acked_sequence_number_(0),
         bytes_in_flight_(0) {
@@ -374,7 +374,7 @@ TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindow) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(kMaxTcpCongestionWindow, sender_->slowstart_threshold());
+  EXPECT_EQ(kMaxResumptionCwnd, sender_->slowstart_threshold());
 
   // Expect the window to decrease to the minimum once the RTO fires
   // and slow start threshold to be set to 1/2 of the CWND.
@@ -684,9 +684,9 @@ TEST_F(TcpCubicSenderTest, BandwidthResumption) {
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      (kMaxTcpCongestionWindow + 1) * kMaxPacketSize);
+      (kMaxResumptionCwnd + 1) * kMaxPacketSize);
   EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
-  EXPECT_EQ(kMaxTcpCongestionWindow, sender_->congestion_window());
+  EXPECT_EQ(kMaxResumptionCwnd, sender_->congestion_window());
 
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
       (kMinCongestionWindowForBandwidthResumption - 1) * kMaxPacketSize);

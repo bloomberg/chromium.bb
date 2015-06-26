@@ -1381,7 +1381,7 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 TEST_P(QuicConnectionTest, TooManySentPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
-  const int num_packets = 5100;
+  const int num_packets = kMaxTrackedPackets + 100;
   for (int i = 0; i < num_packets; ++i) {
     SendStreamDataToPeer(1, "foo", 3 * i, !kFin, nullptr);
   }
@@ -1409,7 +1409,7 @@ TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
                             QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS, false));
 
   // Miss every other packet for 5000 packets.
-  for (QuicPacketSequenceNumber i = 1; i < 5000; ++i) {
+  for (QuicPacketSequenceNumber i = 1; i < kMaxTrackedPackets; ++i) {
     ProcessPacket(i * 2);
     if (!connection_.connected()) {
       break;

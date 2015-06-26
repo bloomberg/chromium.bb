@@ -482,6 +482,14 @@ SerializedPacket QuicPacketCreator::SerializePacket(
     return NoPacket();
   }
 
+  // Update |needs_padding_| flag of |queued_retransmittable_frames_| here, and
+  // not in AddFrame, because when the first padded frame is added to the queue,
+  // it might not be retransmittable, and hence the flag would end up being not
+  // set.
+  if (queued_retransmittable_frames_.get() != nullptr) {
+    queued_retransmittable_frames_->set_needs_padding(needs_padding_);
+  }
+
   packet_size_ = 0;
   queued_frames_.clear();
   needs_padding_ = false;
@@ -566,6 +574,7 @@ bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
     case ACK_FRAME:
     case PADDING_FRAME:
     case STOP_WAITING_FRAME:
+    case MTU_DISCOVERY_FRAME:
       return false;
     default:
       return true;
@@ -601,7 +610,6 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 
   if (needs_padding) {
     needs_padding_ = true;
-    queued_retransmittable_frames_->set_needs_padding(true);
   }
 
   return true;

@@ -21,7 +21,7 @@ namespace net {
 namespace test {
 namespace {
 
-const QuicConnectionId kStreamId = 3;
+const QuicStreamId kTestStreamId = 5u;
 
 class MockDelegate : public QuicReliableClientStream::Delegate {
  public:
@@ -44,7 +44,8 @@ class QuicReliableClientStreamTest
   QuicReliableClientStreamTest()
       : session_(new MockConnection(Perspective::IS_CLIENT,
                                     SupportedVersions(GetParam()))) {
-    stream_ = new QuicReliableClientStream(kStreamId, &session_, BoundNetLog());
+    stream_ =
+        new QuicReliableClientStream(kTestStreamId, &session_, BoundNetLog());
     session_.ActivateStream(stream_);
     stream_->SetDelegate(&delegate_);
   }
@@ -99,7 +100,7 @@ TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 
-  QuicStreamFrame frame2(kStreamId, true, offset, StringPiece());
+  QuicStreamFrame frame2(kTestStreamId, true, offset, StringPiece());
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
   stream_->OnStreamFrame(frame2);
 }

@@ -354,6 +354,9 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
 
   StreamMap::iterator it = dynamic_stream_map_.find(stream_id);
   if (it == dynamic_stream_map_.end()) {
+    // When CloseStreamInner has been called recursively (via
+    // ReliableQuicStream::OnClose), the stream will already have been deleted
+    // from stream_map_, so return immediately.
     DVLOG(1) << ENDPOINT << "Stream is already closed: " << stream_id;
     return;
   }
@@ -375,6 +378,7 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id,
   }
 
   dynamic_stream_map_.erase(it);
+  draining_streams_.erase(stream_id);
   stream->OnClose();
   // Decrease the number of streams being emulated when a new one is opened.
   connection_->SetNumOpenStreams(dynamic_stream_map_.size());
@@ -532,7 +536,8 @@ QuicConfig* QuicSession::config() {
 void QuicSession::ActivateStream(ReliableQuicStream* stream) {
   DVLOG(1) << ENDPOINT << "num_streams: " << dynamic_stream_map_.size()
            << ". activating " << stream->id();
-  DCHECK_EQ(dynamic_stream_map_.count(stream->id()), 0u);
+  DCHECK(!ContainsKey(dynamic_stream_map_, stream->id()));
+  DCHECK(!ContainsKey(static_stream_map_, stream->id()));
   dynamic_stream_map_[stream->id()] = stream;
   // Increase the number of streams being emulated when a new one is opened.
   connection_->SetNumOpenStreams(dynamic_stream_map_.size());
@@ -550,6 +555,13 @@ ReliableQuicStream* QuicSession::GetStream(const QuicStreamId stream_id) {
     return it->second;
   }
   return GetDynamicStream(stream_id);
+}
+
+void QuicSession::StreamDraining(QuicStreamId stream_id) {
+  DCHECK(ContainsKey(dynamic_stream_map_, stream_id));
+  if (!ContainsKey(draining_streams_, stream_id)) {
+    draining_streams_.insert(stream_id);
+  }
 }
 
 ReliableQuicStream* QuicSession::GetDynamicStream(
@@ -639,7 +651,8 @@ bool QuicSession::IsClosedStream(QuicStreamId id) {
 }
 
 size_t QuicSession::GetNumOpenStreams() const {
-  return dynamic_stream_map_.size() + implicitly_created_streams_.size();
+  return dynamic_stream_map_.size() + implicitly_created_streams_.size() -
+         draining_streams_.size();
 }
 
 void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {

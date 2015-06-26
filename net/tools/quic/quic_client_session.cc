@@ -48,10 +48,13 @@ QuicSpdyClientStream* QuicClientSession::CreateOutgoingDynamicStream() {
              << "Already received goaway.";
     return nullptr;
   }
-  QuicSpdyClientStream* stream
-      = new QuicSpdyClientStream(GetNextStreamId(), this);
+  QuicSpdyClientStream* stream = CreateClientStream();
   ActivateStream(stream);
   return stream;
+}
+
+QuicSpdyClientStream* QuicClientSession::CreateClientStream() {
+  return new QuicSpdyClientStream(GetNextStreamId(), this);
 }
 
 QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {

@@ -89,4 +89,25 @@ void AckNotifierManager::OnSerializedPacket(
   }
 }
 
+void AckNotifierManager::OnPacketRemoved(
+    QuicPacketSequenceNumber sequence_number) {
+  // Determine if there are any notifiers interested in this packet.
+  auto map_it = ack_notifier_map_.find(sequence_number);
+  if (map_it == ack_notifier_map_.end()) {
+    return;
+  }
+
+  // Notify all of the interested notifiers that the packet is abandoned.
+  for (QuicAckNotifier* ack_notifier : map_it->second) {
+    DCHECK(ack_notifier);
+    if (ack_notifier->OnPacketAbandoned()) {
+      // If this has resulted in an empty AckNotifer, erase it.
+      delete ack_notifier;
+    }
+  }
+
+  // Remove the packet with given sequence number from the map.
+  ack_notifier_map_.erase(map_it);
+}
+
 }  // namespace net

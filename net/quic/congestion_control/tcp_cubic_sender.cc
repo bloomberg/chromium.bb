@@ -115,7 +115,7 @@ bool TcpCubicSender::ResumeConnectionState(
   // Make sure CWND is in appropriate range (in case of bad data).
   QuicPacketCount new_congestion_window =
       bandwidth.ToBytesPerPeriod(rtt_ms) / kMaxPacketSize;
-  congestion_window_ = max(min(new_congestion_window, kMaxTcpCongestionWindow),
+  congestion_window_ = max(min(new_congestion_window, kMaxResumptionCwnd),
                            kMinCongestionWindowForBandwidthResumption);
 
   // TODO(rjshade): Set appropriate CWND when previous connection was in slow

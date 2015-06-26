@@ -50,6 +50,10 @@ class NET_EXPORT_PRIVATE AckNotifierManager {
   // inform the AckNotifier of the sequence number which it should track.
   void OnSerializedPacket(const SerializedPacket& serialized_packet);
 
+  // This method is invoked when a packet is removed from the list of unacked
+  // packets, and it is no longer necessary to keep track of the notifier.
+  void OnPacketRemoved(QuicPacketSequenceNumber sequence_number);
+
  private:
   friend class test::AckNotifierManagerPeer;
 

@@ -69,7 +69,7 @@ QuicSentPacketManager::QuicSentPacketManager(
     CongestionControlType congestion_control_type,
     LossDetectionType loss_type,
     bool is_secure)
-    : unacked_packets_(),
+    : unacked_packets_(&ack_notifier_manager_),
       perspective_(perspective),
       clock_(clock),
       stats_(stats),

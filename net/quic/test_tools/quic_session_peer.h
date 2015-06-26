@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/containers/hash_tables.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_write_blocked_list.h"
 
@@ -30,6 +31,7 @@ class QuicSessionPeer {
                                                       QuicStreamId stream_id);
   static std::map<QuicStreamId, QuicStreamOffset>&
   GetLocallyClosedStreamsHighestOffset(QuicSession* session);
+  static base::hash_set<QuicStreamId>* GetDrainingStreams(QuicSession* session);
 
   // Discern the state of a stream.  Exactly one of these should be true at a
   // time for any stream id > 0 (other than the special streams 1 and 3).

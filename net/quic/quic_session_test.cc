@@ -223,7 +223,7 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
   }
 
   void CheckClosedStreams() {
-    for (int i = kCryptoStreamId; i < 100; i++) {
+    for (QuicStreamId i = kCryptoStreamId; i < 100; i++) {
       if (!ContainsKey(closed_streams_, i)) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
@@ -268,7 +268,7 @@ TEST_P(QuicSessionTestServer, IsCryptoHandshakeConfirmed) {
 
 TEST_P(QuicSessionTestServer, IsClosedStreamDefault) {
   // Ensure that no streams are initially closed.
-  for (int i = kCryptoStreamId; i < 100; i++) {
+  for (QuicStreamId i = kCryptoStreamId; i < 100; i++) {
     EXPECT_FALSE(session_.IsClosedStream(i)) << "stream id: " << i;
   }
 }
@@ -540,19 +540,21 @@ TEST_P(QuicSessionTestServer, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
 }
 
 TEST_P(QuicSessionTestServer, SendGoAway) {
-  EXPECT_CALL(*connection_,
-              SendGoAway(QUIC_PEER_GOING_AWAY, 3u, "Going Away."));
+  EXPECT_CALL(*connection_, SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId,
+                                       "Going Away."));
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
   EXPECT_TRUE(session_.goaway_sent());
 
+  const QuicStreamId kTestStreamId = 5u;
   EXPECT_CALL(*connection_,
-              SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY, 0)).Times(0);
-  EXPECT_TRUE(session_.GetIncomingDynamicStream(3u));
+              SendRstStream(kTestStreamId, QUIC_STREAM_PEER_GOING_AWAY, 0))
+      .Times(0);
+  EXPECT_TRUE(session_.GetIncomingDynamicStream(kTestStreamId));
 }
 
 TEST_P(QuicSessionTestServer, DoNotSendGoAwayTwice) {
-  EXPECT_CALL(*connection_, SendGoAway(QUIC_PEER_GOING_AWAY, 3u, "Going Away."))
-      .Times(1);
+  EXPECT_CALL(*connection_, SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId,
+                                       "Going Away.")).Times(1);
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
   EXPECT_TRUE(session_.goaway_sent());
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
@@ -599,7 +601,7 @@ TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
   // closed.
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID))
       .Times(1);
-  QuicStreamId kLargeInvalidStreamId = 99999999;
+  const QuicStreamId kLargeInvalidStreamId = 99999999;
   QuicRstStreamFrame rst1(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   QuicConnectionPeer::CloseConnection(connection_);
@@ -660,15 +662,14 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   // Write until the crypto stream is flow control blocked.
   EXPECT_CALL(*connection_, SendBlocked(kCryptoStreamId));
-  int i = 0;
-  while (!crypto_stream->flow_controller()->IsBlocked() && i < 1000) {
+  for (QuicStreamId i = 0;
+       !crypto_stream->flow_controller()->IsBlocked() && i < 1000u; i++) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     QuicConfig config;
     CryptoHandshakeMessage crypto_message;
     config.ToHandshakeMessage(&crypto_message);
     crypto_stream->SendHandshakeMessage(crypto_message);
-    ++i;
   }
   EXPECT_TRUE(crypto_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
@@ -869,7 +870,7 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstAfterRst) {
 TEST_P(QuicSessionTestServer, InvalidStreamFlowControlWindowInHandshake) {
   // Test that receipt of an invalid (< default) stream flow control window from
   // the peer results in the connection being torn down.
-  uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
+  const uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(session_.config(),
                                                             kInvalidWindow);
 
@@ -881,7 +882,7 @@ TEST_P(QuicSessionTestServer, InvalidStreamFlowControlWindowInHandshake) {
 TEST_P(QuicSessionTestServer, InvalidSessionFlowControlWindowInHandshake) {
   // Test that receipt of an invalid (< default) session flow control window
   // from the peer results in the connection being torn down.
-  uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
+  const uint32 kInvalidWindow = kMinimumFlowControlSendWindow - 1;
   QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(session_.config(),
                                                              kInvalidWindow);
 
@@ -943,14 +944,15 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseConnectionClose) {
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS)).Times(1);
 
-  const int kMaxStreams = 5;
+  const QuicStreamId kMaxStreams = 5;
   QuicSessionPeer::SetMaxOpenStreams(&session_, kMaxStreams);
 
   // Create kMaxStreams + 1 data streams, and close them all without receiving a
-  // FIN or a RST from the client.
-  const int kFirstStreamId = kClientDataStreamId1;
-  const int kFinalStreamId = kClientDataStreamId1 + 2 * kMaxStreams + 1;
-  for (int i = kFirstStreamId; i < kFinalStreamId; i += 2) {
+  // FIN or a RST_STREAM from the client.
+  const QuicStreamId kFirstStreamId = kClientDataStreamId1;
+  const QuicStreamId kFinalStreamId =
+      kClientDataStreamId1 + 2 * kMaxStreams + 1;
+  for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += 2) {
     QuicStreamFrame data1(i, false, 0, StringPiece("HT"));
     vector<QuicStreamFrame> frames;
     frames.push_back(data1);
@@ -958,6 +960,35 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseConnectionClose) {
     EXPECT_EQ(1u, session_.GetNumOpenStreams());
     EXPECT_CALL(*connection_, SendRstStream(i, _, _));
     session_.CloseStream(i);
+  }
+
+  // Called after any new data is received by the session, and triggers the call
+  // to close the connection.
+  session_.PostProcessAfterData();
+}
+
+TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
+  // Verify that a draining stream (which has received a FIN but not consumed
+  // it) does not count against the open quota (because it is closed from the
+  // protocol point of view).
+  EXPECT_CALL(*connection_,
+              SendConnectionClose(QUIC_TOO_MANY_UNFINISHED_STREAMS)).Times(0);
+
+  const QuicStreamId kMaxStreams = 5;
+  QuicSessionPeer::SetMaxOpenStreams(&session_, kMaxStreams);
+
+  // Create kMaxStreams + 1 data streams, and mark them draining.
+  const QuicStreamId kFirstStreamId = kClientDataStreamId1;
+  const QuicStreamId kFinalStreamId =
+      kClientDataStreamId1 + 2 * kMaxStreams + 1;
+  for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += 2) {
+    QuicStreamFrame data1(i, true, 0, StringPiece("HT"));
+    vector<QuicStreamFrame> frames;
+    frames.push_back(data1);
+    session_.OnStreamFrames(frames);
+    EXPECT_EQ(1u, session_.GetNumOpenStreams());
+    session_.StreamDraining(i);
+    EXPECT_EQ(0u, session_.GetNumOpenStreams());
   }
 
   // Called after any new data is received by the session, and triggers the call

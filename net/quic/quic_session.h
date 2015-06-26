@@ -186,6 +186,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   ReliableQuicStream* GetStream(const QuicStreamId stream_id);
 
+  // Mark a stream as draining.
+  void StreamDraining(QuicStreamId id);
+
  protected:
   typedef base::hash_map<QuicStreamId, ReliableQuicStream*> StreamMap;
 
@@ -253,7 +256,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // control window in a negotiated config. Closes the connection if invalid.
   void OnNewStreamFlowControlWindow(QuicStreamOffset new_window);
 
-  // Called in OnConfigNegotiated when we receive a new session level flow
+  // Called in OnConfigNegotiated when we receive a new connection level flow
   // control window in a negotiated config. Closes the connection if invalid.
   void OnNewSessionFlowControlWindow(QuicStreamOffset new_window);
 
@@ -291,6 +294,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // of a stream id larger than the next expected stream id.
   base::hash_set<QuicStreamId> implicitly_created_streams_;
 
+  // Set of stream ids that are "draining" -- a FIN has been sent and received,
+  // but the stream object still exists because not all the received data has
+  // been consumed.
+  base::hash_set<QuicStreamId> draining_streams_;
+
   // A list of streams which need to write more data.
   QuicWriteBlockedList write_blocked_streams_;
 
@@ -299,7 +307,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // The latched error with which the connection was closed.
   QuicErrorCode error_;
 
-  // Used for session level flow control.
+  // Used for connection-level flow control.
   QuicFlowController flow_controller_;
 
   // Whether a GoAway has been received.

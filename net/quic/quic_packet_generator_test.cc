@@ -90,8 +90,9 @@ struct PacketContents {
         num_rst_stream_frames(0),
         num_stop_waiting_frames(0),
         num_stream_frames(0),
-        fec_group(0) {
-  }
+        num_ping_frames(0),
+        num_mtu_discovery_frames(0),
+        fec_group(0) {}
 
   size_t num_ack_frames;
   size_t num_connection_close_frames;
@@ -99,6 +100,8 @@ struct PacketContents {
   size_t num_rst_stream_frames;
   size_t num_stop_waiting_frames;
   size_t num_stream_frames;
+  size_t num_ping_frames;
+  size_t num_mtu_discovery_frames;
 
   QuicFecGroupNumber fec_group;
 };
@@ -143,12 +146,13 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
                            size_t packet_index) {
     ASSERT_GT(packets_.size(), packet_index);
     const SerializedPacket& packet = packets_[packet_index];
-    size_t num_retransmittable_frames = contents.num_connection_close_frames +
-        contents.num_goaway_frames + contents.num_rst_stream_frames +
-        contents.num_stream_frames;
-    size_t num_frames = contents.num_ack_frames +
-                        contents.num_stop_waiting_frames +
-                        num_retransmittable_frames;
+    size_t num_retransmittable_frames =
+        contents.num_connection_close_frames + contents.num_goaway_frames +
+        contents.num_rst_stream_frames + contents.num_stream_frames +
+        contents.num_ping_frames;
+    size_t num_frames =
+        contents.num_ack_frames + contents.num_stop_waiting_frames +
+        contents.num_mtu_discovery_frames + num_retransmittable_frames;
 
     if (num_retransmittable_frames == 0) {
       ASSERT_TRUE(packet.retransmittable_frames == nullptr);
@@ -173,6 +177,10 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     EXPECT_EQ(contents.num_stop_waiting_frames,
               simple_framer_.stop_waiting_frames().size());
     EXPECT_EQ(contents.fec_group, simple_framer_.header().fec_group);
+
+    // From the receiver's perspective, MTU discovery frames are ping frames.
+    EXPECT_EQ(contents.num_ping_frames + contents.num_mtu_discovery_frames,
+              simple_framer_.ping_frames().size());
   }
 
   void CheckPacketHasSingleStreamFrame(size_t packet_index) {
@@ -1540,6 +1548,82 @@ TEST_P(QuicPacketGeneratorTest, SetMaxPacketLength_MidpacketFlush) {
   EXPECT_EQ(packet_len, packets_[1].packet->length());
 
   CheckAllPacketsHaveSingleStreamFrame();
+}
+
+// Test sending an MTU probe, without any surrounding data.
+TEST_P(QuicPacketGeneratorTest, GenerateMtuDiscoveryPacket_Simple) {
+  delegate_.SetCanWriteAnything();
+
+  const size_t target_mtu = kDefaultMaxPacketSize + 100;
+  static_assert(target_mtu < kMaxPacketSize,
+                "The MTU probe used by the test exceeds maximum packet size");
+
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+
+  generator_.GenerateMtuDiscoveryPacket(target_mtu, nullptr);
+
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+  ASSERT_EQ(1u, packets_.size());
+  EXPECT_EQ(target_mtu, packets_[0].packet->length());
+
+  PacketContents contents;
+  contents.num_mtu_discovery_frames = 1;
+  CheckPacketContains(contents, 0);
+}
+
+// Test sending an MTU probe.  Surround it with data, to ensure that it resets
+// the MTU to the value before the probe was sent.
+TEST_P(QuicPacketGeneratorTest, GenerateMtuDiscoveryPacket_SurroundedByData) {
+  delegate_.SetCanWriteAnything();
+
+  const size_t target_mtu = kDefaultMaxPacketSize + 100;
+  static_assert(target_mtu < kMaxPacketSize,
+                "The MTU probe used by the test exceeds maximum packet size");
+
+  // Send enough data so it would always cause two packets to be sent.
+  const size_t data_len = target_mtu + 1;
+
+  // Send a total of five packets: two packets before the probe, the probe
+  // itself, and two packets after the probe.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .Times(5)
+      .WillRepeatedly(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+
+  // Send data before the MTU probe.
+  QuicConsumedData consumed =
+      generator_.ConsumeData(kHeadersStreamId, CreateData(data_len),
+                             /*offset=*/2,
+                             /*fin=*/false, MAY_FEC_PROTECT, nullptr);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  EXPECT_FALSE(consumed.fin_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+
+  // Send the MTU probe.
+  generator_.GenerateMtuDiscoveryPacket(target_mtu, nullptr);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+
+  // Send data after the MTU probe.
+  consumed = generator_.ConsumeData(kHeadersStreamId, CreateData(data_len),
+                                    /*offset=*/2 + data_len,
+                                    /*fin=*/true, MAY_FEC_PROTECT, nullptr);
+  EXPECT_EQ(data_len, consumed.bytes_consumed);
+  EXPECT_TRUE(consumed.fin_consumed);
+  EXPECT_FALSE(generator_.HasQueuedFrames());
+
+  ASSERT_EQ(5u, packets_.size());
+  EXPECT_EQ(kDefaultMaxPacketSize, packets_[0].packet->length());
+  EXPECT_EQ(target_mtu, packets_[2].packet->length());
+  EXPECT_EQ(kDefaultMaxPacketSize, packets_[3].packet->length());
+
+  PacketContents probe_contents;
+  probe_contents.num_mtu_discovery_frames = 1;
+
+  CheckPacketHasSingleStreamFrame(0);
+  CheckPacketHasSingleStreamFrame(1);
+  CheckPacketContains(probe_contents, 2);
+  CheckPacketHasSingleStreamFrame(3);
+  CheckPacketHasSingleStreamFrame(4);
 }
 
 }  // namespace test

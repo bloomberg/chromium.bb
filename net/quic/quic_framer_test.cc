@@ -3901,6 +3901,48 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
                                       arraysize(packet));
 }
 
+// Test that the MTU discovery packet is serialized correctly as a PING packet.
+TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = UINT64_C(0xFEDCBA9876543210);
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = false;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.packet_sequence_number = UINT64_C(0x123456789ABC);
+  header.fec_group = 0;
+
+  QuicMtuDiscoveryFrame mtu_discovery_frame;
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&mtu_discovery_frame));
+
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags(entropy)
+    0x01,
+
+    // frame type (ping frame)
+    0x07,
+  };
+  // clang-format on
+
+  scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
+}
+
 TEST_P(QuicFramerTest, BuildPublicResetPacket) {
   QuicPublicResetPacket reset_packet;
   reset_packet.public_header.connection_id = UINT64_C(0xFEDCBA9876543210);

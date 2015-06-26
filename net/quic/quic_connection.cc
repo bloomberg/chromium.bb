@@ -63,9 +63,6 @@ const size_t kMaxFecGroups = 2;
 // Maximum number of acks received before sending an ack in response.
 const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
 
-// Maximum number of tracked packets.
-const QuicPacketCount kMaxTrackedPackets = 5000;
-
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
@@ -1660,9 +1657,7 @@ void QuicConnection::OnSerializedPacket(
     CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
     return;
   }
-  if (serialized_packet.retransmittable_frames) {
-    sent_packet_manager_.OnSerializedPacket(serialized_packet);
-  }
+  sent_packet_manager_.OnSerializedPacket(serialized_packet);
   if (serialized_packet.is_fec_packet && fec_alarm_->IsSet()) {
     // If an FEC packet is serialized with the FEC alarm set, cancel the alarm.
     fec_alarm_->Cancel();

@@ -4,6 +4,16 @@
 //
 // The base class for client/server reliable streams.
 
+// It does not contain the entire interface needed by an application to interact
+// with a QUIC stream.  Some parts of the interface must be obtained by
+// accessing the owning session object.  A subclass of ReliableQuicStream
+// connects the object and the application that generates and consumes the data
+// of the stream.
+
+// The ReliableQuicStream object has a dependent QuicStreamSequencer object,
+// which is given the stream frames as they arrive, and provides stream data in
+// order by invoking ProcessRawData().
+
 #ifndef NET_QUIC_RELIABLE_QUIC_STREAM_H_
 #define NET_QUIC_RELIABLE_QUIC_STREAM_H_
 
@@ -38,34 +48,50 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   virtual ~ReliableQuicStream();
 
-  // Called when a (potentially duplicate) stream frame has been received
-  // for this stream.
+  // Called by the session when a (potentially duplicate) stream frame has been
+  // received for this stream.
   virtual void OnStreamFrame(const QuicStreamFrame& frame);
 
-  // Called when the connection becomes writeable to allow the stream
-  // to write any pending data.
+  // Called by the session when the connection becomes writeable to allow the
+  // stream to write any pending data.
   virtual void OnCanWrite();
 
-  // Called by the session just before the stream is deleted.
+  // Called by the session just before the object is destroyed.
+  // The object should not be accessed after OnClose is called.
+  // Sends a RST_STREAM with code QUIC_RST_ACKNOWLEDGEMENT if neither a FIN nor
+  // a RST_STREAM has been sent.
   virtual void OnClose();
 
-  // Called when we get a stream reset from the peer.
+  // Called by the session when the endpoint receives a RST_STREAM from the
+  // peer.
   virtual void OnStreamReset(const QuicRstStreamFrame& frame);
 
-  // Called when we get or send a connection close, and should immediately
-  // close the stream.  This is not passed through the sequencer,
-  // but is handled immediately.
+  // Called by the session when the endpoint receives or sends a connection
+  // close, and should immediately close the stream.
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer);
 
-  // Called when the final data has been read.
+  // Called by the sequencer after ProcessRawData has accepted the final
+  // incoming data.
   virtual void OnFinRead();
 
+  // Called by the sequencer to deliver to the subclass blocks of the stream's
+  // data in sequential order.
+  // ProcessRawData is called when the next sequential block of data becomes
+  // available, unless the subclass has left the next block of data in the
+  // sequencer.  In that case, the subclass must actively retrieve the data
+  // using the sequencer's Readv() or FlushBufferedFrames().
+  // Return value is the number of data bytes accepted by the callee, i.e.,
+  // the first (return value) bytes of data are removed from the sequencer,
+  // and the final data_len-(return value) bytes of data are retained by the
+  // sequencer.
   virtual uint32 ProcessRawData(const char* data, uint32 data_len) = 0;
 
-  // Called to reset the stream from this end.
+  // Called by the subclass or the sequencer to reset the stream from this
+  // end.
   virtual void Reset(QuicRstStreamErrorCode error);
 
-  // Called to close the entire connection from this end.
+  // Called by the subclass or the sequencer to close the entire connection from
+  // this end.
   virtual void CloseConnection(QuicErrorCode error);
   virtual void CloseConnectionWithDetails(QuicErrorCode error,
                                           const std::string& details);
@@ -91,7 +117,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   void set_fec_policy(FecPolicy fec_policy) { fec_policy_ = fec_policy; }
   FecPolicy fec_policy() const { return fec_policy_; }
 
-  // Adjust our flow control windows according to new offset in |frame|.
+  // Adjust the flow control window according to new offset in |frame|.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
 
   // Used in Chrome.
@@ -101,13 +127,14 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   QuicFlowController* flow_controller() { return &flow_controller_; }
 
-  // Called when we see a frame which could increase the highest offset.
+  // Called when endpoint receives a frame which could increase the highest
+  // offset.
   // Returns true if the highest offset did increase.
   bool MaybeIncreaseHighestReceivedOffset(QuicStreamOffset new_offset);
   // Called when bytes are sent to the peer.
   void AddBytesSent(QuicByteCount bytes);
   // Called by the stream sequencer as bytes are consumed from the buffer.
-  // If our receive window has dropped below the threshold, then send a
+  // If the receive window has dropped below the threshold, then send a
   // WINDOW_UPDATE frame.
   void AddBytesConsumed(QuicByteCount bytes);
 
@@ -115,10 +142,11 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // it was blocked before.
   void UpdateSendWindowOffset(QuicStreamOffset new_offset);
 
-  // Returns true if we have received either a RST or a FIN - either of which
-  // gives a definitive number of bytes which the peer has sent. If this is not
-  // true on stream termination the session must keep track of the stream's byte
-  // offset until a definitive final value arrives.
+  // Returns true if the stream have received either a RST_STREAM or a FIN -
+  // either of which gives a definitive number of bytes which the peer has
+  // sent. If this is not true on deletion of the stream object, the session
+  // must keep track of the stream's byte offset until a definitive final value
+  // arrives.
   bool HasFinalReceivedByteOffset() const {
     return fin_received_ || rst_received_;
   }
@@ -132,6 +160,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
+  // If fin is true: if it is immediately passed on to the session,
+  // write_side_closed() becomes true, otherwise fin_buffered_ becomes true.
   void WriteOrBufferData(
       base::StringPiece data,
       bool fin,
@@ -148,15 +178,20 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
       bool fin,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
-  // Helper method that returns FecProtection to use for writes to the session.
-  FecProtection GetFecProtection();
-
-  // Close the read side of the socket.  Further frames will not be accepted.
+  // Close the read side of the stream.  Further incoming stream frames will be
+  // discarded.  Can be called by the subclass or internally.
+  // May cause the stream to be closed.
   virtual void CloseReadSide();
 
   // Close the write side of the socket.  Further writes will fail.
+  // Can be called by the subclass or internally.
+  // Does not send a FIN.  May cause the stream to be closed.
   void CloseWriteSide();
 
+  // Helper method that returns FecProtection to use when writing.
+  FecProtection GetFecProtection();
+
+  //
   bool fin_buffered() const { return fin_buffered_; }
 
   const QuicSession* session() const { return session_; }
@@ -188,15 +223,17 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
     scoped_refptr<ProxyAckNotifierDelegate> delegate;
   };
 
-  // Calls MaybeSendBlocked on our flow controller, and connection level flow
-  // controller. If we are flow control blocked, marks this stream as write
-  // blocked.
+  // Calls MaybeSendBlocked on the stream's flow controller and the connection
+  // level flow controller.  If the stream is flow control blocked by the
+  // connection-level flow controller but not by the stream-level flow
+  // controller, marks this stream as connection-level write blocked.
   void MaybeSendBlocked();
 
   std::list<PendingData> queued_data_;
 
   QuicStreamSequencer sequencer_;
   QuicStreamId id_;
+  // Pointer to the owning QuicSession object.
   QuicSession* session_;
   // Bytes read and written refer to payload bytes only: they do not include
   // framing, encryption overhead etc.
@@ -216,18 +253,22 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // True if the write side is closed, and further writes should fail.
   bool write_side_closed_;
 
+  // True if the subclass has written a FIN with WriteOrBufferData, but it was
+  // buffered in queued_data_ rather than being sent to the session.
   bool fin_buffered_;
+  // True if a FIN has been sent to the session.
   bool fin_sent_;
 
   // True if this stream has received (and the sequencer has accepted) a
   // StreamFrame with the FIN set.
   bool fin_received_;
 
-  // In combination with fin_sent_, used to ensure that a FIN and/or a RST is
-  // always sent before stream termination.
+  // True if an RST_STREAM has been sent to the session.
+  // In combination with fin_sent_, used to ensure that a FIN and/or a
+  // RST_STREAM is always sent to terminate the stream.
   bool rst_sent_;
 
-  // True if this stream has received a RST stream frame.
+  // True if this stream has received a RST_STREAM frame.
   bool rst_received_;
 
   // FEC policy to be used for this stream.

@@ -49,6 +49,12 @@ QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(QuicSession* session) {
 }
 
 // static
+base::hash_set<QuicStreamId>* QuicSessionPeer::GetDrainingStreams(
+    QuicSession* session) {
+  return &session->draining_streams_;
+}
+
+// static
 bool QuicSessionPeer::IsStreamClosed(QuicSession* session, QuicStreamId id) {
   DCHECK_NE(0u, id);
   return session->IsClosedStream(id);

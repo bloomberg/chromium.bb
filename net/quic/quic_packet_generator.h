@@ -128,6 +128,10 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
                                FecProtection fec_protection,
                                QuicAckNotifier::DelegateInterface* delegate);
 
+  // Generates an MTU discovery packet of specified size.
+  void GenerateMtuDiscoveryPacket(QuicByteCount target_mtu,
+                                  QuicAckNotifier::DelegateInterface* delegate);
+
   // Indicates whether batch mode is currently enabled.
   bool InBatchMode();
   // Disables flushing.
@@ -277,10 +281,10 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Flags to indicate the need for just-in-time construction of a frame.
   bool should_send_ack_;
   bool should_send_stop_waiting_;
-  // If we put a non-retransmittable frame (ack frame) in this packet, then we
-  // have to hold a reference to it until we flush (and serialize it).
-  // Retransmittable frames are referenced elsewhere so that they
-  // can later be (optionally) retransmitted.
+  // If we put a non-retransmittable frame in this packet, then we have to hold
+  // a reference to it until we flush (and serialize it). Retransmittable frames
+  // are referenced elsewhere so that they can later be (optionally)
+  // retransmitted.
   QuicAckFrame pending_ack_frame_;
   QuicStopWaitingFrame pending_stop_waiting_frame_;
   // True if an ack or stop waiting frame is already queued, and should not be

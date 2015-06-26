@@ -63,13 +63,72 @@ class QuicAckNotifierManagerTest : public ::testing::Test {
 // This test verifies that QuicAckNotifierManager can handle the trivial case of
 // received packet notification.
 TEST_F(QuicAckNotifierManagerTest, SimpleAck) {
-  AddPacket(1, true);
+  AddPacket(1, false);
   AddPacket(2, true);
 
   EXPECT_CALL(*delegate_, OnAckNotification(0, 0, zero_)).Times(2);
   manager_.OnPacketAcked(1, zero_);
   EXPECT_EQ(1u, CountPackets());
   manager_.OnPacketAcked(2, zero_);
+  EXPECT_EQ(0u, CountPackets());
+
+  manager_.OnPacketRemoved(1);
+  manager_.OnPacketRemoved(2);
+  EXPECT_EQ(0u, CountPackets());
+}
+
+// This test verifies that QuicAckNotifierManager can correctly handle the case
+// when some of the packets are lost, which causes retransmission and removal
+// from the unacked packet map.
+TEST_F(QuicAckNotifierManagerTest, AckWithLosses) {
+  const size_t retransmitted_packet_size = kDefaultMaxPacketSize;
+
+  // Here, we simulate the following scenario:
+  // 1. We send packets 1 to 5, where only odd-numbered packets are
+  //    retransmittable.
+  // 2. The peer acks 1, 2 and 5, but not 3 and 4.
+  // 3. We retransmit 3 as 6.
+  // 4. We remove 1 and 2, since we no longer care about them.
+  // 4. The peer acks 6.
+  // 5. We remove packets 3 to 6.
+
+  // Step 1: send five packets.
+  AddPacket(1, true);
+  AddPacket(2, false);
+  AddPacket(3, true);
+  AddPacket(4, false);
+  AddPacket(5, true);
+
+  // Step 2: handle acks from peer.
+  EXPECT_CALL(*delegate_, OnAckNotification(0, 0, zero_)).Times(3);
+  manager_.OnPacketAcked(1, zero_);
+  EXPECT_EQ(4u, CountPackets());
+  manager_.OnPacketAcked(2, zero_);
+  EXPECT_EQ(3u, CountPackets());
+  manager_.OnPacketAcked(5, zero_);
+  EXPECT_EQ(2u, CountPackets());
+
+  // Step 3: retransmit 3 as 6.
+  manager_.OnPacketRetransmitted(3, 6, retransmitted_packet_size);
+  EXPECT_EQ(2u, CountPackets());
+
+  // Step 4: remove 1 and 2.
+  manager_.OnPacketRemoved(1);
+  manager_.OnPacketRemoved(2);
+  EXPECT_EQ(2u, CountPackets());
+
+  // Step 4: ack packet 6.
+  EXPECT_CALL(*delegate_,
+              OnAckNotification(1, retransmitted_packet_size, zero_)).Times(1);
+  manager_.OnPacketAcked(6, zero_);
+  EXPECT_EQ(1u, CountPackets());
+
+  // Step 5: remove all packets.  This causes packet 4 to be dropped from the
+  // map.
+  manager_.OnPacketRemoved(3);
+  manager_.OnPacketRemoved(4);
+  manager_.OnPacketRemoved(5);
+  manager_.OnPacketRemoved(6);
   EXPECT_EQ(0u, CountPackets());
 }
 
@@ -91,10 +150,20 @@ TEST_F(QuicAckNotifierManagerTest, RepeatedRetransmission) {
     EXPECT_EQ(1u, CountPackets());
   }
 
+  // Remove all lost packets.
+  for (QuicPacketSequenceNumber packet = 1; packet < last_packet; packet++) {
+    manager_.OnPacketRemoved(packet);
+  }
+  EXPECT_EQ(1u, CountPackets());
+
   // Finally get the packet acknowledged.
   EXPECT_CALL(*delegate_, OnAckNotification(times_lost, total_size_lost, zero_))
       .Times(1);
   manager_.OnPacketAcked(last_packet, zero_);
+  EXPECT_EQ(0u, CountPackets());
+
+  // Remove the last packet.
+  manager_.OnPacketRemoved(last_packet);
   EXPECT_EQ(0u, CountPackets());
 }
 

@@ -372,6 +372,8 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
           return nullptr;
         }
         break;
+      case MTU_DISCOVERY_FRAME:
+      // MTU discovery frames are serialized as ping frames.
       case PING_FRAME:
         // Ping has no payload.
         break;
@@ -1771,6 +1773,8 @@ size_t QuicFramer::ComputeFrameLength(
     }
     case STOP_WAITING_FRAME:
       return GetStopWaitingFrameSize(sequence_number_length);
+    case MTU_DISCOVERY_FRAME:
+    // MTU discovery frames are serialized as ping frames.
     case PING_FRAME:
       // Ping has no payload.
       return kQuicFrameTypeSize;
@@ -1833,6 +1837,9 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
     }
     case ACK_FRAME:
       return true;
+    case MTU_DISCOVERY_FRAME:
+      type_byte = static_cast<uint8>(PING_FRAME);
+      break;
     default:
       type_byte = static_cast<uint8>(frame.type);
       break;

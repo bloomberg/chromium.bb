@@ -56,6 +56,12 @@ class QuicClientSession : public QuicClientSessionBase {
   // QuicSession methods:
   QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override;
 
+  // Unlike CreateOutgoingDynamicStream, which applies a bunch of sanity checks,
+  // this simply returns a new QuicSpdyClientStream. This may be used by
+  // subclasses which want to use a subclass of QuicSpdyClientStream for streams
+  // but wish to use the sanity checks in CreateOutgoingDynamicStream.
+  virtual QuicSpdyClientStream* CreateClientStream();
+
  private:
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
 

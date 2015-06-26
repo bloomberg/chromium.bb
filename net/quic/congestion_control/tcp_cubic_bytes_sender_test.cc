@@ -35,7 +35,7 @@ class TcpCubicBytesSenderPeer : public TcpCubicBytesSender {
                             &rtt_stats_,
                             reno,
                             kInitialCongestionWindowPackets,
-                            kMaxTcpCongestionWindow,
+                            kMaxResumptionCwnd,
                             &stats_) {}
 
   const HybridSlowStart& hybrid_slow_start() const {
@@ -573,9 +573,9 @@ TEST_F(TcpCubicBytesSenderTest, BandwidthResumption) {
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      (kMaxTcpCongestionWindow + 1) * kDefaultTCPMSS);
+      (kMaxResumptionCwnd + 1) * kDefaultTCPMSS);
   EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
-  EXPECT_EQ(kMaxTcpCongestionWindow * kDefaultTCPMSS,
+  EXPECT_EQ(kMaxResumptionCwnd * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 
   cached_network_params.set_bandwidth_estimate_bytes_per_second(

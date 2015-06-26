@@ -427,7 +427,7 @@ class MockQuicSpdySession : public QuicSpdySession {
   explicit MockQuicSpdySession(QuicConnection* connection);
   ~MockQuicSpdySession() override;
 
-  QuicCryptoStream* GetCryptoStream() { return crypto_stream_.get(); }
+  QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
 
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicDataStream*(QuicStreamId id));

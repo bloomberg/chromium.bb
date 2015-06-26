@@ -74,8 +74,11 @@ const uint32 kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
 // Minimum size of the CWND, in packets, when doing bandwidth resumption.
 const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
 
-// Maximum size of the CWND, in packets, for TCP congestion control algorithms.
-const QuicPacketCount kMaxTcpCongestionWindow = 200;
+// Maximum size of the CWND, in packets, for bandwidth resumption.
+const QuicPacketCount kMaxResumptionCwnd = 200;
+
+// Maximum number of tracked packets.
+const QuicPacketCount kMaxTrackedPackets = 5000;
 
 // Default size of the socket receive buffer in bytes.
 const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
@@ -237,6 +240,8 @@ enum QuicFrameType {
   // the wire and their values do not need to be stable.
   STREAM_FRAME,
   ACK_FRAME,
+  // The path MTU discovery frame is encoded as a PING frame on the wire.
+  MTU_DISCOVERY_FRAME,
   NUM_FRAME_TYPES
 };
 
@@ -669,6 +674,10 @@ struct NET_EXPORT_PRIVATE QuicPaddingFrame {
 struct NET_EXPORT_PRIVATE QuicPingFrame {
 };
 
+// A path MTU discovery frame contains no payload and is serialized as a ping
+// frame.
+struct NET_EXPORT_PRIVATE QuicMtuDiscoveryFrame {};
+
 struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
   QuicStreamFrame(const QuicStreamFrame& frame);
@@ -877,6 +886,7 @@ struct NET_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicPaddingFrame* padding_frame);
   explicit QuicFrame(QuicStreamFrame* stream_frame);
   explicit QuicFrame(QuicAckFrame* frame);
+  explicit QuicFrame(QuicMtuDiscoveryFrame* frame);
 
   explicit QuicFrame(QuicRstStreamFrame* frame);
   explicit QuicFrame(QuicConnectionCloseFrame* frame);
@@ -894,6 +904,7 @@ struct NET_EXPORT_PRIVATE QuicFrame {
     QuicPaddingFrame* padding_frame;
     QuicStreamFrame* stream_frame;
     QuicAckFrame* ack_frame;
+    QuicMtuDiscoveryFrame* mtu_discovery_frame;
 
     QuicStopWaitingFrame* stop_waiting_frame;
 

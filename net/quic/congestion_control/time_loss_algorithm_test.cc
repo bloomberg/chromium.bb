@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/quic/congestion_control/time_loss_algorithm.h"
+
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/congestion_control/rtt_stats.h"
-#include "net/quic/congestion_control/time_loss_algorithm.h"
+#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_unacked_packet_map.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,8 +25,7 @@ const uint32 kDefaultLength = 1000;
 
 class TimeLossAlgorithmTest : public ::testing::Test {
  protected:
-  TimeLossAlgorithmTest()
-      : unacked_packets_() {
+  TimeLossAlgorithmTest() : unacked_packets_(&ack_notifier_manager_) {
     rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(100),
                          QuicTime::Delta::Zero(),
                          clock_.Now());
@@ -56,6 +57,7 @@ class TimeLossAlgorithmTest : public ::testing::Test {
   }
 
   vector<QuicEncryptedPacket*> packets_;
+  AckNotifierManager ack_notifier_manager_;
   QuicUnackedPacketMap unacked_packets_;
   TimeLossAlgorithm loss_algorithm_;
   RttStats rtt_stats_;

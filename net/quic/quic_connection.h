@@ -538,6 +538,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicPacketSequenceNumber sequence_number_of_last_sent_packet() const {
     return sequence_number_of_last_sent_packet_;
   }
+
+  QuicPacketWriter* writer() { return writer_; }
   const QuicPacketWriter* writer() const { return writer_; }
 
   bool is_secure() const { return is_secure_; }
@@ -576,8 +578,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // version from |available_versions| which is also supported. Returns true if
   // such a version exists, false otherwise.
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
-
-  QuicPacketWriter* writer() { return writer_; }
 
   bool peer_port_changed() const { return peer_port_changed_; }
 

@@ -6,19 +6,23 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_connection_stats.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils_chromium.h"
 
 using std::max;
 
 namespace net {
 
-QuicUnackedPacketMap::QuicUnackedPacketMap()
+QuicUnackedPacketMap::QuicUnackedPacketMap(
+    AckNotifierManager* ack_notifier_manager)
     : largest_sent_packet_(0),
       largest_observed_(0),
       least_unacked_(1),
       bytes_in_flight_(0),
-      pending_crypto_packet_count_(0) {
+      pending_crypto_packet_count_(0),
+      ack_notifier_manager_(ack_notifier_manager) {
 }
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
@@ -72,11 +76,15 @@ void QuicUnackedPacketMap::AddSentPacket(
 
 void QuicUnackedPacketMap::RemoveObsoletePackets() {
   while (!unacked_packets_.empty()) {
-    if (!IsPacketRemovable(least_unacked_, unacked_packets_.front())) {
+    if (FLAGS_quic_use_is_useless_packet &&
+        !IsPacketUseless(least_unacked_, unacked_packets_.front())) {
       break;
     }
-    unacked_packets_.pop_front();
-    ++least_unacked_;
+    if (!FLAGS_quic_use_is_useless_packet &&
+        !IsPacketRemovable(least_unacked_, unacked_packets_.front())) {
+      break;
+    }
+    PopLeastUnacked();
   }
 }
 
@@ -162,8 +170,7 @@ void QuicUnackedPacketMap::ClearAllPreviousRetransmissions() {
         }
       }
     }
-    unacked_packets_.pop_front();
-    ++least_unacked_;
+    PopLeastUnacked();
   }
 }
 
@@ -273,7 +280,7 @@ bool QuicUnackedPacketMap::IsPacketRemovable(
     QuicPacketSequenceNumber sequence_number,
     const TransmissionInfo& info) const {
   return (!IsPacketUsefulForMeasuringRtt(sequence_number, info) ||
-          unacked_packets_.size() > kMaxTcpCongestionWindow) &&
+          unacked_packets_.size() > 200) &&
          !IsPacketUsefulForCongestionControl(info) &&
          !IsPacketUsefulForRetransmittableData(info);
 }
@@ -385,6 +392,13 @@ bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
 
 QuicPacketSequenceNumber QuicUnackedPacketMap::GetLeastUnacked() const {
   return least_unacked_;
+}
+
+void QuicUnackedPacketMap::PopLeastUnacked() {
+  ack_notifier_manager_->OnPacketRemoved(least_unacked_);
+
+  unacked_packets_.pop_front();
+  ++least_unacked_;
 }
 
 }  // namespace net

@@ -4,6 +4,9 @@
 
 #include "net/quic/quic_unacked_packet_map.h"
 
+#include "net/quic/quic_ack_notifier_manager.h"
+#include "net/quic/quic_flags.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,8 +24,8 @@ const uint32 kDefaultLength = 1000;
 class QuicUnackedPacketMapTest : public ::testing::Test {
  protected:
   QuicUnackedPacketMapTest()
-      : now_(QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1000))) {
-  }
+      : unacked_packets_(&ack_notifier_manager_),
+        now_(QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1000))) {}
 
   ~QuicUnackedPacketMapTest() override {
     STLDeleteElements(&packets_);
@@ -115,6 +118,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     }
   }
   vector<QuicEncryptedPacket*> packets_;
+  AckNotifierManager ack_notifier_manager_;
   QuicUnackedPacketMap unacked_packets_;
   QuicTime now_;
 };
@@ -137,6 +141,7 @@ TEST_F(QuicUnackedPacketMapTest, RttOnly) {
 }
 
 TEST_F(QuicUnackedPacketMapTest, DiscardOldRttOnly) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_use_is_useless_packet, false);
   // Acks are only tracked for RTT measurement purposes, and are discarded
   // when more than 200 accumulate.
   const size_t kNumUnackedPackets = 200;
@@ -439,7 +444,6 @@ TEST_F(QuicUnackedPacketMapTest, SendWithGap) {
   EXPECT_TRUE(unacked_packets_.IsUnacked(5));
   EXPECT_EQ(5u, unacked_packets_.largest_sent_packet());
 }
-
 
 }  // namespace
 }  // namespace test
