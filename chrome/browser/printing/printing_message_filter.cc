@@ -29,7 +29,6 @@
 
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "chrome/browser/printing/print_dialog_cloud.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -44,19 +43,6 @@ using content::BrowserThread;
 namespace printing {
 
 namespace {
-
-#if defined(OS_CHROMEOS)
-typedef std::map<int, base::FilePath> SequenceToPathMap;
-
-struct PrintingSequencePathMap {
-  SequenceToPathMap map;
-  int sequence;
-};
-
-// No locking, only access on the FILE thread.
-static base::LazyInstance<PrintingSequencePathMap>
-    g_printing_file_descriptor_map = LAZY_INSTANCE_INITIALIZER;
-#endif
 
 void RenderParamsFromPrintSettings(const PrintSettings& settings,
                                    PrintMsg_Print_Params* params) {
@@ -107,12 +93,7 @@ PrintingMessageFilter::~PrintingMessageFilter() {
 
 void PrintingMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
-#if defined(OS_CHROMEOS)
-  if (message.type() == PrintHostMsg_AllocateTempFileForPrinting::ID ||
-      message.type() == PrintHostMsg_TempFileForPrintingWritten::ID) {
-    *thread = BrowserThread::FILE;
-  }
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   if (message.type() == PrintHostMsg_AllocateTempFileForPrinting::ID ||
       message.type() == PrintHostMsg_TempFileForPrintingWritten::ID) {
     *thread = BrowserThread::UI;
@@ -126,7 +107,7 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
                         OnAllocateTempFileForPrinting)
     IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
@@ -157,36 +138,11 @@ void PrintingMessageFilter::OnDuplicateSection(
 }
 #endif
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 void PrintingMessageFilter::OnAllocateTempFileForPrinting(
     int render_view_id,
     base::FileDescriptor* temp_file_fd,
     int* sequence_number) {
-#if defined(OS_CHROMEOS)
-  // TODO(thestig): Use |render_view_id| for Chrome OS.
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  temp_file_fd->fd = *sequence_number = -1;
-  temp_file_fd->auto_close = false;
-
-  SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
-  *sequence_number = g_printing_file_descriptor_map.Get().sequence++;
-
-  base::FilePath path;
-  if (base::CreateTemporaryFile(&path)) {
-    int fd = open(path.value().c_str(), O_WRONLY);
-    if (fd >= 0) {
-      SequenceToPathMap::iterator it = map->find(*sequence_number);
-      if (it != map->end()) {
-        NOTREACHED() << "Sequence number already in use. seq=" <<
-            *sequence_number;
-      } else {
-        (*map)[*sequence_number] = path;
-        temp_file_fd->fd = fd;
-        temp_file_fd->auto_close = true;
-      }
-    }
-  }
-#elif defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
   if (!wc)
@@ -199,28 +155,10 @@ void PrintingMessageFilter::OnAllocateTempFileForPrinting(
       print_view_manager->file_descriptor();
   temp_file_fd->fd = file_descriptor.fd;
   temp_file_fd->auto_close = false;
-#endif
 }
 
 void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_view_id,
                                                          int sequence_number) {
-#if defined(OS_CHROMEOS)
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
-  SequenceToPathMap::iterator it = map->find(sequence_number);
-  if (it == map->end()) {
-    NOTREACHED() << "Got a sequence that we didn't pass to the "
-                    "renderer: " << sequence_number;
-    return;
-  }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrintingMessageFilter::CreatePrintDialogForFile,
-                 this, render_view_id, it->second));
-
-  // Erase the entry in the map.
-  map->erase(it);
-#elif defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
   if (!wc)
@@ -232,26 +170,8 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_view_id,
   PrintingContextAndroid::PdfWritingDone(file_descriptor.fd, true);
   // Invalidate the file descriptor so it doesn't accidentally get reused.
   print_view_manager->set_file_descriptor(base::FileDescriptor(-1, false));
-#endif
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
-
-#if defined(OS_CHROMEOS)
-void PrintingMessageFilter::CreatePrintDialogForFile(
-    int render_view_id,
-    const base::FilePath& path) {
-  content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
-  if (!wc)
-    return;
-  print_dialog_cloud::CreatePrintDialogForFile(
-      wc->GetBrowserContext(),
-      wc->GetTopLevelNativeWindow(),
-      path,
-      wc->GetTitle(),
-      base::string16(),
-      std::string("application/pdf"));
-}
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_ANDROID)
 
 content::WebContents* PrintingMessageFilter::GetWebContentsForRenderView(
     int render_view_id) {

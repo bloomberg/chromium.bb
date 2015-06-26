@@ -23,6 +23,7 @@ GURL GetCloudPrintEnableWithSigninURL(const std::string& proxy_id);
 GURL GetCloudPrintManageDeviceURL(const std::string& device_id);
 GURL GetCloudPrintSigninURL();
 GURL GetCloudPrintAddAccountURL();
+bool IsCloudPrintURL(const GURL& url);
 
 GURL GetCloudDevicesURL();
 GURL GetCloudDevicesRelativeURL(const std::string& relative_path);

@@ -63,10 +63,6 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnTempFileForPrintingWritten(int render_view_id, int sequence_number);
 #endif
 
-#if defined(OS_CHROMEOS)
-  void CreatePrintDialogForFile(int render_view_id, const base::FilePath& path);
-#endif
-
 #if defined(OS_ANDROID)
   // Updates the file descriptor for the PrintViewManagerBasic of a given
   // render_view_id.

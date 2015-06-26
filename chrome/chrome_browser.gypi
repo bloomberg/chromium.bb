@@ -2355,6 +2355,8 @@
       'browser/printing/cloud_print/cloud_print_proxy_service_factory.cc',
       'browser/printing/cloud_print/cloud_print_proxy_service_factory.h',
       'browser/printing/print_dialog_cloud.cc',
+      'browser/printing/print_dialog_cloud_win.cc',
+      'browser/printing/print_dialog_cloud_posix.cc',
       'browser/printing/print_dialog_cloud.h',
       'browser/printing/print_error_dialog.cc',
       'browser/printing/print_error_dialog.h',

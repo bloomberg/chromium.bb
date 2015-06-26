@@ -13,12 +13,6 @@
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include <fcntl.h>
-
-#include "base/files/file_util.h"
-#endif
-
 #if defined(ENABLE_PRINTING)
 #include "components/printing/common/print_messages.h"
 #endif
@@ -68,12 +62,6 @@ bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
-#if defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
-                        OnAllocateTempFileForPrinting)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
-                        OnTempFileForPrintingWritten)
-#endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_PRINTING)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -81,27 +69,6 @@ bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 }
 
 #if defined(ENABLE_PRINTING)
-#if defined(OS_CHROMEOS)
-void PrintMockRenderThread::OnAllocateTempFileForPrinting(
-    int render_view_id,
-    base::FileDescriptor* renderer_fd,
-    int* browser_fd) {
-  renderer_fd->fd = *browser_fd = -1;
-  renderer_fd->auto_close = false;
-
-  base::FilePath path;
-  if (base::CreateTemporaryFile(&path)) {
-    int fd = open(path.value().c_str(), O_WRONLY);
-    DCHECK_GE(fd, 0);
-    renderer_fd->fd = *browser_fd = fd;
-  }
-}
-
-void PrintMockRenderThread::OnTempFileForPrintingWritten(int render_view_id,
-                                                         int browser_fd) {
-  close(browser_fd);
-}
-#endif  // defined(OS_CHROMEOS)
 
 void PrintMockRenderThread::OnGetDefaultPrintSettings(
     PrintMsg_Print_Params* params) {

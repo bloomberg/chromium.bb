@@ -1084,7 +1084,6 @@
     ],
     'chrome_unit_tests_print_preview_sources': [
       'browser/printing/cloud_print/cloud_print_proxy_service_unittest.cc',
-      'browser/printing/print_dialog_cloud_unittest.cc',
       'browser/printing/print_job_unittest.cc',
       'browser/printing/print_preview_dialog_controller_unittest.cc',
       'browser/printing/print_preview_test.cc',

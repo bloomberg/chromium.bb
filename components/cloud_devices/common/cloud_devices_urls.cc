@@ -81,6 +81,13 @@ GURL GetCloudPrintAddAccountURL() {
   return url;
 }
 
+bool IsCloudPrintURL(const GURL& url) {
+  GURL cloud_print_url = GetCloudPrintURL();
+  return url.host() == cloud_print_url.host() &&
+         url.scheme() == cloud_print_url.scheme() &&
+         base::StartsWithASCII(url.path(), cloud_print_url.path(), true);
+}
+
 GURL GetCloudPrintEnableURL(const std::string& proxy_id) {
   GURL url = GetCloudPrintRelativeURL("enable_chrome_connector/enable.html");
   url = net::AppendQueryParameter(url, "proxy", proxy_id);

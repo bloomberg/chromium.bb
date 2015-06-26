@@ -95,7 +95,10 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+  return false;
+#elif defined(OS_ANDROID)
   int sequence_number = -1;
   base::FileDescriptor fd;
 
