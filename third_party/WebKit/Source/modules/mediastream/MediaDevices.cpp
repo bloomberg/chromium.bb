@@ -32,7 +32,7 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* scriptState)
 
 namespace {
 
-class PromiseSuccessCallback : public NavigatorUserMediaSuccessCallback {
+class PromiseSuccessCallback final : public NavigatorUserMediaSuccessCallback {
 public:
     PromiseSuccessCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
@@ -47,11 +47,18 @@ public:
     {
         m_resolver->resolve(stream);
     }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_resolver);
+        NavigatorUserMediaSuccessCallback::trace(visitor);
+    }
+
 private:
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
 };
 
-class PromiseErrorCallback : public NavigatorUserMediaErrorCallback {
+class PromiseErrorCallback final : public NavigatorUserMediaErrorCallback {
 public:
     PromiseErrorCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
@@ -66,8 +73,15 @@ public:
     {
         m_resolver->reject(error);
     }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_resolver);
+        NavigatorUserMediaErrorCallback::trace(visitor);
+    }
+
 private:
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
 };
 
 } // namespace
