@@ -176,6 +176,7 @@ DEFINE_TRACE(CanvasRenderingContext2DState)
 {
     visitor->trace(m_strokeStyle);
     visitor->trace(m_fillStyle);
+    visitor->trace(m_filterValue);
     CSSFontSelectorClient::trace(visitor);
 }
 

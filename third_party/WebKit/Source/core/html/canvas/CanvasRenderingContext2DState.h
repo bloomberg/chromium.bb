@@ -200,7 +200,7 @@ private:
     Font m_font;
 
     String m_unparsedFilter;
-    RefPtrWillBeRawPtr<CSSValue> m_filterValue;
+    RefPtrWillBeMember<CSSValue> m_filterValue;
     mutable RefPtr<SkImageFilter> m_resolvedFilter;
 
     // Text state.
