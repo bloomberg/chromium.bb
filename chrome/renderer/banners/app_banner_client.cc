@@ -33,6 +33,10 @@ void AppBannerClient::registerBannerCallbacks(
   banner_callbacks_.AddWithID(callbacks, request_id);
 }
 
+void AppBannerClient::showAppBanner(int request_id) {
+  Send(new ChromeViewHostMsg_RequestShowAppBanner(routing_id(), request_id));
+}
+
 void AppBannerClient::ResolveEvent(
     int request_id,
     const std::string& platform,

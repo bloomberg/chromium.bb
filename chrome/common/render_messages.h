@@ -583,6 +583,10 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_AppBannerPromptReply,
                     int /* request_id */,
                     blink::WebAppBannerPromptReply /* reply */)
 
+// Tells the browser to restart the app banner display pipeline.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RequestShowAppBanner,
+                    int32_t /* request_id */)
+
 // Sent by the renderer to indicate that a fields trial has been activated.
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_FieldTrialActivated,
                      std::string /* name */)

@@ -31,6 +31,8 @@ class AppBannerClient : public content::RenderFrameObserver,
   void registerBannerCallbacks(int request_id,
                                blink::WebAppBannerCallbacks*) override;
 
+  void showAppBanner(int request_id);
+
   void ResolveEvent(int request_id,
                     const std::string& platform,
                     const blink::WebAppBannerPromptResult::Outcome& outcome);

@@ -4,14 +4,19 @@
     <link rel="manifest" href="manifest.json" />
     <script src="main.js"></script>
     <script>
+      function callPrompt(event) {
+        console.log('Re-prompt banner');
+        event.prompt();
+      }
+
       window.addEventListener('beforeinstallprompt', function(e) {
         console.log('Preventing banner from appearing');
         e.preventDefault();
 
-        // Navigate the window to trigger the banner cancellation.
-        window.location.href = "/";
+        setTimeout(callPrompt, 0, e);
       });
+
     </script>
   </head>
-  <body onload="initialize()">Cancels the banner.</body>
+  <body onload="initialize()">Cancels the banner, then prompts for it to be shown later.</body>
 </html>

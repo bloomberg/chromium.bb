@@ -71,6 +71,8 @@ AppBannerDataFetcher::AppBannerDataFetcher(
       ideal_icon_size_(ideal_icon_size),
       weak_delegate_(delegate),
       is_active_(false),
+      was_canceled_by_page_(false),
+      page_requested_prompt_(false),
       event_request_id_(-1) {
 }
 
@@ -81,6 +83,8 @@ void AppBannerDataFetcher::Start(const GURL& validated_url) {
   DCHECK(web_contents);
 
   is_active_ = true;
+  was_canceled_by_page_ = false;
+  page_requested_prompt_ = false;
   validated_url_ = validated_url;
   web_contents->GetManifest(
       base::Bind(&AppBannerDataFetcher::OnDidGetManifest, this));
@@ -92,6 +96,8 @@ void AppBannerDataFetcher::Cancel() {
     FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnDecidedWhetherToShow(this, false));
     is_active_ = false;
+    was_canceled_by_page_ = false;
+    page_requested_prompt_ = false;
   }
 }
 
@@ -128,6 +134,8 @@ bool AppBannerDataFetcher::OnMessageReceived(
                                    render_frame_host)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AppBannerPromptReply,
                         OnBannerPromptReply)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestShowAppBanner,
+                        OnRequestShowAppBanner)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -146,9 +154,18 @@ void AppBannerDataFetcher::OnBannerPromptReply(
   }
 
   // The renderer might have requested the prompt to be canceled.
-  if (reply == blink::WebAppBannerPromptReply::Cancel) {
+  // They may request that it is redisplayed later, so don't Cancel() here.
+  // However, log that the cancelation was requested, so Cancel() can be
+  // called if a redisplay isn't asked for.
+  //
+  // The redisplay request may be received before the Cancel prompt reply
+  // *after* if it is made before the beforeinstallprompt event handler
+  // concludes (e.g. in the event handler itself), so allow the pipeline
+  // to continue in this case.
+  if (reply == blink::WebAppBannerPromptReply::Cancel &&
+      !page_requested_prompt_) {
+    was_canceled_by_page_ = true;
     OutputDeveloperNotShownMessage(web_contents, kRendererRequestCancel);
-    Cancel();
     return;
   }
 
@@ -158,6 +175,20 @@ void AppBannerDataFetcher::OnBannerPromptReply(
 
   ShowBanner(app_icon_.get(), app_title_);
   is_active_ = false;
+}
+
+void AppBannerDataFetcher::OnRequestShowAppBanner(
+    content::RenderFrameHost* render_frame_host,
+    int request_id) {
+  if (was_canceled_by_page_) {
+    // Simulate an "OK" from the website to restart the banner display pipeline.
+    was_canceled_by_page_ = false;
+    OnBannerPromptReply(render_frame_host, request_id,
+                        blink::WebAppBannerPromptReply::None);
+  } else {
+    // Log that the prompt request was made for when we get the prompt reply.
+    page_requested_prompt_ = true;
+  }
 }
 
 AppBannerDataFetcher::~AppBannerDataFetcher() {
