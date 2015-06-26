@@ -968,10 +968,6 @@ const char kContentSettingsPluginWhitelist[] =
     "profile.content_settings.plugin_whitelist";
 #endif
 
-// Boolean that is true if we should unconditionally block third-party cookies,
-// regardless of other content settings.
-const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
-
 // Boolean that is true when all locally stored site data (e.g. cookies, local
 // storage, etc..) should be deleted on exit.
 const char kClearSiteDataOnExit[] = "profile.clear_site_data_on_exit";

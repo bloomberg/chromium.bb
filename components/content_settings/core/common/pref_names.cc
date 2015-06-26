@@ -6,6 +6,10 @@
 
 namespace prefs {
 
+// Boolean that is true if we should unconditionally block third-party cookies,
+// regardless of other content settings.
+const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
+
 // Version of the pattern format used to define content settings.
 const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 

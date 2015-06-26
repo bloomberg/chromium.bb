@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
@@ -28,9 +29,12 @@ class Profile;
 // thread and read on any thread. One instance per profile.
 class CookieSettings : public RefcountedKeyedService {
  public:
-  CookieSettings(
-      HostContentSettingsMap* host_content_settings_map,
-      PrefService* prefs);
+  // Creates a new CookieSettings instance.
+  // The caller is responsible for ensuring that |extension_scheme| is valid for
+  // the whole lifetime of this instance.
+  CookieSettings(HostContentSettingsMap* host_content_settings_map,
+                 PrefService* prefs,
+                 const char* extension_scheme);
 
   // Returns the default content setting (CONTENT_SETTING_ALLOW,
   // CONTENT_SETTING_BLOCK, or CONTENT_SETTING_SESSION_ONLY) for cookies. If
@@ -135,8 +139,10 @@ class CookieSettings : public RefcountedKeyedService {
   // This method may be called on any thread.
   bool ShouldBlockThirdPartyCookies() const;
 
+  base::ThreadChecker thread_checker_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   PrefChangeRegistrar pref_change_registrar_;
+  const char* extension_scheme_;  // Weak.
 
   // Used around accesses to |block_third_party_cookies_| to guarantee thread
   // safety.

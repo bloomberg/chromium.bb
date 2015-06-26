@@ -76,9 +76,10 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_flash_lso_helper_ =
         new MockBrowsingDataFlashLSOHelper(profile_.get());
 
+    const char kExtensionScheme[] = "extensionscheme";
     scoped_refptr<CookieSettings> cookie_settings =
         new CookieSettings(profile_->GetHostContentSettingsMap(),
-                           profile_->GetPrefs());
+                           profile_->GetPrefs(), kExtensionScheme);
 #if defined(ENABLE_EXTENSIONS)
     special_storage_policy_ =
         new ExtensionSpecialStoragePolicy(cookie_settings.get());

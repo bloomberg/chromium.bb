@@ -9,6 +9,7 @@
 
 namespace prefs {
 
+extern const char kBlockThirdPartyCookies[];
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsPatternPairs[];
 extern const char kContentSettingsWindowLastTabIndex[];
