@@ -197,6 +197,26 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
         self.assertRaises(AssertionError, self.AssertDeepCopy, x,
                           copy_x, copy.copy(x))
 
+class SiteParametersClassTest(cros_test_lib.TestCase):
+  """SiteParameters tests."""
+
+  def testAttributeAccess(self):
+    """Test that SiteParameters dot-accessor works correctly."""
+    site_params = config_lib.SiteParameters()
+
+    # Ensure our test key is not in site_params.
+    self.assertTrue(site_params.get('foo') is None)
+
+    # Test that we raise when accessing a non-existent value.
+    # pylint: disable=pointless-statement
+    with self.assertRaises(AttributeError):
+      site_params.foo
+
+    # Test the dot-accessor.
+    site_params.update({'foo': 'bar'})
+    self.assertEquals('bar', site_params.foo)
+
+
 class SiteConfigClassTest(cros_test_lib.TestCase):
   """Config tests."""
 
@@ -310,6 +330,7 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
     config_str = config.SaveConfigToString()
     self.assertEqual(config_str, """{
     "_default": {},
+    "_site_params": {},
     "_templates": {}
 }""")
 
@@ -332,6 +353,10 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
         "child_configs": [],
         "foo": false,
         "hw_tests": []
+    },
+    "_site_params": {
+        "site_foo": true,
+        "site_bar": false
     },
     "_templates": {
        "build": {
@@ -388,6 +413,8 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
             async=True, file_bugs=True, max_retries=None,
             minimum_duts=4, num=2, priority='PostBuild',
             retry=False, suite_min_duts=1))
+    self.assertTrue(config.params.site_foo)
+    self.assertFalse(config.params.site_bar)
 
     # Load an save again, just to make sure there are no changes.
     loaded = config_lib.LoadConfigFromString(config_str)

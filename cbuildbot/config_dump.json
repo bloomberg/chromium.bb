@@ -105,6 +105,7 @@
         ],
         "vm_tests_override": null
     },
+    "_site_params": {},
     "_templates": {
         "asan": {
             "_template": "asan",

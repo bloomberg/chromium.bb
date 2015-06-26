@@ -739,10 +739,21 @@ def DefaultSettings():
   )
 
 
+class SiteParameters(dict):
+  """This holds the site-wide configuration parameters for a SiteConfig."""
+
+  def __getattr__(self, name):
+    """Support attribute-like access to each SiteValue entry."""
+    if name in self:
+      return self[name]
+
+    return super(SiteParameters, self).__getattribute__(name)
+
+
 class SiteConfig(dict):
   """This holds a set of named BuildConfig values."""
 
-  def __init__(self, defaults=None, templates=None):
+  def __init__(self, defaults=None, templates=None, site_params=None):
     """Init.
 
     Args:
@@ -754,10 +765,13 @@ class SiteConfig(dict):
       templates: Dictionary of template names to partial BuildConfigs
                  other BuildConfigs can be based on. Mostly used to reduce
                  verbosity of the config dump file format.
+      site_params: Dictionary of site-wide configuration parameters. Keys
+                   of the site_params dictionary should be strings.
     """
     super(SiteConfig, self).__init__()
     self._defaults = DefaultSettings() if defaults is None else defaults
     self._templates = {} if templates is None else templates
+    self._site_params = {} if site_params is None else site_params
 
   def GetDefault(self):
     """Create the cannonical default build configuration."""
@@ -768,6 +782,11 @@ class SiteConfig(dict):
   def GetTemplates(self):
     """Create the cannonical default build configuration."""
     return self._templates
+
+  @property
+  def params(self):
+    """Create the canonical default build configuration."""
+    return SiteParameters(**self._site_params)
 
   #
   # Methods for searching a SiteConfig's contents.
@@ -1028,6 +1047,7 @@ class SiteConfig(dict):
   def SaveConfigToString(self):
     """Save this Config object to a Json format string."""
     default = self.GetDefault()
+    site_params = self.params
 
     config_dict = {}
     for k, v in self.iteritems():
@@ -1035,6 +1055,7 @@ class SiteConfig(dict):
 
     config_dict['_default'] = default
     config_dict['_templates'] = self._templates
+    config_dict['_site_params'] = site_params
 
     return json.dumps(config_dict, cls=self._JSONEncoder,
                       sort_keys=True, indent=4, separators=(',', ': '))
@@ -1065,6 +1086,7 @@ def LoadConfigFromString(json_string):
   # default is a dictionary of default build configuration values.
   defaults = config_dict.pop(DEFAULT_BUILD_CONFIG)
   templates = config_dict.pop('_templates', None)
+  site_params = config_dict.pop('_site_params', None)
 
   defaultBuildConfig = BuildConfig(**defaults)
 
@@ -1072,7 +1094,8 @@ def LoadConfigFromString(json_string):
             for n, v in config_dict.iteritems()}
 
   # config is the struct that holds the complete cbuildbot config.
-  result = SiteConfig(defaults=defaults, templates=templates)
+  result = SiteConfig(defaults=defaults, templates=templates,
+                      site_params=site_params)
   result.update(builds)
 
   return result
