@@ -282,7 +282,13 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   // Get profiler data from renderer and browser child processes.
   content::ProfilerController::GetInstance()->GetProfilerData(
       sequence_number, current_profiling_phase);
-#endif
+#else
+  // On non-iOS platforms, |OnPendingProcesses()| is called from
+  // |content::ProfilerController|. On iOS, manually call the method to indicate
+  // that there is no need to wait for data from child processes. On iOS, there
+  // is only the main browser process.
+  OnPendingProcesses(sequence_number, 0, true);
+#endif  // !defined(OS_IOS)
 
   // Send process data snapshot from browser process.
   tracked_objects::ProcessDataSnapshot process_data_snapshot;
