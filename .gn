@@ -35,8 +35,10 @@ check_targets = [
   #"//components/*",  # Lots of errors.
   "//components/autofill/*",
   "//components/bookmarks/*",
+  "//components/os_crypt/*",
   "//components/pref_registry/*",
   "//components/undo/*",
+  "//components/user_prefs/*",
   "//components/webcrypto/*",
 
   #"//content/*",  # A whole lot of errors.

@@ -6,7 +6,7 @@ component("user_prefs") {
   sources = [
     "user_prefs.cc",
     "user_prefs.h",
-    "user_prefs/user_prefs_export.h",
+    "user_prefs_export.h",
   ]
 
   defines = [ "USER_PREFS_IMPLEMENTATION" ]
