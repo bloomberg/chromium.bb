@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -74,4 +74,4 @@ class SigninCookieChangedSubscription
   DISALLOW_COPY_AND_ASSIGN(SigninCookieChangedSubscription);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_COOKIE_CHANGED_SUBSCRIPTION_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_cookie_changed_subscription.h"
+#include "components/signin/core/browser/signin_cookie_changed_subscription.h"
 
 #include "base/thread_task_runner_handle.h"
 #include "net/cookies/cookie_store.h"

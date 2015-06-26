@@ -63,6 +63,8 @@
         'signin/core/browser/refresh_token_annotation_request.cc',
         'signin/core/browser/refresh_token_annotation_request.h',
         'signin/core/browser/signin_client.h',
+        'signin/core/browser/signin_cookie_changed_subscription.cc',
+        'signin/core/browser/signin_cookie_changed_subscription.h',
         'signin/core/browser/signin_error_controller.cc',
         'signin/core/browser/signin_error_controller.h',
         'signin/core/browser/signin_internals_util.cc',

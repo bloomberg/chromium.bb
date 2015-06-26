@@ -21,6 +21,8 @@ static_library("browser") {
     "refresh_token_annotation_request.cc",
     "refresh_token_annotation_request.h",
     "signin_client.h",
+    "signin_cookie_changed_subscription.cc",
+    "signin_cookie_changed_subscription.h",
     "signin_error_controller.cc",
     "signin_error_controller.h",
     "signin_internals_util.cc",
