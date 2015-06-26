@@ -4466,7 +4466,7 @@ void RenderFrameImpl::NavigateInternal(
           // process.
           DCHECK(!frame_->parent());
           render_view_->history_controller()->GoToEntry(
-              entry.Pass(), navigation_params.Pass(), cache_policy);
+              frame_, entry.Pass(), navigation_params.Pass(), cache_policy);
         } else {
           // In --site-per-process, the browser process sends a single
           // WebHistoryItem destined for this frame.

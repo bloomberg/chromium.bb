@@ -56,16 +56,17 @@ HistoryController::~HistoryController() {
 }
 
 void HistoryController::GoToEntry(
+    blink::WebLocalFrame* main_frame,
     scoped_ptr<HistoryEntry> target_entry,
     scoped_ptr<NavigationParams> navigation_params,
     WebURLRequest::CachePolicy cache_policy) {
+  DCHECK(!main_frame->parent());
   HistoryFrameLoadVector same_document_loads;
   HistoryFrameLoadVector different_document_loads;
 
   set_provisional_entry(target_entry.Pass());
   navigation_params_ = navigation_params.Pass();
 
-  WebFrame* main_frame = render_view_->GetMainRenderFrame()->GetWebFrame();
   if (current_entry_) {
     RecursiveGoToEntry(
         main_frame, same_document_loads, different_document_loads);
