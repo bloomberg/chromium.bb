@@ -24880,6 +24880,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.PPPMTUValue" units="bytes">
+  <owner>gdk@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the MTU value provided by the
+    upstream PPP peer.  A sample is emitted each time the client successfully
+    negotiates an MTU value via PPP.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.ServiceErrors" enum="NetworkServiceError">
   <owner>quiche@chromium.org</owner>
   <summary>Chrome OS connection manager service errors seen.</summary>
