@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
@@ -252,6 +253,7 @@ void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
   if (status.status() == policy::EnrollmentStatus::STATUS_SUCCESS) {
     success_ = true;
     DCHECK(!fetch_additional_token_ || !additional_token_.empty());
+    StartupUtils::MarkOobeCompleted();
     status_consumer()->OnDeviceEnrolled(additional_token_);
   } else {
     status_consumer()->OnEnrollmentError(status);

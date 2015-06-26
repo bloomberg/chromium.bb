@@ -290,7 +290,6 @@ void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
 }
 
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
-  StartupUtils::MarkOobeCompleted();
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
   actor_->ShowEnrollmentStatus(policy::EnrollmentStatus::ForStatus(
