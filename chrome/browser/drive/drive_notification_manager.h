@@ -9,7 +9,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
-#include "components/invalidation/invalidation_handler.h"
+#include "components/invalidation/public/invalidation_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class ProfileSyncService;

@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task_runner.h"
-#include "components/invalidation/invalidation_util.h"
+#include "components/invalidation/public/invalidation_util.h"
 
 namespace syncer {
 

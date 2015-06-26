@@ -17,12 +17,12 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
-#include "components/invalidation/invalidation_service.h"
-#include "components/invalidation/invalidation_state_tracker.h"
-#include "components/invalidation/invalidator_storage.h"
-#include "components/invalidation/profile_invalidation_provider.h"
-#include "components/invalidation/ticl_invalidation_service.h"
-#include "components/invalidation/ticl_settings_provider.h"
+#include "components/invalidation/impl/invalidation_state_tracker.h"
+#include "components/invalidation/impl/invalidator_storage.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
+#include "components/invalidation/impl/ticl_invalidation_service.h"
+#include "components/invalidation/impl/ticl_settings_provider.h"
+#include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -31,7 +31,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "components/invalidation/invalidation_service_android.h"
+#include "components/invalidation/impl/invalidation_service_android.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

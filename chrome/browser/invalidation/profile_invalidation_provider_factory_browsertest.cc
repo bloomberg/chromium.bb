@@ -12,8 +12,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
-#include "components/invalidation/invalidation_service.h"
-#include "components/invalidation/profile_invalidation_provider.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
+#include "components/invalidation/public/invalidation_service.h"
 #include "components/user_manager/user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

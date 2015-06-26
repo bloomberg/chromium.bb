@@ -49,7 +49,7 @@ source_set("ui") {
     "//components/app_modal",
     "//components/auto_login_parser",
     "//components/dom_distiller/webui",
-    "//components/invalidation",
+    "//components/invalidation/impl",
     "//components/onc",
     "//components/password_manager/core/browser",
     "//components/resources",

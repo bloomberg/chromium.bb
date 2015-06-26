@@ -20,7 +20,7 @@
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
-#include "components/invalidation/invalidation_util.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"

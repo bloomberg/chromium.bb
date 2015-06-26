@@ -7,12 +7,12 @@
 #include <string>
 
 #include "base/logging.h"
-#include "components/invalidation/invalidation.h"
-#include "components/invalidation/invalidation_service.h"
-#include "components/invalidation/invalidation_util.h"
-#include "components/invalidation/invalidator_state.h"
-#include "components/invalidation/object_id_invalidation_map.h"
-#include "components/invalidation/single_object_invalidation_set.h"
+#include "components/invalidation/public/invalidation.h"
+#include "components/invalidation/public/invalidation_service.h"
+#include "components/invalidation/public/invalidation_util.h"
+#include "components/invalidation/public/invalidator_state.h"
+#include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/invalidation/public/single_object_invalidation_set.h"
 
 namespace policy {
 

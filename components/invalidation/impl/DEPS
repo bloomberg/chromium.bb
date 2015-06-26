@@ -1,0 +1,17 @@
+include_rules = [
+  "+components/invalidation/public",
+
+  "+components/gcm_driver",
+  "+components/keyed_service",
+  "+components/pref_registry",
+  "+components/signin",
+
+  "+google_apis/gaia",
+  "+google_apis/gcm",
+  "+jni",
+  "+jingle/notifier",
+  "+net/base/backoff_entry.h",
+  "+net/base/network_change_notifier.h",
+  "+net/http/http_status_code.h",
+  "+net/url_request",
+]

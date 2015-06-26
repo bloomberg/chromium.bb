@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/invalidation/ticl_settings_provider.h"
+#include "components/invalidation/impl/ticl_settings_provider.h"
 
 namespace policy {
 

@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "components/invalidation/invalidation_handler.h"
+#include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

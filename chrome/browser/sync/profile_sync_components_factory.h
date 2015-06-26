@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/public/invalidation_service.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/sync_api_component_factory.h"

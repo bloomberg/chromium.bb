@@ -17,7 +17,7 @@
     ],
     'dependencies': [
       '../../base/base.gyp:base',
-      '../../components/components.gyp:invalidation',
+      '../../components/components.gyp:invalidation_impl',
       '../sync.gyp:sync',
     ],
     'export_dependent_settings': [
@@ -41,7 +41,7 @@
     ],
     'dependencies': [
       '../../base/base.gyp:base',
-      '../../components/components.gyp:invalidation',
+      '../../components/components.gyp:invalidation_impl',
       '../../jingle/jingle.gyp:notifier',
       '../../net/net.gyp:net',
       '../../net/net.gyp:net_test_support',
@@ -63,7 +63,7 @@
     ],
     'dependencies': [
       '../../base/base.gyp:base',
-      '../../components/components.gyp:invalidation',
+      '../../components/components.gyp:invalidation_impl',
       '../../jingle/jingle.gyp:notifier',
       '../../net/net.gyp:net',
       '../../net/net.gyp:net_test_support',

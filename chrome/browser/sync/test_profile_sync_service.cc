@@ -20,7 +20,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
-#include "components/invalidation/profile_invalidation_provider.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"

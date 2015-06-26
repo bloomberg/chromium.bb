@@ -3148,7 +3148,7 @@
         '../components/components.gyp:history_core_common',
         '../components/components.gyp:infobars_core',
         '../components/components.gyp:instance_id',
-        '../components/components.gyp:invalidation',
+        '../components/components.gyp:invalidation_impl',
         '../components/components.gyp:metrics',
         '../components/components.gyp:metrics_gpu',
         '../components/components.gyp:metrics_net',

@@ -8,8 +8,8 @@
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "components/invalidation/invalidation_service_android.h"
-#include "components/invalidation/profile_invalidation_provider.h"
+#include "components/invalidation/impl/invalidation_service_android.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "jni/InvalidationServiceFactory_jni.h"
 
 using base::android::ScopedJavaLocalRef;

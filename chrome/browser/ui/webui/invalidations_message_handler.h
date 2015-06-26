@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "components/invalidation/invalidation_logger_observer.h"
-#include "components/invalidation/invalidation_util.h"
+#include "components/invalidation/impl/invalidation_logger_observer.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;

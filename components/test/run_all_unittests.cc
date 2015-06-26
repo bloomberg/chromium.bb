@@ -22,7 +22,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "components/invalidation/android/component_jni_registrar.h"
+#include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #endif

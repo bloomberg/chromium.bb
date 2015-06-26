@@ -14,7 +14,7 @@ android_library("chrome_java_test_support") {
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_java_resources",
     "//components/bookmarks/common/android:bookmarks_java",
-    "//components/invalidation:java",
+    "//components/invalidation/impl:java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",

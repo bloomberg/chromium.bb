@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "components/invalidation/invalidation_util.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service_observer.h"
 #include "google/cacheinvalidation/include/types.h"

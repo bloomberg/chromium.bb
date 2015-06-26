@@ -10,7 +10,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "components/invalidation/profile_invalidation_provider.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "content/public/browser/notification_source.h"
 

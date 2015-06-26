@@ -130,7 +130,7 @@
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
-#include "components/invalidation/android/component_jni_registrar.h"
+#include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/service_tab_launcher/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"

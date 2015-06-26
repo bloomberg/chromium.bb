@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/invalidation/invalidation_service_util.h"
-#include "components/invalidation/object_id_invalidation_map.h"
+#include "components/invalidation/impl/invalidation_service_util.h"
+#include "components/invalidation/public/object_id_invalidation_map.h"
 
 namespace invalidation {
 

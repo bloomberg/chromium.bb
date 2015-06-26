@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/invalidation/invalidator_storage.h"
+#include "components/invalidation/impl/invalidator_storage.h"
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
-#include "components/invalidation/unacked_invalidation_set_test_util.h"
+#include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
