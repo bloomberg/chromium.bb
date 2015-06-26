@@ -152,6 +152,8 @@
       'renderer/mojo/keep_alive_client_unittest.cc',
       'renderer/mojo/stash_client_unittest.cc',
       'renderer/safe_builtins_unittest.cc',
+      'renderer/scoped_web_frame.cc',
+      'renderer/scoped_web_frame.h',
       'renderer/script_context_set_unittest.cc',
       'renderer/script_context_unittest.cc',
       'renderer/utils_unittest.cc',

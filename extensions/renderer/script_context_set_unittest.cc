@@ -8,23 +8,19 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/renderer/scoped_web_frame.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/public/context_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 
 TEST(ScriptContextSetTest, Lifecycle) {
   base::MessageLoop loop;
-
-  blink::WebView* webview = blink::WebView::create(nullptr);
-  blink::WebLocalFrame* frame =
-      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, nullptr);
-  webview->setMainFrame(frame);
+  ScopedWebFrame web_frame;
 
   // Do this after construction of the webview, since it may construct the
   // Isolate.
@@ -41,11 +37,11 @@ TEST(ScriptContextSetTest, Lifecycle) {
   ExtensionIdSet active_extensions;
   ScriptContextSet context_set(&extensions, &active_extensions);
   ScriptContext* context = context_set.Register(
-      frame, v8_context, 0, 0);  // no extension group or world ID
+      web_frame.frame(), v8_context, 0, 0);  // no extension group or world ID
 
   // Context is valid and resembles correctness.
   EXPECT_TRUE(context->is_valid());
-  EXPECT_EQ(frame, context->web_frame());
+  EXPECT_EQ(web_frame.frame(), context->web_frame());
   EXPECT_EQ(v8_context, context->v8_context());
 
   // Context has been correctly added.
