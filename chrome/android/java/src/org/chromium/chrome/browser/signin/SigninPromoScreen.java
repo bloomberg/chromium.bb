@@ -14,11 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.firstrun.AccountFirstRunView;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -46,9 +45,7 @@ public class SigninPromoScreen extends Dialog implements AccountFirstRunView.Lis
         // navigate to and view a URL on startup), the instance is part of the field trial,
         // and the promo has been marked to display.
         ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance(activity);
-        ChromiumApplication application =
-                (ChromiumApplication) ApplicationStatus.getApplicationContext();
-        if (application.isMultiWindow(activity)) return false;
+        if (MultiWindowUtils.getInstance().isMultiWindow(activity)) return false;
         if (!preferenceManager.getShowSigninPromo()) return false;
         preferenceManager.setShowSigninPromo(false);
 

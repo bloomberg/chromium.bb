@@ -23,7 +23,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.SizingFlags;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
@@ -35,6 +34,7 @@ import org.chromium.chrome.browser.compositor.resources.StaticResourcePreloads;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -135,9 +135,7 @@ public class CompositorView
             mPreviousWindowTop = windowTop;
 
             Activity activity = mWindowAndroid != null ? mWindowAndroid.getActivity().get() : null;
-            ChromiumApplication application =
-                    (ChromiumApplication) getContext().getApplicationContext();
-            boolean isMultiWindow = application.isMultiWindow(activity);
+            boolean isMultiWindow = MultiWindowUtils.getInstance().isMultiWindow(activity);
 
             // If the measured width is the same as the allowed width (i.e. the orientation has
             // not changed) and multi-window mode is off, use the largest measured height seen thus

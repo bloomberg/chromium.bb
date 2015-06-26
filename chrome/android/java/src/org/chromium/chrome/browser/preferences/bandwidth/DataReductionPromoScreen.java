@@ -21,9 +21,8 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.ui.text.SpanApplier;
@@ -60,9 +59,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         if (getDisplayedDataReductionPromo(parentActivity)) return;
         // Showing the promo dialog in multiwindow mode is broken on Galaxy Note devices:
         // http://crbug.com/354696. If we're in multiwindow mode, save the dialog for later.
-        ChromiumApplication application =
-                (ChromiumApplication) ApplicationStatus.getApplicationContext();
-        if (application.isMultiWindow(parentActivity)) return;
+        if (MultiWindowUtils.getInstance().isMultiWindow(parentActivity)) return;
 
         DataReductionPromoScreen promoScreen = new DataReductionPromoScreen(parentActivity);
         promoScreen.setOnDismissListener(promoScreen);

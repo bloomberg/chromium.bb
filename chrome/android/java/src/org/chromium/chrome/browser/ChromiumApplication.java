@@ -55,13 +55,6 @@ public abstract class ChromiumApplication extends ContentApplication {
     private static final long BOOT_TIMESTAMP_MARGIN_MS = 1000;
 
     /**
-     * Returns whether the Activity is being shown in multi-window mode.
-     */
-    public boolean isMultiWindow(Activity activity) {
-        return false;
-    }
-
-    /**
      * Initiate AndroidEdu device check.
      * @param callback Callback that should receive the results of the AndroidEdu device check.
      */

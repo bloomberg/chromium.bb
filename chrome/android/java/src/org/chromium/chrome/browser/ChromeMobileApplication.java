@@ -172,7 +172,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
                 }
 
                 // For multiwindow mode we do not track keyboard visibility.
-                return activity != null && isMultiWindow(activity);
+                return activity != null && MultiWindowUtils.getInstance().isMultiWindow(activity);
             }
         });
 
@@ -474,13 +474,6 @@ public class ChromeMobileApplication extends ChromiumApplication {
      * Stops the application activity tracker.
      */
     protected void stopApplicationActivityTracker() {}
-
-    // TODO(newt): delete this method after upstreaming. Callers can use
-    // MultiWindowUtils.getInstance() instead.
-    @Override
-    public boolean isMultiWindow(Activity activity) {
-        return MultiWindowUtils.getInstance().isMultiWindow(activity);
-    }
 
     /**
      * Honor the Android system setting about showing the last character of a password for a short
