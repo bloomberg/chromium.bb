@@ -227,6 +227,8 @@
         'browser/signin/constants.mm',
         'browser/signin/gaia_auth_fetcher_ios.h',
         'browser/signin/gaia_auth_fetcher_ios.mm',
+        'browser/signin/signin_error_controller_factory.cc',
+        'browser/signin/signin_error_controller_factory.h',
         'browser/snapshots/snapshot_cache.h',
         'browser/snapshots/snapshot_cache.mm',
         'browser/snapshots/snapshot_manager.h',
