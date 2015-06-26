@@ -29,12 +29,16 @@ class AfterStartupTaskUtils {
                        const scoped_refptr<base::TaskRunner>& task_runner,
                        const base::Closure& task);
 
+  // Returns true if browser startup is complete. Only use this on a one-off
+  // basis; If you need to poll this function constantly, use the above
+  // PostTask() API instead.
+  static bool IsBrowserStartupComplete();
+
  private:
   friend class AfterStartupTaskTest;
   FRIEND_TEST_ALL_PREFIXES(AfterStartupTaskTest, IsStartupComplete);
   FRIEND_TEST_ALL_PREFIXES(AfterStartupTaskTest, PostTask);
 
-  static bool IsBrowserStartupComplete();
   static void SetBrowserStartupIsComplete();
   static void UnsafeResetForTesting();
 
