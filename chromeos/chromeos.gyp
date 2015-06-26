@@ -445,6 +445,8 @@
       'settings/timezone_settings.h',
       'settings/timezone_settings_helper.cc',
       'settings/timezone_settings_helper.h',
+      'system/devicetype.cc',
+      'system/devicetype.h',
       'system/name_value_pairs_parser.cc',
       'system/name_value_pairs_parser.h',
       'system/statistics_provider.cc',
