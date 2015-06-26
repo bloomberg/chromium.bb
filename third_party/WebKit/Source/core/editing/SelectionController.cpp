@@ -66,8 +66,9 @@ DEFINE_TRACE(SelectionController)
 
 static void setSelectionIfNeeded(FrameSelection& selection, const VisibleSelection& newSelection)
 {
-    if (!VisibleSelection::InDOMTree::equalSelections(selection.selection(), newSelection))
-        selection.setSelection(newSelection);
+    if (VisibleSelection::InDOMTree::equalSelections(selection.selection(), newSelection))
+        return;
+    selection.setSelection(newSelection);
 }
 
 static inline bool dispatchSelectStart(Node* node)
@@ -133,18 +134,19 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
     Node* innerNode = result.innerNode();
     VisibleSelection newSelection;
 
-    if (innerNode && innerNode->layoutObject()) {
-        VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
-        if (pos.isNotNull()) {
-            newSelection = VisibleSelection(pos);
-            expandSelectionUsingGranularity(newSelection, WordGranularity);
-        }
+    if (!innerNode || !innerNode->layoutObject())
+        return;
 
-        if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
-            newSelection.appendTrailingWhitespace();
-
-        updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
+    VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
+    if (pos.isNotNull()) {
+        newSelection = VisibleSelection(pos);
+        expandSelectionUsingGranularity(newSelection, WordGranularity);
     }
+
+    if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
+        newSelection.appendTrailingWhitespace();
+
+    updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
 }
 
 void SelectionController::selectClosestMisspellingFromHitTestResult(const HitTestResult& result, AppendTrailingWhitespace appendTrailingWhitespace)
@@ -152,40 +154,44 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(const HitTes
     Node* innerNode = result.innerNode();
     VisibleSelection newSelection;
 
-    if (innerNode && innerNode->layoutObject()) {
-        VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
-        Position start = pos.deepEquivalent();
-        Position end = pos.deepEquivalent();
-        if (pos.isNotNull()) {
-            DocumentMarkerVector markers = innerNode->document().markers().markersInRange(makeRange(pos, pos).get(), DocumentMarker::MisspellingMarkers());
-            if (markers.size() == 1) {
-                start.moveToOffset(markers[0]->startOffset());
-                end.moveToOffset(markers[0]->endOffset());
-                newSelection = VisibleSelection(start, end);
-            }
+    if (!innerNode || !innerNode->layoutObject())
+        return;
+
+    VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
+    Position start = pos.deepEquivalent();
+    Position end = pos.deepEquivalent();
+    if (pos.isNotNull()) {
+        DocumentMarkerVector markers = innerNode->document().markers().markersInRange(makeRange(pos, pos).get(), DocumentMarker::MisspellingMarkers());
+        if (markers.size() == 1) {
+            start.moveToOffset(markers[0]->startOffset());
+            end.moveToOffset(markers[0]->endOffset());
+            newSelection = VisibleSelection(start, end);
         }
-
-        if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
-            newSelection.appendTrailingWhitespace();
-
-        updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
     }
+
+    if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())
+        newSelection.appendTrailingWhitespace();
+
+    updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
 }
 
 void SelectionController::selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults& result)
 {
-    if (m_mouseDownMayStartSelect) {
-        selectClosestWordFromHitTestResult(result.hitTestResult(),
-            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend);
-    }
+    if (!m_mouseDownMayStartSelect)
+        return;
+
+    selectClosestWordFromHitTestResult(result.hitTestResult(),
+        (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend);
 }
 
 void SelectionController::selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults& result)
 {
-    if (m_mouseDownMayStartSelect) {
-        selectClosestMisspellingFromHitTestResult(result.hitTestResult(),
-            (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend);
-    }
+    if (!m_mouseDownMayStartSelect)
+        return;
+
+    selectClosestMisspellingFromHitTestResult(result.hitTestResult(),
+        (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend);
+
 }
 
 void SelectionController::selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults& result)
@@ -195,15 +201,16 @@ void SelectionController::selectClosestWordOrLinkFromMouseEvent(const MouseEvent
 
     Node* innerNode = result.innerNode();
 
-    if (innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect) {
-        VisibleSelection newSelection;
-        Element* URLElement = result.hitTestResult().URLElement();
-        VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
-        if (pos.isNotNull() && pos.deepEquivalent().deprecatedNode()->isDescendantOf(URLElement))
-            newSelection = VisibleSelection::selectionFromContentsOfNode(URLElement);
+    if (!innerNode || !innerNode->layoutObject() || !m_mouseDownMayStartSelect)
+        return;
 
-        updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
-    }
+    VisibleSelection newSelection;
+    Element* URLElement = result.hitTestResult().URLElement();
+    VisiblePosition pos(innerNode->layoutObject()->positionForPoint(result.localPoint()));
+    if (pos.isNotNull() && pos.deepEquivalent().deprecatedNode()->isDescendantOf(URLElement))
+        newSelection = VisibleSelection::selectionFromContentsOfNode(URLElement);
+
+    updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
 }
 
 bool SelectionController::handleMousePressEventDoubleClick(const MouseEventWithHitTestResults& event)
@@ -536,38 +543,39 @@ bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& ges
 #else
     bool shouldLongPressSelectWord = m_frame->settings() && m_frame->settings()->touchEditingEnabled();
 #endif
-    if (shouldLongPressSelectWord) {
+    if (!shouldLongPressSelectWord)
+        return false;
 
-
-        Node* innerNode = hitTestResult.innerNode();
-        if (!hitTestResult.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode()
+    Node* innerNode = hitTestResult.innerNode();
+    if (hitTestResult.isLiveLink() || !innerNode || !(innerNode->isContentEditable() || innerNode->isTextNode()
 #if OS(ANDROID)
-            || innerNode->canStartSelection()
+        || innerNode->canStartSelection()
 #endif
-            )) {
-            selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend);
-            if (selection().isRange())
-                return true;
-        }
-    }
-    return false;
+        ))
+        return false;
+
+    selectClosestWordFromHitTestResult(hitTestResult, AppendTrailingWhitespace::DontAppend);
+    if (!selection().isRange())
+        return false;
+    return true;
 }
 
 void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResults& mev, const LayoutPoint& position)
 {
-    if (!selection().contains(position)
-        && !mev.scrollbar()
+    if (selection().contains(position)
+        || mev.scrollbar()
         // FIXME: In the editable case, word selection sometimes selects content that isn't underneath the mouse.
         // If the selection is non-editable, we do word selection to make it easier to use the contextual menu items
         // available for text selections.  But only if we're above text.
-        && (selection().isContentEditable() || (mev.innerNode() && mev.innerNode()->isTextNode()))) {
-        m_mouseDownMayStartSelect = true; // context menu events are always allowed to perform a selection
+        || !(selection().isContentEditable() || (mev.innerNode() && mev.innerNode()->isTextNode())))
+        return;
 
-        if (mev.hitTestResult().isMisspelled())
-            selectClosestMisspellingFromMouseEvent(mev);
-        else if (m_frame->editor().behavior().shouldSelectOnContextualMenuClick())
-            selectClosestWordOrLinkFromMouseEvent(mev);
-    }
+    m_mouseDownMayStartSelect = true; // context menu events are always allowed to perform a selection
+
+    if (mev.hitTestResult().isMisspelled())
+        selectClosestMisspellingFromMouseEvent(mev);
+    else if (m_frame->editor().behavior().shouldSelectOnContextualMenuClick())
+        selectClosestWordOrLinkFromMouseEvent(mev);
 }
 
 void SelectionController::passMousePressEventToSubframe(const MouseEventWithHitTestResults& mev)
@@ -577,12 +585,13 @@ void SelectionController::passMousePressEventToSubframe(const MouseEventWithHitT
     // really strange (having the whole frame be greyed out), so we deselect the
     // selection.
     IntPoint p = m_frame->view()->rootFrameToContents(mev.event().position());
-    if (selection().contains(p)) {
-        VisiblePosition visiblePos(
-            mev.innerNode()->layoutObject()->positionForPoint(mev.localPoint()));
-        VisibleSelection newSelection(visiblePos);
-        selection().setSelection(newSelection);
-    }
+    if (!selection().contains(p))
+        return;
+
+    VisiblePosition visiblePos(
+        mev.innerNode()->layoutObject()->positionForPoint(mev.localPoint()));
+    VisibleSelection newSelection(visiblePos);
+    selection().setSelection(newSelection);
 }
 
 void SelectionController::initializeSelectionState()
