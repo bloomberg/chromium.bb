@@ -6244,19 +6244,19 @@ All users must sign out to continue.
     Consumer management
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_ENROLL_TITLE" desc="The title of the consumer management overlay in the settings page for enrollment.">
-    Enroll Chromebook
+    Enroll <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_ENROLL_MESSAGE" desc="The description of the consumer management overlay in the settings page for enrollment.">
-    You are about to enroll this Chromebook with Google to enable the ability to remotely locate, wipe, and lock the device. This will require a reboot. Do you wish to continue?
+    You are about to enroll this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with Google to enable the ability to remotely locate, wipe, and lock the device. This will require a reboot. Do you wish to continue?
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_ENROLL" desc="The button text of the consumer management overlay in the settings page for enrollment.">
     Enroll and restart
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_UNENROLL_TITLE" desc="The title of the consumer management overlay in the settings page for unenrollment.">
-    Unenroll Chromebook
+    Unenroll <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_UNENROLL_MESSAGE" desc="The description of the consumer management overlay in the settings page for unenrollment.">
-    You are about to unenroll this Chromebook with Google to disable the ability to remotely locate, wipe, and lock the device. This will require a reboot. Do you wish to continue?
+    You are about to unenroll this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with Google to disable the ability to remotely locate, wipe, and lock the device. This will require a reboot. Do you wish to continue?
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_UNENROLL" desc="The button text of the consumer management overlay in the settings page for unenrollment.">
     Unenroll and restart

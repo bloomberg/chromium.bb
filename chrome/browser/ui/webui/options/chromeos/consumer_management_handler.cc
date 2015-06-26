@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/consumer_management_handler.h"
 
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -41,11 +42,11 @@ void ConsumerManagementHandler::GetLocalizedValues(
   // Enroll.
   localized_strings->SetString(
       "consumerManagementOverlayEnrollTitle",
-      l10n_util::GetStringUTF16(
+      ash::SubstituteChromeOSDeviceType(
           IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_ENROLL_TITLE));
   localized_strings->SetString(
       "consumerManagementOverlayEnrollMessage",
-      l10n_util::GetStringUTF16(
+      ash::SubstituteChromeOSDeviceType(
           IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_ENROLL_MESSAGE));
   localized_strings->SetString(
       "consumerManagementOverlayEnroll",
@@ -55,11 +56,11 @@ void ConsumerManagementHandler::GetLocalizedValues(
   // Unenroll.
   localized_strings->SetString(
       "consumerManagementOverlayUnenrollTitle",
-      l10n_util::GetStringUTF16(
+      ash::SubstituteChromeOSDeviceType(
           IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_UNENROLL_TITLE));
   localized_strings->SetString(
       "consumerManagementOverlayUnenrollMessage",
-      l10n_util::GetStringUTF16(
+      ash::SubstituteChromeOSDeviceType(
           IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_UNENROLL_MESSAGE));
   localized_strings->SetString(
       "consumerManagementOverlayUnenroll",
