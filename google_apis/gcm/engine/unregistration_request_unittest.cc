@@ -11,6 +11,7 @@
 #include "google_apis/gcm/engine/gcm_unregistration_request_handler.h"
 #include "google_apis/gcm/engine/instance_id_delete_token_request_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -160,6 +161,10 @@ TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
   ASSERT_TRUE(fetcher);
 
   EXPECT_EQ(GURL(kRegistrationURL), fetcher->GetOriginalURL());
+
+  int flags = fetcher->GetLoadFlags();
+  EXPECT_TRUE(flags & net::LOAD_DO_NOT_SEND_COOKIES);
+  EXPECT_TRUE(flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 
   // Verify that authorization header was put together properly.
   net::HttpRequestHeaders headers;
