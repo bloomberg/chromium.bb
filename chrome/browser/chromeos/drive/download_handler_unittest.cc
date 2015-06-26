@@ -6,6 +6,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
+#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/mock_download_item.h"

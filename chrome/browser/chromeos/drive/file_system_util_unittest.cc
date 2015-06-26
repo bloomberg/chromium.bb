@@ -37,8 +37,7 @@ namespace {
 class ProfileRelatedFileSystemUtilTest : public testing::Test {
  protected:
   ProfileRelatedFileSystemUtilTest()
-      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {
-  }
+      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
 
@@ -68,61 +67,15 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractProfileFromPath) {
       chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting("user1");
   const std::string user2_id_hash =
       chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting("user2");
-  EXPECT_EQ(profile1,
-            ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
-                "/special/drive-" + user1_id_hash)));
-  EXPECT_EQ(profile2,
-            ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
-                "/special/drive-" + user2_id_hash + "/root/xxx")));
-  EXPECT_EQ(NULL, ExtractProfileFromPath(
-      base::FilePath::FromUTF8Unsafe("/special/non-drive-path")));
+  EXPECT_EQ(profile1, ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
+                          "/special/drive-" + user1_id_hash)));
+  EXPECT_EQ(profile2, ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
+                          "/special/drive-" + user2_id_hash + "/root/xxx")));
+  EXPECT_EQ(NULL, ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
+                      "/special/non-drive-path")));
 }
 
-class FileSystemUtilTest : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
-};
-
-TEST_F(FileSystemUtilTest, IsUnderDriveMountPoint) {
-  EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
-  EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
-  EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("special/drive/foo.txt")));
-
-  EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
-  EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
-}
-
-TEST_F(FileSystemUtilTest, ExtractDrivePath) {
-  EXPECT_EQ(base::FilePath(),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
-  EXPECT_EQ(base::FilePath(),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
-
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
-            ExtractDrivePath(base::FilePath::FromUTF8Unsafe(
-                "/special/drive/subdir/foo.txt")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
-}
-
-TEST_F(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
+TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   TestingProfile profile;
 
   // Set up file system context for testing.
@@ -134,8 +87,7 @@ TEST_F(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   scoped_refptr<storage::FileSystemContext> context(
       new storage::FileSystemContext(
           base::ThreadTaskRunnerHandle::Get().get(),
-          base::ThreadTaskRunnerHandle::Get().get(),
-          mount_points.get(),
+          base::ThreadTaskRunnerHandle::Get().get(), mount_points.get(),
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,
           ScopedVector<storage::FileSystemBackend>(),
@@ -146,20 +98,17 @@ TEST_F(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   // Type:"external" + virtual_path:"drive/foo/bar" resolves to "drive/foo/bar".
   const std::string& drive_mount_name =
       GetDriveMountPointPath(&profile).BaseName().AsUTF8Unsafe();
-  mount_points->RegisterFileSystem(drive_mount_name,
-                                   storage::kFileSystemTypeDrive,
-                                   storage::FileSystemMountOption(),
-                                   GetDriveMountPointPath(&profile));
-  EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe("drive/foo/bar"),
-      ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
-          "filesystem:chrome-extension://dummy-id/external/" +
-          drive_mount_name + "/foo/bar"))));
+  mount_points->RegisterFileSystem(
+      drive_mount_name, storage::kFileSystemTypeDrive,
+      storage::FileSystemMountOption(), GetDriveMountPointPath(&profile));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo/bar"),
+            ExtractDrivePathFromFileSystemUrl(context->CrackURL(
+                GURL("filesystem:chrome-extension://dummy-id/external/" +
+                     drive_mount_name + "/foo/bar"))));
 
   // Virtual mount name should not affect the extracted path.
   mount_points->RevokeFileSystem(drive_mount_name);
-  mount_points->RegisterFileSystem("drive2",
-                                   storage::kFileSystemTypeDrive,
+  mount_points->RegisterFileSystem("drive2", storage::kFileSystemTypeDrive,
                                    storage::FileSystemMountOption(),
                                    GetDriveMountPointPath(&profile));
   EXPECT_EQ(
@@ -168,10 +117,9 @@ TEST_F(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           "filesystem:chrome-extension://dummy-id/external/drive2/foo/bar"))));
 
   // Type:"external" + virtual_path:"Downloads/foo" is not a Drive path.
-  mount_points->RegisterFileSystem("Downloads",
-                                   storage::kFileSystemTypeNativeLocal,
-                                   storage::FileSystemMountOption(),
-                                   temp_dir_.path());
+  mount_points->RegisterFileSystem(
+      "Downloads", storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), temp_dir_.path());
   EXPECT_EQ(
       base::FilePath(),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
@@ -181,93 +129,20 @@ TEST_F(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   std::string isolated_name;
   std::string isolated_id =
       storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          storage::kFileSystemTypeNativeForPlatformApp,
-          std::string(),
+          storage::kFileSystemTypeNativeForPlatformApp, std::string(),
           GetDriveMountPointPath(&profile).AppendASCII("bar/buz"),
           &isolated_name);
-  EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe("drive/bar/buz"),
-      ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
-          "filesystem:chrome-extension://dummy-id/isolated/" +
-          isolated_id + "/" + isolated_name))));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/bar/buz"),
+            ExtractDrivePathFromFileSystemUrl(context->CrackURL(
+                GURL("filesystem:chrome-extension://dummy-id/isolated/" +
+                     isolated_id + "/" + isolated_name))));
 }
 
-TEST_F(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
-  const std::string kUnescapedFileName(
-      "tmp:`~!@#$%^&*()-_=+[{|]}\\\\;\',<.>/?");
-  const std::string kEscapedFileName(
-      "tmp:`~!@#$%25^&*()-_=+[{|]}\\\\;\',<%2E>%2F?");
-  EXPECT_EQ(kEscapedFileName, EscapeCacheFileName(kUnescapedFileName));
-  EXPECT_EQ(kUnescapedFileName, UnescapeCacheFileName(kEscapedFileName));
-}
-
-TEST_F(FileSystemUtilTest, NormalizeFileName) {
-  EXPECT_EQ("", NormalizeFileName(""));
-  EXPECT_EQ("foo", NormalizeFileName("foo"));
-  // Slash
-  EXPECT_EQ("foo_zzz", NormalizeFileName("foo/zzz"));
-  EXPECT_EQ("___", NormalizeFileName("///"));
-  // Japanese hiragana "hi" + semi-voiced-mark is normalized to "pi".
-  EXPECT_EQ("\xE3\x81\xB4", NormalizeFileName("\xE3\x81\xB2\xE3\x82\x9A"));
-  // Dot
-  EXPECT_EQ("_", NormalizeFileName("."));
-  EXPECT_EQ("_", NormalizeFileName(".."));
-  EXPECT_EQ("_", NormalizeFileName("..."));
-  EXPECT_EQ(".bashrc", NormalizeFileName(".bashrc"));
-  EXPECT_EQ("._", NormalizeFileName("./"));
-}
-
-TEST_F(FileSystemUtilTest, GetCacheRootPath) {
+TEST_F(ProfileRelatedFileSystemUtilTest, GetCacheRootPath) {
   TestingProfile profile;
   base::FilePath profile_path = profile.GetPath();
   EXPECT_EQ(profile_path.AppendASCII("GCache/v1"),
             util::GetCacheRootPath(&profile));
-}
-
-TEST_F(FileSystemUtilTest, GDocFile) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  GURL url("https://docs.google.com/document/d/"
-           "1YsCnrMxxgp7LDdtlFDt-WdtEIth89vA9inrILtvK-Ug/edit");
-  std::string resource_id("1YsCnrMxxgp7LDdtlFDt-WdtEIth89vA9inrILtvK-Ug");
-
-  // Read and write gdoc.
-  base::FilePath file = temp_dir.path().AppendASCII("test.gdoc");
-  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
-  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
-
-  // Read and write gsheet.
-  file = temp_dir.path().AppendASCII("test.gsheet");
-  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
-  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
-
-  // Read and write gslides.
-  file = temp_dir.path().AppendASCII("test.gslides");
-  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
-  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
-
-  // Read and write gdraw.
-  file = temp_dir.path().AppendASCII("test.gdraw");
-  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
-  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
-
-  // Read and write gtable.
-  file = temp_dir.path().AppendASCII("test.gtable");
-  EXPECT_TRUE(CreateGDocFile(file, url, resource_id));
-  EXPECT_EQ(url, ReadUrlFromGDocFile(file));
-  EXPECT_EQ(resource_id, ReadResourceIdFromGDocFile(file));
-
-  // Non GDoc file.
-  file = temp_dir.path().AppendASCII("test.txt");
-  std::string data = "Hello world!";
-  EXPECT_TRUE(google_apis::test_util::WriteStringToFile(file, data));
-  EXPECT_TRUE(ReadUrlFromGDocFile(file).is_empty());
-  EXPECT_TRUE(ReadResourceIdFromGDocFile(file).empty());
 }
 
 }  // namespace util

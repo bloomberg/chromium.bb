@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"

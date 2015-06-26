@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/drive_pref_names.h"
+#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
@@ -35,11 +36,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
@@ -48,37 +47,6 @@ namespace drive {
 namespace util {
 
 namespace {
-
-std::string ReadStringFromGDocFile(const base::FilePath& file_path,
-                                   const std::string& key) {
-  const int64 kMaxGDocSize = 4096;
-  int64 file_size = 0;
-  if (!base::GetFileSize(file_path, &file_size) ||
-      file_size > kMaxGDocSize) {
-    LOG(WARNING) << "File too large to be a GDoc file " << file_path.value();
-    return std::string();
-  }
-
-  JSONFileValueDeserializer reader(file_path);
-  std::string error_message;
-  scoped_ptr<base::Value> root_value(reader.Deserialize(NULL, &error_message));
-  if (!root_value) {
-    LOG(WARNING) << "Failed to parse " << file_path.value() << " as JSON."
-                 << " error = " << error_message;
-    return std::string();
-  }
-
-  base::DictionaryValue* dictionary_value = NULL;
-  std::string result;
-  if (!root_value->GetAsDictionary(&dictionary_value) ||
-      !dictionary_value->GetString(key, &result)) {
-    LOG(WARNING) << "No value for the given key is stored in "
-                 << file_path.value() << ". key = " << key;
-    return std::string();
-  }
-
-  return result;
-}
 
 // Returns DriveIntegrationService instance, if Drive is enabled.
 // Otherwise, NULL.
@@ -91,31 +59,6 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
 }
 
 }  // namespace
-
-const base::FilePath& GetDriveGrandRootPath() {
-  CR_DEFINE_STATIC_LOCAL(
-      base::FilePath, grand_root_path,
-      (base::FilePath::FromUTF8Unsafe(kDriveGrandRootDirName)));
-  return grand_root_path;
-}
-
-const base::FilePath& GetDriveMyDriveRootPath() {
-  CR_DEFINE_STATIC_LOCAL(
-      base::FilePath, drive_root_path,
-      (GetDriveGrandRootPath().AppendASCII(kDriveMyDriveRootDirName)));
-  return drive_root_path;
-}
-
-base::FilePath GetDriveMountPointPathForUserIdHash(
-    const std::string user_id_hash) {
-  static const base::FilePath::CharType kSpecialMountPointRoot[] =
-      FILE_PATH_LITERAL("/special");
-  static const char kDriveMountPointNameBase[] = "drive";
-  return base::FilePath(kSpecialMountPointRoot).AppendASCII(
-      net::EscapeQueryParamValue(
-          kDriveMountPointNameBase +
-          (user_id_hash.empty() ? "" : "-" + user_id_hash), false));
-}
 
 base::FilePath GetDriveMountPointPath(Profile* profile) {
   std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
@@ -159,9 +102,7 @@ DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile) {
 
   DriveIntegrationService* integration_service =
       GetIntegrationServiceByProfile(profile);
-  return integration_service ?
-      integration_service->drive_app_registry() :
-      NULL;
+  return integration_service ? integration_service->drive_app_registry() : NULL;
 }
 
 DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
@@ -170,29 +111,6 @@ DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
   DriveIntegrationService* integration_service =
       GetIntegrationServiceByProfile(profile);
   return integration_service ? integration_service->drive_service() : NULL;
-}
-
-bool IsUnderDriveMountPoint(const base::FilePath& path) {
-  return !ExtractDrivePath(path).empty();
-}
-
-base::FilePath ExtractDrivePath(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
-  if (components.size() < 3)
-    return base::FilePath();
-  if (components[0] != FILE_PATH_LITERAL("/"))
-    return base::FilePath();
-  if (components[1] != FILE_PATH_LITERAL("special"))
-    return base::FilePath();
-  static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
-  if (components[2].compare(0, arraysize(kPrefix) - 1, kPrefix) != 0)
-    return base::FilePath();
-
-  base::FilePath drive_path = GetDriveGrandRootPath();
-  for (size_t i = 3; i < components.size(); ++i)
-    drive_path = drive_path.Append(components[i]);
-  return drive_path;
 }
 
 Profile* ExtractProfileFromPath(const base::FilePath& path) {
@@ -229,46 +147,6 @@ base::FilePath GetCacheRootPath(Profile* profile) {
   return cache_root_path.Append(kFileCacheVersionDir);
 }
 
-std::string EscapeCacheFileName(const std::string& filename) {
-  // This is based on net/base/escape.cc: net::(anonymous namespace)::Escape
-  std::string escaped;
-  for (size_t i = 0; i < filename.size(); ++i) {
-    char c = filename[i];
-    if (c == '%' || c == '.' || c == '/') {
-      base::StringAppendF(&escaped, "%%%02X", c);
-    } else {
-      escaped.push_back(c);
-    }
-  }
-  return escaped;
-}
-
-std::string UnescapeCacheFileName(const std::string& filename) {
-  std::string unescaped;
-  for (size_t i = 0; i < filename.size(); ++i) {
-    char c = filename[i];
-    if (c == '%' && i + 2 < filename.length()) {
-      c = (base::HexDigitToInt(filename[i + 1]) << 4) +
-          base::HexDigitToInt(filename[i + 2]);
-      i += 2;
-    }
-    unescaped.push_back(c);
-  }
-  return unescaped;
-}
-
-std::string NormalizeFileName(const std::string& input) {
-  DCHECK(base::IsStringUTF8(input));
-
-  std::string output;
-  if (!base::ConvertToUtf8AndNormalize(input, base::kCodepageUTF8, &output))
-    output = input;
-  base::ReplaceChars(output, "/", "_", &output);
-  if (!output.empty() && output.find_first_not_of('.', 0) == std::string::npos)
-    output = "_";
-  return output;
-}
-
 void PrepareWritableFileAndRun(Profile* profile,
                                const base::FilePath& path,
                                const PrepareWritableFileCallback& callback) {
@@ -282,8 +160,7 @@ void PrepareWritableFileAndRun(Profile* profile,
     return;
   }
 
-  WriteOnCacheFile(file_system,
-                   ExtractDrivePath(path),
+  WriteOnCacheFile(file_system, ExtractDrivePath(path),
                    std::string(),  // mime_type
                    callback);
 }
@@ -296,36 +173,13 @@ void EnsureDirectoryExists(Profile* profile,
   if (IsUnderDriveMountPoint(directory)) {
     FileSystemInterface* file_system = GetFileSystemByProfile(profile);
     DCHECK(file_system);
-    file_system->CreateDirectory(
-        ExtractDrivePath(directory),
-        true /* is_exclusive */,
-        true /* is_recursive */,
-        callback);
+    file_system->CreateDirectory(ExtractDrivePath(directory),
+                                 true /* is_exclusive */,
+                                 true /* is_recursive */, callback);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, FILE_ERROR_OK));
   }
-}
-
-void EmptyFileOperationCallback(FileError error) {
-}
-
-bool CreateGDocFile(const base::FilePath& file_path,
-                    const GURL& url,
-                    const std::string& resource_id) {
-  std::string content = base::StringPrintf(
-      "{\"url\": \"%s\", \"resource_id\": \"%s\"}",
-      url.spec().c_str(), resource_id.c_str());
-  return base::WriteFile(file_path, content.data(), content.size()) ==
-      static_cast<int>(content.size());
-}
-
-GURL ReadUrlFromGDocFile(const base::FilePath& file_path) {
-  return GURL(ReadStringFromGDocFile(file_path, "url"));
-}
-
-std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path) {
-  return ReadStringFromGDocFile(file_path, "resource_id");
 }
 
 bool IsDriveEnabledForProfile(Profile* profile) {

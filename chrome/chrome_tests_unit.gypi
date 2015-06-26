@@ -1177,6 +1177,7 @@
       'browser/chromeos/drive/file_system/set_property_operation_unittest.cc',
       'browser/chromeos/drive/file_system/touch_operation_unittest.cc',
       'browser/chromeos/drive/file_system/truncate_operation_unittest.cc',
+      'browser/chromeos/drive/file_system_core_util_unittest.cc',
       'browser/chromeos/drive/file_system_unittest.cc',
       'browser/chromeos/drive/file_system_util_unittest.cc',
       'browser/chromeos/drive/file_task_executor_unittest.cc',

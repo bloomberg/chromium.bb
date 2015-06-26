@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
