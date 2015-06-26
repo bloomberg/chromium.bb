@@ -62,6 +62,7 @@ void UtilsNativeHandler::CreateClassWrapper(
   // TODO(fsamuel): Move privates from ModuleSystem to a shared location.
   v8::Local<v8::Object> natives(context()->module_system()->NewInstance());
   CHECK(!natives.IsEmpty());  // this can happen if v8 has issues
+
   v8::Local<v8::Function> func = func_as_value.As<v8::Function>();
   v8::Local<v8::Value> func_args[] = {
       context()->safe_builtins()->GetObjekt(),

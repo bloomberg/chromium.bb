@@ -22,6 +22,12 @@ inline bool ToV8String(v8::Isolate* isolate,
       .ToLocal(out);
 }
 
+inline bool ToV8String(v8::Isolate* isolate,
+                       const std::string& str,
+                       v8::Local<v8::String>* out) {
+  return ToV8String(isolate, str.c_str(), out);
+}
+
 // Converts |str| to a V8 string.
 // This crashes when strlen(str) > v8::String::kMaxLength.
 inline v8::Local<v8::String> ToV8StringUnsafe(
@@ -98,6 +104,16 @@ inline v8::Local<v8::Value> GetPropertyUnsafe(
   return object->Get(context,
                      ToV8StringUnsafe(context->GetIsolate(), key, string_type))
       .ToLocalChecked();
+}
+
+// Wraps v8::Function::Call(). Returns true on success.
+inline bool CallFunction(v8::Local<v8::Context> context,
+                         v8::Local<v8::Function> function,
+                         v8::Local<v8::Value> recv,
+                         int argc,
+                         v8::Local<v8::Value> argv[],
+                         v8::Local<v8::Value>* out) {
+  return function->Call(context, recv, argc, argv).ToLocal(out);
 }
 
 }  // namespace v8_helpers

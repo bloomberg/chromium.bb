@@ -196,12 +196,17 @@ void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
   exception_handler_->HandleUncaughtException(try_catch);
 }
 
-v8::Local<v8::Value> ModuleSystem::Require(const std::string& module_name) {
-  if (module_name.size() >= v8::String::kMaxLength)
-    return v8::Undefined(GetIsolate());
+v8::MaybeLocal<v8::Object> ModuleSystem::Require(
+    const std::string& module_name) {
+  v8::Local<v8::String> v8_module_name;
+  if (!ToV8String(GetIsolate(), module_name, &v8_module_name))
+    return v8::MaybeLocal<v8::Object>();
   v8::EscapableHandleScope handle_scope(GetIsolate());
-  return handle_scope.Escape(RequireForJsInner(
-      ToV8StringUnsafe(GetIsolate(), module_name.c_str())));
+  v8::Local<v8::Value> value = RequireForJsInner(
+      v8_module_name);
+  if (value.IsEmpty() || !value->IsObject())
+    return v8::MaybeLocal<v8::Object>();
+  return handle_scope.Escape(value.As<v8::Object>());
 }
 
 void ModuleSystem::RequireForJs(
@@ -395,13 +400,9 @@ void ModuleSystem::LazyFieldGetterInner(
   NativesEnabledScope natives_enabled_scope(module_system);
 
   v8::TryCatch try_catch(info.GetIsolate());
-  v8::Local<v8::Value> module_value = (module_system->*require_function)(name);
-  if (try_catch.HasCaught()) {
+  v8::Local<v8::Value> module_value;
+  if (!(module_system->*require_function)(name).ToLocal(&module_value)) {
     module_system->HandleException(try_catch);
-    return;
-  }
-  if (module_value.IsEmpty() || !module_value->IsObject()) {
-    // require_function will have already logged this, we don't need to.
     return;
   }
 
@@ -536,33 +537,39 @@ void ModuleSystem::RequireNative(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   std::string native_name = *v8::String::Utf8Value(args[0]);
-  args.GetReturnValue().Set(RequireNativeFromString(native_name));
+  v8::Local<v8::Object> object;
+  if (RequireNativeFromString(native_name).ToLocal(&object))
+    args.GetReturnValue().Set(object);
 }
 
-v8::Local<v8::Value> ModuleSystem::RequireNativeFromString(
+v8::MaybeLocal<v8::Object> ModuleSystem::RequireNativeFromString(
     const std::string& native_name) {
   if (natives_enabled_ == 0) {
     // HACK: if in test throw exception so that we can test the natives-disabled
     // logic; however, under normal circumstances, this is programmer error so
     // we could crash.
     if (exception_handler_) {
-      return GetIsolate()->ThrowException(
+      GetIsolate()->ThrowException(
           ToV8StringUnsafe(GetIsolate(), "Natives disabled"));
+      return v8::MaybeLocal<v8::Object>();
     }
     Fatal(context_, "Natives disabled for requireNative(" + native_name + ")");
-    return v8::Undefined(GetIsolate());
+    return v8::MaybeLocal<v8::Object>();
   }
 
   if (overridden_native_handlers_.count(native_name) > 0u) {
-    return RequireForJsInner(
+    v8::Local<v8::Value> value = RequireForJsInner(
         ToV8StringUnsafe(GetIsolate(), native_name.c_str()));
+    if (value.IsEmpty() || !value->IsObject())
+      return v8::MaybeLocal<v8::Object>();
+    return value.As<v8::Object>();
   }
 
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
   if (i == native_handler_map_.end()) {
     Fatal(context_,
           "Couldn't find native for requireNative(" + native_name + ")");
-    return v8::Undefined(GetIsolate());
+    return v8::MaybeLocal<v8::Object>();
   }
   return i->second->NewInstance();
 }

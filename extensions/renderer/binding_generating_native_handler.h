@@ -12,7 +12,7 @@
 
 namespace extensions {
 
-class ModuleSystem;
+class ScriptContext;
 
 // Generates API bindings based on the JSON/IDL schemas. This is done by
 // creating a |Binding| (from binding.js) for the schema and generating the
@@ -21,14 +21,14 @@ class BindingGeneratingNativeHandler : public NativeHandler {
  public:
   // Generates binding for |api_name|, and sets the |bind_to| property on the
   // Object returned by |NewInstance| to the generated binding.
-  BindingGeneratingNativeHandler(ModuleSystem* module_system,
+  BindingGeneratingNativeHandler(ScriptContext* context,
                                  const std::string& api_name,
                                  const std::string& bind_to);
 
   v8::Local<v8::Object> NewInstance() override;
 
  private:
-  ModuleSystem* module_system_;
+  ScriptContext* context_;
   std::string api_name_;
   std::string bind_to_;
 };

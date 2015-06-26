@@ -1240,7 +1240,7 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
     module_system->RegisterNativeHandler(
         api_name,
         scoped_ptr<NativeHandler>(new BindingGeneratingNativeHandler(
-            module_system, api_name, "binding")));
+            context, api_name, "binding")));
     module_system->SetNativeLazyField(
         bind_object, bind_name, api_name, "binding");
   } else {

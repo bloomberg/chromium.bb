@@ -80,7 +80,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
-  v8::Local<v8::Value> Require(const std::string& module_name);
+  v8::MaybeLocal<v8::Object> Require(const std::string& module_name);
   void Require(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Run |code| in the current context with the name |name| used for stack
@@ -168,7 +168,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   void RequireForJs(const v8::FunctionCallbackInfo<v8::Value>& args);
   v8::Local<v8::Value> RequireForJsInner(v8::Local<v8::String> module_name);
 
-  typedef v8::Local<v8::Value>(ModuleSystem::*RequireFunction)(
+  typedef v8::MaybeLocal<v8::Object>(ModuleSystem::*RequireFunction)(
       const std::string&);
   // Base implementation of a LazyFieldGetter which uses |require_fn| to require
   // modules.
@@ -184,7 +184,8 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // Return an object that contains the native methods defined by the named
   // NativeHandler.
   // |args[0]| - the name of a native handler object.
-  v8::Local<v8::Value> RequireNativeFromString(const std::string& native_name);
+  v8::MaybeLocal<v8::Object> RequireNativeFromString(
+      const std::string& native_name);
   void RequireNative(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Return a promise for a requested module.
