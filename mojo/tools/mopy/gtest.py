@@ -73,14 +73,14 @@ def _run_apptest(config, shell, args, apptest):
   try:
     output = _run_test_with_timeout(config, shell, args, apptest)
   except Exception as e:
-    _print_error(command, e)
+    _print_exception(command, e)
     return False
 
   # Fail on output with gtest's "[  FAILED  ]" or a lack of "[  PASSED  ]".
   # The latter condition ensures failure on broken command lines or output.
   # Check output instead of exit codes because mojo shell always exits with 0.
   if output.find("[  FAILED  ]") != -1 or output.find("[  PASSED  ]") == -1:
-    _print_error(command, output)
+    _print_exception(command, output)
     return False
 
   ms = int(round(1000 * (time.time() - start_time)))
@@ -91,7 +91,7 @@ def _run_apptest(config, shell, args, apptest):
 def _get_fixtures(config, shell, args, apptest):
   """Returns an apptest's "Suite.Fixture" list via --gtest_list_tests output."""
   arguments = args + ["--gtest_list_tests"]
-  command = _build_command_line(config, args, apptest)
+  command = _build_command_line(config, arguments, apptest)
   logging.getLogger().debug("Command: %s" % " ".join(command))
   try:
     tests = _run_test_with_timeout(config, shell, arguments, apptest)
@@ -111,18 +111,20 @@ def _get_fixtures(config, shell, args, apptest):
       test_list.append(suite + line.strip())
     return test_list
   except Exception as e:
-    _print_error(command, e)
+    _print_exception(command, e)
   return []
 
 
-def _print_error(command_line, error):
-  """Properly format an exception raised from a failed command execution."""
+def _print_exception(command_line, exception):
+  """Print a formatted exception raised from a failed command execution."""
   exit_code = ""
-  if hasattr(error, 'returncode'):
-    exit_code = " (exit code %d)" % error.returncode
+  if hasattr(exception, 'returncode'):
+    exit_code = " (exit code %d)" % exception.returncode
   print "\n[  FAILED  ] Command%s: %s" % (exit_code, " ".join(command_line))
   print 72 * "-"
-  print error.output if hasattr(error, 'output') else error
+  if hasattr(exception, 'output'):
+    print exception.output
+  print str(exception)
   print 72 * "-"
 
 
@@ -138,7 +140,7 @@ def _build_command_line(config, args, apptest):
 
 # TODO(msw): Determine proper test timeout durations (starting small).
 def _run_test_with_timeout(config, shell, args, apptest, timeout_in_seconds=10):
-  """Run the given test with a timeout and return the output or an error."""
+  """Run the test with a timeout; return the output or raise an exception."""
   result = multiprocessing.Queue()
   process = multiprocessing.Process(
       target=_run_test, args=(config, shell, args, apptest, result))
@@ -148,19 +150,30 @@ def _run_test_with_timeout(config, shell, args, apptest, timeout_in_seconds=10):
     process.terminate()
     process.join()
     return "Error: Test timeout after %s seconds" % timeout_in_seconds
-  return result.get()
+  (output, exception) = result.get()
+  if exception:
+    raise Exception(output + "\n" + exception)
+  return output
 
 
 def _run_test(config, shell, args, apptest, result):
-  """Run the given test and puts the output in |result|."""
-  if (config.target_os != Config.OS_ANDROID):
-    command = _build_command_line(config, args, apptest)
-    result.put(subprocess.check_output(command, stderr=subprocess.STDOUT))
-    return
-
-  assert shell
-  (r, w) = os.pipe()
-  with os.fdopen(r, "r") as rf:
-    with os.fdopen(w, "w") as wf:
-      shell.StartActivity('MojoShellActivity', args + [apptest], wf, wf.close)
-      result.put(rf.read())
+  """Run the test and put the output and any exception in |result|."""
+  output = ""
+  exception = ""
+  try:
+    if (config.target_os != Config.OS_ANDROID):
+      command = _build_command_line(config, args, apptest)
+      output = subprocess.check_output(command, stderr=subprocess.STDOUT)
+    else:
+      assert shell
+      (r, w) = os.pipe()
+      with os.fdopen(r, "r") as rf:
+        with os.fdopen(w, "w") as wf:
+          arguments = args + [apptest]
+          shell.StartActivity('MojoShellActivity', arguments, wf, wf.close)
+          output = rf.read()
+  except Exception as e:
+    output = e.output if hasattr(e, 'output') else ""
+    exception = str(e)
+  finally:
+    result.put((output, exception))
