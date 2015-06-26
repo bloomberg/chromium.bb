@@ -108,9 +108,8 @@ void AXObjectCacheImpl::dispose()
 {
     m_notificationPostTimer.stop();
 
-    HashMap<AXID, RefPtr<AXObject>>::iterator end = m_objects.end();
-    for (HashMap<AXID, RefPtr<AXObject>>::iterator it = m_objects.begin(); it != end; ++it) {
-        AXObject* obj = (*it).value.get();
+    for (auto& entry : m_objects) {
+        AXObject* obj = entry.value.get();
         obj->detach();
         removeAXID(obj);
     }
@@ -122,7 +121,7 @@ void AXObjectCacheImpl::dispose()
 
 AXObject* AXObjectCacheImpl::root()
 {
-    return getOrCreate(&m_document);
+    return getOrCreate(m_document);
 }
 
 AXObject* AXObjectCacheImpl::focusedImageMapUIElement(HTMLAreaElement* areaElement)
@@ -278,7 +277,7 @@ bool nodeHasRole(Node* node, const String& role)
     return equalIgnoringCase(toElement(node)->getAttribute(roleAttr), role);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutObject)
+PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutObject)
 {
     // FIXME: How could layoutObject->node() ever not be an Element?
     Node* node = layoutObject->node();
@@ -334,7 +333,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutO
     return AXLayoutObject::create(layoutObject, *this);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
+PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
 {
     if (isMenuListOption(node))
         return AXMenuListOption::create(toHTMLOptionElement(node), *this);
@@ -342,7 +341,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
     return AXNodeObject::create(node, *this);
 }
 
-PassRefPtr<AXObject> AXObjectCacheImpl::createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
+PassRefPtrWillBeRawPtr<AXObject> AXObjectCacheImpl::createFromInlineTextBox(AbstractInlineTextBox* inlineTextBox)
 {
     return AXInlineTextBox::create(inlineTextBox, *this);
 }
@@ -355,7 +354,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
     if (AXObject* obj = get(widget))
         return obj;
 
-    RefPtr<AXObject> newObj = nullptr;
+    RefPtrWillBeRawPtr<AXObject> newObj = nullptr;
     if (widget->isFrameView()) {
         FrameView* frameView = toFrameView(widget);
 
@@ -402,7 +401,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     if (isHTMLHeadElement(node))
         return 0;
 
-    RefPtr<AXObject> newObj = createFromNode(node);
+    RefPtrWillBeRawPtr<AXObject> newObj = createFromNode(node);
 
     // Will crash later if we have two objects for the same node.
     ASSERT(!get(node));
@@ -428,7 +427,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(LayoutObject* layoutObject)
     if (AXObject* obj = get(layoutObject))
         return obj;
 
-    RefPtr<AXObject> newObj = createFromRenderer(layoutObject);
+    RefPtrWillBeRawPtr<AXObject> newObj = createFromRenderer(layoutObject);
 
     // Will crash later if we have two objects for the same layoutObject.
     ASSERT(!get(layoutObject));
@@ -451,7 +450,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(AbstractInlineTextBox* inlineTextBox)
     if (AXObject* obj = get(inlineTextBox))
         return obj;
 
-    RefPtr<AXObject> newObj = createFromInlineTextBox(inlineTextBox);
+    RefPtrWillBeRawPtr<AXObject> newObj = createFromInlineTextBox(inlineTextBox);
 
     // Will crash later if we have two objects for the same inlineTextBox.
     ASSERT(!get(inlineTextBox));
@@ -471,12 +470,12 @@ AXObject* AXObjectCacheImpl::rootObject()
     if (!accessibilityEnabled())
         return 0;
 
-    return getOrCreate(m_document.view());
+    return getOrCreate(m_document->view());
 }
 
 AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
 {
-    RefPtr<AXObject> obj = nullptr;
+    RefPtrWillBeRawPtr<AXObject> obj = nullptr;
 
     // will be filled in...
     switch (role) {
@@ -581,27 +580,6 @@ void AXObjectCacheImpl::remove(AbstractInlineTextBox* inlineTextBox)
     AXID axID = m_inlineTextBoxObjectMapping.get(inlineTextBox);
     remove(axID);
     m_inlineTextBoxObjectMapping.remove(inlineTextBox);
-}
-
-// FIXME: Oilpan: Use a weak hashmap for this instead.
-void AXObjectCacheImpl::clearWeakMembers(Visitor* visitor)
-{
-    Vector<Node*> deadNodes;
-    for (HashMap<Node*, AXID>::iterator it = m_nodeObjectMapping.begin(); it != m_nodeObjectMapping.end(); ++it) {
-        if (!Heap::isHeapObjectAlive(it->key))
-            deadNodes.append(it->key);
-    }
-    for (unsigned i = 0; i < deadNodes.size(); ++i)
-        remove(deadNodes[i]);
-
-    Vector<Widget*> deadWidgets;
-    for (HashMap<Widget*, AXID>::iterator it = m_widgetObjectMapping.begin();
-        it != m_widgetObjectMapping.end(); ++it) {
-        if (!Heap::isHeapObjectAlive(it->key))
-            deadWidgets.append(it->key);
-    }
-    for (unsigned i = 0; i < deadWidgets.size(); ++i)
-        remove(deadWidgets[i]);
 }
 
 AXID AXObjectCacheImpl::platformGenerateAXID() const
@@ -714,7 +692,7 @@ void AXObjectCacheImpl::childrenChanged(AXObject* obj)
 
 void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
 {
-    RefPtrWillBeRawPtr<Document> protectorForCacheOwner(m_document);
+    RefPtrWillBeRawPtr<Document> protectorForCacheOwner(m_document.get());
 
     m_notificationPostTimer.stop();
 
@@ -1114,7 +1092,7 @@ void AXObjectCacheImpl::inlineTextBoxesUpdated(LayoutObject* layoutObject)
 
 Settings* AXObjectCacheImpl::settings()
 {
-    return m_document.settings();
+    return m_document->settings();
 }
 
 bool AXObjectCacheImpl::accessibilityEnabled()
@@ -1234,7 +1212,7 @@ void AXObjectCacheImpl::handleFocusedUIElementChanged(Node*, Node* newFocusedNod
 
 void AXObjectCacheImpl::handleInitialFocus()
 {
-    postNotification(&m_document, AXObjectCache::AXFocusedUIElementChanged);
+    postNotification(m_document, AXObjectCache::AXFocusedUIElementChanged);
 }
 
 void AXObjectCacheImpl::handleEditableTextContentChanged(Node* node)
@@ -1368,7 +1346,14 @@ void AXObjectCacheImpl::setCanvasObjectBounds(Element* element, const LayoutRect
 
 DEFINE_TRACE(AXObjectCacheImpl)
 {
-    visitor->template registerWeakMembers<AXObjectCacheImpl, &AXObjectCacheImpl::clearWeakMembers>(this);
+#if ENABLE(OILPAN)
+    visitor->trace(m_document);
+    visitor->trace(m_objects);
+    visitor->trace(m_widgetObjectMapping);
+    visitor->trace(m_nodeObjectMapping);
+    visitor->trace(m_notificationsToPost);
+    visitor->trace(m_textMarkerNodes);
+#endif
     AXObjectCache::trace(visitor);
 }
 

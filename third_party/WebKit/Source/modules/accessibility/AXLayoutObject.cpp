@@ -181,9 +181,9 @@ AXLayoutObject::AXLayoutObject(LayoutObject* layoutObject, AXObjectCacheImpl& ax
 #endif
 }
 
-PassRefPtr<AXLayoutObject> AXLayoutObject::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXLayoutObject> AXLayoutObject::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXLayoutObject(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AXLayoutObject(layoutObject, axObjectCache));
 }
 
 AXLayoutObject::~AXLayoutObject()
@@ -1707,7 +1707,7 @@ void AXLayoutObject::addChildren()
     Vector<AXObject*> ownedChildren;
     computeAriaOwnsChildren(ownedChildren);
 
-    for (RefPtr<AXObject> obj = firstChild(); obj; obj = obj->nextSibling()) {
+    for (RefPtrWillBeRawPtr<AXObject> obj = firstChild(); obj; obj = obj->nextSibling()) {
         if (!axObjectCache().isAriaOwned(obj.get()))
             addChild(obj.get());
     }
@@ -2367,6 +2367,7 @@ void AXLayoutObject::addImageMapChildren()
             areaObject->setHTMLAreaElement(&area);
             areaObject->setHTMLMapElement(map);
             areaObject->setParent(this);
+            ASSERT(areaObject->axObjectID() != 0);
             if (!areaObject->accessibilityIsIgnored())
                 m_children.append(areaObject);
             else

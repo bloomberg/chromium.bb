@@ -298,9 +298,9 @@ public:
     BLINK_EXPORT void scrollToGlobalPoint(const WebPoint&) const;
 
 #if BLINK_IMPLEMENTATION
-    WebAXObject(const WTF::PassRefPtr<AXObject>&);
-    WebAXObject& operator=(const WTF::PassRefPtr<AXObject>&);
-    operator WTF::PassRefPtr<AXObject>() const;
+    WebAXObject(const PassRefPtrWillBeRawPtr<AXObject>&);
+    WebAXObject& operator=(const PassRefPtrWillBeRawPtr<AXObject>&);
+    operator PassRefPtrWillBeRawPtr<AXObject>() const;
 #endif
 
 private:

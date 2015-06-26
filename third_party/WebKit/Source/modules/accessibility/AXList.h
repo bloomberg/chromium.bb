@@ -41,7 +41,7 @@ private:
     AXList(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXList> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXList> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXList();
 
     virtual bool isList() const override { return true; }

@@ -43,18 +43,18 @@ AXScrollView::AXScrollView(FrameView* view, AXObjectCacheImpl& axObjectCache)
 
 AXScrollView::~AXScrollView()
 {
-    ASSERT(isDetached());
+    ASSERT(!m_scrollView);
 }
 
 void AXScrollView::detach()
 {
     AXObject::detach();
-    m_scrollView = 0;
+    m_scrollView = nullptr;
 }
 
-PassRefPtr<AXScrollView> AXScrollView::create(FrameView* view, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXScrollView> AXScrollView::create(FrameView* view, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXScrollView(view, axObjectCache));
+    return adoptRefWillBeNoop(new AXScrollView(view, axObjectCache));
 }
 
 AXObject* AXScrollView::scrollBar(AccessibilityOrientation orientation)
@@ -251,6 +251,14 @@ AXObject* AXScrollView::computeParentIfExists() const
 ScrollableArea* AXScrollView::getScrollableAreaIfScrollable() const
 {
     return m_scrollView;
+}
+
+DEFINE_TRACE(AXScrollView)
+{
+    visitor->trace(m_scrollView);
+    visitor->trace(m_horizontalScrollbar);
+    visitor->trace(m_verticalScrollbar);
+    AXObject::trace(visitor);
 }
 
 } // namespace blink

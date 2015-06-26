@@ -42,7 +42,7 @@ private:
     explicit AXTableHeaderContainer(AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXTableHeaderContainer> create(AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXTableHeaderContainer> create(AXObjectCacheImpl&);
     virtual ~AXTableHeaderContainer();
 
     virtual AccessibilityRole roleValue() const override { return TableHeaderContainerRole; }

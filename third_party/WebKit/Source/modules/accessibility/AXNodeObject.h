@@ -46,8 +46,9 @@ protected:
     AXNodeObject(Node*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXNodeObject> create(Node*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXNodeObject> create(Node*, AXObjectCacheImpl&);
     virtual ~AXNodeObject();
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     // Protected data.
@@ -167,7 +168,7 @@ protected:
     virtual String computedName() const override;
 
     // New AX name calculation.
-    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, HashSet<AXObject*>& visited, AXNameFrom*, Vector<AXObject*>* nameObjects) override;
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom*, WillBeHeapVector<RawPtrWillBeMember<AXObject>>* nameObjects) override;
 
     // Location and click point in frame-relative coordinates.
     virtual LayoutRect elementRect() const override;
@@ -209,7 +210,7 @@ protected:
     void computeAriaOwnsChildren(Vector<AXObject*>& ownedChildren);
 
 private:
-    Node* m_node;
+    RawPtrWillBeMember<Node> m_node;
 
     String alternativeTextForWebArea() const;
     void alternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;

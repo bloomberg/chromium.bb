@@ -48,7 +48,7 @@ AccessibilityMediaControl::AccessibilityMediaControl(LayoutObject* layoutObject,
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaControl::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXObject> AccessibilityMediaControl::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
     ASSERT(layoutObject->node());
 
@@ -64,7 +64,7 @@ PassRefPtr<AXObject> AccessibilityMediaControl::create(LayoutObject* layoutObjec
         return AXMediaControlsContainer::create(layoutObject, axObjectCache);
 
     default:
-        return adoptRef(new AccessibilityMediaControl(layoutObject, axObjectCache));
+        return adoptRefWillBeNoop(new AccessibilityMediaControl(layoutObject, axObjectCache));
     }
 }
 
@@ -191,9 +191,9 @@ AXMediaControlsContainer::AXMediaControlsContainer(LayoutObject* layoutObject, A
 {
 }
 
-PassRefPtr<AXObject> AXMediaControlsContainer::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXObject> AXMediaControlsContainer::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXMediaControlsContainer(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AXMediaControlsContainer(layoutObject, axObjectCache));
 }
 
 String AXMediaControlsContainer::deprecatedAccessibilityDescription() const
@@ -226,9 +226,9 @@ AccessibilityMediaTimeline::AccessibilityMediaTimeline(LayoutObject* layoutObjec
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeline::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXObject> AccessibilityMediaTimeline::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AccessibilityMediaTimeline(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AccessibilityMediaTimeline(layoutObject, axObjectCache));
 }
 
 String AccessibilityMediaTimeline::valueDescription() const
@@ -254,9 +254,9 @@ AccessibilityMediaTimeDisplay::AccessibilityMediaTimeDisplay(LayoutObject* layou
 {
 }
 
-PassRefPtr<AXObject> AccessibilityMediaTimeDisplay::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXObject> AccessibilityMediaTimeDisplay::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AccessibilityMediaTimeDisplay(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AccessibilityMediaTimeDisplay(layoutObject, axObjectCache));
 }
 
 bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const

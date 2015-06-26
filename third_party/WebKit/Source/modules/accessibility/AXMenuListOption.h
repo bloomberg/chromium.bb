@@ -35,10 +35,12 @@ class AXObjectCacheImpl;
 
 class AXMenuListOption final : public AXMockObject {
 public:
-    static PassRefPtr<AXMenuListOption> create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return adoptRef(new AXMenuListOption(element, axObjectCache)); }
+    static PassRefPtrWillBeRawPtr<AXMenuListOption> create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return adoptRefWillBeNoop(new AXMenuListOption(element, axObjectCache)); }
+    virtual ~AXMenuListOption();
 
 private:
-    explicit AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
+    AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool isMenuListOption() const override { return true; }
 
@@ -59,7 +61,7 @@ private:
     virtual String stringValue() const override;
     virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-    HTMLOptionElement* m_element;
+    RawPtrWillBeMember<HTMLOptionElement> m_element;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, isMenuListOption());

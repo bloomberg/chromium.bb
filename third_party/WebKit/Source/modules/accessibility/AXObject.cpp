@@ -377,7 +377,7 @@ AXObject::AXObject(AXObjectCacheImpl& axObjectCache)
     , m_haveChildren(false)
     , m_role(UnknownRole)
     , m_lastKnownIsIgnoredValue(DefaultBehavior)
-    , m_parent(0)
+    , m_parent(nullptr)
     , m_lastModificationCount(-1)
     , m_cachedIsIgnored(false)
     , m_cachedIsInertOrAriaHidden(false)
@@ -385,7 +385,7 @@ AXObject::AXObject(AXObjectCacheImpl& axObjectCache)
     , m_cachedIsDescendantOfDisabledNode(false)
     , m_cachedHasInheritedPresentationalRole(false)
     , m_cachedIsPresentationalChild(false)
-    , m_cachedLiveRegionRoot(0)
+    , m_cachedLiveRegionRoot(nullptr)
     , m_axObjectCache(&axObjectCache)
 {
     ++s_numberOfLiveAXObjects;
@@ -671,9 +671,9 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
-String AXObject::name(AXNameFrom& nameFrom, Vector<AXObject*>& nameObjects)
+String AXObject::name(AXNameFrom& nameFrom, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects)
 {
-    HashSet<AXObject*> visited;
+    WillBeHeapHashSet<RawPtrWillBeMember<AXObject>> visited;
     return textAlternative(false, false, visited, &nameFrom, &nameObjects);
 }
 
@@ -1482,6 +1482,14 @@ const AtomicString& AXObject::internalRoleName(AccessibilityRole role)
     static const Vector<AtomicString>* internalRoleNameVector = createInternalRoleNameVector();
 
     return internalRoleNameVector->at(role);
+}
+
+DEFINE_TRACE(AXObject)
+{
+    visitor->trace(m_children);
+    visitor->trace(m_parent);
+    visitor->trace(m_cachedLiveRegionRoot);
+    visitor->trace(m_axObjectCache);
 }
 
 } // namespace blink

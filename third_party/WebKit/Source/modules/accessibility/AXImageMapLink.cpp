@@ -45,6 +45,15 @@ AXImageMapLink::AXImageMapLink(AXObjectCacheImpl& axObjectCache)
 
 AXImageMapLink::~AXImageMapLink()
 {
+    ASSERT(!m_areaElement);
+    ASSERT(!m_mapElement);
+}
+
+void AXImageMapLink::detach()
+{
+    AXMockObject::detach();
+    m_areaElement = nullptr;
+    m_mapElement = nullptr;
 }
 
 void AXImageMapLink::detachFromParent()
@@ -54,9 +63,9 @@ void AXImageMapLink::detachFromParent()
     m_mapElement = nullptr;
 }
 
-PassRefPtr<AXImageMapLink> AXImageMapLink::create(AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXImageMapLink> AXImageMapLink::create(AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXImageMapLink(axObjectCache));
+    return adoptRefWillBeNoop(new AXImageMapLink(axObjectCache));
 }
 
 AXObject* AXImageMapLink::computeParent() const
@@ -139,6 +148,13 @@ LayoutRect AXImageMapLink::elementRect() const
         return LayoutRect();
 
     return m_areaElement->computeRect(layoutObject);
+}
+
+DEFINE_TRACE(AXImageMapLink)
+{
+    visitor->trace(m_areaElement);
+    visitor->trace(m_mapElement);
+    AXMockObject::trace(visitor);
 }
 
 } // namespace blink

@@ -45,15 +45,9 @@ AXInlineTextBox::AXInlineTextBox(PassRefPtr<AbstractInlineTextBox> inlineTextBox
 {
 }
 
-AXInlineTextBox::~AXInlineTextBox()
+PassRefPtrWillBeRawPtr<AXInlineTextBox> AXInlineTextBox::create(PassRefPtr<AbstractInlineTextBox> inlineTextBox, AXObjectCacheImpl& axObjectCache)
 {
-    if (m_axObjectCache && m_inlineTextBox)
-        m_axObjectCache->remove(m_inlineTextBox.get());
-}
-
-PassRefPtr<AXInlineTextBox> AXInlineTextBox::create(PassRefPtr<AbstractInlineTextBox> inlineTextBox, AXObjectCacheImpl& axObjectCache)
-{
-    return adoptRef(new AXInlineTextBox(inlineTextBox, axObjectCache));
+    return adoptRefWillBeNoop(new AXInlineTextBox(inlineTextBox, axObjectCache));
 }
 
 void AXInlineTextBox::init()
@@ -62,9 +56,8 @@ void AXInlineTextBox::init()
 
 void AXInlineTextBox::detach()
 {
-    m_inlineTextBox = nullptr;
-    m_axObjectCache = 0;
     AXObject::detach();
+    m_inlineTextBox = nullptr;
 }
 
 LayoutRect AXInlineTextBox::elementRect() const

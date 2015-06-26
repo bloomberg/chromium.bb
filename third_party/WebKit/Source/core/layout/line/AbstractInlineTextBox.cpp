@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 
+#include "core/dom/AXObjectCache.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "platform/text/TextBreakIterator.h"
 
@@ -67,8 +68,19 @@ void AbstractInlineTextBox::willDestroy(InlineTextBox* inlineTextBox)
     }
 }
 
+AbstractInlineTextBox::~AbstractInlineTextBox()
+{
+    ASSERT(!m_layoutText);
+    ASSERT(!m_inlineTextBox);
+}
+
 void AbstractInlineTextBox::detach()
 {
+    if (Node* node = m_layoutText->node()) {
+        if (AXObjectCache* cache = node->document().existingAXObjectCache())
+            cache->remove(this);
+    }
+
     m_layoutText = 0;
     m_inlineTextBox = 0;
 }

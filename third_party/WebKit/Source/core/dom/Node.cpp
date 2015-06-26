@@ -76,7 +76,6 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
@@ -331,9 +330,6 @@ void Node::willBeDeletedFromDocument()
 
     if (document.frameHost())
         document.frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
-
-    if (AXObjectCache* cache = document.existingAXObjectCache())
-        cache->remove(this);
 
     document.markers().removeMarkers(this);
 }
@@ -1804,12 +1800,6 @@ void Node::didMoveToNewDocument(Document& oldDocument)
             for (unsigned i = 0; i < types.size(); ++i)
                 document().addListenerTypeIfNeeded(types[i]);
         }
-    }
-
-    Settings* settings = document().settings();
-    if (settings && settings->accessibilityEnabled()) {
-        if (AXObjectCache* cache = oldDocument.existingAXObjectCache())
-            cache->remove(this);
     }
 
     oldDocument.markers().removeMarkers(this);

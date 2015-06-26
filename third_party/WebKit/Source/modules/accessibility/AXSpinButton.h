@@ -36,8 +36,9 @@ class AXObjectCacheImpl;
 
 class AXSpinButton final : public AXMockObject {
 public:
-    static PassRefPtr<AXSpinButton> create(AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXSpinButton> create(AXObjectCacheImpl&);
     virtual ~AXSpinButton();
+    DECLARE_VIRTUAL_TRACE();
 
     void setSpinButtonElement(SpinButtonElement* spinButton) { m_spinButtonElement = spinButton; }
     void step(int amount);
@@ -53,12 +54,12 @@ private:
     virtual void detach() override;
     virtual void detachFromParent() override;
 
-    SpinButtonElement* m_spinButtonElement;
+    RawPtrWillBeMember<SpinButtonElement> m_spinButtonElement;
 };
 
 class AXSpinButtonPart final : public AXMockObject {
 public:
-    static PassRefPtr<AXSpinButtonPart> create(AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXSpinButtonPart> create(AXObjectCacheImpl&);
     virtual ~AXSpinButtonPart() { }
 
     bool isIncrementor() const { return m_isIncrementor; }

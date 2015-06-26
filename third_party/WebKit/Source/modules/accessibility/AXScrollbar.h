@@ -38,7 +38,9 @@ class Scrollbar;
 
 class AXScrollbar final : public AXMockObject {
 public:
-    static PassRefPtr<AXScrollbar> create(Scrollbar*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXScrollbar> create(Scrollbar*, AXObjectCacheImpl&);
+    virtual ~AXScrollbar();
+    DECLARE_VIRTUAL_TRACE();
 
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
 
@@ -62,9 +64,7 @@ private:
     virtual void setValue(float) override;
     virtual float valueForRange() const override;
 
-    // FIXME: Oilpan: turn this into a Member once the AXObject
-    // hierarchy is on the heap.
-    RefPtrWillBePersistent<Scrollbar> m_scrollbar;
+    RefPtrWillBeMember<Scrollbar> m_scrollbar;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXScrollbar, isAXScrollbar());

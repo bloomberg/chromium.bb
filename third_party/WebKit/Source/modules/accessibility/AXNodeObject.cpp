@@ -70,14 +70,14 @@ AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& axObjectCache)
 {
 }
 
-PassRefPtr<AXNodeObject> AXNodeObject::create(Node* node, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXNodeObject> AXNodeObject::create(Node* node, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXNodeObject(node, axObjectCache));
+    return adoptRefWillBeNoop(new AXNodeObject(node, axObjectCache));
 }
 
 AXNodeObject::~AXNodeObject()
 {
-    ASSERT(isDetached());
+    ASSERT(!m_node);
 }
 
 // This function implements the ARIA accessible name as described by the Mozilla
@@ -755,9 +755,8 @@ void AXNodeObject::init()
 
 void AXNodeObject::detach()
 {
-    clearChildren();
     AXObject::detach();
-    m_node = 0;
+    m_node = nullptr;
 }
 
 bool AXNodeObject::isAnchor() const
@@ -1777,7 +1776,7 @@ String AXNodeObject::computedName() const
 // New AX name calculation.
 //
 
-String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, HashSet<AXObject*>& visited, AXNameFrom* nameFrom, Vector<AXObject*>* nameObjects)
+String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom* nameFrom, WillBeHeapVector<RawPtrWillBeMember<AXObject>>* nameObjects)
 {
     bool alreadyVisited = visited.contains(this);
     visited.add(this);
@@ -1800,7 +1799,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
         ariaLabeledByElements(elements);
         StringBuilder accumulatedText;
         for (const auto& element : elements) {
-            RefPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
+            RefPtrWillBeRawPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
             if (axElement) {
                 if (nameObjects)
                     nameObjects->append(axElement.get());
@@ -2356,10 +2355,16 @@ void AXNodeObject::ariaLabeledByText(WillBeHeapVector<OwnPtrWillBeMember<Accessi
         ariaLabeledByElements(elements);
 
         for (const auto& element : elements) {
-            RefPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
+            RefPtrWillBeRawPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
             textOrder.append(AccessibilityText::create(ariaLabeledBy, AlternativeText, axElement));
         }
     }
+}
+
+DEFINE_TRACE(AXNodeObject)
+{
+    visitor->trace(m_node);
+    AXObject::trace(visitor);
 }
 
 } // namespace blink

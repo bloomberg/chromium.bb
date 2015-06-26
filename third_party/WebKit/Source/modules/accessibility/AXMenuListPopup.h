@@ -36,7 +36,7 @@ class HTMLElement;
 
 class AXMenuListPopup final : public AXMockObject {
 public:
-    static PassRefPtr<AXMenuListPopup> create(AXObjectCacheImpl& axObjectCache) { return adoptRef(new AXMenuListPopup(axObjectCache)); }
+    static PassRefPtrWillBeRawPtr<AXMenuListPopup> create(AXObjectCacheImpl& axObjectCache) { return adoptRefWillBeNoop(new AXMenuListPopup(axObjectCache)); }
 
     virtual bool isEnabled() const override;
     virtual bool isOffScreen() const override;

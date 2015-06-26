@@ -220,7 +220,7 @@ public:
     {
         return adoptPtrWillBeNoop(new AccessibilityText(text, source, nullptr));
     }
-    static PassOwnPtrWillBeRawPtr<AccessibilityText> create(const String& text, const AccessibilityTextSource& source, const RefPtr<AXObject> element)
+    static PassOwnPtrWillBeRawPtr<AccessibilityText> create(const String& text, const AccessibilityTextSource& source, const RefPtrWillBeRawPtr<AXObject> element)
     {
         return adoptPtrWillBeNoop(new AccessibilityText(text, source, nullptr));
     }
@@ -229,10 +229,13 @@ public:
     AccessibilityTextSource textSource() const { return m_textSource; }
     AXObject* textElement() const { return m_textElement.get(); }
 
-    DEFINE_INLINE_TRACE() { }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_textElement);
+    }
 
 private:
-    AccessibilityText(const String& text, const AccessibilityTextSource& source, const PassRefPtr<AXObject> element)
+    AccessibilityText(const String& text, const AccessibilityTextSource& source, const RefPtrWillBeRawPtr<AXObject> element)
     : m_text(text)
     , m_textSource(source)
     , m_textElement(element)
@@ -240,7 +243,7 @@ private:
 
     String m_text;
     AccessibilityTextSource m_textSource;
-    RefPtr<AXObject> m_textElement;
+    RefPtrWillBeMember<AXObject> m_textElement;
 };
 
 enum AccessibilityOrientation {
@@ -363,9 +366,9 @@ struct IgnoredReason {
     { }
 };
 
-class MODULES_EXPORT AXObject : public RefCounted<AXObject> {
+class MODULES_EXPORT AXObject : public RefCountedWillBeGarbageCollectedFinalized<AXObject> {
 public:
-    typedef Vector<RefPtr<AXObject>> AccessibilityChildrenVector;
+    typedef WillBeHeapVector<RefPtrWillBeMember<AXObject>> AccessibilityChildrenVector;
 
     struct PlainTextRange {
 
@@ -390,6 +393,7 @@ protected:
 
 public:
     virtual ~AXObject();
+    DECLARE_VIRTUAL_TRACE();
 
     static unsigned numberOfLiveAXObjects() { return s_numberOfLiveAXObjects; }
 
@@ -546,13 +550,13 @@ public:
 
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of objects that were used to derive the name, if any.
-    virtual String name(AXNameFrom&, Vector<AXObject*>& nameObjects);
+    virtual String name(AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
 
     // Takes the result of nameFrom from calling |name|, above, and retrieves the
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
     // derive the description, if any.
-    virtual String description(AXNameFrom, AXDescriptionFrom&, Vector<AXObject*>& descriptionObjects) { return String(); }
+    virtual String description(AXNameFrom, AXDescriptionFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& descriptionObjects) { return String(); }
 
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
@@ -560,7 +564,7 @@ public:
     virtual String placeholder(AXNameFrom, AXDescriptionFrom) { return String(); }
 
     // Internal function used by name and description, above.
-    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, HashSet<AXObject*>& visited, AXNameFrom*, Vector<AXObject*>* nameObjects) { return String(); }
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom*, WillBeHeapVector<RawPtrWillBeMember<AXObject>>* nameObjects) { return String(); }
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.
@@ -786,7 +790,9 @@ protected:
 
     unsigned getLengthForTextRange() const { return text().length(); }
 
-    mutable AXObject* m_parent;
+    bool m_detached;
+
+    mutable RawPtrWillBeMember<AXObject> m_parent;
 
     // The following cached attribute values (the ones starting with m_cached*)
     // are only valid if m_lastModificationCount matches AXObjectCacheImpl::modificationCount().
@@ -797,9 +803,9 @@ protected:
     mutable bool m_cachedIsDescendantOfDisabledNode : 1;
     mutable bool m_cachedHasInheritedPresentationalRole : 1;
     mutable bool m_cachedIsPresentationalChild : 1;
-    mutable const AXObject* m_cachedLiveRegionRoot;
+    mutable RawPtrWillBeMember<const AXObject> m_cachedLiveRegionRoot;
 
-    AXObjectCacheImpl* m_axObjectCache;
+    RawPtrWillBeMember<AXObjectCacheImpl> m_axObjectCache;
 
     // Updates the cached attribute values. This may be recursive, so to prevent deadlocks,
     // functions called here may only search up the tree (ancestors), not down.

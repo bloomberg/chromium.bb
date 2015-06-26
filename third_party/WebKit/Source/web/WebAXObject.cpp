@@ -711,7 +711,7 @@ WebAXObject WebAXObject::hitTest(const WebPoint& point) const
         return WebAXObject();
 
     IntPoint contentsPoint = m_private->documentFrameView()->soonToBeRemovedUnscaledViewportToContents(point);
-    RefPtr<AXObject> hit = m_private->accessibilityHitTest(contentsPoint);
+    RefPtrWillBeRawPtr<AXObject> hit = m_private->accessibilityHitTest(contentsPoint);
 
     if (hit)
         return WebAXObject(hit);
@@ -1063,7 +1063,7 @@ WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& 
         return WebString();
 
     AXNameFrom nameFrom = AXNameFromAttribute;
-    Vector<AXObject*> nameObjects;
+    WillBeHeapVector<RawPtrWillBeMember<AXObject>> nameObjects;
     WebString result = m_private->name(nameFrom, nameObjects);
     outNameFrom = static_cast<WebAXNameFrom>(nameFrom);
 
@@ -1081,7 +1081,7 @@ WebString WebAXObject::description(WebAXNameFrom nameFrom, WebAXDescriptionFrom&
         return WebString();
 
     AXDescriptionFrom descriptionFrom;
-    Vector<AXObject*> descriptionObjects;
+    WillBeHeapVector<RawPtrWillBeMember<AXObject>> descriptionObjects;
     String result = m_private->description(static_cast<AXNameFrom>(nameFrom), descriptionFrom, descriptionObjects);
     outDescriptionFrom = static_cast<WebAXDescriptionFrom>(descriptionFrom);
 
@@ -1560,18 +1560,18 @@ void WebAXObject::scrollToGlobalPoint(const WebPoint& point) const
         m_private->scrollToGlobalPoint(point);
 }
 
-WebAXObject::WebAXObject(const WTF::PassRefPtr<AXObject>& object)
+WebAXObject::WebAXObject(const PassRefPtrWillBeRawPtr<AXObject>& object)
     : m_private(object)
 {
 }
 
-WebAXObject& WebAXObject::operator=(const WTF::PassRefPtr<AXObject>& object)
+WebAXObject& WebAXObject::operator=(const PassRefPtrWillBeRawPtr<AXObject>& object)
 {
     m_private = object;
     return *this;
 }
 
-WebAXObject::operator WTF::PassRefPtr<AXObject>() const
+WebAXObject::operator PassRefPtrWillBeRawPtr<AXObject>() const
 {
     return m_private.get();
 }

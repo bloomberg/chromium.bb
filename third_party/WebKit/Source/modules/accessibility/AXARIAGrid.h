@@ -41,7 +41,7 @@ private:
     AXARIAGrid(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXARIAGrid> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXARIAGrid> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXARIAGrid();
 
     virtual bool isAriaTable() const override { return true; }

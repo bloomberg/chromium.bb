@@ -65,9 +65,9 @@ void AXTable::init()
     m_isAXTable = isTableExposableThroughAccessibility();
 }
 
-PassRefPtr<AXTable> AXTable::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXTable> AXTable::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXTable(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AXTable(layoutObject, axObjectCache));
 }
 
 bool AXTable::hasARIARole() const
@@ -590,6 +590,14 @@ String AXTable::deprecatedTitle(TextUnderElementMode mode) const
         title = AXLayoutObject::deprecatedTitle(mode);
 
     return title;
+}
+
+DEFINE_TRACE(AXTable)
+{
+    visitor->trace(m_rows);
+    visitor->trace(m_columns);
+    visitor->trace(m_headerContainer);
+    AXLayoutObject::trace(visitor);
 }
 
 } // namespace blink

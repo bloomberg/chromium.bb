@@ -37,11 +37,12 @@ class FrameView;
 
 class AXScrollView final : public AXObject {
 public:
-    static PassRefPtr<AXScrollView> create(FrameView*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXScrollView> create(FrameView*, AXObjectCacheImpl&);
     virtual AccessibilityRole roleValue() const override { return ScrollAreaRole; }
     FrameView* scrollView() const { return m_scrollView; }
 
     virtual ~AXScrollView();
+    DECLARE_VIRTUAL_TRACE();
     virtual void detach() override;
 
 protected:
@@ -75,19 +76,9 @@ private:
     AXScrollbar* addChildScrollbar(Scrollbar*);
     void removeChildScrollbar(AXObject*);
 
-    // FIXME: Oilpan: Frame/ScrollView is on the heap and its
-    // AXScrollView is detached&removed from the AX cache when the
-    // FrameView is disposed. Which clears m_scrollView, hence this
-    // bare pointer will not be stale, so the bare pointer use is safe
-    // & acceptable.
-    //
-    // However, it would be preferable to have it be normally traced
-    // as part of moving the AX objects to the heap. Temporarily using
-    // a Persistent risks creating a FrameView leak, and brings no
-    // real benefits overall.
-    FrameView* m_scrollView;
-    RefPtr<AXObject> m_horizontalScrollbar;
-    RefPtr<AXObject> m_verticalScrollbar;
+    RawPtrWillBeMember<FrameView> m_scrollView;
+    RefPtrWillBeMember<AXObject> m_horizontalScrollbar;
+    RefPtrWillBeMember<AXObject> m_verticalScrollbar;
     bool m_childrenDirty;
 };
 

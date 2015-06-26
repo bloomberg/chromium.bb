@@ -41,7 +41,7 @@ protected:
     AXTableRow(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXTableRow> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXTableRow> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXTableRow();
 
     virtual bool isTableRow() const override final;

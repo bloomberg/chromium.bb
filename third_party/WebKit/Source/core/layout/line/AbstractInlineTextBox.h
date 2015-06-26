@@ -72,6 +72,8 @@ public:
         BottomToTop
     };
 
+    ~AbstractInlineTextBox();
+
     LayoutText* layoutText() const { return m_layoutText; }
 
     PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;

@@ -46,9 +46,9 @@ AXARIAGrid::~AXARIAGrid()
 {
 }
 
-PassRefPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXARIAGrid> AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXARIAGrid(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AXARIAGrid(layoutObject, axObjectCache));
 }
 
 bool AXARIAGrid::addTableCellChild(AXObject* child, HashSet<AXObject*>& appendedRows, unsigned& columnCount)

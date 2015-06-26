@@ -40,7 +40,7 @@ class AXObjectCacheImpl;
 class AccessibilityMediaControl : public AXLayoutObject {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AccessibilityMediaControl() { }
 
     virtual AccessibilityRole roleValue() const override;
@@ -59,7 +59,7 @@ protected:
 class AccessibilityMediaTimeline final : public AXSlider {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AccessibilityMediaTimeline() { }
 
     virtual String deprecatedHelpText() const override;
@@ -74,7 +74,7 @@ private:
 class AXMediaControlsContainer final : public AccessibilityMediaControl {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXMediaControlsContainer() { }
 
     virtual AccessibilityRole roleValue() const override { return ToolbarRole; }
@@ -92,7 +92,7 @@ private:
 class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
 
 public:
-    static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AccessibilityMediaTimeDisplay() { }
 
     virtual AccessibilityRole roleValue() const override { return StaticTextRole; }

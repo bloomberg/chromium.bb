@@ -51,7 +51,7 @@ protected:
     AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXLayoutObject> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXLayoutObject> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXLayoutObject();
 
     // Public, overridden from AXObject.

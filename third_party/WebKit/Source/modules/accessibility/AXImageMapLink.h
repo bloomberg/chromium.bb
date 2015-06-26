@@ -43,8 +43,9 @@ private:
     explicit AXImageMapLink(AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXImageMapLink> create(AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXImageMapLink> create(AXObjectCacheImpl&);
     virtual ~AXImageMapLink();
+    DECLARE_VIRTUAL_TRACE();
 
     void setHTMLAreaElement(HTMLAreaElement* element) { m_areaElement = element; }
     HTMLAreaElement* areaElement() const { return m_areaElement.get(); }
@@ -69,9 +70,10 @@ public:
     virtual LayoutRect elementRect() const override;
 
 private:
-    RefPtrWillBePersistent<HTMLAreaElement> m_areaElement;
-    RefPtrWillBePersistent<HTMLMapElement> m_mapElement;
+    RefPtrWillBeMember<HTMLAreaElement> m_areaElement;
+    RefPtrWillBeMember<HTMLMapElement> m_mapElement;
 
+    virtual void detach() override;
     virtual void detachFromParent() override;
 
     virtual bool isImageMapLink() const override { return true; }

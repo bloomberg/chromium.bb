@@ -30,6 +30,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
@@ -801,6 +802,8 @@ inline void Node::removedFrom(ContainerNode* insertionPoint)
         clearFlag(InDocumentFlag);
     if (isInShadowTree() && !treeScope().rootNode().isShadowRoot())
         clearFlag(IsInShadowTreeFlag);
+    if (AXObjectCache* cache = document().existingAXObjectCache())
+        cache->remove(this);
 }
 
 inline void Element::invalidateStyleAttribute()

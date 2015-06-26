@@ -39,6 +39,11 @@ AXMenuListOption::AXMenuListOption(HTMLOptionElement* element, AXObjectCacheImpl
 {
 }
 
+AXMenuListOption::~AXMenuListOption()
+{
+    ASSERT(!m_element);
+}
+
 void AXMenuListOption::detach()
 {
     m_element = nullptr;
@@ -54,7 +59,7 @@ bool AXMenuListOption::isEnabled() const
 {
     // isDisabledFormControl() returns true if the parent <select> element is disabled,
     // which we don't want.
-    return !m_element->ownElementDisabled();
+    return m_element && !m_element->ownElementDisabled();
 }
 
 bool AXMenuListOption::isVisible() const
@@ -78,12 +83,12 @@ bool AXMenuListOption::isSelected() const
     AXMenuListPopup* parent = static_cast<AXMenuListPopup*>(parentObject());
     if (parent && !parent->isOffScreen())
         return parent->activeChild() == this;
-    return m_element->selected();
+    return m_element && m_element->selected();
 }
 
 void AXMenuListOption::setSelected(bool b)
 {
-    if (!canSetSelectedAttribute())
+    if (!m_element || !canSetSelectedAttribute())
         return;
 
     m_element->setSelected(b);
@@ -116,7 +121,13 @@ LayoutRect AXMenuListOption::elementRect() const
 
 String AXMenuListOption::stringValue() const
 {
-    return m_element->text();
+    return m_element ? m_element->text() : String();
+}
+
+DEFINE_TRACE(AXMenuListOption)
+{
+    visitor->trace(m_element);
+    AXMockObject::trace(visitor);
 }
 
 } // namespace blink

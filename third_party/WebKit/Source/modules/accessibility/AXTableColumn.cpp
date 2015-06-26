@@ -47,9 +47,9 @@ AXTableColumn::~AXTableColumn()
 {
 }
 
-PassRefPtr<AXTableColumn> AXTableColumn::create(AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXTableColumn> AXTableColumn::create(AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXTableColumn(axObjectCache));
+    return adoptRefWillBeNoop(new AXTableColumn(axObjectCache));
 }
 
 

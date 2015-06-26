@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/dom/TreeScopeAdopter.h"
 
-#include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
@@ -49,7 +48,6 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
     Document& oldDocument = oldScope().document();
     Document& newDocument = newScope().document();
     bool willMoveToNewDocument = oldDocument != newDocument;
-    AXObjectCache* axObjectCache = oldDocument.existingAXObjectCache();
     if (willMoveToNewDocument)
         oldDocument.incDOMTreeVersion();
 
@@ -57,8 +55,6 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
         updateTreeScope(node);
 
         if (willMoveToNewDocument) {
-            if (axObjectCache)
-                axObjectCache->remove(&node);
             moveNodeToNewDocument(node, oldDocument, newDocument);
         } else if (node.hasRareData()) {
             NodeRareData* rareData = node.rareData();

@@ -40,7 +40,7 @@ class HTMLInputElement;
 class AXSlider : public AXLayoutObject {
 
 public:
-    static PassRefPtr<AXSlider> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXSlider> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXSlider() { }
 
 protected:
@@ -66,7 +66,7 @@ private:
 class AXSliderThumb final : public AXMockObject {
 
 public:
-    static PassRefPtr<AXSliderThumb> create(AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXSliderThumb> create(AXObjectCacheImpl&);
     virtual ~AXSliderThumb() { }
 
     virtual AccessibilityRole roleValue() const override { return SliderThumbRole; }

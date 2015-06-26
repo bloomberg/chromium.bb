@@ -78,6 +78,7 @@ public:
     virtual void remove(LayoutObject*) override;
     virtual void remove(Node*) override;
     virtual void remove(Widget*) override;
+    virtual void remove(AbstractInlineTextBox*) override;
 
     virtual const Element* rootAXEditableElement(const Node*) override;
 
@@ -99,8 +100,6 @@ public:
     virtual void handleLayoutComplete(Document*) override;
 
     virtual void setCanvasObjectBounds(Element*, const LayoutRect&) override;
-
-    virtual void clearWeakMembers(Visitor*) override;
 
     virtual void inlineTextBoxesUpdated(LayoutObject*) override;
 
@@ -138,7 +137,6 @@ public:
     AXObject* firstAccessibleObjectFromNode(const Node*);
 
     void remove(AXID);
-    void remove(AbstractInlineTextBox*);
 
     void childrenChanged(AXObject*);
 
@@ -200,18 +198,21 @@ protected:
     void removeNodeForUse(Node* n) { m_textMarkerNodes.remove(n); }
     bool isNodeInUse(Node* n) { return m_textMarkerNodes.contains(n); }
 
-    PassRefPtr<AXObject> createFromRenderer(LayoutObject*);
-    PassRefPtr<AXObject> createFromNode(Node*);
-    PassRefPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox*);
+    PassRefPtrWillBeRawPtr<AXObject> createFromRenderer(LayoutObject*);
+    PassRefPtrWillBeRawPtr<AXObject> createFromNode(Node*);
+    PassRefPtrWillBeRawPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox*);
 
 private:
-    Document& m_document;
-    HashMap<AXID, RefPtr<AXObject>> m_objects;
+
+    RawPtrWillBeMember<Document> m_document;
+    WillBeHeapHashMap<AXID, RefPtrWillBeMember<AXObject>> m_objects;
+    // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
+    // do not use HeapHashMap for those mappings.
     HashMap<LayoutObject*, AXID> m_layoutObjectMapping;
-    HashMap<Widget*, AXID> m_widgetObjectMapping;
-    HashMap<Node*, AXID> m_nodeObjectMapping;
+    WillBeHeapHashMap<RawPtrWillBeMember<Widget>, AXID> m_widgetObjectMapping;
+    WillBeHeapHashMap<RawPtrWillBeMember<Node>, AXID> m_nodeObjectMapping;
     HashMap<AbstractInlineTextBox*, AXID> m_inlineTextBoxObjectMapping;
-    HashSet<Node*> m_textMarkerNodes;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node>> m_textMarkerNodes;
     int m_modificationCount;
 
     HashSet<AXID> m_idsInUse;
@@ -249,7 +250,7 @@ private:
     HashMap<String, OwnPtr<HashSet<AXID>>> m_idToAriaOwnersMapping;
 
     Timer<AXObjectCacheImpl> m_notificationPostTimer;
-    Vector<pair<RefPtr<AXObject>, AXNotification>> m_notificationsToPost;
+    WillBeHeapVector<pair<RefPtrWillBeMember<AXObject>, AXNotification>> m_notificationsToPost;
     void notificationPostTimerFired(Timer<AXObjectCacheImpl>*);
 
     AXObject* focusedImageMapUIElement(HTMLAreaElement*);

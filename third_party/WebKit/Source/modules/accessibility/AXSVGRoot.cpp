@@ -42,9 +42,9 @@ AXSVGRoot::~AXSVGRoot()
 {
 }
 
-PassRefPtr<AXSVGRoot> AXSVGRoot::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXSVGRoot> AXSVGRoot::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXSVGRoot(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AXSVGRoot(layoutObject, axObjectCache));
 }
 
 void AXSVGRoot::setParent(AXObject* parent)

@@ -37,9 +37,9 @@ AXMenuList::AXMenuList(LayoutMenuList* layoutObject, AXObjectCacheImpl& axObject
 {
 }
 
-PassRefPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXMenuList(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AXMenuList(layoutObject, axObjectCache));
 }
 
 AccessibilityRole AXMenuList::determineAccessibilityRole()

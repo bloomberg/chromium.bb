@@ -32,6 +32,8 @@
 typedef unsigned AXID;
 
 namespace blink {
+
+class AbstractInlineTextBox;
 class AXObject;
 class FrameView;
 class HTMLOptionElement;
@@ -96,6 +98,7 @@ public:
     virtual void remove(LayoutObject*) = 0;
     virtual void remove(Node*) = 0;
     virtual void remove(Widget*) = 0;
+    virtual void remove(AbstractInlineTextBox*) = 0;
 
     virtual const Element* rootAXEditableElement(const Node*) = 0;
 
@@ -118,8 +121,6 @@ public:
 
 
     virtual void setCanvasObjectBounds(Element*, const LayoutRect&) = 0;
-
-    virtual void clearWeakMembers(Visitor*) = 0;
 
     virtual void inlineTextBoxesUpdated(LayoutObject*) = 0;
 

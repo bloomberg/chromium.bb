@@ -44,9 +44,9 @@ AXSlider::AXSlider(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
 }
 
-PassRefPtr<AXSlider> AXSlider::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXSlider> AXSlider::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXSlider(layoutObject, axObjectCache));
+    return adoptRefWillBeNoop(new AXSlider(layoutObject, axObjectCache));
 }
 
 AccessibilityRole AXSlider::determineAccessibilityRole()
@@ -143,9 +143,9 @@ AXSliderThumb::AXSliderThumb(AXObjectCacheImpl& axObjectCache)
 {
 }
 
-PassRefPtr<AXSliderThumb> AXSliderThumb::create(AXObjectCacheImpl& axObjectCache)
+PassRefPtrWillBeRawPtr<AXSliderThumb> AXSliderThumb::create(AXObjectCacheImpl& axObjectCache)
 {
-    return adoptRef(new AXSliderThumb(axObjectCache));
+    return adoptRefWillBeNoop(new AXSliderThumb(axObjectCache));
 }
 
 LayoutRect AXSliderThumb::elementRect() const

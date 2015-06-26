@@ -44,7 +44,7 @@ private:
     AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
 
 public:
-    static PassRefPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl&);
+    static PassRefPtrWillBeRawPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl&);
     virtual ~AXListBoxOption();
 
     virtual bool isAXListBoxOption() const override { return true; }
