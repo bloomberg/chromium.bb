@@ -5184,12 +5184,12 @@ is_black_surface (struct weston_surface *es, struct weston_surface **fs_surface)
 static void
 activate_binding(struct weston_seat *seat,
 		 struct desktop_shell *shell,
-		 struct weston_surface *focus)
+		 struct weston_view *focus_view)
 {
+	struct weston_surface *focus;
 	struct weston_surface *main_surface;
 
-	if (!focus)
-		return;
+	focus = focus_view->surface;
 
 	if (is_black_surface(focus, &main_surface))
 		focus = main_surface;
@@ -5210,7 +5210,7 @@ click_to_activate_binding(struct weston_pointer *pointer, uint32_t time,
 	if (pointer->focus == NULL)
 		return;
 
-	activate_binding(pointer->seat, data, pointer->focus->surface);
+	activate_binding(pointer->seat, data, pointer->focus);
 }
 
 static void
@@ -5222,7 +5222,7 @@ touch_to_activate_binding(struct weston_touch *touch, uint32_t time,
 	if (touch->focus == NULL)
 		return;
 
-	activate_binding(touch->seat, data, touch->focus->surface);
+	activate_binding(touch->seat, data, touch->focus);
 }
 
 static void
