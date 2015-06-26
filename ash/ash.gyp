@@ -296,6 +296,8 @@
       'system/chromeos/brightness/brightness_controller_chromeos.h',
       'system/chromeos/brightness/tray_brightness.cc',
       'system/chromeos/brightness/tray_brightness.h',
+      'system/chromeos/devicetype_utils.cc',
+      'system/chromeos/devicetype_utils.h',
       'system/chromeos/enterprise/enterprise_domain_observer.h',
       'system/chromeos/enterprise/tray_enterprise.cc',
       'system/chromeos/enterprise/tray_enterprise.h',

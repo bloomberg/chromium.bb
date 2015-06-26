@@ -3,6 +3,23 @@
      Everything in this file is wrapped in <if expr="chromeos">. -->
 <grit-part>
 
+  <!-- Device types -->
+  <message name="IDS_ASH_CHROMEBASE" desc="The device name for a Chromebase (versus say Chromebox)">
+    Chromebase
+  </message>
+  <message name="IDS_ASH_CHROMEBIT" desc="The device name for a Chromebit (versus say Chromebox)">
+    Chromebit
+  </message>
+  <message name="IDS_ASH_CHROMEBOOK" desc="The device name for a Chromebook (versus say Chromebox)">
+    Chromebook
+  </message>
+  <message name="IDS_ASH_CHROMEBOX" desc="The device name for a Chromebox (versus say Chromebook)">
+    Chromebox
+  </message>
+  <message name="IDS_ASH_CHROMEDEVICE" desc="The device name for a generic Chrome device">
+    Chrome device
+  </message>
+
   <!-- Status tray charging strings. -->
   <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
     Low-power charger connected
