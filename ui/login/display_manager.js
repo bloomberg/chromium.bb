@@ -63,6 +63,7 @@
   SAML_PASSWORD_CONFIRM: 5,
   CONSUMER_MANAGEMENT_ENROLLMENT: 6,
   PASSWORD_CHANGED: 7,
+  ENROLLMENT: 8
 };
 
 /* Possible UI states of the error screen. */
