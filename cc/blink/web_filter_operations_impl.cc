@@ -92,4 +92,8 @@ void WebFilterOperationsImpl::clear() {
   filter_operations_.Clear();
 }
 
+bool WebFilterOperationsImpl::isEmpty() const {
+  return filter_operations_.IsEmpty();
+}
+
 }  // namespace cc_blink

@@ -37,6 +37,7 @@ class WebFilterOperationsImpl : public blink::WebFilterOperations {
   virtual void appendReferenceFilter(SkImageFilter* image_filter);
 
   virtual void clear();
+  virtual bool isEmpty() const;
 
  private:
   cc::FilterOperations filter_operations_;
