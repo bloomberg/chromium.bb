@@ -227,9 +227,7 @@ class Port(object):
 
     def additional_driver_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
-            # TODO(wangxianzhu): Remove --enable-slimming-paint when we enable
-            # it by default.
-            return ['--run-layout-test', '--enable-slimming-paint']
+            return ['--run-layout-test']
         return []
 
     def supports_per_test_timeout(self):

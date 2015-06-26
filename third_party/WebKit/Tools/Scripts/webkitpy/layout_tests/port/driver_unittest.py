@@ -131,7 +131,10 @@ class DriverTest(unittest.TestCase):
         port = TestWebKitPort()
         port._config.build_directory = lambda configuration: '/mock-checkout/out/' + configuration
         driver = Driver(port, 0, pixel_tests=True, no_timeout=True)
-        self.assertEqual(driver.cmd_line(True, []), ['/mock-checkout/out/Release/content_shell', '--no-timeout', '--run-layout-test', '--enable-slimming-paint', '-'])
+        cmd_line = driver.cmd_line(True, [])
+        self.assertEqual(cmd_line[0], '/mock-checkout/out/Release/content_shell')
+        self.assertEqual(cmd_line[-1], '-')
+        self.assertTrue('--no-timeout' in cmd_line)
 
     def test_check_for_driver_crash(self):
         port = TestWebKitPort()

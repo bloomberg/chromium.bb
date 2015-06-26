@@ -1066,13 +1066,7 @@ class ChromiumAndroidDriver(driver.Driver):
         return self._android_commands.adb_command() + ['shell']
 
     def _android_driver_cmd_line(self, pixel_tests, per_test_args):
-        # FIXME: We can't enable slimming paint before crbug.com/439457 is fixed.
-        cmd_line = driver.Driver.cmd_line(self, pixel_tests, per_test_args)
-        if '--enable-slimming-paint' in cmd_line:
-            _log.warning('Android port doesn\'t support slimming paint because of crbug.com/439457')
-            cmd_line.remove('--enable-slimming-paint')
-        cmd_line.append('--disable-slimming-paint')
-        return cmd_line
+        return driver.Driver.cmd_line(self, pixel_tests, per_test_args)
 
     @staticmethod
     def _loop_with_timeout(condition, timeout_secs):
