@@ -248,7 +248,7 @@ InspectorTest.evaluateInPage = function(string, callback)
     this.sendCommand("Runtime.evaluate", { "expression": string }, function(message) {
         if (message.error)
             InspectorTest.log("Error while executing '" + string + "': " + message.error.message);
-        else
+        else if (callback)
             callback();
     });
 };

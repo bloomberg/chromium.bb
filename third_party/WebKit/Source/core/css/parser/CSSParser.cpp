@@ -46,9 +46,9 @@ void CSSParser::parseSheet(const CSSParserContext& context, StyleSheetContents* 
     return CSSParserImpl::parseStyleSheet(text, context, styleSheet);
 }
 
-void CSSParser::parseSheetForInspector(const CSSParserContext& context, const String& text, CSSParserObserver& observer)
+void CSSParser::parseSheetForInspector(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& text, CSSParserObserver& observer)
 {
-    return CSSParserImpl::parseStyleSheetForInspector(text, context, observer);
+    return CSSParserImpl::parseStyleSheetForInspector(text, context, styleSheet, observer);
 }
 
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, CSSParserMode parserMode, StyleSheetContents* styleSheet)

@@ -176,14 +176,18 @@ void CSSParserImpl::parseDeclarationListForInspector(const String& declaration, 
     parser.consumeDeclarationList(scope.tokenRange(), StyleRule::Style);
 }
 
-void CSSParserImpl::parseStyleSheetForInspector(const String& string, const CSSParserContext& context, CSSParserObserver& observer)
+void CSSParserImpl::parseStyleSheetForInspector(const String& string, const CSSParserContext& context, StyleSheetContents* styleSheet, CSSParserObserver& observer)
 {
-    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(strictCSSParserContext());
-    CSSParserImpl parser(context, sheet.get());
+    CSSParserImpl parser(context, styleSheet);
     CSSParserObserverWrapper wrapper(observer);
     parser.m_observerWrapper = &wrapper;
     CSSTokenizer::Scope scope(string, wrapper);
-    parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) { });
+    bool firstRuleValid = parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
+        if (rule->isCharsetRule())
+            return;
+        styleSheet->parserAppendRule(rule);
+    });
+    styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
 }
 
 static CSSParserImpl::AllowedRulesType computeNewAllowedRules(CSSParserImpl::AllowedRulesType allowedRules, StyleRuleBase* rule)

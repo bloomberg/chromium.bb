@@ -92,6 +92,8 @@ InspectorTest.dumpRuleMatch = function(ruleMatch)
     }
     selectorLine += " {";
     selectorLine += "    " + rule.origin;
+    if (!rule.style.styleSheetId)
+        selectorLine += "    readonly";
     indentLog(baseIndent, selectorLine);
     InspectorTest.dumpStyle(rule.style, baseIndent);
     indentLog(baseIndent, "}");
@@ -114,15 +116,17 @@ InspectorTest.displayName = function(url)
     return url.substr(url.lastIndexOf("/") + 1);
 };
 
-InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback)
+InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback, omitLog)
 {
     InspectorTest.sendCommandOrDie("CSS.getMatchedStylesForNode", { "nodeId": nodeId }, matchingRulesLoaded);
 
     function matchingRulesLoaded(result)
     {
-        InspectorTest.log("Dumping matched rules: ");
+        if (!omitLog)
+            InspectorTest.log("Dumping matched rules: ");
         dumpRuleMatches(result.matchedCSSRules);
-        InspectorTest.log("Dumping inherited rules: ");
+        if (!omitLog)
+            InspectorTest.log("Dumping inherited rules: ");
         for (var inheritedEntry of result.inherited) {
             InspectorTest.dumpStyle(inheritedEntry.inlineStyle);
             dumpRuleMatches(inheritedEntry.matchedCSSRules);
@@ -141,13 +145,13 @@ InspectorTest.loadAndDumpMatchingRulesForNode = function(nodeId, callback)
     }
 }
 
-InspectorTest.loadAndDumpMatchingRules = function(documentNodeId, selector, callback)
+InspectorTest.loadAndDumpMatchingRules = function(documentNodeId, selector, callback, omitLog)
 {
     InspectorTest.requestNodeId(documentNodeId, selector, nodeIdLoaded);
 
     function nodeIdLoaded(nodeId)
     {
-        InspectorTest.loadAndDumpMatchingRulesForNode(nodeId, callback);
+        InspectorTest.loadAndDumpMatchingRulesForNode(nodeId, callback, omitLog);
     }
 }
 

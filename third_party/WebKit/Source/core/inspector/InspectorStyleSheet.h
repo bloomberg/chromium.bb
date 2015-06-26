@@ -148,17 +148,18 @@ protected:
 
 private:
     InspectorStyleSheet(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
-    RefPtrWillBeRawPtr<CSSRuleSourceData> ruleAfterSourceRange(const SourceRange&);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceDataAfterSourceRange(const SourceRange&);
     RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByHeaderRange(const SourceRange&);
     RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByBodyRange(const SourceRange&);
-    RefPtrWillBeRawPtr<CSSRule> ruleForSourceData(CSSRuleSourceData*);
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceDataForRule(CSSRule*);
+    RefPtrWillBeRawPtr<CSSRule> ruleForSourceData(RefPtrWillBeRawPtr<CSSRuleSourceData>);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceDataForRule(RefPtrWillBeRawPtr<CSSRule>);
     CSSStyleRule* insertCSSOMRuleInStyleSheet(CSSRule* insertBefore, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, CSSRule* insertBefore, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
     String sourceMapURL();
     String sourceURL();
-    void collectFlatRules();
+    void remapSourceDataToCSSOMIfNecessary();
+    void mapSourceDataToCSSOM();
     bool resourceStyleSheetText(String* result);
     bool inlineStyleSheetText(String* result);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector>> selectorsFromSource(CSSRuleSourceData*, const String&);
@@ -178,7 +179,11 @@ private:
     String m_documentURL;
     OwnPtrWillBeMember<RuleSourceDataList> m_sourceData;
     String m_text;
-    CSSRuleVector m_flatRules;
+    CSSRuleVector m_cssomFlatRules;
+    CSSRuleVector m_parsedFlatRules;
+    typedef HashMap<unsigned, unsigned, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>> IndexMap;
+    IndexMap m_ruleToSourceData;
+    IndexMap m_sourceDataToRule;
     String m_sourceURL;
 };
 

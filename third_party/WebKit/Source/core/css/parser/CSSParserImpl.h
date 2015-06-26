@@ -65,7 +65,7 @@ public:
     bool supportsDeclaration(CSSParserTokenRange&);
 
     static void parseDeclarationListForInspector(const String&, const CSSParserContext&, CSSParserObserver&);
-    static void parseStyleSheetForInspector(const String&, const CSSParserContext&, CSSParserObserver&);
+    static void parseStyleSheetForInspector(const String&, const CSSParserContext&, StyleSheetContents*, CSSParserObserver&);
 
 private:
     enum RuleListType {

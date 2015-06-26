@@ -53,7 +53,7 @@ public:
     static bool parseSystemColor(RGBA32& color, const String&);
     static StyleColor colorFromRGBColorString(const String&);
 
-    static void parseSheetForInspector(const CSSParserContext&, const String&, CSSParserObserver&);
+    static void parseSheetForInspector(const CSSParserContext&, StyleSheetContents*, const String&, CSSParserObserver&);
     static void parseDeclarationListForInspector(const CSSParserContext&, const String&, CSSParserObserver&);
 
 private:
