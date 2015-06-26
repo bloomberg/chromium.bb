@@ -102,8 +102,10 @@ class CompositorOutputSurface
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   int routing_id_;
+#if defined(OS_ANDROID)
   bool prefers_smoothness_;
-  base::PlatformThreadHandle main_thread_handle_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+#endif
 
   // TODO(danakj): Remove this when crbug.com/311404
   bool layout_test_mode_;
