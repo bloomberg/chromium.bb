@@ -64,6 +64,10 @@ PASS labelElement.form is null
 PASS inputElement.form is owner
 PASS labelElement.form is owner
 
+- Check if a form and a control are disassociated when they are removed from the document together.
+PASS owner.elements.length is 1
+PASS owner.elements.length is 0
+
 - Checks if option.form is only set if it has a <select> parent.
 PASS option1.form is null
 PASS option2.form is null

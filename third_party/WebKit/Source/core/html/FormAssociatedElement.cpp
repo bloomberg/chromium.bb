@@ -99,8 +99,11 @@ void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint)
 void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLElement* element = toHTMLElement(this);
-    if (insertionPoint->inDocument() && element->fastHasAttribute(formAttr))
+    if (insertionPoint->inDocument() && element->fastHasAttribute(formAttr)) {
         setFormAttributeTargetObserver(nullptr);
+        resetFormOwner();
+        return;
+    }
     // If the form and element are both in the same tree, preserve the connection to the form.
     // Otherwise, null out our form and remove ourselves from the form's list of elements.
     if (m_form && NodeTraversal::highestAncestorOrSelf(*element) != NodeTraversal::highestAncestorOrSelf(*m_form.get()))
