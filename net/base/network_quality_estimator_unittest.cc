@@ -327,4 +327,47 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   EXPECT_EQ(0U, estimator.rtt_msec_observations_.Size());
 }
 
+TEST(NetworkQualityEstimatorTest, HalfLifeParam) {
+  // Verifies if |weight_multiplier_per_second_| is set to correct value for
+  // various values of half life parameter.
+  std::map<std::string, std::string> variation_params;
+  {
+    // Half life parameter is not set. Default value of
+    // |weight_multiplier_per_second_| should be used.
+    NetworkQualityEstimator estimator(variation_params, true, true);
+    EXPECT_NEAR(0.988,
+                estimator.kbps_observations_.weight_multiplier_per_second_,
+                0.001);
+  }
+
+  variation_params["HalfLifeSeconds"] = "-100";
+  {
+    // Half life parameter is set to a negative value.  Default value of
+    // |weight_multiplier_per_second_| should be used.
+    NetworkQualityEstimator estimator(variation_params, true, true);
+    EXPECT_NEAR(0.988,
+                estimator.kbps_observations_.weight_multiplier_per_second_,
+                0.001);
+  }
+
+  variation_params["HalfLifeSeconds"] = "0";
+  {
+    // Half life parameter is set to zero.  Default value of
+    // |weight_multiplier_per_second_| should be used.
+    NetworkQualityEstimator estimator(variation_params, true, true);
+    EXPECT_NEAR(0.988,
+                estimator.kbps_observations_.weight_multiplier_per_second_,
+                0.001);
+  }
+
+  variation_params["HalfLifeSeconds"] = "10";
+  {
+    // Half life parameter is set to a valid value.
+    NetworkQualityEstimator estimator(variation_params, true, true);
+    EXPECT_NEAR(0.933,
+                estimator.kbps_observations_.weight_multiplier_per_second_,
+                0.001);
+  }
+}
+
 }  // namespace net

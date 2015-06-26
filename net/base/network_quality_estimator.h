@@ -68,6 +68,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
                            TestPeakKbpsFastestRTTUpdates);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestAddObservation);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, ObtainOperatingParams);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, HalfLifeParam);
   FRIEND_TEST_ALL_PREFIXES(URLRequestTestHTTP, NetworkQualityEstimator);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            PercentileSameTimestamps);
@@ -118,7 +119,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Stores observations sorted by time.
   class NET_EXPORT_PRIVATE ObservationBuffer {
    public:
-    ObservationBuffer();
+    explicit ObservationBuffer(double weight_multiplier_per_second);
 
     ~ObservationBuffer();
 
@@ -139,6 +140,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
     FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                              ObtainOperatingParams);
+    FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, HalfLifeParam);
 
     // Computes the weighted observations and stores them in
     // |weighted_observations| sorted by ascending |WeightedObservation.value|.

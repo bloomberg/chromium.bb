@@ -24,12 +24,14 @@ namespace {
 // Maximum number of observations that can be held in the ObservationBuffer.
 const size_t kMaximumObservationsBufferSize = 500;
 
-// Half life (in seconds) for computing time weighted percentiles.
-// Every |kHalfLifeSeconds|, the weight of all observations reduces by half.
-// Lowering the half life would reduce the weight of older values faster.
-// TODO(tbansal): |kHalfLifeSeconds| should be configured through field trial
-// in the NetworkQualityEstimator constructor.
-const int kHalfLifeSeconds = 60;
+// Default value of the half life (in seconds) for computing time weighted
+// percentiles. Every half life, the weight of all observations reduces by
+// half. Lowering the half life would reduce the weight of older values faster.
+const int kDefaultHalfLifeSeconds = 60;
+
+// Name of the variation parameter that holds the value of the half life (in
+// seconds) of the observations.
+const char kHalfLifeSecondsParamName[] = "HalfLifeSeconds";
 
 // Name of the different connection types. Used for matching the connection
 // type to the variation parameters. Names must be in the same order as
@@ -51,6 +53,23 @@ const char kDefaultRTTMsecObservationSuffix[] = ".DefaultMedianRTTMsec";
 // parameter for Wi-Fi would be "WiFi.DefaultMedianKbps".
 const char kDefaultKbpsObservationSuffix[] = ".DefaultMedianKbps";
 
+// Computes and returns the weight multiplier per second.
+// |variation_params| is the map containing all field trial parameters
+// related to NetworkQualityEstimator field trial.
+double GetWeightMultiplierPerSecond(
+    const std::map<std::string, std::string>& variation_params) {
+  int half_life_seconds = kDefaultHalfLifeSeconds;
+  int32_t variations_value = 0;
+  auto it = variation_params.find(kHalfLifeSecondsParamName);
+  if (it != variation_params.end() &&
+      base::StringToInt(it->second, &variations_value) &&
+      variations_value >= 1) {
+    half_life_seconds = variations_value;
+  }
+  DCHECK_GT(half_life_seconds, 0);
+  return exp(log(0.5) / half_life_seconds);
+}
+
 }  // namespace
 
 namespace net {
@@ -70,10 +89,13 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       current_connection_type_(NetworkChangeNotifier::GetConnectionType()),
       fastest_rtt_since_last_connection_change_(NetworkQuality::InvalidRTT()),
       peak_kbps_since_last_connection_change_(
-          NetworkQuality::kInvalidThroughput) {
+          NetworkQuality::kInvalidThroughput),
+      kbps_observations_(GetWeightMultiplierPerSecond(variation_params)),
+      rtt_msec_observations_(GetWeightMultiplierPerSecond(variation_params)) {
   static_assert(kMinRequestDurationMicroseconds > 0,
                 "Minimum request duration must be > 0");
-  static_assert(kHalfLifeSeconds > 0, "Half life duration must be > 0");
+  static_assert(kDefaultHalfLifeSeconds > 0,
+                "Default half life duration must be > 0");
   static_assert(arraysize(kConnectionTypeNames) ==
                     NetworkChangeNotifier::CONNECTION_LAST + 1,
                 "ConnectionType name count should match");
@@ -94,7 +116,7 @@ void NetworkQualityEstimator::ObtainOperatingParams(
         std::string(kConnectionTypeNames[i])
             .append(kDefaultRTTMsecObservationSuffix);
     auto it = variation_params.find(rtt_parameter_name);
-    if (it != variation_params.end() && !it->second.empty() &&
+    if (it != variation_params.end() &&
         base::StringToInt(it->second, &variations_value) &&
         variations_value >= kMinimumRTTVariationParameterMsec) {
       default_observations_[i] =
@@ -109,7 +131,7 @@ void NetworkQualityEstimator::ObtainOperatingParams(
         std::string(kConnectionTypeNames[i])
             .append(kDefaultKbpsObservationSuffix);
     it = variation_params.find(kbps_parameter_name);
-    if (it != variation_params.end() && !it->second.empty() &&
+    if (it != variation_params.end() &&
         base::StringToInt(it->second, &variations_value) &&
         variations_value >= kMinimumThroughputVariationParameterKbps) {
       default_observations_[i] =
@@ -358,8 +380,9 @@ NetworkQualityEstimator::Observation::Observation(int32_t value,
 NetworkQualityEstimator::Observation::~Observation() {
 }
 
-NetworkQualityEstimator::ObservationBuffer::ObservationBuffer()
-    : weight_multiplier_per_second_(exp(log(0.5) / kHalfLifeSeconds)) {
+NetworkQualityEstimator::ObservationBuffer::ObservationBuffer(
+    double weight_multiplier_per_second)
+    : weight_multiplier_per_second_(weight_multiplier_per_second) {
   static_assert(kMaximumObservationsBufferSize > 0U,
                 "Minimum size of observation buffer must be > 0");
   DCHECK_GE(weight_multiplier_per_second_, 0.0);
