@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 
@@ -83,6 +84,14 @@ bool GbmPixmap::Initialize() {
   return true;
 }
 
+void GbmPixmap::SetScalingCallback(const ScalingCallback& scaling_callback) {
+  scaling_callback_ = scaling_callback;
+}
+
+scoped_refptr<NativePixmap> GbmPixmap::GetScaledPixmap(gfx::Size new_size) {
+  return scaling_callback_.Run(new_size);
+}
+
 GbmPixmap::~GbmPixmap() {
   if (dma_buf_ > 0)
     close(dma_buf_);
@@ -105,9 +114,37 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
+  gfx::Size required_size;
+  if (plane_z_order &&
+      ShouldApplyScaling(display_bounds, crop_rect, &required_size)) {
+    scoped_refptr<NativePixmap> scaled_pixmap = GetScaledPixmap(required_size);
+    if (scaled_pixmap) {
+      return scaled_pixmap->ScheduleOverlayPlane(
+          widget, plane_z_order, plane_transform, display_bounds, crop_rect);
+    } else {
+      return false;
+    }
+  }
+
   screen_manager_->GetWindow(widget)->QueueOverlayPlane(OverlayPlane(
       buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
   return true;
+}
+
+bool GbmPixmap::ShouldApplyScaling(const gfx::Rect& display_bounds,
+                                   const gfx::RectF& crop_rect,
+                                   gfx::Size* required_size) {
+  if (crop_rect.width() == 0 || crop_rect.height() == 0) {
+    PLOG(ERROR) << "ShouldApplyScaling passed zero scaling target.";
+    return false;
+  }
+
+  gfx::Size pixmap_size = buffer_->GetSize();
+  // If the required size is not integer-sized, round it to the next integer.
+  *required_size = gfx::ToCeiledSize(
+      gfx::SizeF(display_bounds.width() / crop_rect.width(),
+                 display_bounds.height() / crop_rect.height()));
+  return pixmap_size != *required_size;
 }
 
 }  // namespace ui

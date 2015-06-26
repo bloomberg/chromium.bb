@@ -197,6 +197,10 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
                               const gfx::RectF& crop_rect) override {
       return true;
     }
+    void SetScalingCallback(const ScalingCallback& scaling_callback) override {}
+    scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) override {
+      return nullptr;
+    }
 
    private:
     ~CastPixmap() override {}

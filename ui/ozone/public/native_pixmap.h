@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_NATIVE_PIXMAP_H_
 #define UI_OZONE_PUBLIC_NATIVE_PIXMAP_H_
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
@@ -42,6 +43,15 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
                                     gfx::OverlayTransform plane_transform,
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& crop_rect) = 0;
+
+  // This represents a callback function pointing to scaling unit like VPP
+  // to do scaling operations on native pixmap with required size.
+  typedef base::Callback<scoped_refptr<NativePixmap>(gfx::Size)>
+      ScalingCallback;
+
+  // Set callback function for the pixmap used for scaling.
+  virtual void SetScalingCallback(const ScalingCallback& scaling_callback) = 0;
+  virtual scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) = 0;
 
  protected:
   virtual ~NativePixmap() {}

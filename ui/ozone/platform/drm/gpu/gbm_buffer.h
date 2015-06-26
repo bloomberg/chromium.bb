@@ -39,6 +39,8 @@ class GbmPixmap : public NativePixmap {
   GbmPixmap(const scoped_refptr<GbmBuffer>& buffer,
             ScreenManager* screen_manager);
   bool Initialize();
+  void SetScalingCallback(const ScalingCallback& scaling_callback) override;
+  scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) override;
 
   // NativePixmap:
   void* GetEGLClientBuffer() override;
@@ -54,11 +56,16 @@ class GbmPixmap : public NativePixmap {
 
  private:
   ~GbmPixmap() override;
+  bool ShouldApplyScaling(const gfx::Rect& display_bounds,
+                          const gfx::RectF& crop_rect,
+                          gfx::Size* required_size);
 
   scoped_refptr<GbmBuffer> buffer_;
   int dma_buf_ = -1;
 
   ScreenManager* screen_manager_;  // Not owned.
+
+  ScalingCallback scaling_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmPixmap);
 };
