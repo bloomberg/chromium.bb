@@ -1699,6 +1699,7 @@ crbug.com/320477 [ Debug ] inspector/sources/debugger-pause/debugger-pause-in-in
 
 crbug.com/503456 [ Linux Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Pass Crash ]
 crbug.com/503468 [ Debug ] imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/window-named-properties-003.html [ Pass Crash ]
+crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.html [ Pass Crash Slow ]
 
 crbug.com/503824 inspector/elements/styles-3/styles-change-node-while-editing.html [ Failure Pass ]
 crbug.com/503824 inspector/sources/debugger-ui/script-formatter-breakpoints-2.html [ Failure Pass ]
