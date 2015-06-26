@@ -58,10 +58,12 @@ public class AdapterInputConnection extends BaseInputConnection {
         mImeAdapter = imeAdapter;
         mImeAdapter.setInputConnection(this);
         mEditable = editable;
+
         // The editable passed in might have been in use by a prior keyboard and could have had
         // prior composition spans set.  To avoid keyboard conflicts, remove all composing spans
         // when taking ownership of an existing Editable.
-        removeComposingSpans(mEditable);
+        finishComposingText();
+
         mSingleLine = true;
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN
                 | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
@@ -140,6 +142,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         outAttrs.initialSelEnd = Selection.getSelectionEnd(mEditable);
         mLastUpdateSelectionStart = outAttrs.initialSelStart;
         mLastUpdateSelectionEnd = outAttrs.initialSelEnd;
+        if (DEBUG) Log.w(TAG, "Constructor called with outAttrs: " + outAttrs);
 
         Selection.setSelection(mEditable, outAttrs.initialSelStart, outAttrs.initialSelEnd);
         updateSelectionIfRequired();
