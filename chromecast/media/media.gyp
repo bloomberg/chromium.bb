@@ -250,6 +250,8 @@
         'cma/filters/cma_renderer.h',
         'cma/filters/demuxer_stream_adapter.cc',
         'cma/filters/demuxer_stream_adapter.h',
+        'cma/filters/hole_frame_factory.cc',
+        'cma/filters/hole_frame_factory.h',
       ],
     },
     {
@@ -274,10 +276,12 @@
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:test_support_base',
         '../../chromecast/chromecast.gyp:cast_metrics_test_support',
+        '../../gpu/gpu.gyp:gpu_unittest_utils',
         '../../media/media.gyp:media_test_support',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../testing/gtest.gyp:gtest_main',
+        '../../ui/gfx/gfx.gyp:gfx_test_support',
       ],
       'sources': [
         'cdm/chromecast_init_data_unittest.cc',

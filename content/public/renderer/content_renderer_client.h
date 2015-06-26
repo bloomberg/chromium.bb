@@ -56,6 +56,7 @@ struct WebURLError;
 }
 
 namespace media {
+class GpuVideoAcceleratorFactories;
 class MediaLog;
 class RendererFactory;
 struct KeySystemInfo;
@@ -256,6 +257,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows an embedder to provide a media::RendererFactory.
   virtual scoped_ptr<media::RendererFactory> CreateMediaRendererFactory(
       RenderFrame* render_frame,
+      const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories,
       const scoped_refptr<media::MediaLog>& media_log);
 
   // Allows an embedder to provide a MediaStreamRendererFactory.

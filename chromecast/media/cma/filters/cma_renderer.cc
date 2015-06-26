@@ -12,6 +12,7 @@
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/filters/demuxer_stream_adapter.h"
+#include "chromecast/media/cma/filters/hole_frame_factory.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/media_pipeline.h"
@@ -22,8 +23,8 @@
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/time_delta_interpolator.h"
-#include "media/base/video_frame.h"
 #include "media/base/video_renderer_sink.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
@@ -38,8 +39,10 @@ const base::TimeDelta kMaxDeltaFetcher(
 
 }  // namespace
 
-CmaRenderer::CmaRenderer(scoped_ptr<MediaPipeline> media_pipeline,
-                         ::media::VideoRendererSink* video_renderer_sink)
+CmaRenderer::CmaRenderer(
+    scoped_ptr<MediaPipeline> media_pipeline,
+    ::media::VideoRendererSink* video_renderer_sink,
+    const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories)
     : media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
       media_pipeline_(media_pipeline.Pass()),
@@ -54,6 +57,7 @@ CmaRenderer::CmaRenderer(scoped_ptr<MediaPipeline> media_pipeline,
       received_video_eos_(false),
       initial_natural_size_(gfx::Size()),
       initial_video_hole_created_(false),
+      gpu_factories_(gpu_factories),
       time_interpolator_(
           new ::media::TimeDeltaInterpolator(&default_tick_clock_)),
       playback_rate_(1.0),
@@ -94,6 +98,9 @@ void CmaRenderer::Initialize(
   DCHECK(!waiting_for_decryption_key_cb.is_null());
   DCHECK(demuxer_stream_provider->GetStream(::media::DemuxerStream::AUDIO) ||
          demuxer_stream_provider->GetStream(::media::DemuxerStream::VIDEO));
+
+  // Deferred from ctor so as to initialise on correct thread.
+  hole_frame_factory_.reset(new HoleFrameFactory(gpu_factories_));
 
   BeginStateTransition();
 
@@ -152,7 +159,6 @@ void CmaRenderer::StartPlayingFrom(base::TimeDelta time) {
     return;
   }
 
-#if defined(VIDEO_HOLE)
   // Create a video hole frame just before starting playback.
   // Note that instead of creating the video hole frame in Initialize(), we do
   // it here because paint_cb_ (which eventually calls OnOpacityChanged)
@@ -163,9 +169,8 @@ void CmaRenderer::StartPlayingFrom(base::TimeDelta time) {
   if (!initial_video_hole_created_) {
     initial_video_hole_created_ = true;
     video_renderer_sink_->PaintFrameUsingOldRenderingPath(
-        ::media::VideoFrame::CreateHoleFrame(initial_natural_size_));
+        hole_frame_factory_->CreateHoleFrame(initial_natural_size_));
   }
-#endif
 
   {
     base::AutoLock auto_lock(time_interpolator_lock_);
@@ -383,10 +388,8 @@ void CmaRenderer::OnStatisticsUpdated(
 
 void CmaRenderer::OnNaturalSizeChanged(const gfx::Size& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
-#if defined(VIDEO_HOLE)
   video_renderer_sink_->PaintFrameUsingOldRenderingPath(
-      ::media::VideoFrame::CreateHoleFrame(size));
-#endif
+      hole_frame_factory_->CreateHoleFrame(size));
 }
 
 void CmaRenderer::OnPlaybackTimeUpdated(

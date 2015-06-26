@@ -21,6 +21,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 class DemuxerStreamProvider;
+class GpuVideoAcceleratorFactories;
 class TimeDeltaInterpolator;
 class VideoFrame;
 class VideoRendererSink;
@@ -30,13 +31,16 @@ namespace chromecast {
 namespace media {
 class AudioPipeline;
 class BalancedMediaTaskRunnerFactory;
+class HoleFrameFactory;
 class MediaPipeline;
 class VideoPipeline;
 
 class CmaRenderer : public ::media::Renderer {
  public:
   CmaRenderer(scoped_ptr<MediaPipeline> media_pipeline,
-              ::media::VideoRendererSink* video_renderer_sink);
+              ::media::VideoRendererSink* video_renderer_sink,
+              const scoped_refptr<::media::GpuVideoAcceleratorFactories>&
+                  gpu_factories);
   ~CmaRenderer() override;
 
   // ::media::Renderer implementation:
@@ -125,9 +129,11 @@ class CmaRenderer : public ::media::Renderer {
   bool received_audio_eos_;
   bool received_video_eos_;
 
-  // Data members for helping the creation of the initial video hole frame.
+  // Data members for helping the creation of the video hole frame.
   gfx::Size initial_natural_size_;
   bool initial_video_hole_created_;
+  scoped_refptr<::media::GpuVideoAcceleratorFactories> gpu_factories_;
+  scoped_ptr<HoleFrameFactory> hole_frame_factory_;
 
   // Lock protecting access to |time_interpolator_|.
   base::Lock time_interpolator_lock_;

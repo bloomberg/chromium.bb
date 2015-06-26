@@ -12,6 +12,7 @@ namespace switches {
 // Media switches
 extern const char kEnableCmaMediaPipeline[];
 extern const char kHdmiSinkSupportedCodecs[];
+extern const char kEnableLegacyHolePunching[];
 
 // Content-implementation switches
 extern const char kEnableLocalFileAccesses[];

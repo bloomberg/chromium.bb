@@ -191,6 +191,7 @@ void CastContentRendererClient::AddKeySystems(
 scoped_ptr<::media::RendererFactory>
 CastContentRendererClient::CreateMediaRendererFactory(
     ::content::RenderFrame* render_frame,
+    const scoped_refptr<::media::GpuVideoAcceleratorFactories>& gpu_factories,
     const scoped_refptr<::media::MediaLog>& media_log) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
@@ -198,7 +199,7 @@ CastContentRendererClient::CreateMediaRendererFactory(
 
   return scoped_ptr<::media::RendererFactory>(
       new chromecast::media::ChromecastMediaRendererFactory(
-          media_log, render_frame->GetRoutingID()));
+          gpu_factories, media_log, render_frame->GetRoutingID()));
 }
 #endif
 

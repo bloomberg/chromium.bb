@@ -13,9 +13,11 @@
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/filters/cma_renderer.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
+#include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/fake_demuxer_stream.h"
 #include "media/base/null_video_sink.h"
+#include "media/renderers/mock_gpu_video_accelerator_factories.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +28,9 @@ namespace {
 
 class CmaEndToEndTest : public testing::Test {
  public:
-  CmaEndToEndTest() {
+  CmaEndToEndTest() {}
+
+  void SetUp() override {
     demuxer_stream_provider_.reset(
         new ::media::FakeDemuxerStreamProvider(1, 1, false));
     null_sink_.reset(new ::media::NullVideoSink(
@@ -38,12 +42,20 @@ class CmaEndToEndTest : public testing::Test {
     scoped_ptr<MediaPipelineDeviceFactory> factory =
         make_scoped_ptr(new MediaPipelineDeviceFactoryDefault());
 
+    gles2_.reset(new gpu::gles2::GLES2InterfaceStub());
+    mock_gpu_factories_ = new ::media::MockGpuVideoAcceleratorFactories();
+
+    EXPECT_CALL(*mock_gpu_factories_.get(), GetGLES2Interface())
+        .WillRepeatedly(testing::Return(gles2_.get()));
+
     media_pipeline->Initialize(
         kLoadTypeMediaSource,
         make_scoped_ptr(new MediaPipelineDevice(factory.Pass())));
 
-    renderer_.reset(new CmaRenderer(media_pipeline.Pass(), null_sink_.get()));
+    renderer_.reset(new CmaRenderer(media_pipeline.Pass(), null_sink_.get(),
+                                    mock_gpu_factories_));
   }
+  void TearDown() override { message_loop_.RunUntilIdle(); }
 
   ~CmaEndToEndTest() override {}
 
@@ -51,6 +63,8 @@ class CmaEndToEndTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<::media::FakeDemuxerStreamProvider> demuxer_stream_provider_;
   scoped_ptr<CmaRenderer> renderer_;
+  scoped_refptr<::media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
+  scoped_ptr<gpu::gles2::GLES2Interface> gles2_;
 
   class MockCB {
    public:
@@ -84,7 +98,6 @@ TEST_F(CmaEndToEndTest, TestInitialization) {
       base::Bind(&MockCB::OnWaitingForDecryptionKey, base::Unretained(&mock_)));
 
   EXPECT_CALL(mock_, OnInitialized(::media::PIPELINE_OK));
-  message_loop_.RunUntilIdle();
 }
 
 

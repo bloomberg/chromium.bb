@@ -1996,8 +1996,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       new media::MojoRendererFactory(GetMediaServiceProvider()));
 #else
   scoped_ptr<media::RendererFactory> media_renderer_factory =
-      GetContentClient()->renderer()->CreateMediaRendererFactory(this,
-                                                                 media_log);
+      GetContentClient()->renderer()->CreateMediaRendererFactory(
+          this, render_thread->GetGpuFactories(), media_log);
 
   if (!media_renderer_factory.get()) {
     media_renderer_factory.reset(new media::DefaultRendererFactory(
