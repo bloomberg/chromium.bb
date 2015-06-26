@@ -89,7 +89,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // StreamSocket was reused, then ClientSocketPool will call
   // |handle|->set_reused(true).  In either case, the socket will have been
   // allocated and will be connected.  A client might want to know whether or
-  // not the socket is reused in order to request a new socket if he encounters
+  // not the socket is reused in order to request a new socket if it encounters
   // an error with the reused socket.
   //
   // If ERR_IO_PENDING is returned, then the callback will be used to notify the

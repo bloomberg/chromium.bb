@@ -21,8 +21,8 @@
 // as well as providing a per-fd-registered summary of
 // events. Note that enabling this code vastly slows
 // down operations, and uses substantially more
-// memory. For these reasons, it should only be enabled when doing
-// developer debugging at his/her workstation.
+// memory. For these reasons, it should only be enabled by developers doing
+// development at their workstations.
 //
 // A structure called 'EventRecorder' will exist when
 // the macro is defined. See the EventRecorder class interface

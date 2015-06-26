@@ -107,7 +107,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     // the HttpStreamRequest.
     //
     // For the non-tunnel case, the caller will discover the authentication
-    // failure when reading response headers. At that point, he will handle the
+    // failure when reading response headers. At that point, it will handle the
     // authentication failure and restart the HttpStreamRequest entirely.
     //
     // Ownership of |auth_controller| and |proxy_response| are owned

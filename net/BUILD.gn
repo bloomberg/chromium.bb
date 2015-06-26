@@ -69,7 +69,7 @@ component("net") {
 
   cflags = []
   defines = [
-    # TODO(GYP) Note that he GYP file supports linux_link_kerberos (defaults to
+    # TODO(GYP) Note that the GYP file supports linux_link_kerberos (defaults to
     # 0) which implies that we run pkg_config on kerberos and link to that
     # rather than setting this define which will dynamically open it. That
     # doesn't seem to be set in the regular builds, so we're skipping this

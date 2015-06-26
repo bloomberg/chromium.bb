@@ -354,8 +354,8 @@ NET_ERROR(ICANN_NAME_COLLISION, -166)
 // The server responded with a certificate whose common name did not match
 // the host name.  This could mean:
 //
-// 1. An attacker has redirected our traffic to his server and is
-//    presenting a certificate for which he knows the private key.
+// 1. An attacker has redirected our traffic to their server and is
+//    presenting a certificate for which they know the private key.
 //
 // 2. The server is misconfigured and responding with the wrong cert.
 //
@@ -370,7 +370,7 @@ NET_ERROR(CERT_COMMON_NAME_INVALID, -200)
 // The server responded with a certificate that, by our clock, appears to
 // either not yet be valid or to have expired.  This could mean:
 //
-// 1. An attacker is presenting an old certificate for which he has
+// 1. An attacker is presenting an old certificate for which they have
 //    managed to obtain the private key.
 //
 // 2. The server is misconfigured and is not presenting a valid cert.
@@ -383,7 +383,7 @@ NET_ERROR(CERT_DATE_INVALID, -201)
 // we don't trust.  The could mean:
 //
 // 1. An attacker has substituted the real certificate for a cert that
-//    contains his public key and is signed by his cousin.
+//    contains their public key and is signed by their cousin.
 //
 // 2. The server operator has a legitimate certificate from a CA we don't
 //    know about, but should trust.

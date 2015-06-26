@@ -84,7 +84,7 @@ WebSocket::ParseResult DecodeFrameHybi17(const base::StringPiece& frame,
       return WebSocket::FRAME_ERROR;
   }
 
-  if (client_frame && !masked)  // In Hybi-17 spec client MUST mask his frame.
+  if (client_frame && !masked)  // In Hybi-17 spec client MUST mask its frame.
     return WebSocket::FRAME_ERROR;
 
   uint64 payload_length64 = second_byte & kPayloadLengthMask;
