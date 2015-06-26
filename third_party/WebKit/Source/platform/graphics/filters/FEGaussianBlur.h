@@ -31,12 +31,6 @@ class PLATFORM_EXPORT FEGaussianBlur : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEGaussianBlur> create(Filter*, float, float);
 
-    float stdDeviationX() const;
-    void setStdDeviationX(float);
-
-    float stdDeviationY() const;
-    void setStdDeviationY(float);
-
     virtual FloatRect mapRect(const FloatRect&, bool forward = true) override final;
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
     static IntSize calculateKernelSize(Filter*, const FloatPoint& std);
