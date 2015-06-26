@@ -16,6 +16,7 @@
           '<(EXTERNS_DIR)/chrome_send.js',
           '<(EXTERNS_DIR)/chrome_extensions.js',
           '<(EXTERNS_DIR)/file_manager_private.js',
+          '<(EXTERNS_DIR)/metrics_private.js',
           '../externs/chrome_webstore_widget_private.js',
           '../externs/webview_tag.js'
         ]

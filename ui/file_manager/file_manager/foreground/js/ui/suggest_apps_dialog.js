@@ -137,7 +137,31 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
       INSTALLING_SPINNER_ALT: str('SUGGEST_DIALOG_INSTALLING_SPINNER_ALT')
     },
 
-    metricsImpl: metrics,
+    metricsImpl: {
+      /**
+       * @param {string} enumName
+       * @param {number} value
+       * @param {number} enumSize
+       */
+      recordEnum: function(enumName, value, enumSize) {
+        metrics.recordEnum('SuggestApps.' + enumName, value, enumSize);
+      },
+
+      /** @param {string} actionName */
+      recordUserAction: function(actionName) {
+        metrics.recordUserAction('SuggestApps.' + actionName);
+      },
+
+      /** @param {string} intervalName */
+      startInterval: function(intervalName) {
+        metrics.startInterval('SuggestApps.' + intervalName);
+      },
+
+      /** @param {string} intervalName */
+      recordInterval: function(intervalName) {
+        metrics.recordInterval('SuggestApps.' + intervalName);
+      }
+    },
 
     /**
      * @param {string} itemId,

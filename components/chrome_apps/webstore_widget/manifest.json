@@ -32,6 +32,7 @@
     "chrome://resources/",
     "chrome://theme/",
     "fileManagerPrivate",
+    "metricsPrivate",
     "webstoreWidgetPrivate",
     "webview"
   ]

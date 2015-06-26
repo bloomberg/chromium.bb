@@ -923,7 +923,7 @@ CWSWidgetContainer.MetricsRecorder.INSTALL = {
  */
 CWSWidgetContainer.MetricsRecorder.prototype.recordLoad = function(result) {
   if (0 <= result && result < 3)
-    this.metricsImpl_.recordEnum('SuggestApps.Load', result, 3);
+    this.metricsImpl_.recordEnum('Load', result, 3);
 };
 
 /**
@@ -933,7 +933,7 @@ CWSWidgetContainer.MetricsRecorder.prototype.recordLoad = function(result) {
 CWSWidgetContainer.MetricsRecorder.prototype.recordCloseDialog = function(
     reason) {
   if (0 <= reason && reason < 4)
-    this.metricsImpl_.recordEnum('SuggestApps.CloseDialog', reason, 4);
+    this.metricsImpl_.recordEnum('CloseDialog', reason, 4);
 };
 
 /**
@@ -942,17 +942,17 @@ CWSWidgetContainer.MetricsRecorder.prototype.recordCloseDialog = function(
  */
 CWSWidgetContainer.MetricsRecorder.prototype.recordInstall = function(result) {
   if (0 <= result && result < 3)
-    this.metricsImpl_.recordEnum('SuggestApps.Install', result, 3);
+    this.metricsImpl_.recordEnum('Install', result, 3);
 };
 
 CWSWidgetContainer.MetricsRecorder.prototype.recordShowDialog = function() {
-  this.metricsImpl_.recordUserAction('SuggestApps.ShowDialog');
+  this.metricsImpl_.recordUserAction('ShowDialog');
 };
 
 CWSWidgetContainer.MetricsRecorder.prototype.startLoad = function() {
-  this.metricsImpl_.startInterval('SuggestApps.LoadTime');
+  this.metricsImpl_.startInterval('LoadTime');
 };
 
 CWSWidgetContainer.MetricsRecorder.prototype.finishLoad = function() {
-  this.metricsImpl_.recordInterval('SuggestApps.LoadTime');
+  this.metricsImpl_.recordInterval('LoadTime');
 };

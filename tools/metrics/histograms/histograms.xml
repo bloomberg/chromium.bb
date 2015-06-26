@@ -11975,7 +11975,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>joshwoodward@google.com</owner>
   <summary>
     Chrome OS File Browser: time to load the suggest apps dialog. Measured
-    between the moment window appears and the moment all the contants in the
+    between the moment window appears and the moment all the contents in the
     dialog including the Chrome Webstore widget are ready.
   </summary>
 </histogram>
@@ -49083,6 +49083,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The success or failure of all extension installs from the webstore. This
     includes those initiated by sync.
+  </summary>
+</histogram>
+
+<histogram name="WebstoreWidgetApp.Close" enum="SuggestAppsDialogCloseReason">
+  <owner>joshwoodward@google.com</owner>
+  <summary>
+    Webstore Widget app: the reason why the suggest apps dialog was closed.
+  </summary>
+</histogram>
+
+<histogram name="WebstoreWidgetApp.Install" enum="SuggestAppsDialogInstall">
+  <owner>joshwoodward@google.com</owner>
+  <summary>
+    Webstore Widget app: whether the Webstore item user selected was
+    successfully installed or not.
+  </summary>
+</histogram>
+
+<histogram name="WebstoreWidgetApp.Load" enum="SuggestAppsDialogLoad">
+  <owner>joshwoodward@google.com</owner>
+  <summary>
+    Webstore Widget app: whether the initialization of the dialog succeeded or
+    not.
+  </summary>
+</histogram>
+
+<histogram name="WebstoreWidgetApp.LoadTime" units="milliseconds">
+  <owner>joshwoodward@google.com</owner>
+  <summary>
+    Webstore Widget app: time to load the widget contained in the app. Measured
+    between the moment window appears and the moment all the contents in the app
+    including the Chrome Webstore widget are ready.
   </summary>
 </histogram>
 

@@ -12330,6 +12330,13 @@ should be able to be added at any place in this file.
   </obsolete>
 </action>
 
+<action name="WebstoreWidgetApp.ShowDialog">
+  <owner>tbarzic@google.com</owner>
+  <description>
+    Tracks Chrome Webstore Gallery Widget app being launched.
+  </description>
+</action>
+
 <action name="Win7ASHRestart">
   <owner>cpu@chromium.org</owner>
   <owner>ananta@chromium.org</owner>
