@@ -493,6 +493,10 @@ class ChromeSDKCommand(command.CliCommand):
         help='Sets up SDK for building a componentized build of Chrome '
              '(component=shared_library in GYP).')
     parser.add_argument(
+        '--fastbuild', action='store_true', default=False,
+        help='Turn off debugging information for a faster build '
+             '(fastbuild=1 in GYP).')
+    parser.add_argument(
         '--use-external-config', action='store_true', default=False,
         help='Use the external configuration for the specified board, even if '
              'an internal configuration is avalable.')
@@ -612,9 +616,10 @@ class ChromeSDKCommand(command.CliCommand):
     env['CC_host'] = os.path.join(clang_path, 'clang')
     env['CXX_host'] = os.path.join(clang_path, 'clang++')
 
-    # Enable debug fission.
-    env['CFLAGS'] = env.get('CFLAGS', '') +  ' -gsplit-dwarf'
-    env['CXXFLAGS'] = env.get('CXXFLAGS', '') + ' -gsplit-dwarf'
+    if not options.fastbuild:
+      # Enable debug fission.
+      env['CFLAGS'] = env.get('CFLAGS', '') +  ' -gsplit-dwarf'
+      env['CXXFLAGS'] = env.get('CXXFLAGS', '') + ' -gsplit-dwarf'
 
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
                         goma_port=None):
@@ -672,6 +677,9 @@ class ChromeSDKCommand(command.CliCommand):
       gyp_dict.pop('internal_gles2_conform_tests', None)
     if options.component:
       gyp_dict['component'] = 'shared_library'
+    if options.fastbuild:
+      gyp_dict['fastbuild'] = 1
+      gyp_dict.pop('release_extra_cflags', None)
 
     # Enable goma if requested.
     if goma_dir:
