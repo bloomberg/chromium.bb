@@ -46,7 +46,7 @@ jlong FakeServerHelperAndroid::CreateNetworkResources(JNIEnv* env,
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   syncer::NetworkResources* resources =
-      new fake_server::FakeServerNetworkResources(fake_server_ptr);
+      new fake_server::FakeServerNetworkResources(fake_server_ptr->AsWeakPtr());
   return reinterpret_cast<intptr_t>(resources);
 }
 

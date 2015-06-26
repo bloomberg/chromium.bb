@@ -90,7 +90,12 @@ public class FakeServerHelper {
      * @return the FakeServer pointer
      */
     public long createFakeServer() {
-        return nativeCreateFakeServer(mNativeFakeServerHelperAndroid);
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+            @Override
+            public Long call() {
+                return nativeCreateFakeServer(mNativeFakeServerHelperAndroid);
+            }
+        });
     }
 
     /**
@@ -100,8 +105,14 @@ public class FakeServerHelper {
      * @param nativeFakeServer pointer to a native FakeServer object.
      * @return the NetworkResources pointer
      */
-    public long createNetworkResources(long nativeFakeServer) {
-        return nativeCreateNetworkResources(mNativeFakeServerHelperAndroid, nativeFakeServer);
+    public long createNetworkResources(final long nativeFakeServer) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+            @Override
+            public Long call() {
+                return nativeCreateNetworkResources(
+                        mNativeFakeServerHelperAndroid, nativeFakeServer);
+            }
+        });
     }
 
     /**
@@ -109,8 +120,14 @@ public class FakeServerHelper {
      *
      * @param nativeFakeServer the pointer to be deleted
      */
-    public void deleteFakeServer(long nativeFakeServer) {
-        nativeDeleteFakeServer(mNativeFakeServerHelperAndroid, nativeFakeServer);
+    public void deleteFakeServer(final long nativeFakeServer) {
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeDeleteFakeServer(mNativeFakeServerHelperAndroid, nativeFakeServer);
+                return null;
+            }
+        });
     }
 
     /**
@@ -123,17 +140,29 @@ public class FakeServerHelper {
      *
      * @return whether the number of specified entities exist
      */
-    public boolean verifyEntityCountByTypeAndName(int count, ModelType modelType, String name) {
+    public boolean verifyEntityCountByTypeAndName(final int count, final ModelType modelType,
+            final String name) {
         checkFakeServerInitialized(
                 "useFakeServer must be called before data verification.");
-        return nativeVerifyEntityCountByTypeAndName(mNativeFakeServerHelperAndroid,
-            sNativeFakeServer, count, modelType.toString(), name);
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return nativeVerifyEntityCountByTypeAndName(mNativeFakeServerHelperAndroid,
+                        sNativeFakeServer, count, modelType.toString(), name);
+            }
+        });
     }
 
-    public boolean verifySessions(String[] urls) {
+    public boolean verifySessions(final String[] urls) {
         checkFakeServerInitialized(
                 "useFakeServer must be called before data verification.");
-        return nativeVerifySessions(mNativeFakeServerHelperAndroid, sNativeFakeServer, urls);
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return nativeVerifySessions(mNativeFakeServerHelperAndroid, sNativeFakeServer,
+                        urls);
+            }
+        });
     }
 
     /**
@@ -144,12 +173,18 @@ public class FakeServerHelper {
      *             SyncEntity.name value
      * @param entitySpecifics the EntitySpecifics proto that represents the entity to inject
      */
-    public void injectUniqueClientEntity(String name, EntitySpecifics entitySpecifics) {
+    public void injectUniqueClientEntity(final String name, final EntitySpecifics entitySpecifics) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        // The protocol buffer is serialized as a byte array because it can be easily deserialized
-        // from this format in native code.
-        nativeInjectUniqueClientEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, name,
-                MessageNano.toByteArray(entitySpecifics));
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                // The protocol buffer is serialized as a byte array because it can be easily
+                // deserialized from this format in native code.
+                nativeInjectUniqueClientEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
+                        name, MessageNano.toByteArray(entitySpecifics));
+                return null;
+            }
+        });
     }
 
     /**
@@ -160,10 +195,16 @@ public class FakeServerHelper {
      *            class, so it must be a valid URL under its definition.
      * @param parentId the ID of the desired parent bookmark folder
      */
-    public void injectBookmarkEntity(String title, String url, String parentId) {
+    public void injectBookmarkEntity(final String title, final String url, final String parentId) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
-        nativeInjectBookmarkEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, title, url,
-                parentId);
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeInjectBookmarkEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, title,
+                        url, parentId);
+                return null;
+            }
+        });
     }
 
     /**
@@ -173,9 +214,15 @@ public class FakeServerHelper {
      *
      * @param id the server ID of the entity to delete
      */
-    public void deleteEntity(String id) {
+    public void deleteEntity(final String id) {
         checkFakeServerInitialized("useFakeServer must be called before deleting an entity.");
-        nativeDeleteEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, id);
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeDeleteEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, id);
+                return null;
+            }
+        });
     }
 
     /**
@@ -186,7 +233,13 @@ public class FakeServerHelper {
      */
     public String getBookmarkBarFolderId() {
         checkFakeServerInitialized("useFakeServer must be called before access");
-        return nativeGetBookmarkBarFolderId(mNativeFakeServerHelperAndroid, sNativeFakeServer);
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+            @Override
+            public String call() {
+                return nativeGetBookmarkBarFolderId(mNativeFakeServerHelperAndroid,
+                        sNativeFakeServer);
+            }
+        });
     }
 
     private static void checkFakeServerInitialized(String failureMessage) {

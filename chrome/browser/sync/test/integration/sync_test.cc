@@ -462,7 +462,8 @@ void SyncTest::InitializeInstance(int index) {
     // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
     profile_sync_service->OverrideNetworkResourcesForTest(
         make_scoped_ptr<syncer::NetworkResources>(
-            new fake_server::FakeServerNetworkResources(fake_server_.get())));
+            new fake_server::FakeServerNetworkResources(
+                fake_server_->AsWeakPtr())));
   }
 
   ProfileSyncServiceHarness::SigninType singin_type = UsingExternalServers()

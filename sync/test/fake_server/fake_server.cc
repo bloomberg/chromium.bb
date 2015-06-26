@@ -170,17 +170,22 @@ FakeServer::FakeServer() : version_(0),
                            error_type_(sync_pb::SyncEnums::SUCCESS),
                            alternate_triggered_errors_(false),
                            request_counter_(0),
-                           network_enabled_(true) {
+                           network_enabled_(true),
+                           weak_ptr_factory_(this) {
   keystore_keys_.push_back(kDefaultKeystoreKey);
-  CHECK(CreateDefaultPermanentItems());
+
+  const bool create_result = CreateDefaultPermanentItems();
+  DCHECK(create_result) << "Permanent items were not created successfully.";
 }
 
 FakeServer::~FakeServer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   STLDeleteContainerPairSecondPointers(entities_.begin(), entities_.end());
 }
 
 bool FakeServer::CreatePermanentBookmarkFolder(const std::string& server_tag,
                                                const std::string& name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   FakeServerEntity* entity =
       PermanentEntity::Create(syncer::BOOKMARKS, server_tag, name,
                               ModelTypeToRootTag(syncer::BOOKMARKS));
@@ -222,15 +227,25 @@ void FakeServer::SaveEntity(FakeServerEntity* entity) {
 }
 
 void FakeServer::HandleCommand(const string& request,
-                               const HandleCommandCallback& callback) {
+                               const base::Closure& completion_closure,
+                               int* error_code,
+                               int* response_code,
+                               std::string* response) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!network_enabled_) {
-    callback.Run(net::ERR_FAILED, net::ERR_FAILED, string());
+    *error_code = net::ERR_FAILED;
+    *response_code = net::ERR_FAILED;
+    *response = string();
+    completion_closure.Run();
     return;
   }
   request_counter_++;
 
   if (!authenticated_) {
-    callback.Run(0, net::HTTP_UNAUTHORIZED, string());
+    *error_code = 0;
+    *response_code = net::HTTP_UNAUTHORIZED;
+    *response = string();
+    completion_closure.Run();
     return;
   }
 
@@ -263,14 +278,20 @@ void FakeServer::HandleCommand(const string& request,
                                       response_proto.mutable_commit());
         break;
       default:
-        callback.Run(net::ERR_NOT_IMPLEMENTED, 0, string());;
+        *error_code = net::ERR_NOT_IMPLEMENTED;
+        *response_code = 0;
+        *response = string();
+        completion_closure.Run();
         return;
     }
 
     if (!success) {
       // TODO(pvalenzuela): Add logging here so that tests have more info about
       // the failure.
-      callback.Run(net::ERR_FAILED, 0, string());
+      *error_code = net::ERR_FAILED;
+      *response_code = 0;
+      *response = string();
+      completion_closure.Run();
       return;
     }
 
@@ -278,7 +299,11 @@ void FakeServer::HandleCommand(const string& request,
   }
 
   response_proto.set_store_birthday(store_birthday_);
-  callback.Run(0, net::HTTP_OK, response_proto.SerializeAsString());
+
+  *error_code = 0;
+  *response_code = net::HTTP_OK;
+  *response = response_proto.SerializeAsString();
+  completion_closure.Run();
 }
 
 bool FakeServer::HandleGetUpdatesRequest(
@@ -469,6 +494,7 @@ bool FakeServer::HandleCommitRequest(
 }
 
 scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
 
   // Initialize an empty ListValue for all ModelTypes.
@@ -503,6 +529,7 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
 std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
     ModelType model_type) {
   std::vector<sync_pb::SyncEntity> sync_entities;
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     FakeServerEntity* entity = it->second;
@@ -516,10 +543,12 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
 }
 
 void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   SaveEntity(entity.release());
 }
 
 bool FakeServer::SetNewStoreBirthday(const string& store_birthday) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (store_birthday_ == store_birthday)
     return false;
 
@@ -528,14 +557,17 @@ bool FakeServer::SetNewStoreBirthday(const string& store_birthday) {
 }
 
 void FakeServer::SetAuthenticated() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   authenticated_ = true;
 }
 
 void FakeServer::SetUnauthenticated() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   authenticated_ = false;
 }
 
 bool FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (triggered_actionable_error_.get()) {
     DVLOG(1) << "Only one type of error can be triggered at any given time.";
     return false;
@@ -550,6 +582,7 @@ bool FakeServer::TriggerActionableError(
     const string& description,
     const string& url,
     const sync_pb::SyncEnums::Action& action) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (error_type_ != sync_pb::SyncEnums::SUCCESS) {
     DVLOG(1) << "Only one type of error can be triggered at any given time.";
     return false;
@@ -566,6 +599,7 @@ bool FakeServer::TriggerActionableError(
 }
 
 bool FakeServer::EnableAlternatingTriggeredErrors() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (error_type_ == sync_pb::SyncEnums::SUCCESS &&
       !triggered_actionable_error_.get()) {
     DVLOG(1) << "No triggered error set. Alternating can't be enabled.";
@@ -588,22 +622,27 @@ bool FakeServer::ShouldSendTriggeredError() const {
 }
 
 void FakeServer::AddObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.AddObserver(observer);
 }
 
 void FakeServer::RemoveObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
 }
 
 void FakeServer::EnableNetwork() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   network_enabled_ = true;
 }
 
 void FakeServer::DisableNetwork() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   network_enabled_ = false;
 }
 
 std::string FakeServer::GetBookmarkBarFolderId() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     FakeServerEntity* entity = it->second;
@@ -615,6 +654,11 @@ std::string FakeServer::GetBookmarkBarFolderId() const {
   }
   NOTREACHED() << "Bookmark Bar entity not found.";
   return "";
+}
+
+base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace fake_server

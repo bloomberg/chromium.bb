@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "sync/test/fake_server/fake_server.h"
@@ -18,9 +19,10 @@ using syncer::HttpPostProviderInterface;
 namespace fake_server {
 
 FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
-    FakeServer* fake_server,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-        : fake_server_(fake_server), task_runner_(task_runner) { }
+    const base::WeakPtr<FakeServer>& fake_server,
+    scoped_refptr<base::SequencedTaskRunner> fake_server_task_runner)
+        : fake_server_(fake_server),
+          fake_server_task_runner_(fake_server_task_runner) { }
 
 FakeServerHttpPostProviderFactory::~FakeServerHttpPostProviderFactory() { }
 
@@ -28,7 +30,7 @@ void FakeServerHttpPostProviderFactory::Init(const std::string& user_agent) { }
 
 HttpPostProviderInterface* FakeServerHttpPostProviderFactory::Create() {
   FakeServerHttpPostProvider* http =
-      new FakeServerHttpPostProvider(fake_server_, task_runner_);
+      new FakeServerHttpPostProvider(fake_server_, fake_server_task_runner_);
   http->AddRef();
   return http;
 }
@@ -39,11 +41,10 @@ void FakeServerHttpPostProviderFactory::Destroy(
 }
 
 FakeServerHttpPostProvider::FakeServerHttpPostProvider(
-    FakeServer* fake_server,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    const base::WeakPtr<FakeServer>& fake_server,
+    scoped_refptr<base::SequencedTaskRunner> fake_server_task_runner)
         : fake_server_(fake_server),
-          task_runner_(task_runner),
-          post_complete_(false, false) { }
+          fake_server_task_runner_(fake_server_task_runner) { }
 
 FakeServerHttpPostProvider::~FakeServerHttpPostProvider() { }
 
@@ -65,26 +66,35 @@ void FakeServerHttpPostProvider::SetPostPayload(const char* content_type,
   request_content_.assign(content, content_length);
 }
 
-void FakeServerHttpPostProvider::OnPostComplete(int error_code,
-                                                int response_code,
-                                                const std::string& response) {
-  post_error_code_ = error_code;
-  post_response_code_ = response_code;
-  response_ = response;
-  post_complete_.Signal();
-}
-
 bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
                                                      int* response_code) {
   // It is assumed that a POST is being made to /command.
-  FakeServer::HandleCommandCallback callback = base::Bind(
-      &FakeServerHttpPostProvider::OnPostComplete, base::Unretained(this));
-  task_runner_->PostNonNestableTask(FROM_HERE,
-                                    base::Bind(&FakeServer::HandleCommand,
-                                               base::Unretained(fake_server_),
-                                               base::ConstRef(request_content_),
-                                               base::ConstRef(callback)));
-  post_complete_.Wait();
+  int post_error_code = -1;
+  int post_response_code = -1;
+  std::string post_response;
+
+  base::WaitableEvent post_complete(false, false);
+  base::Closure signal_closure = base::Bind(&base::WaitableEvent::Signal,
+                                            base::Unretained(&post_complete));
+
+  bool result = fake_server_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeServer::HandleCommand,
+                 fake_server_,
+                 base::ConstRef(request_content_),
+                 base::ConstRef(signal_closure),
+                 &post_error_code,
+                 &post_response_code,
+                 &post_response));
+
+  if (!result)
+    return false;
+
+  post_complete.Wait();
+  post_error_code_ = post_error_code;
+  post_response_code_ = post_response_code;
+  response_ = post_response;
+
   *error_code = post_error_code_;
   *response_code = post_response_code_;
   return *error_code == 0;
