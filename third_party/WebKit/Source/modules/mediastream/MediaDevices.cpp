@@ -11,6 +11,10 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/NavigatorMediaStream.h"
+#include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
+#include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "modules/mediastream/UserMediaController.h"
 
 namespace blink {
@@ -24,6 +28,70 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* scriptState)
 
     MediaDevicesRequest* request = MediaDevicesRequest::create(scriptState, userMedia);
     return request->start();
+}
+
+namespace {
+
+class PromiseSuccessCallback : public NavigatorUserMediaSuccessCallback {
+public:
+    PromiseSuccessCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+    }
+
+    ~PromiseSuccessCallback()
+    {
+    }
+
+    void handleEvent(MediaStream* stream)
+    {
+        m_resolver->resolve(stream);
+    }
+private:
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> m_resolver;
+};
+
+class PromiseErrorCallback : public NavigatorUserMediaErrorCallback {
+public:
+    PromiseErrorCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+    }
+
+    ~PromiseErrorCallback()
+    {
+    }
+
+    void handleEvent(NavigatorUserMediaError* error)
+    {
+        m_resolver->reject(error);
+    }
+private:
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> m_resolver;
+};
+
+} // namespace
+
+ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const Dictionary& options, ExceptionState& exceptionState)
+{
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+
+    NavigatorUserMediaSuccessCallback* successCallback = new PromiseSuccessCallback(resolver);
+    NavigatorUserMediaErrorCallback* errorCallback = new PromiseErrorCallback(resolver);
+
+    Document* document = toDocument(scriptState->executionContext());
+    UserMediaController* userMedia = UserMediaController::from(document->frame());
+    if (!userMedia)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "No media device controller available; is this a detached window?"));
+
+    UserMediaRequest* request = UserMediaRequest::create(document, userMedia, options, successCallback, errorCallback, exceptionState);
+    if (!request) {
+        ASSERT(exceptionState.hadException());
+        return exceptionState.reject(scriptState);
+    }
+
+    request->start();
+    return resolver->promise();
 }
 
 } // namespace blink
