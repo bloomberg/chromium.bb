@@ -142,6 +142,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEPENDENT_EXTENSIONS));
   source->AddString("extensionSettingsSupervisedUser",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER));
+  source->AddString("loading",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOADING));
   source->AddString("extensionSettingsCorruptInstall",
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_CORRUPTED_EXTENSION));

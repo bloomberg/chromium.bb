@@ -136,6 +136,7 @@ cr.define('extensions', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      this.setLoading_(true);
       uber.onContentFrameLoaded();
       cr.ui.FocusOutlineManager.forDocument(document);
       measureCheckboxStrings();
@@ -248,6 +249,7 @@ cr.define('extensions', function() {
      * @private
      */
     update_: function(profileInfo) {
+      this.setLoading_(true);
       webuiResponded = true;
 
       /** @const */
@@ -261,24 +263,30 @@ cr.define('extensions', function() {
       devControlsCheckbox.checked = profileInfo.inDeveloperMode;
       devControlsCheckbox.disabled = supervised;
 
-      this.updateDevControlsVisibility_(false);
-
       $('load-unpacked').disabled = !profileInfo.canLoadUnpacked;
       var extensionList = $('extension-settings-list');
       extensionList.updateExtensionsData(
           profileInfo.isIncognitoAvailable,
           profileInfo.appInfoDialogEnabled).then(function() {
-        // We can get called many times in short order, thus we need to
-        // be careful to remove the 'finished loading' timeout.
-        if (this.loadingTimeout_)
-          window.clearTimeout(this.loadingTimeout_);
-        document.documentElement.classList.add('loading');
-        this.loadingTimeout_ = window.setTimeout(function() {
-          document.documentElement.classList.remove('loading');
-        }, 0);
-
+        this.setLoading_(false);
         this.onExtensionCountChanged();
       }.bind(this));
+    },
+
+    /**
+     * Shows the loading spinner and hides elements that shouldn't be visible
+     * while loading.
+     * @param {boolean} isLoading
+     * @private
+     */
+    setLoading_: function(isLoading) {
+      document.documentElement.classList.toggle('loading', isLoading);
+      $('loading-spinner').hidden = !isLoading;
+      $('dev-controls').hidden = isLoading;
+      this.updateDevControlsVisibility_(false);
+
+      // The extension list is already hidden/shown elsewhere and shouldn't be
+      // updated here because it can be hidden if there are no extensions.
     },
 
     /**
@@ -478,6 +486,5 @@ cr.define('extensions', function() {
 });
 
 window.addEventListener('load', function(e) {
-  document.documentElement.classList.add('loading');
   extensions.ExtensionSettings.getInstance().initialize();
 });
