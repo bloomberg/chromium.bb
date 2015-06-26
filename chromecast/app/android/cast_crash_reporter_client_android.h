@@ -16,6 +16,9 @@ class CastCrashReporterClientAndroid
   explicit CastCrashReporterClientAndroid(const std::string& process_type);
   ~CastCrashReporterClientAndroid() override;
 
+  static bool GetCrashDumpLocation(const std::string& process_type,
+                                   base::FilePath* crash_dir);
+
   // crash_reporter::CrashReporterClient implementation:
   void GetProductNameAndVersion(const char** product_name,
                                 const char** version) override;

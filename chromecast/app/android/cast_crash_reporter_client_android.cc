@@ -39,7 +39,9 @@ base::FilePath CastCrashReporterClientAndroid::GetReporterLogFilename() {
   return base::FilePath(FILE_PATH_LITERAL("uploads.log"));
 }
 
+// static
 bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
+    const std::string& process_type,
     base::FilePath* crash_dir) {
   base::FilePath crash_dir_local;
   if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &crash_dir_local)) {
@@ -48,7 +50,7 @@ bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
   crash_dir_local = crash_dir_local.Append("crashes");
 
   // Only try to create the directory in the browser process (empty value).
-  if (process_type_.empty()) {
+  if (process_type.empty()) {
     if (!base::DirectoryExists(crash_dir_local)) {
       if (!base::CreateDirectory(crash_dir_local)) {
         return false;
@@ -59,6 +61,12 @@ bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
   // Provide value to crash_dir once directory is known to be a valid path.
   *crash_dir = crash_dir_local;
   return true;
+}
+
+bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
+    base::FilePath* crash_dir) {
+  return CastCrashReporterClientAndroid::GetCrashDumpLocation(process_type_,
+                                                              crash_dir);
 }
 
 size_t CastCrashReporterClientAndroid::RegisterCrashKeys() {

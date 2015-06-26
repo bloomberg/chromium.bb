@@ -4,10 +4,15 @@
 
 #include "chromecast/app/cast_main_delegate.h"
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/files/file.h"
+#include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -24,6 +29,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
+#include "chromecast/app/android/cast_crash_reporter_client_android.h"
 #include "chromecast/app/android/crash_handler.h"
 #else
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
@@ -35,6 +41,10 @@ namespace {
 base::LazyInstance<chromecast::CastCrashReporterClient>::Leaky
     g_crash_reporter_client = LAZY_INSTANCE_INITIALIZER;
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+const int kMaxCrashFiles = 10;
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -69,6 +79,42 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
   logging::InitLogging(settings);
   // Time, process, and thread ID are available through logcat.
   logging::SetLogItems(true, true, false, false);
+
+#if defined(OS_ANDROID)
+  // Only delete the old crash dumps if the current process is the browser
+  // process. Empty |process_type| signifies browser process.
+  if (process_type.empty()) {
+    // Get a listing of all of the crash dump files.
+    base::FilePath crash_directory;
+    if (CastCrashReporterClientAndroid::GetCrashDumpLocation(
+            process_type, &crash_directory)) {
+      base::FileEnumerator crash_directory_list(crash_directory, false,
+                                                base::FileEnumerator::FILES);
+      std::vector<base::FilePath> crash_files;
+      for (base::FilePath file = crash_directory_list.Next(); !file.empty();
+           file = crash_directory_list.Next()) {
+        crash_files.push_back(file);
+      }
+      // Delete crash dumps except for the |kMaxCrashFiles| most recent ones.
+      if (crash_files.size() > kMaxCrashFiles) {
+        auto newest_first =
+            [](const base::FilePath& l, const base::FilePath& r) -> bool {
+              base::File::Info l_info, r_info;
+              base::GetFileInfo(l, &l_info);
+              base::GetFileInfo(r, &r_info);
+              return l_info.last_modified > r_info.last_modified;
+            };
+        std::partial_sort(crash_files.begin(),
+                          crash_files.begin() + kMaxCrashFiles,
+                          crash_files.end(), newest_first);
+        for (auto file = crash_files.begin() + kMaxCrashFiles;
+             file != crash_files.end(); ++file) {
+          base::DeleteFile(*file, false);
+        }
+      }
+    }
+  }
+#endif  // defined(OS_ANDROID)
 
   content::SetContentClient(&content_client_);
   return false;
@@ -160,8 +206,7 @@ void CastMainDelegate::InitializeResourceBundle() {
   // TODO(gunsch): Use LOAD_COMMON_RESOURCES once ResourceBundle no longer
   // hardcodes resource file names.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US",
-      resource_delegate_.get(),
+      "en-US", resource_delegate_.get(),
       ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
 #if defined(OS_ANDROID)
@@ -169,8 +214,7 @@ void CastMainDelegate::InitializeResourceBundle() {
       base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
 #else
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_file,
-      ui::SCALE_FACTOR_NONE);
+      pak_file, ui::SCALE_FACTOR_NONE);
 #endif  // defined(OS_ANDROID)
 }
 
