@@ -32,7 +32,6 @@
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
-#include "chromeos/dbus/leadership_daemon_manager_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
@@ -204,11 +203,6 @@ EasyUnlockClient* DBusThreadManager::GetEasyUnlockClient() {
   return client_bundle_->easy_unlock_client();
 }
 
-LeadershipDaemonManagerClient*
-DBusThreadManager::GetLeadershipDaemonManagerClient() {
-  return client_bundle_->leadership_daemon_manager_client();
-}
-
 LorgnetteManagerClient*
 DBusThreadManager::GetLorgnetteManagerClient() {
   return client_bundle_->lorgnette_manager_client();
@@ -336,7 +330,6 @@ void DBusThreadManager::InitializeClients() {
   GetGsmSMSClient()->Init(GetSystemBus());
   GetImageBurnerClient()->Init(GetSystemBus());
   GetIntrospectableClient()->Init(GetSystemBus());
-  GetLeadershipDaemonManagerClient()->Init(GetSystemBus());
   GetLorgnetteManagerClient()->Init(GetSystemBus());
   GetModemMessagingClient()->Init(GetSystemBus());
   GetPermissionBrokerClient()->Init(GetSystemBus());
@@ -579,12 +572,6 @@ void DBusThreadManagerSetter::SetDebugDaemonClient(
 void DBusThreadManagerSetter::SetEasyUnlockClient(
     scoped_ptr<EasyUnlockClient> client) {
   DBusThreadManager::Get()->client_bundle_->easy_unlock_client_ = client.Pass();
-}
-
-void DBusThreadManagerSetter::SetLeadershipDaemonManagerClient(
-    scoped_ptr<LeadershipDaemonManagerClient> client) {
-  DBusThreadManager::Get()->client_bundle_->leadership_daemon_manager_client_ =
-      client.Pass();
 }
 
 void DBusThreadManagerSetter::SetLorgnetteManagerClient(
