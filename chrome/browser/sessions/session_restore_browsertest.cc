@@ -1427,7 +1427,9 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreSimpleTest, CorrectLoadingOrder) {
   window.tabs.clear();
 }
 
-IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest, CorrectLoadingOrder) {
+// Disabled due to flaky timeouts; http://crbug.com/504885.
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest,
+                       DISABLED_CorrectLoadingOrder) {
   const int num_tabs = 6;
 
   Profile* profile = browser()->profile();
