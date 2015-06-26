@@ -277,7 +277,9 @@ public class UrlBar extends VerticallyFixedEditText {
      * @return Whether the URL is currently in batch edit mode triggered by an IME.  No external
      *         text changes should be triggered while this is true.
      */
-    public boolean isInBatchEditMode() {
+    // isInBatchEditMode is a package protected method on TextView, so we intentionally chose
+    // a different name.
+    public boolean isHandlingBatchInput() {
         return mInBatchEditMode;
     }
 

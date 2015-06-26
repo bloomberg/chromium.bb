@@ -1763,7 +1763,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         Editable text = mUrlBar.getText();
 
         return mUrlBar.isCursorAtEndOfTypedText()
-                && !mUrlBar.isInBatchEditMode()
+                && !mUrlBar.isHandlingBatchInput()
                 && BaseInputConnection.getComposingSpanEnd(text)
                         == BaseInputConnection.getComposingSpanStart(text);
     }
