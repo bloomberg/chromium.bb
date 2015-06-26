@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,10 +64,9 @@ void LoadInitialContents(BookmarkPermanentNode* node,
 
 ChromeBookmarkClient::ChromeBookmarkClient(Profile* profile)
     : profile_(profile),
-      history_service_(NULL),
-      model_(NULL),
-      managed_node_(NULL),
-      supervised_node_(NULL) {
+      model_(nullptr),
+      managed_node_(nullptr),
+      supervised_node_(nullptr) {
 }
 
 ChromeBookmarkClient::~ChromeBookmarkClient() {
@@ -92,10 +92,9 @@ void ChromeBookmarkClient::Init(BookmarkModel* model) {
 }
 
 void ChromeBookmarkClient::Shutdown() {
-  favicon_changed_subscription_.reset();
   if (model_) {
     model_->RemoveObserver(this);
-    model_ = NULL;
+    model_ = nullptr;
   }
   BookmarkClient::Shutdown();
 }
@@ -139,8 +138,11 @@ bool ChromeBookmarkClient::SupportsTypedCountForNodes() {
 void ChromeBookmarkClient::GetTypedCountForNodes(
     const NodeSet& nodes,
     NodeTypedCountPairs* node_typed_count_pairs) {
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileIfExists(
+          profile_, ServiceAccessType::EXPLICIT_ACCESS);
   history::URLDatabase* url_db =
-      history_service_ ? history_service_->InMemoryDatabase() : NULL;
+      history_service ? history_service->InMemoryDatabase() : nullptr;
   for (NodeSet::const_iterator i = nodes.begin(); i != nodes.end(); ++i) {
     int typed_count = 0;
 
@@ -218,36 +220,12 @@ bool ChromeBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
          !bookmarks::IsDescendantOf(node, supervised_node_);
 }
 
-void ChromeBookmarkClient::SetHistoryService(
-    history::HistoryService* history_service) {
-  DCHECK(history_service);
-  history_service_ = history_service;
-  favicon_changed_subscription_ = history_service_->AddFaviconChangedCallback(
-      base::Bind(&BookmarkModel::OnFaviconChanged, base::Unretained(model_)));
-}
-
 void ChromeBookmarkClient::BookmarkModelChanged() {
-}
-
-void ChromeBookmarkClient::BookmarkNodeRemoved(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int old_index,
-    const BookmarkNode* node,
-    const std::set<GURL>& removed_urls) {
-  if (history_service_)
-    history_service_->URLsNoLongerBookmarked(removed_urls);
-}
-
-void ChromeBookmarkClient::BookmarkAllUserNodesRemoved(
-    BookmarkModel* model,
-    const std::set<GURL>& removed_urls) {
-  if (history_service_)
-    history_service_->URLsNoLongerBookmarked(removed_urls);
 }
 
 void ChromeBookmarkClient::BookmarkModelLoaded(BookmarkModel* model,
                                                bool ids_reassigned) {
+  BaseBookmarkModelObserver::BookmarkModelLoaded(model, ids_reassigned);
   // Start tracking the managed and supervised bookmarks. This will detect any
   // changes that may have occurred while the initial managed and supervised
   // bookmarks were being loaded on the background.

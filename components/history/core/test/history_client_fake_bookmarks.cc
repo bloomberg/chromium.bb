@@ -159,6 +159,10 @@ bool HistoryClientFakeBookmarks::IsBookmarked(const GURL& url) {
   return bookmarks_->IsBookmarked(url);
 }
 
+void HistoryClientFakeBookmarks::OnHistoryServiceCreated(
+    HistoryService* history_service) {
+}
+
 void HistoryClientFakeBookmarks::Shutdown() {
 }
 

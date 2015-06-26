@@ -8,14 +8,12 @@
 #include <set>
 #include <vector>
 
-#include "base/callback_list.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/macros.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 
 class GURL;
-class HistoryServiceFactory;
 class Profile;
 
 namespace base {
@@ -27,10 +25,6 @@ class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
 class ManagedBookmarksTracker;
-}
-
-namespace history {
-class HistoryService;
 }
 
 class ChromeBookmarkClient : public bookmarks::BookmarkClient,
@@ -71,18 +65,10 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   bool CanBeEditedByUser(const bookmarks::BookmarkNode* node) override;
 
  private:
-  friend class HistoryServiceFactory;
-  void SetHistoryService(history::HistoryService* history_service);
-
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;
-  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const bookmarks::BookmarkNode* parent,
-                           int old_index,
-                           const bookmarks::BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
-                                   const std::set<GURL>& removed_urls) override;
+
+  // bookmarks::BookmarkModelObserver:
   void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                            bool ids_reassigned) override;
 
@@ -99,14 +85,6 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   std::string GetManagedBookmarksDomain();
 
   Profile* profile_;
-
-  // HistoryService associated to the Profile. Due to circular dependency, this
-  // cannot be passed to the constructor, nor lazily fetched. Instead the value
-  // is initialized from HistoryServiceFactory.
-  history::HistoryService* history_service_;
-
-  scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
-      favicon_changed_subscription_;
 
   // Pointer to the BookmarkModel. Will be non-NULL from the call to Init to
   // the call to Shutdown. Must be valid for the whole interval.

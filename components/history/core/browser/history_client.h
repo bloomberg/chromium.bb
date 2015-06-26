@@ -20,6 +20,7 @@ namespace history {
 class HistoryBackend;
 class HistoryBackendClient;
 class HistoryDatabase;
+class HistoryService;
 class ThumbnailDatabase;
 
 // This class abstracts operations that depend on the embedder's environment,
@@ -28,6 +29,9 @@ class HistoryClient {
  public:
   HistoryClient() {}
   virtual ~HistoryClient() {}
+
+  // Called upon HistoryService creation.
+  virtual void OnHistoryServiceCreated(HistoryService* history_service) = 0;
 
   // Called before HistoryService is shutdown.
   virtual void Shutdown() = 0;

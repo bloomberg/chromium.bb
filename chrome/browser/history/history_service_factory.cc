@@ -6,8 +6,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,9 +23,10 @@ history::HistoryService* HistoryServiceFactory::GetForProfile(
     Profile* profile,
     ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
-  if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      sat != ServiceAccessType::EXPLICIT_ACCESS)
-    return NULL;
+  if (sat != ServiceAccessType::EXPLICIT_ACCESS &&
+      profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
+    return nullptr;
+  }
 
   return static_cast<history::HistoryService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
@@ -38,9 +37,10 @@ history::HistoryService* HistoryServiceFactory::GetForProfileIfExists(
     Profile* profile,
     ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
-  if (profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      sat != ServiceAccessType::EXPLICIT_ACCESS)
-    return NULL;
+  if (sat != ServiceAccessType::EXPLICIT_ACCESS &&
+      profile->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
+    return nullptr;
+  }
 
   return static_cast<history::HistoryService*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
@@ -69,7 +69,6 @@ HistoryServiceFactory::HistoryServiceFactory()
           "HistoryService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
-  DependsOn(ChromeBookmarkClientFactory::GetInstance());
 }
 
 HistoryServiceFactory::~HistoryServiceFactory() {
@@ -88,8 +87,6 @@ KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return nullptr;
   }
-  ChromeBookmarkClientFactory::GetForProfile(profile)
-      ->SetHistoryService(history_service.get());
   return history_service.release();
 }
 

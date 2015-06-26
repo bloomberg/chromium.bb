@@ -30,6 +30,7 @@ class HistoryClientFakeBookmarks : public HistoryClient {
   bool IsBookmarked(const GURL& url);
 
   // HistoryClient implementation.
+  void OnHistoryServiceCreated(HistoryService* history_service) override;
   void Shutdown() override;
   bool CanAddURL(const GURL& url) override;
   void NotifyProfileError(sql::InitStatus init_status) override;

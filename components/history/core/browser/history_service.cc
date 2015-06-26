@@ -889,6 +889,9 @@ bool HistoryService::Init(
   if (visit_delegate_ && !visit_delegate_->Init(this))
     return false;
 
+  if (history_client_)
+    history_client_->OnHistoryServiceCreated(this);
+
   return true;
 }
 

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/history/chrome_history_client.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/logging.h"
 #include "chrome/browser/history/chrome_history_backend_client.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -11,13 +14,29 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/history/core/browser/history_service.h"
 
 ChromeHistoryClient::ChromeHistoryClient(
     bookmarks::BookmarkModel* bookmark_model)
-    : bookmark_model_(bookmark_model) {
+    : bookmark_model_(bookmark_model), is_bookmark_model_observer_(false) {
 }
 
 ChromeHistoryClient::~ChromeHistoryClient() {
+}
+
+void ChromeHistoryClient::OnHistoryServiceCreated(
+    history::HistoryService* history_service) {
+  DCHECK(!is_bookmark_model_observer_);
+  if (bookmark_model_) {
+    on_bookmarks_removed_ =
+        base::Bind(&history::HistoryService::URLsNoLongerBookmarked,
+                   base::Unretained(history_service));
+    favicon_changed_subscription_ = history_service->AddFaviconChangedCallback(
+        base::Bind(&bookmarks::BookmarkModel::OnFaviconChanged,
+                   base::Unretained(bookmark_model_)));
+    bookmark_model_->AddObserver(this);
+    is_bookmark_model_observer_ = true;
+  }
 }
 
 void ChromeHistoryClient::Shutdown() {
@@ -28,8 +47,15 @@ void ChromeHistoryClient::Shutdown() {
   // it can release the signal history is waiting on, allowing history to
   // shutdown (HistoryService::Cleanup to complete). In such a scenario history
   // sees an incorrect view of bookmarks, but it's better than a deadlock.
-  if (bookmark_model_)
+  if (bookmark_model_) {
+    if (is_bookmark_model_observer_) {
+      is_bookmark_model_observer_ = false;
+      bookmark_model_->RemoveObserver(this);
+      favicon_changed_subscription_.reset();
+      on_bookmarks_removed_.Reset();
+    }
     bookmark_model_->Shutdown();
+  }
 }
 
 bool ChromeHistoryClient::CanAddURL(const GURL& url) {
@@ -46,4 +72,28 @@ void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status) {
 scoped_ptr<history::HistoryBackendClient>
 ChromeHistoryClient::CreateBackendClient() {
   return make_scoped_ptr(new ChromeHistoryBackendClient(bookmark_model_));
+}
+
+void ChromeHistoryClient::BookmarkModelChanged() {
+}
+
+void ChromeHistoryClient::BookmarkNodeRemoved(
+    bookmarks::BookmarkModel* bookmark_model,
+    const bookmarks::BookmarkNode* parent,
+    int old_index,
+    const bookmarks::BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
+  BaseBookmarkModelObserver::BookmarkNodeRemoved(bookmark_model, parent,
+                                                 old_index, node, removed_urls);
+  DCHECK(!on_bookmarks_removed_.is_null());
+  on_bookmarks_removed_.Run(removed_urls);
+}
+
+void ChromeHistoryClient::BookmarkAllUserNodesRemoved(
+    bookmarks::BookmarkModel* bookmark_model,
+    const std::set<GURL>& removed_urls) {
+  BaseBookmarkModelObserver::BookmarkAllUserNodesRemoved(bookmark_model,
+                                                         removed_urls);
+  DCHECK(!on_bookmarks_removed_.is_null());
+  on_bookmarks_removed_.Run(removed_urls);
 }
