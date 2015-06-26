@@ -1111,7 +1111,7 @@ html[dir='rtl'] .breadcrumbs .separator {
   background: white -webkit-image-set(
       url(../images/files/ui/drive_logo.png) 1x,
       url(../images/files/ui/2x/drive_logo.png) 2x) no-repeat center;
-  background-size: 25px 22px;
+  background-size: 29px 29px;
   border-radius: 2px;
   flex: none;
   height: 36px;

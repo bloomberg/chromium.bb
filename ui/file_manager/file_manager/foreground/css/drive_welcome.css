@@ -52,7 +52,7 @@
 .drive-welcome.header .drive-welcome-icon {
   background-color: white;
   background-position: center;
-  background-size: 62px 52px;
+  background-size: 64px 64px;
   border-radius: 4px;
   flex: none;
   height: 78px;
@@ -171,7 +171,8 @@ html[dir='rtl'] .drive-welcome.header .banner-people {
 }
 
 .drive-welcome.page .drive-welcome-icon {
-  background-position: center center;
+  background-position: center;
+  background-size: 88px 88px;
   height: 200px;
   left: 0;
   right: 0;
