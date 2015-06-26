@@ -27,8 +27,8 @@ WebCredential WebCredential::create(PlatformCredential* credential)
     return WebCredential(credential);
 }
 
-WebCredential::WebCredential(const WebString& id, const WebString& name, const WebURL& avatarURL)
-    : m_platformCredential(PlatformCredential::create(id, name, avatarURL))
+WebCredential::WebCredential(const WebString& id, const WebString& name, const WebURL& iconURL)
+    : m_platformCredential(PlatformCredential::create(id, name, iconURL))
 {
 }
 
@@ -68,9 +68,9 @@ WebString WebCredential::name() const
     return m_platformCredential->name();
 }
 
-WebURL WebCredential::avatarURL() const
+WebURL WebCredential::iconURL() const
 {
-    return m_platformCredential->avatarURL();
+    return m_platformCredential->iconURL();
 }
 
 WebString WebCredential::type() const

@@ -8,8 +8,8 @@
 #include "platform/credentialmanager/PlatformPasswordCredential.h"
 
 namespace blink {
-WebPasswordCredential::WebPasswordCredential(const WebString& id, const WebString& password, const WebString& name, const WebURL& avatarURL)
-    : WebCredential(PlatformPasswordCredential::create(id, password, name, avatarURL))
+WebPasswordCredential::WebPasswordCredential(const WebString& id, const WebString& password, const WebString& name, const WebURL& iconURL)
+    : WebCredential(PlatformPasswordCredential::create(id, password, name, iconURL))
 {
 }
 

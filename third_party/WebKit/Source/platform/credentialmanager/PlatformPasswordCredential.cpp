@@ -7,13 +7,13 @@
 
 namespace blink {
 
-PlatformPasswordCredential* PlatformPasswordCredential::create(const String& id, const String& password, const String& name, const KURL& avatarURL)
+PlatformPasswordCredential* PlatformPasswordCredential::create(const String& id, const String& password, const String& name, const KURL& iconURL)
 {
-    return new PlatformPasswordCredential(id, password, name, avatarURL);
+    return new PlatformPasswordCredential(id, password, name, iconURL);
 }
 
-PlatformPasswordCredential::PlatformPasswordCredential(const String& id, const String& password, const String& name, const KURL& avatarURL)
-    : PlatformCredential(id, name, avatarURL)
+PlatformPasswordCredential::PlatformPasswordCredential(const String& id, const String& password, const String& name, const KURL& iconURL)
+    : PlatformCredential(id, name, iconURL)
     , m_password(password)
 {
     setType("password");

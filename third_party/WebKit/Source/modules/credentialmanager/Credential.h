@@ -17,13 +17,13 @@ class ExceptionState;
 class Credential : public GarbageCollected<Credential>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static Credential* create(const String& id, const String& name, const KURL& avatar);
-    static Credential* create(const String& id, const String& name, const String& avatar, ExceptionState&);
+    static Credential* create(const String& id, const String& name, const KURL& icon);
+    static Credential* create(const String& id, const String& name, const String& icon, ExceptionState&);
 
     // Credential.idl
     const String& id() const { return m_platformCredential->id(); }
     const String& name() const { return m_platformCredential->name(); }
-    const KURL& avatarURL() const { return m_platformCredential->avatarURL(); }
+    const KURL& iconURL() const { return m_platformCredential->iconURL(); }
     const String& type() const { return m_platformCredential->type(); }
 
     DECLARE_VIRTUAL_TRACE();
@@ -32,7 +32,7 @@ public:
 
 protected:
     Credential(PlatformCredential*);
-    Credential(const String& id, const String& name, const KURL& avatar);
+    Credential(const String& id, const String& name, const KURL& icon);
 
     // Parses a string as a KURL. Throws an exception via |exceptionState| if an invalid URL is produced.
     static KURL parseStringAsURL(const String&, ExceptionState&);

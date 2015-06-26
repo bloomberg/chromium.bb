@@ -18,12 +18,12 @@ PasswordCredential* PasswordCredential::create(WebPasswordCredential* webPasswor
     return new PasswordCredential(webPasswordCredential);
 }
 
-PasswordCredential* PasswordCredential::create(const String& id, const String& password, const String& name, const String& avatar, ExceptionState& exceptionState)
+PasswordCredential* PasswordCredential::create(const String& id, const String& password, const String& name, const String& icon, ExceptionState& exceptionState)
 {
-    KURL avatarURL = parseStringAsURL(avatar, exceptionState);
+    KURL iconURL = parseStringAsURL(icon, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    return new PasswordCredential(id, password, name, avatarURL);
+    return new PasswordCredential(id, password, name, iconURL);
 }
 
 PasswordCredential::PasswordCredential(WebPasswordCredential* webPasswordCredential)
@@ -31,8 +31,8 @@ PasswordCredential::PasswordCredential(WebPasswordCredential* webPasswordCredent
 {
 }
 
-PasswordCredential::PasswordCredential(const String& id, const String& password, const String& name, const KURL& avatar)
-    : Credential(PlatformPasswordCredential::create(id, password, name, avatar))
+PasswordCredential::PasswordCredential(const String& id, const String& password, const String& name, const KURL& icon)
+    : Credential(PlatformPasswordCredential::create(id, password, name, icon))
     , m_formData(DOMFormData::create())
 {
     m_formData->append("username", id);

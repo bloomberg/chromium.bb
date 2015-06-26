@@ -16,7 +16,7 @@ class PlatformCredential;
 
 class WebCredential {
 public:
-    BLINK_PLATFORM_EXPORT WebCredential(const WebString& id, const WebString& name, const WebURL& avatarURL);
+    BLINK_PLATFORM_EXPORT WebCredential(const WebString& id, const WebString& name, const WebURL& iconURL);
     BLINK_PLATFORM_EXPORT WebCredential(const WebCredential&);
     virtual ~WebCredential() { reset(); }
 
@@ -25,14 +25,15 @@ public:
 
     BLINK_PLATFORM_EXPORT WebString id() const;
     BLINK_PLATFORM_EXPORT WebString name() const;
-    BLINK_PLATFORM_EXPORT WebURL avatarURL() const;
+    BLINK_PLATFORM_EXPORT WebURL iconURL() const;
     BLINK_PLATFORM_EXPORT WebString type() const;
 
     BLINK_PLATFORM_EXPORT bool isPasswordCredential() const;
     BLINK_PLATFORM_EXPORT bool isFederatedCredential() const;
 
-    // TODO(mkwst): Drop this once Chromium is updated. https://crbug.com/494880
+    // TODO(mkwst, msramek): Drop this once Chromium is updated. https://crbug.com/494880
     BLINK_PLATFORM_EXPORT bool isLocalCredential() const { return isPasswordCredential(); }
+    BLINK_PLATFORM_EXPORT WebURL avatarURL() const { return iconURL(); }
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT static WebCredential create(PlatformCredential*);

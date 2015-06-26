@@ -628,7 +628,7 @@ interface ConvolverNode
     setter buffer
     setter normalize
 interface Credential
-    getter avatarURL
+    getter iconURL
     getter id
     getter name
     getter type

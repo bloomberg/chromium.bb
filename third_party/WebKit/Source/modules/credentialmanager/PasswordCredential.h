@@ -29,7 +29,7 @@ public:
         return create(id, password, name, emptyString(), exceptionState);
     }
 
-    static PasswordCredential* create(const String& id, const String& password, const String& name, const String& avatar, ExceptionState&);
+    static PasswordCredential* create(const String& id, const String& password, const String& name, const String& icon, ExceptionState&);
     static PasswordCredential* create(WebPasswordCredential*);
 
     // PasswordCredential.idl
@@ -40,7 +40,7 @@ public:
 
 private:
     PasswordCredential(WebPasswordCredential*);
-    PasswordCredential(const String& id, const String& password, const String& name, const KURL& avatar);
+    PasswordCredential(const String& id, const String& password, const String& name, const KURL& icon);
 
     Member<DOMFormData> m_formData;
 };

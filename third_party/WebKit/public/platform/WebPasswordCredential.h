@@ -14,7 +14,7 @@ namespace blink {
 
 class WebPasswordCredential : public WebCredential {
 public:
-    BLINK_PLATFORM_EXPORT WebPasswordCredential(const WebString& id, const WebString& password, const WebString& name, const WebURL& avatarURL);
+    BLINK_PLATFORM_EXPORT WebPasswordCredential(const WebString& id, const WebString& password, const WebString& name, const WebURL& iconURL);
 
     BLINK_PLATFORM_EXPORT void assign(const WebPasswordCredential&);
 

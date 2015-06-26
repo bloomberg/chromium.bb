@@ -30,7 +30,7 @@ public:
 
 private:
     FederatedCredential(WebFederatedCredential*);
-    FederatedCredential(const String& id, const KURL& provider, const String& name, const KURL& avatar);
+    FederatedCredential(const String& id, const KURL& provider, const String& name, const KURL& icon);
 };
 
 } // namespace blink

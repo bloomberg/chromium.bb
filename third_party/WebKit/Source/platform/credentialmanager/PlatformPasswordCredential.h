@@ -14,7 +14,7 @@ namespace blink {
 class PLATFORM_EXPORT PlatformPasswordCredential final : public PlatformCredential {
     WTF_MAKE_NONCOPYABLE(PlatformPasswordCredential);
 public:
-    static PlatformPasswordCredential* create(const String& id, const String& password, const String& name, const KURL& avatarURL);
+    static PlatformPasswordCredential* create(const String& id, const String& password, const String& name, const KURL& iconURL);
     virtual ~PlatformPasswordCredential();
 
     const String& password() const { return m_password; }
@@ -22,7 +22,7 @@ public:
     virtual bool isPassword() override { return true; }
 
 private:
-    PlatformPasswordCredential(const String& id, const String& password, const String& name, const KURL& avatarURL);
+    PlatformPasswordCredential(const String& id, const String& password, const String& name, const KURL& iconURL);
 
     String m_password;
 };
