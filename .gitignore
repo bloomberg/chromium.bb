@@ -185,3 +185,4 @@ TAGS
 /tools/gnulib/sys/
 /tools/gnulib/unistd.h
 /tools/gnulib/warn-on-use.h
+/tests/check_yaml
