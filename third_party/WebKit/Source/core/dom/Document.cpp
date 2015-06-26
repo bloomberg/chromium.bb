@@ -2189,13 +2189,8 @@ void Document::detach(const AttachContext& context)
             frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement.get(), nullptr);
     }
 
-    if (this == &axObjectCacheOwner()) {
+    if (this == &axObjectCacheOwner())
         clearAXObjectCache();
-    } else if (AXObjectCache* cache = existingAXObjectCache()) {
-        for (Node& node : NodeTraversal::descendantsOf(*this)) {
-            cache->remove(&node);
-        }
-    }
 
     m_layoutView = nullptr;
     ContainerNode::detach(context);
