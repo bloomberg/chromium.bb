@@ -7,6 +7,7 @@
 #include <dwmapi.h>
 
 #include "base/process/process_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -330,10 +331,19 @@ MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
     // because the GDI-drawn text in the web content composited over it will
     // become semi-transparent over any glass area.
     if (!IsMaximized() && !GetWidget()->IsFullscreen()) {
-      margins.cxLeftWidth = kClientEdgeThickness + 1;
-      margins.cxRightWidth = kClientEdgeThickness + 1;
-      margins.cyBottomHeight = kClientEdgeThickness + 1;
       margins.cyTopHeight = kClientEdgeThickness + 1;
+      // On Windows 10, we don't draw our own window border, so don't extend the
+      // nonclient area in for it. The top is extended so that the MARGINS isn't
+      // treated as an empty (ignored) extension.
+      if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+        margins.cxLeftWidth = 0;
+        margins.cxRightWidth = 0;
+        margins.cyBottomHeight = 0;
+      } else {
+        margins.cxLeftWidth = kClientEdgeThickness + 1;
+        margins.cxRightWidth = kClientEdgeThickness + 1;
+        margins.cyBottomHeight = kClientEdgeThickness + 1;
+      }
     }
     // In maximized mode, we only have a titlebar strip of glass, no side/bottom
     // borders.

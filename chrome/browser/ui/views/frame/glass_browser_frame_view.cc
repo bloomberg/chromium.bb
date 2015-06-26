@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,8 +38,9 @@ HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
 namespace {
-// There are 3 px of client edge drawn inside the outer frame borders.
-const int kNonClientBorderThickness = 3;
+// Size of client edge drawn inside the outer frame borders.
+const int kNonClientBorderThicknessPreWin10 = 3;
+const int kNonClientBorderThicknessWin10 = 1;
 // Besides the frame border, there's another 9 px of empty space atop the
 // window in restored mode, to use to drag the window around.
 const int kNonClientRestoredExtraThickness = 9;
@@ -329,7 +331,9 @@ int GlassBrowserFrameView::NonClientBorderThickness() const {
   if (frame()->IsMaximized() || frame()->IsFullscreen())
     return 0;
 
-  return kNonClientBorderThickness;
+  return (base::win::GetVersion() <= base::win::VERSION_WIN8_1)
+             ? kNonClientBorderThicknessPreWin10
+             : kNonClientBorderThicknessWin10;
 }
 
 int GlassBrowserFrameView::NonClientTopBorderHeight() const {
@@ -353,11 +357,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   toolbar_bounds.set_origin(toolbar_origin);
   int x = toolbar_bounds.x();
   int w = toolbar_bounds.width();
-  int left_x = x - kContentEdgeShadowThickness;
 
   gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-  gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(
-      IDR_CONTENT_TOP_LEFT_CORNER);
   gfx::ImageSkia* toolbar_center = tp->GetImageSkiaNamed(
       IDR_CONTENT_TOP_CENTER);
 
@@ -373,36 +374,46 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                        dest_y, w, theme_toolbar->height());
 
   if (browser_view()->IsTabStripVisible()) {
-    // Draw rounded corners for the tab.
-    gfx::ImageSkia* toolbar_left_mask =
-        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
-    gfx::ImageSkia* toolbar_right_mask =
-        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
+    // On Windows 10, we don't draw our own window border but rather go right to
+    // the system border, so we don't need to draw the toolbar edges.
+    if (base::win::GetVersion() < base::win::VERSION_WIN10) {
+      int left_x = x - kContentEdgeShadowThickness;
+      // Draw rounded corners for the tab.
+      gfx::ImageSkia* toolbar_left_mask =
+          tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER_MASK);
+      gfx::ImageSkia* toolbar_right_mask =
+          tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER_MASK);
 
-    // We mask out the corners by using the DestinationIn transfer mode,
-    // which keeps the RGB pixels from the destination and the alpha from
-    // the source.
-    SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+      // We mask out the corners by using the DestinationIn transfer mode,
+      // which keeps the RGB pixels from the destination and the alpha from
+      // the source.
+      SkPaint paint;
+      paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
 
-    // Mask out the top left corner.
-    canvas->DrawImageInt(*toolbar_left_mask, left_x, y, paint);
+      // Mask out the top left corner.
+      canvas->DrawImageInt(*toolbar_left_mask, left_x, y, paint);
 
-    // Mask out the top right corner.
-    int right_x =
-        x + w + kContentEdgeShadowThickness - toolbar_right_mask->width();
-    canvas->DrawImageInt(*toolbar_right_mask, right_x, y, paint);
+      // Mask out the top right corner.
+      int right_x =
+          x + w + kContentEdgeShadowThickness - toolbar_right_mask->width();
+      canvas->DrawImageInt(*toolbar_right_mask, right_x, y, paint);
 
-    // Draw left edge.
-    canvas->DrawImageInt(*toolbar_left, left_x, y);
+      // Draw left edge.
+      gfx::ImageSkia* toolbar_left =
+          tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+      canvas->DrawImageInt(*toolbar_left, left_x, y);
 
-    // Draw center edge.
-    canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(), y,
-        right_x - (left_x + toolbar_left->width()), toolbar_center->height());
+      // Draw center edge.
+      canvas->TileImageInt(*toolbar_center, left_x + toolbar_left->width(), y,
+                           right_x - (left_x + toolbar_left->width()),
+                           toolbar_center->height());
 
-    // Right edge.
-    canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
-                         right_x, y);
+      // Right edge.
+      canvas->DrawImageInt(*tp->GetImageSkiaNamed(IDR_CONTENT_TOP_RIGHT_CORNER),
+                           right_x, y);
+    } else {
+      canvas->TileImageInt(*toolbar_center, x, y, w, toolbar_center->height());
+    }
   }
 
   // Draw the content/toolbar separator.
