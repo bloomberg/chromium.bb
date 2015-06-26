@@ -36,13 +36,6 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   KeyedServiceBaseFactory* GetSyncServiceFactory() override;
   sync_driver::SyncService* GetSyncServiceForBrowserState(
       ChromeBrowserState* browser_state) override;
-  KeyedServiceBaseFactory* GetHistoryServiceFactory() override;
-  history::HistoryService* GetHistoryServiceForBrowserState(
-      ChromeBrowserState* browser_state,
-      ServiceAccessType access_type) override;
-  history::HistoryService* GetHistoryServiceForBrowserStateIfExists(
-      ChromeBrowserState* browser_state,
-      ServiceAccessType access_type) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestKeyedServiceProvider);

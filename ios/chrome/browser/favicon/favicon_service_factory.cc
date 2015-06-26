@@ -9,9 +9,8 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/favicon/favicon_client_impl.h"
+#include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 namespace ios {
 
@@ -41,7 +40,7 @@ FaviconServiceFactory::FaviconServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "FaviconService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(ios::GetKeyedServiceProvider()->GetHistoryServiceFactory());
+  DependsOn(ios::HistoryServiceFactory::GetInstance());
 }
 
 FaviconServiceFactory::~FaviconServiceFactory() {
@@ -53,7 +52,7 @@ scoped_ptr<KeyedService> FaviconServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   return make_scoped_ptr(new favicon::FaviconService(
       make_scoped_ptr(new FaviconClientImpl),
-      ios::GetKeyedServiceProvider()->GetHistoryServiceForBrowserState(
+      ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS)));
 }
 

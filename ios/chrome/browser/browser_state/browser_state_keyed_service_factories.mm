@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h"
 #include "ios/chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
@@ -34,6 +35,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   enhanced_bookmarks::EnhancedBookmarkModelFactory::GetInstance();
   ios::BookmarkUndoServiceFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
+  ios::HistoryServiceFactory::GetInstance();
   ios::SigninErrorControllerFactory::GetInstance();
   ios::StartupTaskRunnerServiceFactory::GetInstance();
   ios::TopSitesFactory::GetInstance();

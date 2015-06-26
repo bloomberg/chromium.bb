@@ -134,22 +134,4 @@ TestKeyedServiceProvider::GetSyncServiceForBrowserState(
   return FakeSyncServiceFactory::GetForBrowserState(browser_state);
 }
 
-KeyedServiceBaseFactory* TestKeyedServiceProvider::GetHistoryServiceFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-history::HistoryService*
-TestKeyedServiceProvider::GetHistoryServiceForBrowserState(
-    ChromeBrowserState* browser_state,
-    ServiceAccessType access_type) {
-  return nullptr;
-}
-
-history::HistoryService*
-TestKeyedServiceProvider::GetHistoryServiceForBrowserStateIfExists(
-    ChromeBrowserState* browser_state,
-    ServiceAccessType access_type) {
-  return nullptr;
-}
-
 }  // namespace ios
