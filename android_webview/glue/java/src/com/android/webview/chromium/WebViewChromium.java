@@ -48,6 +48,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.SmartClipProvider;
+import org.chromium.content_public.browser.NavigationHistory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -1100,7 +1101,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return ret;
         }
-        return new WebBackForwardListChromium(mAwContents.getNavigationHistory());
+        // mAwContents.getNavigationHistory() can be null here if mAwContents has been destroyed,
+        // and we do not handle passing null to the WebBackForwardListChromium constructor.
+        NavigationHistory navHistory = mAwContents.getNavigationHistory();
+        if (navHistory == null) navHistory = new NavigationHistory();
+        return new WebBackForwardListChromium(navHistory);
     }
 
     @Override
