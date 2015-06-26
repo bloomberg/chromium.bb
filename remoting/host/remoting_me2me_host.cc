@@ -643,6 +643,11 @@ void HostProcess::SetState(HostState target_state) {
 void HostProcess::StartOnNetworkThread() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
+  if (state_ != HOST_STARTING) {
+    // Host was shutdown before the task had a chance to run.
+    return;
+  }
+
 #if !defined(REMOTING_MULTI_PROCESS)
   if (host_config_path_ == base::FilePath(kStdinConfigPath)) {
     // Process config we've read from stdin.
