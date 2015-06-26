@@ -6,6 +6,7 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -694,6 +695,21 @@ TEST_F(ReliableQuicStreamTest, SetDrainingOutgoingIncoming) {
   EXPECT_EQ(1u, QuicSessionPeer::GetDrainingStreams(session_.get())
                     ->count(kTestStreamId));
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
+}
+
+TEST_F(ReliableQuicStreamTest, FecSendPolicyReceivedConnectionOption) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_send_fec_packet_only_on_fec_alarm,
+                              true);
+  Initialize(kShouldProcessData);
+
+  // Test ReceivedConnectionOptions.
+  QuicConfig* config = session_->config();
+  QuicTagVector copt;
+  copt.push_back(kFSTR);
+  QuicConfigPeer::SetReceivedConnectionOptions(config, copt);
+  EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream_->fec_policy());
+  stream_->SetFromConfig();
+  EXPECT_EQ(FEC_PROTECT_ALWAYS, stream_->fec_policy());
 }
 
 }  // namespace

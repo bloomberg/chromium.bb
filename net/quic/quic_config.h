@@ -229,6 +229,11 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTagVector SendConnectionOptions() const;
 
+  // Returns true if the client is sending or the server has received a
+  // connection option.
+  bool HasClientSentConnectionOption(QuicTag tag,
+                                     Perspective perspective) const;
+
   void SetIdleConnectionStateLifetime(
       QuicTime::Delta max_idle_connection_state_lifetime,
       QuicTime::Delta default_idle_conection_state_lifetime);

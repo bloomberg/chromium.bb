@@ -544,6 +544,11 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool is_secure() const { return is_secure_; }
 
+  // Sends an MTU discovery packet of size |target_mtu|.  If the packet is
+  // acknowledged by the peer, the maximum packet size will be increased to
+  // |target_mtu|.
+  void SendMtuDiscoveryPacket(QuicByteCount target_mtu);
+
  protected:
   // Packets which have not been written to the wire.
   // Owns the QuicPacket* packet.

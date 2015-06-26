@@ -217,6 +217,34 @@ TEST_F(QuicConfigTest, InvalidFlowControlWindow) {
             config.GetInitialStreamFlowControlWindowToSend());
 }
 
+TEST_F(QuicConfigTest, HasClientSentConnectionOption) {
+  QuicConfig client_config;
+  QuicTagVector copt;
+  copt.push_back(kTBBR);
+  copt.push_back(kFHDR);
+  client_config.SetConnectionOptionsToSend(copt);
+  EXPECT_TRUE(client_config.HasClientSentConnectionOption(
+      kTBBR, Perspective::IS_CLIENT));
+  EXPECT_TRUE(client_config.HasClientSentConnectionOption(
+      kFHDR, Perspective::IS_CLIENT));
+
+  CryptoHandshakeMessage msg;
+  client_config.ToHandshakeMessage(&msg);
+
+  string error_details;
+  const QuicErrorCode error =
+      config_.ProcessPeerHello(msg, CLIENT, &error_details);
+  EXPECT_EQ(QUIC_NO_ERROR, error);
+  EXPECT_TRUE(config_.negotiated());
+
+  EXPECT_TRUE(config_.HasReceivedConnectionOptions());
+  EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
+  EXPECT_TRUE(
+      config_.HasClientSentConnectionOption(kTBBR, Perspective::IS_SERVER));
+  EXPECT_TRUE(
+      config_.HasClientSentConnectionOption(kFHDR, Perspective::IS_SERVER));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

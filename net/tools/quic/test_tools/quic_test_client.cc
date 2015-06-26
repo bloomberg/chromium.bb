@@ -235,6 +235,15 @@ ssize_t QuicTestClient::SendRequest(const string& uri) {
   return SendMessage(message);
 }
 
+void QuicTestClient::SendRequestsAndWaitForLastResponse(
+    const vector<string>& url_list) {
+  for (const string& url : url_list) {
+    SendRequest(url);
+  }
+  WaitForResponse();
+  return;
+}
+
 ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   stream_ = nullptr;  // Always force creation of a stream for SendMessage.
 
@@ -316,9 +325,12 @@ string QuicTestClient::SendCustomSynchronousRequest(
 string QuicTestClient::SendSynchronousRequest(const string& uri) {
   if (SendRequest(uri) == 0) {
     DLOG(ERROR) << "Failed the request for uri:" << uri;
-    return "";
+    // Set the response_ explicitly.  Otherwise response_ will contain the
+    // response from the previously successful request.
+    response_ = "";
+  } else {
+    WaitForResponse();
   }
-  WaitForResponse();
   return response_;
 }
 
@@ -486,6 +498,11 @@ size_t QuicTestClient::bytes_written() const {
 }
 
 void QuicTestClient::OnClose(QuicDataStream* stream) {
+  if (stream != nullptr) {
+    // Always close the stream, regardless of whether it was the last stream
+    // written.
+    client()->OnClose(stream);
+  }
   if (stream_ != stream) {
     return;
   }

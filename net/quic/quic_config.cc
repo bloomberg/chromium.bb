@@ -388,6 +388,20 @@ QuicTagVector QuicConfig::SendConnectionOptions() const {
   return connection_options_.GetSendValues();
 }
 
+bool QuicConfig::HasClientSentConnectionOption(QuicTag tag,
+                                               Perspective perspective) const {
+  if (perspective == Perspective::IS_SERVER) {
+    if (HasReceivedConnectionOptions() &&
+        ContainsQuicTag(ReceivedConnectionOptions(), tag)) {
+      return true;
+    }
+  } else if (HasSendConnectionOptions() &&
+             ContainsQuicTag(SendConnectionOptions(), tag)) {
+    return true;
+  }
+  return false;
+}
+
 void QuicConfig::SetIdleConnectionStateLifetime(
     QuicTime::Delta max_idle_connection_state_lifetime,
     QuicTime::Delta default_idle_conection_state_lifetime) {

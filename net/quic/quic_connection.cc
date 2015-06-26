@@ -17,6 +17,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -178,6 +179,33 @@ class FecAlarm : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(FecAlarm);
 };
 
+// Listens for acks of MTU discovery packets and raises the maximum packet size
+// of the connection if the probe succeeds.
+class MtuDiscoveryAckListener : public QuicAckNotifier::DelegateInterface {
+ public:
+  MtuDiscoveryAckListener(QuicConnection* connection, QuicByteCount probe_size)
+      : connection_(connection), probe_size_(probe_size) {}
+
+  void OnAckNotification(int /*num_retransmittable_packets*/,
+                         int /*num_retransmittable_bytes*/,
+                         QuicTime::Delta /*delta_largest_observed*/) override {
+    // Since the probe was successful, increase the maximum packet size to that.
+    if (probe_size_ > connection_->max_packet_length()) {
+      connection_->set_max_packet_length(probe_size_);
+    }
+  }
+
+ protected:
+  // MtuDiscoveryAckListener is ref counted.
+  ~MtuDiscoveryAckListener() override {}
+
+ private:
+  QuicConnection* connection_;
+  QuicByteCount probe_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(MtuDiscoveryAckListener);
+};
+
 }  // namespace
 
 QuicConnection::QueuedPacket::QueuedPacket(SerializedPacket packet,
@@ -313,12 +341,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   max_undecryptable_packets_ = config.max_undecryptable_packets();
 
   if (FLAGS_quic_send_fec_packet_only_on_fec_alarm &&
-      ((perspective_ == Perspective::IS_SERVER &&
-        config.HasReceivedConnectionOptions() &&
-        ContainsQuicTag(config.ReceivedConnectionOptions(), kFSPA)) ||
-       (perspective_ == Perspective::IS_CLIENT &&
-        config.HasSendConnectionOptions() &&
-        ContainsQuicTag(config.SendConnectionOptions(), kFSPA)))) {
+      config.HasClientSentConnectionOption(kFSPA, perspective_)) {
     packet_generator_.set_fec_send_policy(FecSendPolicy::FEC_ALARM_TRIGGER);
   }
 }
@@ -914,7 +937,7 @@ void QuicConnection::OnPacketComplete() {
 
   if (!last_stream_frames_.empty()) {
     visitor_->OnStreamFrames(last_stream_frames_);
-    if (!connected_ && FLAGS_quic_stop_early_2) {
+    if (!connected_) {
       return;
     }
   }
@@ -926,46 +949,44 @@ void QuicConnection::OnPacketComplete() {
   // feedback.
   if (!last_window_update_frames_.empty()) {
     visitor_->OnWindowUpdateFrames(last_window_update_frames_);
-    if (!connected_ && FLAGS_quic_stop_early_2) {
+    if (!connected_) {
       return;
     }
   }
   if (!last_blocked_frames_.empty()) {
     visitor_->OnBlockedFrames(last_blocked_frames_);
-    if (!connected_ && FLAGS_quic_stop_early_2) {
+    if (!connected_) {
       return;
     }
   }
   for (size_t i = 0; i < last_goaway_frames_.size(); ++i) {
     visitor_->OnGoAway(last_goaway_frames_[i]);
-    if (!connected_ && FLAGS_quic_stop_early_2) {
+    if (!connected_) {
       return;
     }
   }
   for (size_t i = 0; i < last_rst_frames_.size(); ++i) {
     visitor_->OnRstStream(last_rst_frames_[i]);
-    if (!connected_ && FLAGS_quic_stop_early_2) {
+    if (!connected_) {
       return;
     }
   }
   for (size_t i = 0; i < last_ack_frames_.size(); ++i) {
     ProcessAckFrame(last_ack_frames_[i]);
-    if (!connected_ && FLAGS_quic_stop_early_2) {
+    if (!connected_) {
       return;
     }
   }
   for (size_t i = 0; i < last_stop_waiting_frames_.size(); ++i) {
     ProcessStopWaitingFrame(last_stop_waiting_frames_[i]);
-    if (!connected_ && FLAGS_quic_stop_early_2) {
+    if (!connected_) {
       return;
     }
   }
   if (!last_close_frames_.empty()) {
     CloseConnection(last_close_frames_[0].error_code, true);
     DCHECK(!connected_);
-    if (FLAGS_quic_stop_early_2) {
-      return;
-    }
+    return;
   }
 
   // If there are new missing packets to report, send an ack immediately.
@@ -2178,6 +2199,19 @@ bool QuicConnection::IsConnectionClose(const QueuedPacket& packet) {
     }
   }
   return false;
+}
+
+void QuicConnection::SendMtuDiscoveryPacket(QuicByteCount target_mtu) {
+  // Create a listener for the new probe.  The ownership of the listener is
+  // transferred to the AckNotifierManager.  The notifier will get destroyed
+  // before the connection (because it's stored in one of the connection's
+  // subfields), hence |this| pointer is guaranteed to stay valid at all times.
+  scoped_refptr<MtuDiscoveryAckListener> last_mtu_discovery_ack_listener(
+      new MtuDiscoveryAckListener(this, target_mtu));
+
+  // Send the probe.
+  packet_generator_.GenerateMtuDiscoveryPacket(
+      target_mtu, last_mtu_discovery_ack_listener.get());
 }
 
 }  // namespace net

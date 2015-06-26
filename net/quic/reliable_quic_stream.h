@@ -48,6 +48,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   virtual ~ReliableQuicStream();
 
+  // Sets |fec_policy_| parameter from |session_|'s config.
+  void SetFromConfig();
+
   // Called by the session when a (potentially duplicate) stream frame has been
   // received for this stream.
   virtual void OnStreamFrame(const QuicStreamFrame& frame);

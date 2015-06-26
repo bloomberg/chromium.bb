@@ -146,16 +146,16 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   EnablePacing();
 
-  if (HasClientSentConnectionOption(config, k1CON)) {
+  if (config.HasClientSentConnectionOption(k1CON, perspective_)) {
     send_algorithm_->SetNumEmulatedConnections(1);
   }
-  if (HasClientSentConnectionOption(config, kNCON)) {
+  if (config.HasClientSentConnectionOption(kNCON, perspective_)) {
     n_connection_simulation_ = true;
   }
-  if (HasClientSentConnectionOption(config, kNTLP)) {
+  if (config.HasClientSentConnectionOption(kNTLP, perspective_)) {
     max_tail_loss_probes_ = 0;
   }
-  if (HasClientSentConnectionOption(config, kNRTO)) {
+  if (config.HasClientSentConnectionOption(kNRTO, perspective_)) {
     use_new_rto_ = true;
   }
   if (config.HasReceivedConnectionOptions() &&
@@ -196,20 +196,6 @@ void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
     send_algorithm_->SetNumEmulatedConnections(
         min<size_t>(5, max<size_t>(1, num_streams)));
   }
-}
-
-bool QuicSentPacketManager::HasClientSentConnectionOption(
-    const QuicConfig& config, QuicTag tag) const {
-  if (perspective_ == Perspective::IS_SERVER) {
-    if (config.HasReceivedConnectionOptions() &&
-        ContainsQuicTag(config.ReceivedConnectionOptions(), tag)) {
-      return true;
-    }
-  } else if (config.HasSendConnectionOptions() &&
-             ContainsQuicTag(config.SendConnectionOptions(), tag)) {
-    return true;
-  }
-  return false;
 }
 
 void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,

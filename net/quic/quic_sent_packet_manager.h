@@ -337,11 +337,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
       const SequenceNumberList& all_transmissions,
       QuicPacketSequenceNumber acked_sequence_number);
 
-  // Returns true if the client is sending or the server has received a
-  // connection option.
-  bool HasClientSentConnectionOption(const QuicConfig& config,
-                                     QuicTag tag) const;
-
   // Newly serialized retransmittable and fec packets are added to this map,
   // which contains owning pointers to any contained frames.  If a packet is
   // retransmitted, this map will contain entries for both the old and the new

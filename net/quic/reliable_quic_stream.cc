@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/quic/iovector.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/quic_write_blocked_list.h"
@@ -136,9 +137,17 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
                        session_->flow_controller()->auto_tune_receive_window()),
       connection_flow_controller_(session_->flow_controller()),
       stream_contributes_to_connection_flow_control_(true) {
+  SetFromConfig();
 }
 
 ReliableQuicStream::~ReliableQuicStream() {
+}
+
+void ReliableQuicStream::SetFromConfig() {
+  if (FLAGS_quic_send_fec_packet_only_on_fec_alarm &&
+      session_->config()->HasClientSentConnectionOption(kFSTR, perspective_)) {
+    fec_policy_ = FEC_PROTECT_ALWAYS;
+  }
 }
 
 void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {

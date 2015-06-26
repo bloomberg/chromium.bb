@@ -99,6 +99,11 @@ class QuicTestClient : public SimpleClient,
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.  Returns 0 if the request failed and no bytes were written.
   ssize_t SendRequest(const std::string& uri) override;
+  // Sends requests for all the urls and waits for the response for the last
+  // url.  To process the individual responses as they are returned, the caller
+  // should use the set the response_listener on the client().
+  void SendRequestsAndWaitForLastResponse(
+      const std::vector<std::string>& url_list);
   ssize_t SendMessage(const HTTPMessage& message) override;
   std::string SendCustomSynchronousRequest(const HTTPMessage& message) override;
   std::string SendSynchronousRequest(const std::string& uri) override;

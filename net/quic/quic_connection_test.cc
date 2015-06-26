@@ -3220,6 +3220,46 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
 }
 
+// Tests whether sending an MTU discovery packet to peer successfully causes the
+// maximum packet size to increase.
+TEST_P(QuicConnectionTest, SendMtuDiscoveryPacket) {
+  EXPECT_TRUE(connection_.connected());
+
+  // Send an MTU probe.
+  const size_t new_mtu = kDefaultMaxPacketSize + 100;
+  QuicByteCount mtu_probe_size;
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&mtu_probe_size), Return(true)));
+  connection_.SendMtuDiscoveryPacket(new_mtu);
+  EXPECT_EQ(new_mtu, mtu_probe_size);
+  EXPECT_EQ(1u, creator_->sequence_number());
+
+  // Send more than MTU worth of data.  No acknowledgement was received so far,
+  // so the MTU should be at its old value.
+  const string data(kDefaultMaxPacketSize + 1, '.');
+  QuicByteCount size_before_mtu_change;
+  // OnPacketSent will be called twice, but only the size of the first packet
+  // will be stored.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .Times(2)
+      .WillOnce(DoAll(SaveArg<3>(&size_before_mtu_change), Return(true)));
+  connection_.SendStreamDataWithString(3, data, 0, kFin, nullptr);
+  EXPECT_EQ(3u, creator_->sequence_number());
+  EXPECT_EQ(kDefaultMaxPacketSize, size_before_mtu_change);
+
+  // Acknowledge all packets so far.
+  QuicAckFrame probe_ack = InitAckFrame(3);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  ProcessAckPacket(&probe_ack);
+  EXPECT_EQ(new_mtu, connection_.max_packet_length());
+
+  // Send the same data again.  Check that it fits into a single packet now.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendStreamDataWithString(3, data, 0, kFin, nullptr);
+  EXPECT_EQ(4u, creator_->sequence_number());
+}
+
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
