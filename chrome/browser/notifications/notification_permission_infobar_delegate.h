@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PERMISSION_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PERMISSION_INFOBAR_DELEGATE_H_
 
 #include <string>
 
 #include "chrome/browser/content_settings/permission_infobar_delegate.h"
 
-class DesktopNotificationInfoBarDelegate : public PermissionInfobarDelegate {
+class NotificationPermissionInfobarDelegate : public PermissionInfobarDelegate {
  public:
   // Creates a Notification permission infobar and delegate and adds the
   // infobar to |infobar_service|.  Returns the infobar if it was successfully
@@ -20,11 +20,11 @@ class DesktopNotificationInfoBarDelegate : public PermissionInfobarDelegate {
                                    const GURL& requesting_frame,
                                    const std::string& display_languages);
  private:
-  DesktopNotificationInfoBarDelegate(PermissionQueueController* controller,
+  NotificationPermissionInfobarDelegate(PermissionQueueController* controller,
                                      const PermissionRequestID& id,
                                      const GURL& requesting_frame,
                                      const std::string& display_languages);
-  ~DesktopNotificationInfoBarDelegate() override;
+  ~NotificationPermissionInfobarDelegate() override;
 
   // PermissionInfoBarDelegate:
   int GetIconID() const override;
@@ -33,7 +33,7 @@ class DesktopNotificationInfoBarDelegate : public PermissionInfobarDelegate {
   GURL requesting_frame_;
   std::string display_languages_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopNotificationInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NotificationPermissionInfobarDelegate);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PERMISSION_INFOBAR_DELEGATE_H_

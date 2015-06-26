@@ -1979,8 +1979,6 @@
     ],
     # Used on all platforms when notifications are enabled.
     'chrome_browser_notifications_sources': [
-      'browser/notifications/desktop_notification_infobar_delegate.cc',
-      'browser/notifications/desktop_notification_infobar_delegate.h',
       'browser/notifications/desktop_notification_profile_util.cc',
       'browser/notifications/desktop_notification_profile_util.h',
       'browser/notifications/desktop_notification_service.cc',
@@ -1995,6 +1993,8 @@
       'browser/notifications/notification_delegate.h',
       'browser/notifications/notification_object_proxy.cc',
       'browser/notifications/notification_object_proxy.h',
+      'browser/notifications/notification_permission_infobar_delegate.cc',
+      'browser/notifications/notification_permission_infobar_delegate.h',
       'browser/notifications/notification_ui_manager.h',
       'browser/notifications/notification_ui_manager_android.cc',
       'browser/notifications/notification_ui_manager_android.h',
