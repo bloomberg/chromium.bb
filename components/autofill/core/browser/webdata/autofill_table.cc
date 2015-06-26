@@ -191,90 +191,68 @@ scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
 
 bool AddAutofillProfileNamesToProfile(sql::Connection* db,
                                       AutofillProfile* profile) {
+  // TODO(estade): update schema so that multiple names are not associated per
+  // unique profile guid. Please refer https://crbug.com/497934.
   sql::Statement s(db->GetUniqueStatement(
       "SELECT guid, first_name, middle_name, last_name, full_name "
       "FROM autofill_profile_names "
-      "WHERE guid=?"));
+      "WHERE guid=?"
+      "LIMIT 1"));
   s.BindString(0, profile->guid());
 
   if (!s.is_valid())
     return false;
 
-  std::vector<base::string16> first_names;
-  std::vector<base::string16> middle_names;
-  std::vector<base::string16> last_names;
-  std::vector<base::string16> full_names;
-  while (s.Step()) {
+  if (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
-    first_names.push_back(s.ColumnString16(1));
-    middle_names.push_back(s.ColumnString16(2));
-    last_names.push_back(s.ColumnString16(3));
-    full_names.push_back(s.ColumnString16(4));
+    profile->SetRawInfo(NAME_FIRST, s.ColumnString16(1));
+    profile->SetRawInfo(NAME_MIDDLE, s.ColumnString16(2));
+    profile->SetRawInfo(NAME_LAST, s.ColumnString16(3));
+    profile->SetRawInfo(NAME_FULL, s.ColumnString16(4));
   }
-  if (!s.Succeeded())
-    return false;
-
-  // TODO(estade): update schema so these aren't vectors.
-  first_names.resize(1);
-  middle_names.resize(1);
-  last_names.resize(1);
-  full_names.resize(1);
-
-  profile->SetRawInfo(NAME_FIRST, first_names[0]);
-  profile->SetRawInfo(NAME_MIDDLE, middle_names[0]);
-  profile->SetRawInfo(NAME_LAST, last_names[0]);
-  profile->SetRawInfo(NAME_FULL, full_names[0]);
-  return true;
+  return s.Succeeded();
 }
 
 bool AddAutofillProfileEmailsToProfile(sql::Connection* db,
                                        AutofillProfile* profile) {
+  // TODO(estade): update schema so that multiple emails are not associated per
+  // unique profile guid. Please refer https://crbug.com/497934.
   sql::Statement s(db->GetUniqueStatement(
       "SELECT guid, email "
       "FROM autofill_profile_emails "
-      "WHERE guid=?"));
+      "WHERE guid=?"
+      "LIMIT 1"));
   s.BindString(0, profile->guid());
 
   if (!s.is_valid())
     return false;
 
-  std::vector<base::string16> emails;
-  while (s.Step()) {
+  if (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
-    emails.push_back(s.ColumnString16(1));
+    profile->SetRawInfo(EMAIL_ADDRESS, s.ColumnString16(1));
   }
-  if (!s.Succeeded())
-    return false;
-
-  // TODO(estade): update schema so this is not a vector.
-  emails.resize(1);
-  profile->SetRawInfo(EMAIL_ADDRESS, emails[0]);
-  return true;
+  return s.Succeeded();
 }
 
 bool AddAutofillProfilePhonesToProfile(sql::Connection* db,
                                        AutofillProfile* profile) {
+  // TODO(estade): update schema so that multiple phone numbers are not
+  // associated per unique profile guid. Please refer https://crbug.com/497934.
   sql::Statement s(db->GetUniqueStatement(
       "SELECT guid, number "
       "FROM autofill_profile_phones "
-      "WHERE guid=?"));
+      "WHERE guid=?"
+      "LIMIT 1"));
   s.BindString(0, profile->guid());
 
   if (!s.is_valid())
     return false;
 
-  std::vector<base::string16> numbers;
-  while (s.Step()) {
+  if (s.Step()) {
     DCHECK_EQ(profile->guid(), s.ColumnString(0));
-    numbers.push_back(s.ColumnString16(1));
+    profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(1));
   }
-  if (!s.Succeeded())
-    return false;
-
-  // TODO(estade): update schema so this isn't a vector.
-  numbers.resize(1);
-  profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, numbers[0]);
-  return true;
+  return s.Succeeded();
 }
 
 bool AddAutofillProfileNames(const AutofillProfile& profile,
