@@ -141,7 +141,7 @@ function test()
             {
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== Stylesheet-for-inline-style modification result ===");
-                InspectorTest.addResult(error);
+                InspectorTest.addResult(error || null);
                 next();
             }
 
@@ -150,7 +150,7 @@ function test()
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== Stylesheet-for-inline-style text ===");
                 InspectorTest.addResult(result);
-                InspectorTest.CSSAgent.setStyleSheetText(inlineStyle.styleSheetId, "", setTextCallback);
+                InspectorTest.CSSAgent.setStyleSheetText(inlineStyle.styleSheetId, "").then(setTextCallback);
             }
 
             function callback(error, inlineStyle, attributesStyle)

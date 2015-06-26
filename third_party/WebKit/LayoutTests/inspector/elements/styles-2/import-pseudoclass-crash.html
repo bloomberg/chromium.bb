@@ -20,12 +20,12 @@ function test()
     {
         styleSheetId = styles.matchedCSSRules[1].styleSheetId;
         InspectorTest.CSSAgent.setStyleSheetText(styleSheetId,
-            "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #000001; }\n", modifiedCallback);
+            "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #000001; }\n").then(modifiedCallback);
     }
 
     function modifiedCallback()
     {
-        InspectorTest.CSSAgent.setStyleSheetText(styleSheetId, "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #002001; }\n", modifiedCallback2);
+        InspectorTest.CSSAgent.setStyleSheetText(styleSheetId, "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #002001; }\n").then(modifiedCallback2);
     }
 
     function modifiedCallback2()

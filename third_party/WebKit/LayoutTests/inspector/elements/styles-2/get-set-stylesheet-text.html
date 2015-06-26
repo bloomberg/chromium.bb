@@ -61,7 +61,7 @@ function test()
         InspectorTest.addResult("=== Original stylesheet text: ===");
         InspectorTest.addResult(foundStyleSheetText);
         InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, next, this);
-        InspectorTest.cssModel.setStyleSheetText(foundStyleSheetHeader.id, "h1 { COLOR: Red; }", true, callback);
+        InspectorTest.cssModel.setStyleSheetText(foundStyleSheetHeader.id, "h1 { COLOR: Red; }", true).then(callback);
     }
 
     function testNewElementStyles()
