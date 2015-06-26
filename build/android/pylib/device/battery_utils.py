@@ -489,6 +489,33 @@ class BatteryUtils(object):
                      ' Falling back to software disabling.')
         self.DisableBatteryUpdates()
 
+  @contextlib.contextmanager
+  def PowerMeasurement(self, timeout=None, retries=None):
+    """Context manager that enables battery power collection.
+
+    Once the with block is exited, charging is resumed. Will attempt to disable
+    charging at the hardware level, and if that fails will fall back to software
+    disabling of battery updates.
+
+    Only for devices L and higher.
+
+    Example usage:
+      with PowerMeasurement():
+        browser_actions()
+        get_power_data() # report usage within this block
+      after_measurements() # Anything that runs after power
+                           # measurements are collected
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    """
+    try:
+      self.TieredSetCharging(False, timeout=timeout, retries=retries)
+      yield
+    finally:
+      self.TieredSetCharging(True, timeout=timeout, retries=retries)
+
   def _ClearPowerData(self):
     """Resets battery data and makes device appear like it is not
     charging so that it will collect power data since last charge.

@@ -471,6 +471,42 @@ class BatteryUtilsTieredSetCharging(BatteryUtilsTest):
       self.battery.TieredSetCharging(False)
 
 
+class BatteryUtilsPowerMeasurement(BatteryUtilsTest):
+
+  def testPowerMeasurement_hardware(self):
+    self.battery._cache['profile'] = self._NEXUS_5
+    with self.assertCalls(
+        (self.call.battery.GetCharging(), True),
+        (self.call.battery._ClearPowerData(), True),
+        (self.call.battery.SetCharging(False)),
+        (self.call.battery.GetCharging(), False),
+        (self.call.battery.SetCharging(True))):
+      with self.battery.PowerMeasurement():
+        pass
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testPowerMeasurement_software(self):
+    self.battery._cache['profile'] = self._NEXUS_6
+    with self.assertCalls(
+        (self.call.battery.GetCharging(), True),
+        (self.call.battery._ClearPowerData(), True),
+        (self.call.battery._ClearPowerData(), True),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '0'], check_return=True), []),
+        (self.call.battery.GetCharging(), False),
+        (self.call.battery.GetCharging(), False),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'reset'], check_return=True), []),
+        (self.call.battery.GetCharging(), False),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery'], check_return=True), ['UPDATES STOPPED']),
+        (self.call.battery.GetCharging(), True)):
+      with self.battery.PowerMeasurement():
+        pass
+
+
 class BatteryUtilsDiscoverDeviceProfile(BatteryUtilsTest):
 
   def testDiscoverDeviceProfile_known(self):
