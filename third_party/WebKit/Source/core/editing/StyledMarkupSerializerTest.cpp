@@ -192,4 +192,29 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeStyle)
     EXPECT_EQ(serializedDOM, serializedICT);
 }
 
+TEST_F(StyledMarkupSerializerTest, AcrossShadow)
+{
+    const char* bodyContent = "<p id='host1'>[<span id='one'>11</span>]</p><p id='host2'>[<span id='two'>22</span>]</p>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+    RefPtrWillBeRawPtr<Element> two = document().getElementById("two");
+    Position startDOM(toText(one->firstChild()), 0);
+    Position endDOM(toText(two->firstChild()), 2);
+    const std::string& serializedDOM = serializePart<EditingStrategy>(startDOM, endDOM, AnnotateForInterchange);
+
+    bodyContent = "<p id='host1'><span id='one'>11</span></p><p id='host2'><span id='two'>22</span></p>";
+    const char* shadowContent1 = "[<content select=#one></content>]";
+    const char* shadowContent2 = "[<content select=#two></content>]";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent1, "host1");
+    setShadowContent(shadowContent2, "host2");
+    one = document().getElementById("one");
+    two = document().getElementById("two");
+    PositionInComposedTree startICT(toText(one->firstChild()), 0);
+    PositionInComposedTree endICT(toText(two->firstChild()), 2);
+    const std::string& serializedICT = serializePart<EditingInComposedTreeStrategy>(startICT, endICT, AnnotateForInterchange);
+
+    EXPECT_EQ(serializedDOM, serializedICT);
+}
+
 } // namespace blink
