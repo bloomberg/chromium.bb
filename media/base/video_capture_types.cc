@@ -133,10 +133,8 @@ std::string VideoCaptureFormat::PixelStorageToString(
 }
 
 VideoCaptureParams::VideoCaptureParams()
-    : resolution_change_policy(RESOLUTION_POLICY_FIXED_RESOLUTION)
-#if defined(OS_LINUX)
-      , use_native_gpu_memory_buffers(false)
-#endif
-    {}
+    : resolution_change_policy(RESOLUTION_POLICY_FIXED_RESOLUTION),
+      use_gpu_memory_buffers(false) {
+}
 
 }  // namespace media

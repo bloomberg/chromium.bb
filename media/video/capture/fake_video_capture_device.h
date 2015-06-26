@@ -25,8 +25,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   enum FakeVideoCaptureDeviceType {
     USING_OWN_BUFFERS,
     USING_OWN_BUFFERS_TRIPLANAR,
-    USING_CLIENT_BUFFERS_I420,
-    USING_CLIENT_BUFFERS_GPU,
+    USING_CLIENT_BUFFERS,
   };
 
   static int FakeCapturePeriodMs() { return kFakeCapturePeriodMs; }

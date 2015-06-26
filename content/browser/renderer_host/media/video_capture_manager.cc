@@ -326,11 +326,9 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
   DeviceEntry* entry =  (*entry_it);
 
   media::VideoCaptureParams params = request->params();
-#if defined(OS_LINUX)
-  params.use_native_gpu_memory_buffers =
+  params.use_gpu_memory_buffers =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseNativeGpuMemoryBuffersForCapture);
-#endif
+          switches::kUseGpuMemoryBuffersForCapture);
 
   DVLOG(3) << "HandleQueuedStartRequest, Post start to device thread, device = "
            << entry->id << " start id = " << entry->serial_id;
@@ -458,9 +456,8 @@ void VideoCaptureManager::StartCaptureForClient(
     VideoCaptureControllerEventHandler* client_handler,
     const DoneCB& done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureManager::StartCaptureForClient, "
-           << params.requested_format.frame_size.ToString() << ", "
-           << params.requested_format.frame_rate << ", #" << session_id << ")";
+  DVLOG(1) << "VideoCaptureManager::StartCaptureForClient #" << session_id
+           << ", request: " << params.requested_format.ToString();
 
   DeviceEntry* entry = GetOrCreateDeviceEntry(session_id);
   if (!entry) {

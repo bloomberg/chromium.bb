@@ -109,22 +109,18 @@ void FakeVideoCaptureDevice::AllocateAndStart(
         base::TimeTicks::Now(),
         base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
                    weak_factory_.GetWeakPtr()));
-  } else if (device_type_ == USING_CLIENT_BUFFERS_I420 ||
-             device_type_ == USING_CLIENT_BUFFERS_GPU) {
-    DVLOG(1) << "starting with " << (device_type_ == USING_CLIENT_BUFFERS_I420
-                                         ? "Client buffers"
-                                         : "GpuMemoryBuffers");
+  } else if (device_type_ == USING_CLIENT_BUFFERS) {
+    DVLOG(1) << "starting with "
+             << (params.use_gpu_memory_buffers ? "GMB" : "ShMem");
     BeepAndScheduleNextCapture(
         base::TimeTicks::Now(),
         base::Bind(
             &FakeVideoCaptureDevice::CaptureUsingClientBuffers,
             weak_factory_.GetWeakPtr(),
-            (device_type_ == USING_CLIENT_BUFFERS_GPU
-                 ? PIXEL_FORMAT_ARGB
-                 : PIXEL_FORMAT_I420),
-            (device_type_ == USING_CLIENT_BUFFERS_GPU
-                 ? PIXEL_STORAGE_GPUMEMORYBUFFER
-                 : PIXEL_STORAGE_CPU)));
+            params.use_gpu_memory_buffers ? PIXEL_FORMAT_ARGB
+                                          : PIXEL_FORMAT_I420,
+            params.use_gpu_memory_buffers ? PIXEL_STORAGE_GPUMEMORYBUFFER
+                                          : PIXEL_STORAGE_CPU));
   } else {
     client_->OnError("Unknown Fake Video Capture Device type.");
   }
