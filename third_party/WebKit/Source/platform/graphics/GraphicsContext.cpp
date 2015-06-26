@@ -904,13 +904,6 @@ void GraphicsContext::drawHighlightForText(const Font& font, const TextRun& run,
     fillRect(font.selectionRectForText(run, point, h, from, to), backgroundColor);
 }
 
-void GraphicsContext::drawImage(Image* image, const IntPoint& p, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
-{
-    if (!image)
-        return;
-    drawImage(image, FloatRect(IntRect(p, image->size())), FloatRect(FloatPoint(), FloatSize(image->size())), op, shouldRespectImageOrientation);
-}
-
 void GraphicsContext::drawImage(Image* image, const IntRect& r, SkXfermode::Mode op, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
     if (!image)
@@ -975,15 +968,6 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const In
     }
 
     image->drawTiled(this, dest, srcRect, tileScaleFactor, hRule, vRule, op);
-}
-
-void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
-{
-    if (contextDisabled())
-        return;
-    ASSERT(m_canvas);
-
-    m_canvas->writePixels(info, pixels, rowBytes, x, y);
 }
 
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)
@@ -1324,16 +1308,6 @@ void GraphicsContext::setURLFragmentForRect(const String& destName, const IntRec
 
     SkAutoDataUnref skDestName(SkData::NewWithCString(destName.utf8().data()));
     SkAnnotateLinkToDestination(m_canvas, rect, skDestName.get());
-}
-
-void GraphicsContext::addURLTargetAtPoint(const String& name, const IntPoint& pos)
-{
-    if (contextDisabled())
-        return;
-    ASSERT(m_canvas);
-
-    SkAutoDataUnref nameData(SkData::NewWithCString(name.utf8().data()));
-    SkAnnotateNamedDestination(m_canvas, SkPoint::Make(pos.x(), pos.y()), nameData);
 }
 
 AffineTransform GraphicsContext::getCTM() const

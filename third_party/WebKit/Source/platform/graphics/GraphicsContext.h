@@ -129,8 +129,6 @@ public:
 
     void setFillGradient(PassRefPtr<Gradient>, float alpha = 1);
 
-    SkDrawLooper* drawLooper() const { return immutableState()->drawLooper(); }
-
     SkMatrix getTotalMatrix() const;
 
     void setShouldAntialias(bool antialias) { mutableState()->setShouldAntialias(antialias); }
@@ -185,7 +183,6 @@ public:
     void drawPicture(const SkPicture*);
     void compositePicture(SkPicture*, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode);
 
-    void drawImage(Image*, const IntPoint&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawImage(Image*, const IntRect&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
 
@@ -197,7 +194,6 @@ public:
 
     // These methods write to the canvas.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
-    void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
     void drawOval(const SkRect&, const SkPaint&);
     void drawPath(const SkPath&, const SkPaint&);
     void drawRect(const SkRect&, const SkPaint&);
@@ -280,7 +276,6 @@ public:
     // URL drawing
     void setURLForRect(const KURL&, const IntRect&);
     void setURLFragmentForRect(const String& name, const IntRect&);
-    void addURLTargetAtPoint(const String& name, const IntPoint&);
 
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
