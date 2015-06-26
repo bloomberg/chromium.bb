@@ -18,6 +18,8 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -56,5 +58,16 @@
                 <data android:scheme="https" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".WebViewLayoutTestActivity"
+            android:label="@string/title_activity_layout_test"
+            android:exported="true">
+        </activity>
+
+        <uses-library android:name="android.test.runner" />
     </application>
+
+    <instrumentation android:name="org.chromium.webview_shell.WebViewLayoutTestRunner"
+        android:targetPackage="org.chromium.webview_shell"
+        android:label="Tests for org.chromium.webview_shell" />
 </manifest>
