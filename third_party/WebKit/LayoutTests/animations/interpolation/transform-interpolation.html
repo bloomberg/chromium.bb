@@ -131,6 +131,42 @@ assertInterpolation({
 ]);
 assertInterpolation({
   property: 'transform',
+  from: 'rotate3d(7, 8, 9, 0deg)',
+  to: 'rotate3d(7, 8, 9, 450deg)'
+}, [
+  {at: -1, is: 'rotate3d(7, 8, 9, -450deg)'},
+  {at: 0, is: 'rotate3d(7, 8, 9, 0deg)'},
+  {at: 0.25, is: 'rotate3d(7, 8, 9, 112.5deg)'},
+  {at: 0.75, is: 'rotate3d(7, 8, 9, 337.5deg)'},
+  {at: 1, is: 'rotate3d(7, 8, 9, 450deg)'},
+  {at: 2, is: 'rotate3d(7, 8, 9, 900deg)'},
+]);
+assertInterpolation({
+  property: 'transform',
+  from: 'rotate3d(0, 1, 0, 0deg)',
+  to: 'rotate3d(0, 1, 0, 450deg)'
+}, [
+  {at: -1, is: 'rotate3d(0, 1, 0, -450deg)'},
+  {at: 0, is: 'rotate3d(0, 1, 0, 0deg)'},
+  {at: 0.25, is: 'rotate3d(0, 1, 0, 112.5deg)'},
+  {at: 0.75, is: 'rotate3d(0, 1, 0, 337.5deg)'},
+  {at: 1, is: 'rotate3d(0, 1, 0, 450deg)'},
+  {at: 2, is: 'rotate3d(0, 1, 0, 900deg)'},
+]);
+assertInterpolation({
+  property: 'transform',
+  from: 'rotate3d(1, 1, 0, 90deg)',
+  to: 'rotate3d(0, 1, 1, 180deg)'
+}, [
+  {at: -1, is: 'rotate3d(0.41, -0.41, -0.82, 120deg)'},
+  {at: 0, is: 'rotate3d(1, 1, 0, 90deg)'},
+  {at: 0.25, is: 'rotate3d(0.8, 0.27, -0.53, 82.76deg)'},
+  {at: 0.75, is: 'rotate3d(0.265153, -0.536206, -0.801359, 138.89deg)'},
+  {at: 1, is: 'rotate3d(0, 1, 1, 180deg)'},
+  {at: 2, is: 'rotate3d(0.71, 0, -0.71, 90deg)'},
+]);
+assertInterpolation({
+  property: 'transform',
   from: 'none',
   to: 'rotate(90deg)'
 }, [

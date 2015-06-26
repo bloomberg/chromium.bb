@@ -91,9 +91,7 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
     const RotateTransformOperation* fromOp = static_cast<const RotateTransformOperation*>(from);
 
     // Optimize for single axis rotation
-    if (!fromOp || (fromOp->m_x == 0 && fromOp->m_y == 0 && fromOp->m_z == 1) ||
-                   (fromOp->m_x == 0 && fromOp->m_y == 1 && fromOp->m_z == 0) ||
-                   (fromOp->m_x == 1 && fromOp->m_y == 0 && fromOp->m_z == 0)) {
+    if (!fromOp) {
         double fromAngle = fromOp ? fromOp->m_angle : 0;
         return RotateTransformOperation::create(fromOp ? fromOp->m_x : m_x,
                                                 fromOp ? fromOp->m_y : m_y,
