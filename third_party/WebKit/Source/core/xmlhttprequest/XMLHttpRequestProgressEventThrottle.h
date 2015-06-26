@@ -49,17 +49,19 @@ class EventTarget;
 // - "progress" event means an event named "progress"
 // - ProgressEvent means an event using the ProgressEvent interface defined in
 //   the spec.
-class XMLHttpRequestProgressEventThrottle final : public TimerBase {
-    DISALLOW_ALLOCATION();
+class XMLHttpRequestProgressEventThrottle final : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>, public TimerBase {
 public:
+    static PassOwnPtrWillBeRawPtr<XMLHttpRequestProgressEventThrottle> create(EventTarget* eventTarget)
+    {
+        return adoptPtrWillBeNoop(new XMLHttpRequestProgressEventThrottle(eventTarget));
+    }
+    virtual ~XMLHttpRequestProgressEventThrottle();
+
     enum DeferredEventAction {
         Ignore,
         Clear,
         Flush,
     };
-
-    explicit XMLHttpRequestProgressEventThrottle(EventTarget*);
-    virtual ~XMLHttpRequestProgressEventThrottle();
 
     // Dispatches a ProgressEvent.
     //
@@ -77,9 +79,13 @@ public:
     void suspend();
     void resume();
 
+    // Need to promptly stop this timer when it is deemed finalizable.
+    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
 private:
+    explicit XMLHttpRequestProgressEventThrottle(EventTarget*);
+
     // The main purpose of this class is to throttle the "progress"
     // ProgressEvent dispatching. This class represents such a deferred
     // "progress" ProgressEvent.

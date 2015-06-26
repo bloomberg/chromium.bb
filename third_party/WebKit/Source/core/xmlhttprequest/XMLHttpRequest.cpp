@@ -346,7 +346,7 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
     , m_lengthDownloadedToFile(0)
     , m_receivedLength(0)
     , m_exceptionCode(0)
-    , m_progressEventThrottle(this)
+    , m_progressEventThrottle(XMLHttpRequestProgressEventThrottle::create(this))
     , m_responseTypeCode(ResponseTypeDefault)
     , m_securityOrigin(securityOrigin)
     , m_eventDispatchRecursionLevel(0)
@@ -673,7 +673,7 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
             else
                 action = XMLHttpRequestProgressEventThrottle::Flush;
         }
-        m_progressEventThrottle.dispatchReadyStateChangeEvent(Event::create(EventTypeNames::readystatechange), action);
+        m_progressEventThrottle->dispatchReadyStateChangeEvent(Event::create(EventTypeNames::readystatechange), action);
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
     }
 
@@ -1222,7 +1222,7 @@ void XMLHttpRequest::dispatchProgressEvent(const AtomicString& type, long long r
     unsigned long long loaded = receivedLength >= 0 ? static_cast<unsigned long long>(receivedLength) : 0;
     unsigned long long total = lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
 
-    m_progressEventThrottle.dispatchProgressEvent(type, lengthComputable, loaded, total);
+    m_progressEventThrottle->dispatchProgressEvent(type, lengthComputable, loaded, total);
 
     if (type == EventTypeNames::loadend)
         InspectorInstrumentation::didDispatchXHRLoadendEvent(executionContext(), this);
@@ -1807,12 +1807,12 @@ void XMLHttpRequest::handleDidTimeout()
 
 void XMLHttpRequest::suspend()
 {
-    m_progressEventThrottle.suspend();
+    m_progressEventThrottle->suspend();
 }
 
 void XMLHttpRequest::resume()
 {
-    m_progressEventThrottle.resume();
+    m_progressEventThrottle->resume();
 }
 
 void XMLHttpRequest::stop()

@@ -254,6 +254,8 @@ private:
 
     void handleRequestError(ExceptionCode, const AtomicString&, long long, long long);
 
+    XMLHttpRequestProgressEventThrottle& progressEventThrottle();
+
     OwnPtrWillBeMember<XMLHttpRequestUpload> m_upload;
 
     KURL m_url;
@@ -293,7 +295,7 @@ private:
     // any.
     ExceptionCode m_exceptionCode;
 
-    XMLHttpRequestProgressEventThrottle m_progressEventThrottle;
+    OwnPtrWillBeMember<XMLHttpRequestProgressEventThrottle> m_progressEventThrottle;
 
     // An enum corresponding to the allowed string values for the responseType attribute.
     ResponseTypeCode m_responseTypeCode;
