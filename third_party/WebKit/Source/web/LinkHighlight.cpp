@@ -206,15 +206,8 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
     ASSERT(quads.size());
     Path newPath;
 
-    FloatPoint positionAdjustForCompositedScrolling = IntPoint(m_currentGraphicsLayer->offsetFromLayoutObject());
-
     for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
         FloatQuad absoluteQuad = quads[quadIndex];
-
-        // FIXME: this hack should not be necessary. It's a consequence of the fact that composited layers for scrolling are represented
-        // differently in Blink than other composited layers.
-        if (paintInvalidationContainer->layer()->needsCompositedScrolling() && m_node->layoutObject() != paintInvalidationContainer)
-            absoluteQuad.move(-positionAdjustForCompositedScrolling.x(), -positionAdjustForCompositedScrolling.y());
 
         // Transform node quads in target absolute coords to local coordinates in the compositor layer.
         FloatQuad transformedQuad;
