@@ -57,6 +57,7 @@ class CONTENT_EXPORT ServiceWorkerDiskCacheMigrator {
   void OnEntryMigrated(InflightTaskMap::KeyType task_id,
                        ServiceWorkerStatusCode status);
   void Complete(ServiceWorkerStatusCode status);
+  void RunUserCallback(ServiceWorkerStatusCode status);
 
   void set_max_number_of_inflight_tasks(size_t max_number) {
     max_number_of_inflight_tasks_ = max_number;

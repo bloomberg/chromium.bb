@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
@@ -70,7 +71,7 @@ class ServiceWorkerDiskCacheMigrator::Task {
        int32 data_size,
        ServiceWorkerDiskCache* src,
        ServiceWorkerDiskCache* dest,
-       const base::WeakPtr<ServiceWorkerDiskCacheMigrator>& owner);
+       const StatusCallback& callback);
   ~Task();
 
   void Run();
@@ -94,12 +95,11 @@ class ServiceWorkerDiskCacheMigrator::Task {
   void OnReadResponseData(const scoped_refptr<net::IOBuffer>& buffer,
                           int result);
   void OnWriteResponseData(int result);
-  void Finish(ServiceWorkerStatusCode status);
 
   InflightTaskMap::KeyType task_id_;
   int64 resource_id_;
   int32 data_size_;
-  base::WeakPtr<ServiceWorkerDiskCacheMigrator> owner_;
+  StatusCallback callback_;
 
   scoped_ptr<ServiceWorkerResponseReader> reader_;
   scoped_ptr<ServiceWorkerResponseWriter> writer_;
@@ -135,17 +135,16 @@ class ServiceWorkerDiskCacheMigrator::WrappedEntry {
   DISALLOW_COPY_AND_ASSIGN(WrappedEntry);
 };
 
-ServiceWorkerDiskCacheMigrator::Task::Task(
-    InflightTaskMap::KeyType task_id,
-    int64 resource_id,
-    int32 data_size,
-    ServiceWorkerDiskCache* src,
-    ServiceWorkerDiskCache* dest,
-    const base::WeakPtr<ServiceWorkerDiskCacheMigrator>& owner)
+ServiceWorkerDiskCacheMigrator::Task::Task(InflightTaskMap::KeyType task_id,
+                                           int64 resource_id,
+                                           int32 data_size,
+                                           ServiceWorkerDiskCache* src,
+                                           ServiceWorkerDiskCache* dest,
+                                           const StatusCallback& callback)
     : task_id_(task_id),
       resource_id_(resource_id),
       data_size_(data_size),
-      owner_(owner),
+      callback_(callback),
       weak_factory_(this) {
   DCHECK_LE(0, data_size_);
   reader_.reset(new ServiceWorkerResponseReader(resource_id, src));
@@ -174,7 +173,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnReadResponseInfo(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to read the response info";
-    Finish(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
   writer_->WriteInfo(info_buffer.get(),
@@ -187,7 +186,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnWriteResponseInfo(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to write the response info";
-    Finish(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
 
@@ -221,7 +220,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnWriteResponseMetadata(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to write the response metadata";
-    Finish(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
   DCHECK_EQ(info_buffer->http_info->metadata->size(), result);
@@ -240,7 +239,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnReadResponseData(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to read the response data";
-    Finish(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
   DCHECK_EQ(data_size_, result);
@@ -252,17 +251,11 @@ void ServiceWorkerDiskCacheMigrator::Task::OnReadResponseData(
 void ServiceWorkerDiskCacheMigrator::Task::OnWriteResponseData(int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to write the response data";
-    Finish(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
   DCHECK_EQ(data_size_, result);
-  Finish(SERVICE_WORKER_OK);
-}
-
-void ServiceWorkerDiskCacheMigrator::Task::Finish(
-    ServiceWorkerStatusCode status) {
-  DCHECK(owner_);
-  owner_->OnEntryMigrated(task_id_, status);
+  callback_.Run(SERVICE_WORKER_OK);
 }
 
 ServiceWorkerDiskCacheMigrator::ServiceWorkerDiskCacheMigrator(
@@ -407,7 +400,9 @@ void ServiceWorkerDiskCacheMigrator::OnNextEntryOpened(
   InflightTaskMap::KeyType task_id = next_task_id_++;
   pending_task_.reset(new Task(
       task_id, resource_id, scoped_entry->GetDataSize(kResponseContentIndex),
-      src_.get(), dest_.get(), weak_factory_.GetWeakPtr()));
+      src_.get(), dest_.get(),
+      base::Bind(&ServiceWorkerDiskCacheMigrator::OnEntryMigrated,
+                 weak_factory_.GetWeakPtr(), task_id)));
   if (inflight_tasks_.size() < max_number_of_inflight_tasks_) {
     RunPendingTask();
     OpenNextEntry();
@@ -432,6 +427,7 @@ void ServiceWorkerDiskCacheMigrator::OnEntryMigrated(
 
   if (status != SERVICE_WORKER_OK) {
     inflight_tasks_.Clear();
+    pending_task_.reset();
     Complete(status);
     return;
   }
@@ -453,12 +449,27 @@ void ServiceWorkerDiskCacheMigrator::OnEntryMigrated(
 
 void ServiceWorkerDiskCacheMigrator::Complete(ServiceWorkerStatusCode status) {
   DCHECK(inflight_tasks_.IsEmpty());
+  DCHECK(!pending_task_);
+
   if (status == SERVICE_WORKER_OK) {
     RecordMigrationTime(base::TimeTicks().Now() - start_time_);
     RecordNumberOfMigratedResources(number_of_migrated_resources_);
   }
   RecordMigrationResult(status);
 
+  // Invalidate weakptrs to ensure that other running operations do not call
+  // OnEntryMigrated().
+  weak_factory_.InvalidateWeakPtrs();
+
+  // Use PostTask to avoid deleting AppCacheDiskCache in the middle of the
+  // execution (see http://crbug.com/502420).
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ServiceWorkerDiskCacheMigrator::RunUserCallback,
+                            weak_factory_.GetWeakPtr(), status));
+}
+
+void ServiceWorkerDiskCacheMigrator::RunUserCallback(
+    ServiceWorkerStatusCode status) {
   src_.reset();
   dest_.reset();
   callback_.Run(status);
