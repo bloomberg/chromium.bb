@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -13,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -35,6 +35,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/system/devicetype.h"
 #include "chromeos/system/version_loader.h"
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
@@ -59,6 +60,21 @@ const char kAuthIframeParentOrigin[] =
 
 const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
 const char kEndpointGen[] = "1.0";
+
+std::string GetChromeType() {
+  switch (chromeos::GetDeviceType()) {
+    case chromeos::DeviceType::kChromebox:
+      return "chromebox";
+    case chromeos::DeviceType::kChromebase:
+      return "chromebase";
+    case chromeos::DeviceType::kChromebit:
+      return "chromebit";
+    case chromeos::DeviceType::kChromebook:
+      return "chromebook";
+    default:
+      return "chromedevice";
+  }
+}
 
 void UpdateAuthParams(base::DictionaryValue* params,
                       bool has_users,
@@ -272,7 +288,7 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
       params.SetString("enterpriseDomain", enterprise_domain);
 
     chrome::VersionInfo version_info;
-    params.SetString("chromeType", GetChromeDeviceTypeString());
+    params.SetString("chromeType", GetChromeType());
     params.SetString("clientId",
                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
     params.SetString("clientVersion", version_info.Version());
@@ -391,7 +407,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_FATAL_ERROR_TRY_AGAIN_BUTTON);
 
   builder->AddF("offlineLoginWelcome", IDS_NEWGAIA_OFFLINE_WELCOME,
-                GetChromeDeviceType());
+                ash::GetChromeOSDeviceTypeResourceId());
   builder->Add("offlineLoginEmail", IDS_NEWGAIA_OFFLINE_EMAIL);
   builder->Add("offlineLoginPassword", IDS_NEWGAIA_OFFLINE_PASSWORD);
   builder->Add("offlineLoginInvalidEmail", IDS_NEWGAIA_OFFLINE_INVALID_EMAIL);

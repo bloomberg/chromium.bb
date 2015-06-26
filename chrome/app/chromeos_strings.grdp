@@ -1600,7 +1600,7 @@ Press any key to continue exploring.
     Complete sign-in
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE_NEW_GAIA_FLOW" desc="Title for the confirm password dialog.">
-    Please re-enter your password to update your Chromebook profile.
+    Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_LABEL" desc="Label for the password field on the confirm password dialog.">
     Please re-enter your password
@@ -5444,7 +5444,7 @@ Battery full
     You are currently offline
   </message>
   <message name="IDS_LOGIN_OFFLINE_MESSAGE" desc="An offline message that shows up in OOBE sign-in screen.">
-    Please connect to the Internet to sign in to your Chromebook.
+    Please connect to the Internet to sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_KIOSK_OFFLINE_MESSAGE" desc="An offline message that shows up when a kiosk app can't launch without network connectivity.">
     Please connect to the Internet to launch your app in kiosk mode.
@@ -5456,10 +5456,10 @@ Battery full
     Your network connectivity is restored. Please select a different network or press 'Continue' button below to launch your kiosk app.
   </message>
   <message name="IDS_UPDATE_OFFLINE_MESSAGE" desc="An offline message that shows up in the OOBE update screen.">
-    Please connect to the Internet to update your Chromebook.
+    Please connect to the Internet to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_LOGIN_AUTO_ENROLLMENT_OFFLINE_MESSAGE" desc="An offline message that shows in the error screen when auto-enrollment state failed to be downloaded.">
-    Your Chromebook is unable to connect to the Internet using <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>. Please choose another network. <ph name="LEARN_MORE_LINK_START">$2<ex>&gt;a&lt;</ex></ph>Learn more<ph name="LEARN_MORE_LINK_END">$3<ex>&gt;/a&lt;</ex></ph>
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is unable to connect to the Internet using <ph name="NETWORK_NAME">$2<ex>Ethernet</ex></ph>. Please choose another network. <ph name="LEARN_MORE_LINK_START">$3<ex>&gt;a&lt;</ex></ph>Learn more<ph name="LEARN_MORE_LINK_END">$4<ex>&gt;/a&lt;</ex></ph>
   </message>
   <message name="IDS_UPDATE_PROXY_ERROR_MESSAGE" desc="An offline message that shows up when a proxy error has appeared in the OOBE update screen.">
     The update check failed using the current proxy settings. Please adjust your <ph name="PROXY_SETTINGS_LINK_START">$1<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="PROXY_SETTINGS_LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.

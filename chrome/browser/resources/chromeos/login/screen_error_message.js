@@ -129,6 +129,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       $('auto-enrollment-offline-message-text').innerHTML =
           loadTimeData.getStringF(
               'autoEnrollmentOfflineMessageBody',
+              loadTimeData.getString('deviceType'),
               '<b class="' + CURRENT_NETWORK_NAME_CLASS + '"></b>',
               '<a id="auto-enrollment-learn-more" class="signin-link" ' +
                   '"href="#">',

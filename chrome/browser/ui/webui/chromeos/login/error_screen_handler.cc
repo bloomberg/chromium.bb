@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/screens/network_error_model.h"
@@ -91,9 +92,11 @@ void ErrorScreenHandler::RegisterMessages() {
 
 void ErrorScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
+  builder->Add("deviceType", ash::GetChromeOSDeviceName());
   builder->Add("loginErrorTitle", IDS_LOGIN_ERROR_TITLE);
   builder->Add("rollbackErrorTitle", IDS_RESET_SCREEN_REVERT_ERROR);
-  builder->Add("signinOfflineMessageBody", IDS_LOGIN_OFFLINE_MESSAGE);
+  builder->Add("signinOfflineMessageBody",
+               ash::SubstituteChromeOSDeviceType(IDS_LOGIN_OFFLINE_MESSAGE));
   builder->Add("kioskOfflineMessageBody", IDS_KIOSK_OFFLINE_MESSAGE);
   builder->Add("kioskOnlineTitle", IDS_LOGIN_NETWORK_RESTORED_TITLE);
   builder->Add("kioskOnlineMessageBody", IDS_KIOSK_ONLINE_MESSAGE);
@@ -109,7 +112,8 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("captivePortalNetworkSelect",
                IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT);
   builder->Add("signinProxyMessageText", IDS_LOGIN_PROXY_ERROR_MESSAGE);
-  builder->Add("updateOfflineMessageBody", IDS_UPDATE_OFFLINE_MESSAGE);
+  builder->Add("updateOfflineMessageBody",
+               ash::SubstituteChromeOSDeviceType(IDS_UPDATE_OFFLINE_MESSAGE));
   builder->Add("updateProxyMessageText", IDS_UPDATE_PROXY_ERROR_MESSAGE);
   builder->AddF("localStateErrorText0", IDS_LOCAL_STATE_ERROR_TEXT_0,
                 IDS_SHORT_PRODUCT_NAME);

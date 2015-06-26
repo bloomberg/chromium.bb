@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
@@ -399,7 +399,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_MULTI_PROFILES_OWNER_PRIMARY_ONLY_MSG);
 
   // Strings used by password changed dialog.
-  builder->Add("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE);
   builder->Add("passwordChangedDesc", IDS_LOGIN_PASSWORD_CHANGED_DESC);
   builder->AddF("passwordChangedMoreInfo",
                 IDS_LOGIN_PASSWORD_CHANGED_MORE_INFO,
@@ -422,7 +421,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_FORGOT_PASSWORD);
   builder->AddF("passwordChangedTitle",
                 IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_TITLE,
-                GetChromeDeviceType());
+                ash::GetChromeOSDeviceName());
   builder->Add("passwordChangedProceedAnywayTitle",
                IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_PROCEED_ANYWAY);
   builder->Add("passwordChangedTryAgain",
@@ -447,8 +446,9 @@ void SigninScreenHandler::DeclareLocalizedValues(
 
   if (StartupUtils::IsWebviewSigninEnabled()) {
     builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE_NEW_GAIA_FLOW);
-    builder->Add("confirmPasswordTitle",
-                 IDS_LOGIN_CONFIRM_PASSWORD_TITLE_NEW_GAIA_FLOW);
+    builder->AddF("confirmPasswordTitle",
+                  IDS_LOGIN_CONFIRM_PASSWORD_TITLE_NEW_GAIA_FLOW,
+                  ash::GetChromeOSDeviceName());
     builder->Add("confirmPasswordLabel",
                  IDS_LOGIN_CONFIRM_PASSWORD_LABEL_NEW_GAIA_FLOW);
   } else {
