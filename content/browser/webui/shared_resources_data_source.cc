@@ -29,7 +29,7 @@ const char* kPathAliases[][2] = {
     {"../../../third_party/polymer/components-chromium/", "polymer/"},
     {"../../../third_party/polymer/v1_0/components-chromium/", "polymer/v1_0/"},
     {"../../../third_party/web-animations-js/sources/",
-     "polymer/web-animations-js/"},
+     "polymer/v1_0/web-animations-js/"},
     {"../../views/resources/default_100_percent/common/", "images/apps/"},
     {"../../views/resources/default_200_percent/common/", "images/2x/apps/"},
     {"../../webui/resources/cr_elements/", "cr_elements/"}};

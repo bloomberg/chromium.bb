@@ -17,19 +17,28 @@ set -e
 cd "$(dirname "$0")"
 
 rm -rf components components-chromium
+rm -rf ../../web-animations-js/sources
 
 bower install
+
+mv components/web-animations-js ../../web-animations-js/sources
+cp ../../web-animations-js/sources/COPYING ../../web-animations-js/LICENSE
+
+# Remove unused gzipped binary which causes git-cl problems.
+rm ../../web-animations-js/sources/web-animations.min.js.gz
 
 # These components are needed only for demos and docs.
 rm -rf components/{hydrolysis,marked,marked-element,prism,prism-element,\
 iron-component-page,iron-doc-viewer,webcomponentsjs}
 
-# Remove unused gzipped binary which causes git-cl problems.
-rm components/web-animations-js/web-animations.min.js.gz
-
 # Test and demo directories aren't needed.
 rm -rf components/*/{test,demo}
 rm -rf components/polymer/explainer
+
+# Remove promise-polyfill and components which depend on it.
+rm -rf components/promise-polyfill
+rm -rf components/iron-ajax
+rm -rf components/iron-form
 
 # Make checkperms.py happy.
 find components/*/hero.svg -type f -exec chmod -x {} \;

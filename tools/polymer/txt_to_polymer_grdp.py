@@ -39,15 +39,12 @@ FILE_TEMPLATE = \
 <grit-part>
   <!-- Polymer 0.5 (TODO: Remove by M45 branch point) -->
 %(v_0_5)s
-  <structure name="IDR_POLYMER_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS"
-             file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
-             type="chrome_html" />
-  <structure name="IDR_POLYMER_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS_MAP"
-             file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js.map"
-             type="chrome_html" />
 
   <!-- Polymer 1.0 -->
 %(v_1_0)s
+  <structure name="IDR_POLYMER_1_0_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS"
+             file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
+             type="chrome_html" />
 </grit-part>
 """
 
