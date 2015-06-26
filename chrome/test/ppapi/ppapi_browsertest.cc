@@ -1123,11 +1123,17 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTransitionalNonSfiTest,
 }
 
 TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible);
-TEST_PPAPI_NACL(View_CreatedVisible);
+#if defined(OS_MACOSX)
+// http://crbug.com/474399
+#define MAYBE_View_CreatedVisible DISABLED_View_CreatedVisible
+#else
+#define MAYBE_View_CreatedVisible View_CreatedVisible
+#endif
+TEST_PPAPI_NACL(MAYBE_View_CreatedVisible);
+
 // This test ensures that plugins created in a background tab have their
 // initial visibility set to false. We don't bother testing in-process for this
 // custom test since the out of process code also exercises in-process.
-
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
   // Make a second tab in the foreground.
   GURL url = GetTestFileUrl("View_CreatedInvisible");
