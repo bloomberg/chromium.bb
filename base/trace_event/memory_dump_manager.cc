@@ -8,6 +8,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/compiler_specific.h"
+#include "base/hash.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
@@ -157,6 +158,7 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 MemoryDumpManager::MemoryDumpManager()
     : delegate_(nullptr),
       memory_tracing_enabled_(0),
+      tracing_process_id_(kInvalidTracingProcessId),
       skip_core_dumpers_auto_registration_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
@@ -435,6 +437,15 @@ void MemoryDumpManager::OnTraceLogDisabled() {
   periodic_dump_timer_.Stop();
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
   session_state_ = nullptr;
+}
+
+// static
+uint64 MemoryDumpManager::ChildProcessIdToTracingProcessId(
+    int child_process_id) {
+  return static_cast<uint64>(
+             Hash(reinterpret_cast<const char*>(&child_process_id),
+                  sizeof(child_process_id))) +
+         1;
 }
 
 MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(

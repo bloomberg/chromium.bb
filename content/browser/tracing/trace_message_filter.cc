@@ -9,9 +9,12 @@
 
 namespace content {
 
-TraceMessageFilter::TraceMessageFilter()
+TraceMessageFilter::TraceMessageFilter(int child_process_id)
     : BrowserMessageFilter(TracingMsgStart),
       has_child_(false),
+      tracing_process_id_(
+          base::trace_event::MemoryDumpManager::
+              ChildProcessIdToTracingProcessId(child_process_id)),
       is_awaiting_end_ack_(false),
       is_awaiting_capture_monitoring_snapshot_ack_(false),
       is_awaiting_buffer_percent_full_ack_(false) {
@@ -63,8 +66,8 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void TraceMessageFilter::SendBeginTracing(
       const base::trace_event::TraceConfig& trace_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Send(new TracingMsg_BeginTracing(trace_config.ToString(),
-                                   base::TraceTicks::Now()));
+  Send(new TracingMsg_BeginTracing(
+      trace_config.ToString(), base::TraceTicks::Now(), tracing_process_id_));
 }
 
 void TraceMessageFilter::SendEndTracing() {

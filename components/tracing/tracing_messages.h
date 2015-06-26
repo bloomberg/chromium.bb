@@ -32,9 +32,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     static_cast<int>(base::trace_event::MemoryDumpType::LAST))
 
 // Sent to all child processes to enable trace event recording.
-IPC_MESSAGE_CONTROL2(TracingMsg_BeginTracing,
+IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
                      std::string /*  trace_config_str */,
-                     base::TraceTicks /* browser_time */)
+                     base::TraceTicks /* browser_time */,
+                     uint64 /* Tracing process id (hash of child id) */)
 
 // Sent to all child processes to disable trace event recording.
 IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)

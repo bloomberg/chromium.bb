@@ -59,7 +59,8 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::string& trace_config_str,
-    base::TraceTicks browser_time) {
+    base::TraceTicks browser_time,
+    uint64 tracing_process_id) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -67,6 +68,8 @@ void ChildTraceMessageFilter::OnBeginTracing(
   base::TimeDelta time_offset = base::TraceTicks::Now() - browser_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->set_tracing_process_id(
+      tracing_process_id);
   TraceLog::GetInstance()->SetEnabled(
       base::trace_event::TraceConfig(trace_config_str),
       base::trace_event::TraceLog::RECORDING_MODE);
@@ -81,6 +84,9 @@ void ChildTraceMessageFilter::OnEndTracing() {
   // OnTraceDataCollected calls will not be deferred.
   TraceLog::GetInstance()->Flush(
       base::Bind(&ChildTraceMessageFilter::OnTraceDataCollected, this));
+
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->set_tracing_process_id(
+      base::trace_event::MemoryDumpManager::kInvalidTracingProcessId);
 }
 
 void ChildTraceMessageFilter::OnCancelTracing() {
