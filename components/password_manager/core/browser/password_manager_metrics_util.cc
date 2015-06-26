@@ -159,6 +159,11 @@ void LogFilledCredentialIsFromAndroidApp(bool from_android) {
       from_android);
 }
 
+void LogPasswordSyncState(PasswordSyncState state) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PasswordSyncState", state,
+                            NUM_SYNC_STATES);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

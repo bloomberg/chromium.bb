@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "net/base/escape.h"
 #include "sync/api/sync_error_factory.h"
@@ -157,6 +158,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
     merge_result.set_error(sync_error_factory->CreateAndUploadError(
         FROM_HERE, "Failed to get passwords from store."));
+    metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
     return merge_result;
   }
 
@@ -164,6 +166,8 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
     merge_result.set_error(sync_error_factory->CreateAndUploadError(
         FROM_HERE,
         "There are passwords with identical sync tags in the database."));
+    metrics_util::LogPasswordSyncState(
+        metrics_util::NOT_SYNCING_DUPLICATE_TAGS);
     return merge_result;
   }
   merge_result.set_num_items_before_association(new_local_entries.size());
@@ -200,8 +204,10 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   WriteToPasswordStore(sync_entries);
   merge_result.set_error(
       sync_processor->ProcessSyncChanges(FROM_HERE, updated_db_entries));
-  if (merge_result.error().IsSet())
+  if (merge_result.error().IsSet()) {
+    metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_SERVER_ERROR);
     return merge_result;
+  }
 
   merge_result.set_num_items_after_association(
       merge_result.num_items_before_association() +
@@ -214,6 +220,8 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   // failure Sync shouldn't receive any updates from the PasswordStore.
   sync_error_factory_ = sync_error_factory.Pass();
   sync_processor_ = sync_processor.Pass();
+
+  metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
   return merge_result;
 }
 
