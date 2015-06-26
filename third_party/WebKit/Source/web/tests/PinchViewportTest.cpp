@@ -198,11 +198,6 @@ static void DefaultSettingOverride(WebSettings *)
 {
 }
 
-static void RootLayerScrollsSettingOverride(WebSettings *settings)
-{
-    settings->setRootLayerScrolls(true);
-}
-
 class ParameterizedPinchViewportTest
     : public PinchViewportTest
     , public testing::WithParamInterface<SettingOverrideFunction> {
@@ -213,9 +208,19 @@ public:
     }
 };
 
+#if OS(MACOSX) && ENABLE(OILPAN)
+// FIXME(504655): RootLayerScrolls configuration crashes on Mac Oilpan bots.
+INSTANTIATE_TEST_CASE_P(All, ParameterizedPinchViewportTest, ::testing::Values(
+    DefaultSettingOverride));
+#else
+static void RootLayerScrollsSettingOverride(WebSettings *settings)
+{
+    settings->setRootLayerScrolls(true);
+}
 INSTANTIATE_TEST_CASE_P(All, ParameterizedPinchViewportTest, ::testing::Values(
     DefaultSettingOverride,
     RootLayerScrollsSettingOverride));
+#endif
 
 // Test that resizing the PinchViewport works as expected and that resizing the
 // WebView resizes the PinchViewport.
