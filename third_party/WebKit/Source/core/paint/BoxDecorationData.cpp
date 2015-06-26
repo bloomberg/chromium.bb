@@ -57,9 +57,6 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     if (borderObscuresBackgroundEdge(*layoutBox.style()))
         return BackgroundBleedShrinkBackground;
 
-    if (!hasAppearance && layoutBox.style()->borderObscuresBackground() && layoutBox.backgroundHasOpaqueTopLayer())
-        return BackgroundBleedBackgroundOverBorder;
-
     return BackgroundBleedClipLayer;
 }
 

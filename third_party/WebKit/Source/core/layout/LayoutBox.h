@@ -724,8 +724,6 @@ public:
             removeFloatingOrPositionedChildFromBlockLists();
     }
 
-    bool backgroundHasOpaqueTopLayer() const;
-
     void setIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
 
     bool canRenderBorderImage() const;

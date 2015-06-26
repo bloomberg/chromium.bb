@@ -53,7 +53,6 @@ enum BackgroundBleedAvoidance {
     BackgroundBleedShrinkBackground,
     BackgroundBleedClipOnly,
     BackgroundBleedClipLayer,
-    BackgroundBleedBackgroundOverBorder,
 };
 
 enum ContentChangeType {

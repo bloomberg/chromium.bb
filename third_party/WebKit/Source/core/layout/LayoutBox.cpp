@@ -1284,29 +1284,6 @@ bool LayoutBox::computeBackgroundIsKnownToBeObscured()
     return foregroundIsKnownToBeOpaqueInRect(backgroundRect, backgroundObscurationTestMaxDepth);
 }
 
-bool LayoutBox::backgroundHasOpaqueTopLayer() const
-{
-    const FillLayer& fillLayer = style()->backgroundLayers();
-    if (fillLayer.clip() != BorderFillBox)
-        return false;
-
-    // Clipped with local scrolling
-    if (hasOverflowClip() && fillLayer.attachment() == LocalBackgroundAttachment)
-        return false;
-
-    if (fillLayer.hasOpaqueImage(this) && fillLayer.hasRepeatXY() && fillLayer.image()->canRender(*this, style()->effectiveZoom()))
-        return true;
-
-    // If there is only one layer and no image, check whether the background color is opaque
-    if (!fillLayer.next() && !fillLayer.hasImage()) {
-        Color bgColor = resolveColor(CSSPropertyBackgroundColor);
-        if (bgColor.alpha() == 255)
-            return true;
-    }
-
-    return false;
-}
-
 void LayoutBox::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     BoxPainter(*this).paintMask(paintInfo, paintOffset);

@@ -114,9 +114,6 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     ThemePainter& themePainter = LayoutTheme::theme().painter();
     bool themePainted = boxDecorationData.hasAppearance && !themePainter.paint(&m_layoutBox, paintInfo, snappedPaintRect);
     if (!themePainted) {
-        if (boxDecorationData.bleedAvoidance == BackgroundBleedBackgroundOverBorder)
-            paintBorder(m_layoutBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance);
-
         paintBackground(paintInfo, paintRect, boxDecorationData.backgroundColor, boxDecorationData.bleedAvoidance);
 
         if (boxDecorationData.hasAppearance)
@@ -125,7 +122,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     paintBoxShadow(paintInfo, paintRect, style, Inset);
 
     // The theme will tell us whether or not we should also paint the CSS border.
-    if (boxDecorationData.hasBorderDecoration && boxDecorationData.bleedAvoidance != BackgroundBleedBackgroundOverBorder
+    if (boxDecorationData.hasBorderDecoration
         && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().painter().paintBorderOnly(&m_layoutBox, paintInfo, snappedPaintRect)))
         && !(m_layoutBox.isTable() && toLayoutTable(&m_layoutBox)->collapseBorders()))
         paintBorder(m_layoutBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance);
@@ -289,8 +286,6 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(Layo
         insetRadii.shrink(-insets.top(), -insets.bottom(), -insets.left(), -insets.right());
         return FloatRoundedRect(insetRect, insetRadii);
     }
-    if (bleedAvoidance == BackgroundBleedBackgroundOverBorder)
-        return obj.style()->getRoundedInnerBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
 
     return getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
 }

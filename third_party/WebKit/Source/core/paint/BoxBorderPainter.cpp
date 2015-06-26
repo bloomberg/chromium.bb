@@ -273,11 +273,6 @@ void drawBleedAdjustedDRRect(GraphicsContext* context, BackgroundBleedAvoidance 
     const FloatRoundedRect& outer, const FloatRoundedRect& inner, Color color)
 {
     switch (bleedAvoidance) {
-    case BackgroundBleedBackgroundOverBorder:
-        // BackgroundBleedBackgroundOverBorder draws an opaque background over the inner rrect,
-        // so we can simply fill the outer rect here to avoid backdrop bleeding.
-        context->fillRoundedRect(outer, color);
-        break;
     case BackgroundBleedClipLayer: {
         // BackgroundBleedClipLayer clips the outer rrect for the whole layer. Based on this,
         // we can avoid background bleeding by filling the *outside* of inner rrect, all the
@@ -599,9 +594,7 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info, const LayoutRect& rect
         if (!bleedAvoidanceIsClipping(m_bleedAvoidance))
             graphicsContext->clipRoundedRect(m_outer);
 
-        // For BackgroundBleedBackgroundOverBorder, we're going to draw an opaque background over
-        // the inner rrect - so clipping is not needed (nor desirable due to backdrop bleeding).
-        if (m_bleedAvoidance != BackgroundBleedBackgroundOverBorder && m_inner.isRenderable() && !m_inner.isEmpty())
+        if (m_inner.isRenderable() && !m_inner.isEmpty())
             graphicsContext->clipOutRoundedRect(m_inner);
     }
 
