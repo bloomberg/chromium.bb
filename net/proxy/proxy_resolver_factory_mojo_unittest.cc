@@ -406,6 +406,16 @@ void MockMojoProxyResolverFactory::CreateResolver(
   WakeWaiter();
 }
 
+void DeleteResolverFactoryRequestCallback(
+    scoped_ptr<ProxyResolverFactory::Request>* request,
+    const CompletionCallback& callback,
+    int result) {
+  ASSERT_TRUE(request);
+  EXPECT_TRUE(request->get());
+  request->reset();
+  callback.Run(result);
+}
+
 }  // namespace
 
 class ProxyResolverFactoryMojoTest : public testing::Test,
@@ -565,6 +575,25 @@ TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_ResolverDisconnected) {
       callback.GetResult(proxy_resolver_factory_mojo_->CreateProxyResolver(
           pac_script, &proxy_resolver_mojo_, callback.callback(), &request)));
   EXPECT_TRUE(request);
+  on_delete_callback_.WaitForResult();
+}
+
+TEST_F(ProxyResolverFactoryMojoTest,
+       CreateProxyResolver_ResolverDisconnected_DeleteRequestInCallback) {
+  mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
+      CreateProxyResolverAction::DropResolver(kScriptData));
+
+  scoped_refptr<ProxyResolverScriptData> pac_script(
+      ProxyResolverScriptData::FromUTF8(kScriptData));
+  scoped_ptr<ProxyResolverFactory::Request> request;
+  TestCompletionCallback callback;
+  EXPECT_EQ(
+      ERR_PAC_SCRIPT_TERMINATED,
+      callback.GetResult(proxy_resolver_factory_mojo_->CreateProxyResolver(
+          pac_script, &proxy_resolver_mojo_,
+          base::Bind(&DeleteResolverFactoryRequestCallback, &request,
+                     callback.callback()),
+          &request)));
   on_delete_callback_.WaitForResult();
 }
 

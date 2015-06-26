@@ -315,10 +315,7 @@ class ProxyResolverFactoryMojo::Job
     binding_.set_error_handler(this);
   }
 
-  void OnConnectionError() override {
-    callback_.Run(ERR_PAC_SCRIPT_TERMINATED);
-    on_delete_callback_runner_.reset();
-  }
+  void OnConnectionError() override { ReportResult(ERR_PAC_SCRIPT_TERMINATED); }
 
  private:
   void ReportResult(int32_t error) override {
