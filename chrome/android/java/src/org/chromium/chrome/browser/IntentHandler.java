@@ -73,12 +73,6 @@ public class IntentHandler {
     public static final String EXTRA_NATIVE_WEB_CONTENTS = "com.android.chrome.native_web_contents";
 
     /**
-     * Document mode: Whether or not to try loading a page with "Request Desktop Site" enabled.
-     */
-    public static final String EXTRA_USE_DESKTOP_USER_AGENT =
-            "com.android.chrome.use_desktop_user_agent";
-
-    /**
      * The tab id of the parent tab, if any.
      */
     public static final String EXTRA_PARENT_TAB_ID = "com.android.chrome.parent_tab_id";

@@ -507,13 +507,6 @@ public class DocumentActivity extends ChromeActivity {
             ServiceTabLauncher.onWebContentsForRequestAvailable(
                     pendingData.requestId, mDocumentTab.getWebContents());
         }
-
-        if (getIntent() != null && IntentUtils.safeGetBooleanExtra(getIntent(),
-                IntentHandler.EXTRA_USE_DESKTOP_USER_AGENT, false)) {
-            // The desktop user agent can't be carried over without the Tab already having a URL,
-            // so we're forced to set the user agent and then reload the page.
-            mDocumentTab.setUseDesktopUserAgent(true, true);
-        }
     }
 
     @Override

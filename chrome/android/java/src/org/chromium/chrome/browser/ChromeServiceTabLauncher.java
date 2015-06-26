@@ -58,7 +58,6 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
         intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PageTransition.LINK);
         intent.putExtra(IntentHandler.EXTRA_STARTED_BY, intentSource);
-        intent.putExtra(IntentHandler.EXTRA_USE_DESKTOP_USER_AGENT, false);
 
         intent.putExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, requestId);
 
