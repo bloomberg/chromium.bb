@@ -57,6 +57,7 @@ private:
     virtual bool isValidElement() override final;
     virtual void childrenChanged(const ChildrenChange&) override;
     virtual bool areAuthorShadowsAllowed() const override { return false; }
+    virtual bool isSubmittableElement() override;
 
     static void invalidateDisabledStateUnder(Element&);
     void refreshElementsIfNeeded() const;

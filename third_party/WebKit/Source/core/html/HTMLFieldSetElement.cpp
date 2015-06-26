@@ -76,6 +76,11 @@ bool HTMLFieldSetElement::isValidElement()
     return true;
 }
 
+bool HTMLFieldSetElement::isSubmittableElement()
+{
+    return false;
+}
+
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)
 {
     for (HTMLFormControlElement& element : Traversal<HTMLFormControlElement>::descendantsOf(base))

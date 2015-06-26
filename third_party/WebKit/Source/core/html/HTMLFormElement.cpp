@@ -729,7 +729,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<R
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
             HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
-            if (!control->checkValidity(unhandledInvalidControls, eventBehavior) && control->formOwner() == this) {
+            if (control->isSubmittableElement() && !control->checkValidity(unhandledInvalidControls, eventBehavior) && control->formOwner() == this) {
                 ++invalidControlsCount;
                 if (!unhandledInvalidControls && eventBehavior == CheckValidityDispatchNoEvent)
                     return true;
