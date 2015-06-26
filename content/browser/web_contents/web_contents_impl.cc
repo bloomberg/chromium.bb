@@ -4162,8 +4162,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
   if (!static_cast<RenderViewHostImpl*>(
-          render_view_host)->CreateRenderView(base::string16(),
-                                              opener_route_id,
+          render_view_host)->CreateRenderView(opener_route_id,
                                               proxy_routing_id,
                                               max_page_id,
                                               replicated_frame_state,

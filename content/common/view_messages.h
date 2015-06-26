@@ -502,9 +502,6 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The session storage namespace ID this view should use.
   IPC_STRUCT_MEMBER(int64, session_storage_namespace_id)
 
-  // The name of the frame associated with this view (or empty if none).
-  IPC_STRUCT_MEMBER(base::string16, frame_name)
-
   // The route ID of the opener RenderView if we need to set one
   // (MSG_ROUTING_NONE otherwise).
   IPC_STRUCT_MEMBER(int, opener_route_id)
@@ -512,9 +509,10 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Whether the RenderView should initially be swapped out.
   IPC_STRUCT_MEMBER(bool, swapped_out)
 
-  // In --site-per-process mode, if this view is |swapped_out|, its main frame
-  // will become a RenderFrameProxy.  |replicated_frame_state| is used to
-  // replicate information such as security origin to that RenderFrameProxy.
+  // Carries replicated information, such as frame name and sandbox flags, for
+  // this view's main frame, which will be a proxy in |swapped_out|
+  // views when in --site-per-process mode, or a RenderFrame in all other
+  // cases.
   IPC_STRUCT_MEMBER(content::FrameReplicationState, replicated_frame_state)
 
   // The ID of the proxy object for the main frame in this view. It is only

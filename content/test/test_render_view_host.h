@@ -241,8 +241,7 @@ class TestRenderViewHost
 
   // RenderViewHost overrides --------------------------------------------------
 
-  bool CreateRenderView(const base::string16& frame_name,
-                        int opener_route_id,
+  bool CreateRenderView(int opener_route_id,
                         int proxy_route_id,
                         int32 max_page_id,
                         const FrameReplicationState& replicated_frame_state,

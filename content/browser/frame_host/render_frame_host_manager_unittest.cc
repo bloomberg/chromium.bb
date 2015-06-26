@@ -1143,9 +1143,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   RenderFrameHostManager* manager1 =
       web_contents1->GetRenderManagerForTesting();
   // Test the case that new RVH is considered live.
-  manager1->current_host()->CreateRenderView(
-      base::string16(), -1, MSG_ROUTING_NONE, -1,
-      FrameReplicationState(), false);
+  manager1->current_host()->CreateRenderView(-1, MSG_ROUTING_NONE, -1,
+                                             FrameReplicationState(), false);
   EXPECT_TRUE(manager1->current_host()->IsRenderViewLive());
   EXPECT_TRUE(manager1->current_frame_host()->IsRenderFrameLive());
 
@@ -1178,9 +1177,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
       web_contents2->GetRenderManagerForTesting();
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
-  manager2->current_host()->CreateRenderView(
-      base::string16(), -1, MSG_ROUTING_NONE, -1,
-      FrameReplicationState(), false);
+  manager2->current_host()->CreateRenderView(-1, MSG_ROUTING_NONE, -1,
+                                             FrameReplicationState(), false);
   EXPECT_TRUE(manager2->current_host()->IsRenderViewLive());
 
   const GURL kUrl2("chrome://foo/bar");
@@ -1618,8 +1616,7 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
 
   // Make sure the new opener RVH is considered live.
   opener1_manager->current_host()->CreateRenderView(
-      base::string16(), -1, MSG_ROUTING_NONE, -1,
-      FrameReplicationState(), false);
+      -1, MSG_ROUTING_NONE, -1, FrameReplicationState(), false);
   EXPECT_TRUE(opener1_manager->current_host()->IsRenderViewLive());
   EXPECT_TRUE(opener1_manager->current_frame_host()->IsRenderFrameLive());
 

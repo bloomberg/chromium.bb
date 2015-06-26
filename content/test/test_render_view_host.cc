@@ -5,6 +5,7 @@
 #include "content/test/test_render_view_host.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -242,13 +243,13 @@ bool TestRenderViewHost::CreateTestRenderView(
     int proxy_route_id,
     int32 max_page_id,
     bool window_was_created_with_opener) {
-  return CreateRenderView(frame_name, opener_route_id, proxy_route_id,
-                          max_page_id, FrameReplicationState(),
-                          window_was_created_with_opener);
+  FrameReplicationState replicated_state;
+  replicated_state.name = base::UTF16ToUTF8(frame_name);
+  return CreateRenderView(opener_route_id, proxy_route_id, max_page_id,
+                          replicated_state, window_was_created_with_opener);
 }
 
 bool TestRenderViewHost::CreateRenderView(
-    const base::string16& frame_name,
     int opener_route_id,
     int proxy_route_id,
     int32 max_page_id,

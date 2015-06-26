@@ -778,8 +778,10 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     selection_strategy = WebSettings::SelectionStrategyType::Direction;
   webview()->settings()->setSelectionStrategy(selection_strategy);
 
-  if (!params.frame_name.empty())
-    webview()->mainFrame()->setName(params.frame_name);
+  if (!params.replicated_frame_state.name.empty()) {
+    webview()->mainFrame()->setName(
+        blink::WebString::fromUTF8(params.replicated_frame_state.name));
+  }
 
   // TODO(davidben): Move this state from Blink into content.
   if (params.window_was_created_with_opener)
@@ -1616,9 +1618,8 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.surface_id = surface_id;
   view_params.session_storage_namespace_id =
       cloned_session_storage_namespace_id;
-  // WebCore will take care of setting the correct name.
-  view_params.frame_name = base::string16();
   view_params.swapped_out = false;
+  // WebCore will take care of setting the correct name.
   view_params.replicated_frame_state = FrameReplicationState();
   view_params.proxy_routing_id = MSG_ROUTING_NONE;
   view_params.hidden = (params.disposition == NEW_BACKGROUND_TAB);

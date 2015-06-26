@@ -549,6 +549,53 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
                             "window.frames[0].opener = null;"));
 }
 
+// Check that window.name is preserved for top frames when they navigate
+// cross-process.  See https://crbug.com/504164.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       PreserveTopFrameWindowNameOnCrossProcessNavigations) {
+  StartEmbeddedServer();
+
+  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance.get() != NULL);
+
+  // Create a popup with a 'foo' window.name.
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(!!window.open('', 'foo'));",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // The window.name for the new popup should be "foo".
+  std::string name;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      new_shell->web_contents(),
+      "window.domAutomationController.send(window.name);", &name));
+  EXPECT_EQ("foo", name);
+
+  // Now navigate the new tab to a different site.
+  GURL cross_site_url(embedded_test_server()->GetURL("foo.com",
+                                                     "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, cross_site_url));
+  scoped_refptr<SiteInstance> new_site_instance(
+      new_shell->web_contents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, new_site_instance);
+
+  // window.name should still be "foo".
+  name = "";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      new_shell->web_contents(),
+      "window.domAutomationController.send(window.name);", &name));
+  EXPECT_EQ("foo", name);
+}
+
 // Test for crbug.com/99202.  PostMessage calls should still work after
 // navigating the source and target windows to different sites.
 // Specifically:
