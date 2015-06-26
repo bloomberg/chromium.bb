@@ -2592,7 +2592,7 @@
         # http://crbug.com/255186
         '-Wno-deprecated-register',
 
-        # TODO(hans): Get this cleaned up.
+        # TODO(hans): Get this cleaned up, http://crbug.com/428099
         '-Wno-inconsistent-missing-override',
       ],
     },
@@ -5731,7 +5731,6 @@
                   '-Wno-unused-value',
                   '-Wno-unused-variable',
                   '-Wno-unused-local-typedef',  # http://crbug.com/411648
-                  '-Wno-inconsistent-missing-override',  # http://crbug.com/428099
                 ],
               },
             }],
