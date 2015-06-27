@@ -24,53 +24,6 @@ const int kDefaultTimeout = 10;
 
 }  // namespace
 
-std::string RequestTypeToString(RequestType type) {
-  switch (type) {
-    case REQUEST_UNMOUNT:
-      return "REQUEST_UNMOUNT";
-    case GET_METADATA:
-      return "GET_METADATA";
-    case GET_ACTIONS:
-      return "GET_ACTIONS";
-    case EXECUTE_ACTION:
-      return "EXECUTE_ACTION";
-    case READ_DIRECTORY:
-      return "READ_DIRECTORY";
-    case OPEN_FILE:
-      return "OPEN_FILE";
-    case CLOSE_FILE:
-      return "CLOSE_FILE";
-    case READ_FILE:
-      return "READ_FILE";
-    case CREATE_DIRECTORY:
-      return "CREATE_DIRECTORY";
-    case DELETE_ENTRY:
-      return "DELETE_ENTRY";
-    case CREATE_FILE:
-      return "CREATE_FILE";
-    case COPY_ENTRY:
-      return "COPY_ENTRY";
-    case MOVE_ENTRY:
-      return "MOVE_ENTRY";
-    case TRUNCATE:
-      return "TRUNCATE";
-    case WRITE_FILE:
-      return "WRITE_FILE";
-    case ABORT:
-      return "ABORT";
-    case ADD_WATCHER:
-      return "ADD_WATCHER";
-    case REMOVE_WATCHER:
-      return "REMOVE_WATCHER";
-    case CONFIGURE:
-      return "CONFIGURE";
-    case TESTING:
-      return "TESTING";
-  }
-  NOTREACHED();
-  return "";
-}
-
 RequestManager::RequestManager(
     Profile* profile,
     const std::string& extension_id,

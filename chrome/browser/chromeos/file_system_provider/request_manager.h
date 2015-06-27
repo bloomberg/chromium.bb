@@ -48,9 +48,6 @@ enum RequestType {
   TESTING
 };
 
-// Converts a request type to human-readable format.
-std::string RequestTypeToString(RequestType type);
-
 // Manages requests between the service, async utils and the providing
 // extensions.
 class RequestManager {

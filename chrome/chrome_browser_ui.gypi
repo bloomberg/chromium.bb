@@ -404,8 +404,6 @@
       'browser/ui/webui/chromeos/nfc_debug_ui.h',
       'browser/ui/webui/chromeos/power_ui.cc',
       'browser/ui/webui/chromeos/power_ui.h',
-      'browser/ui/webui/chromeos/provided_file_systems_ui.cc',
-      'browser/ui/webui/chromeos/provided_file_systems_ui.h',
       'browser/ui/webui/chromeos/proxy_settings_ui.cc',
       'browser/ui/webui/chromeos/proxy_settings_ui.h',
       'browser/ui/webui/chromeos/salsa_ui.cc',
