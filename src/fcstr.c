@@ -1347,14 +1347,6 @@ FcStrListDone (FcStrList *list)
     free (list);
 }
 
-int
-FcStrListGetLength (const FcStrList *list)
-{
-    if (!list)
-	return 0;
-    return list->set->num;
-}
-
 #define __fcstr__
 #include "fcaliastail.h"
 #undef __fcstr__

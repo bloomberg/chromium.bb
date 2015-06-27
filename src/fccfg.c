@@ -368,13 +368,10 @@ FcConfigAddDirList (FcConfig *config, FcSetName set, FcStrSet *dirSet)
     FcStrList	    *dirlist;
     FcChar8	    *dir;
     FcCache	    *cache;
-    FcBool	     ret = FcFalse;
 
     dirlist = FcStrListCreate (dirSet);
     if (!dirlist)
         return FcFalse;
-    if (FcStrListGetLength (dirlist) == 0)
-	ret = FcTrue;
 	
     while ((dir = FcStrListNext (dirlist)))
     {
@@ -385,10 +382,9 @@ FcConfigAddDirList (FcConfig *config, FcSetName set, FcStrSet *dirSet)
 	    continue;
 	FcConfigAddCache (config, cache, set, dirSet);
 	FcDirCacheUnload (cache);
-	ret = FcTrue;
     }
     FcStrListDone (dirlist);
-    return ret;
+    return FcTrue;
 }
 
 /*
@@ -2201,7 +2197,6 @@ FcConfigAppFontAddFile (FcConfig    *config,
     FcStrSet	*subdirs;
     FcStrList	*sublist;
     FcChar8	*subdir;
-    FcBool	 ret = FcFalse;
 
     if (!config)
     {
@@ -2231,19 +2226,16 @@ FcConfigAppFontAddFile (FcConfig    *config,
 	FcStrSetDestroy (subdirs);
 	return FcFalse;
     }
-    if (subdirs->num == 0)
-	ret = FcTrue;
-    else if ((sublist = FcStrListCreate (subdirs)))
+    if ((sublist = FcStrListCreate (subdirs)))
     {
 	while ((subdir = FcStrListNext (sublist)))
 	{
-	    if (FcConfigAppFontAddDir (config, subdir))
-		ret = FcTrue;
+	    FcConfigAppFontAddDir (config, subdir);
 	}
 	FcStrListDone (sublist);
     }
     FcStrSetDestroy (subdirs);
-    return ret;
+    return FcTrue;
 }
 
 FcBool
@@ -2252,7 +2244,6 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 {
     FcFontSet	*set;
     FcStrSet	*dirs;
-    FcBool	 ret = FcTrue;
 
     if (!config)
     {
@@ -2271,8 +2262,8 @@ FcConfigAppFontAddDir (FcConfig	    *config,
 	set = FcFontSetCreate ();
 	if (!set)
 	{
-	    ret = FcFalse;
-	    goto bail;
+	    FcStrSetDestroy (dirs);
+	    return FcFalse;
 	}
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
@@ -2280,10 +2271,12 @@ FcConfigAppFontAddDir (FcConfig	    *config,
     FcStrSetAddFilename (dirs, dir);
 
     if (!FcConfigAddDirList (config, FcSetApplication, dirs))
-	ret = FcFalse;
-bail:
+    {
+	FcStrSetDestroy (dirs);
+	return FcFalse;
+    }
     FcStrSetDestroy (dirs);
-    return ret;
+    return FcTrue;
 }
 
 void
