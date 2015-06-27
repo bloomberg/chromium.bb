@@ -63,6 +63,12 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
             FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
             OwnPtr<WebFilterOperations> webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
             builder.buildFilterOperations(filterOperations, webFilterOperations.get());
+            // FIXME: It's possible to have empty WebFilterOperations here even
+            // though the SkImageFilter produced above is non-null, since the
+            // layer's FilterEffectBuilder can have a stale representation of
+            // the layer's filter. See crbug.com/502026.
+            if (webFilterOperations->isEmpty())
+                return;
             OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(*m_layoutObject, imageFilter, rootRelativeBounds, webFilterOperations.release());
 
             context->displayItemList()->add(filterDisplayItem.release());

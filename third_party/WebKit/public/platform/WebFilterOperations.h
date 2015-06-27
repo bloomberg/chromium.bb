@@ -56,6 +56,7 @@ public:
     virtual void appendReferenceFilter(SkImageFilter*) = 0;
 
     virtual void clear() = 0;
+    virtual bool isEmpty() const = 0;
 };
 
 } // namespace blink
