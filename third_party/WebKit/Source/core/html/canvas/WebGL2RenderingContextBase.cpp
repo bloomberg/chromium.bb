@@ -1080,7 +1080,7 @@ void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query)
         return;
     }
 
-    if (!query->isCompatibleTarget(target)) {
+    if (query->getTarget() && query->getTarget() != target) {
         synthesizeGLError(GL_INVALID_OPERATION, "beginQuery", "query type does not match target");
         return;
     }
@@ -1110,7 +1110,8 @@ void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query)
         return;
     }
 
-    query->setTarget(target);
+    if (!query->getTarget())
+        query->setTarget(target);
 
     webContext()->beginQueryEXT(target, query->object());
 }

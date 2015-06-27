@@ -21,7 +21,6 @@ public:
 
     void setTarget(GLenum);
     GLenum getTarget() const { return m_target; }
-    bool isCompatibleTarget(GLenum);
 
 protected:
     explicit WebGLQuery(WebGL2RenderingContextBase*);
