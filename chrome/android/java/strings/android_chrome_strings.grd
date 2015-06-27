@@ -1164,6 +1164,28 @@ You are signing in with a managed account and giving its administrator control o
         Web View
       </message>
 
+      <!-- Runtime permission infobar strings -->
+      <message name="IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT" desc="Text shown in an infobar when a website has requested access to the camera capabilities, but Chrome is missing the Android camera permission.">
+        Chrome needs camera access to share it with this site.
+      </message>
+      <message name="IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT" desc="Text shown in an infobar when a website has requested access to the microphone capabilities, but Chrome is missing the Android microphone permission.">
+        Chrome needs microphone access to share it with this site.
+      </message>
+      <message name="IDS_INFOBAR_MISSING_LOCATION_PERMISSION_TEXT" desc="Text shown in an infobar when a website has requested access to the location capabilities, but Chrome is missing the Android location permission.">
+        Chrome needs location access to share it with this site.
+      </message>
+      <message name="IDS_INFOBAR_MISSING_MULTIPLE_PERMISSIONS_TEXT" desc="Text shown in an infobar when a website has requested access to the multiple restricted capabilities (e.g. location, camera, microphone), but Chrome is missing the corresponding Android permissions.">
+        Chrome needs permissions access to share them with this site.
+      </message>
+      <message name="IDS_INFOBAR_UPDATE_PERMISSIONS_BUTTON_TEXT" desc="Button text shown when Chrome does not have the necessary permission required to complete the requested tasks (e.g. a website has request location information, but Chrome is missing that Android permission).">
+        Update permissions
+      </message>
+      
+      <!-- Runtime permission geolocation disclosure strings -->
+      <message name="IDS_OMNIBOX_GEOLOCATION_DISCLOSURE" desc="Text shown when a user focuses the Chrome omnibox to inform them that their location will be shared with the search provider to get better local search results.">
+        <ph name="SEARCH_ENGINE_URL">%1$s<ex>www.google.com</ex></ph> uses your location to show local search results
+      </message>
+
       <!-- ContextMenu -->
       <message name="IDS_CONTEXTMENU_OPEN_IN_NEW_TAB" desc="Context sensitive menu item to open the selected link in a new tab. [CHAR-LIMIT=30]">
         Open in new tab
