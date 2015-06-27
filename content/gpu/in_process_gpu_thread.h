@@ -7,11 +7,11 @@
 
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "content/common/content_export.h"
 #include "content/common/in_process_child_thread_params.h"
 
 namespace content {
 
+class GpuMemoryBufferFactory;
 class GpuProcess;
 
 // This class creates a GPU thread (instead of a GPU process), when running
@@ -30,6 +30,8 @@ class InProcessGpuThread : public base::Thread {
 
   // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
   GpuProcess* gpu_process_;
+
+  scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessGpuThread);
 };

@@ -130,13 +130,17 @@ GpuChildThread::GpuChildThread(
   g_thread_safe_sender.Get() = thread_safe_sender();
 }
 
-GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params)
+GpuChildThread::GpuChildThread(
+    const InProcessChildThreadParams& params,
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
+                          .AddStartupFilter(new GpuMemoryBufferMessageFilter(
+                              gpu_memory_buffer_factory))
                           .Build()),
       dead_on_arrival_(false),
       in_browser_process_(true),
-      gpu_memory_buffer_factory_(nullptr) {
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
@@ -152,6 +156,15 @@ GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params)
 }
 
 GpuChildThread::~GpuChildThread() {
+}
+
+// static
+gfx::GpuMemoryBufferType GpuChildThread::GetGpuMemoryBufferFactoryType() {
+  std::vector<gfx::GpuMemoryBufferType> supported_types;
+  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
+  DCHECK(!supported_types.empty());
+  // Note: We always use the preferred type.
+  return supported_types[0];
 }
 
 void GpuChildThread::Shutdown() {
