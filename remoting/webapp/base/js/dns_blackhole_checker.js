@@ -81,7 +81,8 @@ remoting.DnsBlackholeChecker.prototype.getType = function() {
 remoting.DnsBlackholeChecker.prototype.connect = function(server,
                                                           username,
                                                           authToken) {
-  base.debug.assert(this.onStateChangedCallback_ != null);
+  console.assert(this.onStateChangedCallback_ != null,
+                 'No state change callback registered.');
 
   this.signalStrategy_.connect(server, username, authToken);
 
@@ -105,7 +106,8 @@ remoting.DnsBlackholeChecker.prototype.getError = function() {
 };
 
 remoting.DnsBlackholeChecker.prototype.getJid = function() {
-  base.debug.assert(this.state_ == remoting.SignalStrategy.State.CONNECTED);
+  console.assert(this.state_ == remoting.SignalStrategy.State.CONNECTED,
+                'getJid() called in state ' + this.state_ + '.');
   return this.signalStrategy_.getJid();
 };
 
@@ -122,7 +124,8 @@ remoting.DnsBlackholeChecker.prototype.sendConnectionSetupResults = function(
 
 /** @param {string} message */
 remoting.DnsBlackholeChecker.prototype.sendMessage = function(message) {
-  base.debug.assert(this.state_ == remoting.SignalStrategy.State.CONNECTED);
+  console.assert(this.state_ == remoting.SignalStrategy.State.CONNECTED,
+                'sendMessage() called in state ' + this.state_ + '.');
   this.signalStrategy_.sendMessage(message);
 };
 

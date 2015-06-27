@@ -44,8 +44,8 @@ base.WindowMessageDispatcher.prototype.dispose = function() {
  */
 base.WindowMessageDispatcher.prototype.registerMessageHandler =
     function(source, handler) {
-  base.debug.assert(!!source);
-  base.debug.assert(!!handler);
+  console.assert(Boolean(source), 'No source specified.');
+  console.assert(Boolean(handler), 'No handler specified.');
 
   if (source in this.handlers_) {
     console.error('Cannot register more than one handler for source: ', source);
@@ -60,7 +60,7 @@ base.WindowMessageDispatcher.prototype.registerMessageHandler =
  */
 base.WindowMessageDispatcher.prototype.unregisterMessageHandler =
     function(source) {
-  base.debug.assert(!!source);
+  console.assert(Boolean(source), 'No source specified.');
 
   if (source in this.handlers_) {
     delete this.handlers_[source];

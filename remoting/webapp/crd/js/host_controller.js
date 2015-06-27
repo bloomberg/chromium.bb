@@ -187,7 +187,7 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
 
   // Get XMPP creditials.
   var xmppCredsPromise = registerResultPromise.then(function(registerResult) {
-    base.debug.assert(registerResult.authCode != '');
+    console.assert(registerResult.authCode != '', '|authCode| is empty.');
     if (registerResult.email) {
       // Use auth code and email supplied by GCD.
       return that.hostDaemonFacade_.getRefreshTokenFromAuthCode(

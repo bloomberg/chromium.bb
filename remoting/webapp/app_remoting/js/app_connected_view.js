@@ -241,7 +241,8 @@ remoting.AppConnectedView.prototype.sendGoogleDriveAccessToken_ =
   ];
   remoting.identity.getNewToken(googleDriveScopes).then(
     function(/** string */ token){
-      base.debug.assert(token !== previousToken_);
+      console.assert(token !== previousToken_,
+                     'getNewToken() returned the same token.');
       previousToken_ = token;
       sendExtensionMessage('accessToken', token);
   }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {

@@ -134,7 +134,8 @@ remoting.MockXhr.prototype.setJsonResponse = function(status, body) {
  * @private
  */
 remoting.MockXhr.prototype.setResponse_ = function(response) {
-  base.debug.assert(this.response_ == null);
+  console.assert(this.response_ == null,
+                 'Duplicate setResponse_() invocation.');
   this.response_ = response;
   this.maybeRespond_();
 };
@@ -277,9 +278,7 @@ var runMatchingHandler = function(xhr) {
  * Activates this mock.
  */
 remoting.MockXhr.activate = function() {
-  base.debug.assert(
-      origXhr == null,
-      'Xhr mocking already active');
+  console.assert(origXhr == null, 'Xhr mocking already active');
   origXhr = remoting.Xhr;
   remoting.MockXhr.Response = remoting.Xhr.Response;
   remoting['Xhr'] = remoting.MockXhr;
@@ -289,9 +288,7 @@ remoting.MockXhr.activate = function() {
  * Restores the original definiton of |remoting.Xhr|.
  */
 remoting.MockXhr.restore = function() {
-  base.debug.assert(
-      origXhr != null,
-      'Xhr mocking not active');
+  console.assert(origXhr != null, 'Xhr mocking not active');
   remoting['Xhr'] = origXhr;
   origXhr = null;
   handlers = [];

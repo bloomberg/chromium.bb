@@ -5,33 +5,13 @@
 (function() {
 'use strict';
 
-/** @type {boolean} */
-var oldThrowOnAssert;
-
 QUnit.module('mock_xhr', {
   beforeEach: function() {
-    oldThrowOnAssert = base.debug.throwOnAssert;
-    base.debug.throwOnAssert = true;
     remoting.MockXhr.activate();
   },
   afterEach: function() {
     remoting.MockXhr.restore();
-    base.debug.throwOnAssert = oldThrowOnAssert;
   }
-});
-
-QUnit.test('multiple calls to activate() fail', function(assert) {
-  assert.throws(function() {
-    remoting.MockXhr.activate();
-  });
-});
-
-QUnit.test('restore() without activate() fails', function(assert) {
-  remoting.MockXhr.restore();
-  assert.throws(function() {
-    remoting.MockXhr.restore();
-  });
-  remoting.MockXhr.activate();
 });
 
 /**

@@ -119,13 +119,13 @@ function postInitTest(description, callback) {
       type: 'helloResponse',
       version: ''
     });
-    base.debug.assert(it == null);
+    console.assert(it == null, 'Daemon facade already exists.');
     it = new remoting.HostDaemonFacade();
     assert.deepEqual(postMessageStub.args[0][0], {
       id: 0,
       type: 'hello'
     });
-    it.getDaemonVersion().then(function() {
+    return it.getDaemonVersion().then(function() {
       return callback(assert);
     });
   });

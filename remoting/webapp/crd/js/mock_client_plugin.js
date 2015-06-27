@@ -164,7 +164,8 @@ remoting.MockClientPlugin.prototype.mock$onConnect = function() {
  */
 remoting.MockClientPlugin.prototype.mock$setConnectionStatus = function(
     status, opt_error) {
-  base.debug.assert(this.connectionEventHandler_ !== null);
+  console.assert(this.connectionEventHandler_ !== null,
+                 '|connectionEventHandler_| is null.');
   var PluginError = remoting.ClientSession.ConnectionError;
   var error = opt_error ? opt_error : PluginError.NONE;
   this.connectionEventHandler_.onConnectionStatusUpdate(status, error);

@@ -18,15 +18,15 @@ var remoting = remoting || {};
  */
 remoting.manageHelpAndFeedback = function(container) {
   var helpButton = container.querySelector('.menu-help');
-  base.debug.assert(helpButton != null);
+  console.assert(helpButton != null, 'Missing help button.');
   helpButton.addEventListener('click', showHelp, false);
 
   var creditsButton = container.querySelector('.menu-credits');
-  base.debug.assert(creditsButton != null);
+  console.assert(creditsButton != null, 'Missing credits button.');
   creditsButton.addEventListener('click', showCredits, false);
 
   var feedbackButton = container.querySelector('.menu-feedback');
-  base.debug.assert(feedbackButton != null);
+  console.assert(feedbackButton != null, 'Missing feedback button.');
   var chromeVersion = parseInt(
       window.navigator.appVersion.match(/Chrome\/(\d+)\./)[1], 10);
   if (chromeVersion >= 35) {

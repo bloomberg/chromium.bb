@@ -102,7 +102,7 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
   document.getElementById('cancel-share-button').disabled = false;
   disableTimeoutCountdown_();
 
-  base.debug.assert(hostSession_ === null);
+  console.assert(hostSession_ === null, '|hostSession_| already exists.');
   hostSession_ = new remoting.HostSession();
   remoting.identity.getEmail().then(
       function(/** string */ email) {

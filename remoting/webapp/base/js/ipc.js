@@ -48,7 +48,7 @@ var base = base || {};
  * @private
  */
 base.Ipc = function() {
-  base.debug.assert(instance_ === null);
+  console.assert(instance_ === null, 'Duplicate base.Ipc constructor.');
   /** @private {!Object<Function>} */
   this.handlers_ = {};
   this.onMessageHandler_ =

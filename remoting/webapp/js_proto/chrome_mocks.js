@@ -87,7 +87,7 @@ chromeMocks.runtime.onSuspend = new chromeMocks.Event();
  */
 chromeMocks.runtime.sendMessage = function(extensionId, message,
                                            responseCallback) {
-  base.debug.assert(
+  console.assert(
       extensionId === null,
       'The mock only supports sending messages to the same extension.');
   extensionId = chrome.runtime.id;

@@ -129,7 +129,8 @@ remoting.TcpSocket.prototype.dispose = function() {
 remoting.TcpSocket.prototype.startReceiving = function(
     /** ?function(ArrayBuffer):void */ receiveCallback,
     /** ?function(number):void */ receiveErrorCallback) {
-  base.debug.assert(this.receiveCallback_ == null);
+  console.assert(this.receiveCallback_ == null,
+                 'Duplicate startReceiving() invocation.');
   this.receiveCallback_ = receiveCallback;
   this.receiveErrorCallback_ = receiveErrorCallback;
   chrome.sockets.tcp.setPaused(this.socketId_, false);

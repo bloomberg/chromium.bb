@@ -234,7 +234,8 @@ remoting.HostTableEntry.prototype.updateUI_ = function() {
  */
 remoting.HostTableEntry.prototype.beginRename_ = function() {
   this.renameInputField_.value = this.host.hostName;
-  base.debug.assert(this.renameInputEventHooks_ === null);
+  console.assert(this.renameInputEventHooks_ === null,
+                 '|renameInputEventHooks_| already exists.');
   base.dispose(this.renameInputEventHooks_);
   this.renameInputEventHooks_ = new base.Disposables(
       new base.DomEventHook(this.renameInputField_, 'blur',

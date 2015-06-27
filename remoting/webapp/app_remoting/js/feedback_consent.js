@@ -125,7 +125,7 @@ function generateId() {
  */
 function onToken(token) {
   var getUserInfo = function() {
-    base.debug.assert(Boolean(token), 'token is undefined.');
+    console.assert(Boolean(token), 'token is undefined.');
     var oauth2Api = new remoting.OAuth2ApiImpl();
     oauth2Api.getUserInfo(
         onUserInfo, onUserInfo.bind(null, 'unknown', 'unknown'),
@@ -213,7 +213,9 @@ function onLearnMore(event) {
 function onCategorySelect() {
   var feedbackCategory = /** @type {HTMLSelectElement} */
       (document.getElementById('feedback-category'));
-  base.debug.assert(feedbackCategory.selectedOptions.length == 1);
+  console.assert(feedbackCategory.selectedOptions.length == 1,
+                'Expected exactly one selection; got ' +
+                feedbackCategory.selectedOptions.length + '.');
   var selectedOption = /** @type {HTMLElement} */
       (feedbackCategory.selectedOptions[0]);
   selectedCategory = selectedOption.getAttribute('i18n-content');

@@ -116,7 +116,8 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
       logToServer.setAuthTotalTime(new Date().getTime() - authStartTime);
       onPinFetched(pin);
     }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
-      base.debug.assert(error.hasTag(remoting.Error.Tag.CANCELLED));
+      console.assert(error.hasTag(remoting.Error.Tag.CANCELLED),
+                    'Unexpected error: ' + error.getTag() + '.');
       remoting.setMode(remoting.AppMode.HOME);
       that.stop();
     }));

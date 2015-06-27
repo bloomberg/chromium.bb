@@ -293,7 +293,7 @@ browserTest.Bump_Scroll.prototype.testVerifyScroll = function() {
 browserTest.Bump_Scroll.prototype.verifyScroll =
     function (expectedTop, expectedLeft, opt_desktopViewport) {
   var desktopViewport = opt_desktopViewport || getViewportForTesting();
-  base.debug.assert(desktopViewport != null);
+  console.assert(desktopViewport != null, '|desktopViewport| is null.');
   var STARTED = remoting.BumpScroller.Events.bumpScrollStarted;
   var STOPPED = remoting.BumpScroller.Events.bumpScrollStopped;
 

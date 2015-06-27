@@ -60,7 +60,8 @@ remoting.VideoFrameRecorder.prototype.sendMessageToHost_ = function(data) {
  */
 remoting.VideoFrameRecorder.prototype.onExtensionMessage =
     function(type, message) {
-  base.debug.assert(type == remoting.VideoFrameRecorder.EXTENSION_TYPE);
+  console.assert(type == remoting.VideoFrameRecorder.EXTENSION_TYPE,
+                'Unexpected extension message type: ' + type + '.');
 
   var messageType = base.getStringAttr(message, 'type');
   var messageData = base.getStringAttr(message, 'data');

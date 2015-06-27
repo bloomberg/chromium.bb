@@ -49,7 +49,8 @@ remoting.AuthDialog.prototype.show = function() {
     return Promise.reject('Auth dialog is already showing.');
   }
   this.rootElement_.hidden = false;
-  base.debug.assert(this.onAuthButtonDeferred_ === null);
+  console.assert(this.onAuthButtonDeferred_ === null,
+                 'Duplicate show() invocation.');
   this.onAuthButtonDeferred_ = new base.Deferred();
   return this.onAuthButtonDeferred_.promise();
 };

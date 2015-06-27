@@ -81,13 +81,15 @@ remoting.IdleDetector.prototype.registerInputDetectionCallbacks_ =
   var events = [ 'mousemove', 'mousedown', 'mouseup', 'click',
                  'keyup', 'keydown', 'keypress' ];
   if (register) {
-    base.debug.assert(this.resetTimeoutRef_ == null);
+    console.assert(this.resetTimeoutRef_ == null,
+                   '|resetTimeoutRef_| already exists.');
     this.resetTimeoutRef_ = this.resetTimeout_.bind(this);
     for (var i = 0; i < events.length; ++i) {
       document.body.addEventListener(events[i], this.resetTimeoutRef_, true);
     }
   } else {
-    base.debug.assert(this.resetTimeoutRef_ != null);
+    console.assert(this.resetTimeoutRef_ != null,
+                   '|resetTimeoutRef_| does not exist.');
     for (var i = 0; i < events.length; ++i) {
       document.body.removeEventListener(events[i], this.resetTimeoutRef_, true);
     }

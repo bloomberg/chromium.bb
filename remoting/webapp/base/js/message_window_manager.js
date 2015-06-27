@@ -75,7 +75,7 @@ remoting.MessageWindowManager.prototype.closeAllMessageWindows = function() {
   for (var win_id in this.messageWindows_) {
     /** @type {remoting.MessageWindow} */
     var win = this.getMessageWindow(parseInt(win_id, 10));
-    base.debug.assert(win != null);
+    console.assert(win != null, 'Unknown window id ' + win_id + '.');
     windows.push(win);
   }
   for (var i = 0; i < windows.length; i++) {
@@ -90,8 +90,11 @@ remoting.MessageWindowManager.prototype.closeAllMessageWindows = function() {
  * @private
  */
 remoting.MessageWindowManager.prototype.onMessage_ = function(event) {
-  base.debug.assert(typeof event.data === 'object' &&
-                    event.data['source'] == 'message-window');
+  console.assert(typeof event.data === 'object',
+                 'Unexpected data. Expected object, got ' + event.data + '.');
+  console.assert(event.data['source'] == 'message-window',
+                'Bad event source: ' +
+                /** @type {string} */ (event.data['source']) + '.');
 
   if (event.data['command'] == 'messageWindowResult') {
     var id = /** @type {number} */ (event.data['id']);

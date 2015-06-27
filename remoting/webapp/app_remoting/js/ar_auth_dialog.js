@@ -48,7 +48,7 @@ remoting.AuthDialog.getInstance = function() {
 };
 
 remoting.AuthDialog.prototype.onOk_ = function() {
-  base.debug.assert(this.deferred_ !== null);
+  console.assert(this.deferred_ !== null, 'No deferred Promise found.');
   this.deferred_.resolve();
   this.deferred_ = null;
 };

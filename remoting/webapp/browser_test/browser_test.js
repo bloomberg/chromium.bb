@@ -214,7 +214,8 @@ browserTest.connectMe2Me = function() {
  * @return {Promise}
  */
 browserTest.disconnect = function() {
-  base.debug.assert(remoting.app instanceof remoting.DesktopRemoting);
+  console.assert(remoting.app instanceof remoting.DesktopRemoting,
+                '|remoting.app| is not an instance of DesktopRemoting.');
   var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
   var mode = drApp.getConnectionMode();
 

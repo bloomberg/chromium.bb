@@ -37,7 +37,8 @@ remoting.ProtocolExtensionManager.prototype.dispose = function() {
 
 /** Called by the plugin when the session is connected */
 remoting.ProtocolExtensionManager.prototype.start = function() {
-  base.debug.assert(!this.protocolExtensionsStarted_);
+  console.assert(!this.protocolExtensionsStarted_,
+                 'Duplicate start() invocation.');
   /** @type {Object<remoting.ProtocolExtension, boolean>} */
   var started = {};
   for (var type in this.protocolExtensions_) {

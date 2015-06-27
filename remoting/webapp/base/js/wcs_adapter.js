@@ -50,7 +50,8 @@ remoting.WcsAdapter.prototype.setIncomingStanzaCallback =
  * @param {string} authToken
  */
 remoting.WcsAdapter.prototype.connect = function(server, username, authToken) {
-  base.debug.assert(this.onStateChangedCallback_ != null);
+  console.assert(this.onStateChangedCallback_ != null,
+                'No state-change callback registered.');
 
   remoting.wcsSandbox.setOnIq(this.onIncomingStanza_.bind(this));
   remoting.wcsSandbox.connect(this.onWcsConnected_.bind(this),

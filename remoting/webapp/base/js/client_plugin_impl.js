@@ -243,7 +243,7 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       // TODO(kelvinp): Fix the client plugin to fire capabilities and the
       // connected event in the same message.
       if (state === remoting.ClientSession.State.CONNECTED) {
-        base.debug.assert(this.hostCapabilities_ === null,
+        console.assert(this.hostCapabilities_ === null,
             'Capabilities should only be set after the session is connected');
         return;
       }
@@ -262,8 +262,8 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       var capabilityString = base.getStringAttr(message.data, 'capabilities');
       console.log('plugin: setCapabilities: [' + capabilityString + ']');
 
-      base.debug.assert(this.hostCapabilities_ === null,
-                        'setCapabilities() should only be called once');
+      console.assert(this.hostCapabilities_ === null,
+                     'setCapabilities() should only be called once.');
       this.hostCapabilities_ = tokenize(capabilityString);
 
       handler.onConnectionStatusUpdate(
@@ -375,7 +375,8 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     var context =
         /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
     var imageData = context.getImageData(0, 0, width, height);
-    base.debug.assert(srcArrayBuffer instanceof ArrayBuffer);
+    console.assert(srcArrayBuffer instanceof ArrayBuffer,
+                   '|srcArrayBuffer| is not an ArrayBuffer.');
     var src = new Uint8Array(/** @type {ArrayBuffer} */(srcArrayBuffer));
     var dest = imageData.data;
     for (var i = 0; i < /** @type {number} */(dest.length); i += 4) {

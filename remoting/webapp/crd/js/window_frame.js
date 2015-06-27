@@ -28,15 +28,16 @@ remoting.WindowFrame = function(titleBar, disconnectCallback) {
   /** @private {HTMLElement} */
   this.title_ = /** @type {HTMLElement} */
       (titleBar.querySelector('.window-title'));
-  base.debug.assert(this.title_ != null);
+  console.assert(this.title_ != null, 'Missing title element.');
 
   /** @private {HTMLElement} */
   this.maximizeRestoreControl_ = /** @type {HTMLElement} */
       (titleBar.querySelector('.window-maximize-restore'));
-  base.debug.assert(this.maximizeRestoreControl_ != null);
+  console.assert(this.maximizeRestoreControl_ != null,
+                 'Missing maximize/restore control.');
 
   var optionsButton = titleBar.querySelector('.window-options');
-  base.debug.assert(optionsButton != null);
+  console.assert(optionsButton != null, 'Missing options button.');
   this.optionMenuButton_ = new remoting.MenuButton(
       optionsButton,
       this.onShowOptionsMenu_.bind(this),
@@ -45,7 +46,7 @@ remoting.WindowFrame = function(titleBar, disconnectCallback) {
   /** @private {HTMLElement} */
   this.optionsMenuList_ = /** @type {HTMLElement} */
       (optionsButton.querySelector('.window-options-menu'));
-  base.debug.assert(this.optionsMenuList_ != null);
+  console.assert(this.optionsMenuList_ != null, 'Missing options menu.');
 
   /**
    * @type {Array<{cls:string, fn: function()}>}
@@ -60,7 +61,7 @@ remoting.WindowFrame = function(titleBar, disconnectCallback) {
   ];
   for (var i = 0; i < handlers.length; ++i) {
     var element = titleBar.querySelector('.' + handlers[i].cls);
-    base.debug.assert(element != null);
+    console.assert(element != null, 'Missing class: ' + handlers[i].cls + '.');
     element.addEventListener('click', handlers[i].fn, false);
   }
 

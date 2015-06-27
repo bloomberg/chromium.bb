@@ -110,7 +110,7 @@ function remember(unsettledPromise) {
  * @private
  */
 function forget(id) {
-  base.debug.assert(unsettled[id] != null);
+  console.assert(unsettled[id] != null, 'No such Promise: ' + id + '.');
   base.SpyPromise.unsettledCount--;
   delete unsettled[id];
 };

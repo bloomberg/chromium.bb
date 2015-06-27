@@ -129,8 +129,12 @@ remoting.ContextMenuDom.prototype.create = function(
   if (opt_parentId) {
     var parent = /** @type {HTMLElement} */
         (this.menu_.querySelector('[data-id="' + opt_parentId + '"]'));
-    base.debug.assert(parent != null);
-    base.debug.assert(!parent.classList.contains('menu-group-item'));
+    console.assert(
+        parent != null,
+        'No parent match for [data-id="' + /** @type {string} */(opt_parentId) +
+        '"] in create().');
+    console.assert(!parent.classList.contains('menu-group-item'),
+                   'Nested sub-menus are not supported.');
     parent.classList.add('menu-group-header');
     menuEntry.classList.add('menu-group-item');
     insertBefore = this.getInsertionPointForParent(
@@ -211,7 +215,9 @@ remoting.ContextMenuDom.prototype.onClick_ = function(event) {
 remoting.ContextMenuDom.prototype.getInsertionPointForParent = function(
     parentId) {
   var parentNode = this.menu_.querySelector('[data-id="' + parentId + '"]');
-  base.debug.assert(parentNode != null);
+  console.assert(parentNode != null,
+                 'No parent match for [data-id="' + parentId +
+                 '"] in getInsertionPointForParent().');
   var childNode = /** @type {HTMLElement} */ (parentNode.nextSibling);
   while (childNode != null && childNode.classList.contains('menu-group-item')) {
     childNode = childNode.nextSibling;

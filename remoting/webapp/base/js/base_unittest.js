@@ -316,13 +316,13 @@ QUnit.test('raiseEvent() should not invoke listeners of a different event',
 
 QUnit.test('raiseEvent() should assert when undeclared events are raised',
   function(assert) {
-    sinon.stub(base.debug, 'assert');
+    sinon.stub(console, 'assert');
     try {
       source.raiseEvent('undefined');
     } catch (e) {
     } finally {
-      sinon.assert.called(base.debug.assert);
-      $testStub(base.debug.assert).restore();
+      sinon.assert.called(console.assert);
+      $testStub(console.assert).restore();
     }
 });
 

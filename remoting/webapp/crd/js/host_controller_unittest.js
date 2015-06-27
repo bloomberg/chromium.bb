@@ -87,9 +87,9 @@ QUnit.module('host_controller', {
     mockHostListApi.emailFromRegister = '';
     mockHostListApi.hostIdFromRegister = FAKE_HOST_ID;
     remoting.HostListApi.setInstance(mockHostListApi);
-    base.debug.assert(remoting.oauth2 === null);
+    console.assert(remoting.oauth2 === null, '|oauth2| already exists.');
     remoting.oauth2 = new remoting.OAuth2();
-    base.debug.assert(remoting.hostList === null);
+    console.assert(remoting.hostList === null, '|hostList| already exists.');
     remoting.hostList = /** @type {remoting.HostList} */
         (Object.create(remoting.HostList.prototype));
 

@@ -60,8 +60,10 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
 
   /** @private */
   this.signalStrategy_ = signalStrategy;
-  base.debug.assert(this.signalStrategy_.getState() ==
-                    remoting.SignalStrategy.State.CONNECTED);
+
+  var state = this.signalStrategy_.getState();
+  console.assert(state == remoting.SignalStrategy.State.CONNECTED,
+                 'ClientSession ctor called in state ' + state + '.');
   this.signalStrategy_.setIncomingStanzaCallback(
       this.onIncomingMessage_.bind(this));
 

@@ -36,14 +36,18 @@ remoting.Viewport = {};
 remoting.Viewport.choosePluginSize = function(
     clientSizeDips, clientPixelRatio, desktopSize, desktopDpi, desktopScale,
     isFullscreen, shrinkToFit) {
-  base.debug.assert(clientSizeDips.width > 0);
-  base.debug.assert(clientSizeDips.height > 0);
-  base.debug.assert(clientPixelRatio >= 1.0);
-  base.debug.assert(desktopSize.width > 0);
-  base.debug.assert(desktopSize.height > 0);
-  base.debug.assert(desktopDpi.x > 0);
-  base.debug.assert(desktopDpi.y > 0);
-  base.debug.assert(desktopScale > 0);
+  console.assert(clientSizeDips.width > 0 && clientSizeDips.height > 0,
+                 'Bad |clientSizeDips|: ' + clientSizeDips.width + 'x' +
+                 clientSizeDips.height + '.');
+  console.assert(clientPixelRatio >= 1.0,
+                 'Bad |clientPixelRatio|: ' + clientPixelRatio + '.');
+  console.assert(desktopSize.width > 0 && desktopSize.height > 0,
+                 'Bad |desktopSize|: ' + desktopSize.width + 'x' +
+                 desktopSize.height + '.');
+  console.assert(desktopDpi.x > 0 && desktopDpi.y > 0,
+                 'Bad |desktopDpi|: ' + desktopDpi.x + 'x' + desktopDpi.y +
+                 '.');
+  console.assert(desktopScale > 0, 'Bad |desktopScale|: ' + desktopScale + '.');
 
   // We have the following goals in sizing the desktop display at the client:
   //  1. Avoid losing detail by down-scaling beyond 1:1 host:device pixels.
@@ -106,7 +110,7 @@ remoting.Viewport.choosePluginSize = function(
     var scaleX = Math.floor(clientWidth / desktopSize.width);
     var scaleY = Math.floor(clientHeight / desktopSize.height);
     scale = Math.min(scaleX, scaleY);
-    base.debug.assert(scale >= 1.0);
+    console.assert(scale >= 1.0, 'Bad scale: ' + scale + '.');
   }
 
   // 3. Apply shrink-to-fit, if configured.

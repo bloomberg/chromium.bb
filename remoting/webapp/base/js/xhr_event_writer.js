@@ -166,7 +166,8 @@ function randomString(length) {
  */
 remoting.XhrEventWriter.prototype.markPending_ = function(event) {
   var requestId = Date.now() + '_' + randomString(16);
-  base.debug.assert(!this.pendingRequests_.has(requestId));
+  console.assert(!this.pendingRequests_.has(requestId),
+                 'There is already an event with id ' + requestId + '.');
   this.pendingRequests_.set(requestId, event);
 };
 

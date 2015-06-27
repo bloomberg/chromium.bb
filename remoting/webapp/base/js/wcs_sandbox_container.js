@@ -140,8 +140,11 @@ remoting.WcsSandboxContainer.prototype.sendIq = function(stanza) {
  * @private
  */
 remoting.WcsSandboxContainer.prototype.onMessage_ = function(event) {
-  base.debug.assert(typeof event.data === 'object' &&
-                    event.data['source'] == 'wcs-sandbox');
+  console.assert(typeof event.data === 'object',
+                 'Bad data type: ' + typeof event.data + '.');
+  console.assert(event.data['source'] == 'wcs-sandbox',
+                 'Bad data source: ' +
+                 /** @type {string} */ (event.data['source']));
 
   switch (event.data['command']) {
 

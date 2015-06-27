@@ -7,6 +7,7 @@
  * @return {sinon.TestStub}
  */
 function $testStub(/** Object */ object) {
-  base.debug.assert(object.hasOwnProperty("getCall"));
+  console.assert(object.hasOwnProperty("getCall"),
+                 'Object is not a stub', object);
   return /** @type {sinon.TestStub} */ (object);
 };

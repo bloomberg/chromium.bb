@@ -71,7 +71,7 @@ remoting.XmppStreamParser.prototype.setCallbacks =
 
 /** @param {ArrayBuffer} data */
 remoting.XmppStreamParser.prototype.appendData = function(data) {
-  base.debug.assert(!this.error_);
+  console.assert(!this.error_, 'appendData() called in error state.');
 
   if (this.data_.byteLength > 0) {
     // Concatenate two buffers.
@@ -151,7 +151,7 @@ remoting.XmppStreamParser.prototype.appendData = function(data) {
 remoting.XmppStreamParser.prototype.processText_ = function(text) {
   // Tokenization code in appendData() shouldn't allow text tokens in between
   // stanzas.
-  base.debug.assert(this.depth_ > 1);
+  console.assert(this.depth_ > 1, 'Bad depth: ' + this.depth_ + '.');
   this.currentStanza_ += text;
 }
 
@@ -160,8 +160,8 @@ remoting.XmppStreamParser.prototype.processText_ = function(text) {
  * @private
  */
 remoting.XmppStreamParser.prototype.processTag_ = function(tag) {
-  base.debug.assert(tag.charAt(0) == '<');
-  base.debug.assert(tag.charAt(tag.length - 1) == '>');
+  console.assert(tag.charAt(0) == '<' && tag.charAt(tag.length - 1) == '>',
+                 'Malformed tag: ' + tag);
 
   this.currentStanza_ += tag;
 

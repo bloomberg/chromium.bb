@@ -75,7 +75,7 @@ QUnit.module('gcd_client', {
  * @param {function():void=} opt_preconditions
  */
 function queueResponse(status, headers, body, opt_preconditions) {
-  base.debug.assert(queuedResponse == null);
+  console.assert(queuedResponse == null, '|queuedResponse| is null.');
   queuedResponse = function() {
     if (opt_preconditions) {
       opt_preconditions();

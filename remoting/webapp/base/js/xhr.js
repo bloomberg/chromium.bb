@@ -100,7 +100,8 @@ remoting.Xhr.prototype.start = function() {
     var that = this;
     if (this.useIdentity_) {
       remoting.identity.getToken().then(function(token) {
-        base.debug.assert(that.nativeXhr_.readyState == 1);
+        console.assert(that.nativeXhr_.readyState == 1,
+                      'Bad |readyState|: ' + that.nativeXhr_.readyState + '.');
         that.setAuthToken_(token);
         that.sendXhr_();
       }).catch(function(error) {
@@ -197,7 +198,7 @@ remoting.Xhr.prototype.maybeSetContentType_ = function(type) {
  */
 remoting.Xhr.prototype.setHeader_ = function(key, value) {
   var wasSet = this.maybeSetHeader_(key, value);
-  base.debug.assert(wasSet);
+  console.assert(wasSet, 'setHeader(' + key + ', ' + value + ') failed.');
 };
 
 /**
@@ -316,7 +317,7 @@ remoting.Xhr.Response.prototype.getText = function() {
  * @return {*} The parsed JSON content of the response.
  */
 remoting.Xhr.Response.prototype.getJson = function() {
-  base.debug.assert(this.allowJson_);
+  console.assert(this.allowJson_, 'getJson() called with |allowJson_| false.');
   if (this.json_ === undefined) {
     this.json_ = JSON.parse(this.text_);
   }

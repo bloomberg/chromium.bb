@@ -47,7 +47,7 @@ remoting.InputDialog.prototype.show = function() {
   this.eventHooks_ = new base.Disposables(
       new base.DomEventHook(this.formElement_, 'submit', onOk, false),
       new base.DomEventHook(this.cancelButton_, 'click', onCancel, false));
-  base.debug.assert(this.deferred_ === null);
+  console.assert(this.deferred_ === null, 'No deferred Promise found.');
   this.deferred_ = new base.Deferred();
   remoting.setMode(this.appMode_);
   return this.deferred_.promise();
@@ -119,7 +119,7 @@ remoting.MessageDialog = function(mode, primaryButton, opt_secondaryButton) {
  * the button clicked.
  */
 remoting.MessageDialog.prototype.show = function() {
-  base.debug.assert(this.eventHooks_ === null);
+  console.assert(this.eventHooks_ === null, 'Duplicate show() invocation.');
   this.eventHooks_ = new base.Disposables(new base.DomEventHook(
       this.primaryButton_, 'click',
       this.onClicked_.bind(this, remoting.MessageDialog.Result.PRIMARY),
@@ -132,7 +132,7 @@ remoting.MessageDialog.prototype.show = function() {
         false));
   }
 
-  base.debug.assert(this.deferred_ === null);
+  console.assert(this.deferred_ === null, 'No deferred Promise found.');
   this.deferred_ = new base.Deferred();
   remoting.setMode(this.mode_);
   return this.deferred_.promise();
@@ -211,7 +211,7 @@ remoting.Html5ModalDialog.prototype.dispose = function() {
  * the button clicked.
  */
 remoting.Html5ModalDialog.prototype.show = function() {
-  base.debug.assert(this.deferred_ === null);
+  console.assert(this.deferred_ === null, 'No deferred Promise found.');
   this.deferred_ = new base.Deferred();
   this.dialog_.showModal();
   if (this.windowShape_) {

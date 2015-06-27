@@ -17,30 +17,6 @@ var base = base || {};
 base.debug = function() {};
 
 /**
- * Whether to break in debugger and alert when an assertion fails.
- * Set it to true for debugging.
- * @type {boolean}
- */
-base.debug.throwOnAssert = false;
-
-/**
- * Assert that |expr| is true else print the |opt_msg|.
- * @param {boolean} expr
- * @param {string=} opt_msg
- */
-base.debug.assert = function(expr, opt_msg) {
-  if (!expr) {
-    if (!opt_msg) {
-      opt_msg = 'Assertion Failed.';
-    }
-    console.error(opt_msg);
-    if (base.debug.throwOnAssert) {
-      throw new Error(opt_msg);
-    }
-  }
-};
-
-/**
  * @return {string} The callstack of the current method.
  */
 base.debug.callstack = function() {
@@ -119,7 +95,9 @@ base.Disposables.prototype.dispose = function() {
  */
 base.dispose = function(obj) {
   if (obj) {
-    base.debug.assert(typeof obj.dispose == 'function');
+    console.assert(typeof obj.dispose == 'function',
+                   'dispose() should have type function, not ' +
+                   typeof obj.dispose + '.');
     obj.dispose();
   }
 };
@@ -172,8 +150,8 @@ base.extend = function(dest, src) {
  * @suppress {checkTypes|reportUnknownTypes}
  */
 base.inherits = function(childObject, parentCtor, parentCtorArgs) {
-  base.debug.assert(parentCtor && parentCtor.prototype,
-                    'Invalid parent constructor.');
+  console.assert(parentCtor && parentCtor.prototype,
+                 'Invalid parent constructor.');
   var parentArgs = Array.prototype.slice.call(arguments, 2);
 
   // Mix in the parent's prototypes so that they're available during the parent
@@ -187,7 +165,8 @@ base.inherits = function(childObject, parentCtor, parentCtorArgs) {
   // It is used so that childObject instanceof parentCtor will
   // return true.
   childObject.__proto__.__proto__ = parentCtor.prototype;
-  base.debug.assert(childObject instanceof parentCtor);
+  console.assert(childObject instanceof parentCtor,
+                 'child is not an instance of parent.');
 };
 
 base.doNothing = function() {};
@@ -503,12 +482,13 @@ base.EventSourceImpl = function() {
 /**
   * @param {base.EventSourceImpl} obj
   * @param {string} type
+  * @private
   */
-base.EventSourceImpl.isDefined = function(obj, type) {
-  base.debug.assert(Boolean(obj.eventMap_),
-                   "The object doesn't support events");
-  base.debug.assert(Boolean(obj.eventMap_[type]), 'Event <' + type +
-    '> is undefined for the current object');
+base.EventSourceImpl.assertHasEvent_ = function(obj, type) {
+  console.assert(Boolean(obj.eventMap_),
+                 "The object doesn't support events.");
+  console.assert(Boolean(obj.eventMap_[type]),
+                 'Event <' + type +'> is undefined for the current object.');
 };
 
 base.EventSourceImpl.prototype = {
@@ -517,8 +497,8 @@ base.EventSourceImpl.prototype = {
     * @param {Array<string>} events
     */
   defineEvents: function(events) {
-    base.debug.assert(!Boolean(this.eventMap_),
-                     'defineEvents can only be called once.');
+    console.assert(!Boolean(this.eventMap_),
+                   'defineEvents() can only be called once.');
     this.eventMap_ = {};
     events.forEach(
       /**
@@ -526,7 +506,8 @@ base.EventSourceImpl.prototype = {
         * @param {string} type
         */
       function(type) {
-        base.debug.assert(typeof type == 'string');
+        console.assert(typeof type == 'string',
+                       'Event name must be a string; found ' + type + '.');
         this.eventMap_[type] = new base.EventEntry();
     }, this);
   },
@@ -536,8 +517,10 @@ base.EventSourceImpl.prototype = {
     * @param {Function} fn
     */
   addEventListener: function(type, fn) {
-    base.debug.assert(typeof fn == 'function');
-    base.EventSourceImpl.isDefined(this, type);
+    console.assert(typeof fn == 'function',
+                   'addEventListener(): event listener for ' + type +
+                   ' must be function, not ' + typeof fn + '.');
+    base.EventSourceImpl.assertHasEvent_(this, type);
 
     var listeners = this.eventMap_[type].listeners;
     listeners.push(fn);
@@ -548,8 +531,10 @@ base.EventSourceImpl.prototype = {
     * @param {Function} fn
     */
   removeEventListener: function(type, fn) {
-    base.debug.assert(typeof fn == 'function');
-    base.EventSourceImpl.isDefined(this, type);
+    console.assert(typeof fn == 'function',
+                   'removeEventListener(): event listener for ' + type +
+                   ' must be function, not ' + typeof fn + '.');
+    base.EventSourceImpl.assertHasEvent_(this, type);
 
     var listeners = this.eventMap_[type].listeners;
     // find the listener to remove.
@@ -571,7 +556,7 @@ base.EventSourceImpl.prototype = {
     *     As a hack, we set the type to *=.
     */
   raiseEvent: function(type, opt_details) {
-    base.EventSourceImpl.isDefined(this, type);
+    base.EventSourceImpl.assertHasEvent_(this, type);
 
     var entry = this.eventMap_[type];
     var listeners = entry.listeners.slice(0); // Make a copy of the listeners.

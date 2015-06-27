@@ -71,31 +71,31 @@ remoting.BufferedSignalStrategy.prototype.flush_ = function() {
 
 remoting.BufferedSignalStrategy.prototype.setStateChangedCallback =
     function(onStateChangedCallback) {
-  base.debug.assert(false);
+  console.error('Unexpected setStateChangedCallback().');
 };
 
 remoting.BufferedSignalStrategy.prototype.setIncomingStanzaCallback =
     function(onIncomingStanzaCallback) {
-  base.debug.assert(false);
+  console.error('Unexpected setIncomingStanzaCallback().');
 };
 
 remoting.BufferedSignalStrategy.prototype.connect =
     function(server, username, authToken) {
-  base.debug.assert(false);
+  console.error('Unexpected connect().');
 };
 
 remoting.BufferedSignalStrategy.prototype.getState = function() {
-  base.debug.assert(false);
+  console.error('Unexpected getState().');
 };
 
 remoting.BufferedSignalStrategy.prototype.getError = function() {
-  base.debug.assert(false);
+  console.error('Unexpected getError().');
 };
 
 remoting.BufferedSignalStrategy.prototype.getJid = function() {
-  base.debug.assert(false);
+  console.error('Unexpected getJid().');
 };
 
 remoting.BufferedSignalStrategy.prototype.getType = function() {
-  base.debug.assert(false);
+  console.error('Unexpected getType().');
 };

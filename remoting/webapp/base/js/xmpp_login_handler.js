@@ -134,9 +134,10 @@ remoting.XmppLoginHandler.prototype.start = function() {
 
 /** @param {ArrayBuffer} data */
 remoting.XmppLoginHandler.prototype.onDataReceived = function(data) {
-  base.debug.assert(this.state_ != remoting.XmppLoginHandler.State.INIT &&
-                    this.state_ != remoting.XmppLoginHandler.State.DONE &&
-                    this.state_ != remoting.XmppLoginHandler.State.ERROR);
+  console.assert(this.state_ != remoting.XmppLoginHandler.State.INIT &&
+                 this.state_ != remoting.XmppLoginHandler.State.DONE &&
+                 this.state_ != remoting.XmppLoginHandler.State.ERROR,
+                'onDataReceived() called in state ' + this.state_ + '.');
 
   this.streamParser_.appendData(data);
 }
@@ -239,16 +240,17 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
       break;
 
     default:
-      base.debug.assert(false);
+      console.error('onStanza_() called in state ' + this.state_ + '.');
       break;
   }
 }
 
 remoting.XmppLoginHandler.prototype.onTlsStarted = function() {
-  base.debug.assert(this.state_ ==
-                    remoting.XmppLoginHandler.State.STARTING_TLS);
+  console.assert(this.state_ ==
+                 remoting.XmppLoginHandler.State.STARTING_TLS,
+                'onTlsStarted() called in state ' + this.state_ + '.');
   this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_TLS;
-  var cookie = window.btoa("\0" + this.username_ + "\0" + this.authToken_);
+  var cookie = window.btoa('\0' + this.username_ + '\0' + this.authToken_);
 
   this.startStream_(
       '<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" ' +

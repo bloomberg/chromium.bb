@@ -199,7 +199,7 @@ remoting.MessageWindow.prototype.handleResult = function(result) {
  * @private
  */
 remoting.MessageWindow.prototype.setWindow_ = function(window) {
-  base.debug.assert(this.window_ == null);
+  console.assert(this.window_ == null, 'Duplicate call to setWindow_().');
   this.window_ = window;
   for (var i = 0; i < this.pendingWindowOperations_.length; ++i) {
     var pendingOperation = this.pendingWindowOperations_[i];
