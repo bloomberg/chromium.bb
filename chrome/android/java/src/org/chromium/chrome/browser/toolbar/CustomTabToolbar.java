@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.util.AttributeSet;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -173,6 +174,15 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void setShowTitle(boolean showTitle) {
+        int titleVisibility = showTitle ? VISIBLE : GONE;
+        int urlTextSizeId = showTitle
+                ? R.dimen.custom_tabs_url_text_size : R.dimen.location_bar_url_text_size;
+        mTitleBar.setVisibility(titleVisibility);
+        mUrlBar.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(urlTextSizeId));
     }
 
     @Override

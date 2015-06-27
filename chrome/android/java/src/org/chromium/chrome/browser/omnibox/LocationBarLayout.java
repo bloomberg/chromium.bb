@@ -2419,4 +2419,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     @Override
     public void setTitleToPageTitle() { }
+
+    @Override
+    public void setShowTitle(boolean showTitle) { }
 }

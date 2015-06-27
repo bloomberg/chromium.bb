@@ -797,6 +797,14 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * Sets whether a title should be shown within the Toolbar.
+     * @param showTitle Whether a title should be shown.
+     */
+    public void setShowTitle(boolean showTitle) {
+        mLocationBar.setShowTitle(showTitle);
+    }
+
+    /**
      * Focuses or unfocuses the URL bar.
      * @param focused Whether URL bar should be focused.
      */

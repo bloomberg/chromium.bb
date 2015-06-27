@@ -59,6 +59,23 @@ public class CustomTabIntentDataProvider {
             "android.support.CUSTOM_TABS:toolbar_color";
 
     /**
+     * Extra int that specifies state for showing the page title. Default is showing only the domain
+     * and no information about the title.
+     */
+    public static final String EXTRA_CUSTOM_TABS_TITLE_VISIBILITY_STATE =
+            "android.support.CUSTOM_TABS:title_visibility";
+
+    /**
+     * Don't show any title. Shows only the domain.
+     */
+    public static final int CUSTOM_TAB_NO_TITLE = 0;
+
+    /**
+     * Shows the page title and the domain.
+     */
+    public static final int CUSTOM_TAB_SHOW_PAGE_TITLE = 1;
+
+    /**
      * Bundle used for the action button parameters.
      */
     public static final String EXTRA_CUSTOM_TABS_ACTION_BUTTON_BUNDLE =
@@ -108,6 +125,7 @@ public class CustomTabIntentDataProvider {
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE = "android:animExitRes";
     private final long mSessionId;
     private final Intent mKeepAliveServiceIntent;
+    private final int mTitleVisibilityState;
     private int mToolbarColor;
     private Bitmap mIcon;
     private PendingIntent mActionButtonPendingIntent;
@@ -156,6 +174,9 @@ public class CustomTabIntentDataProvider {
 
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
                 intent, EXTRA_CUSTOM_TABS_EXIT_ANIMATION_BUNDLE);
+
+        mTitleVisibilityState = IntentUtils.safeGetIntExtra(
+                intent, EXTRA_CUSTOM_TABS_TITLE_VISIBILITY_STATE, CUSTOM_TAB_NO_TITLE);
     }
 
     /**
@@ -195,6 +216,14 @@ public class CustomTabIntentDataProvider {
      */
     public int getToolbarColor() {
         return mToolbarColor;
+    }
+
+    /**
+     * @return The title visibility state for the toolbar.
+     *         Default is {@link CustomTabIntentDataProvider#CUSTOM_TAB_NO_TITLE}.
+     */
+    public int getTitleVisibilityState() {
+        return mTitleVisibilityState;
     }
 
     /**

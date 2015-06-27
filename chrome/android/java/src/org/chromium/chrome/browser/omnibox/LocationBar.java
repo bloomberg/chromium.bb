@@ -63,6 +63,12 @@ public interface LocationBar extends UrlBarDelegate {
     void setTitleToPageTitle();
 
     /**
+     * Sets whether the location bar should have a layout showing a title.
+     * @param showTitle Whether the title should be shown.
+     */
+    void setShowTitle(boolean showTitle);
+
+    /**
      * Update the visuals based on a loading state change.
      * @param updateUrl Whether to update the URL as a result of the this call.
      */

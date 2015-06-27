@@ -132,6 +132,8 @@ public class CustomTabActivity extends ChromeActivity {
         mToolbarManager = new ToolbarManager(this, controlContainer,
                 mAppMenuHandler, mAppMenuPropertiesDelegate,
                 getCompositorViewHolder().getInvalidator());
+        mToolbarManager.setShowTitle(mIntentDataProvider.getTitleVisibilityState()
+                == CustomTabIntentDataProvider.CUSTOM_TAB_SHOW_PAGE_TITLE);
         mToolbarManager.updatePrimaryColor(mIntentDataProvider.getToolbarColor());
         setStatusBarColor(mIntentDataProvider.getToolbarColor());
         if (mIntentDataProvider.shouldShowActionButton()) {
