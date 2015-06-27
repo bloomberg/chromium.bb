@@ -5,7 +5,6 @@
 #include "chrome/browser/task_manager/browser_process_resource_provider.h"
 
 #include "base/command_line.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -26,16 +25,8 @@ gfx::ImageSkia* g_default_icon = nullptr;
 
 gfx::ImageSkia* GetDefaultIcon() {
   if (!g_default_icon && ResourceBundle::HasSharedInstance()) {
-    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 POSIX icon construction"));
-
       g_default_icon = ResourceBundle::GetSharedInstance().
           GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
-
-    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 MakeThreadSafe()"));
     if (g_default_icon)
       g_default_icon->MakeThreadSafe();
   }
