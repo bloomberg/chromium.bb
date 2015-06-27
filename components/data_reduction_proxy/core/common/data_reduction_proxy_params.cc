@@ -75,11 +75,6 @@ bool IsIncludedInPromoFieldTrial() {
       "DataCompressionProxyPromoVisibility") == kEnabled;
 }
 
-bool IsIncludedInCriticalPathBypassFieldTrial() {
-  return FieldTrialList::FindFullName(
-          "DataCompressionProxyCriticalBypass") == kEnabled;
-}
-
 bool IsIncludedInHoldbackFieldTrial() {
   return FieldTrialList::FindFullName(
       "DataCompressionProxyHoldback") == kEnabled;

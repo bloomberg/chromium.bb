@@ -16,7 +16,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
@@ -299,15 +298,6 @@ void OnResolveProxyHandler(const GURL& url,
     data_reduction_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
     if (!data_reduction_proxy_info.proxy_server().is_direct())
       result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
-  }
-
-  if ((load_flags & net::LOAD_BYPASS_DATA_REDUCTION_PROXY) &&
-      params::IsIncludedInCriticalPathBypassFieldTrial()) {
-    if (!result->is_empty() && !result->is_direct() &&
-        config->IsDataReductionProxy(result->proxy_server().host_port_pair(),
-                                     NULL)) {
-      result->RemoveProxiesWithoutScheme(net::ProxyServer::SCHEME_DIRECT);
-    }
   }
 }
 

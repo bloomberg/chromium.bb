@@ -1910,9 +1910,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (info.is_main_frame)
     load_flags |= net::LOAD_MAIN_FRAME;
-  // Add a flag to selectively bypass the data reduction proxy if the resource
-  // type is not an image.
-  load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
 
   // TODO(davidben): BuildLoadFlagsForRequest includes logic for
   // CanSendCookiesForOrigin and CanReadRawCookies. Is this needed here?
@@ -2357,11 +2354,6 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
     VLOG(1) << "Denied unauthorized request for raw headers";
     load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
   }
-
-  // Add a flag to selectively bypass the data reduction proxy if the resource
-  // type is not an image.
-  if (request_data.resource_type != RESOURCE_TYPE_IMAGE)
-    load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
 
   return load_flags;
 }

@@ -580,52 +580,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
                         empty_proxy_retry_info,
                         config(), &other_proxy_info);
   EXPECT_FALSE(other_proxy_info.is_direct());
-
-  load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
-
-  result.UseDirect();
-  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(),
-                        &result);
-  EXPECT_FALSE(result.is_direct());
-
-  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info,
-                        config(), &other_proxy_info);
-  EXPECT_FALSE(other_proxy_info.is_direct());
-
-  // With Finch trial set, should only bypass if LOAD flag is set and the
-  // effective proxy is the data compression proxy.
-  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyCriticalBypass",
-                                         "Enabled");
-  EXPECT_TRUE(params::IsIncludedInCriticalPathBypassFieldTrial());
-
-  load_flags = net::LOAD_NORMAL;
-
-  result.UseDirect();
-  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(),
-                        &result);
-  EXPECT_FALSE(result.is_direct());
-
-  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(),
-                        &other_proxy_info);
-  EXPECT_FALSE(other_proxy_info.is_direct());
-
-  load_flags |= net::LOAD_BYPASS_DATA_REDUCTION_PROXY;
-
-  result.UseDirect();
-  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(),
-                        &result);
-  EXPECT_TRUE(result.is_direct());
-
-  OnResolveProxyHandler(url, load_flags, data_reduction_proxy_config,
-                        empty_proxy_retry_info, config(),
-                        &other_proxy_info);
-  EXPECT_FALSE(other_proxy_info.is_direct());
 }
 
 // Notify network delegate with a NULL request.

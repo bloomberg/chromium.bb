@@ -36,10 +36,6 @@ bool IsIncludedInAlternativeFieldTrial();
 // a promotion for the data reduction proxy.
 bool IsIncludedInPromoFieldTrial();
 
-// Returns true if this client is part of a field trial that bypasses the
-// proxy if the request resource type is on the critical path (e.g. HTML).
-bool IsIncludedInCriticalPathBypassFieldTrial();
-
 // Returns true if this client is part of a field trial that runs a holdback
 // experiment. A holdback experiment is one in which a fraction of browser
 // instances will not be configured to use the data reduction proxy even if
