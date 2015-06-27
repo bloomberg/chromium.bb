@@ -29,6 +29,7 @@
 #include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
+#include "ash/ime/input_method_event_handler.h"
 #include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -673,6 +674,7 @@ Shell::~Shell() {
   // Please keep in same order as in Init() because it's easy to miss one.
   if (window_modality_controller_)
     window_modality_controller_.reset();
+  RemovePreTargetHandler(display_controller_->input_method_event_handler());
 #if defined(OS_CHROMEOS)
   RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
   magnifier_key_scroll_handler_.reset();
@@ -917,6 +919,8 @@ void Shell::Init(const ShellInitParams& init_params) {
       new ::wm::NestedAcceleratorController(new NestedAcceleratorDelegate));
   accelerator_controller_.reset(new AcceleratorController);
   maximize_mode_controller_.reset(new MaximizeModeController());
+
+  AddPreTargetHandler(display_controller_->input_method_event_handler());
 
 #if defined(OS_CHROMEOS)
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();

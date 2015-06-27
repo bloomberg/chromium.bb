@@ -17,6 +17,7 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
+#include "ash/ime/input_method_event_handler.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
@@ -894,8 +895,11 @@ AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
   if (!input_method_) {  // Singleton input method instance for Ash.
     input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
     input_method_->OnFocus();
+    input_method_event_handler_.reset(
+        new InputMethodEventHandler(input_method_.get()));
   }
   host->SetSharedInputMethod(input_method_.get());
+  ash_host->set_input_method_handler(input_method_event_handler_.get());
 
   host->window()->SetName(base::StringPrintf(
       "%sRootWindow-%d", params_with_bounds.offscreen ? "Offscreen" : "",

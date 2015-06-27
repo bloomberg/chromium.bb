@@ -5,6 +5,7 @@
 #include "ash/host/ash_remote_window_tree_host_win.h"
 
 #include "ash/host/root_window_transformer.h"
+#include "ash/ime/input_method_event_handler.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
 
@@ -54,6 +55,20 @@ gfx::Transform AshRemoteWindowTreeHostWin::GetInverseRootTransform() const {
 void AshRemoteWindowTreeHostWin::UpdateRootWindowSize(
     const gfx::Size& host_size) {
   transformer_helper_.UpdateWindowSize(host_size);
+}
+
+bool AshRemoteWindowTreeHostWin::DispatchKeyEventPostIME(
+    const ui::KeyEvent& event) {
+  ui::KeyEvent event_copy(event);
+  input_method_handler()->SetPostIME(true);
+  ui::EventSource::DeliverEventToProcessor(&event_copy);
+  input_method_handler()->SetPostIME(false);
+  return event_copy.handled();
+}
+
+ui::EventDispatchDetails AshRemoteWindowTreeHostWin::DeliverEventToProcessor(
+    ui::Event* event) {
+  return ui::EventSource::DeliverEventToProcessor(event);
 }
 
 }  // namespace ash

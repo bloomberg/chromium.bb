@@ -35,8 +35,9 @@ const char kKeyUp[] = "keyup";
 
 void SendProcessKeyEvent(ui::EventType type,
                          aura::WindowTreeHost* host) {
-  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::DomCode::NONE, ui::EF_NONE,
-                     ui::DomKey::PROCESS, 0, ui::EventTimeForNow());
+  ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::DomCode::NONE,
+                     ui::EF_IS_SYNTHESIZED, ui::DomKey::PROCESS, 0,
+                     ui::EventTimeForNow());
   ui::EventDispatchDetails details =
       host->event_processor()->OnEventFromSource(&event);
   CHECK(!details.dispatcher_destroyed);

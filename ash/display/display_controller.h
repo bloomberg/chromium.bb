@@ -46,6 +46,7 @@ class CursorWindowController;
 class DisplayInfo;
 class DisplayManager;
 class FocusActivationStore;
+class InputMethodEventHandler;
 class MirrorWindowController;
 class RootWindowController;
 
@@ -172,6 +173,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // ui::internal::InputMethodDelegate overrides:
   bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
 
+  InputMethodEventHandler* input_method_event_handler() {
+    return input_method_event_handler_.get();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, BoundsUpdated);
   FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, SecondaryDisplayLayout);
@@ -228,6 +233,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   scoped_ptr<MirrorWindowController> mirror_window_controller_;
 
   scoped_ptr<ui::InputMethod> input_method_;
+  scoped_ptr<InputMethodEventHandler> input_method_event_handler_;
 
   // Stores the current cursor location (in native coordinates and screen
   // coordinates respectively). The locations are used to restore the cursor

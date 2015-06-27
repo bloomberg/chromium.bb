@@ -9,6 +9,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
+#include "ash/ime/input_method_event_handler.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_helper.h"
@@ -360,6 +361,10 @@ void AshTestBase::UnblockUserSession() {
   SetUserAddingScreenRunning(false);
 }
 
+void AshTestBase::DisableIME() {
+  Shell::GetInstance()->RemovePreTargetHandler(
+      Shell::GetInstance()->display_controller()->input_method_event_handler());
+}
 
 }  // namespace test
 }  // namespace ash

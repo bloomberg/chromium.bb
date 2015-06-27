@@ -132,6 +132,10 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
 };
 
 TEST_F(WindowManagerTest, Focus) {
+  // The IME event filter interferes with the basic key event propagation we
+  // attempt to do here, so we disable it.
+  //
+  DisableIME();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 510, 510));
 
@@ -643,6 +647,9 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
 }
 
 TEST_F(WindowManagerTest, AdditionalFilters) {
+  // The IME event filter interferes with the basic key event propagation we
+  // attempt to do here, so we disable it.
+  DisableIME();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   // Creates a window and make it active

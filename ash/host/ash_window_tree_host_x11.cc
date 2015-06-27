@@ -15,6 +15,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/host/root_window_transformer.h"
+#include "ash/ime/input_method_event_handler.h"
 #include "base/basictypes.h"
 #include "base/sys_info.h"
 #include "ui/aura/env.h"
@@ -233,6 +234,19 @@ void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
     ui::LocatedEvent* event) {
   TranslateLocatedEvent(event);
   SendEventToProcessor(event);
+}
+
+bool AshWindowTreeHostX11::DispatchKeyEventPostIME(const ui::KeyEvent& event) {
+  ui::KeyEvent event_copy(event);
+  input_method_handler()->SetPostIME(true);
+  ui::EventSource::DeliverEventToProcessor(&event_copy);
+  input_method_handler()->SetPostIME(false);
+  return event_copy.handled();
+}
+
+ui::EventDispatchDetails AshWindowTreeHostX11::DeliverEventToProcessor(
+    ui::Event* event) {
+  return ui::EventSource::DeliverEventToProcessor(event);
 }
 
 #if defined(OS_CHROMEOS)

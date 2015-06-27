@@ -4,6 +4,7 @@
 
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/host/root_window_transformer.h"
+#include "ash/ime/input_method_event_handler.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -179,6 +180,20 @@ void AshWindowTreeHostUnified::OnWindowDestroying(aura::Window* window) {
   DCHECK(iter != mirroring_hosts_.end());
   window->RemoveObserver(this);
   mirroring_hosts_.erase(iter);
+}
+
+bool AshWindowTreeHostUnified::DispatchKeyEventPostIME(
+    const ui::KeyEvent& event) {
+  ui::KeyEvent event_copy(event);
+  input_method_handler()->SetPostIME(true);
+  ui::EventSource::DeliverEventToProcessor(&event_copy);
+  input_method_handler()->SetPostIME(false);
+  return event_copy.handled();
+}
+
+ui::EventDispatchDetails AshWindowTreeHostUnified::DeliverEventToProcessor(
+    ui::Event* event) {
+  return ui::EventSource::DeliverEventToProcessor(event);
 }
 
 }  // namespace ash

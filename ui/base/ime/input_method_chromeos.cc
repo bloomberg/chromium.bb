@@ -94,6 +94,7 @@ void InputMethodChromeOS::ProcessKeyEventDone(const ui::KeyEvent* event,
 
 bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
   DCHECK(event.IsKeyEvent());
+  DCHECK(!(event.flags() & ui::EF_IS_SYNTHESIZED));
   DCHECK(system_toplevel_window_focused());
 
   // For linux_chromeos, the ime keyboard cannot track the caps lock state by

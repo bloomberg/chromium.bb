@@ -138,6 +138,8 @@ class AshTestBase : public testing::Test {
   void BlockUserSession(UserSessionBlockReason block_reason);
   void UnblockUserSession();
 
+  void DisableIME();
+
  private:
   bool setup_called_;
   bool teardown_called_;

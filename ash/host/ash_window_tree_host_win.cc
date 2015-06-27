@@ -10,6 +10,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
+#include "ash/ime/input_method_event_handler.h"
 #include "base/command_line.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/window_tree_host_win.h"
@@ -99,6 +100,20 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
   }
   void UpdateRootWindowSize(const gfx::Size& host_size) override {
     transformer_helper_.UpdateWindowSize(host_size);
+  }
+
+  // ui::internal::InputMethodDelegate:
+  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
+    ui::KeyEvent event_copy(event);
+    input_method_handler()->SetPostIME(true);
+    ui::EventSource::DeliverEventToProcessor(&event_copy);
+    input_method_handler()->SetPostIME(false);
+    return event_copy.handled();
+  }
+
+  // ui::EventSource:
+  ui::EventDispatchDetails DeliverEventToProcessor(ui::Event* event) override {
+    return ui::EventSource::DeliverEventToProcessor(event);
   }
 
   bool fullscreen_;

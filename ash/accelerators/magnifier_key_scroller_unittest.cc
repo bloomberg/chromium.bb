@@ -63,7 +63,7 @@ TEST_F(MagnifierKeyScrollerTest, Basic) {
   generator.ReleaseKey(ui::VKEY_DOWN, 0);
   EXPECT_EQ("200,150", controller->GetWindowPosition().ToString());
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(delegate.event());
+  ASSERT_TRUE(delegate.event());
   EXPECT_EQ(ui::ET_KEY_PRESSED, delegate.event()->type());
   delegate.reset();
 
@@ -84,27 +84,27 @@ TEST_F(MagnifierKeyScrollerTest, Basic) {
   controller->SetEnabled(false);
 
   generator.PressKey(ui::VKEY_DOWN, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(delegate.event());
+  ASSERT_TRUE(delegate.event());
   EXPECT_EQ(ui::ET_KEY_PRESSED, delegate.event()->type());
   delegate.reset();
 
   generator.ReleaseKey(ui::VKEY_DOWN, 0);
-  EXPECT_TRUE(delegate.event());
+  ASSERT_TRUE(delegate.event());
   EXPECT_EQ(ui::ET_KEY_RELEASED, delegate.event()->type());
   delegate.reset();
 
   generator.PressKey(ui::VKEY_DOWN, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(delegate.event());
+  ASSERT_TRUE(delegate.event());
   EXPECT_EQ(ui::ET_KEY_PRESSED, delegate.event()->type());
   delegate.reset();
 
   generator.PressKey(ui::VKEY_DOWN, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(delegate.event());
+  ASSERT_TRUE(delegate.event());
   EXPECT_EQ(ui::ET_KEY_PRESSED, delegate.event()->type());
   delegate.reset();
 
   generator.ReleaseKey(ui::VKEY_DOWN, 0);
-  EXPECT_TRUE(delegate.event());
+  ASSERT_TRUE(delegate.event());
   EXPECT_EQ(ui::ET_KEY_RELEASED, delegate.event()->type());
   delegate.reset();
 }

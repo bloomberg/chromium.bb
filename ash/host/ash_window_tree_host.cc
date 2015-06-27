@@ -11,6 +11,9 @@
 
 namespace ash {
 
+AshWindowTreeHost::AshWindowTreeHost() : input_method_handler_(nullptr) {
+}
+
 void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
   if (event->IsTouchEvent())
     return;

@@ -769,6 +769,9 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
 
 #if defined(OS_WIN) || defined(USE_X11)
 TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
+  // The IME event filter interferes with the basic key event propagation we
+  // attempt to do here, so we disable it.
+  DisableIME();
   ui::Accelerator accelerator_a(ui::VKEY_A, ui::EF_NONE);
   TestTarget target;
   GetController()->Register(accelerator_a, &target);
