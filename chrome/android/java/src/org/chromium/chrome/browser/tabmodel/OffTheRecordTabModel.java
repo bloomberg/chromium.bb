@@ -34,6 +34,7 @@ public class OffTheRecordTabModel implements TabModel {
     private final OffTheRecordTabModelDelegate mDelegate;
     private final ObserverList<TabModelObserver> mObservers = new ObserverList<TabModelObserver>();
     private TabModel mDelegateModel;
+    private boolean mIsAddingTab;
 
     /**
      * Constructor for OffTheRecordTabModel.
@@ -68,7 +69,7 @@ public class OffTheRecordTabModel implements TabModel {
      */
     protected void destroyIncognitoIfNecessary() {
         ThreadUtils.assertOnUiThread();
-        if (!isEmpty() || mDelegateModel instanceof EmptyTabModel) {
+        if (!isEmpty() || mDelegateModel instanceof EmptyTabModel || mIsAddingTab) {
             return;
         }
 
@@ -205,8 +206,10 @@ public class OffTheRecordTabModel implements TabModel {
 
     @Override
     public void addTab(Tab tab, int index, TabLaunchType type) {
+        mIsAddingTab = true;
         ensureTabModelImpl();
         mDelegateModel.addTab(tab, index, type);
+        mIsAddingTab = false;
     }
 
     @Override
