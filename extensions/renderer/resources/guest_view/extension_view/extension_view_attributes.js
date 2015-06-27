@@ -38,6 +38,12 @@ function SrcAttribute(view) {
 SrcAttribute.prototype.__proto__ =
     GuestViewAttributes.ReadOnlyAttribute.prototype;
 
+SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
+  console.log('src is read only. Use .load(url) to navigate to a new ' +
+      'extension page.');
+  this.setValueIgnoreMutation(oldValue);
+}
+
 // -----------------------------------------------------------------------------
 
 // Sets up all of the extensionview attributes.
