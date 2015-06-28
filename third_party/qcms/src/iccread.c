@@ -342,13 +342,13 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
 static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 {
 	unsigned int i;
-	struct tag *tag = NULL;
+
 	for (i = 0; i < index.count; i++) {
-		if (index.tags[i].signature == tag_id) {
+		if (index.tags[i].signature == tag_id)
 			return &index.tags[i];
-		}
 	}
-	return tag;
+
+	return NULL;
 }
 
 #define DESC_TYPE 0x64657363 // 'desc'
