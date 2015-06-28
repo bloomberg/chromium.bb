@@ -147,12 +147,10 @@ static void check_CMM_type_signature(struct mem_source *src)
 {
 	//uint32_t CMM_type_signature = read_u32(src, 4);
 	//TODO: do the check?
-
 }
 
 static void check_profile_version(struct mem_source *src)
 {
-
 	/*
 	uint8_t major_revision = read_u8(src, 8 + 0);
 	uint8_t minor_revision = read_u8(src, 8 + 1);
@@ -217,8 +215,7 @@ static void read_pcs(qcms_profile *profile, struct mem_source *mem)
 	}
 }
 
-struct tag
-{
+struct tag {
 	uint32_t signature;
 	uint32_t offset;
 	uint32_t size;
@@ -360,10 +357,8 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 #define MMOD_TYPE 0x6D6D6F64 // 'mmod'
 #define VCGT_TYPE 0x76636774 // 'vcgt'
 
-// Check unsigned short is uint16_t.
-typedef char assert_short_not_16b[(sizeof(unsigned short) == sizeof(uint16_t)) ? 1 : -1];
-
-qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struct tag_index index) {
+static qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struct tag_index index)
+{
 	size_t tag_offset = find_tag(index, TAG_vcgt)->offset;
 	uint32_t tag_type = read_u32(src, tag_offset);
 	uint32_t vcgt_type = read_u32(src, tag_offset + 8);
@@ -1369,27 +1364,33 @@ qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
 	return profile->rendering_intent;
 }
 
-icColorSpaceSignature
-qcms_profile_get_color_space(qcms_profile *profile)
+icColorSpaceSignature qcms_profile_get_color_space(qcms_profile *profile)
 {
 	return profile->color_space;
+}
+
+size_t qcms_profile_get_vcgt_channel_length(qcms_profile *profile)
+{
+	return profile->vcgt.length;
+}
+
+// Check unsigned short is uint16_t.
+typedef char assert_short_not_16b[(sizeof(unsigned short) == sizeof(uint16_t)) ? 1 : -1];
+
+qcms_bool qcms_profile_get_vcgt_rgb_channels(qcms_profile *profile, unsigned short *data)
+{
+	size_t vcgt_channel_bytes = qcms_profile_get_vcgt_channel_length(profile) * sizeof(uint16_t);
+
+	if (!vcgt_channel_bytes || !data)
+		return false;
+
+	memcpy(data, profile->vcgt.data, 3 * vcgt_channel_bytes);
+	return true;
 }
 
 static void lut_release(struct lutType *lut)
 {
 	free(lut);
-}
-
-size_t qcms_profile_get_vcgt_channel_length(qcms_profile *profile) {
-	return profile->vcgt.length;
-}
-
-qcms_bool qcms_profile_get_vcgt_rgb_channels(qcms_profile *profile, unsigned short *data) {
-	size_t vcgt_channel_bytes = qcms_profile_get_vcgt_channel_length(profile) * sizeof(uint16_t);
-	if (!vcgt_channel_bytes || !data)
-		return false;
-	memcpy(data, profile->vcgt.data, 3 * vcgt_channel_bytes);
-	return true;
 }
 
 void qcms_profile_release(qcms_profile *profile)
@@ -1421,8 +1422,8 @@ void qcms_profile_release(qcms_profile *profile)
 	free(profile);
 }
 
-
 #include <stdio.h>
+
 qcms_profile* qcms_profile_from_file(FILE *file)
 {
 	uint32_t length, remaining_length;
