@@ -164,15 +164,19 @@ public:
             processAttribute(htmlTokenAttribute.name, htmlTokenAttribute.value);
     }
 
-    void handlePictureSourceURL(String& sourceURL)
+    void handlePictureSourceURL(PictureData& pictureData)
     {
-        if (match(m_tagImpl, sourceTag) && m_matchedMediaAttribute && sourceURL.isEmpty())
-            sourceURL = m_srcsetImageCandidate.toString();
-        else if (match(m_tagImpl, imgTag) && !sourceURL.isEmpty())
-            setUrlToLoad(sourceURL, AllowURLReplacement);
+        if (match(m_tagImpl, sourceTag) && m_matchedMediaAttribute && pictureData.sourceURL.isEmpty()) {
+            pictureData.sourceURL = m_srcsetImageCandidate.toString();
+            pictureData.sourceSizeSet = m_sourceSizeSet;
+            pictureData.sourceSize = m_sourceSize;
+            pictureData.picked = true;
+        } else if (match(m_tagImpl, imgTag) && !pictureData.sourceURL.isEmpty()) {
+            setUrlToLoad(pictureData.sourceURL, AllowURLReplacement);
+        }
     }
 
-    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences)
+    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences, const PictureData& pictureData)
     {
         PreloadRequest::RequestType requestType = PreloadRequest::RequestTypePreload;
         if (shouldPreconnect())
@@ -182,8 +186,14 @@ public:
 
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
         FetchRequest::ResourceWidth resourceWidth;
-        if (m_sourceSizeSet) {
-            resourceWidth.width = m_sourceSize;
+        float sourceSize = m_sourceSize;
+        bool sourceSizeSet = m_sourceSizeSet;
+        if (pictureData.picked) {
+            sourceSizeSet = pictureData.sourceSizeSet;
+            sourceSize = pictureData.sourceSize;
+        }
+        if (sourceSizeSet) {
+            resourceWidth.width = sourceSize;
             resourceWidth.isSet = true;
         } else {
             resourceWidth.isSet = m_widthValueSet;
@@ -560,15 +570,15 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
 
         if (match(tagImpl, pictureTag)) {
             m_inPicture = true;
-            m_pictureSourceURL = String();
+            m_pictureData = PictureData();
             return;
         }
 
         StartTagScanner scanner(tagImpl, m_documentParameters->mediaValues);
         scanner.processAttributes(token.attributes());
         if (m_inPicture)
-            scanner.handlePictureSourceURL(m_pictureSourceURL);
-        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source, m_clientHintsPreferences);
+            scanner.handlePictureSourceURL(m_pictureData);
+        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source, m_clientHintsPreferences, m_pictureData);
         if (request)
             requests.append(request.release());
         return;
