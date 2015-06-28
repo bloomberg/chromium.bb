@@ -1338,11 +1338,11 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 		goto invalid_tag_table;
 
 	free(index.tags);
-
 	return profile;
 
 invalid_tag_table:
-	free(index.tags);
+	if (index.tags)
+		free(index.tags);
 invalid_profile:
 	qcms_profile_release(profile);
 	return INVALID_PROFILE;
