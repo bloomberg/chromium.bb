@@ -45,7 +45,6 @@ QuicErrorCode ReadUint32(const CryptoHandshakeMessage& msg,
   return error;
 }
 
-
 QuicConfigValue::QuicConfigValue(QuicTag tag,
                                  QuicConfigPresence presence)
     : tag_(tag),

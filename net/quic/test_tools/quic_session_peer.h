@@ -45,6 +45,7 @@ class QuicSessionPeer {
 };
 
 }  // namespace test
+
 }  // namespace net
 
 #endif  // NET_QUIC_TEST_TOOLS_QUIC_SESSION_PEER_H_
