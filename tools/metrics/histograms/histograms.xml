@@ -6871,8 +6871,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The size of successfully completed downloads.</summary>
 </histogram>
 
-<histogram name="Download.DownloadWarningShownOnShelf"
-    enum="DownloadItem.DangerType">
+<histogram name="Download.DownloadWarningShown" enum="DownloadItem.DangerType">
   <owner>asanka@chromium.org</owner>
   <summary>
     A download warning was shown in the shelf. Note that some downloads may not
