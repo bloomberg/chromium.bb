@@ -87,16 +87,8 @@ gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType() {
 std::vector<GpuMemoryBufferFactory::Configuration>
 GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
   std::vector<GpuMemoryBufferFactory::Configuration> configurations;
-#if defined(OS_MACOSX)
-  bool enable_native_gpu_memory_buffers =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNativeGpuMemoryBuffers);
-#else
-  bool enable_native_gpu_memory_buffers =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeGpuMemoryBuffers);
-#endif
-  if (enable_native_gpu_memory_buffers) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNativeGpuMemoryBuffers)) {
     const GpuMemoryBufferFactory::Configuration kNativeConfigurations[] = {
         {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
         {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
