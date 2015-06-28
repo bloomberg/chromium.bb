@@ -146,7 +146,6 @@ static uInt16Number read_uInt16Number(struct mem_source *mem, size_t offset)
 static void check_CMM_type_signature(struct mem_source *src)
 {
 	//uint32_t CMM_type_signature = read_u32(src, 4);
-	//TODO: do the check?
 }
 
 static void check_profile_version(struct mem_source *src)
