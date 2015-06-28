@@ -31,8 +31,6 @@ per-file io_thread*=cbentzel@chromium.org
 per-file io_thread*=mmenke@chromium.org
 per-file io_thread*=rch@chromium.org
 per-file io_thread*=rsleevi@chromium.org
-# On extended leave.
-per-file io_thread*=willchan@chromium.org
 
 per-file *.mm=avi@chromium.org
 per-file *.mm=mark@chromium.org
