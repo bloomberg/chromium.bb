@@ -123,15 +123,13 @@ typedef enum {
 } qcms_trc_type;
 
 /* the names for the following two types are sort of ugly */
-typedef struct
-{
+typedef struct {
 	double x;
 	double y;
 	double Y;
 } qcms_CIE_xyY;
 
-typedef struct
-{
+typedef struct {
 	qcms_CIE_xyY red;
 	qcms_CIE_xyY green;
 	qcms_CIE_xyY blue;
