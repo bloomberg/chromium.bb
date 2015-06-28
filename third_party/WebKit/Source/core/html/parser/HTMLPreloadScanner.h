@@ -109,19 +109,6 @@ private:
         size_t templateCount;
     };
 
-    struct PictureData {
-        PictureData()
-            : sourceSize(0.0)
-            , sourceSizeSet(false)
-            , picked(false)
-        {
-        }
-        String sourceURL;
-        float sourceSize;
-        bool sourceSizeSet;
-        bool picked;
-    };
-
     CSSPreloadScanner m_cssScanner;
     const KURL m_documentURL;
     KURL m_predictedBaseElementURL;
@@ -129,7 +116,7 @@ private:
     bool m_inPicture;
     bool m_isAppCacheEnabled;
     bool m_isCSPEnabled;
-    PictureData m_pictureData;
+    String m_pictureSourceURL;
     size_t m_templateCount;
     OwnPtr<CachedDocumentParameters> m_documentParameters;
     ClientHintsPreferences m_clientHintsPreferences;
