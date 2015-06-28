@@ -77,7 +77,6 @@
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/filesystem/InspectorFileSystemAgent.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
-#include "modules/screen_orientation/ScreenOrientationInspectorAgent.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "platform/JSONValues.h"
@@ -366,8 +365,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     m_agents.append(workerAgentPtr.release());
     m_agents.append(pageConsoleAgentPtr.release());
-
-    m_agents.append(ScreenOrientationInspectorAgent::create(*m_webLocalFrameImpl->frame()));
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()

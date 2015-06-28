@@ -36,9 +36,6 @@ public:
     void lock(WebScreenOrientationLockType, WebLockOrientationCallback*);
     void unlock();
 
-    void setOverride(WebScreenOrientationType, unsigned short angle);
-    void clearOverride();
-
     static void provideTo(LocalFrame&, WebScreenOrientationClient*);
     static ScreenOrientationController* from(LocalFrame&);
     static const char* supplementName();
@@ -48,7 +45,7 @@ public:
 private:
     ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
 
-    static WebScreenOrientationType computeOrientation(const IntRect&, uint16_t);
+    static WebScreenOrientationType computeOrientation(ChromeClient&);
 
     // Inherited from PlatformEventController.
     virtual void didUpdateData() override;
@@ -59,9 +56,6 @@ private:
 
     // Inherited from LocalFrameLifecycleObserver.
     virtual void willDetachFrameHost() override;
-
-    unsigned short effectiveAngle(ChromeClient&);
-    WebScreenOrientationType effectiveType(ChromeClient&);
 
     void notifyDispatcher();
 
@@ -74,9 +68,6 @@ private:
     PersistentWillBeMember<ScreenOrientation> m_orientation;
     WebScreenOrientationClient* m_client;
     Timer<ScreenOrientationController> m_dispatchEventTimer;
-    bool m_override;
-    WebScreenOrientationType m_overrideType;
-    unsigned short m_overrideAngle;
 };
 
 } // namespace blink

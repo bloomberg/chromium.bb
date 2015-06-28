@@ -1151,8 +1151,6 @@
       'screen_orientation/ScreenOrientationController.h',
       'screen_orientation/ScreenOrientationDispatcher.cpp',
       'screen_orientation/ScreenOrientationDispatcher.h',
-      'screen_orientation/ScreenOrientationInspectorAgent.cpp',
-      'screen_orientation/ScreenOrientationInspectorAgent.h',
       'serviceworkers/ExtendableEvent.cpp',
       'serviceworkers/ExtendableEvent.h',
       'serviceworkers/FetchEvent.cpp',
