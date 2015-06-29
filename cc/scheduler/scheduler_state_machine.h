@@ -247,10 +247,6 @@ class CC_EXPORT SchedulerStateMachine {
 
   void SetDeferCommits(bool defer_commits);
 
-  // TODO(zmo): This is temporary for debugging crbug.com/393331.
-  // We should remove it afterwards.
-  std::string GetStatesForDebugging() const;
-
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames);
   bool children_need_begin_frames() const {
     return children_need_begin_frames_;

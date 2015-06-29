@@ -614,9 +614,6 @@ void Scheduler::ProcessScheduledActions() {
                  "SchedulerStateMachine",
                  "state",
                  AsValue());
-    DVLOG(2) << "Scheduler::ProcessScheduledActions: "
-             << SchedulerStateMachine::ActionToString(action) << " "
-             << state_machine_.GetStatesForDebugging();
     state_machine_.UpdateState(action);
     base::AutoReset<SchedulerStateMachine::Action>
         mark_inside_action(&inside_action_, action);
