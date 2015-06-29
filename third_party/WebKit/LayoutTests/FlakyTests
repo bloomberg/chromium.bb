@@ -1537,7 +1537,7 @@ crbug.com/460580 [ Release Retina ] tables/mozilla/bugs/bug96334.html [ ImageOnl
 Bug(gardener) [ Release Win7 ] tables/mozilla/core/bloomberg.html [ Failure Pass ]
 crbug.com/362499 [ Release SnowLeopard ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/463358 [ Release Linux ] transforms/2d/hindi-rotated.html [ Failure Pass ]
-crbug.com/463358 [ Debug Linux ] transforms/2d/hindi-rotated.html [ Failure ImageOnlyFailure ]
+crbug.com/463358 [ Debug Linux Mac ] transforms/2d/hindi-rotated.html [ ImageOnlyFailure ]
 Bug(gardener) [ Release Lion ] transforms/3d/general/perspective-non-layer.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release SnowLeopard ] transitions/cancel-and-start-new.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] transitions/cancel-and-start-new.html [ Failure Pass ]
