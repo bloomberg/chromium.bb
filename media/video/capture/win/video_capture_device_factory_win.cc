@@ -8,6 +8,7 @@
 #include <mferror.h>
 
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -28,15 +29,16 @@ using Names = media::VideoCaptureDevice::Names;
 
 namespace media {
 
-// We would like to avoid enumerating and/or using certain devices due to they
-// provoking crashes or any other reason. This enum is defined for the purposes
-// of UMA collection. Existing entries cannot be removed.
+// Avoid enumerating and/or using certain devices due to they provoking crashes
+// or any other reason (http://crbug.com/378494). This enum is defined for the
+// purposes of UMA collection. Existing entries cannot be removed.
 enum BlacklistedCameraNames {
-  BLACKLISTED_CAMERA_GOOGLE_CAMERA_ADAPTER,
-  BLACKLISTED_CAMERA_IP_CAMERA,
-  BLACKLISTED_CAMERA_CYBERLINK_WEBCAM_SPLITTER,
+  BLACKLISTED_CAMERA_GOOGLE_CAMERA_ADAPTER = 0,
+  BLACKLISTED_CAMERA_IP_CAMERA = 1,
+  BLACKLISTED_CAMERA_CYBERLINK_WEBCAM_SPLITTER = 2,
+  BLACKLISTED_CAMERA_EPOCCAM = 3,
    // This one must be last, and equal to the previous enumerated value.
-  BLACKLISTED_CAMERA_MAX = BLACKLISTED_CAMERA_CYBERLINK_WEBCAM_SPLITTER
+  BLACKLISTED_CAMERA_MAX = BLACKLISTED_CAMERA_EPOCCAM,
 };
 
 // Blacklisted devices are identified by a characteristic prefix of the name.
@@ -45,10 +47,13 @@ enum BlacklistedCameraNames {
 static const char* const kBlacklistedCameraNames[] = {
   // Name of a fake DirectShow filter on computers with GTalk installed.
   "Google Camera Adapter",
-  // The following two software WebCams cause crashes.
+  // The following software WebCams cause crashes.
   "IP Camera [JPEG/MJPEG]",
   "CyberLink Webcam Splitter",
+  "EpocCam",
 };
+static_assert(arraysize(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
+  "kBlacklistedCameraNames should be same size as BlacklistedCameraNames enum");
 
 static bool LoadMediaFoundationDlls() {
   static const wchar_t* const kMfDLLs[] = {

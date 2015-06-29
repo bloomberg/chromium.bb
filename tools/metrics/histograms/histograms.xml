@@ -50339,6 +50339,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Google GTalk Camera Adapter"/>
   <int value="1" label="IP Camera"/>
   <int value="2" label="Cyberlink YouCam Webcam Splitter"/>
+  <int value="3" label="EpocCam Smartphone Wireless Camera"/>
 </enum>
 
 <enum name="BlacklistSetup" type="int">
