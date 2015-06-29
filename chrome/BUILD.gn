@@ -474,6 +474,14 @@ group("packed_resources") {
   if (enable_hidpi) {
     deps += [ ":repack_chrome_200_percent" ]
   }
+
+  if (enable_topchrome_md) {
+    deps += [ ":repack_chrome_material_100_percent" ]
+
+    if (enable_hidpi) {
+      deps += [ ":repack_chrome_material_200_percent" ]
+    }
+  }
 }
 
 repack("packed_extra_resources") {
@@ -697,6 +705,58 @@ chrome_repack_percent("repack_chrome_100_percent") {
 if (enable_hidpi) {
   chrome_repack_percent("repack_chrome_200_percent") {
     percent = "200"
+  }
+}
+
+# Generates a rule to repack a set of material design resources for the browser
+# top chrome, substituting a given string in for the percentage (e.g. "100",
+# "200").
+template("chrome_repack_material_percent") {
+  percent = invoker.percent
+
+  repack_name = "${target_name}_repack"
+  repack_output_file = "$root_gen_dir/repack/chrome_material_${percent}_percent.pak"
+
+  copy_name = target_name
+
+  repack(repack_name) {
+    visibility = [ ":$copy_name" ]
+
+    # All sources should also have deps for completeness.
+    sources = [
+      "$root_gen_dir/chrome/theme_resources_material_${percent}_percent.pak",
+    ]
+
+    deps = [
+      "//chrome/app/theme:theme_resources",
+    ]
+
+    output = repack_output_file
+  }
+
+  copy(copy_name) {
+    visibility = [ ":*" ]
+    deps = [
+      ":$repack_name",
+    ]
+    sources = [
+      repack_output_file,
+    ]
+    outputs = [
+      "$root_build_dir/chrome_material_${percent}_percent.pak",
+    ]
+  }
+}
+
+if (enable_topchrome_md) {
+  chrome_repack_material_percent("repack_chrome_material_100_percent") {
+    percent = "100"
+  }
+
+  if (enable_hidpi) {
+    chrome_repack_material_percent("repack_chrome_material_200_percent") {
+      percent = "200"
+    }
   }
 }
 
