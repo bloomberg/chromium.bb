@@ -81,9 +81,9 @@ class HostedAppTest : public ExtensionBrowserTest {
   Browser* app_browser_;
 };
 
-// Check that the location bar is shown correctly for HTTP bookmark apps.
+// Check that the location bar is shown correctly for bookmark apps.
 IN_PROC_BROWSER_TEST_F(HostedAppTest,
-                       ShouldShowLocationBarForHTTPBookmarkApp) {
+                       ShouldShowLocationBarForBookmarkApp) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableNewBookmarkApps);
 
@@ -98,21 +98,32 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest,
   NavigateAndCheckForLocationBar(
       app_browser_, "http://www.example.com/blah", false);
 
+  // Navigate to different origin; the location bar should now be visible.
+  NavigateAndCheckForLocationBar(
+      app_browser_, "http://www.foo.com/blah", true);
+}
+
+// Check that the location bar is shown correctly for HTTP bookmark apps when
+// they navigate to a HTTPS page on the same origin.
+IN_PROC_BROWSER_TEST_F(HostedAppTest,
+                       ShouldShowLocationBarForHTTPBookmarkApp) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableNewBookmarkApps);
+
+  SetupApp("app", true);
+
+  // Navigate to the app's launch page; the location bar should be hidden.
+  NavigateAndCheckForLocationBar(
+      app_browser_, "http://www.example.com/empty.html", false);
+
   // Navigate to the https version of the site; the location bar should
   // be hidden.
   NavigateAndCheckForLocationBar(
       app_browser_, "https://www.example.com/blah", false);
-
-  // Navigate to different origin; the location bar should now be visible.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.foo.com/blah", true);
-
-  // Navigate back to the app's origin; the location bar should now be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/blah", false);
 }
 
-// Check that the location bar is shown correctly for HTTPS bookmark apps.
+// Check that the location bar is shown correctly for HTTPS bookmark apps when
+// they navigate to a HTTP page on the same origin.
 IN_PROC_BROWSER_TEST_F(HostedAppTest,
                        ShouldShowLocationBarForHTTPSBookmarkApp) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -124,24 +135,11 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest,
   NavigateAndCheckForLocationBar(
       app_browser_, "https://www.example.com/empty.html", false);
 
-  // Navigate to another page on the same origin; the location bar should still
-  // hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "https://www.example.com/blah", false);
-
   // Navigate to the http version of the site; the location bar should
   // be visible for the https version as it is now on a less secure version
   // of its host.
   NavigateAndCheckForLocationBar(
       app_browser_, "http://www.example.com/blah", true);
-
-  // Navigate to different origin; the location bar should now be visible.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.foo.com/blah", true);
-
-  // Navigate back to the app's origin; the location bar should now be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "https://www.example.com/blah", false);
 }
 
 // Check that the location bar is shown correctly for normal hosted apps.
@@ -158,18 +156,9 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest,
   NavigateAndCheckForLocationBar(
       app_browser_, "http://www.example.com/blah", false);
 
-  // Navigate to the https version of the site; the location bar should
-  // be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "https://www.example.com/blah", false);
-
   // Navigate to different origin; the location bar should now be visible.
   NavigateAndCheckForLocationBar(
       app_browser_, "http://www.foo.com/blah", true);
-
-  // Navigate back to the app's origin; the location bar should now be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://www.example.com/blah", false);
 }
 
 // Check that the location bar is shown correctly for hosted apps that specify
@@ -190,10 +179,6 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest,
   // Navigate to different origin; the location bar should now be visible.
   NavigateAndCheckForLocationBar(
       app_browser_, "http://www.foo.com/blah", true);
-
-  // Navigate back to the app's origin; the location bar should now be hidden.
-  NavigateAndCheckForLocationBar(
-      app_browser_, "http://example.com/blah", false);
 }
 
 // Open a normal browser window, a hosted app window, a legacy packaged app
