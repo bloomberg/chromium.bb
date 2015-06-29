@@ -142,24 +142,36 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 }  // namespace
 
-HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
-                           mojo::ApplicationConnection* connection,
-                           URLResponsePtr response,
-                           Setup* setup,
-                           const DeleteCallback& delete_callback)
-    : app_refcount_(
-          html_document_app->app_lifetime_helper()->CreateAppRefCount()),
-      html_document_app_(html_document_app),
-      response_(response.Pass()),
-      navigator_host_(connection->GetServiceProvider()),
+HTMLDocument::CreateParams::CreateParams(
+    mojo::ApplicationImpl* html_document_app,
+    mojo::ApplicationConnection* connection,
+    mojo::URLResponsePtr response,
+    Setup* setup,
+    const DeleteCallback& delete_callback)
+    : html_document_app(html_document_app),
+      connection(connection),
+      response(response.Pass()),
+      setup(setup),
+      delete_callback(delete_callback) {
+}
+
+HTMLDocument::CreateParams::~CreateParams() {
+}
+
+HTMLDocument::HTMLDocument(HTMLDocument::CreateParams* params)
+    : app_refcount_(params->html_document_app->app_lifetime_helper()
+                        ->CreateAppRefCount()),
+      html_document_app_(params->html_document_app),
+      response_(params->response.Pass()),
+      navigator_host_(params->connection->GetServiceProvider()),
       web_view_(nullptr),
       root_(nullptr),
-      view_manager_client_factory_(html_document_app->shell(), this),
-      setup_(setup),
-      delete_callback_(delete_callback) {
-  connection->AddService(
+      view_manager_client_factory_(params->html_document_app->shell(), this),
+      setup_(params->setup),
+      delete_callback_(params->delete_callback) {
+  params->connection->AddService(
       static_cast<InterfaceFactory<mojo::AxProvider>*>(this));
-  connection->AddService(&view_manager_client_factory_);
+  params->connection->AddService(&view_manager_client_factory_);
 
   if (setup_->did_init())
     Load(response_.Pass());

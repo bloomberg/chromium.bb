@@ -42,7 +42,17 @@ class Frame : public blink::WebFrameClient,
               public blink::WebRemoteFrameClient,
               public mojo::ViewObserver {
  public:
-  Frame(FrameTreeManager* manager, Frame* parent, uint32_t id);
+  struct CreateParams {
+    CreateParams(FrameTreeManager* manager, Frame* parent, uint32_t id)
+        : manager(manager), parent(parent), id(id) {}
+    ~CreateParams() {}
+
+    FrameTreeManager* manager;
+    Frame* parent;
+    uint32_t id;
+  };
+
+  explicit Frame(const CreateParams& params);
 
   void Init(mojo::View* local_view);
 

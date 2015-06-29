@@ -150,10 +150,11 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
                      base::Unretained(this)));
       documents2_.insert(document);
     } else {
-      HTMLDocument* document = new HTMLDocument(
+      HTMLDocument::CreateParams params(
           &app_, connection, response.Pass(), setup_,
           base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted,
                      base::Unretained(this)));
+      HTMLDocument* document = new HTMLDocument(&params);
       documents_.insert(document);
     }
   }

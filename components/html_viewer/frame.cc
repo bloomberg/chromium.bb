@@ -80,11 +80,11 @@ Frame* GetPreviousSibling(Frame* frame) {
 
 }  // namespace
 
-Frame::Frame(FrameTreeManager* frame_tree_manager, Frame* parent, uint32_t id)
-    : frame_tree_manager_(frame_tree_manager),
-      parent_(parent),
+Frame::Frame(const Frame::CreateParams& params)
+    : frame_tree_manager_(params.manager),
+      parent_(params.parent),
       view_(nullptr),
-      id_(id),
+      id_(params.id),
       web_frame_(nullptr),
       web_widget_(nullptr),
       scope_(blink::WebTreeScopeType::Document),
@@ -402,7 +402,8 @@ blink::WebFrame* Frame::createChildFrame(blink::WebLocalFrame* parent,
 
   // TODO(sky): the act of creating needs to notify the browser side, not
   // navigation.
-  Frame* child_frame = new Frame(frame_tree_manager_, this, child_view->id());
+  Frame::CreateParams params(frame_tree_manager_, this, child_view->id());
+  Frame* child_frame = new Frame(params);
   child_frame->scope_ = scope;
 
   child_frame->SetView(child_view);

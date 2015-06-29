@@ -66,9 +66,10 @@ Frame* BuildFrameTree(FrameTreeManager* frame_tree_manager,
       while (parents.back()->id() != frame_data[i]->parent_id)
         parents.pop_back();
     }
-    Frame* frame = new Frame(frame_tree_manager,
-                             !parents.empty() ? parents.back() : nullptr,
-                             frame_data[i]->frame_id);
+    Frame::CreateParams params(frame_tree_manager,
+                               !parents.empty() ? parents.back() : nullptr,
+                               frame_data[i]->frame_id);
+    Frame* frame = new Frame(params);
     if (!last_frame)
       root = frame;
     else

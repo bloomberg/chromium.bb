@@ -56,15 +56,26 @@ class HTMLDocument : public blink::WebViewClient,
  public:
   using DeleteCallback = base::Callback<void(HTMLDocument*)>;
 
+  struct CreateParams {
+    CreateParams(mojo::ApplicationImpl* html_document_app,
+                 mojo::ApplicationConnection* connection,
+                 mojo::URLResponsePtr response,
+                 Setup* setup,
+                 const DeleteCallback& delete_callback);
+    ~CreateParams();
+
+    mojo::ApplicationImpl* html_document_app;
+    mojo::ApplicationConnection* connection;
+    mojo::URLResponsePtr response;
+    Setup* setup;
+    const DeleteCallback& delete_callback;
+  };
+
   // Load a new HTMLDocument with |response|.
   // |html_document_app| is the application this app was created in, and
   // |connection| the specific connection triggering this new instance.
   // |setup| is used to obtain init type state (such as resources).
-  HTMLDocument(mojo::ApplicationImpl* html_document_app,
-               mojo::ApplicationConnection* connection,
-               mojo::URLResponsePtr response,
-               Setup* setup,
-               const DeleteCallback& delete_callback);
+  explicit HTMLDocument(CreateParams* params);
 
   // Deletes this object.
   void Destroy();
