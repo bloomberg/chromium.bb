@@ -1222,22 +1222,19 @@ void SSLClientSocketOpenSSL::VerifyCT() {
       server_cert_verify_result_.verified_cert.get(), ocsp_response, sct_list,
       &ct_verify_result_, net_log_);
 
-  if (!policy_enforcer_) {
-    server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
-  } else {
-    if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
-      scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
-          SSLConfigService::GetEVCertsWhitelist();
-      if (!policy_enforcer_->DoesConformToCTEVPolicy(
-              server_cert_verify_result_.verified_cert.get(),
-              ev_whitelist.get(), ct_verify_result_, net_log_)) {
-        // TODO(eranm): Log via the BoundNetLog, see crbug.com/437766
-        VLOG(1) << "EV certificate for "
-                << server_cert_verify_result_.verified_cert->subject()
-                       .GetDisplayName()
-                << " does not conform to CT policy, removing EV status.";
-        server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
-      }
+  if (policy_enforcer_ &&
+      (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV)) {
+    scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
+        SSLConfigService::GetEVCertsWhitelist();
+    if (!policy_enforcer_->DoesConformToCTEVPolicy(
+            server_cert_verify_result_.verified_cert.get(), ev_whitelist.get(),
+            ct_verify_result_, net_log_)) {
+      // TODO(eranm): Log via the BoundNetLog, see crbug.com/437766
+      VLOG(1) << "EV certificate for "
+              << server_cert_verify_result_.verified_cert->subject()
+                     .GetDisplayName()
+              << " does not conform to CT policy, removing EV status.";
+      server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
     }
   }
 }
