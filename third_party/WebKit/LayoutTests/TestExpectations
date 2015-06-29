@@ -65,8 +65,6 @@ crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFail
 
 crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
 
-crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
-
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
 
 # The result here is flaky. So a rebaseline won't make these [ Pass Timeout ].
@@ -834,7 +832,7 @@ crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 
 # Started failing after r162705.
-crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
+crbug.com/324370 compositing/video/video-reflection.html [ Failure ]
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
@@ -982,11 +980,8 @@ crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
-crbug.com/352801 [ Linux Mac ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Pass Failure ]
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure ]
-
-crbug.com/453944 [ Mac ] fast/images/png-suite/test.html [ Crash Pass ]
 
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 crbug.com/419696 [ Mac Debug ] virtual/antialiasedtext/fast/text/font-linux-normalize.html [ Crash Pass ]
@@ -1237,8 +1232,6 @@ crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Time
 
 crbug.com/422846 [ Linux ] fast/text/shaping/same-script-different-lang.html [ Pass Failure ]
 
-crbug.com/424648 editing/selection/deleteFromDocument-crash.html [ Pass ImageOnlyFailure ]
-
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 crbug.com/425345 [ Mac ] virtual/antialiasedtext/fast/text/line-break-after-question-mark.html [ Failure ]
 
@@ -1274,8 +1267,6 @@ crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failur
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
 crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Pass Failure ]
-
-crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Failure ]
 
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
 
