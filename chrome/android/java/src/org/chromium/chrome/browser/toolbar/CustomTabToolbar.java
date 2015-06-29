@@ -82,6 +82,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         mUrlBar.setHint("");
         mUrlBar.setDelegate(this);
         mUrlBar.setEnabled(false);
+        mUrlBar.setAllowFocus(false);
         mTitleBar = (TextView) findViewById(R.id.title_bar);
         mUrlInfoContainer = findViewById(R.id.url_info_container);
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);

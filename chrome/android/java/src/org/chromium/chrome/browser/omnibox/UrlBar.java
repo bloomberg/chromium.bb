@@ -84,6 +84,7 @@ public class UrlBar extends VerticallyFixedEditText {
      */
     private final GestureDetector mGestureDetector;
     private boolean mFocused;
+    private boolean mAllowFocus = true;
 
     private final ColorStateList mDarkHintColor;
     private final int mDarkDefaultTextColor;
@@ -369,6 +370,17 @@ public class UrlBar extends VerticallyFixedEditText {
         return mFirstFocusTimeMs;
     }
 
+    /**
+     * Sets whether this {@link UrlBar} should be focusable.
+     */
+    public void setAllowFocus(boolean allowFocus) {
+        mAllowFocus = allowFocus;
+        if (mFirstDrawComplete) {
+            setFocusable(allowFocus);
+            setFocusableInTouchMode(allowFocus);
+        }
+    }
+
     @Override
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
@@ -478,11 +490,13 @@ public class UrlBar extends VerticallyFixedEditText {
             // We have now avoided the first draw problem (see the comment in
             // the constructor) so we want to make the URL bar focusable so that
             // touches etc. activate it.
-            setFocusable(true);
-            setFocusableInTouchMode(true);
+            setFocusable(mAllowFocus);
+            setFocusableInTouchMode(mAllowFocus);
 
             // The URL bar will now react correctly to a focus change event
-            if (mOmniboxLivenessListener != null) mOmniboxLivenessListener.onOmniboxInteractive();
+            if (mOmniboxLivenessListener != null) {
+                mOmniboxLivenessListener.onOmniboxInteractive();
+            }
         }
 
         // Notify listeners if the URL's direction has changed.
