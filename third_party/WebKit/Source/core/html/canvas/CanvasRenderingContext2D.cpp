@@ -1322,7 +1322,11 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
         SkMatrix ctm = c->getTotalMatrix();
         SkMatrix invCtm;
         if (!ctm.invert(&invCtm)) {
-            ASSERT_NOT_REACHED(); // There is an earlier check for invertibility
+            // There is an earlier check for invertibility, but the arithmetic
+            // in AffineTransform is not exactly identical, so it is possible
+            // for SkMatrix to find the transform to be non-invertible at this stage.
+            // crbug.com/504687
+            return;
         }
         c->save();
         c->concat(invCtm);
