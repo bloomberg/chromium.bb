@@ -15,12 +15,12 @@ class ChildFrame;
 struct ParentCompositorDrawConstraints {
   bool is_layer;
   gfx::Transform transform;
-  gfx::Rect surface_rect;
+  bool surface_rect_empty;
 
   ParentCompositorDrawConstraints();
   ParentCompositorDrawConstraints(bool is_layer,
                                   const gfx::Transform& transform,
-                                  const gfx::Rect& surface_rect);
+                                  bool surface_rect_empty);
   bool NeedUpdate(const ChildFrame& frame) const;
 };
 

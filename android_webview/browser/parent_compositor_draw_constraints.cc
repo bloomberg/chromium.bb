@@ -9,15 +9,16 @@
 namespace android_webview {
 
 ParentCompositorDrawConstraints::ParentCompositorDrawConstraints()
-    : is_layer(false) {
+    : is_layer(false), surface_rect_empty(false) {
 }
 
 ParentCompositorDrawConstraints::ParentCompositorDrawConstraints(
     bool is_layer,
     const gfx::Transform& transform,
-    const gfx::Rect& surface_rect)
-    : is_layer(is_layer), transform(transform), surface_rect(surface_rect) {
-}
+    bool surface_rect_empty)
+    : is_layer(is_layer),
+      transform(transform),
+      surface_rect_empty(surface_rect_empty) {}
 
 bool ParentCompositorDrawConstraints::NeedUpdate(
     const ChildFrame& frame) const {
@@ -27,16 +28,11 @@ bool ParentCompositorDrawConstraints::NeedUpdate(
   }
 
   // Viewport for tile priority does not depend on surface rect in this case.
-  if (frame.offscreen_pre_raster)
+  if (frame.offscreen_pre_raster || is_layer)
     return false;
 
-  if (is_layer) {
-    return surface_rect != frame.viewport_rect_for_tile_priority;
-  } else {
-    // Workaround for corner case. See crbug.com/417479.
-    return frame.viewport_rect_for_tile_priority.IsEmpty() &&
-           !surface_rect.IsEmpty();
-  }
+  // Workaround for corner case. See crbug.com/417479.
+  return frame.viewport_rect_for_tile_priority_empty && !surface_rect_empty;
 }
 
 }  // namespace webview

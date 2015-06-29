@@ -170,9 +170,12 @@ void BrowserViewRenderer::UpdateMemoryPolicy() {
   if (g_memory_override_in_bytes) {
     bytes_limit = static_cast<size_t>(g_memory_override_in_bytes);
   } else {
-    gfx::Rect interest_rect = offscreen_pre_raster_
-                                  ? gfx::Rect(size_)
-                                  : last_on_draw_global_visible_rect_;
+    ParentCompositorDrawConstraints parent_draw_constraints =
+        shared_renderer_state_.GetParentDrawConstraintsOnUI();
+    gfx::Rect interest_rect =
+        offscreen_pre_raster_ || parent_draw_constraints.is_layer
+            ? gfx::Rect(size_)
+            : last_on_draw_global_visible_rect_;
     size_t width = interest_rect.width();
     size_t height = interest_rect.height();
     bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
@@ -240,12 +243,8 @@ bool BrowserViewRenderer::CompositeHw() {
   gfx::Rect viewport_rect_for_tile_priority;
 
   // Leave viewport_rect_for_tile_priority empty if offscreen_pre_raster_ is on.
-  if (!offscreen_pre_raster_) {
-    if (parent_draw_constraints.is_layer) {
-      viewport_rect_for_tile_priority = parent_draw_constraints.surface_rect;
-    } else {
-      viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
-    }
+  if (!offscreen_pre_raster_ && !parent_draw_constraints.is_layer) {
+    viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
   }
 
   scoped_ptr<cc::CompositorFrame> frame =
@@ -262,7 +261,7 @@ bool BrowserViewRenderer::CompositeHw() {
   }
 
   scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(
-      new ChildFrame(frame.Pass(), viewport_rect_for_tile_priority,
+      new ChildFrame(frame.Pass(), viewport_rect_for_tile_priority.IsEmpty(),
                      transform_for_tile_priority, offscreen_pre_raster_,
                      parent_draw_constraints.is_layer));
 

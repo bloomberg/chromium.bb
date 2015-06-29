@@ -129,7 +129,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   // because there is no onDraw during a Render Thread animation, and child
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(
-      draw_info->is_layer, transform, gfx::Rect(viewport));
+      draw_info->is_layer, transform, viewport.IsEmpty());
   if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
     shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
         draw_constraints);

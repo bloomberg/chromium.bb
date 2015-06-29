@@ -19,14 +19,14 @@ namespace android_webview {
 class ChildFrame {
  public:
   ChildFrame(scoped_ptr<cc::CompositorFrame> frame,
-             const gfx::Rect& viewport_rect_for_tile_priority,
+             bool viewport_rect_for_tile_priority_empty,
              const gfx::Transform& transform_for_tile_priority,
              bool offscreen_pre_raster,
              bool is_layer);
   ~ChildFrame();
 
   scoped_ptr<cc::CompositorFrame> frame;
-  const gfx::Rect viewport_rect_for_tile_priority;
+  const bool viewport_rect_for_tile_priority_empty;
   const gfx::Transform transform_for_tile_priority;
   const bool offscreen_pre_raster;
   const bool is_layer;

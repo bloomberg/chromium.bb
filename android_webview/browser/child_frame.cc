@@ -9,16 +9,16 @@
 namespace android_webview {
 
 ChildFrame::ChildFrame(scoped_ptr<cc::CompositorFrame> frame,
-                       const gfx::Rect& viewport_rect_for_tile_priority,
+                       bool viewport_rect_for_tile_priority_empty,
                        const gfx::Transform& transform_for_tile_priority,
                        bool offscreen_pre_raster,
                        bool is_layer)
     : frame(frame.Pass()),
-      viewport_rect_for_tile_priority(viewport_rect_for_tile_priority),
+      viewport_rect_for_tile_priority_empty(
+          viewport_rect_for_tile_priority_empty),
       transform_for_tile_priority(transform_for_tile_priority),
       offscreen_pre_raster(offscreen_pre_raster),
-      is_layer(is_layer) {
-}
+      is_layer(is_layer) {}
 
 ChildFrame::~ChildFrame() {
 }
