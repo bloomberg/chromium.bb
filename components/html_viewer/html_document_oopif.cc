@@ -16,7 +16,7 @@
 #include "components/html_viewer/document_resource_waiter.h"
 #include "components/html_viewer/frame.h"
 #include "components/html_viewer/frame_tree_manager.h"
-#include "components/html_viewer/setup.h"
+#include "components/html_viewer/global_state.h"
 #include "components/html_viewer/web_url_loader_impl.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/cpp/view.h"
@@ -46,17 +46,17 @@ bool EnableRemoteDebugging() {
 HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
                                      mojo::ApplicationConnection* connection,
                                      mojo::URLResponsePtr response,
-                                     Setup* setup,
+                                     GlobalState* global_state,
                                      const DeleteCallback& delete_callback)
     : app_refcount_(
           html_document_app->app_lifetime_helper()->CreateAppRefCount()),
       html_document_app_(html_document_app),
       connection_(connection),
       view_manager_client_factory_(html_document_app->shell(), this),
-      setup_(setup),
+      global_state_(global_state),
       delete_callback_(delete_callback) {
   // TODO(sky): nuke headless. We're not going to care about it anymore.
-  DCHECK(!setup_->is_headless());
+  DCHECK(!global_state_->is_headless());
 
   connection->AddService(
       static_cast<mojo::InterfaceFactory<mandoline::FrameTreeClient>*>(this));
@@ -64,7 +64,7 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
   connection->AddService(&view_manager_client_factory_);
 
   resource_waiter_.reset(
-      new DocumentResourceWaiter(setup_, response.Pass(), this));
+      new DocumentResourceWaiter(global_state_, response.Pass(), this));
   LoadIfNecessary();
 }
 
@@ -105,7 +105,7 @@ void HTMLDocumentOOPIF::Load() {
   DCHECK(resource_waiter_ && resource_waiter_->IsReady());
 
   mojo::View* view = resource_waiter_->root();
-  setup_->InitIfNecessary(
+  global_state_->InitIfNecessary(
       view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
       view->viewport_metrics().device_pixel_ratio);
 
@@ -119,9 +119,9 @@ void HTMLDocumentOOPIF::Load() {
 
   view->RemoveObserver(this);
 
-  frame_tree_manager_.reset(new FrameTreeManager(setup_, html_document_app_,
-                                                 connection_, view->id(),
-                                                 frame_tree_server.Pass()));
+  frame_tree_manager_.reset(
+      new FrameTreeManager(global_state_, html_document_app_, connection_,
+                           view->id(), frame_tree_server.Pass()));
   frame_tree_manager_->set_delegate(this);
   frame_tree_manager_binding_.reset(
       new mojo::Binding<mandoline::FrameTreeClient>(

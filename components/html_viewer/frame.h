@@ -110,7 +110,7 @@ class Frame : public blink::WebFrameClient,
   // See comment in SwapToRemote() for details on this.
   void FinishSwapToRemote();
 
-  Setup* setup() { return frame_tree_manager_->setup(); }
+  GlobalState* global_state() { return frame_tree_manager_->global_state(); }
 
   // Returns the Frame associated with the specified WebFrame.
   Frame* FindFrameWithWebFrame(blink::WebFrame* web_frame);

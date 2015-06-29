@@ -38,7 +38,7 @@ class DevToolsAgentImpl;
 class DocumentResourceWaiter;
 class Frame;
 class FrameTreeManager;
-class Setup;
+class GlobalState;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
@@ -62,7 +62,7 @@ class HTMLDocumentOOPIF
   HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
                     mojo::ApplicationConnection* connection,
                     mojo::URLResponsePtr response,
-                    Setup* setup,
+                    GlobalState* setup,
                     const DeleteCallback& delete_callback);
 
   // Deletes this object.
@@ -112,7 +112,7 @@ class HTMLDocumentOOPIF
   // A flag set on didFinishLoad.
   bool did_finish_main_frame_load_ = false;
 
-  Setup* setup_;
+  GlobalState* global_state_;
 
   scoped_ptr<FrameTreeManager> frame_tree_manager_;
   scoped_ptr<mojo::Binding<mandoline::FrameTreeClient>>

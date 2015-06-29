@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/html_viewer/setup.h"
+#include "components/html_viewer/global_state.h"
 
 #include <string>
 
@@ -60,7 +60,7 @@ std::set<std::string> GetResourcePaths() {
 
 }  // namespace
 
-Setup::Setup(mojo::ApplicationImpl* app)
+GlobalState::GlobalState(mojo::ApplicationImpl* app)
     : app_(app),
       resource_loader_(app->shell(), GetResourcePaths()),
       is_headless_(
@@ -73,15 +73,15 @@ Setup::Setup(mojo::ApplicationImpl* app)
     InitIfNecessary(gfx::Size(1024, 1024), 1.f);
 }
 
-Setup::~Setup() {
+GlobalState::~GlobalState() {
   if (blink_platform_) {
     renderer_scheduler_->Shutdown();
     blink::shutdown();
   }
 }
 
-void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
-                            float device_pixel_ratio) {
+void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
+                                  float device_pixel_ratio) {
   if (did_init_)
     return;
 

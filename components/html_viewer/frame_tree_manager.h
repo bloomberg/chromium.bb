@@ -35,7 +35,7 @@ namespace html_viewer {
 
 class Frame;
 class FrameTreeManagerDelegate;
-class Setup;
+class GlobalState;
 
 // FrameTreeManager is responsible for managing the frames that comprise a
 // document. Some of the frames may be remote. FrameTreeManager updates its
@@ -44,7 +44,7 @@ class Setup;
 // that is backed by a mojo::View.
 class FrameTreeManager : public mandoline::FrameTreeClient {
  public:
-  FrameTreeManager(Setup* setup,
+  FrameTreeManager(GlobalState* global_state,
                    mojo::ApplicationImpl* app,
                    mojo::ApplicationConnection* app_connection,
                    uint32_t local_frame_id,
@@ -58,7 +58,7 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
     delegate_ = delegate;
   }
 
-  Setup* setup() { return setup_; }
+  GlobalState* global_state() { return global_state_; }
   mojo::ApplicationImpl* app() { return app_; }
 
   // Returns the Frame/WebFrame that is rendering to the supplied view.
@@ -92,7 +92,7 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
   void OnFrameAdded(mandoline::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t frame_id) override;
 
-  Setup* setup_;
+  GlobalState* global_state_;
 
   mojo::ApplicationImpl* app_;
 

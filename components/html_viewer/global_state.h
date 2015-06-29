@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HTML_VIEWER_SETUP_H_
-#define COMPONENTS_HTML_VIEWER_SETUP_H_
+#ifndef COMPONENTS_HTML_VIEWER_GLOBAL_STATE_H_
+#define COMPONENTS_HTML_VIEWER_GLOBAL_STATE_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,17 +34,18 @@ namespace html_viewer {
 class BlinkPlatformImpl;
 class MediaFactory;
 
-// Setup encapsulates the necessary state needed by HTMLViewer. Some objects
-// are created immediately in the constructor, otherwise not until
+// GlobalState encapsulates the necessary state needed by HTMLViewer. Some
+// objects are created immediately in the constructor, otherwise not until
 // InitIfNecessary() is invoked.
-// Setup can be initialized in two distinct ways:
+//
+// GlobalState can be initialized in two distinct ways:
 // . headless: this is determined by the command line, but can be forced by way
 //   of InitHeadless().
 // . with a ui: this is done via InitIfNecessary().
-class Setup {
+class GlobalState {
  public:
-  explicit Setup(mojo::ApplicationImpl* app);
-  ~Setup();
+  explicit GlobalState(mojo::ApplicationImpl* app);
+  ~GlobalState();
 
   // Inits with the specified screen size and device pixel ratio.
   // NOTE: we wait to complete setup until the device pixel ratio is available
@@ -109,9 +110,9 @@ class Setup {
   gles2::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
   scoped_ptr<MediaFactory> media_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(Setup);
+  DISALLOW_COPY_AND_ASSIGN(GlobalState);
 };
 
 }  // namespace html_viewer
 
-#endif  // COMPONENTS_HTML_VIEWER_SETUP_H_
+#endif  // COMPONENTS_HTML_VIEWER_GLOBAL_STATE_H_

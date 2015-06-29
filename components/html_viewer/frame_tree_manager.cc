@@ -11,7 +11,7 @@
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/frame.h"
 #include "components/html_viewer/frame_tree_manager_delegate.h"
-#include "components/html_viewer/setup.h"
+#include "components/html_viewer/global_state.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -81,12 +81,12 @@ Frame* BuildFrameTree(FrameTreeManager* frame_tree_manager,
 
 }  // namespace
 
-FrameTreeManager::FrameTreeManager(Setup* setup,
+FrameTreeManager::FrameTreeManager(GlobalState* global_state,
                                    mojo::ApplicationImpl* app,
                                    mojo::ApplicationConnection* app_connection,
                                    uint32_t local_frame_id,
                                    mandoline::FrameTreeServerPtr server)
-    : setup_(setup),
+    : global_state_(global_state),
       app_(app),
       delegate_(nullptr),
       local_frame_id_(local_frame_id),

@@ -40,7 +40,7 @@ namespace html_viewer {
 
 class AxProviderImpl;
 class DevToolsAgentImpl;
-class Setup;
+class GlobalState;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
@@ -60,14 +60,14 @@ class HTMLDocument : public blink::WebViewClient,
     CreateParams(mojo::ApplicationImpl* html_document_app,
                  mojo::ApplicationConnection* connection,
                  mojo::URLResponsePtr response,
-                 Setup* setup,
+                 GlobalState* global_state,
                  const DeleteCallback& delete_callback);
     ~CreateParams();
 
     mojo::ApplicationImpl* html_document_app;
     mojo::ApplicationConnection* connection;
     mojo::URLResponsePtr response;
-    Setup* setup;
+    GlobalState* global_state;
     DeleteCallback delete_callback;
   };
 
@@ -93,7 +93,7 @@ class HTMLDocument : public blink::WebViewClient,
   // |root_|.
   void UpdateWebviewSizeFromViewSize();
 
-  void InitSetupAndLoadIfNecessary();
+  void InitGlobalStateAndLoadIfNecessary();
 
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
@@ -176,7 +176,7 @@ class HTMLDocument : public blink::WebViewClient,
   // A flag set on didFinishLoad.
   bool did_finish_load_ = false;
 
-  Setup* setup_;
+  GlobalState* global_state_;
 
   scoped_ptr<TouchHandler> touch_handler_;
 

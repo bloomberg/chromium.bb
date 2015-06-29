@@ -11,9 +11,9 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_document_oopif.h"
-#include "components/html_viewer/setup.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -60,7 +60,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   HTMLDocumentApplicationDelegate(
       mojo::InterfaceRequest<mojo::Application> request,
       mojo::URLResponsePtr response,
-      Setup* setup,
+      GlobalState* setup,
       scoped_ptr<mojo::AppRefCount> parent_app_refcount)
       : app_(this,
              request.Pass(),
@@ -166,7 +166,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   mojo::NetworkServicePtr network_service_;
   mojo::URLLoaderFactoryPtr url_loader_factory_;
   URLResponsePtr initial_response_;
-  Setup* setup_;
+  GlobalState* setup_;
 
   // As we create HTMLDocuments they are added here. They are removed when the
   // HTMLDocument is deleted.
@@ -181,7 +181,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
 
 class ContentHandlerImpl : public mojo::ContentHandler {
  public:
-  ContentHandlerImpl(Setup* setup,
+  ContentHandlerImpl(GlobalState* setup,
                      mojo::ApplicationImpl* app,
                      mojo::InterfaceRequest<ContentHandler> request)
       : setup_(setup), app_(app), binding_(this, request.Pass()) {}
@@ -197,7 +197,7 @@ class ContentHandlerImpl : public mojo::ContentHandler {
         app_->app_lifetime_helper()->CreateAppRefCount());
   }
 
-  Setup* setup_;
+  GlobalState* setup_;
   mojo::ApplicationImpl* app_;
   mojo::StrongBinding<mojo::ContentHandler> binding_;
 
@@ -214,7 +214,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
     app_ = app;
-    setup_.reset(new Setup(app));
+    setup_.reset(new GlobalState(app));
   }
 
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
@@ -228,7 +228,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     new ContentHandlerImpl(setup_.get(), app_, request.Pass());
   }
 
-  scoped_ptr<Setup> setup_;
+  scoped_ptr<GlobalState> setup_;
   mojo::ApplicationImpl* app_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);

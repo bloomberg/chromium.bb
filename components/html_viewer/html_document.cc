@@ -16,8 +16,8 @@
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/devtools_agent_impl.h"
+#include "components/html_viewer/global_state.h"
 #include "components/html_viewer/media_factory.h"
-#include "components/html_viewer/setup.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
@@ -146,12 +146,12 @@ HTMLDocument::CreateParams::CreateParams(
     mojo::ApplicationImpl* html_document_app,
     mojo::ApplicationConnection* connection,
     mojo::URLResponsePtr response,
-    Setup* setup,
+    GlobalState* global_state,
     const DeleteCallback& delete_callback)
     : html_document_app(html_document_app),
       connection(connection),
       response(response.Pass()),
-      setup(setup),
+      global_state(global_state),
       delete_callback(delete_callback) {
 }
 
@@ -167,13 +167,13 @@ HTMLDocument::HTMLDocument(HTMLDocument::CreateParams* params)
       web_view_(nullptr),
       root_(nullptr),
       view_manager_client_factory_(params->html_document_app->shell(), this),
-      setup_(params->setup),
+      global_state_(params->global_state),
       delete_callback_(params->delete_callback) {
   params->connection->AddService(
       static_cast<InterfaceFactory<mojo::AxProvider>*>(this));
   params->connection->AddService(&view_manager_client_factory_);
 
-  if (setup_->did_init())
+  if (global_state_->did_init())
     Load(response_.Pass());
 }
 
@@ -201,12 +201,12 @@ HTMLDocument::~HTMLDocument() {
 }
 
 void HTMLDocument::OnEmbed(View* root) {
-  DCHECK(!setup_->is_headless());
+  DCHECK(!global_state_->is_headless());
   root_ = root;
   root_->AddObserver(this);
   UpdateFocus();
 
-  InitSetupAndLoadIfNecessary();
+  InitGlobalStateAndLoadIfNecessary();
 }
 
 void HTMLDocument::OnViewManagerDestroyed(ViewManager* view_manager) {
@@ -261,7 +261,7 @@ void HTMLDocument::Load(URLResponsePtr response) {
 }
 
 void HTMLDocument::UpdateWebviewSizeFromViewSize() {
-  web_view_->setDeviceScaleFactor(setup_->device_pixel_ratio());
+  web_view_->setDeviceScaleFactor(global_state_->device_pixel_ratio());
   const gfx::Size size_in_pixels(root_->bounds().width, root_->bounds().height);
   const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
       root_->viewport_metrics().device_pixel_ratio, size_in_pixels);
@@ -270,13 +270,13 @@ void HTMLDocument::UpdateWebviewSizeFromViewSize() {
   web_layer_tree_view_impl_->setViewportSize(size_in_pixels);
 }
 
-void HTMLDocument::InitSetupAndLoadIfNecessary() {
+void HTMLDocument::InitGlobalStateAndLoadIfNecessary() {
   DCHECK(root_);
   if (root_->viewport_metrics().device_pixel_ratio == 0.f)
     return;
 
   if (!web_view_) {
-    setup_->InitIfNecessary(
+    global_state_->InitIfNecessary(
         root_->viewport_metrics().size_in_pixels.To<gfx::Size>(),
         root_->viewport_metrics().device_pixel_ratio);
     Load(response_.Pass());
@@ -291,9 +291,10 @@ blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
 }
 
 void HTMLDocument::initializeLayerTreeView() {
-  if (setup_->is_headless()) {
-    web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-        setup_->compositor_thread(), nullptr, nullptr, nullptr, nullptr));
+  if (global_state_->is_headless()) {
+    web_layer_tree_view_impl_.reset(
+        new WebLayerTreeViewImpl(global_state_->compositor_thread(), nullptr,
+                                 nullptr, nullptr, nullptr));
     return;
   }
 
@@ -308,9 +309,10 @@ void HTMLDocument::initializeLayerTreeView() {
   mojo::GpuPtr gpu_service;
   html_document_app_->ConnectToService(request2.Pass(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-      setup_->compositor_thread(), setup_->gpu_memory_buffer_manager(),
-      setup_->raster_thread_helper()->task_graph_runner(), surface.Pass(),
-      gpu_service.Pass()));
+      global_state_->compositor_thread(),
+      global_state_->gpu_memory_buffer_manager(),
+      global_state_->raster_thread_helper()->task_graph_runner(),
+      surface.Pass(), gpu_service.Pass()));
 }
 
 blink::WebLayerTreeView* HTMLDocument::layerTreeView() {
@@ -322,7 +324,7 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
-  return setup_->media_factory()->CreateMediaPlayer(
+  return global_state_->media_factory()->CreateMediaPlayer(
       frame, url, client, initial_cdm, html_document_app_->shell());
 }
 
@@ -409,7 +411,7 @@ void HTMLDocument::didNavigateWithinPage(
 }
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
-  return setup_->media_factory()->GetEncryptedMediaClient();
+  return global_state_->media_factory()->GetEncryptedMediaClient();
 }
 
 void HTMLDocument::OnViewBoundsChanged(View* view,
@@ -423,7 +425,7 @@ void HTMLDocument::OnViewViewportMetricsChanged(
     mojo::View* view,
     const mojo::ViewportMetrics& old_metrics,
     const mojo::ViewportMetrics& new_metrics) {
-  InitSetupAndLoadIfNecessary();
+  InitGlobalStateAndLoadIfNecessary();
 }
 
 void HTMLDocument::OnViewDestroyed(View* view) {
@@ -434,10 +436,10 @@ void HTMLDocument::OnViewDestroyed(View* view) {
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
   if (event->pointer_data) {
     // Blink expects coordintes to be in DIPs.
-    event->pointer_data->x /= setup_->device_pixel_ratio();
-    event->pointer_data->y /= setup_->device_pixel_ratio();
-    event->pointer_data->screen_x /= setup_->device_pixel_ratio();
-    event->pointer_data->screen_y /= setup_->device_pixel_ratio();
+    event->pointer_data->x /= global_state_->device_pixel_ratio();
+    event->pointer_data->y /= global_state_->device_pixel_ratio();
+    event->pointer_data->screen_x /= global_state_->device_pixel_ratio();
+    event->pointer_data->screen_y /= global_state_->device_pixel_ratio();
   }
 
   if ((event->action == mojo::EVENT_TYPE_POINTER_DOWN ||

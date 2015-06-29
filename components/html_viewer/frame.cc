@@ -15,8 +15,8 @@
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/frame_tree_manager.h"
+#include "components/html_viewer/global_state.h"
 #include "components/html_viewer/media_factory.h"
-#include "components/html_viewer/setup.h"
 #include "components/html_viewer/touch_handler.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
@@ -115,7 +115,7 @@ void Frame::Init(mojo::View* local_view) {
         local_view->viewport_metrics().device_pixel_ratio, size_in_pixels);
     web_widget_->resize(size_in_dips);
     web_frame_ = local_web_frame;
-    web_view()->setDeviceScaleFactor(setup()->device_pixel_ratio());
+    web_view()->setDeviceScaleFactor(global_state()->device_pixel_ratio());
     if (id_ != local_view->id()) {
       blink::WebRemoteFrame* remote_web_frame = blink::WebRemoteFrame::create(
           blink::WebTreeScopeType::Document, this);
@@ -321,10 +321,10 @@ void Frame::OnViewDestroyed(View* view) {
 void Frame::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
   if (event->pointer_data) {
     // Blink expects coordintes to be in DIPs.
-    event->pointer_data->x /= setup()->device_pixel_ratio();
-    event->pointer_data->y /= setup()->device_pixel_ratio();
-    event->pointer_data->screen_x /= setup()->device_pixel_ratio();
-    event->pointer_data->screen_y /= setup()->device_pixel_ratio();
+    event->pointer_data->x /= global_state()->device_pixel_ratio();
+    event->pointer_data->y /= global_state()->device_pixel_ratio();
+    event->pointer_data->screen_x /= global_state()->device_pixel_ratio();
+    event->pointer_data->screen_y /= global_state()->device_pixel_ratio();
   }
 
   if (!touch_handler_ && web_widget_)
@@ -365,9 +365,10 @@ void Frame::initializeLayerTreeView() {
   mojo::GpuPtr gpu_service;
   frame_tree_manager_->app()->ConnectToService(request2.Pass(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
-      setup()->compositor_thread(), setup()->gpu_memory_buffer_manager(),
-      setup()->raster_thread_helper()->task_graph_runner(), surface.Pass(),
-      gpu_service.Pass()));
+      global_state()->compositor_thread(),
+      global_state()->gpu_memory_buffer_manager(),
+      global_state()->raster_thread_helper()->task_graph_runner(),
+      surface.Pass(), gpu_service.Pass()));
 }
 
 blink::WebLayerTreeView* Frame::layerTreeView() {
@@ -383,7 +384,7 @@ blink::WebMediaPlayer* Frame::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
-  return setup()->media_factory()->CreateMediaPlayer(
+  return global_state()->media_factory()->CreateMediaPlayer(
       frame, url, client, initial_cdm, frame_tree_manager_->app()->shell());
 }
 
@@ -466,7 +467,7 @@ void Frame::didNavigateWithinPage(blink::WebLocalFrame* frame,
 }
 
 blink::WebEncryptedMediaClient* Frame::encryptedMediaClient() {
-  return setup()->media_factory()->GetEncryptedMediaClient();
+  return global_state()->media_factory()->GetEncryptedMediaClient();
 }
 
 void Frame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {

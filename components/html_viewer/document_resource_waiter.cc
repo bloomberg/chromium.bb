@@ -5,16 +5,16 @@
 #include "components/html_viewer/document_resource_waiter.h"
 
 #include "components/html_viewer/frame_tree_manager.h"
+#include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document_oopif.h"
-#include "components/html_viewer/setup.h"
 #include "components/view_manager/public/cpp/view.h"
 
 namespace html_viewer {
 
-DocumentResourceWaiter::DocumentResourceWaiter(Setup* setup,
+DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
                                                mojo::URLResponsePtr response,
                                                HTMLDocumentOOPIF* document)
-    : setup_(setup),
+    : global_state_(global_state),
       document_(document),
       response_(response.Pass()),
       root_(nullptr),

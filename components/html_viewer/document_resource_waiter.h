@@ -16,7 +16,7 @@ class View;
 namespace html_viewer {
 
 class HTMLDocumentOOPIF;
-class Setup;
+class GlobalState;
 
 // DocumentResourceWaiter waits for the necessary resources needed to load an
 // HTMLDocument. Use IsReady() to determine when everything is available. Once
@@ -24,7 +24,7 @@ class Setup;
 // FrameData.
 class DocumentResourceWaiter : public mandoline::FrameTreeClient {
  public:
-  DocumentResourceWaiter(Setup* setup,
+  DocumentResourceWaiter(GlobalState* global_state,
                          mojo::URLResponsePtr response,
                          HTMLDocumentOOPIF* document);
   ~DocumentResourceWaiter() override;
@@ -51,7 +51,7 @@ class DocumentResourceWaiter : public mandoline::FrameTreeClient {
   void OnFrameAdded(mandoline::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t frame_id) override;
 
-  Setup* setup_;
+  GlobalState* global_state_;
   HTMLDocumentOOPIF* document_;
   mojo::URLResponsePtr response_;
   mojo::View* root_;
