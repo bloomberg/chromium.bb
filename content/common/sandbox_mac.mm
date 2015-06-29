@@ -43,6 +43,15 @@ extern "C" {
 extern "C" {
 void CGSSetDenyWindowServerConnections(bool);
 void CGSShutdownServerConnections();
+
+void* sandbox_create_params();
+int sandbox_set_param(void* params, const char* key, const char* value);
+void* sandbox_compile_string(const char* profile_str,
+                             void* params,
+                             char** error);
+int sandbox_apply(void* profile);
+void sandbox_free_params(void* params);
+void sandbox_free_profile(void* profile);
 };
 
 namespace content {
@@ -116,37 +125,59 @@ NOINLINE void FatalStringQuoteException(const std::string& str) {
 
 }  // namespace
 
-// static
-NSString* Sandbox::AllowMetadataForPath(const base::FilePath& allowed_path) {
-  // Collect a list of all parent directories.
-  base::FilePath last_path = allowed_path;
-  std::vector<base::FilePath> subpaths;
-  for (base::FilePath path = allowed_path;
-       path.value() != last_path.value();
-       path = path.DirName()) {
-    subpaths.push_back(path);
-    last_path = path;
+SandboxCompiler::SandboxCompiler(const std::string& profile_str)
+    : params_map_(), profile_str_(profile_str) {
+}
+
+SandboxCompiler::~SandboxCompiler() {
+}
+
+bool SandboxCompiler::InsertBooleanParam(const std::string& key, bool value) {
+  return params_map_.insert(std::make_pair(key, value ? "TRUE" : "FALSE"))
+      .second;
+}
+
+bool SandboxCompiler::InsertStringParam(const std::string& key,
+                                        const std::string& value) {
+  return params_map_.insert(std::make_pair(key, value)).second;
+}
+
+void SandboxCompiler::FreeSandboxResources(void* profile,
+                                           void* params,
+                                           char* error) {
+  if (error)
+    sandbox_free_error(error);
+  if (params)
+    sandbox_free_params(params);
+  if (profile)
+    sandbox_free_profile(profile);
+}
+
+bool SandboxCompiler::CompileAndApplyProfile(std::string* error) {
+  char* error_internal = nullptr;
+  void* profile = nullptr;
+  void* params = nullptr;
+
+  if (!params_map_.empty()) {
+    params = sandbox_create_params();
+    if (!params)
+      return false;
+
+    for (const auto& kv : params_map_)
+      sandbox_set_param(params, kv.first.c_str(), kv.second.c_str());
   }
 
-  // Iterate through all parents and allow stat() on them explicitly.
-  NSString* sandbox_command = @"(allow file-read-metadata ";
-  for (std::vector<base::FilePath>::reverse_iterator i = subpaths.rbegin();
-       i != subpaths.rend();
-       ++i) {
-    std::string subdir_escaped;
-    if (!QuotePlainString(i->value(), &subdir_escaped)) {
-      FatalStringQuoteException(i->value());
-      return nil;
-    }
-
-    NSString* subdir_escaped_ns =
-        base::SysUTF8ToNSString(subdir_escaped.c_str());
-    sandbox_command =
-        [sandbox_command stringByAppendingFormat:@"(literal \"%@\")",
-            subdir_escaped_ns];
+  profile =
+      sandbox_compile_string(profile_str_.c_str(), params, &error_internal);
+  if (!profile) {
+    error->assign(error_internal);
+    FreeSandboxResources(profile, params, error_internal);
+    return false;
   }
 
-  return [sandbox_command stringByAppendingString:@")"];
+  int result = sandbox_apply(profile);
+  FreeSandboxResources(profile, params, error_internal);
+  return result == 0;
 }
 
 // static
@@ -349,41 +380,6 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
   }
 }
 
-// static
-NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
-    const base::FilePath& allowed_dir,
-    SandboxVariableSubstitions* substitutions) {
-  // A whitelist is used to determine which directories can be statted
-  // This means that in the case of an /a/b/c/d/ directory, we may be able to
-  // stat the leaf directory, but not its parent.
-  // The extension code in Chrome calls realpath() which fails if it can't call
-  // stat() on one of the parent directories in the path.
-  // The solution to this is to allow statting the parent directories themselves
-  // but not their contents.  We need to add a separate rule for each parent
-  // directory.
-
-  // The sandbox only understands "real" paths.  This resolving step is
-  // needed so the caller doesn't need to worry about things like /var
-  // being a link to /private/var (like in the paths CreateNewTempDirectory()
-  // returns).
-  base::FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
-
-  NSString* sandbox_command = AllowMetadataForPath(allowed_dir_canonical);
-  sandbox_command = [sandbox_command
-      substringToIndex:[sandbox_command length] - 1];  // strip trailing ')'
-
-  // Finally append the leaf directory.  Unlike its parents (for which only
-  // stat() should be allowed), the leaf directory needs full access.
-  (*substitutions)["ALLOWED_DIR"] =
-      SandboxSubstring(allowed_dir_canonical.value(),
-                       SandboxSubstring::REGEX);
-  sandbox_command =
-      [sandbox_command
-          stringByAppendingString:@") (allow file-read* file-write*"
-                                   " (regex #\"@ALLOWED_DIR@\") )"];
-  return sandbox_command;
-}
-
 // Load the appropriate template for the given sandbox type.
 // Returns the template as an NSString or nil on error.
 NSString* LoadSandboxTemplate(int sandbox_type) {
@@ -441,75 +437,6 @@ NSString* LoadSandboxTemplate(int sandbox_type) {
   return [common_sandbox_prefix_data stringByAppendingString:sandbox_data];
 }
 
-// static
-bool Sandbox::PostProcessSandboxProfile(
-        NSString* sandbox_template,
-        NSArray* comments_to_remove,
-        SandboxVariableSubstitions& substitutions,
-        std::string *final_sandbox_profile_str) {
-  NSString* sandbox_data = [[sandbox_template copy] autorelease];
-
-  // Remove comments, e.g. ;10.7_OR_ABOVE .
-  for (NSString* to_remove in comments_to_remove) {
-    sandbox_data = [sandbox_data stringByReplacingOccurrencesOfString:to_remove
-                                                           withString:@""];
-  }
-
-  // Split string on "@" characters.
-  std::vector<std::string> raw_sandbox_pieces;
-  if (Tokenize([sandbox_data UTF8String], "@", &raw_sandbox_pieces) == 0) {
-    DLOG(FATAL) << "Bad Sandbox profile, should contain at least one token ("
-                << [sandbox_data UTF8String]
-                << ")";
-    return false;
-  }
-
-  // Iterate over string pieces and substitute variables, escaping as necessary.
-  size_t output_string_length = 0;
-  std::vector<std::string> processed_sandbox_pieces(raw_sandbox_pieces.size());
-  for (std::vector<std::string>::iterator it = raw_sandbox_pieces.begin();
-       it != raw_sandbox_pieces.end();
-       ++it) {
-    std::string new_piece;
-    SandboxVariableSubstitions::iterator replacement_it =
-        substitutions.find(*it);
-    if (replacement_it == substitutions.end()) {
-      new_piece = *it;
-    } else {
-      // Found something to substitute.
-      SandboxSubstring& replacement = replacement_it->second;
-      switch (replacement.type()) {
-        case SandboxSubstring::PLAIN:
-          new_piece = replacement.value();
-          break;
-
-        case SandboxSubstring::LITERAL:
-          if (!QuotePlainString(replacement.value(), &new_piece))
-            FatalStringQuoteException(replacement.value());
-          break;
-
-        case SandboxSubstring::REGEX:
-          if (!QuoteStringForRegex(replacement.value(), &new_piece))
-            FatalStringQuoteException(replacement.value());
-          break;
-      }
-    }
-    output_string_length += new_piece.size();
-    processed_sandbox_pieces.push_back(new_piece);
-  }
-
-  // Build final output string.
-  final_sandbox_profile_str->reserve(output_string_length);
-
-  for (std::vector<std::string>::iterator it = processed_sandbox_pieces.begin();
-       it != processed_sandbox_pieces.end();
-       ++it) {
-    final_sandbox_profile_str->append(*it);
-  }
-  return true;
-}
-
-
 // Turns on the OS X sandbox for this process.
 
 // static
@@ -528,22 +455,19 @@ bool Sandbox::EnableSandbox(int sandbox_type,
     return false;
   }
 
-  SandboxVariableSubstitions substitutions;
+  SandboxCompiler compiler([sandbox_data UTF8String]);
+
   if (!allowed_dir.empty()) {
-    // Add the sandbox commands necessary to access the given directory.
-    // Note: this function must be called before PostProcessSandboxProfile()
-    // since the string it inserts contains variables that need substitution.
-    NSString* allowed_dir_sandbox_command =
-        BuildAllowDirectoryAccessSandboxString(allowed_dir, &substitutions);
-
-    if (allowed_dir_sandbox_command) {  // May be nil if function fails.
-      sandbox_data = [sandbox_data
-          stringByReplacingOccurrencesOfString:@";ENABLE_DIRECTORY_ACCESS"
-                                    withString:allowed_dir_sandbox_command];
+    // Add the sandbox parameters necessary to access the given directory.
+    base::FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
+    std::string regex;
+    if (!QuoteStringForRegex(allowed_dir_canonical.value(), &regex)) {
+      FatalStringQuoteException(allowed_dir_canonical.value());
+      return false;
     }
+    if (!compiler.InsertStringParam("PERMITTED_DIR", regex))
+      return false;
   }
-
-  NSMutableArray* tokens_to_remove = [NSMutableArray array];
 
   // Enable verbose logging if enabled on the command line. (See common.sb
   // for details).
@@ -551,20 +475,14 @@ bool Sandbox::EnableSandbox(int sandbox_type,
       base::CommandLine::ForCurrentProcess();
   bool enable_logging =
       command_line->HasSwitch(switches::kEnableSandboxLogging);;
-  if (enable_logging) {
-    [tokens_to_remove addObject:@";ENABLE_LOGGING"];
-  }
-
-  bool lion_or_later = base::mac::IsOSLionOrLater();
+  if (!compiler.InsertBooleanParam("ENABLE_LOGGING", enable_logging))
+    return false;
 
   // Without this, the sandbox will print a message to the system log every
   // time it denies a request.  This floods the console with useless spew.
-  if (!enable_logging) {
-    substitutions["DISABLE_SANDBOX_DENIAL_LOGGING"] =
-        SandboxSubstring("(with no-log)");
-  } else {
-    substitutions["DISABLE_SANDBOX_DENIAL_LOGGING"] = SandboxSubstring("");
-  }
+  if (!compiler.InsertBooleanParam("DISABLE_SANDBOX_DENIAL_LOGGING",
+                                   !enable_logging))
+    return false;
 
   // Splice the path of the user's home directory into the sandbox profile
   // (see renderer.sb for details).
@@ -573,47 +491,33 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   base::FilePath home_dir_canonical =
       GetCanonicalSandboxPath(base::FilePath(home_dir));
 
-  substitutions["USER_HOMEDIR_AS_LITERAL"] =
-      SandboxSubstring(home_dir_canonical.value(),
-          SandboxSubstring::LITERAL);
-
-  if (lion_or_later) {
-    // >=10.7 Sandbox rules.
-    [tokens_to_remove addObject:@";10.7_OR_ABOVE"];
+  std::string quoted_home_dir;
+  if (!QuotePlainString(home_dir_canonical.value(), &quoted_home_dir)) {
+    FatalStringQuoteException(home_dir_canonical.value());
+    return false;
   }
 
-  substitutions["COMPONENT_BUILD_WORKAROUND"] = SandboxSubstring("");
+  if (!compiler.InsertStringParam("USER_HOMEDIR_AS_LITERAL", quoted_home_dir))
+    return false;
+
+  bool lion_or_later = base::mac::IsOSLionOrLater();
+  if (!compiler.InsertBooleanParam("LION_OR_LATER", lion_or_later))
+    return false;
+
 #if defined(COMPONENT_BUILD)
   // dlopen() fails without file-read-metadata access if the executable image
   // contains LC_RPATH load commands. The components build uses those.
   // See http://crbug.com/127465
   if (base::mac::IsOSSnowLeopard()) {
-    base::FilePath bundle_executable = base::mac::NSStringToFilePath(
-        [base::mac::MainBundle() executablePath]);
-    NSString* sandbox_command = AllowMetadataForPath(
-        GetCanonicalSandboxPath(bundle_executable));
-    substitutions["COMPONENT_BUILD_WORKAROUND"] =
-        SandboxSubstring(base::SysNSStringToUTF8(sandbox_command));
+    if (!compiler.InsertBooleanParam("COMPONENT_BUILD_WORKAROUND", true))
+      return false;
   }
 #endif
 
-  // All information needed to assemble the final profile has been collected.
-  // Merge it all together.
-  std::string final_sandbox_profile_str;
-  if (!PostProcessSandboxProfile(sandbox_data, tokens_to_remove, substitutions,
-                                 &final_sandbox_profile_str)) {
-    return false;
-  }
-
   // Initialize sandbox.
-  char* error_buff = NULL;
-  int error = sandbox_init(final_sandbox_profile_str.c_str(), 0, &error_buff);
-  bool success = (error == 0 && error_buff == NULL);
-  DLOG_IF(FATAL, !success) << "Failed to initialize sandbox: "
-                           << error
-                           << " "
-                           << error_buff;
-  sandbox_free_error(error_buff);
+  std::string error_str;
+  bool success = compiler.CompileAndApplyProfile(&error_str);
+  DLOG_IF(FATAL, !success) << "Failed to initialize sandbox: " << error_str;
   gSandboxIsActive = success;
   return success;
 }

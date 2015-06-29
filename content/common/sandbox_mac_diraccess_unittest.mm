@@ -183,41 +183,33 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
   if (!sandbox_allowed_dir)
     return -1;
 
+  std::string final_allowed_dir;
+  EXPECT_TRUE(
+      Sandbox::QuoteStringForRegex(sandbox_allowed_dir, &final_allowed_dir));
+
   // Build up a sandbox profile that only allows access to a single directory.
-  NSString *sandbox_profile =
-      @"(version 1)" \
-      "(deny default)" \
-      "(allow signal (target self))" \
-      "(allow sysctl-read)" \
-      ";ENABLE_DIRECTORY_ACCESS";
+  std::string sandbox_profile =
+      "(version 1)"
+      "(define perm_dir (param \"PERMITTED_DIR\"))"
+      "(deny default)"
+      "(allow signal (target self))"
+      "(allow sysctl-read)"
+      "(if (string? perm_dir)"
+      "    (begin"
+      "       (allow file-read-metadata )"
+      "       (allow file-read* file-write* (regex (string-append #\"\" "
+      "perm_dir)))))";
 
-  std::string allowed_dir(sandbox_allowed_dir);
-  Sandbox::SandboxVariableSubstitions substitutions;
-  NSString* allow_dir_sandbox_code =
-      Sandbox::BuildAllowDirectoryAccessSandboxString(
-          base::FilePath(sandbox_allowed_dir),
-          &substitutions);
-  sandbox_profile = [sandbox_profile
-      stringByReplacingOccurrencesOfString:@";ENABLE_DIRECTORY_ACCESS"
-                                withString:allow_dir_sandbox_code];
-
-  std::string final_sandbox_profile_str;
-  if (!Sandbox::PostProcessSandboxProfile(sandbox_profile,
-                                          [NSArray array],
-                                          substitutions,
-                                          &final_sandbox_profile_str)) {
-    LOG(ERROR) << "Call to PostProcessSandboxProfile() failed";
-    return -1;
-  }
+  // Setup the parameters to pass to the sandbox.
+  SandboxCompiler compiler(sandbox_profile);
+  CHECK(compiler.InsertStringParam("PERMITTED_DIR", final_allowed_dir));
 
   // Enable Sandbox.
-  char* error_buff = NULL;
-  int error = sandbox_init(final_sandbox_profile_str.c_str(), 0, &error_buff);
-  if (error == -1) {
-    LOG(ERROR) << "Failed to Initialize Sandbox: " << error_buff;
+  std::string error_str;
+  if (!compiler.CompileAndApplyProfile(&error_str)) {
+    LOG(ERROR) << "Failed to Initialize Sandbox: " << error_str;
     return -1;
   }
-  sandbox_free_error(error_buff);
 
   // Test Sandbox.
 

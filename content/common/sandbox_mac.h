@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SANDBOX_MAC_H_
 #define CONTENT_COMMON_SANDBOX_MAC_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -27,38 +28,43 @@ class NSString;
 
 namespace content {
 
-// Class representing a substring of the sandbox profile tagged with its type.
-class SandboxSubstring {
+// This class wraps the C-style sandbox APIs in a class to ensure proper
+// initialization and cleanup.
+class CONTENT_EXPORT SandboxCompiler {
  public:
-  enum SandboxSubstringType {
-    PLAIN,    // Just a plain string, no escaping necessary.
-    LITERAL,  // Escape for use in (literal ...) expression.
-    REGEX,    // Escape for use in (regex ...) expression.
-  };
+  explicit SandboxCompiler(const std::string& profile_str);
 
-  SandboxSubstring() {}
+  ~SandboxCompiler();
 
-  explicit SandboxSubstring(const std::string& value)
-      : value_(value),
-        type_(PLAIN) {}
+  // Inserts a boolean into the parameters key/value map. A duplicate key is not
+  // allowed, and will cause the function to return false. The value is not
+  // inserted in this case.
+  bool InsertBooleanParam(const std::string& key, bool value);
 
-  SandboxSubstring(const std::string& value, SandboxSubstringType type)
-      : value_(value),
-        type_(type) {}
+  // Inserts a string into the parameters key/value map. A duplicate key is not
+  // allowed, and will cause the function to return false. The value is not
+  // inserted in this case.
+  bool InsertStringParam(const std::string& key, const std::string& value);
 
-  const std::string& value() { return value_; }
-  SandboxSubstringType type() { return type_; }
+  // Compiles and applies the profile; returns true on success.
+  bool CompileAndApplyProfile(std::string* error);
 
  private:
-  std::string value_;
-  SandboxSubstringType type_;
+  // Frees all of the system resources allocated for the sandbox.
+  void FreeSandboxResources(void* profile, void* params, char* error);
+
+  // Storage of the key/value pairs of strings that are used in the sandbox
+  // profile.
+  std::map<std::string, std::string> params_map_;
+
+  // The sandbox profile source code.
+  const std::string profile_str_;
+
+  DISALLOW_COPY_AND_ASSIGN(SandboxCompiler);
 };
 
 class CONTENT_EXPORT Sandbox {
  public:
-  // A map of variable name -> string to substitute in its place.
-  typedef base::hash_map<std::string, SandboxSubstring>
-      SandboxVariableSubstitions;
 
   // Warm up System APIs that empirically need to be accessed before the
   // sandbox is turned on. |sandbox_type| is the type of sandbox to warm up.
@@ -80,58 +86,6 @@ class CONTENT_EXPORT Sandbox {
   // Returns true if the sandbox has been enabled for the current process.
   static bool SandboxIsCurrentlyActive();
 
-  // Exposed for testing purposes, used by an accessory function of our tests
-  // so we can't use FRIEND_TEST.
-
-  // Build the Sandbox command necessary to allow access to a named directory
-  // indicated by |allowed_dir|.
-  // Returns a string containing the sandbox profile commands necessary to allow
-  // access to that directory or nil if an error occured.
-
-  // The header comment for PostProcessSandboxProfile() explains how variable
-  // substition works in sandbox templates.
-  // The returned string contains embedded variables. The function fills in
-  // |substitutions| to contain the values for these variables.
-  static NSString* BuildAllowDirectoryAccessSandboxString(
-                       const base::FilePath& allowed_dir,
-                       SandboxVariableSubstitions* substitutions);
-
-  // Assemble the final sandbox profile from a template by removing comments
-  // and substituting variables.
-  //
-  // |sandbox_template| is a string which contains 2 entitites to operate on:
-  //
-  // - Comments - The sandbox comment syntax is used to make the OS sandbox
-  // optionally ignore commands it doesn't support. e.g.
-  // ;10.6_ONLY (foo)
-  // Where (foo) is some command that is only supported on OS X 10.6.
-  // The ;10.6_ONLY comment can then be removed from the template to enable
-  // (foo) as appropriate.
-  //
-  // - Variables - denoted by @variable_name@ .  These are defined in the
-  // sandbox template in cases where another string needs to be substituted at
-  // runtime. e.g. @HOMEDIR_AS_LITERAL@ is substituted at runtime for the user's
-  // home directory escaped appropriately for a (literal ...) expression.
-  //
-  // |comments_to_remove| is a list of NSStrings containing the comments to
-  // remove.
-  // |substitutions| is a hash of "variable name" -> "string to substitute".
-  // Where the replacement string is tagged with information on how it is to be
-  // escaped e.g. used as part of a regex string or a literal.
-  //
-  // On output |final_sandbox_profile_str| contains the final sandbox profile.
-  // Returns true on success, false otherwise.
-  static bool PostProcessSandboxProfile(
-                  NSString* in_sandbox_data,
-                  NSArray* comments_to_remove,
-                  SandboxVariableSubstitions& substitutions,
-                  std::string *final_sandbox_profile_str);
-
- private:
-  // Returns an (allow file-read-metadata) rule for |allowed_path| and all its
-  // parent directories.
-  static NSString* AllowMetadataForPath(const base::FilePath& allowed_path);
-
   // Escape |src_utf8| for use in a plain string variable in a sandbox
   // configuraton file.  On return |dst| is set to the quoted output.
   // Returns: true on success, false otherwise.
@@ -152,6 +106,7 @@ class CONTENT_EXPORT Sandbox {
   static bool QuoteStringForRegex(const std::string& str_utf8,
                                   std::string* dst);
 
+ private:
   // Convert provided path into a "canonical" path matching what the Sandbox
   // expects i.e. one without symlinks.
   // This path is not necessarily unique e.g. in the face of hardlinks.

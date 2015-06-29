@@ -671,6 +671,7 @@
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
           '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+          '$(SDKROOT)/usr/lib/libsandbox.dylib',
         ],
       },
       'variables': {
