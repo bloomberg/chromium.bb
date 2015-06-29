@@ -76,7 +76,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
-#include "content/browser/navigator_connect/navigator_connect_dispatcher_host.h"
+#include "content/browser/navigator_connect/service_port_service_impl.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -930,9 +930,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
   AddFilter(new GeofencingDispatcherHost(
       storage_partition_impl_->GetGeofencingManager()));
-  AddFilter(new NavigatorConnectDispatcherHost(
-      storage_partition_impl_->GetNavigatorConnectContext(),
-      message_port_message_filter_.get()));
   if (browser_command_line.HasSwitch(switches::kEnableWebBluetooth)) {
     bluetooth_dispatcher_host_ = new BluetoothDispatcherHost();
     AddFilter(bluetooth_dispatcher_host_.get());
@@ -953,6 +950,11 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(base::Bind(
       &content::BackgroundSyncServiceImpl::Create,
       base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
+
+  mojo_application_host_->service_registry()->AddService(base::Bind(
+      &content::ServicePortServiceImpl::Create,
+      make_scoped_refptr(storage_partition_impl_->GetNavigatorConnectContext()),
+      message_port_message_filter_));
 
 #if defined(OS_ANDROID)
   ServiceRegistrarAndroid::RegisterProcessHostServices(

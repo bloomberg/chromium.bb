@@ -493,6 +493,7 @@ mojom("mojo_bindings") {
     "presentation/presentation_service.mojom",
     "process_control.mojom",
     "render_frame_setup.mojom",
+    "service_port_service.mojom",
     "vr_service.mojom",
   ]
 

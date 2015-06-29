@@ -112,7 +112,6 @@ enum IPCMessageStart {
   LayoutTestMsgStart,
   NetworkHintsMsgStart,
   BluetoothMsgStart,
-  NavigatorConnectMsgStart,
   CastMediaMsgStart,
   AwMessagePortMsgStart,
   ExtensionsGuestViewMsgStart,

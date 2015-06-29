@@ -119,6 +119,32 @@ WebMessagePortChannelImpl::ExtractMessagePortIDs(
 }
 
 // static
+std::vector<TransferredMessagePort>
+WebMessagePortChannelImpl::ExtractMessagePortIDsWithoutQueueing(
+    scoped_ptr<WebMessagePortChannelArray> channels) {
+  if (!channels)
+    return std::vector<TransferredMessagePort>();
+
+  std::vector<TransferredMessagePort> message_ports(channels->size());
+  for (size_t i = 0; i < channels->size(); ++i) {
+    WebMessagePortChannelImpl* webchannel =
+        static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
+    // The message port ids might not be set up yet if this channel
+    // wasn't created on the main thread.
+    DCHECK(webchannel->main_thread_task_runner_->BelongsToCurrentThread());
+    message_ports[i].id = webchannel->message_port_id();
+    message_ports[i].send_messages_as_values =
+        webchannel->send_messages_as_values_;
+    // Don't queue messages, but do increase the child processes ref-count to
+    // ensure this child process stays alive long enough to receive all
+    // in-flight messages.
+    ChildProcess::current()->AddRefProcess();
+    DCHECK(message_ports[i].id != MSG_ROUTING_NONE);
+  }
+  return message_ports;
+}
+
+// static
 WebMessagePortChannelArray WebMessagePortChannelImpl::CreatePorts(
     const std::vector<TransferredMessagePort>& message_ports,
     const std::vector<int>& new_routing_ids,

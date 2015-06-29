@@ -1,0 +1,32 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content;
+
+enum ServicePortConnectResult {
+  ACCEPT,
+  REJECT
+};
+
+struct MojoTransferredMessagePort {
+  int32 id;
+  bool send_messages_as_values;
+};
+
+interface ServicePortService {
+  SetClient(ServicePortServiceClient client);
+
+  Connect(string target_url, string origin)
+      => (ServicePortConnectResult result, int32 port_id);
+
+  PostMessage(int32 port_id, string message,
+              array<MojoTransferredMessagePort> ports);
+  ClosePort(int32 port_id);
+};
+
+interface ServicePortServiceClient {
+  PostMessage(int32 port_id, string message,
+              array<MojoTransferredMessagePort> ports,
+              array<int32> new_routing_ids);
+};

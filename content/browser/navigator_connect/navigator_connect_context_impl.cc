@@ -6,10 +6,18 @@
 
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
+#include "content/browser/navigator_connect/service_port_service_impl.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigator_connect_service_factory.h"
 #include "content/public/common/navigator_connect_client.h"
 
 namespace content {
+
+struct NavigatorConnectContextImpl::Port {
+  int message_port_id;
+  // Set to nullptr when the ServicePortService goes away.
+  ServicePortServiceImpl* service;
+};
 
 NavigatorConnectContextImpl::NavigatorConnectContextImpl() {
 }
@@ -33,27 +41,27 @@ void NavigatorConnectContextImpl::AddFactoryOnIOThread(
 }
 
 void NavigatorConnectContextImpl::Connect(
-    NavigatorConnectClient client,
-    MessagePortMessageFilter* message_port_message_filter,
+    const GURL& target_url,
+    const GURL& origin,
+    ServicePortServiceImpl* service_port_service,
     const ConnectCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Create a new message channel. Client port is setup to talk to client
-  // process, service port is initially setup without a delegate.
-  MessagePortService* message_port_service = MessagePortService::GetInstance();
-  int client_port;
-  int client_port_route_id = message_port_message_filter->GetNextRoutingID();
-  message_port_service->Create(client_port_route_id,
-                               message_port_message_filter, &client_port);
+  // Create a new message channel. Use |this| as delegate for both ports until
+  // the real delegate for the service port is known later on.
+  int client_port_id;
   int service_port;
-  message_port_service->Create(MSG_ROUTING_NONE, nullptr, &service_port);
-  message_port_service->Entangle(client_port, service_port);
-  message_port_service->Entangle(service_port, client_port);
-  // Hold messages on client port while setting up connection.
-  message_port_service->HoldMessages(client_port);
+  MessagePortProvider::CreateMessageChannel(this, &client_port_id,
+                                            &service_port);
+  // Hold messages send to the client while setting up connection.
+  MessagePortService::GetInstance()->HoldMessages(client_port_id);
+
+  Port& client_port = ports_[client_port_id];
+  client_port.message_port_id = client_port_id;
+  client_port.service = service_port_service;
 
   // The message_port_id stored in the client object is the one associated with
   // the service.
-  client.message_port_id = service_port;
+  NavigatorConnectClient client(target_url, origin, service_port);
 
   // Find factory to handle request, more recently added factories should take
   // priority as per comment at NavigatorConnectContext::AddFactory..
@@ -68,38 +76,69 @@ void NavigatorConnectContextImpl::Connect(
 
   if (!factory) {
     // No factories found.
-    OnConnectResult(client, client_port, client_port_route_id, callback,
-                    nullptr, false);
+    OnConnectResult(client, client_port_id, callback, nullptr, false);
     return;
   }
 
   // Actually initiate connection.
   factory->Connect(
       client, base::Bind(&NavigatorConnectContextImpl::OnConnectResult, this,
-                         client, client_port, client_port_route_id, callback));
+                         client, client_port_id, callback));
+}
+
+void NavigatorConnectContextImpl::ServicePortServiceDestroyed(
+    ServicePortServiceImpl* service_port_service) {
+  for (auto& port : ports_) {
+    if (port.second.service != service_port_service)
+      continue;
+    port.second.service = nullptr;
+    // TODO(mek): Should actually inform other side of connections that the
+    // connection was closed, or in the case of service workers somehow keep
+    // track of the connection.
+  }
+}
+
+void NavigatorConnectContextImpl::SendMessage(
+    int route_id,
+    const MessagePortMessage& message,
+    const std::vector<TransferredMessagePort>& sent_message_ports) {
+  DCHECK(ports_.find(route_id) != ports_.end());
+  const Port& port = ports_[route_id];
+  if (!port.service) {
+    // TODO(mek): Figure out what to do in this situation.
+    return;
+  }
+
+  port.service->PostMessageToClient(route_id, message, sent_message_ports);
+}
+
+void NavigatorConnectContextImpl::SendMessagesAreQueued(int route_id) {
+  NOTREACHED() << "navigator.services endpoints should never queue messages.";
 }
 
 void NavigatorConnectContextImpl::OnConnectResult(
     const NavigatorConnectClient& client,
     int client_message_port_id,
-    int client_port_route_id,
     const ConnectCallback& callback,
     MessagePortDelegate* delegate,
     bool data_as_values) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (delegate) {
+    DCHECK(!data_as_values) << "Data as values is not currently implemented";
+    // TODO(mek): Might have to do something else if the client connection got
+    // severed while the service side connection was being set up.
+
     // Update service side port with delegate.
     MessagePortService::GetInstance()->UpdateMessagePort(
         client.message_port_id, delegate, client.message_port_id);
-    TransferredMessagePort port;
-    port.id = client_message_port_id;
-    port.send_messages_as_values = data_as_values;
-    callback.Run(port, client_port_route_id, true);
+    callback.Run(client_message_port_id, true);
+    MessagePortService::GetInstance()->ReleaseMessages(client_message_port_id);
   } else {
     // Destroy ports since connection failed.
     MessagePortService::GetInstance()->Destroy(client.message_port_id);
     MessagePortService::GetInstance()->Destroy(client_message_port_id);
-    callback.Run(TransferredMessagePort(), MSG_ROUTING_NONE, false);
+    ports_.erase(client_message_port_id);
+    callback.Run(MSG_ROUTING_NONE, false);
   }
 }
 

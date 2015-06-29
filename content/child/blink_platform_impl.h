@@ -168,7 +168,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebBluetooth* bluetooth();
   virtual blink::WebNotificationManager* notificationManager();
   virtual blink::WebPushProvider* pushProvider();
-  virtual blink::WebNavigatorConnectProvider* navigatorConnectProvider();
+  virtual blink::WebServicePortProvider* createServicePortProvider(
+      blink::WebServicePortProviderClient*);
   virtual blink::WebPermissionClient* permissionClient();
   virtual blink::WebSyncProvider* backgroundSyncProvider();
 

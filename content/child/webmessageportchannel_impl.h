@@ -56,6 +56,15 @@ class WebMessagePortChannelImpl
   static std::vector<TransferredMessagePort> ExtractMessagePortIDs(
       const blink::WebMessagePortChannelArray& channels);
 
+  // Extracts port IDs for passing on to the browser process, but doesn't
+  // send a separate IPC to the browser to initiate queueing messages. Instead
+  // calling code is responsible for initiating the queueing in the browser
+  // process. This is useful when transfering ports over an IPC channel that
+  // does not share ordering guarentees with regular IPC.
+  static std::vector<TransferredMessagePort>
+  ExtractMessagePortIDsWithoutQueueing(
+      scoped_ptr<blink::WebMessagePortChannelArray> channels);
+
   // Creates WebMessagePortChannelImpl instances for port IDs passed in from the
   // browser process.
   static blink::WebMessagePortChannelArray CreatePorts(

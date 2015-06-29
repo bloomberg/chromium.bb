@@ -49,7 +49,6 @@ class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
 class InProcessChildThreadParams;
-class NavigatorConnectDispatcher;
 class NotificationDispatcher;
 class PushDispatcher;
 class ServiceWorkerMessageFilter;
@@ -294,8 +293,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<ChildMessageFilter> geofencing_message_filter_;
   scoped_refptr<ChildMessageFilter> bluetooth_message_filter_;
-
-  scoped_refptr<NavigatorConnectDispatcher> navigator_connect_dispatcher_;
 
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner_;
 

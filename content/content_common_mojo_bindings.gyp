@@ -18,6 +18,7 @@
           'common/presentation/presentation_service.mojom',
           'common/process_control.mojom',
           'common/render_frame_setup.mojom',
+          'common/service_port_service.mojom',
           'common/vr_service.mojom',
 
           # NOTE: Sources duplicated in

@@ -109,6 +109,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGeofencingEventType,
                           blink::WebGeofencingEventTypeLast)
 
+IPC_STRUCT_TRAITS_BEGIN(content::NavigatorConnectClient)
+  IPC_STRUCT_TRAITS_MEMBER(target_url)
+  IPC_STRUCT_TRAITS_MEMBER(origin)
+  IPC_STRUCT_TRAITS_MEMBER(message_port_id)
+IPC_STRUCT_TRAITS_END()
+
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
 
