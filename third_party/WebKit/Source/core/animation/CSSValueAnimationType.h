@@ -17,7 +17,7 @@ public:
         : AnimationType(property)
     { }
 
-    virtual PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation::Side> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const override final;
+    virtual PassOwnPtrWillBeRawPtr<AnimationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const override final;
     virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const override final;
 };
 

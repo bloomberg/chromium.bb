@@ -13,48 +13,43 @@ namespace blink {
 
 class AnimationType;
 
-struct AnimationValue {
-private:
-    DISALLOW_ALLOCATION();
-
+class AnimationValue : public NoBaseWillBeGarbageCollectedFinalized<AnimationValue> {
 public:
-    const AnimationType* type;
-    OwnPtrWillBeMember<InterpolableValue> interpolableValue;
-    RefPtrWillBeMember<NonInterpolableValue> nonInterpolableValue;
-
-    operator bool() const { return bool(type); }
-
-    AnimationValue()
-        : type(nullptr)
-        , interpolableValue(nullptr)
-        , nonInterpolableValue(nullptr)
-    { }
-
-    AnimationValue(const AnimationType* type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, RefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
-        : type(type)
-        , interpolableValue(interpolableValue)
-        , nonInterpolableValue(nonInterpolableValue)
-    { }
-
-    void copyFrom(const AnimationValue& other)
+    static PassOwnPtrWillBeRawPtr<AnimationValue> create(const AnimationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
-        type = other.type;
-        interpolableValue = other.interpolableValue ? other.interpolableValue->clone() : nullptr;
-        nonInterpolableValue = other.nonInterpolableValue;
+        return adoptPtrWillBeNoop(new AnimationValue(type, interpolableValue, nonInterpolableValue));
     }
 
-    void clear()
+    PassOwnPtrWillBeRawPtr<AnimationValue> clone() const
     {
-        type = nullptr;
-        interpolableValue = nullptr;
-        nonInterpolableValue = nullptr;
+        return create(m_type, m_interpolableValue->clone(), m_nonInterpolableValue);
     }
+
+    const AnimationType& type() const { return m_type; }
+    const InterpolableValue& interpolableValue() const { return *m_interpolableValue; }
+    InterpolableValue& interpolableValue() { return *m_interpolableValue; }
+    const NonInterpolableValue* nonInterpolableValue() const { return m_nonInterpolableValue.get(); }
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(interpolableValue);
-        visitor->trace(nonInterpolableValue);
+        visitor->trace(m_interpolableValue);
+        visitor->trace(m_nonInterpolableValue);
     }
+
+private:
+    AnimationValue(const AnimationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+        : m_type(type)
+        , m_interpolableValue(interpolableValue)
+        , m_nonInterpolableValue(nonInterpolableValue)
+    {
+        ASSERT(this->m_interpolableValue);
+    }
+
+    const AnimationType& m_type;
+    OwnPtrWillBeMember<InterpolableValue> m_interpolableValue;
+    RefPtrWillBeMember<NonInterpolableValue> m_nonInterpolableValue;
+
+    friend class AnimationType;
 };
 
 } // namespace blink

@@ -47,7 +47,7 @@ private:
     void ensureValidInterpolation(const StyleResolverState&) const;
     bool isCacheValid(const StyleResolverState&) const;
     bool maybeCachePairwiseConversion(const StyleResolverState*) const;
-    PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation::Side> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&) const;
+    PassOwnPtrWillBeRawPtr<AnimationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&) const;
 
     const Vector<const AnimationType*>& m_animationTypes;
     const CSSPropertySpecificKeyframe& m_startKeyframe;
@@ -55,7 +55,7 @@ private:
     double m_currentFraction;
     mutable OwnPtrWillBeMember<PrimitiveInterpolation> m_cachedConversion;
     mutable AnimationType::ConversionCheckers m_conversionCheckers;
-    mutable AnimationValue m_cachedValue;
+    mutable OwnPtrWillBeRawPtr<AnimationValue> m_cachedValue;
 };
 
 DEFINE_TYPE_CASTS(InvalidatableStyleInterpolation, Interpolation, value, value->isInvalidatableStyleInterpolation(), value.isInvalidatableStyleInterpolation());

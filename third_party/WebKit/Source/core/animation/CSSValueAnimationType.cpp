@@ -9,12 +9,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation::Side> CSSValueAnimationType::maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState*, ConversionCheckers&) const
+PassOwnPtrWillBeRawPtr<AnimationValue> CSSValueAnimationType::maybeConvertSingle(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState*, ConversionCheckers&) const
 {
-    OwnPtrWillBeRawPtr<FlipPrimitiveInterpolation::Side> result = FlipPrimitiveInterpolation::Side::create(*this);
-    result->interpolableValue = InterpolableList::create(0);
-    result->nonInterpolableValue = DefaultNonInterpolableValue::create(keyframe.value());
-    return result.release();
+    return AnimationValue::create(*this, InterpolableList::create(0), DefaultNonInterpolableValue::create(keyframe.value()));
 }
 
 void CSSValueAnimationType::apply(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state) const

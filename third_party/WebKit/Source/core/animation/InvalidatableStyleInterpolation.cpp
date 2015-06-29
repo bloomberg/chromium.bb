@@ -27,8 +27,7 @@ bool InvalidatableStyleInterpolation::maybeCachePairwiseConversion(const StyleRe
     for (const auto& animationType : m_animationTypes) {
         OwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> pairwiseConversion = animationType->maybeConvertPairwise(m_startKeyframe, m_endKeyframe, state, m_conversionCheckers);
         if (pairwiseConversion) {
-            m_cachedValue.type = animationType;
-            pairwiseConversion->initializeAnimationValue(m_cachedValue);
+            m_cachedValue = pairwiseConversion->initialValue();
             m_cachedConversion = pairwiseConversion.release();
             return true;
         }
@@ -44,10 +43,10 @@ void InvalidatableStyleInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedConversion is null.
 }
 
-PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation::Side> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state) const
+PassOwnPtrWillBeRawPtr<AnimationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state) const
 {
     for (const auto& animationType : m_animationTypes) {
-        OwnPtrWillBeRawPtr<FlipPrimitiveInterpolation::Side> result = animationType->maybeConvertSingle(keyframe, &state, m_conversionCheckers);
+        OwnPtrWillBeRawPtr<AnimationValue> result = animationType->maybeConvertSingle(keyframe, &state, m_conversionCheckers);
         if (result)
             return result.release();
     }
@@ -80,7 +79,7 @@ void InvalidatableStyleInterpolation::ensureValidInterpolation(const StyleResolv
 void InvalidatableStyleInterpolation::apply(StyleResolverState& state) const
 {
     ensureValidInterpolation(state);
-    m_cachedValue.type->apply(*m_cachedValue.interpolableValue, m_cachedValue.nonInterpolableValue.get(), state);
+    m_cachedValue->type().apply(m_cachedValue->interpolableValue(), m_cachedValue->nonInterpolableValue(), state);
 }
 
 } // namespace blink

@@ -36,7 +36,7 @@ public:
         return nullptr;
     }
 
-    virtual PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation::Side> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const = 0;
+    virtual PassOwnPtrWillBeRawPtr<AnimationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const = 0;
 
     virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const = 0;
 
