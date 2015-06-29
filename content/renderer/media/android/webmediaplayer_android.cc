@@ -87,6 +87,8 @@ void OnReleaseTexture(
   GLES2Interface* gl = factories->ContextGL();
   gl->WaitSyncPointCHROMIUM(release_sync_point);
   gl->DeleteTextures(1, &texture_id);
+  // Flush to ensure that the stream texture gets deleted in a timely fashion.
+  gl->ShallowFlushCHROMIUM();
 }
 
 bool IsSkBitmapProperlySizedTexture(const SkBitmap* bitmap,
@@ -238,6 +240,8 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   if (stream_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
     gl->DeleteTextures(1, &texture_id_);
+    // Flush to ensure that the stream texture gets deleted in a timely fashion.
+    gl->ShallowFlushCHROMIUM();
     texture_id_ = 0;
     texture_mailbox_ = gpu::Mailbox();
     stream_id_ = 0;
@@ -1290,6 +1294,8 @@ void WebMediaPlayerAndroid::ResetStreamTextureProxy() {
   if (stream_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
     gl->DeleteTextures(1, &texture_id_);
+    // Flush to ensure that the stream texture gets deleted in a timely fashion.
+    gl->ShallowFlushCHROMIUM();
     texture_id_ = 0;
     texture_mailbox_ = gpu::Mailbox();
     stream_id_ = 0;
