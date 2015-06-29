@@ -44,7 +44,7 @@ BasicTargetDescriptor::BasicTargetDescriptor(
       url_(agent_host->GetURL()) {
   if (content::WebContents* web_contents = agent_host_->GetWebContents()) {
     content::NavigationController& controller = web_contents->GetController();
-    content::NavigationEntry* entry = controller.GetActiveEntry();
+    content::NavigationEntry* entry = controller.GetLastCommittedEntry();
     if (entry != NULL && entry->GetURL().is_valid())
       favicon_url_ = entry->GetFavicon().url;
     last_activity_time_ = web_contents->GetLastActiveTime();
