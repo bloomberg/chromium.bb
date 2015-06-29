@@ -147,17 +147,6 @@ ScriptPromise CredentialsContainer::notifySignedIn(ScriptState* scriptState, Cre
     return promise;
 }
 
-ScriptPromise CredentialsContainer::notifyFailedSignIn(ScriptState* scriptState, Credential* credential)
-{
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    if (!checkBoilerplate(resolver))
-        return promise;
-
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchFailedSignIn(WebCredential::create(credential->platformCredential()), new NotificationCallbacks(resolver));
-    return promise;
-}
-
 ScriptPromise CredentialsContainer::requireUserMediation(ScriptState* scriptState)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);

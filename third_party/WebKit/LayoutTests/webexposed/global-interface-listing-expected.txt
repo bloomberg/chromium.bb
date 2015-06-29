@@ -635,7 +635,6 @@ interface Credential
     method constructor
 interface CredentialsContainer
     method constructor
-    method notifyFailedSignIn
     method notifySignedIn
     method request
     method requireUserMediation
