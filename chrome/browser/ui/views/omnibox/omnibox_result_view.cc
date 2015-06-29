@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/omnibox/suggestion_answer.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -124,11 +123,11 @@ struct TextStyle {
       NativeTheme::kColorId_ResultsTablePositiveSelectedText},
      gfx::INFERIOR},
     // 7  MORE_INFO_TEXT
-    {ui::ResourceBundle::SmallFont,
+    {ui::ResourceBundle::BaseFont,
      {NativeTheme::kColorId_ResultsTableNormalDimmedText,
       NativeTheme::kColorId_ResultsTableHoveredDimmedText,
       NativeTheme::kColorId_ResultsTableSelectedDimmedText},
-     gfx::NORMAL_BASELINE},
+     gfx::INFERIOR},
     // 8  SUGGESTION_TEXT
     {ui::ResourceBundle::BaseFont,
      {NativeTheme::kColorId_ResultsTableNormalText,
@@ -657,18 +656,12 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
 
     if (!description_rendertext_) {
       if (match_.answer) {
-        base::string16 text;
-        description_rendertext_ = CreateRenderText(text);
-        for (const SuggestionAnswer::TextField& text_field :
-             match_.answer->second_line().text_fields())
-          AppendAnswerText(text_field.text(), text_field.type());
-        const base::char16 space(' ');
-        const auto* text_field = match_.answer->second_line().additional_text();
-        if (text_field)
-          AppendAnswerText(space + text_field->text(), text_field->type());
-        text_field = match_.answer->second_line().status_text();
-        if (text_field)
-          AppendAnswerText(space + text_field->text(), text_field->type());
+        contents_rendertext_ =
+            CreateAnswerLine(match_.answer->first_line(), font_list_);
+        description_rendertext_ = CreateAnswerLine(
+            match_.answer->second_line(),
+            ui::ResourceBundle::GetSharedInstance().GetFontList(
+                ui::ResourceBundle::LargeFont));
       } else if (!match_.description.empty()) {
         description_rendertext_ = CreateClassifiedRenderText(
             match_.description, match_.description_class, true);
@@ -718,17 +711,70 @@ int OmniboxResultView::GetContentLineHeight() const {
                   GetTextHeight() + (kMinimumTextVerticalPadding * 2));
 }
 
-void OmniboxResultView::AppendAnswerText(const base::string16& text,
+scoped_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(
+    const SuggestionAnswer::ImageLine& line,
+    gfx::FontList font_list) {
+  scoped_ptr<gfx::RenderText> destination = CreateRenderText(base::string16());
+  destination->SetFontList(font_list);
+
+  for (const SuggestionAnswer::TextField& text_field : line.text_fields())
+    AppendAnswerText(destination.get(), text_field.text(), text_field.type());
+  const base::char16 space(' ');
+  const auto* text_field = line.additional_text();
+  if (text_field) {
+    AppendAnswerText(destination.get(), space + text_field->text(),
+                     text_field->type());
+  }
+  text_field = line.status_text();
+  if (text_field) {
+    AppendAnswerText(destination.get(), space + text_field->text(),
+                     text_field->type());
+  }
+  return destination.Pass();
+}
+
+void OmniboxResultView::AppendAnswerText(gfx::RenderText* destination,
+                                         const base::string16& text,
                                          int text_type) {
-  int offset = description_rendertext_->text().length();
+  // TODO(dschuyler): make this better.  Right now this only supports unnested
+  // bold tags.  In the future we'll need to flag unexpected tags while adding
+  // support for b, i, u, sub, and sup.  We'll also need to support HTML
+  // entities (&lt; for '<', etc.).
+  const base::string16 begin_tag = base::ASCIIToUTF16("<b>");
+  const base::string16 end_tag = base::ASCIIToUTF16("</b>");
+  size_t begin = 0;
+  while (true) {
+    size_t end = text.find(begin_tag, begin);
+    if (end == base::string16::npos) {
+      AppendAnswerTextHelper(destination, text.substr(begin), text_type, false);
+      break;
+    }
+    AppendAnswerTextHelper(destination, text.substr(begin, end - begin),
+                           text_type, false);
+    begin = end + begin_tag.length();
+    end = text.find(end_tag, begin);
+    if (end == base::string16::npos)
+      break;
+    AppendAnswerTextHelper(destination, text.substr(begin, end - begin),
+                           text_type, true);
+    begin = end + end_tag.length();
+  }
+}
+
+void OmniboxResultView::AppendAnswerTextHelper(gfx::RenderText* destination,
+                                               const base::string16& text,
+                                               int text_type,
+                                               bool is_bold) {
+  if (text.empty())
+    return;
+  int offset = destination->text().length();
   gfx::Range range(offset, offset + text.length());
-  description_rendertext_->AppendText(text);
+  destination->AppendText(text);
   const TextStyle& text_style = GetTextStyle(text_type);
   // TODO(dschuyler): follow up on the problem of different font sizes within
-  // one RenderText.
-  description_rendertext_->SetFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(text_style.font));
-  description_rendertext_->ApplyColor(
+  // one RenderText.  Maybe with destination->SetFontList(...).
+  destination->ApplyStyle(gfx::BOLD, is_bold, range);
+  destination->ApplyColor(
       GetNativeTheme()->GetSystemColor(text_style.colors[GetState()]), range);
-  description_rendertext_->ApplyBaselineStyle(text_style.baseline, range);
+  destination->ApplyBaselineStyle(text_style.baseline, range);
 }

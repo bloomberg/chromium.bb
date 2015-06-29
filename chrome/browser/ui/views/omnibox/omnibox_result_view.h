@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/suggestion_answer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -158,11 +159,25 @@ class OmniboxResultView : public views::View,
   int GetAnswerLineHeight() const;
   int GetContentLineHeight() const;
 
-  // Adds |text| to |description_rendertext_|.  |text_type| is an index into the
+  // Creates a RenderText with text and styling from the image line.
+  scoped_ptr<gfx::RenderText> CreateAnswerLine(
+      const SuggestionAnswer::ImageLine& line,
+      gfx::FontList font_list);
+
+  // Adds |text| to |destination|.  |text_type| is an index into the
   // kTextStyles constant defined in the .cc file and is used to style the text,
   // including setting the font size, color, and baseline style.  See the
   // TextStyle struct in the .cc file for more.
-  void AppendAnswerText(const base::string16& text, int text_type);
+  void AppendAnswerText(gfx::RenderText* destination,
+                        const base::string16& text,
+                        int text_type);
+
+  // AppendAnswerText will break up the |text| into bold and non-bold pieces
+  // and pass each to this helper with the correct |is_bold| value.
+  void AppendAnswerTextHelper(gfx::RenderText* destination,
+                              const base::string16& text,
+                              int text_type,
+                              bool is_bold);
 
   static int default_icon_size_;
 
