@@ -12,7 +12,7 @@
 #include "ui/base/base_window.h"
 #include "ui/base/test/ui_controls.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && defined(USE_X11)
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <X11/keysym.h>
