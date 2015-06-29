@@ -57,7 +57,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void GetScaledContentBitmap(
       float scale,
       SkColorType preferred_color_type,
-      gfx::Rect src_subrect,
+      const gfx::Rect& src_subrect,
       ReadbackRequestCallback& result_callback) override;
   float GetDpiScale() const override;
   void PauseOrResumeGeolocation(bool should_pause) override;

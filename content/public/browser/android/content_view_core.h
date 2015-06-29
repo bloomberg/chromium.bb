@@ -9,22 +9,18 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/geometry/rect.h"
-
-class SkBitmap;
 
 namespace cc {
 class Layer;
 }
 
 namespace gfx {
-class Size;
-class SizeF;
-class Vector2dF;
+class Rect;
 }
 
 namespace ui {
@@ -59,16 +55,10 @@ class CONTENT_EXPORT ContentViewCore {
   virtual void GetScaledContentBitmap(
       float scale,
       SkColorType color_type,
-      gfx::Rect src_rect,
+      const gfx::Rect& src_rect,
       ReadbackRequestCallback& result_callback) = 0;
   virtual float GetDpiScale() const = 0;
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
-
-  // Observer callback for frame metadata updates.
-  typedef base::Callback<void(
-      const gfx::SizeF& content_size,
-      const gfx::Vector2dF& scroll_offset,
-      float page_scale_factor)> UpdateFrameInfoCallback;
 
   // Text surrounding selection.
   virtual void RequestTextSurroundingSelection(

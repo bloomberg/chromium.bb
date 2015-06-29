@@ -659,7 +659,7 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
 void ContentViewCoreImpl::GetScaledContentBitmap(
     float scale,
     SkColorType preferred_color_type,
-    gfx::Rect src_subrect,
+    const gfx::Rect& src_subrect,
     ReadbackRequestCallback& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view || preferred_color_type == kUnknown_SkColorType) {
