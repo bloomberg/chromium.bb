@@ -3227,7 +3227,7 @@
           'CharacterSet': '1',
         },
         'msvs_settings':{
-          'VCCompilerTool': {
+          'VCCLCompilerTool': {
             'AdditionalOptions': [
               '/bigobj',
             ],
