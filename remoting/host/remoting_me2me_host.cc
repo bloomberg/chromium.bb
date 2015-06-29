@@ -934,7 +934,15 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   if (!config.GetString(kHostIdConfigPath, &host_id_)) {
-    LOG(ERROR) << "host_id is not defined in the config.";
+    host_id_.clear();
+  }
+
+  if (!config.GetString(kGcdDeviceIdConfigPath, &gcd_device_id_)) {
+    gcd_device_id_.clear();
+  }
+
+  if (host_id_.empty() && gcd_device_id_.empty()) {
+    LOG(ERROR) << "Neither host_id nor gcd_device_id is defined in the config.";
     return false;
   }
 
@@ -1005,10 +1013,6 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   }
   if (frame_recorder_buffer_kb > 0) {
     frame_recorder_buffer_size_ = 1024LL * frame_recorder_buffer_kb;
-  }
-
-  if (!config.GetString(kGcdDeviceIdConfigPath, &gcd_device_id_)) {
-    gcd_device_id_.clear();
   }
 
   return true;
@@ -1324,7 +1328,9 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
 }
 
 void HostProcess::InitializeSignaling() {
-  DCHECK(!host_id_.empty());  // ApplyConfig() should already have been run.
+  // ApplyConfig() should already have been run.
+  DCHECK(!host_id_.empty() || !gcd_device_id_.empty());
+
   DCHECK(!signal_strategy_);
   DCHECK(!oauth_token_getter_);
   DCHECK(!signaling_connector_);

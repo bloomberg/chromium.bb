@@ -114,9 +114,11 @@ void GcdStateUpdater::MaybeSendStateUpdate() {
 
   // Construct an update to the remote state.
   scoped_ptr<base::DictionaryValue> patch(new base::DictionaryValue);
+  scoped_ptr<base::DictionaryValue> base_state(new base::DictionaryValue);
   pending_request_jid_ = signal_strategy_->GetLocalJid();
-  patch->SetString("_jabberId", pending_request_jid_);
-  patch->SetString("_hostVersion", STRINGIZE(VERSION));
+  base_state->SetString("_jabberId", pending_request_jid_);
+  base_state->SetString("_hostVersion", STRINGIZE(VERSION));
+  patch->Set("base", base_state.Pass());
 
   // Send the update to GCD.
   gcd_rest_client_->PatchState(

@@ -68,9 +68,9 @@ TEST_F(GcdStateUpdaterTest, Success) {
   task_runner_->RunUntilIdle();
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ("{\"patches\":[{"
-            "\"patch\":{\"_hostVersion\":\"" STRINGIZE(VERSION) "\","
-            "\"_jabberId\":\"local_jid\"},"
+  EXPECT_EQ("{\"patches\":[{\"patch\":{"
+            "\"base\":{\"_hostVersion\":\"" STRINGIZE(VERSION) "\","
+            "\"_jabberId\":\"local_jid\"}},"
             "\"timeMs\":0.0}],\"requestTimeMs\":0.0}",
             fetcher->upload_data());
   fetcher->set_response_code(200);
@@ -112,9 +112,9 @@ TEST_F(GcdStateUpdaterTest, QueuedRequests) {
   // There should be a new pending request now with the new local JID.
   net::TestURLFetcher* fetcher1 = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher1);
-  EXPECT_EQ("{\"patches\":[{"
-            "\"patch\":{\"_hostVersion\":\"" STRINGIZE(VERSION) "\","
-            "\"_jabberId\":\"local_jid2\"},"
+  EXPECT_EQ("{\"patches\":[{\"patch\":{"
+            "\"base\":{\"_hostVersion\":\"" STRINGIZE(VERSION) "\","
+            "\"_jabberId\":\"local_jid2\"}},"
             "\"timeMs\":0.0}],\"requestTimeMs\":0.0}",
             fetcher1->upload_data());
   fetcher1->set_response_code(200);
