@@ -132,7 +132,8 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
 
   // Overridden from history::TopSitesObserver:
   void TopSitesLoaded(history::TopSites* top_sites) override;
-  void TopSitesChanged(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites,
+                       ChangeReason change_reason) override;
 
   // Overridden from TabRestoreServiceObserver:
   void TabRestoreServiceChanged(TabRestoreService* service) override;

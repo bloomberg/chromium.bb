@@ -26,7 +26,8 @@ class WaitTopSitesLoadedObserver : public TopSitesObserver {
  private:
   // TopSitesObserver implementation.
   void TopSitesLoaded(TopSites* top_sites) override;
-  void TopSitesChanged(TopSites* top_sites) override;
+  void TopSitesChanged(TopSites* top_sites,
+                       ChangeReason change_reason) override;
 
   scoped_refptr<TopSites> top_sites_;
   base::RunLoop run_loop_;

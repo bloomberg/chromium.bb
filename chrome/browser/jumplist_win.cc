@@ -529,7 +529,8 @@ void JumpList::CreateIconFiles(const ShellLinkItemList& item_list) {
 void JumpList::TopSitesLoaded(history::TopSites* top_sites) {
 }
 
-void JumpList::TopSitesChanged(history::TopSites* top_sites) {
+void JumpList::TopSitesChanged(history::TopSites* top_sites,
+                               ChangeReason change_reason) {
   top_sites->GetMostVisitedURLs(
       base::Bind(&JumpList::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr()),

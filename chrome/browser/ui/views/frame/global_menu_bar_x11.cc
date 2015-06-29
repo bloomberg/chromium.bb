@@ -731,7 +731,8 @@ void GlobalMenuBarX11::EnabledStateChangedForCommand(int id, bool enabled) {
 void GlobalMenuBarX11::TopSitesLoaded(history::TopSites* top_sites) {
 }
 
-void GlobalMenuBarX11::TopSitesChanged(history::TopSites* top_sites) {
+void GlobalMenuBarX11::TopSitesChanged(history::TopSites* top_sites,
+                                       ChangeReason change_reason) {
     GetTopSitesData();
 }
 

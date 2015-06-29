@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -178,7 +179,7 @@ class TopSites : public RefcountedKeyedService {
 
  protected:
   void NotifyTopSitesLoaded();
-  void NotifyTopSitesChanged();
+  void NotifyTopSitesChanged(const TopSitesObserver::ChangeReason reason);
   ~TopSites() override;
 
  private:

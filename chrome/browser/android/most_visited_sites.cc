@@ -414,7 +414,8 @@ void MostVisitedSites::RecordUMAMetrics() {
 void MostVisitedSites::TopSitesLoaded(history::TopSites* top_sites) {
 }
 
-void MostVisitedSites::TopSitesChanged(history::TopSites* top_sites) {
+void MostVisitedSites::TopSitesChanged(history::TopSites* top_sites,
+                                       ChangeReason change_reason) {
   if (mv_source_ == TOP_SITES) {
     // The displayed suggestions are invalidated.
     QueryMostVisitedURLs();

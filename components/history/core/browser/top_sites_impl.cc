@@ -28,6 +28,7 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/top_sites_cache.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -334,7 +335,7 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   }
 
   ResetThreadSafeCache();
-  NotifyTopSitesChanged();
+  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
 }
 
 void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
@@ -345,7 +346,7 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
     blacklist->RemoveWithoutPathExpansion(GetURLHash(url), nullptr);
   }
   ResetThreadSafeCache();
-  NotifyTopSitesChanged();
+  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
 }
 
 bool TopSitesImpl::IsBlacklisted(const GURL& url) {
@@ -363,7 +364,7 @@ void TopSitesImpl::ClearBlacklistedURLs() {
     blacklist->Clear();
   }
   ResetThreadSafeCache();
-  NotifyTopSitesChanged();
+  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
 }
 
 void TopSitesImpl::ShutdownOnUIThread() {
@@ -618,7 +619,7 @@ bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
   new_list.insert(mid, new_url);
   mid = new_list.begin() + num_forced;  // Mid was invalidated.
   std::inplace_merge(new_list.begin(), mid, mid + 1, ForcedURLComparator);
-  SetTopSites(new_list, CALL_LOCATION_FROM_OTHER_PLACES);
+  SetTopSites(new_list, CALL_LOCATION_FROM_FORCED_URLS);
   return true;
 }
 
@@ -795,7 +796,10 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
 
   ResetThreadSafeCache();
   ResetThreadSafeImageCache();
-  NotifyTopSitesChanged();
+  if (location == CALL_LOCATION_FROM_FORCED_URLS)
+    NotifyTopSitesChanged(TopSitesObserver::ChangeReason::FORCED_URL);
+  else
+    NotifyTopSitesChanged(TopSitesObserver::ChangeReason::MOST_VISITED);
 
   // Restart the timer that queries history for top sites. This is done to
   // ensure we stay in sync with history.

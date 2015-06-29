@@ -42,8 +42,10 @@ void TopSites::NotifyTopSitesLoaded() {
   FOR_EACH_OBSERVER(TopSitesObserver, observer_list_, TopSitesLoaded(this));
 }
 
-void TopSites::NotifyTopSitesChanged() {
-  FOR_EACH_OBSERVER(TopSitesObserver, observer_list_, TopSitesChanged(this));
+void TopSites::NotifyTopSitesChanged(
+    const TopSitesObserver::ChangeReason reason) {
+  FOR_EACH_OBSERVER(TopSitesObserver, observer_list_,
+                    TopSitesChanged(this, reason));
 }
 
 }  // namespace history

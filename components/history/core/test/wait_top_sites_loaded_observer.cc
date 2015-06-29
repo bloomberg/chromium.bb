@@ -29,7 +29,8 @@ void WaitTopSitesLoadedObserver::TopSitesLoaded(TopSites* top_sites) {
   run_loop_.Quit();
 }
 
-void WaitTopSitesLoadedObserver::TopSitesChanged(TopSites* top_sites) {
+void WaitTopSitesLoadedObserver::TopSitesChanged(TopSites* top_sites,
+                                                 ChangeReason change_reason) {
 }
 
 }  // namespace history

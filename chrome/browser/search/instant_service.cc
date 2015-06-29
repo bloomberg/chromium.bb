@@ -450,7 +450,11 @@ void InstantService::OnTemplateURLServiceChanged() {
 void InstantService::TopSitesLoaded(history::TopSites* top_sites) {
 }
 
-void InstantService::TopSitesChanged(history::TopSites* top_sites) {
+void InstantService::TopSitesChanged(history::TopSites* top_sites,
+                                     ChangeReason change_reason) {
+  // As forced urls already come from tiles, we can safely ignore those updates.
+  if (change_reason == history::TopSitesObserver::ChangeReason::FORCED_URL)
+    return;
   top_sites->GetMostVisitedURLs(
       base::Bind(&InstantService::OnMostVisitedItemsReceived,
                  weak_ptr_factory_.GetWeakPtr()),

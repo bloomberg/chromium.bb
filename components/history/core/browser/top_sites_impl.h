@@ -118,8 +118,10 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   enum CallLocation {
     // SetTopSites is called from function OnGotMostVisitedThumbnails.
     CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_THUMBNAILS,
+    // SetTopSites is called from AddForcedURLs.
+    CALL_LOCATION_FROM_FORCED_URLS,
     // All other situations.
-    CALL_LOCATION_FROM_OTHER_PLACES
+    CALL_LOCATION_FROM_OTHER_PLACES,
   };
 
   friend class TopSitesImplTest;

@@ -91,7 +91,8 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
 
   // history::TopSitesObserver implementation.
   void TopSitesLoaded(history::TopSites* top_sites) override;
-  void TopSitesChanged(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites,
+                       ChangeReason change_reason) override;
 
   // The profile whose most visited sites will be queried.
   Profile* profile_;

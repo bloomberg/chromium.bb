@@ -14,6 +14,16 @@ class TopSites;
 // Interface for observing notifications from TopSites.
 class TopSitesObserver {
  public:
+  // An enum representing different for TopSitesChanged to happen.
+  enum class ChangeReason {
+    // TopSites was changed by most visited.
+    MOST_VISITED,
+    // TopSites was changed by add/remove/clear blacklist.
+    BLACKLIST,
+    // TopSites was changed by AddForcedURLs.
+    FORCED_URL,
+  };
+
   TopSitesObserver() {}
   virtual ~TopSitesObserver() {}
 
@@ -22,7 +32,8 @@ class TopSitesObserver {
 
   // Is called when either one of the most visited urls
   // changed, or one of the images changes.
-  virtual void TopSitesChanged(TopSites* top_sites) = 0;
+  virtual void TopSitesChanged(TopSites* top_sites,
+                               ChangeReason change_reason) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TopSitesObserver);

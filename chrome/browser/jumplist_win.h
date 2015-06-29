@@ -141,7 +141,8 @@ class JumpList : public TabRestoreServiceObserver,
 
   // history::TopSitesObserver implementation.
   void TopSitesLoaded(history::TopSites* top_sites) override;
-  void TopSitesChanged(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites,
+                       ChangeReason change_reason) override;
 
   // Tracks FaviconService tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
