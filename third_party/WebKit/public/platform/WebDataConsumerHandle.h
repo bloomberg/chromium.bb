@@ -23,6 +23,10 @@ namespace blink {
 // A WebDataConsumerHandle having a reader is called "locked". A
 // WebDataConsumerHandle or its reader are called "waiting" when reading from
 // the handle or reader returns ShouldWait.
+//
+// WebDataConsumerHandle can be created / used / destructed only on
+// Oilpan-enabled threads.
+// TODO(yhirano): Remove this restriction.
 class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
 public:
     using Flags = unsigned;
@@ -100,7 +104,8 @@ public:
         }
     };
 
-    virtual ~WebDataConsumerHandle() { }
+    WebDataConsumerHandle();
+    virtual ~WebDataConsumerHandle();
 
     // Returns a non-null reader. This function can be called only when this
     // handle is not locked. |client| can be null. Otherwise, |*client| must be
@@ -110,7 +115,7 @@ public:
     // If |client| is not null and the handle is not waiting, client
     // notification is called asynchronously.
 #if INSIDE_BLINK
-    PassOwnPtr<Reader> obtainReader(Client* client) { return adoptPtr(obtainReaderInternal(client)); }
+    PassOwnPtr<Reader> obtainReader(Client*);
 #endif
 
     // Returns a string literal (e.g. class name) for debugging only.

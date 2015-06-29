@@ -274,6 +274,7 @@
       'exported/WebCryptoResult.cpp',
       'exported/WebCursorInfo.cpp',
       'exported/WebData.cpp',
+      'exported/WebDataConsumerHandle.cpp',
       'exported/WebDeviceMotionData.cpp',
       'exported/WebDeviceOrientationData.cpp',
       'exported/WebDisplayItemTransformTree.cpp',
