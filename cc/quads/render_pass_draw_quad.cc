@@ -93,9 +93,9 @@ void RenderPassDrawQuad::ExtendValue(
   MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
   MathUtil::AddToTracedValue("mask_uv_scale", mask_uv_scale, value);
 
-  value->BeginDictionary("filters");
+  value->BeginArray("filters");
   filters.AsValueInto(value);
-  value->EndDictionary();
+  value->EndArray();
   MathUtil::AddToTracedValue("filters_scale", filters_scale, value);
 
   value->BeginDictionary("background_filters");
