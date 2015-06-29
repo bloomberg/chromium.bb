@@ -106,6 +106,9 @@ class NTPUserDataLogger
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;
 
+  // Are stats being logged during Chrome startup?
+  bool during_startup_;
+
   // The URL of this New Tab Page - varies based on NTP version.
   GURL ntp_url_;
 

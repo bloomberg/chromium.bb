@@ -72465,6 +72465,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="NewTabPageTimings" separator=".">
+  <suffix name="MostLikely" label="Loaded server-side suggestions."/>
+  <suffix name="MostVisited" label="Loaded client-side suggestions."/>
+  <suffix name="LocalNTP" label="Loaded local NTP"/>
+  <suffix name="Web" label="Loaded server-side NTP"/>
+  <suffix name="Startup" label="NTP loaded during browser startup."/>
+  <suffix name="NewTab" label="NTP loaded on a new tab."/>
+  <affected-histogram name="NewTabPage.LoadTime"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="NQE.NetworkTypes" separator=".">
   <suffix name="Unknown" label="On Unknown network"/>
   <suffix name="Ethernet" label="On Ethernet network"/>
