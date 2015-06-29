@@ -10,6 +10,10 @@
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/apk_assets.h"
+#endif
+
 namespace content {
 
 TestContentClient::TestContentClient()
@@ -18,6 +22,14 @@ TestContentClient::TestContentClient()
 #if !defined(OS_IOS)
   base::FilePath content_shell_pack_path;
 #if defined(OS_ANDROID)
+  base::MemoryMappedFile::Region region;
+  // Tests that don't yet use .isolate files require loading from within .apk.
+  int fd = base::android::OpenApkAsset("assets/content_shell.pak", &region);
+  if (fd >= 0) {
+    data_pack_.LoadFromFileRegion(base::File(fd), region);
+    return;
+  }
+
   // on Android all pak files are inside the paks folder.
   PathService::Get(base::DIR_ANDROID_APP_DATA, &content_shell_pack_path);
   content_shell_pack_path = content_shell_pack_path.Append(
