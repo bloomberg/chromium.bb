@@ -357,7 +357,6 @@
         'test/app_remoting_test_driver_environment_unittest.cc',
         'test/remote_host_info_fetcher_unittest.cc',
         'test/test_chromoting_client_unittest.cc',
-        'test/test_video_renderer_unittest.cc',
       ],
       'conditions': [
         [ 'OS=="win"', {
