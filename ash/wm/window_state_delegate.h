@@ -25,6 +25,11 @@ class ASH_EXPORT WindowStateDelegate {
   // returns false.
   virtual bool ToggleFullscreen(WindowState* window_state);
 
+  // Invoked when workspace fullscreen state changes and a window may need to
+  // reassert its always on top state. Returns true if delegate has handled this
+  // and no additional work is needed, false otherwise.
+  virtual bool RestoreAlwaysOnTop(WindowState* window_state);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowStateDelegate);
 };

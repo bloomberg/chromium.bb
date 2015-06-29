@@ -70,6 +70,8 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // ash::ShellObserver overrides:
   void OnDisplayWorkAreaInsetsChanged() override;
+  void OnFullscreenStateChanged(bool is_fullscreen,
+                                aura::Window* root_window) override;
 
   // Overriden from WindowObserver:
   void OnWindowHierarchyChanged(

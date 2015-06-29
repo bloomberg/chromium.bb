@@ -595,9 +595,9 @@ void RootWindowController::UpdateShelfVisibility() {
   shelf_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
-const aura::Window* RootWindowController::GetWindowForFullscreenMode() const {
-  const aura::Window* topmost_window = NULL;
-  const aura::Window* active_window = wm::GetActiveWindow();
+aura::Window* RootWindowController::GetWindowForFullscreenMode() {
+  aura::Window* topmost_window = NULL;
+  aura::Window* active_window = wm::GetActiveWindow();
   if (active_window && active_window->GetRootWindow() == GetRootWindow() &&
       IsSwitchableContainer(active_window->parent())) {
     // Use the active window when it is on the current root window to determine

@@ -216,6 +216,38 @@ void WindowState::Restore() {
   }
 }
 
+void WindowState::DisableAlwaysOnTop(aura::Window* window_on_top) {
+  DCHECK(window_on_top);
+  if (GetAlwaysOnTop()) {
+    // |window_| is hidden first to avoid canceling fullscreen mode when it is
+    // no longer always on top and gets added to default container. This avoids
+    // sending redundant OnFullscreenStateChanged to the layout manager. The
+    // |window_| visibility is restored after it no longer obscures the
+    // |window_on_top|.
+    bool visible = window_->IsVisible();
+    if (visible)
+      window_->Hide();
+    window_->SetProperty(aura::client::kAlwaysOnTopKey, false);
+    // Technically it is possible that a |window_| could make itself
+    // always_on_top really quickly. This is probably not a realistic case but
+    // check if the two windows are in the same container just in case.
+    if (window_on_top->parent() == window_->parent())
+      window_->parent()->StackChildAbove(window_on_top, window_);
+    if (visible)
+      window_->Show();
+    cached_always_on_top_ = true;
+  }
+}
+
+void WindowState::RestoreAlwaysOnTop() {
+  if (delegate() && delegate()->RestoreAlwaysOnTop(this))
+    return;
+  if (cached_always_on_top_) {
+    cached_always_on_top_ = false;
+    window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  }
+}
+
 void WindowState::OnWMEvent(const WMEvent* event) {
   current_state_->OnWMEvent(this, event);
 }
@@ -318,9 +350,14 @@ WindowState::WindowState(aura::Window* window)
       hide_shelf_when_fullscreen_(true),
       minimum_visibility_(false),
       can_be_dragged_(true),
+      cached_always_on_top_(false),
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
+}
+
+bool WindowState::GetAlwaysOnTop() const {
+  return window_->GetProperty(aura::client::kAlwaysOnTopKey);
 }
 
 ui::WindowShowState WindowState::GetShowState() const {

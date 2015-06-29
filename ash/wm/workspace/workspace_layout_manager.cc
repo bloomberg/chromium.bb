@@ -184,6 +184,33 @@ void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
     backdrop_delegate_->OnDisplayWorkAreaInsetsChanged();
 }
 
+void WorkspaceLayoutManager::OnFullscreenStateChanged(
+    bool is_fullscreen,
+    aura::Window* root_window) {
+  if (window_->GetRootWindow() != root_window ||
+      is_fullscreen_ == is_fullscreen) {
+    return;
+  }
+  is_fullscreen_ = is_fullscreen;
+  Window* fullscreen_window =
+      is_fullscreen
+          ? GetRootWindowController(window_->GetRootWindow())
+                ->GetWindowForFullscreenMode()
+          : NULL;
+  // Changing always on top state may change window's parent. Iterate on a copy
+  // of |windows_| to avoid invalidating an iterator. Since both workspace and
+  // always_on_top containers' layouts are managed by this class all the
+  // appropriate windows will be included in the iteration.
+  WindowSet windows(windows_);
+  for (auto window : windows) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (is_fullscreen)
+      window_state->DisableAlwaysOnTop(fullscreen_window);
+    else
+      window_state->RestoreAlwaysOnTop();
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, aura::WindowObserver implementation:
 

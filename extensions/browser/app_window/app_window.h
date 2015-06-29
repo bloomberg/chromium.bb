@@ -327,6 +327,9 @@ class AppWindow : public content::WebContentsDelegate,
   // may be false if the bit is silently switched off for security reasons.
   bool IsAlwaysOnTop() const;
 
+  // Restores the always-on-top property according to |cached_always_on_top_|.
+  void RestoreAlwaysOnTop();
+
   // Set whether the window should get even reserved keys (modulo platform
   // restrictions).
   void SetInterceptAllKeys(bool want_all_keys);

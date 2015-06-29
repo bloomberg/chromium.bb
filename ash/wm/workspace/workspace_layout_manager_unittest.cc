@@ -645,6 +645,34 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Fullscreen) {
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
 
+// Tests that fullscreen window causes always_on_top windows to stack below.
+TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
+  gfx::Rect bounds(100, 100, 200, 200);
+  scoped_ptr<aura::Window> fullscreen_window(CreateTestWindow(bounds));
+  scoped_ptr<aura::Window> always_on_top_window1(CreateTestWindow(bounds));
+  scoped_ptr<aura::Window> always_on_top_window2(CreateTestWindow(bounds));
+  always_on_top_window1->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  // Making a window fullscreen temporarily suspends always on top state.
+  fullscreen_window->SetProperty(aura::client::kShowStateKey,
+                                 ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_FALSE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_FALSE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_NE(nullptr, GetRootWindowController(fullscreen_window->GetRootWindow())
+                         ->GetWindowForFullscreenMode());
+  // Making fullscreen window normal restores always on top windows.
+  fullscreen_window->SetProperty(aura::client::kShowStateKey,
+                                 ui::SHOW_STATE_NORMAL);
+  EXPECT_TRUE(
+      always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(
+      always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_EQ(nullptr, GetRootWindowController(fullscreen_window->GetRootWindow())
+                         ->GetWindowForFullscreenMode());
+}
+
 // Tests fullscreen window size during root window resize.
 TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);

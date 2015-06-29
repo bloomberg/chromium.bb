@@ -472,8 +472,7 @@ void AppWindow::OnNativeWindowChanged() {
     fullscreen_types_ = FULLSCREEN_TYPE_NONE;
   }
 
-  if (cached_always_on_top_)
-    UpdateNativeAlwaysOnTop();  // Same as in SetNativeWindowFullscreen.
+  RestoreAlwaysOnTop();  // Same as in SetNativeWindowFullscreen.
 #endif
 
   SaveWindowPosition();
@@ -703,6 +702,11 @@ void AppWindow::SetAlwaysOnTop(bool always_on_top) {
 
 bool AppWindow::IsAlwaysOnTop() const { return cached_always_on_top_; }
 
+void AppWindow::RestoreAlwaysOnTop() {
+  if (cached_always_on_top_)
+    UpdateNativeAlwaysOnTop();
+}
+
 void AppWindow::SetInterceptAllKeys(bool want_all_keys) {
   native_app_window_->SetInterceptAllKeys(want_all_keys);
 }
@@ -815,8 +819,7 @@ void AppWindow::UpdateExtensionAppIcon() {
 void AppWindow::SetNativeWindowFullscreen() {
   native_app_window_->SetFullscreen(fullscreen_types_);
 
-  if (cached_always_on_top_)
-    UpdateNativeAlwaysOnTop();
+  RestoreAlwaysOnTop();
 }
 
 bool AppWindow::IntersectsWithTaskbar() const {
