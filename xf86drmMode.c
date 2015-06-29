@@ -37,16 +37,17 @@
  * TODO the types we are after are defined in diffrent headers on diffrent
  * platforms find which headers to include to get uint32_t
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <stdbool.h>
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "xf86drmMode.h"
 #include "xf86drm.h"
