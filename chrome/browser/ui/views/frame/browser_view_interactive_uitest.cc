@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/omnibox/autocomplete_controller.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/non_client_view.h"

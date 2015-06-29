@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_CONTROLLER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_CONTROLLER_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_CONTROLLER_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -256,4 +256,4 @@ class AutocompleteController : public AutocompleteProviderListener {
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_CONTROLLER_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_CONTROLLER_H_

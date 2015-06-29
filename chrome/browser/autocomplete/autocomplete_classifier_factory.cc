@@ -4,8 +4,6 @@
 
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 
-#include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -14,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/omnibox/autocomplete_classifier.h"
+#include "components/omnibox/autocomplete_controller.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_system_provider.h"

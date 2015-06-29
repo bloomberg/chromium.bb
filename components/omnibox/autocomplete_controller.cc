@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_controller.h"
+#include "components/omnibox/autocomplete_controller.h"
 
 #include <set>
 #include <string>
@@ -13,16 +13,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
-#include "chrome/browser/autocomplete/builtin_provider.h"
-#include "chrome/browser/autocomplete/zero_suggest_provider.h"
+#include "components/omnibox/autocomplete_controller_delegate.h"
 #include "components/omnibox/bookmark_provider.h"
+#include "components/omnibox/builtin_provider.h"
 #include "components/omnibox/history_quick_provider.h"
 #include "components/omnibox/history_url_provider.h"
 #include "components/omnibox/keyword_provider.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/search_provider.h"
 #include "components/omnibox/shortcuts_provider.h"
+#include "components/omnibox/zero_suggest_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "grit/components_strings.h"

@@ -6,8 +6,8 @@
 // provider is invoked when the user focuses in the omnibox prior to editing,
 // and generates search query suggestions based on the current URL.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_ZERO_SUGGEST_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_ZERO_SUGGEST_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_ZERO_SUGGEST_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_ZERO_SUGGEST_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -162,4 +162,4 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   DISALLOW_COPY_AND_ASSIGN(ZeroSuggestProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_ZERO_SUGGEST_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_ZERO_SUGGEST_PROVIDER_H_

@@ -8,6 +8,11 @@ static_library("omnibox") {
   sources = [
     "answers_cache.cc",
     "answers_cache.h",
+    "autocomplete_classifier.cc",
+    "autocomplete_classifier.h",
+    "autocomplete_controller.cc",
+    "autocomplete_controller.h",
+    "autocomplete_controller_delegate.h",
     "autocomplete_input.cc",
     "autocomplete_input.h",
     "autocomplete_match.cc",
@@ -23,6 +28,8 @@ static_library("omnibox") {
     "base_search_provider.h",
     "bookmark_provider.cc",
     "bookmark_provider.h",
+    "builtin_provider.cc",
+    "builtin_provider.h",
     "history_provider.cc",
     "history_provider.h",
     "history_quick_provider.cc",
@@ -63,6 +70,8 @@ static_library("omnibox") {
     "url_index_private_data.h",
     "url_prefix.cc",
     "url_prefix.h",
+    "zero_suggest_provider.cc",
+    "zero_suggest_provider.h",
   ]
 
   public_deps = [
@@ -75,6 +84,7 @@ static_library("omnibox") {
     "//base:i18n",
     "//components/bookmarks/browser",
     "//components/keyed_service/core",
+    "//components/pref_registry",
     "//components/query_parser",
     "//components/resources",
     "//components/search",

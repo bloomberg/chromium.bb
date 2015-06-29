@@ -1305,15 +1305,8 @@
     # Variables should generally be alphabetical within this section.
 
     'chrome_browser_autocomplete_sources': [
-      'browser/autocomplete/autocomplete_classifier.cc',
-      'browser/autocomplete/autocomplete_classifier.h',
       'browser/autocomplete/autocomplete_classifier_factory.cc',
       'browser/autocomplete/autocomplete_classifier_factory.h',
-      'browser/autocomplete/autocomplete_controller.cc',
-      'browser/autocomplete/autocomplete_controller.h',
-      'browser/autocomplete/autocomplete_controller_delegate.h',
-      'browser/autocomplete/builtin_provider.cc',
-      'browser/autocomplete/builtin_provider.h',
       'browser/autocomplete/chrome_autocomplete_provider_client.cc',
       'browser/autocomplete/chrome_autocomplete_provider_client.h',
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.cc',
@@ -1324,8 +1317,6 @@
       'browser/autocomplete/shortcuts_backend_factory.h',
       'browser/autocomplete/shortcuts_extensions_manager.cc',
       'browser/autocomplete/shortcuts_extensions_manager.h',
-      'browser/autocomplete/zero_suggest_provider.cc',
-      'browser/autocomplete/zero_suggest_provider.h',
     ],
     'chrome_browser_background_sources': [
       'browser/background/background_application_list_model.cc',

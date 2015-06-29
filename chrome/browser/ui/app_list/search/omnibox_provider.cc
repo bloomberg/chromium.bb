@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 
-#include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +11,8 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/omnibox/autocomplete_classifier.h"
+#include "components/omnibox/autocomplete_controller.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "ui/app_list/search_result.h"
 #include "url/gurl.h"

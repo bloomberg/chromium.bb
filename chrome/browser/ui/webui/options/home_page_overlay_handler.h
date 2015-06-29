@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/omnibox/autocomplete_controller_delegate.h"
 
 class AutocompleteController;
 

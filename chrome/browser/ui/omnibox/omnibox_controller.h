@@ -9,9 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
+#include "components/omnibox/autocomplete_controller.h"
+#include "components/omnibox/autocomplete_controller_delegate.h"
 #include "components/omnibox/autocomplete_match.h"
 
 class AUtocompleteInput;

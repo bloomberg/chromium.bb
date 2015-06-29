@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/omnibox/autocomplete_controller.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

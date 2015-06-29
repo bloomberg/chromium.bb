@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/net/predictor.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/common/instant_types.h"
+#include "components/omnibox/autocomplete_classifier.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/search_provider.h"
 #include "components/search/search.h"

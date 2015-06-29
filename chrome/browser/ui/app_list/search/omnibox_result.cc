@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/omnibox/autocomplete_controller.h"
 #include "components/omnibox/autocomplete_match_type.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

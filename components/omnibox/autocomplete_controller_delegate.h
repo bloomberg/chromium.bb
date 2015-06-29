@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_CONTROLLER_DELEGATE_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_CONTROLLER_DELEGATE_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_CONTROLLER_DELEGATE_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_CONTROLLER_DELEGATE_H_
 
 class AutocompleteControllerDelegate {
  public:
@@ -16,4 +16,4 @@ class AutocompleteControllerDelegate {
   virtual ~AutocompleteControllerDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_CONTROLLER_DELEGATE_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_CONTROLLER_DELEGATE_H_

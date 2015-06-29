@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/zero_suggest_provider.h"
+#include "components/omnibox/zero_suggest_provider.h"
 
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
