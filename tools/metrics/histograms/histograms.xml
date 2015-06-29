@@ -73732,7 +73732,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Cookie" label="Cookie"/>
   <suffix name="DatabaseTracker" label="DatabaseTracker"/>
   <suffix name="DomainBoundCerts" label="DomainBoundCerts"/>
-  <suffix name="DomStorageDatabase" label="DomStorageDatabase"/>
+  <suffix name="DOMStorageDatabase" label="DOMStorageDatabase"/>
   <suffix name="History" label="History"/>
   <suffix name="Predictor" label="Predictor"/>
   <suffix name="Quota" label="Quota"/>
