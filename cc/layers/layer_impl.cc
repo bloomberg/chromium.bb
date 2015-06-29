@@ -796,6 +796,17 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
   }
 }
 
+void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
+  if (scrollable())
+    UpdatePropertyTreeScrollOffset();
+
+  if (OpacityIsAnimating())
+    UpdatePropertyTreeOpacity();
+
+  if (TransformIsAnimating())
+    UpdatePropertyTreeTransform();
+}
+
 gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
@@ -1225,7 +1236,7 @@ void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
     DidUpdateScrollOffset(false);
 }
 
-void LayerImpl::UpdatePropertyTreeForScrollingIfNeeded() {
+void LayerImpl::UpdatePropertyTreeScrollOffset() {
   // TODO(enne): in the future, scrolling should update the scroll tree
   // directly instead of going through layers.
   if (transform_tree_index_ != -1) {
@@ -1249,7 +1260,7 @@ void LayerImpl::DidUpdateScrollOffset(bool is_from_root_delegate) {
   NoteLayerPropertyChangedForSubtree();
   ScrollbarParametersDidChange(false);
 
-  UpdatePropertyTreeForScrollingIfNeeded();
+  UpdatePropertyTreeScrollOffset();
 
   // Inform the pending twin that a property changed.
   if (layer_tree_impl()->IsActiveTree()) {

@@ -327,7 +327,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   // This must happen after synchronizing property trees and after push
   // properties, which updates property tree indices.
-  sync_tree->UpdatePropertyTreeScrollingFromMainThread();
+  sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread();
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
 }

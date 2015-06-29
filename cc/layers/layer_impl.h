@@ -185,6 +185,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void UpdatePropertyTreeTransform();
   void UpdatePropertyTreeOpacity();
+  void UpdatePropertyTreeScrollOffset();
 
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
@@ -651,7 +652,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   bool sorted_for_recursion() { return sorted_for_recursion_; }
 
-  void UpdatePropertyTreeForScrollingIfNeeded();
+  void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
 
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,

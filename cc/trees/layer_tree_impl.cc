@@ -342,17 +342,18 @@ float LayerTreeImpl::ClampPageScaleFactorToLimits(
   return page_scale_factor;
 }
 
-void LayerTreeImpl::UpdatePropertyTreeScrollingFromMainThread() {
-  // TODO(enne): This should get replaced by pulling out scrolling into its own
-  // tree.  Then scrolls would have their own way of synchronizing across
-  // commits.  This occurs to push updates from scrolling deltas on the
-  // compositor thread that have occurred after begin frame to a newly-committed
-  // property tree.
+void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
+  // TODO(enne): This should get replaced by pulling out scrolling and
+  // animations into their own trees.  Then scrolls and animations would have
+  // their own ways of synchronizing across commits.  This occurs to push
+  // updates from scrolling deltas on the compositor thread that have occurred
+  // after begin frame and updates from animations that have ticked since begin
+  // frame to a newly-committed property tree.
   if (!root_layer())
     return;
   LayerTreeHostCommon::CallFunctionForSubtree(
       root_layer(), [](LayerImpl* layer) {
-        layer->UpdatePropertyTreeForScrollingIfNeeded();
+        layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
       });
 }
 

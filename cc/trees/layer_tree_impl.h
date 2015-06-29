@@ -182,7 +182,7 @@ class CC_EXPORT LayerTreeImpl {
     has_transparent_background_ = transparent;
   }
 
-  void UpdatePropertyTreeScrollingFromMainThread();
+  void UpdatePropertyTreeScrollingAndAnimationFromMainThread();
   void SetPageScaleOnActiveTree(float active_page_scale);
   void PushPageScaleFromMainThread(float page_scale_factor,
                                    float min_page_scale_factor,
