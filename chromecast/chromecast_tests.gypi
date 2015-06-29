@@ -27,9 +27,14 @@
       'dependencies': [
         'chromecast.gyp:cast_crash',
         '../base/base.gyp:run_all_unittests',
+        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
+      'include_dirs': [
+        '../breakpad/src',
+      ],
       'sources': [
+        'crash/cast_crashdump_uploader_unittest.cc',
         'crash/linux/dump_info_unittest.cc',
         'crash/linux/synchronized_minidump_manager_unittest.cc',
         'crash/linux/minidump_writer_unittest.cc',
