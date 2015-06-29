@@ -967,7 +967,24 @@ EVENT_TYPE(ENTRY_DOOM)
 EVENT_TYPE(HTTP_STREAM_REQUEST)
 
 // Measures the time taken to execute the HttpStreamFactoryImpl::Job
+// The event parameters are:
+//   {
+//      "source_dependency": <Source identifier for the Request with started
+//                            this Job>,
+//      "original_url": <The URL to create a stream for>,
+//      "url": <The URL actually being used, possibly different from
+//              original_url if using an alternate service>,
+//      "alternate_service": <The alternate service being used>,
+//      "priority": <The priority of the Job>,
+//   }
 EVENT_TYPE(HTTP_STREAM_JOB)
+
+// Identifies the NetLog::Source() for a Job started by the Request.
+// The event parameters are:
+//   {
+//      "source_dependency": <Source identifier for Job we started>,
+//   }
+EVENT_TYPE(HTTP_STREAM_REQUEST_STARTED_JOB)
 
 // Identifies the NetLog::Source() for the Job that fulfilled the Request.
 // The event parameters are:
@@ -991,6 +1008,10 @@ EVENT_TYPE(HTTP_STREAM_JOB_BOUND_TO_REQUEST)
 //      "server_protos": <The list of server advertised protocols>,
 //   }
 EVENT_TYPE(HTTP_STREAM_REQUEST_PROTO)
+
+// Emitted when a Job is orphaned because the Request was bound to a different
+// Job. The orphaned Job will continue to run to completion.
+EVENT_TYPE(HTTP_STREAM_JOB_ORPHANED)
 
 // ------------------------------------------------------------------------
 // HttpNetworkTransaction

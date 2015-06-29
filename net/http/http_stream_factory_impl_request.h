@@ -34,6 +34,8 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // The GURL from the HttpRequestInfo the started the Request.
   const GURL& url() const { return url_; }
 
+  const BoundNetLog& net_log() const { return net_log_; }
+
   // Called when the Job determines the appropriate |spdy_session_key| for the
   // Request. Note that this does not mean that SPDY is necessarily supported
   // for this SpdySessionKey, since we may need to wait for NPN to complete

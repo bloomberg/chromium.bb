@@ -50,12 +50,15 @@ namespace net {
 
 // Returns parameters associated with the start of a HTTP stream job.
 scoped_ptr<base::Value> NetLogHttpStreamJobCallback(
+    const NetLog::Source& source,
     const GURL* original_url,
     const GURL* url,
     const AlternativeService* alternative_service,
     RequestPriority priority,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  if (source.IsValid())
+    source.AddToEventParameters(dict.get());
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
   dict->SetString("alternative_service", alternative_service->ToString());
@@ -227,6 +230,7 @@ void HttpStreamFactoryImpl::Job::Resume(Job* job) {
 void HttpStreamFactoryImpl::Job::Orphan(const Request* request) {
   DCHECK_EQ(request_, request);
   request_ = NULL;
+  net_log_.AddEvent(NetLog::TYPE_HTTP_STREAM_JOB_ORPHANED);
   if (blocking_job_) {
     // We've been orphaned, but there's a job we're blocked on. Don't bother
     // racing, just cancel ourself.
@@ -667,8 +671,14 @@ int HttpStreamFactoryImpl::Job::DoStart() {
 
   net_log_.BeginEvent(
       NetLog::TYPE_HTTP_STREAM_JOB,
-      base::Bind(&NetLogHttpStreamJobCallback, &request_info_.url, &origin_url_,
-                 &alternative_service_, priority_));
+      base::Bind(&NetLogHttpStreamJobCallback,
+                 request_ ? request_->net_log().source() : NetLog::Source(),
+                 &request_info_.url, &origin_url_, &alternative_service_,
+                 priority_));
+  if (request_) {
+    request_->net_log().AddEvent(NetLog::TYPE_HTTP_STREAM_REQUEST_STARTED_JOB,
+                                 net_log_.source().ToEventParametersCallback());
+  }
 
   // Don't connect to restricted ports.
   if (!IsPortAllowedForScheme(server_.port(), request_info_.url.scheme())) {
