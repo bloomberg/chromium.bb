@@ -1682,7 +1682,6 @@ crbug.com/503856 imported/web-platform-tests/html/semantics/embedded-content/the
 
 crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
 crbug.com/503875 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure ]
-crbug.com/503887 inspector/sources/debugger-step/debugger-step-out-document-write.html [ Failure Pass ]
 crbug.com/450493 [ Win ] http/tests/inspector/resource-tree/resource-tree-frame-navigate.html [ Failure Pass ]
 crbug.com/450493 [ Win ] inspector/console/console-trace-arguments.html [ Failure Pass ]
 crbug.com/450493 [ Win ] virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]

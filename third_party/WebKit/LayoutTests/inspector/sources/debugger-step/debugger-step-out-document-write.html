@@ -1,13 +1,14 @@
 <html>
 <head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+
 <script>
     document.writeln("<script>\nfunction f1() {\n  window.foo1 = true;\n}\nf1();\n <" + "/script>");
 </script>
-
 <script>
     console.assert(window.foo1, "FAIL: foo1");
 </script>
-
 <script>
 function global1()
 {
@@ -16,16 +17,11 @@ function global1()
 }
 var x = global1();
 </script>
-
 <script>
     console.assert(window.foo2, "FAIL: foo2");
 </script>
 
-<script src="../../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../../http/tests/inspector/debugger-test.js"></script>
-
 <script>
-
 function test()
 {
     var numberOfStepOut = 5;
@@ -40,7 +36,7 @@ function test()
     function step2(sourceFrame)
     {
         InspectorTest.addResult("Script source was shown.");
-        InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
+        InspectorTest.setBreakpoint(sourceFrame, 6, "", true);
         InspectorTest.waitUntilPaused(step3);
         InspectorTest.reloadPage(completeTest);
     }
@@ -59,7 +55,6 @@ function test()
         InspectorTest.completeDebuggerTest();
     }
 }
-
 </script>
 </head>
 
