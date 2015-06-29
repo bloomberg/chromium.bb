@@ -40,9 +40,16 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 };
 
-// Extremely flaky. See http://crbug.com/443542
+// Flaky on ChromeOS (?): http://crbug.com/443542.
+#if defined(OS_CHROMEOS)
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
+    DISABLED_RunsAudioVideoWebRTCCallInTwoTabs
+#else
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
+    RunsAudioVideoWebRTCCallInTwoTabs
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       DISABLED_RunsAudioVideoWebRTCCallInTwoTabs) {
+                       MAYBE_RunsAudioVideoWebRTCCallInTwoTabs) {
   if (OnWinXp()) return;
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -60,8 +67,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
 
+#if !defined(OS_MACOSX)
+  // Video is choppy on Mac OS X. http://crbug.com/443542.
   WaitForVideoToPlay(left_tab);
   WaitForVideoToPlay(right_tab);
+#endif
 
   HangUp(left_tab);
   HangUp(right_tab);
