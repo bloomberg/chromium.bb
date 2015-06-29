@@ -192,12 +192,6 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
 
   // Verifies whether the pages printed or not.
   void VerifyPagesPrinted(bool printed) {
-#if defined(OS_CHROMEOS)
-    bool did_print_msg =
-        (render_thread_->sink().GetUniqueMessageMatching(
-             PrintHostMsg_TempFileForPrintingWritten::ID) != NULL);
-    ASSERT_EQ(printed, did_print_msg);
-#else
     const IPC::Message* print_msg =
         render_thread_->sink().GetUniqueMessageMatching(
             PrintHostMsg_DidPrintPage::ID);
@@ -208,7 +202,6 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
       PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
       EXPECT_EQ(0, base::get<0>(post_did_print_page_param).page_number);
     }
-#endif  // defined(OS_CHROMEOS)
   }
 
 #if defined(ENABLE_BASIC_PRINTING)
