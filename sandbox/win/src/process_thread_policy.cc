@@ -117,7 +117,7 @@ NTSTATUS ProcessPolicy::OpenThreadAction(const ClientInfo& client_info,
   client_id.UniqueThread =
       reinterpret_cast<PVOID>(static_cast<ULONG_PTR>(thread_id));
 
-  HANDLE local_handle;
+  HANDLE local_handle = NULL;
   NTSTATUS status = NtOpenThread(&local_handle, desired_access, &attributes,
                                  &client_id);
   if (NT_SUCCESS(status)) {
@@ -148,7 +148,7 @@ NTSTATUS ProcessPolicy::OpenProcessAction(const ClientInfo& client_info,
   CLIENT_ID client_id = {0};
   client_id.UniqueProcess = reinterpret_cast<PVOID>(
                                 static_cast<ULONG_PTR>(client_info.process_id));
-  HANDLE local_handle;
+  HANDLE local_handle = NULL;
   NTSTATUS status = NtOpenProcess(&local_handle, desired_access, &attributes,
                                   &client_id);
   if (NT_SUCCESS(status)) {
@@ -173,7 +173,7 @@ NTSTATUS ProcessPolicy::OpenProcessTokenAction(const ClientInfo& client_info,
   if (CURRENT_PROCESS != process)
     return STATUS_ACCESS_DENIED;
 
-  HANDLE local_handle;
+  HANDLE local_handle = NULL;
   NTSTATUS status = NtOpenProcessToken(client_info.process, desired_access,
                                        &local_handle);
   if (NT_SUCCESS(status)) {
@@ -198,7 +198,7 @@ NTSTATUS ProcessPolicy::OpenProcessTokenExAction(const ClientInfo& client_info,
   if (CURRENT_PROCESS != process)
     return STATUS_ACCESS_DENIED;
 
-  HANDLE local_handle;
+  HANDLE local_handle = NULL;
   NTSTATUS status = NtOpenProcessTokenEx(client_info.process, desired_access,
                                          attributes, &local_handle);
   if (NT_SUCCESS(status)) {
