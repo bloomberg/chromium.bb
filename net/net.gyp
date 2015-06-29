@@ -301,6 +301,7 @@
           }, {  # else: !use_v8_in_net
             'sources!': [
               'proxy/proxy_resolver_v8_tracing_unittest.cc',
+              'proxy/proxy_resolver_v8_tracing_wrapper_unittest.cc',
               'proxy/proxy_resolver_v8_unittest.cc',
             ],
           },
@@ -317,7 +318,6 @@
             'sources!': [
               'dns/host_resolver_mojo_unittest.cc',
               'dns/mojo_host_resolver_impl_unittest.cc',
-              'proxy/load_state_change_coalescer_unittest.cc',
               'proxy/mojo_proxy_resolver_factory_impl_unittest.cc',
               'proxy/mojo_proxy_resolver_impl_unittest.cc',
               'proxy/proxy_resolver_error_observer_mojo_unittest.cc',
@@ -869,6 +869,8 @@
             'proxy/proxy_resolver_v8.h',
             'proxy/proxy_resolver_v8_tracing.cc',
             'proxy/proxy_resolver_v8_tracing.h',
+            'proxy/proxy_resolver_v8_tracing_wrapper.cc',
+            'proxy/proxy_resolver_v8_tracing_wrapper.h',
             'proxy/proxy_service_v8.cc',
             'proxy/proxy_service_v8.h',
           ],
@@ -930,8 +932,6 @@
           'sources': [
             'dns/host_resolver_mojo.cc',
             'dns/host_resolver_mojo.h',
-            'proxy/load_state_change_coalescer.cc',
-            'proxy/load_state_change_coalescer.h',
             'proxy/mojo_proxy_resolver_factory_impl.cc',
             'proxy/mojo_proxy_resolver_factory_impl.h',
             'proxy/mojo_proxy_resolver_impl.cc',

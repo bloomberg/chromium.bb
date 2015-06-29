@@ -5,8 +5,6 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_V8_TRACING_H_
 #define NET_PROXY_PROXY_RESOLVER_V8_TRACING_H_
 
-#include <set>
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,50 +15,84 @@
 namespace net {
 
 class HostResolver;
-class NetLog;
-class ProxyResolverErrorObserver;
 
-// ProxyResolverFactoryV8Tracing is a ProxyResolverFactory that returns
-// non-blocking ProxyResolver instances. Each ProxyResolver instance executes
-// ProxyResolverV8 on a single helper thread, and does some magic to avoid
+// ProxyResolverV8Tracing is a non-blocking proxy resolver.
+class NET_EXPORT ProxyResolverV8Tracing {
+ public:
+  // Bindings is an interface used by ProxyResolverV8Tracing to delegate
+  // per-request functionality. Each instance will be destroyed on the origin
+  // thread of the ProxyResolverV8Tracing when the request completes or after
+  // the request is cancelled. In the cancellation case, the Bindings instance
+  // for a request may be destroyed after CancelRequest completes.
+  class Bindings {
+   public:
+    Bindings() {}
+    virtual ~Bindings() {}
+
+    // Invoked in response to an alert() call by the PAC script. This may be
+    // called after cancellation and from any thread.
+    virtual void Alert(const base::string16& message) = 0;
+
+    // Invoked in response to an error in the PAC script. This may be
+    // called after cancellation and from any thread.
+    virtual void OnError(int line_number, const base::string16& message) = 0;
+
+    // Returns a HostResolver to use for DNS resolution. This will only be
+    // called from the origin thread and will never be called after
+    // cancellation.
+    virtual HostResolver* GetHostResolver() = 0;
+
+    // Returns a BoundNetLog to be passed to the HostResolver returned by
+    // GetHostResolver(). This will only be called from the origin thread and
+    // will never be called after cancellation.
+    virtual BoundNetLog GetBoundNetLog() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Bindings);
+  };
+
+  virtual ~ProxyResolverV8Tracing() {}
+
+  // Gets a list of proxy servers to use for |url|. This request always
+  // runs asynchronously and notifies the result by running |callback|. If the
+  // result code is OK then the request was successful and |results| contains
+  // the proxy resolution information. If |request| is non-null, |*request| is
+  // written to, and can be passed to CancelRequest().
+  virtual void GetProxyForURL(const GURL& url,
+                              ProxyInfo* results,
+                              const CompletionCallback& callback,
+                              ProxyResolver::RequestHandle* request,
+                              scoped_ptr<Bindings> bindings) = 0;
+
+  // Cancels |request|.
+  virtual void CancelRequest(ProxyResolver::RequestHandle request) = 0;
+
+  // Gets the LoadState for |request|.
+  virtual LoadState GetLoadState(
+      ProxyResolver::RequestHandle request) const = 0;
+};
+
+// A factory for ProxyResolverV8Tracing instances. The default implementation,
+// returned by Create(), creates ProxyResolverV8Tracing instances that execute
+// ProxyResolverV8 on a single helper thread, and do some magic to avoid
 // blocking in DNS. For more details see the design document:
 // https://docs.google.com/a/google.com/document/d/16Ij5OcVnR3s0MH4Z5XkhI9VTPoMJdaBn9rKreAmGOdE/edit?pli=1
-class NET_EXPORT ProxyResolverFactoryV8Tracing : public ProxyResolverFactory {
+class NET_EXPORT ProxyResolverV8TracingFactory {
  public:
-  // Note that |host_resolver| and |net_log| are expected to outlive |this| and
-  // any ProxyResolver instances created using |this|. |error_observer_factory|
-  // will be invoked once per CreateProxyResolver() call to create a
-  // ProxyResolverErrorObserver to be used by the ProxyResolver instance
-  // returned by that call.
-  ProxyResolverFactoryV8Tracing(
-      HostResolver* host_resolver,
-      NetLog* net_log,
-      const ProxyResolver::LoadStateChangedCallback& callback,
-      const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
-          error_observer_factory);
-  ~ProxyResolverFactoryV8Tracing() override;
+  ProxyResolverV8TracingFactory() {}
+  virtual ~ProxyResolverV8TracingFactory() = default;
 
-  // ProxyResolverFactory override.
-  int CreateProxyResolver(
+  virtual void CreateProxyResolverV8Tracing(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolver>* resolver,
+      scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+      scoped_ptr<ProxyResolverV8Tracing>* resolver,
       const CompletionCallback& callback,
-      scoped_ptr<Request>* request) override;
+      scoped_ptr<ProxyResolverFactory::Request>* request) = 0;
+
+  static scoped_ptr<ProxyResolverV8TracingFactory> Create();
 
  private:
-  class CreateJob;
-
-  void RemoveJob(CreateJob* job);
-
-  HostResolver* const host_resolver_;
-  NetLog* const net_log_;
-  const ProxyResolver::LoadStateChangedCallback load_state_changed_callback_;
-  const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>
-      error_observer_factory_;
-
-  std::set<CreateJob*> jobs_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryV8Tracing);
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8TracingFactory);
 };
 
 }  // namespace net

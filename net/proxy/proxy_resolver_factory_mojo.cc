@@ -132,7 +132,7 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
   void Cancel();
 
   // Returns the LoadState of this job.
-  LoadState load_state() { return load_state_; }
+  LoadState load_state() { return LOAD_STATE_RESOLVING_PROXY_FOR_URL; }
 
  private:
   // Overridden from mojo::ErrorHandler:
@@ -142,13 +142,11 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
   void ReportResult(
       int32_t error,
       mojo::Array<interfaces::ProxyServerPtr> proxy_servers) override;
-  void LoadStateChanged(int32_t load_state) override;
 
   ProxyResolverMojo* resolver_;
   const GURL url_;
   ProxyInfo* results_;
   CompletionCallback callback_;
-  LoadState load_state_ = LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 
   base::ThreadChecker thread_checker_;
   mojo::Binding<interfaces::ProxyResolverRequestClient> binding_;
@@ -204,10 +202,6 @@ void ProxyResolverMojo::Job::ReportResult(
   callback_.Reset();
   resolver_->RemoveJob(this);
   callback.Run(error);
-}
-
-void ProxyResolverMojo::Job::LoadStateChanged(int32_t load_state) {
-  load_state_ = static_cast<LoadState>(load_state);
 }
 
 ProxyResolverMojo::ProxyResolverMojo(

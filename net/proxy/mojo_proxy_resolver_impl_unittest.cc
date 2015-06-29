@@ -26,7 +26,6 @@ class TestRequestClient : public interfaces::ProxyResolverRequestClient,
  public:
   enum Event {
     RESULT_RECEIVED,
-    LOAD_STATE_CHANGED,
     CONNECTION_ERROR,
   };
 
@@ -37,21 +36,18 @@ class TestRequestClient : public interfaces::ProxyResolverRequestClient,
 
   Error error() { return error_; }
   const mojo::Array<interfaces::ProxyServerPtr>& results() { return results_; }
-  LoadState load_state() { return load_state_; }
   EventWaiter<Event>& event_waiter() { return event_waiter_; }
 
  private:
   // interfaces::ProxyResolverRequestClient override.
   void ReportResult(int32_t error,
                     mojo::Array<interfaces::ProxyServerPtr> results) override;
-  void LoadStateChanged(int32_t load_state) override;
 
   // mojo::ErrorHandler override.
   void OnConnectionError() override;
 
   bool done_ = false;
   Error error_ = ERR_FAILED;
-  LoadState load_state_ = LOAD_STATE_IDLE;
   mojo::Array<interfaces::ProxyServerPtr> results_;
 
   mojo::Binding<interfaces::ProxyResolverRequestClient> binding_;
@@ -81,11 +77,6 @@ void TestRequestClient::ReportResult(
   error_ = static_cast<Error>(error);
   results_ = results.Pass();
   done_ = true;
-}
-
-void TestRequestClient::LoadStateChanged(int32_t load_state) {
-  event_waiter_.NotifyEvent(LOAD_STATE_CHANGED);
-  load_state_ = static_cast<LoadState>(load_state);
 }
 
 void TestRequestClient::OnConnectionError() {
@@ -164,25 +155,14 @@ class MojoProxyResolverImplTest : public testing::Test {
     scoped_ptr<CallbackMockProxyResolver> mock_resolver(
         new CallbackMockProxyResolver);
     mock_proxy_resolver_ = mock_resolver.get();
-    resolver_impl_.reset(new MojoProxyResolverImpl(
-        mock_resolver.Pass(),
-        base::Bind(&MojoProxyResolverImplTest::set_load_state_changed_callback,
-                   base::Unretained(this))));
+    resolver_impl_.reset(new MojoProxyResolverImpl(mock_resolver.Pass()));
     resolver_ = resolver_impl_.get();
-  }
-
-  void set_load_state_changed_callback(
-      const ProxyResolver::LoadStateChangedCallback& callback) {
-    EXPECT_TRUE(load_state_changed_callback_.is_null());
-    EXPECT_FALSE(callback.is_null());
-    load_state_changed_callback_ = callback;
   }
 
   CallbackMockProxyResolver* mock_proxy_resolver_;
 
   scoped_ptr<MojoProxyResolverImpl> resolver_impl_;
   interfaces::ProxyResolver* resolver_;
-  ProxyResolver::LoadStateChangedCallback load_state_changed_callback_;
 };
 
 TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
@@ -194,12 +174,6 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
   scoped_refptr<MockAsyncProxyResolver::Request> request =
       mock_proxy_resolver_->pending_requests()[0];
   EXPECT_EQ(GURL("http://example.com"), request->url());
-
-  ASSERT_FALSE(load_state_changed_callback_.is_null());
-  load_state_changed_callback_.Run(request.get(),
-                                   LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
-  client.event_waiter().WaitForEvent(TestRequestClient::LOAD_STATE_CHANGED);
-  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT, client.load_state());
 
   request->results()->UsePacString(
       "PROXY proxy.example.com:1; "

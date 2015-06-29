@@ -10,7 +10,7 @@
 #include "net/proxy/network_delegate_error_observer.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_factory.h"
-#include "net/proxy/proxy_resolver_v8_tracing.h"
+#include "net/proxy/proxy_resolver_v8_tracing_wrapper.h"
 #include "net/proxy/proxy_service.h"
 
 namespace net {
@@ -30,8 +30,8 @@ ProxyService* CreateProxyServiceUsingV8ProxyResolver(
 
   ProxyService* proxy_service = new ProxyService(
       proxy_config_service,
-      make_scoped_ptr(new ProxyResolverFactoryV8Tracing(
-          host_resolver, net_log, ProxyResolver::LoadStateChangedCallback(),
+      make_scoped_ptr(new ProxyResolverFactoryV8TracingWrapper(
+          host_resolver, net_log,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
                      base::ThreadTaskRunnerHandle::Get()))),
       net_log);

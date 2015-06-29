@@ -101,8 +101,6 @@ struct GetProxyForUrlAction {
     DISCONNECT,
     // Wait for the client pipe to be disconnected.
     WAIT_FOR_CLIENT_DISCONNECT,
-    // Send a LoadStateChanged message and keep the client pipe open.
-    SEND_LOAD_STATE_AND_BLOCK,
   };
 
   GetProxyForUrlAction() {}
@@ -147,13 +145,6 @@ struct GetProxyForUrlAction {
     GetProxyForUrlAction result;
     result.expected_url = url;
     result.action = WAIT_FOR_CLIENT_DISCONNECT;
-    return result;
-  }
-
-  static GetProxyForUrlAction SendLoadStateChanged(const GURL& url) {
-    GetProxyForUrlAction result;
-    result.expected_url = url;
-    result.action = SEND_LOAD_STATE_AND_BLOCK;
     return result;
   }
 
@@ -250,11 +241,6 @@ void MockMojoProxyResolver::GetProxyForUrl(
     case GetProxyForUrlAction::WAIT_FOR_CLIENT_DISCONNECT:
       ASSERT_FALSE(client.WaitForIncomingResponse());
       break;
-    case GetProxyForUrlAction::SEND_LOAD_STATE_AND_BLOCK:
-      client->LoadStateChanged(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
-      blocked_clients_.push_back(
-          new interfaces::ProxyResolverRequestClientPtr(client.Pass()));
-      break;
   }
   WakeWaiter();
 }
@@ -269,7 +255,6 @@ class Request {
 
   int error() const { return error_; }
   const ProxyInfo& results() const { return results_; }
-  LoadState load_state() { return resolver_->GetLoadState(handle_); }
 
  private:
   ProxyResolver* resolver_;
@@ -626,21 +611,6 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL) {
   EXPECT_EQ(OK, request->WaitForResult());
 
   EXPECT_EQ("DIRECT", request->results().ToPacString());
-}
-
-TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_LoadState) {
-  mock_proxy_resolver_.AddGetProxyAction(
-      GetProxyForUrlAction::SendLoadStateChanged(GURL(kExampleUrl)));
-  CreateProxyResolver();
-
-  scoped_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
-  EXPECT_EQ(ERR_IO_PENDING, request->Resolve());
-  EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, request->load_state());
-  while (request->load_state() == LOAD_STATE_RESOLVING_PROXY_FOR_URL)
-    base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT, request->load_state());
-  mock_proxy_resolver_.ClearBlockedClients();
-  EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request->WaitForResult());
 }
 
 TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_MultipleResults) {

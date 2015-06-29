@@ -16,11 +16,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
-#include "net/log/net_log.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_v8.h"
@@ -58,17 +56,6 @@ const size_t kMaxUniqueResolveDnsPerExec = 20;
 // hit this. (In fact normal scripts should not even have alerts() or errors).
 const size_t kMaxAlertsAndErrorsBytes = 2048;
 
-// Returns event parameters for a PAC error message (line number + message).
-scoped_ptr<base::Value> NetLogErrorCallback(
-    int line_number,
-    const base::string16* message,
-    NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("line_number", line_number);
-  dict->SetString("message", *message);
-  return dict.Pass();
-}
-
 // The Job class is responsible for executing GetProxyForURL() and
 // creating ProxyResolverV8 instances, since both of these operations share
 // similar code.
@@ -81,8 +68,8 @@ scoped_ptr<base::Value> NetLogErrorCallback(
 // thread. Most methods are expected to be used exclusively on one thread
 // or the other.
 //
-// The lifetime of Jobs does not exceed that of the ProxyResolverV8Tracing that
-// spawned it. Destruction might happen on either the origin thread or the
+// The lifetime of Jobs does not exceed that of the ProxyResolverV8TracingImpl
+// that spawned it. Destruction might happen on either the origin thread or the
 // worker thread.
 class Job : public base::RefCountedThreadSafe<Job>,
             public ProxyResolverV8::JSBindings {
@@ -90,30 +77,19 @@ class Job : public base::RefCountedThreadSafe<Job>,
   struct Params {
     Params(
         const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
-        HostResolver* host_resolver,
-        ProxyResolverErrorObserver* error_observer,
-        NetLog* net_log,
-        ProxyResolver::LoadStateChangedCallback on_load_state_changed,
         int* num_outstanding_callbacks)
         : v8_resolver(nullptr),
           worker_task_runner(worker_task_runner),
-          host_resolver(host_resolver),
-          error_observer(error_observer),
-          net_log(net_log),
-          on_load_state_changed(on_load_state_changed),
           num_outstanding_callbacks(num_outstanding_callbacks) {}
 
     ProxyResolverV8* v8_resolver;
     scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner;
-    HostResolver* host_resolver;
-    ProxyResolverErrorObserver* error_observer;
-    NetLog* net_log;
-    ProxyResolver::LoadStateChangedCallback on_load_state_changed;
     int* num_outstanding_callbacks;
   };
   // |params| is non-owned. It contains the parameters for this Job, and must
   // outlive it.
-  explicit Job(const Params* params);
+  Job(const Params* params,
+      scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings);
 
   // Called from origin thread.
   void StartCreateV8Resolver(
@@ -124,7 +100,6 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // Called from origin thread.
   void StartGetProxyForURL(const GURL& url,
                            ProxyInfo* results,
-                           const BoundNetLog& net_log,
                            const CompletionCallback& callback);
 
   // Called from origin thread.
@@ -159,8 +134,6 @@ class Job : public base::RefCountedThreadSafe<Job>,
   ProxyResolverV8* v8_resolver();
   const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner();
   HostResolver* host_resolver();
-  ProxyResolverErrorObserver* error_observer();
-  NetLog* net_log();
 
   // Invokes the user's callback.
   void NotifyCaller(int result);
@@ -223,17 +196,15 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void DispatchAlertOrError(bool is_alert, int line_number,
                             const base::string16& message);
 
-  void LogEventToCurrentRequestAndGlobally(
-      NetLog::EventType type,
-      const NetLog::ParametersCallback& parameters_callback);
-
-  // The thread which called into ProxyResolverV8Tracing, and on which the
+  // The thread which called into ProxyResolverV8TracingImpl, and on which the
   // completion callback is expected to run.
   scoped_refptr<base::SingleThreadTaskRunner> origin_runner_;
 
   // The Parameters for this Job.
   // Initialized on origin thread and then accessed from both threads.
   const Params* const params_;
+
+  scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings_;
 
   // The callback to run (on the origin thread) when the Job finishes.
   // Should only be accessed from origin thread.
@@ -277,7 +248,6 @@ class Job : public base::RefCountedThreadSafe<Job>,
   ProxyInfo* user_results_;  // Owned by caller, lives on origin thread.
   GURL url_;
   ProxyInfo results_;
-  BoundNetLog bound_net_log_;
 
   // ---------------------------------------------------------------------------
   // State for ExecuteNonBlocking()
@@ -324,53 +294,42 @@ class Job : public base::RefCountedThreadSafe<Job>,
   AddressList pending_dns_addresses_;
 };
 
-class ProxyResolverV8Tracing : public ProxyResolver,
-                               public base::NonThreadSafe {
+class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing,
+                                   public base::NonThreadSafe {
  public:
-  // Constructs a ProxyResolver that will issue DNS requests through
-  // |job_params->host_resolver|, forward Javascript errors through
-  // |error_observer|, and log Javascript errors and alerts to
-  // |job_params->net_log|. When the LoadState for a request changes,
-  // |job_params->on_load_state_changed| will be invoked with the RequestHandle
-  // for that request with the new LoadState.
-  //
-  // Note that the constructor takes ownership of |error_observer|, whereas
-  // |job_params->host_resolver| and |job_params->net_log| are expected to
-  // outlive |this|.
-  ProxyResolverV8Tracing(scoped_ptr<ProxyResolverErrorObserver> error_observer,
-                         scoped_ptr<base::Thread> thread,
-                         scoped_ptr<ProxyResolverV8> resolver,
-                         scoped_ptr<Job::Params> job_params);
+  ProxyResolverV8TracingImpl(scoped_ptr<base::Thread> thread,
+                             scoped_ptr<ProxyResolverV8> resolver,
+                             scoped_ptr<Job::Params> job_params);
 
-  ~ProxyResolverV8Tracing() override;
+  ~ProxyResolverV8TracingImpl() override;
 
-  // ProxyResolver implementation:
-  int GetProxyForURL(const GURL& url,
-                     ProxyInfo* results,
-                     const CompletionCallback& callback,
-                     RequestHandle* request,
-                     const BoundNetLog& net_log) override;
-  void CancelRequest(RequestHandle request) override;
-  LoadState GetLoadState(RequestHandle request) const override;
+  // ProxyResolverV8Tracing overrides.
+  void GetProxyForURL(const GURL& url,
+                      ProxyInfo* results,
+                      const CompletionCallback& callback,
+                      ProxyResolver::RequestHandle* request,
+                      scoped_ptr<Bindings> bindings) override;
+  void CancelRequest(ProxyResolver::RequestHandle request) override;
+  LoadState GetLoadState(ProxyResolver::RequestHandle request) const override;
 
  private:
   // The worker thread on which the ProxyResolverV8 will be run.
   scoped_ptr<base::Thread> thread_;
   scoped_ptr<ProxyResolverV8> v8_resolver_;
 
-  scoped_ptr<ProxyResolverErrorObserver> error_observer_;
-
   scoped_ptr<Job::Params> job_params_;
 
   // The number of outstanding (non-cancelled) jobs.
   int num_outstanding_callbacks_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8Tracing);
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8TracingImpl);
 };
 
-Job::Job(const Job::Params* params)
+Job::Job(const Job::Params* params,
+         scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings)
     : origin_runner_(base::ThreadTaskRunnerHandle::Get()),
       params_(params),
+      bindings_(bindings.Pass()),
       event_(true, false),
       last_num_dns_(0),
       pending_dns_(NULL) {
@@ -395,13 +354,11 @@ void Job::StartCreateV8Resolver(
 
 void Job::StartGetProxyForURL(const GURL& url,
                               ProxyInfo* results,
-                              const BoundNetLog& net_log,
                               const CompletionCallback& callback) {
   CheckIsOnOriginThread();
 
   url_ = url;
   user_results_ = results;
-  bound_net_log_ = net_log;
 
   Start(GET_PROXY_FOR_URL, false /*non-blocking*/, callback);
 }
@@ -490,15 +447,7 @@ const scoped_refptr<base::SingleThreadTaskRunner>& Job::worker_task_runner() {
 }
 
 HostResolver* Job::host_resolver() {
-  return params_->host_resolver;
-}
-
-ProxyResolverErrorObserver* Job::error_observer() {
-  return params_->error_observer;
-}
-
-NetLog* Job::net_log() {
-  return params_->net_log;
+  return bindings_->GetHostResolver();
 }
 
 void Job::NotifyCaller(int result) {
@@ -746,12 +695,9 @@ void Job::DoDnsOperation() {
 
   HostResolver::RequestHandle dns_request = NULL;
   int result = host_resolver()->Resolve(
-      MakeDnsRequestInfo(pending_dns_host_, pending_dns_op_),
-      DEFAULT_PRIORITY,
-      &pending_dns_addresses_,
-      base::Bind(&Job::OnDnsOperationComplete, this),
-      &dns_request,
-      bound_net_log_);
+      MakeDnsRequestInfo(pending_dns_host_, pending_dns_op_), DEFAULT_PRIORITY,
+      &pending_dns_addresses_, base::Bind(&Job::OnDnsOperationComplete, this),
+      &dns_request, bindings_->GetBoundNetLog());
 
   pending_dns_completed_synchronously_ = result != ERR_IO_PENDING;
 
@@ -769,10 +715,6 @@ void Job::DoDnsOperation() {
   } else {
     DCHECK(dns_request);
     pending_dns_ = dns_request;
-    if (!params_->on_load_state_changed.is_null()) {
-      params_->on_load_state_changed.Run(
-          this, LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
-    }
     // OnDnsOperationComplete() will be called by host resolver on completion.
   }
 
@@ -792,12 +734,6 @@ void Job::OnDnsOperationComplete(int result) {
   SaveDnsToLocalCache(pending_dns_host_, pending_dns_op_, result,
                       pending_dns_addresses_);
   pending_dns_ = NULL;
-
-  if (!params_->on_load_state_changed.is_null() &&
-      !pending_dns_completed_synchronously_ && !cancelled_.IsSet()) {
-    params_->on_load_state_changed.Run(this,
-                                       LOAD_STATE_RESOLVING_PROXY_FOR_URL);
-  }
 
   if (blocking_dns_) {
     event_.Signal();
@@ -949,8 +885,8 @@ void Job::DispatchAlertOrError(bool is_alert,
   // alerts/errors. The request might get cancelled shortly after this
   // check! (There is no lock being held to guarantee otherwise).
   //
-  // If this happens, then some information will get written to the NetLog
-  // needlessly, however the NetLog will still be alive so it shouldn't cause
+  // If this happens, then some information will be logged needlessly, however
+  // the Bindings are responsible for handling this case so it shouldn't cause
   // problems.
   if (cancelled_.IsSet())
     return;
@@ -961,10 +897,7 @@ void Job::DispatchAlertOrError(bool is_alert,
     // -------------------
     VLOG(1) << "PAC-alert: " << message;
 
-    // Send to the NetLog.
-    LogEventToCurrentRequestAndGlobally(
-        NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
-        NetLog::StringCallback("message", &message));
+    bindings_->Alert(message);
   } else {
     // -------------------
     // error
@@ -974,41 +907,22 @@ void Job::DispatchAlertOrError(bool is_alert,
     else
       VLOG(1) << "PAC-error: " << "line: " << line_number << ": " << message;
 
-    // Send the error to the NetLog.
-    LogEventToCurrentRequestAndGlobally(
-        NetLog::TYPE_PAC_JAVASCRIPT_ERROR,
-        base::Bind(&NetLogErrorCallback, line_number, &message));
-
-    if (error_observer())
-      error_observer()->OnPACScriptError(line_number, message);
+    bindings_->OnError(line_number, message);
   }
 }
 
-void Job::LogEventToCurrentRequestAndGlobally(
-    NetLog::EventType type,
-    const NetLog::ParametersCallback& parameters_callback) {
-  CheckIsOnWorkerThread();
-  bound_net_log_.AddEvent(type, parameters_callback);
-
-  // Emit to the global NetLog event stream.
-  if (net_log())
-    net_log()->AddGlobalEntry(type, parameters_callback);
-}
-
-ProxyResolverV8Tracing::ProxyResolverV8Tracing(
-    scoped_ptr<ProxyResolverErrorObserver> error_observer,
+ProxyResolverV8TracingImpl::ProxyResolverV8TracingImpl(
     scoped_ptr<base::Thread> thread,
     scoped_ptr<ProxyResolverV8> resolver,
     scoped_ptr<Job::Params> job_params)
     : thread_(thread.Pass()),
       v8_resolver_(resolver.Pass()),
-      error_observer_(error_observer.Pass()),
       job_params_(job_params.Pass()),
       num_outstanding_callbacks_(0) {
   job_params_->num_outstanding_callbacks = &num_outstanding_callbacks_;
 }
 
-ProxyResolverV8Tracing::~ProxyResolverV8Tracing() {
+ProxyResolverV8TracingImpl::~ProxyResolverV8TracingImpl() {
   // Note, all requests should have been cancelled.
   CHECK_EQ(0, num_outstanding_callbacks_);
 
@@ -1017,50 +931,67 @@ ProxyResolverV8Tracing::~ProxyResolverV8Tracing() {
   thread_.reset();
 }
 
-int ProxyResolverV8Tracing::GetProxyForURL(const GURL& url,
-                                           ProxyInfo* results,
-                                           const CompletionCallback& callback,
-                                           RequestHandle* request,
-                                           const BoundNetLog& net_log) {
+void ProxyResolverV8TracingImpl::GetProxyForURL(
+    const GURL& url,
+    ProxyInfo* results,
+    const CompletionCallback& callback,
+    ProxyResolver::RequestHandle* request,
+    scoped_ptr<Bindings> bindings) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  scoped_refptr<Job> job = new Job(job_params_.get());
+  scoped_refptr<Job> job = new Job(job_params_.get(), bindings.Pass());
 
   if (request)
     *request = job.get();
 
-  job->StartGetProxyForURL(url, results, net_log, callback);
-  return ERR_IO_PENDING;
+  job->StartGetProxyForURL(url, results, callback);
 }
 
-void ProxyResolverV8Tracing::CancelRequest(RequestHandle request) {
+void ProxyResolverV8TracingImpl::CancelRequest(
+    ProxyResolver::RequestHandle request) {
   Job* job = reinterpret_cast<Job*>(request);
   job->Cancel();
 }
 
-LoadState ProxyResolverV8Tracing::GetLoadState(RequestHandle request) const {
+LoadState ProxyResolverV8TracingImpl::GetLoadState(
+    ProxyResolver::RequestHandle request) const {
   Job* job = reinterpret_cast<Job*>(request);
   return job->GetLoadState();
 }
 
-}  // namespace
+class ProxyResolverV8TracingFactoryImpl : public ProxyResolverV8TracingFactory {
+ public:
+  ProxyResolverV8TracingFactoryImpl();
+  ~ProxyResolverV8TracingFactoryImpl() override;
 
-class ProxyResolverFactoryV8Tracing::CreateJob
+  void CreateProxyResolverV8Tracing(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+      scoped_ptr<ProxyResolverV8Tracing>* resolver,
+      const CompletionCallback& callback,
+      scoped_ptr<ProxyResolverFactory::Request>* request) override;
+
+ private:
+  class CreateJob;
+
+  void RemoveJob(CreateJob* job);
+
+  std::set<CreateJob*> jobs_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8TracingFactoryImpl);
+};
+
+class ProxyResolverV8TracingFactoryImpl::CreateJob
     : public ProxyResolverFactory::Request {
  public:
-  CreateJob(ProxyResolverFactoryV8Tracing* factory,
-            HostResolver* host_resolver,
-            scoped_ptr<ProxyResolverErrorObserver> error_observer,
-            NetLog* net_log,
-            const ProxyResolver::LoadStateChangedCallback&
-                load_state_changed_callback,
+  CreateJob(ProxyResolverV8TracingFactoryImpl* factory,
+            scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
             const scoped_refptr<ProxyResolverScriptData>& pac_script,
-            scoped_ptr<ProxyResolver>* resolver_out,
+            scoped_ptr<ProxyResolverV8Tracing>* resolver_out,
             const CompletionCallback& callback)
       : factory_(factory),
         thread_(new base::Thread("Proxy Resolver")),
-        error_observer_(error_observer.Pass()),
         resolver_out_(resolver_out),
         callback_(callback),
         num_outstanding_callbacks_(0) {
@@ -1068,14 +999,13 @@ class ProxyResolverFactoryV8Tracing::CreateJob
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_MAXIMUM;
     CHECK(thread_->StartWithOptions(options));
-    job_params_.reset(new Job::Params(
-        thread_->task_runner(), host_resolver, error_observer_.get(), net_log,
-        load_state_changed_callback, &num_outstanding_callbacks_));
-    create_resolver_job_ = new Job(job_params_.get());
+    job_params_.reset(
+        new Job::Params(thread_->task_runner(), &num_outstanding_callbacks_));
+    create_resolver_job_ = new Job(job_params_.get(), bindings.Pass());
     create_resolver_job_->StartCreateV8Resolver(
         pac_script, &v8_resolver_,
         base::Bind(
-            &ProxyResolverFactoryV8Tracing::CreateJob::OnV8ResolverCreated,
+            &ProxyResolverV8TracingFactoryImpl::CreateJob::OnV8ResolverCreated,
             base::Unretained(this)));
   }
 
@@ -1101,9 +1031,8 @@ class ProxyResolverFactoryV8Tracing::CreateJob
     DCHECK(factory_);
     if (error == OK) {
       job_params_->v8_resolver = v8_resolver_.get();
-      resolver_out_->reset(
-          new ProxyResolverV8Tracing(error_observer_.Pass(), thread_.Pass(),
-                                     v8_resolver_.Pass(), job_params_.Pass()));
+      resolver_out_->reset(new ProxyResolverV8TracingImpl(
+          thread_.Pass(), v8_resolver_.Pass(), job_params_.Pass()));
     } else {
       StopWorkerThread();
     }
@@ -1120,58 +1049,51 @@ class ProxyResolverFactoryV8Tracing::CreateJob
     thread_.reset();
   }
 
-  ProxyResolverFactoryV8Tracing* factory_;
+  ProxyResolverV8TracingFactoryImpl* factory_;
   scoped_ptr<base::Thread> thread_;
-  scoped_ptr<ProxyResolverErrorObserver> error_observer_;
   scoped_ptr<Job::Params> job_params_;
   scoped_refptr<Job> create_resolver_job_;
   scoped_ptr<ProxyResolverV8> v8_resolver_;
-  scoped_ptr<ProxyResolver>* resolver_out_;
+  scoped_ptr<ProxyResolverV8Tracing>* resolver_out_;
   const CompletionCallback callback_;
   int num_outstanding_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateJob);
 };
 
-ProxyResolverFactoryV8Tracing::ProxyResolverFactoryV8Tracing(
-    HostResolver* host_resolver,
-    NetLog* net_log,
-    const ProxyResolver::LoadStateChangedCallback& callback,
-    const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
-        error_observer_factory)
-    : ProxyResolverFactory(true),
-      host_resolver_(host_resolver),
-      net_log_(net_log),
-      load_state_changed_callback_(callback),
-      error_observer_factory_(error_observer_factory) {
+ProxyResolverV8TracingFactoryImpl::ProxyResolverV8TracingFactoryImpl() {
 }
 
-ProxyResolverFactoryV8Tracing::~ProxyResolverFactoryV8Tracing() {
+ProxyResolverV8TracingFactoryImpl::~ProxyResolverV8TracingFactoryImpl() {
   for (auto job : jobs_) {
     job->FactoryDestroyed();
   }
 }
 
-// ProxyResolverFactory override.
-int ProxyResolverFactoryV8Tracing::CreateProxyResolver(
+void ProxyResolverV8TracingFactoryImpl::CreateProxyResolverV8Tracing(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    scoped_ptr<ProxyResolver>* resolver,
+    scoped_ptr<ProxyResolverV8Tracing::Bindings> bindings,
+    scoped_ptr<ProxyResolverV8Tracing>* resolver,
     const CompletionCallback& callback,
-    scoped_ptr<Request>* request) {
-  scoped_ptr<CreateJob> job(new CreateJob(
-      this, host_resolver_,
-      error_observer_factory_.is_null() ? nullptr
-                                        : error_observer_factory_.Run(),
-      net_log_, load_state_changed_callback_, pac_script, resolver, callback));
+    scoped_ptr<ProxyResolverFactory::Request>* request) {
+  scoped_ptr<CreateJob> job(
+      new CreateJob(this, bindings.Pass(), pac_script, resolver, callback));
   jobs_.insert(job.get());
   *request = job.Pass();
-  return ERR_IO_PENDING;
 }
 
-void ProxyResolverFactoryV8Tracing::RemoveJob(
-    ProxyResolverFactoryV8Tracing::CreateJob* job) {
+void ProxyResolverV8TracingFactoryImpl::RemoveJob(
+    ProxyResolverV8TracingFactoryImpl::CreateJob* job) {
   size_t erased = jobs_.erase(job);
   DCHECK_EQ(1u, erased);
+}
+
+}  // namespace
+
+// static
+scoped_ptr<ProxyResolverV8TracingFactory>
+ProxyResolverV8TracingFactory::Create() {
+  return make_scoped_ptr(new ProxyResolverV8TracingFactoryImpl());
 }
 
 }  // namespace net

@@ -31,15 +31,13 @@ struct ProxyServer {
 
 interface ProxyResolver {
   // Use a ProxyResolverRequestClient instead of returning a result so we can
-  // receive load state updates and cancel in-flight requests by destroying the
-  // client.
+  // cancel in-flight requests by destroying the client.
   // TODO(amistry): Add BoundNetLog.
   GetProxyForUrl(string url, ProxyResolverRequestClient client);
 };
 
 interface ProxyResolverRequestClient {
   ReportResult(int32 error, array<ProxyServer>? proxy_servers);
-  LoadStateChanged(int32 load_state);
 };
 
 interface ProxyResolverErrorObserver {

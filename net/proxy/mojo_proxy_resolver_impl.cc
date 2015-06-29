@@ -8,15 +8,11 @@
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
-#include "net/proxy/load_state_change_coalescer.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 
 namespace net {
-namespace {
-const int kLoadStateChangeCoalesceTimeoutMilliseconds = 10;
-}
 
 class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
  public:
@@ -26,9 +22,6 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
   ~Job() override;
 
   void Start();
-
-  // Invoked when the LoadState for this job changes.
-  void LoadStateChanged(LoadState load_state);
 
   net::ProxyResolver::RequestHandle request_handle() { return request_handle_; }
 
@@ -40,8 +33,6 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
 
   void GetProxyDone(int error);
 
-  void SendLoadStateChanged(LoadState load_state);
-
   MojoProxyResolverImpl* resolver_;
 
   interfaces::ProxyResolverRequestClientPtr client_;
@@ -49,31 +40,17 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
   GURL url_;
   net::ProxyResolver::RequestHandle request_handle_;
   bool done_;
-  LoadStateChangeCoalescer load_state_change_coalescer_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 MojoProxyResolverImpl::MojoProxyResolverImpl(
-    scoped_ptr<net::ProxyResolver> resolver,
-    const base::Callback<
-        void(const net::ProxyResolver::LoadStateChangedCallback&)>&
-        load_state_change_callback_setter)
+    scoped_ptr<net::ProxyResolver> resolver)
     : resolver_(resolver.Pass()) {
-  load_state_change_callback_setter.Run(base::Bind(
-      &MojoProxyResolverImpl::LoadStateChanged, base::Unretained(this)));
 }
 
 MojoProxyResolverImpl::~MojoProxyResolverImpl() {
   STLDeleteElements(&resolve_jobs_);
-}
-
-void MojoProxyResolverImpl::LoadStateChanged(
-    net::ProxyResolver::RequestHandle handle,
-    LoadState load_state) {
-  auto it = request_handle_to_job_.find(handle);
-  DCHECK(it != request_handle_to_job_.end());
-  it->second->LoadStateChanged(load_state);
 }
 
 void MojoProxyResolverImpl::GetProxyForUrl(
@@ -103,13 +80,7 @@ MojoProxyResolverImpl::Job::Job(
       client_(client.Pass()),
       url_(url),
       request_handle_(nullptr),
-      done_(false),
-      load_state_change_coalescer_(
-          base::Bind(&MojoProxyResolverImpl::Job::SendLoadStateChanged,
-                     base::Unretained(this)),
-          base::TimeDelta::FromMilliseconds(
-              kLoadStateChangeCoalesceTimeoutMilliseconds),
-          LOAD_STATE_RESOLVING_PROXY_FOR_URL) {
+      done_(false) {
 }
 
 MojoProxyResolverImpl::Job::~Job() {
@@ -130,10 +101,6 @@ void MojoProxyResolverImpl::Job::Start() {
       std::make_pair(request_handle_, this));
 }
 
-void MojoProxyResolverImpl::Job::LoadStateChanged(LoadState load_state) {
-  load_state_change_coalescer_.LoadStateChanged(load_state);
-}
-
 void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
   done_ = true;
   DVLOG(1) << "GetProxyForUrl(" << url_ << ") finished with error " << error
@@ -152,10 +119,6 @@ void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
 
 void MojoProxyResolverImpl::Job::OnConnectionError() {
   resolver_->DeleteJob(this);
-}
-
-void MojoProxyResolverImpl::Job::SendLoadStateChanged(LoadState load_state) {
-  client_->LoadStateChanged(load_state);
 }
 
 }  // namespace net

@@ -76,10 +76,8 @@ class MojoProxyResolverFactoryImplTest
 
   scoped_ptr<ProxyResolverFactory> CreateFakeProxyResolverFactory(
       HostResolver* host_resolver,
-      scoped_ptr<ProxyResolverErrorObserver> error_observer,
-      const ProxyResolver::LoadStateChangedCallback& callback) {
+      scoped_ptr<ProxyResolverErrorObserver> error_observer) {
     EXPECT_TRUE(host_resolver);
-    EXPECT_FALSE(callback.is_null());
     DCHECK(mock_factory_owner_);
     return mock_factory_owner_.Pass();
   }

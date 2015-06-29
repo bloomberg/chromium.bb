@@ -21,8 +21,7 @@ class MojoProxyResolverFactoryImpl : public interfaces::ProxyResolverFactory {
  public:
   using Factory = base::Callback<scoped_ptr<net::ProxyResolverFactory>(
       HostResolver*,
-      scoped_ptr<ProxyResolverErrorObserver>,
-      const ProxyResolver::LoadStateChangedCallback&)>;
+      scoped_ptr<ProxyResolverErrorObserver>)>;
 
   explicit MojoProxyResolverFactoryImpl(
       mojo::InterfaceRequest<interfaces::ProxyResolverFactory> request);

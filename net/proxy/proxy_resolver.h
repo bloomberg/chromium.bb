@@ -29,9 +29,6 @@ class NET_EXPORT_PRIVATE ProxyResolver {
   // Opaque pointer type, to return a handle to cancel outstanding requests.
   typedef void* RequestHandle;
 
-  using LoadStateChangedCallback =
-      base::Callback<void(RequestHandle, LoadState)>;
-
   ProxyResolver() {}
 
   virtual ~ProxyResolver() {}
