@@ -277,10 +277,9 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
     for (size_t i = 0; i < num_operations; ++i) {
       gfx::Transform blended;
       if (!TransformOperation::BlendTransformOperations(
-          from_identity ? 0 : &from.operations_[i],
-          to_identity ? 0 : &operations_[i],
-          progress,
-          &blended))
+              from.operations_.size() <= i ? 0 : &from.operations_[i],
+              operations_.size() <= i ? 0 : &operations_[i], progress,
+              &blended))
           return false;
       result->PreconcatTransform(blended);
     }
