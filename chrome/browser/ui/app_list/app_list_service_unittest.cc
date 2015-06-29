@@ -16,9 +16,9 @@
 #include "chrome/browser/ui/app_list/test/fake_profile.h"
 #include "chrome/browser/ui/app_list/test/fake_profile_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_switches.h"
 
 class TestingAppListServiceImpl : public AppListServiceImpl {
  public:
@@ -210,7 +210,7 @@ TEST_F(AppListServiceUnitTest, SwitchingProfilesPersists) {
 
 TEST_F(AppListServiceUnitTest, EnableViaCommandLineFlag) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kEnableAppList);
+  command_line.AppendSwitch(app_list::switches::kEnableAppList);
   SetupWithCommandLine(command_line);
   service_->PerformStartupChecks(profile1_.get());
   EXPECT_TRUE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));
@@ -218,7 +218,7 @@ TEST_F(AppListServiceUnitTest, EnableViaCommandLineFlag) {
 
 TEST_F(AppListServiceUnitTest, DisableViaCommandLineFlag) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kResetAppListInstallState);
+  command_line.AppendSwitch(app_list::switches::kResetAppListInstallState);
   SetupWithCommandLine(command_line);
   service_->PerformStartupChecks(profile1_.get());
   EXPECT_FALSE(local_state_->GetBoolean(prefs::kAppLauncherHasBeenEnabled));

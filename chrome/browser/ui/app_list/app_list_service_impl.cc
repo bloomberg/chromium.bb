@@ -22,9 +22,9 @@
 #include "chrome/browser/ui/app_list/profile_loader.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 
 namespace {
 
@@ -437,10 +437,10 @@ void AppListServiceImpl::PerformStartupChecks(Profile* initial_profile) {
   // returns.
   RecordAppListDiscoverability(local_state_, true);
 
-  if (command_line_.HasSwitch(switches::kResetAppListInstallState))
+  if (command_line_.HasSwitch(app_list::switches::kResetAppListInstallState))
     local_state_->SetBoolean(prefs::kAppLauncherHasBeenEnabled, false);
 
-  if (command_line_.HasSwitch(switches::kEnableAppList))
+  if (command_line_.HasSwitch(app_list::switches::kEnableAppList))
     EnableAppList(initial_profile, ENABLE_VIA_COMMAND_LINE);
 
   if (!base::ThreadTaskRunnerHandle::IsSet())

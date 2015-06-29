@@ -21,6 +21,9 @@ const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 // If set, Drive apps will not be shown side-by-side with Chrome apps.
 const char kDisableDriveAppsInAppList[] = "disable-drive-apps-in-app-list";
 
+// If set, the app list will be enabled as if enabled from CWS.
+const char kEnableAppList[] = "enable-app-list";
+
 // If set, the app list will be centered and wide instead of tall.
 const char kEnableCenteredAppList[] = "enable-centered-app-list";
 
@@ -41,6 +44,11 @@ const char kEnableLauncherSearchProviderApi[] =
 // forcing the AppListMixer/Blended field trial.
 const char kEnableNewAppListMixer[] = "enable-new-app-list-mixer";
 const char kDisableNewAppListMixer[] = "disable-new-app-list-mixer";
+
+// If set, the app list will forget it has been installed on startup. Note this
+// doesn't prevent the app list from running, it just makes Chrome think the app
+// list hasn't been enabled (as in kEnableAppList) yet.
+const char kResetAppListInstallState[] = "reset-app-list-install-state";
 
 #if defined(OS_MACOSX)
 // Enables use of the toolkit-views app list on Mac.

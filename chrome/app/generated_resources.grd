@@ -6674,12 +6674,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         This will allow the use of the experimental SurfaceWorker feature.
       </message>
       <if expr="enable_app_list">
-        <message name="IDS_FLAGS_ENABLE_APP_LIST_NAME" desc="Name of the flag to enable the app launcher.">
-          Enable the App Launcher.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to enable app launcher.">
-          Enable the App Launcher. Upon enabling, creates operating system shortcuts to the App Launcher.
-        </message>
         <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_NAME" desc="Name of the flag to enable the experimental app launcher.">
           Enable the experimental App Launcher.
         </message>

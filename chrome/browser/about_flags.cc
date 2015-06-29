@@ -1155,8 +1155,7 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_NAME,
      IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_DESCRIPTION,
      kOsAll,
-     MULTI_VALUE_TYPE(kMaxTilesForInterestAreaChoices)
-    },
+     MULTI_VALUE_TYPE(kMaxTilesForInterestAreaChoices)},
     {"enable-offer-store-unmasked-wallet-cards",
      IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS,
      IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION,
@@ -1354,23 +1353,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION,
      kOsMac | kOsWin | kOsLinux,
      SINGLE_VALUE_TYPE(switches::kGoogleProfileInfo)},
-    {"reset-app-list-install-state",
-     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME,
-     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION,
-     kOsMac | kOsWin | kOsLinux,
-     SINGLE_VALUE_TYPE(switches::kResetAppListInstallState)},
-#if defined(ENABLE_APP_LIST)
-#if defined(OS_LINUX)
-    {// This is compiled out on non-Linux platforms because otherwise it would
-     // be
-     // visible on Win/Mac/CrOS but not on Linux GTK, which would be confusing.
-     // TODO(mgiuca): Remove the #if when Aura is the default on Linux.
-     "enable-app-list",
-     IDS_FLAGS_ENABLE_APP_LIST_NAME,
-     IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION,
-     kOsLinux,
-     SINGLE_VALUE_TYPE(switches::kEnableAppList)},
-#endif
 #if defined(ENABLE_EXTENSIONS)
     {"enable-surface-worker",
      IDS_FLAGS_ENABLE_SURFACE_WORKER_NAME,
@@ -1378,6 +1360,12 @@ const Experiment kExperiments[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableSurfaceWorker)},
 #endif
+#if defined(ENABLE_APP_LIST)
+    {"reset-app-list-install-state",
+     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME,
+     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION,
+     kOsMac | kOsWin | kOsLinux,
+     SINGLE_VALUE_TYPE(app_list::switches::kResetAppListInstallState)},
     {"disable-drive-apps-in-app-list",
      IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_NAME,
      IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_DESCRIPTION,

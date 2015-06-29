@@ -381,9 +381,6 @@ const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 // app to their shelf (or platform-specific equivalent)
 const char kEnableAddToShelf[] = "enable-add-to-shelf";
 
-// If set, the app list will be enabled as if enabled from CWS.
-const char kEnableAppList[]                 = "enable-app-list";
-
 // Enable OS integration for Chrome app file associations.
 const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 
@@ -903,11 +900,6 @@ const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
 
 // Specifies the version of QUIC to use.
 const char kQuicVersion[]                   = "quic-version";
-
-// If set, the app list will forget it has been installed on startup. Note this
-// doesn't prevent the app list from running, it just makes Chrome think the app
-// list hasn't been enabled (as in kEnableAppList) yet.
-const char kResetAppListInstallState[]      = "reset-app-list-install-state";
 
 // Indicates the last session should be restored on startup. This overrides the
 // preferences value and is primarily intended for testing. The value of this

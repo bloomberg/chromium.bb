@@ -15,6 +15,7 @@ namespace switches {
 APP_LIST_EXPORT extern const char kCustomLauncherPage[];
 APP_LIST_EXPORT extern const char kDisableAppListDismissOnBlur[];
 APP_LIST_EXPORT extern const char kDisableDriveAppsInAppList[];
+APP_LIST_EXPORT extern const char kEnableAppList[];
 APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
 APP_LIST_EXPORT extern const char kDisableExperimentalAppList[];
@@ -23,6 +24,7 @@ APP_LIST_EXPORT extern const char kDisableNewAppListMixer[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableLauncherSearchProviderApi[];
+APP_LIST_EXPORT extern const char kResetAppListInstallState[];
 
 #if defined(OS_MACOSX)
 APP_LIST_EXPORT extern const char kEnableMacViewsAppList[];
