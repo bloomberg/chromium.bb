@@ -25,29 +25,35 @@ bool InputDeviceEquals(const ui::InputDevice& a, const ui::InputDevice& b) {
 DeviceDataManager* DeviceDataManager::instance_ = NULL;
 
 DeviceDataManager::DeviceDataManager() {
-  CHECK(!instance_) << "Can not create multiple instances of DeviceDataManager";
-  instance_ = this;
-
-  base::AtExitManager::RegisterTask(
-      base::Bind(&base::DeletePointer<DeviceDataManager>, this));
-
   ClearTouchDeviceAssociations();
 }
 
 DeviceDataManager::~DeviceDataManager() {
-  CHECK_EQ(this, instance_);
-  instance_ = NULL;
 }
 
 // static
 DeviceDataManager* DeviceDataManager::instance() { return instance_; }
+
+void DeviceDataManager::set_instance(DeviceDataManager* instance) {
+  CHECK(!instance_) << "Can not set multiple instances of DeviceDataManager";
+  instance_ = instance;
+}
 
 // static
 void DeviceDataManager::CreateInstance() {
   if (instance())
     return;
 
-  new DeviceDataManager();
+  set_instance(new DeviceDataManager());
+
+  base::AtExitManager::RegisterTask(base::Bind(DeleteInstance));
+}
+
+void DeviceDataManager::DeleteInstance() {
+  if (instance_) {
+    delete instance_;
+    instance_ = NULL;
+  }
 }
 
 // static

@@ -10,6 +10,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/sys_info.h"
@@ -130,7 +132,11 @@ void DeviceDataManagerX11::CreateInstance() {
   if (instance())
     return;
 
-  new DeviceDataManagerX11();
+  DeviceDataManagerX11* device_data_manager = new DeviceDataManagerX11();
+  base::AtExitManager::RegisterTask(
+      base::Bind(&base::DeletePointer<DeviceDataManager>, device_data_manager));
+
+  set_instance(device_data_manager);
 }
 
 // static

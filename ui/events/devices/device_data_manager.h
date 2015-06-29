@@ -30,6 +30,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   ~DeviceDataManager() override;
 
   static void CreateInstance();
+  static void DeleteInstance();
   static DeviceDataManager* GetInstance();
   static bool HasInstance();
 
@@ -62,6 +63,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   DeviceDataManager();
 
   static DeviceDataManager* instance();
+
+  static void set_instance(DeviceDataManager* instance);
 
   // DeviceHotplugEventObserver:
   void OnTouchscreenDevicesUpdated(
