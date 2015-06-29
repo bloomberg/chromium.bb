@@ -21,7 +21,7 @@ crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFai
 
 crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 
-crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
+crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout Crash ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
@@ -1514,7 +1514,7 @@ crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-
 
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
-crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-evenodd.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-nonzero.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-html-background.html [ Pass ImageOnlyFailure ]
@@ -1696,3 +1696,10 @@ crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/o
 
 crbug.com/505411 [ Mac Win ] virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ ImageOnlyFailure ]
 crbug.com/505411 [ Linux ] virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ Pass ImageOnlyFailure ]
+
+crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Failure ]
+crbug.com/505422 [ Linux Mac ] http/tests/serviceworker/chromium/stashed-ports-after-terminate.html [ Pass Timeout ]
+
+crbug.com/505429 [ Release Mavericks Retina ] http/tests/websocket/close.html [ Pass Timeout ]
+crbug.com/505429 [ Mavericks Retina Win ] http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
+
