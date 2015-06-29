@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.text.SpanApplier;
@@ -110,6 +109,9 @@ public class NewTabPageView extends FrameLayout
     public interface NewTabPageManager extends MostVisitedItemManager {
         /** @return Whether the location bar is shown in the NTP. */
         boolean isLocationBarShownInNTP();
+
+        /** @return Whether voice search is enabled and the microphone should be shown. */
+        boolean isVoiceSearchEnabled();
 
         /** @return Whether the document mode opt out promo should be shown. */
         boolean shouldShowOptOutPromo();
@@ -608,14 +610,20 @@ public class NewTabPageView extends FrameLayout
         setUrlFocusChangeAnimationPercent(0f);
     }
 
+    /**
+     * Update the visibility of the voice search button based on whether the feature is currently
+     * enabled.
+     */
+    void updateVoiceSearchButtonVisibility() {
+        mVoiceSearchButton.setVisibility(mManager.isVoiceSearchEnabled() ? VISIBLE : GONE);
+    }
+
     @Override
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
 
         if (visibility == VISIBLE) {
-            mVoiceSearchButton.setVisibility(
-                    FeatureUtilities.isRecognitionIntentPresent(getContext(), true)
-                            ? VISIBLE : GONE);
+            updateVoiceSearchButtonVisibility();
         }
     }
 

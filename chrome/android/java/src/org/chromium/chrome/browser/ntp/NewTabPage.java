@@ -123,6 +123,11 @@ public class NewTabPage
         void startVoiceRecognition();
 
         /**
+         * @return Whether voice search is currently enabled.
+         */
+        boolean isVoiceSearchEnabled();
+
+        /**
          * Focuses the URL bar when the user taps the fakebox, types in the fakebox, or pastes text
          * into the fakebox.
          *
@@ -177,6 +182,11 @@ public class NewTabPage
             Context context = mNewTabPageView.getContext();
             return isInSingleUrlBarMode(context)
                     && !mNewTabPageView.urlFocusAnimationsDisabled();
+        }
+
+        @Override
+        public boolean isVoiceSearchEnabled() {
+            return mFakeboxDelegate != null && mFakeboxDelegate.isVoiceSearchEnabled();
         }
 
         private void recordOpenedMostVisitedItem(MostVisitedItem item) {
@@ -484,6 +494,9 @@ public class NewTabPage
      */
     public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate) {
         mFakeboxDelegate = fakeboxDelegate;
+        if (mFakeboxDelegate != null) {
+            mNewTabPageView.updateVoiceSearchButtonVisibility();
+        }
     }
 
     /**

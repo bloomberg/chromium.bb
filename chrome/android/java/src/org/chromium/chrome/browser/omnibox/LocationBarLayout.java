@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import static org.chromium.chrome.browser.toolbar.ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -17,6 +18,7 @@ import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -2261,12 +2263,18 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mOmniboxBackgroundAnimator.start();
     }
 
-    /**
-     * @return Whether voice search is supported in the current browser configuration.
-     */
-    protected boolean isVoiceSearchEnabled() {
-        return mToolbarDataProvider != null && !mToolbarDataProvider.isIncognito()
-                && FeatureUtilities.isRecognitionIntentPresent(getContext(), true);
+    @Override
+    public boolean isVoiceSearchEnabled() {
+        if (mToolbarDataProvider == null) return false;
+        if (mToolbarDataProvider.isIncognito()) return false;
+        if (mWindowAndroid == null) return false;
+
+        if (!mWindowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)
+                && !mWindowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
+            return false;
+        }
+
+        return FeatureUtilities.isRecognitionIntentPresent(getContext(), true);
     }
 
     @Override
@@ -2334,6 +2342,33 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public void startVoiceRecognition() {
         Activity activity = mWindowAndroid.getActivity().get();
         if (activity == null) return;
+
+        if (!mWindowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)) {
+            if (mWindowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
+                WindowAndroid.PermissionCallback callback =
+                        new WindowAndroid.PermissionCallback() {
+                    @Override
+                    public void onRequestPermissionsResult(
+                            String[] permissions, int[] grantResults) {
+                        if (grantResults.length != 1) {
+                            assert false;
+                            return;
+                        }
+
+                        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                            startVoiceRecognition();
+                        } else {
+                            updateMicButtonState();
+                        }
+                    }
+                };
+                mWindowAndroid.requestPermissions(
+                        new String[] {Manifest.permission.RECORD_AUDIO}, callback);
+            } else {
+                updateMicButtonState();
+            }
+            return;
+        }
 
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
