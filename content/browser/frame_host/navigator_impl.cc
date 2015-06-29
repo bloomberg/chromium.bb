@@ -758,16 +758,6 @@ void NavigatorImpl::CancelNavigation(FrameTreeNode* frame_tree_node) {
     navigation_data_.reset();
 }
 
-bool NavigatorImpl::IsWaitingForBeforeUnloadACK(
-    FrameTreeNode* frame_tree_node) {
-  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation));
-  NavigationRequest* request = frame_tree_node->navigation_request();
-  if (!request)
-    return false;
-  return request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE;
-}
-
 void NavigatorImpl::LogResourceRequestTime(
     base::TimeTicks timestamp, const GURL& url) {
   if (navigation_data_ && navigation_data_->url_ == url) {

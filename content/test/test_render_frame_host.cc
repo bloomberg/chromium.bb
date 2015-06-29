@@ -231,7 +231,7 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     // Non PlzNavigate
-    if (IsWaitingForBeforeUnloadACK())
+    if (is_waiting_for_beforeunload_ack())
       SendBeforeUnloadACK(true);
     return;
   }

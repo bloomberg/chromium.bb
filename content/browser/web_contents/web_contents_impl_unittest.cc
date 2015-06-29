@@ -1004,11 +1004,11 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_TRUE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
   base::TimeTicks now = base::TimeTicks::Now();
   orig_rfh->OnMessageReceived(
       FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
-  EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
 
@@ -1016,10 +1016,10 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   entry_id = controller().GetPendingEntry()->GetUniqueID();
-  EXPECT_TRUE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
   now = base::TimeTicks::Now();
   orig_rfh->PrepareForCommit();
-  EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
 
@@ -1057,7 +1057,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  EXPECT_TRUE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
   orig_rfh->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
@@ -1065,7 +1065,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
   orig_rfh->SendNavigate(2, 0, true, GURL("http://www.google.com/foo"));
 
   // Verify that the pending navigation is cancelled.
-  EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   SiteInstance* instance2 = contents()->GetSiteInstance();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
@@ -1103,7 +1103,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   TestRenderFrameHost* google_rfh = contents()->GetPendingMainFrame();
 
   // Simulate beforeunload approval.
-  EXPECT_TRUE(ntp_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(ntp_rfh->is_waiting_for_beforeunload_ack());
   base::TimeTicks now = base::TimeTicks::Now();
   ntp_rfh->PrepareForCommit();
 
@@ -1156,7 +1156,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(entry1, controller().GetPendingEntry());
 
   // Simulate beforeunload approval.
-  EXPECT_TRUE(google_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(google_rfh->is_waiting_for_beforeunload_ack());
   now = base::TimeTicks::Now();
   google_rfh->PrepareForCommit();
   google_rfh->OnMessageReceived(
@@ -1209,12 +1209,12 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
   child_rfh->SendNavigateWithTransition(1, 0, false,
                                         GURL("http://google.com/frame"),
                                         ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  EXPECT_TRUE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
 
   // Now simulate the onbeforeunload approval and verify the navigation is
   // not canceled.
   orig_rfh->PrepareForCommit();
-  EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 }
 
@@ -1244,7 +1244,7 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   int entry2_id = controller().GetPendingEntry()->GetUniqueID();
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
   EXPECT_NE(orig_rfh, pending_rfh);
 
   // Suppose the first navigation tries to commit now, with a
@@ -1254,7 +1254,7 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
       1, entry1_id, true, url, base::Bind(SetAsNonUserGesture));
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
-  EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
+  EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   // It should commit.
   ASSERT_EQ(1, controller().GetEntryCount());
   EXPECT_EQ(url, controller().GetLastCommittedEntry()->GetURL());

@@ -88,7 +88,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) override;
   void CancelNavigation(FrameTreeNode* frame_tree_node) override;
-  bool IsWaitingForBeforeUnloadACK(FrameTreeNode* frame_tree_node) override;
 
  private:
   // Holds data used to track browser side navigation metrics.

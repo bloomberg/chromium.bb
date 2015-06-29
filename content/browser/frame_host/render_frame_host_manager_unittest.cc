@@ -1342,9 +1342,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   // happen, but we have seen it when going back quickly across many entries
   // (http://crbug.com/93427).
   contents()->GetController().GoBack();
-  EXPECT_TRUE(rfh2->IsWaitingForBeforeUnloadACK());
+  EXPECT_TRUE(rfh2->is_waiting_for_beforeunload_ack());
   contents()->GetMainFrame()->PrepareForCommit();
-  EXPECT_FALSE(rfh2->IsWaitingForBeforeUnloadACK());
+  EXPECT_FALSE(rfh2->is_waiting_for_beforeunload_ack());
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();

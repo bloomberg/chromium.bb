@@ -274,7 +274,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrame. Currently this only happens in cross-site navigations.
   // PlzNavigate: this happens in every browser-initiated navigation that is not
   // same-page.
-  bool IsWaitingForBeforeUnloadACK() const;
+  bool is_waiting_for_beforeunload_ack() const {
+    return is_waiting_for_beforeunload_ack_;
+  }
 
   // Whether the RFH is waiting for an unload ACK from the renderer.
   bool IsWaitingForUnloadACK() const;
