@@ -286,8 +286,10 @@ ErrorConsoleExtensionSettingsWebUITest.prototype = {
   },
 };
 
-// Flaky on ChromeOS. http://crbug.com/499884
-GEN('#if defined(OS_CHROMEOS)');
+GEN('#if defined(OS_CHROMEOS)');  // Flaky on ChromeOS; http://crbug.com/499884.
+GEN('#define MAYBE_testErrorListButtonVisibility ' +
+    'DISABLED_testErrorListButtonVisibility');
+GEN('#elif defined(OS_WIN)');  // Flaky on Win7 dbg; http://crbug.com/463245.
 GEN('#define MAYBE_testErrorListButtonVisibility ' +
     'DISABLED_testErrorListButtonVisibility');
 GEN('#else');
