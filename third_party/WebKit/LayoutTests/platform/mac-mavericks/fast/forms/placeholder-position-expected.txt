@@ -1,0 +1,134 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutTextControl {INPUT} at (0,0) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutBlockFlow {DIV} at (0,6.50) size 5x0
+          LayoutBlockFlow {DIV} at (5,0) size 100x13
+      LayoutBR {BR} at (125,14) size 0x0
+      LayoutTextControl {INPUT} at (0,19) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutBR {BR} at (123,33) size 0x0
+      LayoutTextControl {INPUT} at (0,38) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutBlockFlow {DIV} at (0,6.50) size 5x0
+          LayoutBlockFlow {DIV} at (5,0) size 100x13
+      LayoutBR {BR} at (125,52) size 0x0
+      LayoutTextControl {INPUT} at (0,57) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutFlexibleBox {DIV} at (4,3) size 117x13
+          LayoutBlockFlow {DIV} at (0,0) size 16x13
+          LayoutBlockFlow {DIV} at (16,0) size 89x13
+      LayoutBR {BR} at (125,71) size 0x0
+      LayoutBR {BR} at (161,108) size 0x0
+      LayoutTextControl {INPUT} at (0,108) size 123x33 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutBR {BR} at (123,122) size 0x0
+      LayoutBR {BR} at (161,186) size 0x0
+      LayoutTextControl {INPUT} at (5,191) size 174x30 [bgcolor=#FFFFFF] [border: (5px solid #000000)]
+      LayoutBR {BR} at (184,212) size 0x0
+      LayoutTextControl {INPUT} at (0,226) size 123x31 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (123,232) size 4x18
+        text run at (123,232) width 4: " "
+      LayoutTextControl {INPUT} at (127,226) size 123x31 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (250,232) size 4x18
+        text run at (250,232) width 4: " "
+      LayoutBR {BR} at (254,246) size 0x0
+      LayoutTextControl {INPUT} at (0,257) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (123,257) size 4x18
+        text run at (123,257) width 4: " "
+      LayoutTextControl {INPUT} at (127,257) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (250,257) size 4x18
+        text run at (250,257) width 4: " "
+      LayoutTextControl {INPUT} at (254,257) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (377,257) size 4x18
+        text run at (377,257) width 4: " "
+      LayoutBR {BR} at (381,271) size 0x0
+      LayoutBR {BR} at (123,304) size 0x0
+layer at (17,11) size 100x13
+  LayoutBlockFlow {DIV} at (9,3) size 100x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 63x13
+      text run at (0,0) width 63: "placeholder"
+layer at (17,11) size 100x13
+  LayoutBlockFlow {DIV} at (0,0) size 100x13
+layer at (11,30) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 63x13
+      text run at (0,0) width 63: "placeholder"
+layer at (11,30) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13
+layer at (17,49) size 100x13
+  LayoutBlockFlow {DIV} at (9,3) size 100x13 [color=#A9A9A9]
+    LayoutText {#text} at (37,0) size 63x13
+      text run at (37,0) width 63: "placeholder"
+layer at (17,49) size 100x13
+  LayoutBlockFlow {DIV} at (0,0) size 100x13
+layer at (28,68) size 89x13
+  LayoutBlockFlow {DIV} at (20,3) size 89x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 63x13
+      text run at (0,0) width 63: "placeholder"
+layer at (28,68) size 89x13
+  LayoutBlockFlow {DIV} at (0,0) size 89x13
+layer at (8,84) size 161x32 clip at (9,85) size 159x30
+  LayoutTextControl {TEXTAREA} at (0,76) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,3) size 155x13 [color=#A9A9A9]
+      LayoutText {#text} at (0,0) size 63x13
+        text run at (0,0) width 63: "placeholder"
+    LayoutBlockFlow {DIV} at (3,3) size 155x13
+layer at (11,119) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 63x13
+      text run at (0,0) width 63: "placeholder"
+layer at (11,119) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13
+layer at (8,149) size 161x45 clip at (9,150) size 159x43
+  LayoutTextControl {TEXTAREA} at (0,141) size 161x45 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+    LayoutBlockFlow {DIV} at (3,16) size 155x13 [color=#A9A9A9]
+      LayoutText {#text} at (0,0) size 63x13
+        text run at (0,0) width 63: "placeholder"
+    LayoutBlockFlow {DIV} at (3,16) size 155x13
+layer at (19,205) size 162x18
+  LayoutBlockFlow {DIV} at (6,6) size 162x18 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 85x18
+      text run at (0,0) width 85: "placeholder"
+layer at (19,205) size 162x18
+  LayoutBlockFlow {DIV} at (6,6) size 162x18
+layer at (11,237) size 117x25
+  LayoutBlockFlow {DIV} at (3,3) size 117x25
+    LayoutText {#text} at (0,6) size 30x13
+      text run at (0,6) width 30: "Value"
+layer at (138,237) size 117x25
+  LayoutBlockFlow {DIV} at (3,3) size 117x25 [color=#A9A9A9]
+    LayoutText {#text} at (0,6) size 63x13
+      text run at (0,6) width 63: "placeholder"
+layer at (138,237) size 117x25
+  LayoutBlockFlow {DIV} at (3,3) size 117x25
+layer at (11,268) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13
+    LayoutText {#text} at (43,0) size 31x13
+      text run at (43,0) width 31: "Value"
+layer at (138,268) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13 [color=#A9A9A9]
+    LayoutText {#text} at (27,0) size 63x13
+      text run at (27,0) width 63: "placeholder"
+layer at (138,268) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13
+layer at (265,268) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13 [color=#A9A9A9]
+    LayoutText {#text} at (27,0) size 63x13
+      text run at (27,0) width 63: "placeholder"
+layer at (265,268) size 117x13
+  LayoutBlockFlow {DIV} at (3,3) size 117x13
+layer at (118,12) size 11x11 transparent
+  LayoutBlockFlow {DIV} at (106,1) size 11x11
+layer at (118,50) size 11x11 transparent
+  LayoutBlockFlow {DIV} at (106,1) size 11x11
+layer at (118,69) size 11x11 transparent
+  LayoutBlockFlow {DIV} at (106,1) size 11x11
+layer at (8,284) size 123x33
+  LayoutTextControl {INPUT} at (0,276) size 123x33 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+layer at (11,301) size 117x13
+  LayoutBlockFlow {DIV} at (3,17) size 117x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 63x13
+      text run at (0,0) width 63: "placeholder"
+layer at (11,301) size 117x13
+  LayoutBlockFlow {DIV} at (3,17) size 117x13

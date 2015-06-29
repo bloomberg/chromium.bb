@@ -1,13 +1,7 @@
 crbug.com/486920 [ Mac Win ] plugins/destroy-on-setwindow.html [ Crash ]
 
-crbug.com/382491 css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ NeedsRebaseline ]
-crbug.com/382491 css3/blending/effect-background-blend-mode-stacking.html [ NeedsRebaseline ]
 crbug.com/504613 paint/images/image-backgrounds-not-antialiased.html [ ImageOnlyFailure ]
-crbug.com/382491 transforms/svg-vs-css.xhtml [ NeedsRebaseline ]
-crbug.com/382491 fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ NeedsRebaseline ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
-crbug.com/382491 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-crbug.com/382491 fast/forms/placeholder-position.html [ NeedsRebaseline ]
 
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
