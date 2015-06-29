@@ -114,9 +114,13 @@ interface Array
     attribute length
     method concat
     method constructor
+    method copyWithin
     method entries
     method every
+    method fill
     method filter
+    method find
+    method findIndex
     method forEach
     method indexOf
     method join
@@ -468,6 +472,7 @@ interface CanvasRenderingContext2D
     getter currentTransform
     getter direction
     getter fillStyle
+    getter filter
     getter font
     getter globalAlpha
     getter globalCompositeOperation
@@ -534,6 +539,7 @@ interface CanvasRenderingContext2D
     setter currentTransform
     setter direction
     setter fillStyle
+    setter filter
     setter font
     setter globalAlpha
     setter globalCompositeOperation
@@ -1524,10 +1530,29 @@ interface Float32Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface Float64Array
     attribute BYTES_PER_ELEMENT
@@ -1536,10 +1561,29 @@ interface Float64Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface FocusEvent
     getter relatedTarget
@@ -3088,10 +3132,29 @@ interface Int16Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface Int32Array
     attribute BYTES_PER_ELEMENT
@@ -3100,10 +3163,29 @@ interface Int32Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface Int8Array
     attribute BYTES_PER_ELEMENT
@@ -3112,10 +3194,29 @@ interface Int8Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface KeyboardEvent
     attribute DOM_KEY_LOCATION_LEFT
@@ -3230,6 +3331,7 @@ interface MediaController
 interface MediaDevices
     method constructor
     method enumerateDevices
+    method getUserMedia
 interface MediaElementAudioSourceNode
     getter mediaElement
     method constructor
@@ -5260,7 +5362,6 @@ interface ServiceWorker
     getter state
     method constructor
     method postMessage
-    method terminate
     setter onerror
     setter onstatechange
 interface ServiceWorkerContainer
@@ -5656,10 +5757,29 @@ interface Uint16Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface Uint32Array
     attribute BYTES_PER_ELEMENT
@@ -5668,10 +5788,29 @@ interface Uint32Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface Uint8Array
     attribute BYTES_PER_ELEMENT
@@ -5680,10 +5819,29 @@ interface Uint8Array
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface Uint8ClampedArray
     attribute BYTES_PER_ELEMENT
@@ -5692,10 +5850,29 @@ interface Uint8ClampedArray
     getter byteOffset
     getter length
     method constructor
+    method copyWithin
     method entries
+    method every
+    method fill
+    method filter
+    method find
+    method findIndex
+    method forEach
+    method indexOf
+    method join
     method keys
+    method lastIndexOf
+    method map
+    method reduce
+    method reduceRight
+    method reverse
     method set
+    method slice
+    method some
+    method sort
     method subarray
+    method toLocaleString
+    method toString
     method values
 interface VTTCue
     getter align
