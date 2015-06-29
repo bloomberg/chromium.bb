@@ -114,6 +114,25 @@ bool ReadOutputExtension(Scope* scope, Tool* tool, Err* err) {
   return true;
 }
 
+bool ReadPrecompiledHeaderType(Scope* scope, Tool* tool, Err* err) {
+  const Value* value = scope->GetValue("precompiled_header_type", true);
+  if (!value)
+    return true;  // Not present is fine.
+  if (!value->VerifyTypeIs(Value::STRING, err))
+    return false;
+
+  if (value->string_value().empty())
+    return true;  // Accept empty string, do nothing (default is "no PCH").
+
+  if (value->string_value() == "msvc") {
+    tool->set_precompiled_header_type(Tool::PCH_MSVC);
+    return true;
+  }
+  *err = Err(*value, "Invalid precompiled_header_type",
+             "Must either be empty or \"msvc\".");
+  return false;
+}
+
 bool ReadDepsFormat(Scope* scope, Tool* tool, Err* err) {
   const Value* value = scope->GetValue("depsformat", true);
   if (!value)
@@ -503,6 +522,20 @@ const char kTool_Help[] =
     "        Posix systems:\n"
     "          output_prefix = \"lib\"\n"
     "\n"
+    "    precompiled_header_type  [string]\n"
+    "        Valid for: \"cc\", \"cxx\", \"objc\", \"objcxx\"\n"
+    "\n"
+    "        Type of precompiled headers. If undefined or the empty string,\n"
+    "        precompiled headers will not be used for this tool. Otherwise\n"
+    "        use \"msvc\" which is the only currently supported value.\n"
+    "\n"
+    "        For precompiled headers to be used for a given target, the\n"
+    "        target (or a config applied to it) must also specify a\n"
+    "        \"precompiled_header\" and, for \"msvc\"-style headers, a\n"
+    "        \"precompiled_source\" value.\n"
+    "\n"
+    "        See \"gn help precompiled_header\" for more.\n"
+    "\n"
     "    restat  [boolean]\n"
     "        Valid for: all tools (optional, defaults to false)\n"
     "\n"
@@ -540,7 +573,7 @@ const char kTool_Help[] =
     "            rspfile_content = \"{{inputs}} {{solibs}} {{libs}}\"\n"
     "          }\n"
     "\n"
-    "Expansions for tool variables"
+    "Expansions for tool variables\n"
     "\n"
     "  All paths are relative to the root build directory, which is the\n"
     "  current directory for running all tools. These expansions are\n"
@@ -784,6 +817,7 @@ Value RunTool(Scope* scope,
                    &Tool::set_depend_output, err) ||
       !ReadString(&block_scope, "output_prefix", tool.get(),
                   &Tool::set_output_prefix, err) ||
+      !ReadPrecompiledHeaderType(&block_scope, tool.get(), err) ||
       !ReadBool(&block_scope, "restat", tool.get(), &Tool::set_restat, err) ||
       !ReadPattern(&block_scope, "rspfile", subst_validator, tool.get(),
                    &Tool::set_rspfile, err) ||

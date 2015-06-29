@@ -83,6 +83,14 @@ void PathOutput::WriteFiles(std::ostream& out,
   }
 }
 
+void PathOutput::WriteFiles(std::ostream& out,
+                            const UniqueVector<OutputFile>& files) const {
+  for (const auto& file : files) {
+    out << " ";
+    WriteFile(out, file);
+  }
+}
+
 void PathOutput::WriteDir(std::ostream& out,
                           const OutputFile& file,
                           DirSlashEnding slash_ending) const {

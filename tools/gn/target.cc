@@ -170,6 +170,8 @@ bool Target::OnResolved(Err* err) {
   PullDependentTargets();
   PullForwardedDependentConfigs();
   PullRecursiveHardDeps();
+  if (!ResolvePrecompiledHeaders(err))
+    return false;
 
   FillOutputFiles();
 
@@ -215,12 +217,12 @@ std::string Target::GetComputedOutputName(bool include_prefix) const {
   std::string result;
   if (include_prefix) {
     const Tool* tool = toolchain_->GetToolForTargetFinalOutput(this);
-    const std::string& prefix = tool->output_prefix();
-    // Only add the prefix if the name doesn't already have it.
-    if (!base::StartsWithASCII(name, prefix, true))
-      result = prefix;
+    if (tool) {
+      // Only add the prefix if the name doesn't already have it.
+      if (!base::StartsWithASCII(name, tool->output_prefix(), true))
+        result = tool->output_prefix();
+    }
   }
-
   result.append(name);
   return result;
 }
@@ -427,6 +429,60 @@ void Target::FillOutputFiles() {
   action_values_.GetOutputsAsSourceFiles(this, &outputs_as_sources);
   for (const SourceFile& out : outputs_as_sources)
     computed_outputs_.push_back(OutputFile(settings()->build_settings(), out));
+}
+
+bool Target::ResolvePrecompiledHeaders(Err* err) {
+  // Precompiled headers are stored on a ConfigValues struct. This way, the
+  // build can set all the precompiled header settings in a config and apply
+  // it to many targets. Likewise, the precompiled header values may be
+  // specified directly on a target.
+  //
+  // Unlike other values on configs which are lists that just get concatenated,
+  // the precompiled header settings are unique values. We allow them to be
+  // specified anywhere, but if they are specified in more than one place all
+  // places must match.
+
+  // Track where the current settings came from for issuing errors.
+  const Label* pch_header_settings_from = NULL;
+  if (config_values_.has_precompiled_headers())
+    pch_header_settings_from = &label();
+
+  for (ConfigValuesIterator iter(this); !iter.done(); iter.Next()) {
+    if (!iter.GetCurrentConfig())
+      continue;  // Skip the one on the target itself.
+
+    const Config* config = iter.GetCurrentConfig();
+    const ConfigValues& cur = config->config_values();
+    if (!cur.has_precompiled_headers())
+      continue;  // This one has no precompiled header info, skip.
+
+    if (config_values_.has_precompiled_headers()) {
+      // Already have a precompiled header values, the settings must match.
+      if (config_values_.precompiled_header() != cur.precompiled_header() ||
+          config_values_.precompiled_source() != cur.precompiled_source()) {
+        *err = Err(defined_from(),
+            "Precompiled header setting conflict.",
+            "The target " + label().GetUserVisibleName(false) + "\n"
+            "has conflicting precompiled header settings.\n"
+            "\n"
+            "From " + pch_header_settings_from->GetUserVisibleName(false) +
+            "\n  header: " + config_values_.precompiled_header() +
+            "\n  source: " + config_values_.precompiled_source().value() +
+            "\n\n"
+            "From " + config->label().GetUserVisibleName(false) +
+            "\n  header: " + cur.precompiled_header() +
+            "\n  source: " + cur.precompiled_source().value());
+        return false;
+      }
+    } else {
+      // Have settings from a config, apply them to ourselves.
+      pch_header_settings_from = &config->label();
+      config_values_.set_precompiled_header(cur.precompiled_header());
+      config_values_.set_precompiled_source(cur.precompiled_source());
+    }
+  }
+
+  return true;
 }
 
 bool Target::CheckVisibility(Err* err) const {

@@ -7,11 +7,13 @@
 
 class SourceFile;
 
+// This should be sequential integers starting from 0 so they can be used as
+// array indices.
 enum SourceFileType {
-  SOURCE_UNKNOWN,
+  SOURCE_UNKNOWN = 0,
   SOURCE_ASM,
   SOURCE_C,
-  SOURCE_CC,
+  SOURCE_CPP,
   SOURCE_H,
   SOURCE_M,
   SOURCE_MM,
@@ -19,6 +21,9 @@ enum SourceFileType {
   SOURCE_RC,
   SOURCE_O,  // Object files can be inputs, too. Also counts .obj.
   SOURCE_DEF,
+
+  // Must be last.
+  SOURCE_NUMTYPES,
 };
 
 SourceFileType GetSourceFileType(const SourceFile& file);

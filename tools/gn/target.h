@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -252,6 +253,8 @@ class Target : public Item {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(Target, ResolvePrecompiledHeaders);
+
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
   void PullDependentTarget(const Target* dep, bool is_public);
@@ -265,6 +268,10 @@ class Target : public Item {
 
   // Fills the link and dependency output files when a target is resolved.
   void FillOutputFiles();
+
+  // Checks precompiled headers from configs and makes sure the resulting
+  // values are in config_values_.
+  bool ResolvePrecompiledHeaders(Err* err);
 
   // Validates the given thing when a target is resolved.
   bool CheckVisibility(Err* err) const;
@@ -310,8 +317,13 @@ class Target : public Item {
   // target is marked resolved. This will not include the current target.
   std::set<const Target*> recursive_hard_deps_;
 
-  ConfigValues config_values_;  // Used for all binary targets.
-  ActionValues action_values_;  // Used for action[_foreach] targets.
+  // Used for all binary targets. The precompiled header values in this struct
+  // will be resolved to the ones to use for this target, if precompiled
+  // headers are used.
+  ConfigValues config_values_;
+
+  // Used for action[_foreach] targets.
+  ActionValues action_values_;
 
   // Toolchain used by this target. Null until target is resolved.
   const Toolchain* toolchain_;

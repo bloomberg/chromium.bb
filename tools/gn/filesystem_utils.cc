@@ -744,7 +744,7 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
     result.value().append(&source_dir.value()[2],
                           source_dir.value().size() - 2);
   } else {
-    // system-absolute
+    // System-absolute.
     const std::string& build_dir =
         settings->build_settings()->build_dir().value();
 

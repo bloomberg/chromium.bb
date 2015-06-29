@@ -43,8 +43,13 @@ class TestWithScope {
   // Fills in the tools for the given toolchain with reasonable default values.
   // The toolchain in this object will be automatically set up with this
   // function, it is exposed to allow tests to get the same functionality for
-  // other toolchains they make
+  // other toolchains they make.
   static void SetupToolchain(Toolchain* toolchain);
+
+  // Sets the given text command on the given tool, parsing it as a
+  // substitution pattern. This will assert if the input is malformed. This is
+  // designed to help setting up Tools for tests.
+  static void SetCommandForTool(const std::string& cmd, Tool* tool);
 
  private:
   void AppendPrintOutput(const std::string& str);

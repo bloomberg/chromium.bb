@@ -7,6 +7,8 @@ import("//testing/test.gni")
 defines = [ "GN_BUILD" ]
 
 static_library("gn_lib") {
+  configs += [ "//build/config:precompiled_headers" ]
+
   sources = [
     "action_target_generator.cc",
     "action_target_generator.h",

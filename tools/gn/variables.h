@@ -171,6 +171,14 @@ extern const char kOutputs[];
 extern const char kOutputs_HelpShort[];
 extern const char kOutputs_Help[];
 
+extern const char kPrecompiledHeader[];
+extern const char kPrecompiledHeader_HelpShort[];
+extern const char kPrecompiledHeader_Help[];
+
+extern const char kPrecompiledSource[];
+extern const char kPrecompiledSource_HelpShort[];
+extern const char kPrecompiledSource_Help[];
+
 extern const char kPublic[];
 extern const char kPublic_HelpShort[];
 extern const char kPublic_Help[];

@@ -102,7 +102,7 @@ Toolchain::ToolType Toolchain::GetToolTypeForSourceType(SourceFileType type) {
   switch (type) {
     case SOURCE_C:
       return TYPE_CC;
-    case SOURCE_CC:
+    case SOURCE_CPP:
       return TYPE_CXX;
     case SOURCE_M:
       return TYPE_OBJC;

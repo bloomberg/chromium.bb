@@ -4,6 +4,7 @@
 
 #include "tools/gn/ninja_binary_target_writer.h"
 
+#include <cstring>
 #include <set>
 #include <sstream>
 
@@ -12,11 +13,32 @@
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/ninja_utils.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/source_file_type.h"
 #include "tools/gn/string_utils.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
+
+// Represents a set of tool types. Must be first since it is also shared by
+// some helper functions in the anonymous namespace below.
+class NinjaBinaryTargetWriter::SourceFileTypeSet {
+ public:
+  SourceFileTypeSet() {
+    memset(flags_, 0, sizeof(bool) * static_cast<int>(SOURCE_NUMTYPES));
+  }
+
+  void Set(SourceFileType type) {
+    flags_[static_cast<int>(type)] = true;
+  }
+  bool Get(SourceFileType type) const {
+    return flags_[static_cast<int>(type)];
+  }
+
+ private:
+  bool flags_[static_cast<int>(SOURCE_NUMTYPES)];
+};
 
 namespace {
 
@@ -65,31 +87,231 @@ struct IncludeWriter {
   PathOutput& path_output_;
 };
 
+// Computes the set of output files resulting from compiling the given source
+// file. If the file can be compiled and the tool exists, fills the outputs in
+// and writes the tool type to computed_tool_type. If the file is not
+// compilable, returns false.
+//
+// The target that the source belongs to is passed as an argument. In the case
+// of linking to source sets, this can be different than the target this class
+// is currently writing.
+//
+// The function can succeed with a "NONE" tool type for object files which are
+// just passed to the output. The output will always be overwritten, not
+// appended to.
+bool GetOutputFilesForSource(const Target* target,
+                             const SourceFile& source,
+                             Toolchain::ToolType* computed_tool_type,
+                             std::vector<OutputFile>* outputs) {
+  outputs->clear();
+  *computed_tool_type = Toolchain::TYPE_NONE;
+
+  SourceFileType file_type = GetSourceFileType(source);
+  if (file_type == SOURCE_UNKNOWN)
+    return false;
+  if (file_type == SOURCE_O) {
+    // Object files just get passed to the output and not compiled.
+    outputs->push_back(
+        OutputFile(target->settings()->build_settings(), source));
+    return true;
+  }
+
+  *computed_tool_type =
+      target->toolchain()->GetToolTypeForSourceType(file_type);
+  if (*computed_tool_type == Toolchain::TYPE_NONE)
+    return false;  // No tool for this file (it's a header file or something).
+  const Tool* tool = target->toolchain()->GetTool(*computed_tool_type);
+  if (!tool)
+    return false;  // Tool does not apply for this toolchain.file.
+
+  // Figure out what output(s) this compiler produces.
+  SubstitutionWriter::ApplyListToCompilerAsOutputFile(
+      target, source, tool->outputs(), outputs);
+  return !outputs->empty();
+}
+
+// Returns the language-specific prefix/suffix for precomiled header files.
+const char* GetPCHLangForToolType(Toolchain::ToolType type) {
+  switch (type) {
+    case Toolchain::TYPE_CC:
+      return "c";
+    case Toolchain::TYPE_CXX:
+      return "cc";
+    case Toolchain::TYPE_OBJC:
+      return "m";
+    case Toolchain::TYPE_OBJCXX:
+      return "mm";
+    default:
+      NOTREACHED() << "Not a valid PCH tool type type";
+      return "";
+  }
+}
+
+// Returns the object files for the precompiled header of the given type (flag
+// type and tool type must match).
+void GetWindowsPCHObjectFiles(const Target* target,
+                              Toolchain::ToolType tool_type,
+                              std::vector<OutputFile>* outputs) {
+  outputs->clear();
+
+  // Compute the tool. This must use the tool type passed in rather than the
+  // detected file type of the precompiled source file since the same
+  // precompiled source file will be used for separate C/C++ compiles.
+  const Tool* tool = target->toolchain()->GetTool(tool_type);
+  if (!tool)
+    return;
+  SubstitutionWriter::ApplyListToCompilerAsOutputFile(
+      target, target->config_values().precompiled_source(),
+      tool->outputs(), outputs);
+
+  if (outputs->empty())
+    return;
+  if (outputs->size() > 1)
+    outputs->resize(1);  // Only link the first output from the compiler tool.
+
+  // Need to annotate the obj files with the language type. For example:
+  //   obj/foo/target_name.precompile.obj ->
+  //   obj/foo/target_name.precompile.cc.obj
+  const char* lang_suffix = GetPCHLangForToolType(tool_type);
+  std::string& output_value = (*outputs)[0].value();
+  size_t extension_offset = FindExtensionOffset(output_value);
+  if (extension_offset == std::string::npos) {
+    NOTREACHED() << "No extension found";
+  } else {
+    DCHECK(extension_offset >= 1);
+    DCHECK(output_value[extension_offset - 1] == '.');
+    output_value.insert(extension_offset - 1, ".");
+    output_value.insert(extension_offset, lang_suffix);
+  }
+}
+
+// Appends the object files generated by the given source set to the given
+// output vector.
+void AddSourceSetObjectFiles(const Target* source_set,
+                             UniqueVector<OutputFile>* obj_files) {
+  std::vector<OutputFile> tool_outputs;  // Prevent allocation in loop.
+  NinjaBinaryTargetWriter::SourceFileTypeSet used_types;
+
+  // Compute object files for all sources. Only link the first output from
+  // the tool if there are more than one.
+  for (const auto& source : source_set->sources()) {
+    Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
+    if (GetOutputFilesForSource(source_set, source, &tool_type, &tool_outputs))
+      obj_files->push_back(tool_outputs[0]);
+
+    used_types.Set(GetSourceFileType(source));
+  }
+
+  // Precompiled header object files.
+  if (source_set->config_values().has_precompiled_headers()) {
+    if (used_types.Get(SOURCE_C)) {
+      GetWindowsPCHObjectFiles(source_set, Toolchain::TYPE_CC, &tool_outputs);
+      obj_files->Append(tool_outputs.begin(), tool_outputs.end());
+    }
+    if (used_types.Get(SOURCE_CPP)) {
+      GetWindowsPCHObjectFiles(source_set, Toolchain::TYPE_CXX, &tool_outputs);
+      obj_files->Append(tool_outputs.begin(), tool_outputs.end());
+    }
+    if (used_types.Get(SOURCE_M)) {
+      GetWindowsPCHObjectFiles(source_set, Toolchain::TYPE_OBJC, &tool_outputs);
+      obj_files->Append(tool_outputs.begin(), tool_outputs.end());
+    }
+    if (used_types.Get(SOURCE_MM)) {
+      GetWindowsPCHObjectFiles(source_set, Toolchain::TYPE_OBJCXX,
+                               &tool_outputs);
+      obj_files->Append(tool_outputs.begin(), tool_outputs.end());
+    }
+  }
+}
+
 }  // namespace
 
 NinjaBinaryTargetWriter::NinjaBinaryTargetWriter(const Target* target,
                                                  std::ostream& out)
     : NinjaTargetWriter(target, out),
-      tool_(target->toolchain()->GetToolForTargetFinalOutput(target)) {
+      tool_(target->toolchain()->GetToolForTargetFinalOutput(target)),
+      rule_prefix_(GetNinjaRulePrefixForToolchain(settings_)) {
 }
 
 NinjaBinaryTargetWriter::~NinjaBinaryTargetWriter() {
 }
 
 void NinjaBinaryTargetWriter::Run() {
-  WriteCompilerVars();
+  // Figure out what source types are needed.
+  SourceFileTypeSet used_types;
+  for (const auto& source : target_->sources())
+    used_types.Set(GetSourceFileType(source));
 
+  WriteCompilerVars(used_types);
+
+  // The input dependencies will be an order-only dependency. This will cause
+  // Ninja to make sure the inputs are up-to-date before compiling this source,
+  // but changes in the inputs deps won't cause the file to be recompiled.
+  //
+  // This is important to prevent changes in unrelated actions that are
+  // upstream of this target from causing everything to be recompiled
+  //
+  // Why can we get away with this rather than using implicit deps ("|", which
+  // will force rebuilds when the inputs change)?  For source code, the
+  // computed dependencies of all headers will be computed by the compiler,
+  // which will cause source rebuilds if any "real" upstream dependencies
+  // change.
+  //
+  // If a .cc file is generated by an input dependency, Ninja will see the
+  // input to the build rule doesn't exist, and that it is an output from a
+  // previous step, and build the previous step first. This is a "real"
+  // dependency and doesn't need | or || to express.
+  //
+  // The only case where this rule matters is for the first build where no .d
+  // files exist, and Ninja doesn't know what that source file depends on. In
+  // this case it's sufficient to ensure that the upstream dependencies are
+  // built first. This is exactly what Ninja's order-only dependencies
+  // expresses.
+  OutputFile order_only_dep =
+      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
+
+  std::vector<OutputFile> pch_obj_files;
+  WritePrecompiledHeaderCommands(used_types, order_only_dep, &pch_obj_files);
+
+  // Treat all precompiled object files as explicit dependencies of all
+  // compiles. Some notes:
+  //
+  //  - Technically only the language-specific one is required for any specific
+  //    compile, but that's more difficult to express and the additional logic
+  //    doesn't buy much reduced parallelism. Just list them all (there's
+  //    usually only one anyway).
+  //
+  //  - Technically the .pch file is the input to the compile, not the
+  //    precompiled header's corresponding object file that we're using here.
+  //    But Ninja's depslog doesn't support multiple outputs from the
+  //    precompiled header compile step (it outputs both the .pch file and a
+  //    corresponding .obj file). So we consistently list the .obj file and the
+  //    .pch file we really need comes along with it.
   std::vector<OutputFile> obj_files;
   std::vector<SourceFile> other_files;
-  WriteSources(&obj_files, &other_files);
+  WriteSources(pch_obj_files, order_only_dep, &obj_files, &other_files);
 
-  if (target_->output_type() == Target::SOURCE_SET)
+  // Also link all pch object files.
+  obj_files.insert(obj_files.end(), pch_obj_files.begin(), pch_obj_files.end());
+
+  if (target_->output_type() == Target::SOURCE_SET) {
     WriteSourceSetStamp(obj_files);
-  else
+#ifndef NDEBUG
+    // Verify that the function that separately computes a source set's object
+    // files match the object files just computed.
+    UniqueVector<OutputFile> computed_obj;
+    AddSourceSetObjectFiles(target_, &computed_obj);
+    DCHECK_EQ(obj_files.size(), computed_obj.size());
+    for (const auto& obj : obj_files)
+      DCHECK_NE(static_cast<size_t>(-1), computed_obj.IndexOf(obj));
+#endif
+  } else {
     WriteLinkerStuff(obj_files, other_files);
+  }
 }
 
-void NinjaBinaryTargetWriter::WriteCompilerVars() {
+void NinjaBinaryTargetWriter::WriteCompilerVars(
+    const SourceFileTypeSet& used_types) {
   const SubstitutionBits& subst = target_->toolchain()->substitution_bits();
 
   // Defines.
@@ -113,36 +335,134 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
     out_ << std::endl;
   }
 
-  // C flags and friends.
-  EscapeOptions flag_escape_options = GetFlagOptions();
-#define WRITE_FLAGS(name, subst_enum) \
-    if (subst.used[subst_enum]) { \
-      out_ << kSubstitutionNinjaNames[subst_enum] << " ="; \
-      RecursiveTargetConfigStringsToStream(target_, &ConfigValues::name, \
-                                           flag_escape_options, out_); \
-      out_ << std::endl; \
-    }
+  bool has_precompiled_headers =
+      target_->config_values().has_precompiled_headers();
 
-  WRITE_FLAGS(cflags, SUBSTITUTION_CFLAGS)
-  WRITE_FLAGS(cflags_c, SUBSTITUTION_CFLAGS_C)
-  WRITE_FLAGS(cflags_cc, SUBSTITUTION_CFLAGS_CC)
-  WRITE_FLAGS(cflags_objc, SUBSTITUTION_CFLAGS_OBJC)
-  WRITE_FLAGS(cflags_objcc, SUBSTITUTION_CFLAGS_OBJCC)
-
-#undef WRITE_FLAGS
+  // Some toolchains pass cflags to the assembler since it's the same command,
+  // and cflags_c might also be sent to the objective C compiler.
+  //
+  // TODO(brettw) remove the SOURCE_M from the CFLAGS_C writing once the Chrome
+  // Mac build is updated not to pass cflags_c to .m files.
+  EscapeOptions opts = GetFlagOptions();
+  if (used_types.Get(SOURCE_C) || used_types.Get(SOURCE_CPP) ||
+      used_types.Get(SOURCE_M) || used_types.Get(SOURCE_MM) ||
+      used_types.Get(SOURCE_ASM)) {
+    WriteOneFlag(SUBSTITUTION_CFLAGS, false, Toolchain::TYPE_NONE,
+                 &ConfigValues::cflags, opts);
+  }
+  if (used_types.Get(SOURCE_C) || used_types.Get(SOURCE_M) ||
+      used_types.Get(SOURCE_ASM)) {
+    WriteOneFlag(SUBSTITUTION_CFLAGS_C, has_precompiled_headers,
+                 Toolchain::TYPE_CC, &ConfigValues::cflags_c, opts);
+  }
+  if (used_types.Get(SOURCE_CPP)) {
+    WriteOneFlag(SUBSTITUTION_CFLAGS_CC, has_precompiled_headers,
+                 Toolchain::TYPE_CXX, &ConfigValues::cflags_cc, opts);
+  }
+  if (used_types.Get(SOURCE_M)) {
+    WriteOneFlag(SUBSTITUTION_CFLAGS_OBJC, has_precompiled_headers,
+                 Toolchain::TYPE_OBJC, &ConfigValues::cflags_objc, opts);
+  }
+  if (used_types.Get(SOURCE_MM)) {
+    WriteOneFlag(SUBSTITUTION_CFLAGS_OBJCC, has_precompiled_headers,
+                 Toolchain::TYPE_OBJCXX, &ConfigValues::cflags_objcc, opts);
+  }
 
   WriteSharedVars(subst);
 }
 
+void NinjaBinaryTargetWriter::WriteOneFlag(
+    SubstitutionType subst_enum,
+    bool has_precompiled_headers,
+    Toolchain::ToolType tool_type,
+    const std::vector<std::string>& (ConfigValues::* getter)() const,
+    EscapeOptions flag_escape_options) {
+  if (!target_->toolchain()->substitution_bits().used[subst_enum])
+    return;
+
+  out_ << kSubstitutionNinjaNames[subst_enum] << " =";
+
+  if (has_precompiled_headers) {
+    const Tool* tool = target_->toolchain()->GetTool(tool_type);
+    if (tool && tool->precompiled_header_type() == Tool::PCH_MSVC) {
+      // Name the .pch file.
+      out_ << " /Fp";
+      path_output_.WriteFile(out_, GetWindowsPCHFile(tool_type));
+
+      // Enables precompiled headers and names the .h file. It's a string
+      // rather than a file name (so no need to rebase or use path_output_).
+      out_ << " /Yu" << target_->config_values().precompiled_header();
+    }
+  }
+
+  RecursiveTargetConfigStringsToStream(target_, getter,
+                                       flag_escape_options, out_);
+  out_ << std::endl;
+}
+
+void NinjaBinaryTargetWriter::WritePrecompiledHeaderCommands(
+    const SourceFileTypeSet& used_types,
+    const OutputFile& order_only_dep,
+    std::vector<OutputFile>* object_files) {
+  if (!target_->config_values().has_precompiled_headers())
+    return;
+
+  const Tool* tool_c = target_->toolchain()->GetTool(Toolchain::TYPE_CC);
+  if (tool_c &&
+      tool_c->precompiled_header_type() == Tool::PCH_MSVC &&
+      used_types.Get(SOURCE_C)) {
+    WriteWindowsPCHCommand(SUBSTITUTION_CFLAGS_C,
+                           Toolchain::TYPE_CC,
+                           order_only_dep, object_files);
+  }
+  const Tool* tool_cxx = target_->toolchain()->GetTool(Toolchain::TYPE_CXX);
+  if (tool_cxx &&
+      tool_cxx->precompiled_header_type() == Tool::PCH_MSVC &&
+      used_types.Get(SOURCE_CPP)) {
+    WriteWindowsPCHCommand(SUBSTITUTION_CFLAGS_CC,
+                           Toolchain::TYPE_CXX,
+                           order_only_dep, object_files);
+  }
+}
+
+void NinjaBinaryTargetWriter::WriteWindowsPCHCommand(
+    SubstitutionType flag_type,
+    Toolchain::ToolType tool_type,
+    const OutputFile& order_only_dep,
+    std::vector<OutputFile>* object_files) {
+  // Compute the object file (it will be language-specific).
+  std::vector<OutputFile> outputs;
+  GetWindowsPCHObjectFiles(target_, tool_type, &outputs);
+  if (outputs.empty())
+    return;
+  object_files->insert(object_files->end(), outputs.begin(), outputs.end());
+
+  // Build line to compile the file.
+  WriteCompilerBuildLine(target_->config_values().precompiled_source(),
+                         std::vector<OutputFile>(), order_only_dep, tool_type,
+                         outputs);
+
+  // This build line needs a custom language-specific flags value. It needs to
+  // include the switch to generate the .pch file in addition to the normal
+  // ones. Rule-specific variables are just indented underneath the rule line,
+  // and this defines the new one in terms of the old value.
+  out_ << "  " << kSubstitutionNinjaNames[flag_type] << " =";
+  out_ << " ${" << kSubstitutionNinjaNames[flag_type] << "}";
+
+  // Append the command to generate the .pch file.
+  out_ << " /Yc" << target_->config_values().precompiled_header();
+
+  // Write two blank lines to help separate the PCH build lines from the
+  // regular source build lines.
+  out_ << std::endl << std::endl;
+}
+
 void NinjaBinaryTargetWriter::WriteSources(
+    const std::vector<OutputFile>& extra_deps,
+    const OutputFile& order_only_dep,
     std::vector<OutputFile>* object_files,
     std::vector<SourceFile>* other_files) {
-  object_files->reserve(target_->sources().size());
-
-  OutputFile input_dep =
-      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
-
-  std::string rule_prefix = GetNinjaRulePrefixForToolchain(settings_);
+  object_files->reserve(object_files->size() + target_->sources().size());
 
   std::vector<OutputFile> tool_outputs;  // Prevent reallocation in loop.
   for (const auto& source : target_->sources()) {
@@ -154,46 +474,41 @@ void NinjaBinaryTargetWriter::WriteSources(
     }
 
     if (tool_type != Toolchain::TYPE_NONE) {
-      out_ << "build";
-      path_output_.WriteFiles(out_, tool_outputs);
-
-      out_ << ": " << rule_prefix << Toolchain::ToolTypeToName(tool_type);
-      out_ << " ";
-      path_output_.WriteFile(out_, source);
-      if (!input_dep.value().empty()) {
-        // Write out the input dependencies as an order-only dependency. This
-        // will cause Ninja to make sure the inputs are up-to-date before
-        // compiling this source, but changes in the inputs deps won't cause
-        // the file to be recompiled.
-        //
-        // This is important to prevent changes in unrelated actions that
-        // are upstream of this target from causing everything to be recompiled.
-        //
-        // Why can we get away with this rather than using implicit deps ("|",
-        // which will force rebuilds when the inputs change)?  For source code,
-        // the computed dependencies of all headers will be computed by the
-        // compiler, which will cause source rebuilds if any "real" upstream
-        // dependencies change.
-        //
-        // If a .cc file is generated by an input dependency, Ninja will see
-        // the input to the build rule doesn't exist, and that it is an output
-        // from a previous step, and build the previous step first.  This is a
-        // "real" dependency and doesn't need | or || to express.
-        //
-        // The only case where this rule matters is for the first build where
-        // no .d files exist, and Ninja doesn't know what that source file
-        // depends on. In this case it's sufficient to ensure that the upstream
-        // dependencies are built first. This is exactly what Ninja's order-
-        // only dependencies expresses.
-        out_ << " || ";
-        path_output_.WriteFile(out_, input_dep);
-      }
-      out_ << std::endl;
+      WriteCompilerBuildLine(source, extra_deps, order_only_dep, tool_type,
+                             tool_outputs);
     }
 
     // It's theoretically possible for a compiler to produce more than one
     // output, but we'll only link to the first output.
     object_files->push_back(tool_outputs[0]);
+  }
+  out_ << std::endl;
+}
+
+void NinjaBinaryTargetWriter::WriteCompilerBuildLine(
+    const SourceFile& source,
+    const std::vector<OutputFile>& extra_deps,
+    const OutputFile& order_only_dep,
+    Toolchain::ToolType tool_type,
+    const std::vector<OutputFile>& outputs) {
+  out_ << "build";
+  path_output_.WriteFiles(out_, outputs);
+
+  out_ << ": " << rule_prefix_ << Toolchain::ToolTypeToName(tool_type);
+  out_ << " ";
+  path_output_.WriteFile(out_, source);
+
+  if (!extra_deps.empty()) {
+    out_ << " |";
+    for (const OutputFile& dep : extra_deps) {
+      out_ << " ";
+      path_output_.WriteFile(out_, dep);
+    }
+  }
+
+  if (!order_only_dep.value().empty()) {
+    out_ << " || ";
+    path_output_.WriteFile(out_, order_only_dep);
   }
   out_ << std::endl;
 }
@@ -208,8 +523,7 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   out_ << "build";
   path_output_.WriteFiles(out_, output_files);
 
-  out_ << ": "
-       << GetNinjaRulePrefixForToolchain(settings_)
+  out_ << ": " << rule_prefix_
        << Toolchain::ToolTypeToName(
               target_->toolchain()->GetToolTypeForTargetFinalOutput(target_));
 
@@ -219,18 +533,12 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   GetDeps(&extra_object_files, &linkable_deps, &non_linkable_deps);
 
   // Object files.
-  for (const auto& obj : object_files) {
-    out_ << " ";
-    path_output_.WriteFile(out_, obj);
-  }
-  for (const auto& obj : extra_object_files) {
-    out_ << " ";
-    path_output_.WriteFile(out_, obj);
-  }
+  path_output_.WriteFiles(out_, object_files);
+  path_output_.WriteFiles(out_, extra_object_files);
 
+  // Dependencies.
   std::vector<OutputFile> implicit_deps;
   std::vector<OutputFile> solibs;
-
   for (const Target* cur : linkable_deps) {
     // All linkable deps should have a link output file.
     DCHECK(!cur->link_output_file().value().empty())
@@ -442,18 +750,8 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
     // just forward the dependency, otherwise the files in the source
     // set can easily get linked more than once which will cause
     // multiple definition errors.
-    if (can_link_libs) {
-      // Linking in a source set to an executable, shared library, or
-      // complete static library, so copy its object files.
-      std::vector<OutputFile> tool_outputs;  // Prevent allocation in loop.
-      for (const auto& source : dep->sources()) {
-        Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
-        if (GetOutputFilesForSource(dep, source, &tool_type, &tool_outputs)) {
-          // Only link the first output if there are more than one.
-          extra_object_files->push_back(tool_outputs[0]);
-        }
-      }
-    }
+    if (can_link_libs)
+      AddSourceSetObjectFiles(dep, extra_object_files);
 
     // Add the source set itself as a non-linkable dependency on the current
     // target. This will make sure that anything the source set's stamp file
@@ -481,33 +779,15 @@ void NinjaBinaryTargetWriter::WriteOrderOnlyDependencies(
   }
 }
 
-bool NinjaBinaryTargetWriter::GetOutputFilesForSource(
-    const Target* target,
-    const SourceFile& source,
-    Toolchain::ToolType* computed_tool_type,
-    std::vector<OutputFile>* outputs) const {
-  outputs->clear();
-  *computed_tool_type = Toolchain::TYPE_NONE;
+OutputFile NinjaBinaryTargetWriter::GetWindowsPCHFile(
+    Toolchain::ToolType tool_type) const {
+  // Use "obj/{dir}/{target_name}_{lang}.pch" which ends up
+  // looking like "obj/chrome/browser/browser.cc.pch"
+  OutputFile ret = GetTargetOutputDirAsOutputFile(target_);
+  ret.value().append(target_->label().name());
+  ret.value().push_back('_');
+  ret.value().append(GetPCHLangForToolType(tool_type));
+  ret.value().append(".pch");
 
-  SourceFileType file_type = GetSourceFileType(source);
-  if (file_type == SOURCE_UNKNOWN)
-    return false;
-  if (file_type == SOURCE_O) {
-    // Object files just get passed to the output and not compiled.
-    outputs->push_back(OutputFile(settings_->build_settings(), source));
-    return true;
-  }
-
-  *computed_tool_type =
-      target->toolchain()->GetToolTypeForSourceType(file_type);
-  if (*computed_tool_type == Toolchain::TYPE_NONE)
-    return false;  // No tool for this file (it's a header file or something).
-  const Tool* tool = target->toolchain()->GetTool(*computed_tool_type);
-  if (!tool)
-    return false;  // Tool does not apply for this toolchain.file.
-
-  // Figure out what output(s) this compiler produces.
-  SubstitutionWriter::ApplyListToCompilerAsOutputFile(
-      target, source, tool->outputs(), outputs);
-  return !outputs->empty();
+  return ret;
 }

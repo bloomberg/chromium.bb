@@ -8,19 +8,6 @@
 #include "tools/gn/parser.h"
 #include "tools/gn/tokenizer.h"
 
-namespace {
-
-void SetCommandForTool(const std::string& cmd, Tool* tool) {
-  Err err;
-  SubstitutionPattern command;
-  command.Parse(cmd, nullptr, &err);
-  CHECK(!err.has_error())
-      << "Couldn't parse \"" << cmd << "\", " << "got " << err.message();
-  tool->set_command(command);
-}
-
-}  // namespace
-
 TestWithScope::TestWithScope()
     : build_settings_(),
       settings_(&build_settings_, std::string()),
@@ -130,6 +117,16 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   toolchain->SetTool(Toolchain::TYPE_COPY, copy_tool.Pass());
 
   toolchain->ToolchainSetupComplete();
+}
+
+// static
+void TestWithScope::SetCommandForTool(const std::string& cmd, Tool* tool) {
+  Err err;
+  SubstitutionPattern command;
+  command.Parse(cmd, nullptr, &err);
+  CHECK(!err.has_error())
+      << "Couldn't parse \"" << cmd << "\", " << "got " << err.message();
+  tool->set_command(command);
 }
 
 void TestWithScope::AppendPrintOutput(const std::string& str) {

@@ -25,7 +25,7 @@ struct EscapeOptions;
 //
 // Example:
 //   for (ConfigValueIterator iter(target); !iter.done(); iter.Next())
-//     DoSomething(iter->cur());
+//     DoSomething(iter.cur());
 class ConfigValuesIterator {
  public:
   explicit ConfigValuesIterator(const Target* target)

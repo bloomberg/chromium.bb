@@ -4,6 +4,7 @@
 
 #include "tools/gn/config_values_generator.h"
 
+#include "base/strings/string_util.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
@@ -81,4 +82,34 @@ void ConfigValuesGenerator::Run() {
 
 #undef FILL_STRING_CONFIG_VALUE
 #undef FILL_DIR_CONFIG_VALUE
+
+  // Precompiled headers.
+  const Value* precompiled_header_value =
+      scope_->GetValue(variables::kPrecompiledHeader, true);
+  if (precompiled_header_value) {
+    if (!precompiled_header_value->VerifyTypeIs(Value::STRING, err_))
+      return;
+
+    // Check for common errors. This is a string and not a file.
+    const std::string& pch_string = precompiled_header_value->string_value();
+    if (base::StartsWith(pch_string, "//", base::CompareCase::SENSITIVE)) {
+      *err_ = Err(*precompiled_header_value,
+          "This precompiled_header value is wrong.",
+          "You need to specify a string that the compiler will match against\n"
+          "the #include lines rather than a GN-style file name.\n");
+      return;
+    }
+    config_values_->set_precompiled_header(pch_string);
+  }
+
+  const Value* precompiled_source_value =
+      scope_->GetValue(variables::kPrecompiledSource, true);
+  if (precompiled_source_value) {
+    config_values_->set_precompiled_source(
+        input_dir_.ResolveRelativeFile(
+            *precompiled_source_value, err_,
+            scope_->settings()->build_settings()->root_path_utf8()));
+    if (err_->has_error())
+      return;
+  }
 }

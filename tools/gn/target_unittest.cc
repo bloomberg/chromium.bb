@@ -558,3 +558,58 @@ TEST(Target, WriteFileGeneratedInputs) {
   // Should be OK.
   EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
 }
+
+TEST(Target, ResolvePrecompiledHeaders) {
+  TestWithScope setup;
+  Err err;
+
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+
+  // Target with no settings, no configs, should be a no-op.
+  EXPECT_TRUE(target.ResolvePrecompiledHeaders(&err));
+
+  // Config with PCH values.
+  Config config_1(setup.settings(), Label(SourceDir("//foo/"), "c1"));
+  std::string pch_1("pch.h");
+  SourceFile pcs_1("//pcs.cc");
+  config_1.config_values().set_precompiled_header(pch_1);
+  config_1.config_values().set_precompiled_source(pcs_1);
+  target.configs().push_back(LabelConfigPair(&config_1));
+
+  // No PCH info specified on target, but the config specifies one, the
+  // values should get copied to the target.
+  EXPECT_TRUE(target.ResolvePrecompiledHeaders(&err));
+  EXPECT_EQ(pch_1, target.config_values().precompiled_header());
+  EXPECT_TRUE(target.config_values().precompiled_source() == pcs_1);
+
+  // Now both target and config have matching PCH values. Resolving again
+  // should be a no-op since they all match.
+  EXPECT_TRUE(target.ResolvePrecompiledHeaders(&err));
+  EXPECT_TRUE(target.config_values().precompiled_header() == pch_1);
+  EXPECT_TRUE(target.config_values().precompiled_source() == pcs_1);
+
+  // Second config with different PCH values.
+  Config config_2(setup.settings(), Label(SourceDir("//foo/"), "c2"));
+  std::string pch_2("pch2.h");
+  SourceFile pcs_2("//pcs2.cc");
+  config_2.config_values().set_precompiled_header(pch_2);
+  config_2.config_values().set_precompiled_source(pcs_2);
+  target.configs().push_back(LabelConfigPair(&config_2));
+
+  // This should be an error since they don't match.
+  EXPECT_FALSE(target.ResolvePrecompiledHeaders(&err));
+
+  // Make sure the proper labels are blamed.
+  EXPECT_EQ(
+      "The target //foo:bar\n"
+      "has conflicting precompiled header settings.\n"
+      "\n"
+      "From //foo:bar\n"
+      "  header: pch.h\n"
+      "  source: //pcs.cc\n"
+      "\n"
+      "From //foo:c2\n"
+      "  header: pch2.h\n"
+      "  source: //pcs2.cc",
+      err.help_text());
+}
