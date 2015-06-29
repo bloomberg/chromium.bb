@@ -17,7 +17,7 @@ OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
 
 if [ $MINGW = 0 ]; then
-  base_dir="${0%\\*}"
+  base_dir="${0%/*}"
 else
   base_dir=$(dirname "$0")
   if [ -L "$base_dir" ]; then
