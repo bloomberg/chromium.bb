@@ -167,19 +167,49 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
     bool password_is_generated) {
   DCHECK(client_->IsSavingEnabledForCurrentPage());
 
+  ScopedVector<PasswordFormManager>::iterator matched_manager_it =
+      pending_login_managers_.end();
+  PasswordFormManager::MatchResultMask current_match_result =
+      PasswordFormManager::RESULT_NO_MATCH;
+
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
-    if ((*iter)->DoesManage(form) ==
-        PasswordFormManager::RESULT_COMPLETE_MATCH) {
-      (*iter)->set_has_generated_password(password_is_generated);
-      return;
+    PasswordFormManager::MatchResultMask result = (*iter)->DoesManage(form);
+
+    if (result == PasswordFormManager::RESULT_NO_MATCH)
+      continue;
+
+    if (result == PasswordFormManager::RESULT_COMPLETE_MATCH) {
+      // If we find a manager that exactly matches the submitted form including
+      // the action URL, exit the loop.
+      matched_manager_it = iter;
+      break;
+    } else if (result == (PasswordFormManager::RESULT_COMPLETE_MATCH &
+                          ~PasswordFormManager::RESULT_ACTION_MATCH) &&
+               result > current_match_result) {
+      // If the current manager matches the submitted form excluding the action
+      // URL, remember it as a candidate and continue searching for an exact
+      // match. See http://crbug.com/27246 for an example where actions can
+      // change.
+      matched_manager_it = iter;
+      current_match_result = result;
+    } else if (result > current_match_result) {
+      matched_manager_it = iter;
+      current_match_result = result;
     }
   }
 
-  if (!password_is_generated) {
+  if (matched_manager_it != pending_login_managers_.end()) {
+    (*matched_manager_it)->set_has_generated_password(password_is_generated);
     return;
   }
+
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
+                        password_is_generated);
+
+  if (!password_is_generated)
+    return;
 
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
@@ -189,7 +219,6 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
       this, client_, driver->AsWeakPtr(), form, ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->set_has_generated_password(true);
-  // TODO(gcasto): Add UMA stats to track this.
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {

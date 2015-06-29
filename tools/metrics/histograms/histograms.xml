@@ -27707,6 +27707,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.GeneratedFormHasNoFormManager"
+    enum="BooleanFormManager">
+  <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <owner>deepak.m1@samsung.com</owner>
+  <summary>
+    When the generation state of a password was changed, records whether an
+    existing form corresponding to the password was found.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.InfoBarResponse" enum="InfoBarResponse">
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -50500,6 +50511,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanForceDisabled" type="int">
   <int value="0" label="Not Force Disabled"/>
   <int value="1" label="Force Disabled"/>
+</enum>
+
+<enum name="BooleanFormManager" type="int">
+  <int value="0" label="Has Form Manager"/>
+  <int value="1" label="Lacks Form Manager"/>
 </enum>
 
 <enum name="BooleanFromAddressBook" type="int">
