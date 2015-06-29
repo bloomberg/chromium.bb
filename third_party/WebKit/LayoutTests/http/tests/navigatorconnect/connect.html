@@ -12,7 +12,7 @@
 <script>
 var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
 
-run_connect_tests(function(t, service) {
-    return first_to_resolve([wrap_in_port(navigator.services.connect(service)), navigator.connect(service)]);
+run_connect_tests(function(t, service, options) {
+    return navigator.services.connect(service, options);
   });
 </script>

@@ -53,7 +53,8 @@ function run_connect_tests(connect_method) {
             return connect_method(t, scope + '/service');
           })
         .then(function(port) {
-            assert_class_string(port, 'MessagePort');
+            var targetURL = new URL(port.targetURL);
+            assert_equals(targetURL.pathname, base_path() + scope + '/service');
             return service_worker_unregister(t, scope);
           });
     }, 'Connection succeeds if service worker accepts connection event.');
@@ -84,8 +85,28 @@ function run_connect_tests(connect_method) {
             return connect_method(t, scope + '/service?accept');
           })
         .then(function(port) {
-            assert_class_string(port, 'MessagePort');
+            var targetURL = new URL(port.targetURL);
+            assert_equals(targetURL.pathname, base_path() + scope + '/service');
             return service_worker_unregister(t, scope);
           });
     }, 'Connection succeeds if service worker accepts connection event async.');
+
+  promise_test(function(t) {
+      var scope = sw_scope + '/accepting';
+      var sw_url = 'resources/accepting-worker.js';
+      return service_worker_unregister_and_register(t, sw_url, scope)
+        .then(function(registration) {
+            return wait_for_state(t, registration.installing, 'activated');
+          })
+        .then(function() {
+            return connect_method(t, scope + '/service', {name: 'somename', data: 'somedata'});
+          })
+        .then(function(port) {
+            var targetURL = new URL(port.targetURL);
+            assert_equals(targetURL.pathname, base_path() + scope + '/service');
+            assert_equals(port.name, 'somename');
+            assert_equals(port.data, 'somedata');
+            return service_worker_unregister(t, scope);
+          });
+    }, 'Returned port has correct name and data fields');
 }

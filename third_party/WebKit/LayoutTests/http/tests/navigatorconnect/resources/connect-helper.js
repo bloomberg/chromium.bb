@@ -5,9 +5,17 @@ if ("importScripts" in self) {
 
 self.onmessage = function(e) {
   var service = e.data.connect;
-  first_to_resolve([wrap_in_port(navigator.services.connect(service)), navigator.connect(service)])
+  wrap_in_port(navigator.services.connect(service, e.data.options))
     .then(function(port) {
-        e.data.port.postMessage({success: true, result: port}, [port]);
+        e.data.port.postMessage({
+            success: true,
+            result: {
+              port: port,
+              targetURL: port.targetURL,
+              name: port.name,
+              data: port.data
+            }
+          }, [port]);
       })
     .catch(function(error) {
         // Not all errors can be serialized as a SerializedScriptValue, so
