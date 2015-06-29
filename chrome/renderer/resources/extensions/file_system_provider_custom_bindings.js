@@ -283,6 +283,10 @@ eventBindings.registerArgumentMassager(
     massageArgumentsDefault);
 
 eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onExecuteActionRequested',
+    massageArgumentsDefault);
+
+eventBindings.registerArgumentMassager(
     'fileSystemProvider.onMountRequested',
     function(args, dispatch) {
       var onSuccessCallback = function() {

@@ -258,6 +258,18 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Configure) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, GetActions) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/get_actions",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, ExecuteAction) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/execute_action",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unresponsive_Extension) {
   AbortOnUnresponsivePerformer performer(browser()->profile());
   ASSERT_TRUE(

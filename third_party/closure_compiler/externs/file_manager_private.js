@@ -216,6 +216,14 @@ var DeviceEvent;
 var ProvidingExtension;
 
 /**
+ * @typedef {{
+ *   id: string,
+ *   title: (string|undefined)
+ * }}
+ */
+var EntryAction;
+
+/**
  * @const
  */
 chrome.fileManagerPrivate = {};
@@ -617,6 +625,24 @@ chrome.fileManagerPrivate.addProvidedFileSystem =
  * @param {function()} callback
  */
 chrome.fileManagerPrivate.configureVolume = function(volumeId, callback) {};
+
+/**
+ * Requests fetching list of actions for the specified entry. If not possible,
+ * then returns an error via chrome.runtime.lastError.
+ * @param {string} entryUrl
+ * @param {function(!Array<!EntryAction>)} callback
+ */
+chrome.fileManagerPrivate.getEntryActions = function(entryUrl, callback) {};
+
+/**
+ * Executes the action on the specified entry. If not possible, then returns an
+ * error via chrome.runtime.lastError.
+ * @param {string} entryUrl
+ * @param {string} actionId
+ * @param {function()} callback
+ */
+chrome.fileManagerPrivate.executeAction = function(
+    entryUrl, actionId, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

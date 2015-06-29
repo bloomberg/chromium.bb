@@ -634,6 +634,9 @@ callback ComputeChecksumCallback = void(DOMString checksum);
 // |extensions| List of providing extensions.
 callback GetProvidingExtensionsCallback = void(ProvidingExtension[] extensions);
 
+// |actions| List of actions.
+callback GetEntryActionsCallback = void(fileSystemProvider.Action[] actions);
+
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
   // the Google account.
@@ -915,6 +918,17 @@ interface Functions {
   // Requests configuring an existing volume. If not possible, then returns
   // an error via chrome.runtime.lastError.
   static void configureVolume(DOMString volumeId, SimpleCallback callback);
+
+  // Requests list of actions for the specified file. If not possible, then an
+  // error via chrome.runtime.lastError is returned.
+  static void getEntryActions(DOMString entryUrl,
+                              GetEntryActionsCallback callback);
+
+  // Executes the entry action. If not possible, then an error via
+  // chrome.runtime.lastError is returned.
+  static void executeEntryAction(DOMString entryUrl,
+                                 DOMString actionId,
+                                 SimpleCallback callback);
 };
 
 interface Events {

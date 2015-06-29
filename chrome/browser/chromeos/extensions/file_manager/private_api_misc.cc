@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
+#include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -527,6 +528,97 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
     Respond(Error("Failed to complete configuration."));
+    return;
+  }
+
+  Respond(NoArguments());
+}
+
+FileManagerPrivateGetEntryActionsFunction::
+    FileManagerPrivateGetEntryActionsFunction()
+    : chrome_details_(this) {
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetEntryActionsFunction::Run() {
+  using extensions::api::file_manager_private::GetEntryActions::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          chrome_details_.GetProfile(), render_frame_host());
+
+  const storage::FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(params->entry_url)));
+
+  chromeos::file_system_provider::util::FileSystemURLParser parser(
+      file_system_url);
+  if (!parser.Parse())
+    return RespondNow(Error("Related provided file system not found."));
+
+  parser.file_system()->GetActions(
+      parser.file_path(),
+      base::Bind(&FileManagerPrivateGetEntryActionsFunction::OnCompleted,
+                 this));
+  return RespondLater();
+}
+
+void FileManagerPrivateGetEntryActionsFunction::OnCompleted(
+    const chromeos::file_system_provider::Actions& actions,
+    base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    Respond(Error("Failed to fetch actions."));
+    return;
+  }
+
+  using api::file_system_provider::Action;
+  std::vector<linked_ptr<Action>> items;
+  for (const auto& action : actions) {
+    const linked_ptr<Action> item(new Action);
+    item->id = action.id;
+    item->title.reset(new std::string(action.title));
+    items.push_back(item);
+  }
+
+  Respond(ArgumentList(
+      api::file_manager_private::GetEntryActions::Results::Create(items)));
+}
+
+FileManagerPrivateExecuteEntryActionFunction::
+    FileManagerPrivateExecuteEntryActionFunction()
+    : chrome_details_(this) {
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateExecuteEntryActionFunction::Run() {
+  using extensions::api::file_manager_private::ExecuteEntryAction::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          chrome_details_.GetProfile(), render_frame_host());
+
+  const storage::FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(params->entry_url)));
+
+  chromeos::file_system_provider::util::FileSystemURLParser parser(
+      file_system_url);
+  if (!parser.Parse())
+    return RespondNow(Error("Related provided file system not found."));
+
+  parser.file_system()->ExecuteAction(
+      parser.file_path(), params->action_id,
+      base::Bind(&FileManagerPrivateExecuteEntryActionFunction::OnCompleted,
+                 this));
+  return RespondLater();
+}
+
+void FileManagerPrivateExecuteEntryActionFunction::OnCompleted(
+    base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    Respond(Error("Failed to execute the action."));
     return;
   }
 

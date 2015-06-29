@@ -55326,6 +55326,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="FILESYSTEMPROVIDERINTERNAL_GETACTIONSREQUESTEDSUCCESS"/>
   <int value="1059"
       label="WEBSTOREPRIVATE_SHOWPERMISSIONPROMPTFORDELEGATEDBUNDLEINSTALL"/>
+  <int value="1060" label="FILEMANAGERPRIVATE_GETENTRYACTIONS"/>
+  <int value="1061" label="FILEMANAGERPRIVATE_EXECUTEENTRYACTION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
