@@ -46,6 +46,11 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Creates a UsbDeviceHandle for further manipulation.
   virtual void Open(const OpenCallback& callback) = 0;
 
+  // Creates a UsbDeviceHandle for further manipulation. This method is a
+  // temporary workaround for crbug.com/500057 while the work to finish
+  // crbug.com/496469 is completed.
+  virtual void OpenInterface(int interface_id, const OpenCallback& callback);
+
   // Explicitly closes a device handle. This method will be automatically called
   // by the destructor of a UsbDeviceHandle as well.
   virtual bool Close(scoped_refptr<UsbDeviceHandle> handle) = 0;

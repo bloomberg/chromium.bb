@@ -492,10 +492,10 @@ ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
 
   vendor_id_ = parameters->options.vendor_id;
   product_id_ = parameters->options.product_id;
-  int interface_id = parameters->options.interface_id.get()
-                         ? *parameters->options.interface_id.get()
-                         : UsbDevicePermissionData::ANY_INTERFACE;
-  UsbDevicePermission::CheckParam param(vendor_id_, product_id_, interface_id);
+  interface_id_ = parameters->options.interface_id.get()
+                      ? *parameters->options.interface_id.get()
+                      : UsbDevicePermissionData::ANY_INTERFACE;
+  UsbDevicePermission::CheckParam param(vendor_id_, product_id_, interface_id_);
   if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kUsbDevice, &param)) {
     return RespondNow(Error(kErrorPermissionDenied));
@@ -522,7 +522,9 @@ void UsbFindDevicesFunction::OnGetDevicesComplete(
         device->product_id() != product_id_) {
       barrier_.Run();
     } else {
-      device->Open(base::Bind(&UsbFindDevicesFunction::OnDeviceOpened, this));
+      device->OpenInterface(
+          interface_id_,
+          base::Bind(&UsbFindDevicesFunction::OnDeviceOpened, this));
     }
   }
 }
