@@ -7,15 +7,12 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/infobars/infobar_responder.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/infobars/core/infobar.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -110,20 +107,11 @@ bool WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
   std::string result;
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager::FromWebContents(tab_contents)
-        ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
-    GetUserMedia(tab_contents, constraints);
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  } else {
-    InfoBarResponder infobar_accept_responder(
-        InfoBarService::FromWebContents(tab_contents),
-        InfoBarResponder::ACCEPT);
-    GetUserMedia(tab_contents, constraints);
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  }
+  PermissionBubbleManager::FromWebContents(tab_contents)
+      ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
+  GetUserMedia(tab_contents, constraints);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   return kOkGotStream == result;
 }
 
@@ -136,41 +124,23 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
   std::string result;
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager::FromWebContents(tab_contents)
-        ->set_auto_response_for_test(PermissionBubbleManager::DENY_ALL);
-    GetUserMedia(tab_contents, constraints);
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  } else {
-    InfoBarResponder infobar_deny_responder(
-        InfoBarService::FromWebContents(tab_contents), InfoBarResponder::DENY);
-    GetUserMedia(tab_contents, constraints);
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  }
+  PermissionBubbleManager::FromWebContents(tab_contents)
+      ->set_auto_response_for_test(PermissionBubbleManager::DENY_ALL);
+  GetUserMedia(tab_contents, constraints);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   EXPECT_EQ(kFailedWithPermissionDeniedError, result);
 }
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
     content::WebContents* tab_contents) const {
   std::string result;
-  if (PermissionBubbleManager::Enabled()) {
-    PermissionBubbleManager::FromWebContents(tab_contents)
-        ->set_auto_response_for_test(PermissionBubbleManager::DISMISS);
-    GetUserMedia(tab_contents, kAudioVideoCallConstraints);
-    // A dismiss should be treated like a deny.
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  } else {
-    InfoBarResponder infobar_dismiss_responder(
-        InfoBarService::FromWebContents(tab_contents),
-        InfoBarResponder::DISMISS);
-    GetUserMedia(tab_contents, kAudioVideoCallConstraints);
-    // A dismiss should be treated like a deny.
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  }
+  PermissionBubbleManager::FromWebContents(tab_contents)
+      ->set_auto_response_for_test(PermissionBubbleManager::DISMISS);
+  GetUserMedia(tab_contents, kAudioVideoCallConstraints);
+  // A dismiss should be treated like a deny.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
   EXPECT_EQ(kFailedWithPermissionDismissedError, result);
 }
 
