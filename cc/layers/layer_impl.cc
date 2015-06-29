@@ -865,13 +865,10 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
 
   TransformTree& transform_tree =
       layer_tree_impl()->property_trees()->transform_tree;
-  if (this == layer_tree_impl()->InnerViewportContainerLayer()) {
-    transform_tree.set_inner_viewport_bounds_delta(bounds_delta);
-    transform_tree.set_needs_update(true);
-  } else if (this == layer_tree_impl()->OuterViewportContainerLayer()) {
-    transform_tree.set_outer_viewport_bounds_delta(bounds_delta);
-    transform_tree.set_needs_update(true);
-  }
+  if (this == layer_tree_impl()->InnerViewportContainerLayer())
+    transform_tree.SetInnerViewportBoundsDelta(bounds_delta);
+  else if (this == layer_tree_impl()->OuterViewportContainerLayer())
+    transform_tree.SetOuterViewportBoundsDelta(bounds_delta);
 
   ScrollbarParametersDidChange(true);
 
