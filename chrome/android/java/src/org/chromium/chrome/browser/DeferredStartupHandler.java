@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.PowerMonitor;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -149,6 +150,9 @@ public class DeferredStartupHandler {
     }
 
     private static void startModerateBindingManagementIfNeeded(Context context) {
+        // Ensures that a low memory device isn't included in the field trial experimental.
+        if (SysUtils.isLowEndDevice()) return;
+
         String enabledValue = getModerateBindingConfigValue(MODERATE_BINDING_ENABLED_PARAM);
         if (!Boolean.parseBoolean(enabledValue)) return;
 
