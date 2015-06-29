@@ -459,6 +459,33 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
   EXPECT_TRUE(widget.GetNativeWindow()->IsVisible());
 }
 
+TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
+  Widget parent_widget;
+  Widget::InitParams parent_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  parent_params.native_widget = new DesktopNativeWidgetAura(&parent_widget);
+  parent_widget.Init(parent_params);
+  parent_widget.Show();
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  Widget child_widget;
+  Widget::InitParams child_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  child_params.native_widget = new DesktopNativeWidgetAura(&child_widget);
+  child_params.parent = parent_widget.GetNativeWindow();
+  child_widget.Init(child_params);
+  child_widget.Show();
+  ui::X11EventSource::GetInstance()->DispatchXEvents();
+
+  // Sanity check that the two widgets each have their own XID.
+  ASSERT_NE(parent_widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget(),
+            child_widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  Widget::CloseAllSecondaryWidgets();
+  EXPECT_TRUE(DesktopWindowTreeHostX11::GetAllOpenWindows().empty());
+}
+
 class MouseEventRecorder : public ui::EventHandler {
  public:
   MouseEventRecorder() {}

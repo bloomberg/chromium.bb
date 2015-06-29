@@ -1049,10 +1049,7 @@ void Widget::CloseAllSecondaryWidgets() {
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  std::vector<aura::Window*> open_windows =
-      DesktopWindowTreeHostX11::GetAllOpenWindows();
-  std::for_each(open_windows.begin(), open_windows.end(), CloseWindow);
-  DesktopWindowTreeHostX11::CleanUpWindowList();
+  DesktopWindowTreeHostX11::CleanUpWindowList(CloseWindow);
 #endif
 }
 

@@ -81,8 +81,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Swaps the current handler for events in the non client view with |handler|.
   void SwapNonClientEventHandler(scoped_ptr<ui::EventHandler> handler);
 
-  // Deallocates the internal list of open windows.
-  static void CleanUpWindowList();
+  // Runs the |func| callback for each content-window, and deallocates the
+  // internal list of open windows.
+  static void CleanUpWindowList(void (*func)(aura::Window* window));
 
  protected:
   // Overridden from DesktopWindowTreeHost:
