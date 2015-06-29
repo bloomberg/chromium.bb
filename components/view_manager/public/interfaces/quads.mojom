@@ -11,9 +11,16 @@ struct Color {
   uint32 rgba;
 };
 
-// TODO(jamesr): Populate subtype fields.
-struct CheckerboardQuadState {};
+struct CheckerboardQuadState {
+  // Checkerboard color.
+  Color color;
 
+  // The scale factor of checkers. Chromium uses device scale factor for
+  // it.
+  float scale;
+};
+
+// TODO(jamesr): Populate subtype fields.
 struct DebugBorderQuadState {};
 
 struct IoSurfaceContentQuadState {};

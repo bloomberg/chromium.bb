@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
+#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -65,6 +66,19 @@ bool ConvertDrawQuad(const QuadPtr& input,
                      cc::SharedQuadState* sqs,
                      cc::RenderPass* render_pass) {
   switch (input->material) {
+    case MATERIAL_CHECKERBOARD: {
+      cc::CheckerboardDrawQuad* checkerboard_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::CheckerboardDrawQuad>();
+      checkerboard_quad->SetAll(
+          sqs,
+          input->rect.To<gfx::Rect>(),
+          input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(),
+          input->needs_blending,
+          input->checkerboard_quad_state->color.To<SkColor>(),
+          input->checkerboard_quad_state->scale);
+      break;
+    }
     case MATERIAL_RENDER_PASS: {
       cc::RenderPassDrawQuad* render_pass_quad =
           render_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
@@ -246,6 +260,16 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
   // state list.
   quad->shared_quad_state_index = UINT32_MAX;
   switch (input.material) {
+    case cc::DrawQuad::CHECKERBOARD: {
+      const cc::CheckerboardDrawQuad* checkerboard_quad =
+          cc::CheckerboardDrawQuad::MaterialCast(&input);
+      CheckerboardQuadStatePtr checkerboard_state =
+          CheckerboardQuadState::New();
+      checkerboard_state->color = Color::From(checkerboard_quad->color);
+      checkerboard_state->scale = checkerboard_quad->scale;
+      quad->checkerboard_quad_state = checkerboard_state.Pass();
+      break;
+    }
     case cc::DrawQuad::RENDER_PASS: {
       const cc::RenderPassDrawQuad* render_pass_quad =
           cc::RenderPassDrawQuad::MaterialCast(&input);
