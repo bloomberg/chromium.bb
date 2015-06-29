@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeMobileApplication;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
@@ -19,17 +18,11 @@ import org.chromium.chrome.browser.TabUma.TabCreationState;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
-import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.Referrer;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -160,76 +153,6 @@ public class DocumentTab extends ChromeTab {
                 ((DocumentTabObserver) observer).onFaviconReceived(image);
             }
         }
-    }
-
-    private class DocumentContextMenuItemDelegate extends TabChromeContextMenuItemDelegate {
-        @Override
-        public boolean isIncognitoSupported() {
-            return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
-        }
-
-        @Override
-        public boolean canLoadOriginalImage() {
-            return mUsedSpdyProxy && !mUsedSpdyProxyWithPassthrough;
-        }
-
-        @Override
-        public boolean isDataReductionProxyEnabledForURL(String url) {
-            return isSpdyProxyEnabledForUrl(url);
-        }
-
-        @Override
-        public boolean startDownload(String url, boolean isLink) {
-            if (isLink && shouldInterceptContextMenuDownload(url)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public void onOpenInNewTab(String url, Referrer referrer) {
-            LoadUrlParams params = new LoadUrlParams(url);
-            params.setReferrer(referrer);
-            mActivity.getTabModelSelector().openNewTab(params,
-                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, DocumentTab.this, isIncognito());
-        }
-
-        @Override
-        public void onOpenInNewIncognitoTab(String url) {
-            mActivity.getTabModelSelector().openNewTab(
-                    new LoadUrlParams(url),
-                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, DocumentTab.this, true);
-        }
-
-        @Override
-        public void onOpenImageInNewTab(String url, Referrer referrer) {
-            boolean useOriginal = isSpdyProxyEnabledForUrl(url);
-
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
-            loadUrlParams.setReferrer(referrer);
-            mActivity.getTabModelSelector().openNewTab(loadUrlParams,
-                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, DocumentTab.this, isIncognito());
-        }
-
-        @Override
-        public void onOpenImageUrl(String url, Referrer referrer) {
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setTransitionType(PageTransition.AUTO_BOOKMARK);
-            loadUrlParams.setReferrer(referrer);
-            loadUrl(loadUrlParams);
-        }
-
-        @Override
-        public void onSearchByImageInNewTab() {
-            RecordUserAction.record("MobileContextMenuSearchByImage");
-            triggerSearchByImage();
-        }
-    }
-
-    @Override
-    protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(new DocumentContextMenuItemDelegate());
     }
 
     /**

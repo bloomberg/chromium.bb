@@ -377,6 +377,43 @@ public class DocumentModeTest extends DocumentModeTestBase {
     }
 
     /**
+     * Tests that opening an Incognito tab via a context menu while in Incognito mode opens the tab
+     * in the background.
+     */
+    @MediumTest
+    public void testIncognitoOpensInBackgroundFromIncognito() throws Exception {
+        // Create an Incognito tab via an Intent extra.
+        assertFalse(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        final int firstId = launchViaLaunchDocumentInstance(true, HREF_LINK, "href link page");
+        assertTrue(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        final DocumentTabModelSelector selector =
+                ChromeMobileApplication.getDocumentTabModelSelector();
+        final TabModel incognitoModel = selector.getModel(true);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return firstId == selector.getCurrentTabId() && selector.getTotalTabCount() == 1;
+            }
+        }));
+        assertEquals(incognitoModel, selector.getCurrentModel());
+
+        Activity firstActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+        assertTrue(firstActivity instanceof IncognitoDocumentActivity);
+
+        // The context menu for links in Incognito mode lacks an "Open in new Incognito tab" option.
+        // Instead, the regular "Open in new tab" option opens a new incognito tab.
+        openLinkInNewTabViaContextMenu(false, true);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return firstId == selector.getCurrentTabId() && selector.getTotalTabCount() == 2;
+            }
+        }));
+        assertEquals(incognitoModel, selector.getCurrentModel());
+        assertEquals(firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+    }
+
+    /**
      * Confirm that the incognito tabs and TabModel are destroyed when the "close all" notification
      * Intent is fired.
      */
@@ -474,16 +511,17 @@ public class DocumentModeTest extends DocumentModeTestBase {
     }
 
     /**
-     * Tests that Incognito tabs are opened in the foreground.
+     * Tests that Incognito tabs are opened in the foreground when spawned from a regular tab.
      */
     @MediumTest
     public void testIncognitoOpensInForegroundViaLinkContextMenu() throws Exception {
         launchViaLaunchDocumentInstance(false, HREF_LINK, "href link page");
 
         // Save the current tab info.
-        Activity regularActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-        assertTrue(regularActivity instanceof DocumentActivity);
-        assertFalse(regularActivity instanceof IncognitoDocumentActivity);
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        assertTrue(activity instanceof DocumentActivity);
+        assertFalse(activity instanceof IncognitoDocumentActivity);
+        final DocumentActivity regularActivity = (DocumentActivity) activity;
 
         final DocumentTabModelSelector selector =
                 ChromeMobileApplication.getDocumentTabModelSelector();
@@ -492,7 +530,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final int regularTabId = selector.getCurrentTabId();
 
         // Open a link in incognito via the context menu.
-        openLinkInNewTabViaContextMenu(true);
+        openLinkInNewTabViaContextMenu(true, true);
         final DocumentActivity secondActivity =
                 (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
         final int secondTabId = selector.getCurrentTabId();
@@ -522,7 +560,8 @@ public class DocumentModeTest extends DocumentModeTestBase {
             public void run() {
                 LoadUrlParams params = new LoadUrlParams(URL_1);
                 secondActivity.getTabModelSelector().openNewTab(
-                        params, TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND, null, true);
+                        params, TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                        regularActivity.getActivityTab(), true);
             }
         };
         DocumentActivity thirdActivity = ActivityUtils.waitForActivity(getInstrumentation(),

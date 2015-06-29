@@ -217,7 +217,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         final DocumentActivity expectedActivity =
                 (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
 
-        openLinkInNewTabViaContextMenu(false);
+        openLinkInNewTabViaContextMenu(false, false);
 
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
@@ -234,8 +234,13 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
 
     /**
      * Long presses at the center of the page and opens a new Tab via a link's context menu.
+     * @param selectIncognitoItem If true, selects "Open in incognito tab".
+     *                            If false, selects "Open in new tab".
+     * @param waitForIncognito If true, waits for an IncognitoDocumentActivity to start.
+     *                         If false, waits for a DocumentActivity to start.
      */
-    protected void openLinkInNewTabViaContextMenu(final boolean incognito) throws Exception {
+    protected void openLinkInNewTabViaContextMenu(
+            final boolean selectIncognitoItem, final boolean waitForIncognito) throws Exception {
         // Long press the center of the page, which should bring up the context menu.
         final TestTabObserver observer = new TestTabObserver();
         final DocumentActivity activity =
@@ -259,11 +264,11 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
 
         // Select the "open in new tab" option.
         DocumentActivity newActivity = ActivityUtils.waitForActivity(getInstrumentation(),
-                incognito ? IncognitoDocumentActivity.class : DocumentActivity.class,
+                waitForIncognito ? IncognitoDocumentActivity.class : DocumentActivity.class,
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (incognito) {
+                        if (selectIncognitoItem) {
                             assertTrue(observer.mContextMenu.performIdentifierAction(
                                     R.id.contextmenu_open_in_incognito_tab, 0));
                         } else {

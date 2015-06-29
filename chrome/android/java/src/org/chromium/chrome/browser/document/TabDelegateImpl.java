@@ -123,8 +123,14 @@ public class TabDelegateImpl implements TabDelegate {
         int launchMode;
         if (TextUtils.equals(UrlConstants.NTP_URL, loadUrlParams.getUrl())) {
             launchMode = ChromeLauncherActivity.LAUNCH_MODE_RETARGET;
-        } else if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND && !mIsIncognito) {
-            launchMode = ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED;
+        } else if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
+            if (!parent.isIncognito() && mIsIncognito) {
+                // Incognito tabs opened from regular tabs open in the foreground for privacy
+                // concerns.
+                launchMode = ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
+            } else {
+                launchMode = ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED;
+            }
         } else {
             launchMode = ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
         }
