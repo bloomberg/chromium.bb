@@ -26,6 +26,7 @@
 #ifndef SVGSMILElement_h
 #define SVGSMILElement_h
 
+#include "core/CoreExport.h"
 #include "core/SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGTests.h"
@@ -43,7 +44,7 @@ template<typename T> class EventSender;
 typedef EventSender<SVGSMILElement> SMILEventSender;
 
 // This class implements SMIL interval timing model as needed for SVG animation.
-class SVGSMILElement : public SVGElement, public SVGTests {
+class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGSMILElement);
 public:
     SVGSMILElement(const QualifiedName&, Document&);

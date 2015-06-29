@@ -7,6 +7,7 @@
 
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/streams/Stream.h"
+#include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
@@ -25,7 +26,7 @@ namespace blink {
 // - If FetchDataLoader::cancel() is called (or FetchDataLoader is garbage
 //   collected), Client's methods are not called anymore.
 // - FetchDataLoader takes the ownership of |handle|'s reader but not |handle|.
-class FetchDataLoader : public GarbageCollectedFinalized<FetchDataLoader> {
+class MODULES_EXPORT FetchDataLoader : public GarbageCollectedFinalized<FetchDataLoader> {
 public:
     class Client : public GarbageCollectedMixin {
     public:

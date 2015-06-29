@@ -1,5 +1,6 @@
 namespace="XLink"
 namespaceURI="http://www.w3.org/1999/xlink"
+export="CORE_EXPORT"
 
 actuate
 arcrole

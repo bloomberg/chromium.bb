@@ -24,6 +24,7 @@
 #ifndef StyleImage_h
 #define StyleImage_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
@@ -40,7 +41,7 @@ class LayoutObject;
 
 typedef void* WrappedImagePtr;
 
-class StyleImage : public RefCounted<StyleImage> {
+class CORE_EXPORT StyleImage : public RefCounted<StyleImage> {
 public:
     virtual ~StyleImage() { }
 

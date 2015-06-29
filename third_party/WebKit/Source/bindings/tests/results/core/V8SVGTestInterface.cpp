@@ -21,7 +21,16 @@
 
 namespace blink {
 
+// Suppress warning: global constructors, because struct WrapperTypeInfo is trivial
+// and does not depend on another global objects.
+#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SVGTestInterface::domTemplate, V8SVGTestInterface::refObject, V8SVGTestInterface::derefObject, V8SVGTestInterface::trace, 0, 0, V8SVGTestInterface::preparePrototypeObject, V8SVGTestInterface::installConditionallyEnabledProperties, "SVGTestInterface", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#pragma clang diagnostic pop
+#endif
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in SVGTestInterface.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in

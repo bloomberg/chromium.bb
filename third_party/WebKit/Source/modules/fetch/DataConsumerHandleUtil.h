@@ -5,6 +5,7 @@
 #ifndef DataConsumerHandleUtil_h
 #define DataConsumerHandleUtil_h
 
+#include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/PassOwnPtr.h"
@@ -14,15 +15,15 @@ namespace blink {
 
 // Returns a handle that returns ShouldWait for read / beginRead and
 // UnexpectedError for endRead.
-PassOwnPtr<WebDataConsumerHandle> createWaitingDataConsumerHandle();
+MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createWaitingDataConsumerHandle();
 
 // Returns a handle that returns Done for read / beginRead and
 // UnexpectedError for endRead.
-PassOwnPtr<WebDataConsumerHandle> createDoneDataConsumerHandle();
+MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createDoneDataConsumerHandle();
 
 // Returns a handle that returns UnexpectedError for read / beginRead /
 // endRead.
-PassOwnPtr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle();
+MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle();
 
 // Returns a FetchDataConsumerHandle that wraps WebDataConsumerHandle.
 PassOwnPtr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(PassOwnPtr<WebDataConsumerHandle>);

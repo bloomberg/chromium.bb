@@ -23,7 +23,7 @@ namespace blink {
 // A WebDataConsumerHandle having a reader is called "locked". A
 // WebDataConsumerHandle or its reader are called "waiting" when reading from
 // the handle or reader returns ShouldWait.
-class WebDataConsumerHandle {
+class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
 public:
     using Flags = unsigned;
     static const Flags FlagNone = 0;

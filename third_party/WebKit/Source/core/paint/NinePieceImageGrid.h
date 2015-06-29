@@ -5,6 +5,7 @@
 #ifndef NinePieceImageGrid_h
 #define NinePieceImageGrid_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntRect.h"
@@ -57,14 +58,14 @@ inline NinePiece& operator++(NinePiece& piece)
 //       |         |              +------------------+
 //
 // it generates drawing information for the nine border pieces.
-class NinePieceImageGrid {
+class CORE_EXPORT NinePieceImageGrid {
     STACK_ALLOCATED();
 
 public:
     NinePieceImageGrid(const NinePieceImage&, IntSize imageSize, IntRect borderImageArea,
         const IntRectOutsets& borderWidths);
 
-    struct NinePieceDrawInfo {
+    struct CORE_EXPORT NinePieceDrawInfo {
         bool isDrawable;
         bool isCornerPiece;
         FloatRect destination;

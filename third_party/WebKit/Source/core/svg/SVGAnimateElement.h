@@ -23,6 +23,7 @@
 #ifndef SVGAnimateElement_h
 #define SVGAnimateElement_h
 
+#include "core/CoreExport.h"
 #include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimationElement.h"
@@ -34,7 +35,7 @@ namespace blink {
 
 class SVGAnimatedTypeAnimator;
 
-class SVGAnimateElement : public SVGAnimationElement {
+class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimateElement> create(Document&);

@@ -451,9 +451,9 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::lastPositionInOrAft
     return Strategy::editingIgnoresContent(node) ? afterNode(node) : lastPositionInNode(node);
 }
 
-PositionInComposedTree toPositionInComposedTree(const Position&);
+CORE_EXPORT PositionInComposedTree toPositionInComposedTree(const Position&);
 Position toPositionInDOMTree(const Position&);
-Position toPositionInDOMTree(const PositionInComposedTree&);
+CORE_EXPORT Position toPositionInDOMTree(const PositionInComposedTree&);
 
 } // namespace blink
 

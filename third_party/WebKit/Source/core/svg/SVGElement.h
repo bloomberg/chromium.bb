@@ -22,6 +22,7 @@
 #ifndef SVGElement_h
 #define SVGElement_h
 
+#include "core/CoreExport.h"
 #include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/svg/SVGParsingError.h"
@@ -49,7 +50,7 @@ class SVGUseElement;
 
 typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement>> SVGElementSet;
 
-class SVGElement : public Element {
+class CORE_EXPORT SVGElement : public Element {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~SVGElement();

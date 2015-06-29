@@ -26,11 +26,12 @@
 #ifndef ResourcePtr_h
 #define ResourcePtr_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
 
 namespace blink {
 
-class ResourcePtrBase {
+class CORE_EXPORT ResourcePtrBase {
 public:
     Resource* get() const { return m_resource; }
     bool operator!() const { return !m_resource; }

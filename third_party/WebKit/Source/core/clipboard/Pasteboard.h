@@ -26,6 +26,7 @@
 #ifndef Pasteboard_h
 #define Pasteboard_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebClipboard.h"
 #include "wtf/Forward.h"
@@ -38,7 +39,7 @@ class DataObject;
 class Image;
 class KURL;
 
-class Pasteboard {
+class CORE_EXPORT Pasteboard {
     WTF_MAKE_NONCOPYABLE(Pasteboard); WTF_MAKE_FAST_ALLOCATED(Pasteboard);
 public:
     enum SmartReplaceOption {

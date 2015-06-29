@@ -60,7 +60,7 @@ public:
     };
     void setDebuggerListener(DebuggerListener* listener) { m_debuggerListener = listener; }
 
-    class LayoutEditorListener : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT LayoutEditorListener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~LayoutEditorListener() { }
         virtual void overlayStartedPropertyChange(const String&) = 0;

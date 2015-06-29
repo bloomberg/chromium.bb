@@ -22,13 +22,14 @@
 #ifndef SVGAElement_h
 #define SVGAElement_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace blink {
 
-class SVGAElement final : public SVGGraphicsElement,
+class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
                           public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGAElement);

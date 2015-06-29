@@ -21,6 +21,7 @@
 #ifndef SVGTests_h
 #define SVGTests_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGStaticStringList.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -31,7 +32,7 @@ class Document;
 class QualifiedName;
 class SVGElement;
 
-class SVGTests : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT SVGTests : public WillBeGarbageCollectedMixin {
 public:
     // JS API
     SVGStringListTearOff* requiredFeatures() { return m_requiredFeatures->tearOff(); }

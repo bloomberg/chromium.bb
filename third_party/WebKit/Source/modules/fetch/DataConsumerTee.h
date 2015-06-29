@@ -5,6 +5,7 @@
 #ifndef DataConsumerTee_h
 #define DataConsumerTee_h
 
+#include "modules/ModulesExport.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
 #include "wtf/OwnPtr.h"
@@ -14,7 +15,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class DataConsumerTee {
+class MODULES_EXPORT DataConsumerTee {
 public:
     // Create two handles from one. |src| must be a valid unlocked handle.
     static void create(ExecutionContext*, PassOwnPtr<WebDataConsumerHandle> src, OwnPtr<WebDataConsumerHandle>* dest1, OwnPtr<WebDataConsumerHandle>* dest2);

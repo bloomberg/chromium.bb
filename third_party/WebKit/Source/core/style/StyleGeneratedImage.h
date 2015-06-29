@@ -24,6 +24,7 @@
 #ifndef StyleGeneratedImage_h
 #define StyleGeneratedImage_h
 
+#include "core/CoreExport.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {
@@ -31,7 +32,7 @@ namespace blink {
 class CSSValue;
 class CSSImageGeneratorValue;
 
-class StyleGeneratedImage final : public StyleImage {
+class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
 public:
     static PassRefPtr<StyleGeneratedImage> create(CSSImageGeneratorValue* value)
     {

@@ -21,6 +21,7 @@
 #ifndef SVGURIReference_h
 #define SVGURIReference_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "platform/heap/Handle.h"
@@ -29,7 +30,7 @@ namespace blink {
 
 class Element;
 
-class SVGURIReference : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT SVGURIReference : public WillBeGarbageCollectedMixin {
 public:
     virtual ~SVGURIReference() { }
 

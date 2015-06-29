@@ -22,6 +22,7 @@
 #ifndef SVGGraphicsElement_h
 #define SVGGraphicsElement_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGRectTearOff.h"
@@ -34,7 +35,7 @@ class AffineTransform;
 class Path;
 class SVGMatrixTearOff;
 
-class SVGGraphicsElement : public SVGElement, public SVGTests {
+class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGGraphicsElement);
 public:

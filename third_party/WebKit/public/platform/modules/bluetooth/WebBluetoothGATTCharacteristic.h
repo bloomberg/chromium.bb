@@ -6,7 +6,7 @@
 #define WebBluetoothGATTCharacteristic_h
 
 #include "public/platform/WebString.h"
-#include "public/web/WebArrayBuffer.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
@@ -28,7 +28,7 @@ struct WebBluetoothGATTCharacteristic {
     // TODO(ortuno): Add 'properties' once CharacteristicProperties is implemented.
     // https://crbug.com/483345
     // const WebCharacteristicProperties properties;
-    const WebArrayBuffer value;
+    const WebVector<uint8_t> value;
 };
 
 } // namespace blink

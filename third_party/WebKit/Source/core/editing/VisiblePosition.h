@@ -140,8 +140,8 @@ VisiblePosition startVisiblePosition(const Range*, EAffinity);
 
 Element* enclosingBlockFlowElement(const VisiblePosition&);
 
-Position canonicalPositionOf(const Position&);
-PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
+CORE_EXPORT Position canonicalPositionOf(const Position&);
+CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
 

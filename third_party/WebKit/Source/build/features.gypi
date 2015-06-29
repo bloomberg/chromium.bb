@@ -100,7 +100,7 @@
           'LOG_DISABLED=0',
         ],
       }],
-      ['link_core_modules_separately==1', {
+      ['link_core_modules_separately==1 and component=="shared_library"', {
         'feature_defines': [
           'LINK_CORE_MODULES_SEPARATELY',
         ],

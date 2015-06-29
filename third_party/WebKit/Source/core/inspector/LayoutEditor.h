@@ -6,6 +6,7 @@
 #define LayoutEditor_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "platform/heap/Handle.h"
@@ -18,7 +19,7 @@ namespace blink {
 class JSONObject;
 class InspectorCSSAgent;
 
-class LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
+class CORE_EXPORT LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LayoutEditor);
 public:
     static PassOwnPtrWillBeRawPtr<LayoutEditor> create(InspectorCSSAgent* cssAgent)

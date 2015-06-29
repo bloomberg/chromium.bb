@@ -25,6 +25,7 @@
 #ifndef SVGAnimationElement_h
 #define SVGAnimationElement_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "platform/animation/UnitBezier.h"
@@ -59,7 +60,7 @@ enum CalcMode {
     CalcModeSpline
 };
 
-class SVGAnimationElement : public SVGSMILElement {
+class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // SVGAnimationElement

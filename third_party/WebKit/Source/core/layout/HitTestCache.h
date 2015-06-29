@@ -5,6 +5,7 @@
 #ifndef HitTestCache_h
 #define HitTestCache_h
 
+#include "core/CoreExport.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -32,7 +33,7 @@ namespace blink {
 // size of 1.
 #define HIT_TEST_CACHE_SIZE (2)
 
-class HitTestCache final : public NoBaseWillBeGarbageCollectedFinalized<HitTestCache> {
+class CORE_EXPORT HitTestCache final : public NoBaseWillBeGarbageCollectedFinalized<HitTestCache> {
 public:
     static PassOwnPtrWillBeRawPtr<HitTestCache> create()
     {
@@ -55,7 +56,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    HitTestCache() = default;
+    HitTestCache()
+        : m_updateIndex(0)
+        , m_domTreeVersion(0) { }
 
     // The below UMA values reference a validity region. This code has not
     // been written yet; and exact matches are only supported but the
@@ -86,9 +89,9 @@ private:
         MAX_VALIDITY_METRIC = INCORRECT_POINT_REGION,
     };
 
-    unsigned m_updateIndex = 0;
+    unsigned m_updateIndex;
     WillBeHeapVector<HitTestResult, HIT_TEST_CACHE_SIZE> m_items;
-    uint64_t m_domTreeVersion = 0;
+    uint64_t m_domTreeVersion;
 };
 
 } // namespace blink

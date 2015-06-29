@@ -5,6 +5,7 @@
 #ifndef CompositeDataConsumerHandle_h
 #define CompositeDataConsumerHandle_h
 
+#include "modules/ModulesExport.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -15,7 +16,7 @@ namespace blink {
 // This is a utility class to construct a composite data consumer handle. It
 // owns a web data consumer handle and delegates methods. A user can update
 // the handle by using |update| method.
-class CompositeDataConsumerHandle final : public WebDataConsumerHandle {
+class MODULES_EXPORT CompositeDataConsumerHandle final : public WebDataConsumerHandle {
 public:
     // |handle| must not be null and must not be locked.
     static PassOwnPtr<CompositeDataConsumerHandle> create(PassOwnPtr<WebDataConsumerHandle> handle)

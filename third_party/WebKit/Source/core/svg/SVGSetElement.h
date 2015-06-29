@@ -21,12 +21,13 @@
 #ifndef SVGSetElement_h
 #define SVGSetElement_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGAnimateElement.h"
 
 namespace blink {
 
 // SVGAnimateElement implements superset of the functionality.
-class SVGSetElement final : public SVGAnimateElement {
+class CORE_EXPORT SVGSetElement final : public SVGAnimateElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGSetElement);

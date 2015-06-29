@@ -26,6 +26,7 @@
 #ifndef CSSImageGeneratorValue_h
 #define CSSImageGeneratorValue_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "wtf/HashCountedSet.h"
@@ -50,7 +51,7 @@ struct SizeAndCount {
 
 typedef HashMap<const LayoutObject*, SizeAndCount> LayoutObjectSizeCountMap;
 
-class CSSImageGeneratorValue : public CSSValue {
+class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
 public:
     ~CSSImageGeneratorValue();
 
