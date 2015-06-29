@@ -400,12 +400,15 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
 
             SubtreeLayoutScope layoutScope(*child);
 
-            // We need to see if this child's height has changed, since we make block elements
-            // fill the height of a containing box by default.
-            // Now do a layout.
-            LayoutUnit oldChildHeight = child->size().height();
-            child->updateLogicalHeight();
-            if (oldChildHeight != child->size().height())
+            // We need to see if this child's height will change, since we make block elements fill
+            // the height of a containing box by default. We cannot actually *set* the new height
+            // here, though. Need to do that from within layout, or we won't be able to detect the
+            // change and duly notify any positioned descendants that are affected by it.
+            LayoutUnit oldChildHeight = child->logicalHeight();
+            LogicalExtentComputedValues computedValues;
+            child->computeLogicalHeight(child->logicalHeight(), child->logicalTop(), computedValues);
+            LayoutUnit newChildHeight = computedValues.m_extent;
+            if (oldChildHeight != newChildHeight)
                 layoutScope.setChildNeedsLayout(child);
 
             if (!child->needsLayout())
