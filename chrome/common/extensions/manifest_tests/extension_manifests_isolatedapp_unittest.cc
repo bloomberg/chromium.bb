@@ -5,9 +5,9 @@
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
 #include "base/command_line.h"
-#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

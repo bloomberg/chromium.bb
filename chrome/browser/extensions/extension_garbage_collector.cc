@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +30,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/one_shot_event.h"
 
 namespace extensions {

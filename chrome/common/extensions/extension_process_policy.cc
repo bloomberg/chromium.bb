@@ -5,10 +5,10 @@
 #include "chrome/common/extensions/extension_process_policy.h"
 
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/manifest_handlers/app_isolation_info.h"
 
 namespace extensions {
 

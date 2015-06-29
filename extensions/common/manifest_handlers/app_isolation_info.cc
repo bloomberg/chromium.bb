@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "extensions/common/manifest_handlers/app_isolation_info.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"

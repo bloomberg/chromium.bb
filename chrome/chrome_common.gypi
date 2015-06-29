@@ -177,8 +177,6 @@
       'common/extensions/image_writer/image_writer_util_mac.h',
       'common/extensions/manifest_handlers/app_icon_color_info.cc',
       'common/extensions/manifest_handlers/app_icon_color_info.h',
-      'common/extensions/manifest_handlers/app_isolation_info.cc',
-      'common/extensions/manifest_handlers/app_isolation_info.h',
       'common/extensions/manifest_handlers/app_launch_info.cc',
       'common/extensions/manifest_handlers/app_launch_info.h',
       'common/extensions/manifest_handlers/automation.cc',
@@ -267,8 +265,8 @@
       'common/importer/safari_importer_utils.mm',
     ],
     'chrome_common_ipc_fuzzer_sources': [
-      'common/external_ipc_dumper.h',
       'common/external_ipc_dumper.cc',
+      'common/external_ipc_dumper.h',
     ],
     'chrome_common_service_process_sources': [
       'common/service_messages.h',
