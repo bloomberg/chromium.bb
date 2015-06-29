@@ -259,7 +259,8 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         } else {
             getMenu().setGroupVisible(R.id.normal_menu_group, true);
             getMenu().setGroupVisible(R.id.selection_mode_menu_group, false);
-            setBackgroundColor(getResources().getColor(R.color.default_primary_color));
+            setBackgroundColor(
+                    getResources().getColor(R.color.enhanced_bookmark_appbar_background));
 
             numberRollView.setVisibility(View.GONE);
             numberRollView.setNumber(0, false);

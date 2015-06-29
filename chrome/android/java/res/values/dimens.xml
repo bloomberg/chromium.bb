@@ -279,7 +279,6 @@
     <dimen name="enhanced_bookmark_folder_item_icon_size">40dp</dimen>
     <dimen name="enhanced_bookmark_detail_image_height">232dp</dimen>
     <dimen name="enhanced_bookmark_minimum_dialog_size_tablet">500dp</dimen>
-    <dimen name="enhanced_bookmark_list_mode_background_margin">10dp</dimen>
     <dimen name="enhanced_bookmark_drawer_drawable_padding">18dp</dimen>
 
     <!-- Custom Tabs dimensions -->

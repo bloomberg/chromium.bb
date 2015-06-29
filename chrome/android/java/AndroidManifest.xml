@@ -275,7 +275,7 @@ by a child template that "extends" this file.
             android:exported="true">
         </activity>
         <activity android:name="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkActivity"
-            android:theme="@style/EnhancedBookmarkDialogWhite"
+            android:theme="@style/EnhancedBookmarkDialog"
             android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc" >
         </activity>

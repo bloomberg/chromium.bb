@@ -28,7 +28,6 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
         mSnackbarManager = new SnackbarManager(findViewById(android.R.id.content));
         mBookmarkManager = new EnhancedBookmarkManager(this);
         setContentView(mBookmarkManager.getView());
-        getWindow().setBackgroundDrawable(null);
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(R.string.bookmarks));
 
         // Hack to work around inferred theme false lint error: http://crbug.com/445633

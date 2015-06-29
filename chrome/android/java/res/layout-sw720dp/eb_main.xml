@@ -6,14 +6,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:background="@color/default_primary_color" >
+    android:orientation="horizontal" >
 
     <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDrawerListView
         android:id="@+id/eb_drawer_list"
         android:layout_width="256dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:background="@android:color/white"
         android:choiceMode="singleChoice"
         android:divider="@null"
         android:dividerHeight="0dp" />

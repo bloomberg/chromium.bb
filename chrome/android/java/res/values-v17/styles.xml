@@ -330,14 +330,17 @@
     </style>
 
     <!-- Enhanced bookmarks -->
-    <style name="EnhancedBookmarkDialogWhite" parent="Theme.AppCompat.Light.DialogWhenLarge">
-        <item name="android:windowBackground">@drawable/bg_white_dialog</item>
+    <style name="EnhancedBookmarkDialog" parent="Theme.AppCompat.Light.DialogWhenLarge">
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="colorPrimaryDark">@android:color/black</item>
         <item name="colorAccent">@color/light_active_color</item>
 
         <!-- Remove ActionBar -->
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
+    </style>
+    <style name="EnhancedBookmarkDialogWhite" parent="EnhancedBookmarkDialog">
+      <item name="android:windowBackground">@drawable/bg_white_dialog</item>
     </style>
     <style name="EnhancedBookmarkTitleBarButton">
         <item name="android:layout_width">wrap_content</item>

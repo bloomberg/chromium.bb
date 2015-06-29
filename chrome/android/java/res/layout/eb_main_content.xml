@@ -15,6 +15,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_below="@+id/eb_action_bar"
+        android:background="@android:color/white"
         android:paddingBottom="8dp"
         android:paddingTop="8dp"
         android:clipToPadding="false"
