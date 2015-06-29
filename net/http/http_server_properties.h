@@ -5,10 +5,8 @@
 #ifndef NET_HTTP_HTTP_SERVER_PROPERTIES_H_
 #define NET_HTTP_HTTP_SERVER_PROPERTIES_H_
 
-#include <iosfwd>
 #include <map>
 #include <string>
-
 #include "base/basictypes.h"
 #include "base/containers/mru_cache.h"
 #include "base/memory/weak_ptr.h"
@@ -138,10 +136,6 @@ struct NET_EXPORT AlternativeService {
   std::string host;
   uint16 port;
 };
-
-NET_EXPORT std::ostream& operator<<(
-    std::ostream& os,
-    const AlternativeService& alternative_service);
 
 struct NET_EXPORT AlternativeServiceInfo {
   AlternativeServiceInfo() : alternative_service(), probability(0.0) {}
