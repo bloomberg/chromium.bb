@@ -84,7 +84,10 @@ enum YUVColorSpace {
 };
 
 struct YUVVideoQuadState {
-  RectF tex_coord_rect;
+  RectF ya_tex_coord_rect;
+  RectF uv_tex_coord_rect;
+  Size ya_tex_size;
+  Size uv_tex_size;
   uint32 y_plane_resource_id;
   uint32 u_plane_resource_id;
   uint32 v_plane_resource_id;
