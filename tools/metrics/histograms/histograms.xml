@@ -8414,6 +8414,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.HitTestValidityScore" enum="EventHitTestValidityScore">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    For hit tests that are invalid, records the score (a series of bits
+    indicating what was matched and what wasn't).
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.Browser" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -53821,6 +53829,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Incorrect, exact match (point query)."/>
   <int value="4" label="Incorrect, region match (rect query)."/>
   <int value="5" label="Incorrect, region match (point query)."/>
+</enum>
+
+<enum name="EventHitTestValidityScore" type="int">
+  <int value="0" label="Nothing matched."/>
+  <int value="1" label="Over widget matched."/>
+  <int value="2" label="Scrollbar matched."/>
+  <int value="4" label="URL element matched."/>
+  <int value="8" label="Local point matched."/>
+  <int value="16" label="Point in inner frame matched."/>
+  <int value="32" label="Inner pseudo node matched."/>
+  <int value="64" label="Inner node matched."/>
+  <int value="128" label="Request type matched."/>
 </enum>
 
 <enum name="EVWhitelistStatus" type="int">
