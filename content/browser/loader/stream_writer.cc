@@ -14,7 +14,7 @@
 
 namespace content {
 
-StreamWriter::StreamWriter() : controller_(nullptr) {
+StreamWriter::StreamWriter() : controller_(nullptr), immediate_mode_(false) {
 }
 
 StreamWriter::~StreamWriter() {
@@ -59,6 +59,9 @@ void StreamWriter::OnReadCompleted(int bytes_read, bool* defer) {
   scoped_refptr<net::IOBuffer> buffer;
   read_buffer_.swap(buffer);
   stream_->AddData(buffer, bytes_read);
+
+  if (immediate_mode_)
+    stream_->Flush();
 
   if (!stream_->can_add_data())
     *defer = true;

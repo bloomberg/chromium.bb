@@ -25,6 +25,7 @@ NavigationResourceHandler::NavigationResourceHandler(
     : ResourceHandler(request),
       core_(core) {
   core_->set_resource_handler(this);
+  writer_.set_immediate_mode(true);
 }
 
 NavigationResourceHandler::~NavigationResourceHandler() {
