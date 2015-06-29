@@ -444,9 +444,6 @@ crbug.com/452018 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash Timeout
 crbug.com/227231 fast/events/keyboardevent-key.html [ Failure Pass ]
 crbug.com/227231 virtual/pointerevent/fast/events/keyboardevent-key.html [ Failure Pass ]
 
-crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
-crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
-
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
 crbug.com/455879 [ Win ] webaudio/realtimeanalyser-basic.html [ Crash Pass ]
@@ -815,7 +812,6 @@ crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
-crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
 
@@ -826,7 +822,7 @@ crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFa
 crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
 crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
 
-crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
+crbug.com/335710 [ Win ] canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ NeedsRebaseline ]
 
 crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
@@ -993,7 +989,6 @@ crbug.com/356991 [ Linux Debug ] fast/canvas/canvas-createImageBitmap-drawImage-
 crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]
 crbug.com/357002 [ Linux ] http/tests/misc/cache-hit-resource-timing-buffer-full-crash.html [ Failure Pass ]
 crbug.com/357068 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure Pass ]
-crbug.com/392626 [ XP ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
 crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Failure Pass ]
 crbug.com/357082 [ Win Debug ] virtual/threaded/animations/animation-hit-test.html [ Failure Pass ]
 crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing-functions2.html [ Pass Timeout ]
@@ -1067,9 +1062,6 @@ crbug.com/440511 fast/text-autosizing/hackernews-comments.html [ Pass Failure Ne
 crbug.com/454760 fast/text/international/text-combine-image-test.html [ NeedsManualRebaseline ]
 crbug.com/453002 virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsManualRebaseline ]
 
-# Expectations changes due to switiching to In-renderer Shared Worker.
-crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
-
 crbug.com/437112 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
@@ -1077,8 +1069,6 @@ crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailur
 crbug.com/419101 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ NeedsManualRebaseline ]
 
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
-
-crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
 crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
@@ -1091,7 +1081,7 @@ crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pas
 
 crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
 
-crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
+crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ NeedsRebaseline ]
 
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
 
@@ -1145,9 +1135,6 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-async/async-ca
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
-
-# V8 3.28.19
-crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
@@ -1514,8 +1501,6 @@ crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 
 # These need a manual rebaseline after crbug.com/459555
 crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
-
-crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]
