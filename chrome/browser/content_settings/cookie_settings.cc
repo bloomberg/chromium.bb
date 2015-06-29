@@ -63,10 +63,7 @@ CookieSettings::Factory::~Factory() {}
 
 void CookieSettings::Factory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kBlockThirdPartyCookies,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  CookieSettings::RegisterProfilePrefs(registry);
 }
 
 content::BrowserContext* CookieSettings::Factory::GetBrowserContextToUse(
@@ -133,6 +130,13 @@ void CookieSettings::GetCookieSettings(
     ContentSettingsForOneType* settings) const {
   return host_content_settings_map_->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), settings);
+}
+
+void CookieSettings::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kBlockThirdPartyCookies, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void CookieSettings::SetDefaultCookieSetting(ContentSetting setting) {

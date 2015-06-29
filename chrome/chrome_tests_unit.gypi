@@ -71,6 +71,7 @@
       'browser/content_settings/content_settings_policy_provider_unittest.cc',
       'browser/content_settings/content_settings_pref_provider_unittest.cc',
       'browser/content_settings/content_settings_usages_state_unittest.cc',
+      'browser/content_settings/cookie_settings_factory_unittest.cc',
       'browser/content_settings/cookie_settings_unittest.cc',
       'browser/content_settings/host_content_settings_map_unittest.cc',
       'browser/content_settings/mock_settings_observer.cc',

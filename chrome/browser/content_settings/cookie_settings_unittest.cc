@@ -2,43 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/auto_reset.h"
-#include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "content/public/test/test_browser_thread.h"
-#include "net/base/static_cookie_policy.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace {
 
 class CookieSettingsTest : public testing::Test {
  public:
   CookieSettingsTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        cookie_settings_(CookieSettings::Factory::GetForProfile(&profile_)
-                             .get()),
-        kBlockedSite("http://ads.thirdparty.com"),
+      : kBlockedSite("http://ads.thirdparty.com"),
         kAllowedSite("http://good.allays.com"),
         kFirstPartySite("http://cool.things.com"),
         kBlockedFirstPartySite("http://no.thirdparties.com"),
         kExtensionURL("chrome-extension://deadbeef"),
         kHttpsSite("https://example.com"),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
+    CookieSettings::RegisterProfilePrefs(prefs_.registry());
+    HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
+    settings_map_ = new HostContentSettingsMap(&prefs_, false);
+    cookie_settings_ =
+        new CookieSettings(settings_map_.get(), &prefs_, "chrome-extension");
   }
 
+  ~CookieSettingsTest() override { settings_map_->ShutdownOnUIThread(); }
+
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  TestingProfile profile_;
-  CookieSettings* cookie_settings_;
+  user_prefs::TestingPrefServiceSyncable prefs_;
+  scoped_refptr<HostContentSettingsMap> settings_map_;
+  scoped_refptr<CookieSettings> cookie_settings_;
   const GURL kBlockedSite;
   const GURL kAllowedSite;
   const GURL kFirstPartySite;
@@ -58,7 +54,7 @@ TEST_F(CookieSettingsTest, CookiesBlockSingle) {
 }
 
 TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
-  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(
       kBlockedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
@@ -98,7 +94,7 @@ TEST_F(CookieSettingsTest, CookiesExplicitSessionOnly) {
       kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 
-  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_TRUE(cookie_settings_->
               IsReadingCookieAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings_->
@@ -111,7 +107,7 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
       ContentSettingsPattern::FromURL(kAllowedSite),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTING_ALLOW);
-  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(
       kAllowedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings_->IsSettingCookieAllowed(
@@ -130,7 +126,7 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedAllSitesAllowed) {
       ContentSettingsPattern::FromURL(kAllowedSite),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTING_ALLOW);
-  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
   // As an example for a pattern that matches all hosts but not all origins,
   // match all HTTPS sites.
   cookie_settings_->SetCookieSetting(
@@ -274,77 +270,12 @@ TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
 }
 
 TEST_F(CookieSettingsTest, ExtensionsThirdParty) {
-  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
 
   // XHRs stemming from extensions are exempt from third-party cookie blocking
   // rules (as the first party is always the extension's security origin).
   EXPECT_TRUE(cookie_settings_->IsSettingCookieAllowed(
       kBlockedSite, kExtensionURL));
-}
-
-TEST_F(CookieSettingsTest, IncognitoBehaviorOfBlockingRules) {
-  scoped_refptr<CookieSettings> incognito_settings =
-      CookieSettings::Factory::GetForProfile(profile_.GetOffTheRecordProfile());
-
-  // Modify the regular cookie settings after the incognito cookie settings have
-  // been instantiated.
-  cookie_settings_->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kBlockedSite),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_BLOCK);
-
-  // The modification should apply to the regular profile and incognito profile.
-  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(
-      kBlockedSite, kBlockedSite));
-  EXPECT_FALSE(incognito_settings->IsReadingCookieAllowed(
-      kBlockedSite, kBlockedSite));
-
-  // Modify an incognito cookie setting and check that this does not propagate
-  // into regular mode.
-  incognito_settings->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kHttpsSite),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_BLOCK);
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(
-      kHttpsSite, kHttpsSite));
-  EXPECT_FALSE(incognito_settings->IsReadingCookieAllowed(
-      kHttpsSite, kHttpsSite));
-}
-
-TEST_F(CookieSettingsTest, IncognitoBehaviorOfBlockingEverything) {
-  scoped_refptr<CookieSettings> incognito_settings =
-      CookieSettings::Factory::GetForProfile(profile_.GetOffTheRecordProfile());
-
-  // Apply the general blocking to the regular profile.
-  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-
-  // It should be effective for regular and incognito session.
-  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(
-      kFirstPartySite, kFirstPartySite));
-  EXPECT_FALSE(incognito_settings->IsReadingCookieAllowed(
-      kFirstPartySite, kFirstPartySite));
-
-  // A whitelisted item set in incognito mode should only apply to incognito
-  // mode.
-  incognito_settings->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kAllowedSite),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_ALLOW);
-  EXPECT_TRUE(incognito_settings->IsReadingCookieAllowed(
-      kAllowedSite, kAllowedSite));
-  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(
-      kAllowedSite, kAllowedSite));
-
-  // A whitelisted item set in regular mode should apply to regular and
-  // incognito mode.
-  cookie_settings_->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kHttpsSite),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_ALLOW);
-  EXPECT_TRUE(incognito_settings->IsReadingCookieAllowed(
-      kHttpsSite, kHttpsSite));
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(
-      kHttpsSite, kHttpsSite));
 }
 
 }  // namespace
