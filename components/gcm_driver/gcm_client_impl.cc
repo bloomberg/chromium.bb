@@ -947,6 +947,11 @@ void GCMClientImpl::OnRegisterCompleted(
 
   if (result == SUCCESS) {
     // Cache it.
+    // Note that the existing cached record has to be removed first because
+    // otherwise the key value in registrations_ will not be updated. For GCM
+    // registrations, the key consists of pair of app_id and sender_ids though
+    // only app_id is used in the comparison.
+    registrations_.erase(registration_info);
     registrations_[registration_info] = registration_id;
 
     // Save it in the persistent store.

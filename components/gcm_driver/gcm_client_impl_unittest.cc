@@ -728,6 +728,52 @@ TEST_F(GCMClientImplTest, DISABLED_RegisterAppFromCache) {
   EXPECT_TRUE(ExistsRegistration(kAppId));
 }
 
+TEST_F(GCMClientImplTest, RegisterPreviousSenderAgain) {
+  EXPECT_FALSE(ExistsRegistration(kAppId));
+
+  // Register a sender.
+  std::vector<std::string> senders;
+  senders.push_back("sender");
+  Register(kAppId, senders);
+  CompleteRegistration("reg_id");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("reg_id", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsRegistration(kAppId));
+
+  reset_last_event();
+
+  // Register a different sender. Different registration ID from previous one
+  // should be returned.
+  std::vector<std::string> senders2;
+  senders2.push_back("sender2");
+  Register(kAppId, senders2);
+  CompleteRegistration("reg_id2");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("reg_id2", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsRegistration(kAppId));
+
+  reset_last_event();
+
+  // Register the 1st sender again. Different registration ID from previous one
+  // should be returned.
+  std::vector<std::string> senders3;
+  senders3.push_back("sender");
+  Register(kAppId, senders3);
+  CompleteRegistration("reg_id");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("reg_id", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsRegistration(kAppId));
+}
+
 TEST_F(GCMClientImplTest, UnregisterApp) {
   EXPECT_FALSE(ExistsRegistration(kAppId));
 
