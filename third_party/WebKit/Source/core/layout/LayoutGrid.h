@@ -90,8 +90,6 @@ public:
     }
 
 private:
-    typedef void (GridTrack::* AccumulatorGrowFunction)(LayoutUnit);
-
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
