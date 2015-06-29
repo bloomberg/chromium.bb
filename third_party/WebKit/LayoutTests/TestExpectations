@@ -1701,3 +1701,4 @@ crbug.com/505422 [ Linux Mac ] http/tests/serviceworker/chromium/stashed-ports-a
 crbug.com/505429 [ Release Mavericks Retina ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/505429 [ Mavericks Retina Win ] http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
 
+crbug.com/505411 fast/canvas/fill-stroke-clip-reset-path.html [ NeedsRebaseline ]
