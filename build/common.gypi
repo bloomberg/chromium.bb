@@ -5710,26 +5710,26 @@
                   '-Wno-int-to-void-pointer-cast',  # http://crbug.com/504697
                   '-Wno-invalid-noreturn',  # http://crbug.com/504698
                   '-Wno-logical-op-parentheses',  # http://crbug.com/504699
-                  '-Wno-microsoft',
-                  '-Wno-missing-braces',
-                  '-Wno-missing-declarations',
-                  '-Wno-msvc-include',
-                  '-Wno-null-dereference',
-                  '-Wno-overloaded-virtual',
-                  '-Wno-parentheses',
-                  '-Wno-pointer-sign',
-                  '-Wno-reorder',
-                  '-Wno-return-type-c-linkage',
-                  '-Wno-self-assign',
-                  '-Wno-sometimes-uninitialized',
-                  '-Wno-switch',
-                  '-Wno-tautological-compare',
-                  '-Wno-unknown-pragmas',
-                  '-Wno-unsequenced',
-                  '-Wno-unused-function',
-                  '-Wno-unused-private-field',
-                  '-Wno-unused-value',
-                  '-Wno-unused-variable',
+                  '-Wno-microsoft',  # http://crbug.com/505296
+                  '-Wno-missing-braces',  # http://crbug.com/505297
+                  '-Wno-missing-declarations',  # http://crbug.com/505298
+                  '-Wno-msvc-include',  # http://crbug.com/505299
+                  '-Wno-null-dereference',  # http://crbug.com/505300
+                  '-Wno-overloaded-virtual',  # http://crbug.com/505301
+                  '-Wno-parentheses',  # http://crbug.com/505302
+                  '-Wno-pointer-sign',  # http://crbug.com/505303
+                  '-Wno-reorder',  # http://crbug.com/505304
+                  '-Wno-return-type-c-linkage',  # http://crbug.com/505305
+                  '-Wno-self-assign',  # http://crbug.com/505306
+                  '-Wno-sometimes-uninitialized',  # http://crbug.com/505307
+                  '-Wno-switch',  # http://crbug.com/505308
+                  '-Wno-tautological-compare',  # http://crbug.com/505309
+                  '-Wno-unknown-pragmas',  # http://crbug.com/505314
+                  '-Wno-unsequenced',  # http://crbug.com/505315
+                  '-Wno-unused-function',  # http://crbug.com/505316
+                  '-Wno-unused-private-field',  # http://crbug.com/505317
+                  '-Wno-unused-value',  # http://crbug.com/505318
+                  '-Wno-unused-variable',  # http://crbug.com/505319
                   '-Wno-unused-local-typedef',  # http://crbug.com/411648
                 ],
               },
