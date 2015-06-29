@@ -314,8 +314,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-004.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
-crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ Crash Pass ]
-crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Crash Pass ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-stretch-001.html [ ImageOnlyFailure ]
 
 # These tests pass but images do not match because of position: absolute in vertical flow bug
