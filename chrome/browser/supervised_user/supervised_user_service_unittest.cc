@@ -43,9 +43,11 @@ using content::MessageLoopRunner;
 
 namespace {
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void OnProfileDownloadedFail(const base::string16& full_name) {
   ASSERT_TRUE(false) << "Profile download should not have succeeded.";
 }
+#endif
 
 // Base class for helper objects that wait for certain events to happen.
 // This class will ensure that calls to QuitRunLoop() (triggered by a subclass)
@@ -211,6 +213,7 @@ TEST_F(SupervisedUserServiceTest, ChangesIncludedSessionOnChangedSettings) {
   EXPECT_FALSE(supervised_user_service_->IncludesSyncSessionsType());
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Ensure that the CustodianProfileDownloaderService shuts down cleanly. If no
 // DCHECK is hit when the service is destroyed, this test passed.
 TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
@@ -223,6 +226,7 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
       SetAuthenticatedAccountInfo("12345", "Logged In");
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
+#endif
 
 namespace {
 

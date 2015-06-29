@@ -570,12 +570,14 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
     case syncer::SUPERVISED_USERS:
       return SupervisedUserSyncServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
     case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
           profile_)->AsWeakPtr();
+#endif
     case syncer::SUPERVISED_USER_WHITELISTS:
       return SupervisedUserServiceFactory::GetForProfile(profile_)
           ->GetWhitelistService()

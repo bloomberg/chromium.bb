@@ -736,6 +736,7 @@ void SupervisedUserService::SetActive(bool active) {
 
   if (!delegate_ || !delegate_->SetActive(active_)) {
     if (active_) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
       SupervisedUserPrefMappingServiceFactory::GetForBrowserContext(profile_)
           ->Init();
 
@@ -760,6 +761,9 @@ void SupervisedUserService::SetActive(bool active) {
           profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
 
       SetupSync();
+#else
+      NOTREACHED();
+#endif
     }
   }
 

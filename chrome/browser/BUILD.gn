@@ -778,6 +778,12 @@ source_set("browser") {
                            ".",
                            "//chrome")
   }
+  if (enable_supervised_users && !is_android && !is_ios) {
+    sources +=
+        rebase_path(gypi_values.chrome_browser_supervised_user_legacy_sources,
+                    ".",
+                    "//chrome")
+  }
   if (enable_supervised_users && enable_themes) {
     sources += rebase_path(
             gypi_values.chrome_browser_supervised_user_and_themes_sources,

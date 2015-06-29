@@ -236,7 +236,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   chromeos::ManagerPasswordServiceFactory::GetInstance();
 #endif
   SupervisedUserServiceFactory::GetInstance();
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   SupervisedUserSyncServiceFactory::GetInstance();
+#endif
 #endif
 #if defined(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)

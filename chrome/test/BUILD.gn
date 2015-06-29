@@ -1694,6 +1694,12 @@ if (!is_android) {
               ".",
               "//chrome")
     }
+    if (enable_supervised_users && !is_android && !is_ios) {
+      sources += rebase_path(
+              unit_gypi_values.chrome_unit_tests_supervised_user_legacy_sources,
+              ".",
+              "//chrome")
+    }
     if (safe_browsing_mode == 1 && enable_extensions) {
       sources += [ "../browser/extensions/blacklist_unittest.cc" ]
     }

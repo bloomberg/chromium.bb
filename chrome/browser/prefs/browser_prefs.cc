@@ -452,10 +452,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
-  ChildAccountService::RegisterProfilePrefs(registry);
-  SupervisedUserService::RegisterProfilePrefs(registry);
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   SupervisedUserSharedSettingsService::RegisterProfilePrefs(registry);
   SupervisedUserSyncService::RegisterProfilePrefs(registry);
+#endif
+  ChildAccountService::RegisterProfilePrefs(registry);
+  SupervisedUserService::RegisterProfilePrefs(registry);
   SupervisedUserWhitelistService::RegisterProfilePrefs(registry);
 #endif
 

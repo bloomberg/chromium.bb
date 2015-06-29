@@ -1447,18 +1447,22 @@
       'browser/supervised_user/child_accounts/family_info_fetcher_unittest.cc',
       'browser/supervised_user/child_accounts/permission_request_creator_apiary_unittest.cc',
       'browser/supervised_user/experimental/supervised_user_async_url_checker_unittest.cc',
-      'browser/supervised_user/legacy/supervised_user_pref_mapping_service_unittest.cc',
-      'browser/supervised_user/legacy/supervised_user_refresh_token_fetcher_unittest.cc',
-      'browser/supervised_user/legacy/supervised_user_registration_utility_unittest.cc',
-      'browser/supervised_user/legacy/supervised_user_shared_settings_service_unittest.cc',
-      'browser/supervised_user/legacy/supervised_user_shared_settings_update_unittest.cc',
-      'browser/supervised_user/legacy/supervised_user_sync_service_unittest.cc',
       'browser/supervised_user/supervised_user_bookmarks_handler_unittest.cc',
       'browser/supervised_user/supervised_user_pref_store_unittest.cc',
       'browser/supervised_user/supervised_user_service_unittest.cc',
       'browser/supervised_user/supervised_user_settings_service_unittest.cc',
       'browser/supervised_user/supervised_user_url_filter_unittest.cc',
       'browser/supervised_user/supervised_user_whitelist_service_unittest.cc',
+    ],
+    # TODO(bauerb): This code should be removed (on desktop) once child account
+    # support has launched (https://crbug.com/505443).
+    'chrome_unit_tests_supervised_user_legacy_sources': [
+      'browser/supervised_user/legacy/supervised_user_pref_mapping_service_unittest.cc',
+      'browser/supervised_user/legacy/supervised_user_refresh_token_fetcher_unittest.cc',
+      'browser/supervised_user/legacy/supervised_user_registration_utility_unittest.cc',
+      'browser/supervised_user/legacy/supervised_user_shared_settings_service_unittest.cc',
+      'browser/supervised_user/legacy/supervised_user_shared_settings_update_unittest.cc',
+      'browser/supervised_user/legacy/supervised_user_sync_service_unittest.cc',
     ],
     'chrome_unit_tests_media_router_sources': [
       'browser/media/router/create_session_request_unittest.cc',
@@ -2672,6 +2676,9 @@
         }],
         ['enable_supervised_users == 1', {
           'sources': [ '<@(chrome_unit_tests_supervised_user_sources)' ],
+        }],
+        ['enable_supervised_users == 1 and OS != "android" and OS != "ios"', {
+          'sources': [ '<@(chrome_unit_tests_supervised_user_legacy_sources)' ],
         }],
         ['safe_browsing==1 and enable_extensions==1', {
           'sources': [
