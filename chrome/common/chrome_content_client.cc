@@ -322,12 +322,35 @@ const char kPepperFlashDLLBaseName[] =
 #endif  // defined(ARCH_CPU_X86)
 #endif  // defined(OS_WIN)
 
+#if defined(FLAPPER_AVAILABLE)
+bool IsSystemFlashScriptDebuggerPresent() {
+#if defined(OS_WIN)
+  const wchar_t kFlashRegistryRoot[] =
+      L"SOFTWARE\\Macromedia\\FlashPlayerPepper";
+  const wchar_t kIsDebuggerValueName[] = L"isScriptDebugger";
+
+  base::win::RegKey path_key(HKEY_LOCAL_MACHINE, kFlashRegistryRoot, KEY_READ);
+  DWORD debug_value;
+  if (FAILED(path_key.ReadValueDW(kIsDebuggerValueName, &debug_value)))
+    return false;
+
+  return (debug_value == 1);
+#else
+  // TODO(wfh): implement this on OS X and Linux. crbug.com/497996.
+  return false;
+#endif
+}
+#endif
+
 bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
 #if defined(FLAPPER_AVAILABLE)
-  // If flapper is available, only try system plugin if
-  // --disable-bundled-ppapi-flash is specified.
-  if (!command_line->HasSwitch(switches::kDisableBundledPpapiFlash))
+  // If flapper is available, only try the system plugin if either:
+  // --disable-bundled-ppapi-flash is specified, or the system debugger is the
+  // Flash Script Debugger.
+  if (!command_line->HasSwitch(switches::kDisableBundledPpapiFlash) &&
+      !IsSystemFlashScriptDebuggerPresent())
     return false;
 #endif  // defined(FLAPPER_AVAILABLE)
 
