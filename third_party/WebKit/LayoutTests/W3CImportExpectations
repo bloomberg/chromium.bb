@@ -384,20 +384,12 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_
 # https://github.com/w3c/web-platform-tests/issues/1875  The test has a syntax error.
 imported/web-platform-tests/html/semantics/forms/the-input-element/email.html [ Skip ]
 
-# CSS Writing Modes Level 3: Following tests have known issues and notified to the submitters.
-imported/csswg-test/css-writing-modes-3/text-combine-horizontal-010.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-combine-horizontal-011.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-010.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-011.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-013.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-015.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-mixed-001.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-sideways-001.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-sideways-right-001.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-upright-001.xht [ Skip ]
+# https://github.com/w3c/csswg-test/issues/784 The tests have incorrect expectations
+imported/csswg-test/css-writing-modes-3/value-all-and-inherit-001.htm [ Skip ]
 
-# Not test files but our script identify as test files
-imported/csswg-test/css-writing-modes-3/text-combine-upright/reference [ Skip ]
+# https://github.com/w3c/csswg-test/issues/786 The tests have incorrect expectations
+imported/csswg-test/css-writing-modes-3/text-decoration-001.htm [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-emphasis-001.htm [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests are "combo", import only one from each combo group (or improve the script to handle automatically).
 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001a.html [ Skip ]
@@ -436,6 +428,8 @@ imported/csswg-test/css-writing-modes-3/line-box-direction-016.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-baseline-007.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-baseline-010.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-baseline-011.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-orientation-013.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-orientation-015.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-orientation-sideways-002.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-orientation-sideways-left-001.xht [ Skip ]
 
@@ -449,7 +443,10 @@ imported/csswg-test/css-writing-modes-3/text-combine-upright-parsing-valid-001.h
 imported/csswg-test/css-writing-modes-3/text-combine-upright-parsing-valid-002.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/value-digit2-and-inherit-001.htm [ Skip ]
 imported/csswg-test/css-writing-modes-3/value-digits2-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/value-digits2-003.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/value-digits3-001.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/value-digits3-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/value-digits3-003.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/value-digits4-001.html [ Skip ]
 imported/csswg-test/css-writing-modes-3/value-digits4-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/value-digits4-003.html [ Skip ]

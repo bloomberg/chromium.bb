@@ -316,12 +316,9 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-004.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
-crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ Crash ]
-crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Crash ]
+crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ Crash Pass ]
+crbug.com/496848 [ Mac ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Crash Pass ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-stretch-001.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-decoration-001.htm [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-emphasis-001.htm [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-and-inherit-001.htm [ ImageOnlyFailure ]
 
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-009.xht [ ImageOnlyFailure ]
@@ -340,22 +337,17 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-embed-002.html [ P
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Pass ImageOnlyFailure ]
+crbug.com/492664 [ Linux Win ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure Pass ]
+crbug.com/492664 [ Linux Win ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ ImageOnlyFailure Pass ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-002.html [ ImageOnlyFailure Pass ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-003.html [ ImageOnlyFailure Pass ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-none-001.html [ ImageOnlyFailure Pass ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-lr-002.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ Pass ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-003.htm [ Pass ImageOnlyFailure ]
 
-crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-long.html [ ImageOnlyFailure ]
-crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-tall.html [ ImageOnlyFailure ]
-crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-transform.html [ ImageOnlyFailure ]
-
-crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
-
 # These CSS Writing Modes Level 3 tests pass but causes 1px diff on images, notified to the submitter.
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-002.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-all-003.html [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-001.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-002.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-003.xht [ ImageOnlyFailure ]
@@ -404,6 +396,12 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-006.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-009.xht [ ImageOnlyFailure ]
+
+crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-long.html [ ImageOnlyFailure ]
+crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-tall.html [ ImageOnlyFailure ]
+crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-transform.html [ ImageOnlyFailure ]
+
+crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 
 crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
@@ -1716,10 +1714,6 @@ crbug.com/503852 imported/web-platform-tests/html/semantics/embedded-content/med
 crbug.com/503852 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrackList/onremovetrack.html [ Skip ]
 
 crbug.com/503856 imported/web-platform-tests/html/semantics/embedded-content/the-img-element/current-pixel-density/error.html [ Failure Pass ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-digits2-003.html [ ImageOnlyFailure Pass ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-digits3-003.html [ ImageOnlyFailure Pass ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-digits4-003.html [ ImageOnlyFailure Pass ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/value-none-001.html [ ImageOnlyFailure Pass ]
 
 crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
 crbug.com/503875 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure ]
