@@ -822,8 +822,6 @@ crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ ImageOnlyFa
 crbug.com/374643 [ Mac ] fast/text-autosizing/supercluster-multiple-layout.html [ Failure ]
 crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.html [ Failure ]
 
-crbug.com/335710 [ Win ] canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ NeedsRebaseline ]
-
 crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 
@@ -1080,8 +1078,6 @@ crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-compo
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
 
 crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
-
-crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ NeedsRebaseline ]
 
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
 
