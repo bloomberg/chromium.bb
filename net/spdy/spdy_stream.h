@@ -317,9 +317,10 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // receiving window to be updated.
   void OnPaddingConsumed(size_t len);
 
-  // Called by the SpdySession when a frame has been successfully and
-  // completely written. |frame_size| is the total size of the frame
-  // in bytes, including framing overhead.
+  // Called by the SpdySession when a frame has been successfully and completely
+  // written. |frame_size| is the total size of the logical frame in bytes,
+  // including framing overhead.  For fragmented headers, this is the total size
+  // of the HEADERS or PUSH_PROMISE frame and subsequent CONTINUATION frames.
   void OnFrameWriteComplete(SpdyFrameType frame_type, size_t frame_size);
 
   // SYN_STREAM-specific write handler invoked by OnFrameWriteComplete().

@@ -6488,6 +6488,46 @@ TEST_P(SpdyNetworkTransactionTest,
   EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
 }
 
+// Regression test for https://crbug.com/493348: request header exceeds 16 kB
+// and thus sent in multiple frames when using HTTP/2.
+TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
+  const std::string kKey("foo");
+  const std::string kValue(1 << 15, 'z');
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(GetDefaultUrl());
+  request.extra_headers.SetHeader(kKey, kValue);
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(GetDefaultUrl()));
+  (*headers)[kKey] = kValue;
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdySyn(1, *headers, LOWEST, false, true));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),
+  };
+
+  scoped_ptr<SpdyFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockRead reads[] = {
+      CreateMockRead(*resp, 1),
+      CreateMockRead(*body, 2),
+      MockRead(ASYNC, 0, 3)  // EOF
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                     GetParam(), nullptr);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+
+  EXPECT_EQ(OK, out.rv);
+  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
 class SpdyNetworkTransactionNoTLSUsageCheckTest
     : public SpdyNetworkTransactionTest {
  protected:

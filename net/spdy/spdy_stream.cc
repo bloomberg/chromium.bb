@@ -546,12 +546,6 @@ void SpdyStream::OnPaddingConsumed(size_t len) {
 void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
                                       size_t frame_size) {
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
-
-  if (frame_size < session_->GetFrameMinimumSize() ||
-      frame_size > session_->GetFrameMaximumSize()) {
-    NOTREACHED();
-    return;
-  }
   CHECK(frame_type == SYN_STREAM ||
         frame_type == DATA) << frame_type;
 
