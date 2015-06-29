@@ -340,10 +340,18 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source, ownerDocument);
 }
 
+void FrameLoader::receivedMainResourceRedirect(const KURL& newURL)
+{
+    client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
+    // If a back/forward navigation redirects cross-origin, don't reuse any state from the HistoryItem.
+    if (m_provisionalItem && !SecurityOrigin::create(m_provisionalItem->url())->isSameSchemeHostPort(SecurityOrigin::create(newURL).get()))
+        m_provisionalItem.clear();
+}
+
 void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
 {
     RefPtrWillBeRawPtr<HistoryItem> oldItem = m_currentItem;
-    if (historyCommitType == BackForwardCommit)
+    if (historyCommitType == BackForwardCommit && m_provisionalItem)
         m_currentItem = m_provisionalItem.release();
     else
         m_currentItem = HistoryItem::create();

@@ -388,7 +388,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
         return;
 
     appendRedirect(newRequest.url());
-    frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
+    frameLoader()->receivedMainResourceRedirect(m_request.url());
     if (!shouldContinueForNavigationPolicy(newRequest, CheckContentSecurityPolicy))
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }

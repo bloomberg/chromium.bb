@@ -156,6 +156,8 @@ public:
     void finishedParsing();
     void checkCompleted();
 
+    void receivedMainResourceRedirect(const KURL& newURL);
+
     // This prepares the FrameLoader for the next commit. It will dispatch
     // unload events, abort XHR requests and detach the document. Returns true
     // if the frame is ready to receive the next commit, or false otherwise.
