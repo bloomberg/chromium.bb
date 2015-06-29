@@ -108,6 +108,9 @@ void V8AbstractEventListener::setListenerObject(v8::Local<v8::Object> listener)
 
 void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState, Event* event, v8::Local<v8::Value> jsEvent)
 {
+    if (!event->canBeDispatchedInWorld(world()))
+        return;
+
     v8::Local<v8::Value> returnValue;
     {
         // Catch exceptions thrown in the event handler so they do not propagate to javascript code that caused the event to fire.

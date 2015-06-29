@@ -53,6 +53,11 @@ const AtomicString& PromiseRejectionEvent::interfaceName() const
     return EventNames::PromiseRejectionEvent;
 }
 
+bool PromiseRejectionEvent::canBeDispatchedInWorld(const DOMWrapperWorld& world) const
+{
+    return m_scriptState && m_scriptState->contextIsValid() && m_scriptState->world().worldId() == world.worldId();
+}
+
 DEFINE_TRACE(PromiseRejectionEvent)
 {
     Event::trace(visitor);

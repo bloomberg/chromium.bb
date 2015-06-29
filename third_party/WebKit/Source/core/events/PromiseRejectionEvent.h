@@ -5,6 +5,7 @@
 #ifndef PromiseRejectionEvent_h
 #define PromiseRejectionEvent_h
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -31,6 +32,10 @@ public:
     ScriptPromise promise(ScriptState*) const;
 
     virtual const AtomicString& interfaceName() const override;
+
+    // PromiseRejectionEvents are similar to ErrorEvents in that they can't be
+    // observed across different worlds.
+    virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const override;
 
     DECLARE_VIRTUAL_TRACE();
 

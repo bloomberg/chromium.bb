@@ -35,6 +35,7 @@
 
 namespace blink {
 
+class DOMWrapperWorld;
 class EventTarget;
 class ExecutionContext;
 
@@ -184,6 +185,10 @@ public:
 
     double uiCreateTime() const { return m_uiCreateTime; }
     void setUICreateTime(double uiCreateTime) { m_uiCreateTime = uiCreateTime; }
+
+    // Events that must not leak across isolated world, similar to how
+    // ErrorEvent behaves, can override this method.
+    virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const { return true; }
 
     DECLARE_VIRTUAL_TRACE();
 
