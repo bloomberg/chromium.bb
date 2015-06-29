@@ -59662,6 +59662,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
   <int value="-979034258" label="disable-ntp-other-sessions-menu"/>
   <int value="-972425050" label="gesture-editing"/>
+  <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>

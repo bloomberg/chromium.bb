@@ -2009,6 +2009,13 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
 #endif
+#if defined(OS_CHROMEOS)
+    {"enable-accelerated-mjpeg-decode",
+     IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_NAME,
+     IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_DESCRIPTION,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableAcceleratedMjpegDecode)},
+#endif  // OS_CHROMEOS
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

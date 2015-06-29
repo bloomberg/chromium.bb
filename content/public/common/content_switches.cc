@@ -277,6 +277,10 @@ const char kEnable2dCanvasClipAntialiasing[] = "enable-2d-canvas-clip-aa";
 const char kDisableAcceleratedJpegDecoding[] =
     "disable-accelerated-jpeg-decoding";
 
+// Enable hardware acceleration of mjpeg decode for captured frame, where
+// available.
+const char kEnableAcceleratedMjpegDecode[] = "enable-accelerated-mjpeg-decode";
+
 // Enable bleeding-edge code to make Chrome draw content faster. The changes
 // behind this path are very likely to break lots of content.
 // ** DO NOT use this flag unless you know what you are doing. **

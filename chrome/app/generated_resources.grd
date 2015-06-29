@@ -6970,6 +6970,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Changes the behavior of Cmd+` when a Chrome App becomes active. When enabled, Chrome Apps will not be cycled when Cmd+` is pressed from a browser window, and browser windows will not be cycled when a Chrome App is active.
         </message>
       </if>
+      <if expr="chromeos">
+        <message name="IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_NAME" desc="Name of the flag to enable accelerated mjpeg decode for captured frame where available.">
+          Enable hardware-accelerated mjpeg decode for captured frame.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_ACCELERATED_MJPEG_DECODE_DESCRIPTION" desc="Description for the flag to enable accelerated mjpeg decode for captured frame where available.">
+          Enable hardware-accelerated mjpeg decode for captured frame where available.
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -13,6 +14,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/common/gpu/client/gpu_jpeg_decode_accelerator_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
 
 namespace content {
@@ -23,6 +25,12 @@ bool VideoCaptureGpuJpegDecoder::Supported() {
   // platform. Initialize() can do the real platform supporting check but it
   // requires an IPC even for platforms that do not support HW decoder.
   // TODO(kcwu): move this information to GpuInfo. https://crbug.com/503568
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAcceleratedMjpegDecode)) {
+    return true;
+  }
+#endif
   return false;
 }
 
