@@ -95,20 +95,16 @@ function load() {
           $('do-not-track-enabled')['pref'],
           $('do-not-track-enabled')['metric']),
       BrowserOptions.getInstance());
-  // 'spelling-enabled-control' element is only present on Chrome branded
-  // builds.
-  if ($('spelling-enabled-control')) {
-    PageManager.registerOverlay(
-        new ConfirmDialog(
-            'spellingConfirm',
-            loadTimeData.getString('spellingConfirmOverlayTabTitle'),
-            'spelling-confirm-overlay',
-            /** @type {HTMLButtonElement} */($('spelling-confirm-ok')),
-            /** @type {HTMLButtonElement} */($('spelling-confirm-cancel')),
-            $('spelling-enabled-control')['pref'],
-            $('spelling-enabled-control')['metric']),
-        BrowserOptions.getInstance());
-  }
+  PageManager.registerOverlay(
+      new ConfirmDialog(
+          'spellingConfirm',
+          loadTimeData.getString('spellingConfirmOverlayTabTitle'),
+          'spelling-confirm-overlay',
+          /** @type {HTMLButtonElement} */($('spelling-confirm-ok')),
+          /** @type {HTMLButtonElement} */($('spelling-confirm-cancel')),
+          $('spelling-enabled-control')['pref'],
+          $('spelling-enabled-control')['metric']),
+      BrowserOptions.getInstance());
   PageManager.registerOverlay(new HotwordConfirmDialog(),
                               BrowserOptions.getInstance());
   PageManager.registerOverlay(ContentSettings.getInstance(),
