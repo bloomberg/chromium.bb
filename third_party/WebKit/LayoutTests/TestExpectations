@@ -81,7 +81,7 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
-# This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
+# This batch is flaky:
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
@@ -393,7 +393,7 @@ crbug.com/487281 [ Mac ] fast/forms/select/popup-menu-appearance-transform.html 
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 
-crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
+crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ ImageOnlyFailure ]
 
