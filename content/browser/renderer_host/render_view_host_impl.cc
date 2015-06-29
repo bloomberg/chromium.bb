@@ -465,10 +465,12 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.touch_adjustment_enabled =
       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
 
-  prefs.slimming_paint_enabled = command_line.HasSwitch(
-      switches::kEnableSlimmingPaint) ||
-      !command_line.HasSwitch(switches::kDisableSlimmingPaint);
-
+  const std::string slimming_group =
+      base::FieldTrialList::FindFullName("SlimmingPaint");
+  prefs.slimming_paint_enabled =
+      (command_line.HasSwitch(switches::kEnableSlimmingPaint) ||
+      !command_line.HasSwitch(switches::kDisableSlimmingPaint)) &&
+      (slimming_group != "DisableSlimmingPaint");
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   bool default_enable_scroll_animator = true;
 #else

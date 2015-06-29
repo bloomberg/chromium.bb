@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -233,8 +234,12 @@ void RenderWidgetCompositor::Initialize() {
       !compositor_deps_->IsElasticOverscrollEnabled();
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
-  settings.use_display_lists = cmd->HasSwitch(switches::kEnableSlimmingPaint) ||
-      !cmd->HasSwitch(switches::kDisableSlimmingPaint);
+  const std::string slimming_group =
+      base::FieldTrialList::FindFullName("SlimmingPaint");
+  settings.use_display_lists =
+      (cmd->HasSwitch(switches::kEnableSlimmingPaint) ||
+      !cmd->HasSwitch(switches::kDisableSlimmingPaint)) &&
+      (slimming_group != "DisableSlimmingPaint");
   if (cmd->HasSwitch(switches::kEnableCompositorAnimationTimelines)) {
     settings.use_compositor_animation_timelines = true;
     blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
