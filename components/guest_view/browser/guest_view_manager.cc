@@ -245,6 +245,22 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
   }
 }
 
+void GuestViewManager::EmbedderWillBeDestroyed(int embedder_process_id) {
+  // Find and call any callbacks associated with the embedder that is being
+  // destroyed.
+  auto embedder_it = view_destruction_callback_map_.find(embedder_process_id);
+  if (embedder_it == view_destruction_callback_map_.end())
+    return;
+  CallbacksForEachViewID& callbacks_for_embedder = embedder_it->second;
+  for (auto& view_pair : callbacks_for_embedder) {
+    Callbacks& callbacks_for_view = view_pair.second;
+    for (auto& callback : callbacks_for_view) {
+      callback.Run();
+    }
+  }
+  view_destruction_callback_map_.erase(embedder_it);
+}
+
 void GuestViewManager::ViewCreated(int embedder_process_id,
                                    int view_instance_id,
                                    const std::string& view_type) {
@@ -317,22 +333,6 @@ void GuestViewManager::DispatchEvent(const std::string& event_name,
   // TODO(fsamuel): GuestViewManager should probably do something more useful
   // here like log an error if the event could not be dispatched.
   delegate_->DispatchEvent(event_name, args.Pass(), guest, instance_id);
-}
-
-void GuestViewManager::EmbedderWillBeDestroyed(int embedder_process_id) {
-  // Find and call any callbacks associated with the embedder that is being
-  // destroyed.
-  auto embedder_it = view_destruction_callback_map_.find(embedder_process_id);
-  if (embedder_it == view_destruction_callback_map_.end())
-    return;
-  CallbacksForEachViewID& callbacks_for_embedder = embedder_it->second;
-  for (auto& view_pair : callbacks_for_embedder) {
-    Callbacks& callbacks_for_view = view_pair.second;
-    for (auto& callback : callbacks_for_view) {
-      callback.Run();
-    }
-  }
-  view_destruction_callback_map_.erase(embedder_it);
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(

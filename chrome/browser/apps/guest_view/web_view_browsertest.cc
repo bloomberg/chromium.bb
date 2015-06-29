@@ -2421,6 +2421,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGarbageCollect) {
   GetGuestViewManager()->WaitForSingleViewGarbageCollected();
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCloseNewWindowCleanup) {
+  TestHelper("testCloseNewWindowCleanup", "web_view/shim", NEEDS_TEST_SERVER);
+  auto gvm = GetGuestViewManager();
+  gvm->WaitForLastGuestDeleted();
+  ASSERT_EQ(gvm->num_embedder_processes_destroyed(), 0);
+}
+
 #if defined(USE_AURA)
 // TODO(wjmaclean): when WebViewTest is re-enabled on the site-isolation
 // bots, then re-enable this test class as well.

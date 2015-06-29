@@ -22,6 +22,8 @@ class TestGuestViewManager : public GuestViewManager {
 
   void WaitForAllGuestsDeleted();
 
+  void WaitForLastGuestDeleted();
+
   content::WebContents* WaitForSingleGuestCreated();
 
   void WaitForSingleViewGarbageCollected();
@@ -47,6 +49,11 @@ class TestGuestViewManager : public GuestViewManager {
     guest_view_registry_.insert(registry_entry);
   }
 
+  // Returns the number of times EmbedderWillBeDestroyed() was called.
+  int num_embedder_processes_destroyed() const {
+    return num_embedder_processes_destroyed_;
+  }
+
   // Returns the number of guests that have been created since the creation of
   // this GuestViewManager.
   int num_guests_created() const { return num_guests_created_; }
@@ -67,6 +74,7 @@ class TestGuestViewManager : public GuestViewManager {
   void AddGuest(int guest_instance_id,
                 content::WebContents* guest_web_contents) override;
   void RemoveGuest(int guest_instance_id) override;
+  void EmbedderWillBeDestroyed(int embedder_process_id) override;
   void ViewGarbageCollected(int embedder_process_id,
                             int view_instance_id) override;
 
@@ -77,8 +85,8 @@ class TestGuestViewManager : public GuestViewManager {
   using GuestViewManager::last_instance_id_removed_;
   using GuestViewManager::removed_instance_ids_;
 
+  int num_embedder_processes_destroyed_;
   int num_guests_created_;
-
   int num_views_garbage_collected_;
 
   std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>

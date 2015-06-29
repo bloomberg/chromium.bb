@@ -13,6 +13,7 @@ TestGuestViewManager::TestGuestViewManager(
     content::BrowserContext* context,
     scoped_ptr<GuestViewManagerDelegate> delegate)
     : GuestViewManager(context, delegate.Pass()),
+      num_embedder_processes_destroyed_(0),
       num_guests_created_(0),
       num_views_garbage_collected_(0) {
 }
@@ -40,10 +41,15 @@ content::WebContents* TestGuestViewManager::GetLastGuestCreated() {
 }
 
 void TestGuestViewManager::WaitForAllGuestsDeleted() {
-  // Make sure that every guest that was created have been removed.
+  // Make sure that every guest that was created has been removed.
   for (auto& watcher : guest_web_contents_watchers_)
     watcher->Wait();
 }
+
+void TestGuestViewManager::WaitForLastGuestDeleted() {
+  // Wait for the last guest that was created to be deleted.
+  guest_web_contents_watchers_.back()->Wait();
+};
 
 void TestGuestViewManager::WaitForGuestCreated() {
   created_message_loop_runner_ = new content::MessageLoopRunner;
@@ -87,6 +93,11 @@ void TestGuestViewManager::AddGuest(int guest_instance_id,
 
 void TestGuestViewManager::RemoveGuest(int guest_instance_id) {
   GuestViewManager::RemoveGuest(guest_instance_id);
+}
+
+void TestGuestViewManager::EmbedderWillBeDestroyed(int embedder_process_id) {
+  ++num_embedder_processes_destroyed_;
+  GuestViewManager::EmbedderWillBeDestroyed(embedder_process_id);
 }
 
 void TestGuestViewManager::ViewGarbageCollected(int embedder_process_id,

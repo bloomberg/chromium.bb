@@ -138,6 +138,10 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                         content::WebContents* guest_web_contents);
   virtual void RemoveGuest(int guest_instance_id);
 
+  // This method is called when the embedder process with ID
+  // |embedder_process_id| is about to be destroyed.
+  virtual void EmbedderWillBeDestroyed(int embedder_process_id);
+
   // Called when a GuestView has been created in JavaScript.
   virtual void ViewCreated(int embedder_process_id,
                            int view_instance_id,
@@ -164,10 +168,6 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                      scoped_ptr<base::DictionaryValue> args,
                      GuestViewBase* guest,
                      int instance_id);
-
-  // This method is called when the embedder with ID |embedder_process_id| is
-  // about to be destroyed.
-  void EmbedderWillBeDestroyed(int embedder_process_id);
 
   content::WebContents* GetGuestByInstanceID(int guest_instance_id);
 

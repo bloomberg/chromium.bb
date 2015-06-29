@@ -74,7 +74,14 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
   }
 
   void RenderProcessGone(base::TerminationStatus status) override {
-    // If the embedder crashes, then destroy the guest.
+    if (destroyed_)
+      return;
+
+    GuestViewManager::FromBrowserContext(web_contents()->GetBrowserContext())
+        ->EmbedderWillBeDestroyed(
+            web_contents()->GetRenderProcessHost()->GetID());
+
+    // If the embedder process is destroyed, then destroy the guest.
     Destroy();
   }
 
@@ -87,10 +94,7 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
   }
 
   void MainFrameWasResized(bool width_changed) override {
-    if (destroyed_)
-      return;
-
-    if (!web_contents()->GetDelegate())
+    if (destroyed_ || !web_contents()->GetDelegate())
       return;
 
     bool current_fullscreen =
@@ -110,11 +114,7 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
   void Destroy() {
     if (destroyed_)
       return;
-
     destroyed_ = true;
-    GuestViewManager::FromBrowserContext(web_contents()->GetBrowserContext())
-        ->EmbedderWillBeDestroyed(
-            web_contents()->GetRenderProcessHost()->GetID());
     guest_->Destroy();
   }
 

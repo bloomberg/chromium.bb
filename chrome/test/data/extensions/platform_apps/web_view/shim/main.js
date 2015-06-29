@@ -2686,6 +2686,26 @@ function testGarbageCollect() {
   embedder.test.succeed();
 }
 
+// This test verifies that when an app window is closed, only the state for the
+// webview in that window is cleaned up, and not the entire embedder process.
+function testCloseNewWindowCleanup() {
+  chrome.app.window.create('appwindow.html', {
+    width: 640,
+    height: 480
+  }, function(appWindow) {
+    appWindow.contentWindow.onload = function(evt) {
+      var webview = appWindow.contentWindow.document.querySelector('webview');
+      webview.addEventListener('loadstop', function(evt) {
+        // Close the second app window, which should not trigger the whole
+        // embedder process to be cleaned up.
+        appWindow.contentWindow.close();
+        embedder.test.succeed();
+      });
+      webview.src = 'about:blank';
+    };
+  });
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2784,7 +2804,8 @@ embedder.test.testList = {
   'testDisabledZoomMode': testDisabledZoomMode,
   'testZoomBeforeNavigation': testZoomBeforeNavigation,
   'testPlugin': testPlugin,
-  'testGarbageCollect': testGarbageCollect
+  'testGarbageCollect': testGarbageCollect,
+  'testCloseNewWindowCleanup': testCloseNewWindowCleanup
 };
 
 onload = function() {
