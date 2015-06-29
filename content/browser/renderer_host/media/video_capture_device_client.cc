@@ -15,6 +15,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
+#include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -201,13 +202,18 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
     const scoped_refptr<base::SingleThreadTaskRunner>& capture_task_runner)
     : controller_(controller),
+      external_jpeg_decoder_initialized_(false),
       buffer_pool_(buffer_pool),
       capture_task_runner_(capture_task_runner),
       last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
+VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
+  // This should be on the platform auxiliary thread since
+  // |external_jpeg_decoder_| need to be destructed on the same thread as
+  // OnIncomingCapturedData.
+}
 
 void VideoCaptureDeviceClient::OnIncomingCapturedData(
     const uint8* data,
@@ -222,6 +228,25 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     OnLog("Pixel format: " +
           VideoCaptureFormat::PixelFormatToString(frame_format.pixel_format));
     last_captured_pixel_format_ = frame_format.pixel_format;
+
+    if (frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
+        VideoCaptureGpuJpegDecoder::Supported()) {
+      if (!external_jpeg_decoder_initialized_) {
+        external_jpeg_decoder_initialized_ = true;
+        // base::Unretained is safe because |this| outlives
+        // |external_jpeg_decoder_| and the callbacks are never called after
+        // |external_jpeg_decoder_| is destroyed.
+        external_jpeg_decoder_.reset(new VideoCaptureGpuJpegDecoder(
+            base::Bind(
+                &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
+                controller_),
+            // TODO(kcwu): fallback to software decode if error.
+            // https://crbug.com/503532
+            base::Bind(&VideoCaptureDeviceClient::OnError,
+                       base::Unretained(this))));
+        external_jpeg_decoder_->Initialize();
+      }
+    }
   }
 
   if (!frame_format.IsValid())
@@ -333,6 +358,14 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   // The input |length| can be greater than the required buffer size because of
   // paddings and/or alignments, but it cannot be smaller.
   DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());
+
+  if (external_jpeg_decoder_ &&
+      frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG && rotation == 0 &&
+      !flip && external_jpeg_decoder_->ReadyToDecode()) {
+    external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
+                                               timestamp, buffer.Pass());
+    return;
+  }
 
   if (libyuv::ConvertToI420(data,
                             length,

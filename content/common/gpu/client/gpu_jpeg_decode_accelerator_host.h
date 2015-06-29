@@ -26,8 +26,9 @@ class GpuChannelHost;
 class GpuJpegDecodeAcceleratorHost : public media::JpegDecodeAccelerator,
                                      public base::NonThreadSafe {
  public:
-  // GpuJpegDecoder owns |this| and |channel|. And GpuJpegDecoder delete |this|
-  // before |channel|. So |this| is guaranteed not to outlive |channel|.
+  // VideoCaptureGpuJpegDecoder owns |this| and |channel|. And
+  // VideoCaptureGpuJpegDecoder delete |this| before |channel|. So |this| is
+  // guaranteed not to outlive |channel|.
   GpuJpegDecodeAcceleratorHost(
       GpuChannelHost* channel,
       int32 route_id,

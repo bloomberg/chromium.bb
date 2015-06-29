@@ -1244,6 +1244,8 @@
       'browser/renderer_host/media/video_capture_controller_event_handler.h',
       'browser/renderer_host/media/video_capture_device_client.cc',
       'browser/renderer_host/media/video_capture_device_client.h',
+      'browser/renderer_host/media/video_capture_gpu_jpeg_decoder.cc',
+      'browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h',
       'browser/renderer_host/media/video_capture_host.cc',
       'browser/renderer_host/media/video_capture_host.h',
       'browser/renderer_host/media/video_capture_manager.cc',

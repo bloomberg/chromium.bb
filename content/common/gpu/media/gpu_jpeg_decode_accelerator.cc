@@ -322,7 +322,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32 route_id,
   DCHECK(CalledOnValidThread());
   scoped_ptr<media::JpegDecodeAccelerator> accelerator;
 
-// When adding more platforms, GpuJpegDecoder::Supported need
+// When adding more platforms, VideoCaptureGpuJpegDecoder::Supported need
 // update as well.
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   accelerator.reset(new VaapiJpegDecodeAccelerator(io_task_runner_));

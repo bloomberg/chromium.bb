@@ -14,6 +14,7 @@
 namespace content {
 class VideoCaptureBufferPool;
 class VideoCaptureController;
+class VideoCaptureGpuJpegDecoder;
 
 // Receives events from the VideoCaptureDevice and posts them to a |controller_|
 // on the IO thread. An instance of this class may safely outlive its target
@@ -30,7 +31,8 @@ class VideoCaptureController;
 // manages the necessary entities to interact with the GPU process, notably an
 // offscreen Context to avoid janking the UI thread.
 class CONTENT_EXPORT VideoCaptureDeviceClient
-    : public media::VideoCaptureDevice::Client {
+    : public media::VideoCaptureDevice::Client,
+      public base::SupportsWeakPtr<VideoCaptureDeviceClient> {
  public:
   VideoCaptureDeviceClient(
       const base::WeakPtr<VideoCaptureController>& controller,
@@ -71,6 +73,12 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
  private:
   // The controller to which we post events.
   const base::WeakPtr<VideoCaptureController> controller_;
+
+  // Hardware JPEG decoder.
+  scoped_ptr<VideoCaptureGpuJpegDecoder> external_jpeg_decoder_;
+
+  // Whether |external_jpeg_decoder_| has been initialized.
+  bool external_jpeg_decoder_initialized_;
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
