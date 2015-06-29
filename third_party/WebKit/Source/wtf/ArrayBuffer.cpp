@@ -33,10 +33,11 @@ namespace WTF {
 
 bool ArrayBuffer::transfer(ArrayBufferContents& result)
 {
+    ASSERT(!isShared());
     RefPtr<ArrayBuffer> keepAlive(this);
 
     if (!m_contents.data()) {
-        result.clear();
+        result.neuter();
         return false;
     }
 
@@ -63,6 +64,20 @@ bool ArrayBuffer::transfer(ArrayBufferContents& result)
 
     m_isNeutered = true;
 
+    return true;
+}
+
+bool ArrayBuffer::shareContentsWith(ArrayBufferContents& result)
+{
+    ASSERT(isShared());
+    RefPtr<ArrayBuffer> keepAlive(this);
+
+    if (!m_contents.data()) {
+        result.neuter();
+        return false;
+    }
+
+    m_contents.shareWith(result);
     return true;
 }
 

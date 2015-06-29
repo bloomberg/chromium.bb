@@ -871,7 +871,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
     if (dataSize.hasOverflowed())
         return false;
 
-    WTF::ArrayBufferContents pixels(width * height, 4, WTF::ArrayBufferContents::DontInitialize);
+    WTF::ArrayBufferContents pixels(width * height, 4, WTF::ArrayBufferContents::NotShared, WTF::ArrayBufferContents::DontInitialize);
 
     GLint fbo = 0;
     if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {

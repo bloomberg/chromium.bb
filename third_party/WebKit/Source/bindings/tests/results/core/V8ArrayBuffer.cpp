@@ -55,7 +55,7 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
     // Transfer the ownership of the allocated memory to an ArrayBuffer without
     // copying.
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength());
+    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::NotShared);
     RefPtr<TestArrayBuffer> buffer = TestArrayBuffer::create(contents);
     buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
 

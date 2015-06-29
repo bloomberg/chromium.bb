@@ -29,6 +29,8 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
 
@@ -42,24 +44,31 @@ public:
         DontInitialize
     };
 
+    enum SharingType {
+        NotShared,
+        Shared,
+    };
+
     ArrayBufferContents();
-    ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy);
+    ArrayBufferContents(unsigned numElements, unsigned elementByteSize, SharingType isShared, ArrayBufferContents::InitializationPolicy);
 
     // Use with care. data must be allocated with allocateMemory.
     // ArrayBufferContents will take ownership of the data and free it (using freeMemory)
     // upon destruction.
     // This constructor will not call observer->StartObserving(), so it is a responsibility
     // of the caller to make sure JS knows about external memory.
-    ArrayBufferContents(void* data, unsigned sizeInBytes);
+    ArrayBufferContents(void* data, unsigned sizeInBytes, SharingType isShared);
 
     ~ArrayBufferContents();
 
-    void clear();
+    void neuter();
 
-    void* data() const { return m_data; }
-    unsigned sizeInBytes() const { return m_sizeInBytes; }
+    void* data() const { return m_holder ? m_holder->data() : nullptr; }
+    unsigned sizeInBytes() const { return m_holder ? m_holder->sizeInBytes() : 0; }
+    bool isShared() const { return m_holder ? m_holder->isShared() : false; }
 
     void transfer(ArrayBufferContents& other);
+    void shareWith(ArrayBufferContents& other);
     void copyTo(ArrayBufferContents& other);
 
     static void allocateMemory(size_t, InitializationPolicy, void*&);
@@ -71,8 +80,27 @@ public:
     }
 
 private:
-    void* m_data;
-    unsigned m_sizeInBytes;
+    class DataHolder : public ThreadSafeRefCounted<DataHolder> {
+        WTF_MAKE_NONCOPYABLE(DataHolder);
+    public:
+        DataHolder();
+        ~DataHolder();
+
+        void allocateNew(unsigned sizeInBytes, SharingType isShared, InitializationPolicy);
+        void adopt(void* data, unsigned sizeInBytes, SharingType isShared);
+        void copyMemoryTo(DataHolder& other);
+
+        void* data() const { return m_data; }
+        unsigned sizeInBytes() const { return m_sizeInBytes; }
+        bool isShared() const { return m_isShared == Shared; }
+
+    private:
+        void* m_data;
+        unsigned m_sizeInBytes;
+        SharingType m_isShared;
+    };
+
+    RefPtr<DataHolder> m_holder;
     static AdjustAmountOfExternalAllocatedMemoryFunction s_adjustAmountOfExternalAllocatedMemoryFunction;
 };
 

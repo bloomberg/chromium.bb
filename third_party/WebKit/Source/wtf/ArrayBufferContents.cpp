@@ -37,67 +37,65 @@ namespace WTF {
 AdjustAmountOfExternalAllocatedMemoryFunction ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction;
 
 ArrayBufferContents::ArrayBufferContents()
-    : m_data(0)
-    , m_sizeInBytes(0) { }
+    : m_holder(adoptRef(new DataHolder())) { }
 
-ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementByteSize, ArrayBufferContents::InitializationPolicy policy)
-    : m_data(0)
-    , m_sizeInBytes(0)
+ArrayBufferContents::ArrayBufferContents(unsigned numElements, unsigned elementByteSize, SharingType isShared, ArrayBufferContents::InitializationPolicy policy)
+    : m_holder(adoptRef(new DataHolder()))
 {
     // Do not allow 32-bit overflow of the total size.
+    unsigned totalSize = numElements * elementByteSize;
     if (numElements) {
-        unsigned totalSize = numElements * elementByteSize;
         if (totalSize / numElements != elementByteSize) {
-            m_data = 0;
             return;
         }
     }
-    allocateMemory(numElements * elementByteSize, policy, m_data);
-    m_sizeInBytes = numElements * elementByteSize;
+
+    m_holder->allocateNew(totalSize, isShared, policy);
 }
 
-ArrayBufferContents::ArrayBufferContents(void* data, unsigned sizeInBytes)
-    : m_data(data)
-    , m_sizeInBytes(sizeInBytes)
+ArrayBufferContents::ArrayBufferContents(
+    void* data, unsigned sizeInBytes, SharingType isShared)
+    : m_holder(adoptRef(new DataHolder()))
 {
-    if (!m_data) {
-        ASSERT(!m_sizeInBytes);
-        m_sizeInBytes = 0;
-        // Allow null data if size is 0 bytes, make sure m_data is valid pointer.
-        // (partitionAllocGeneric guarantees valid pointer for size 0)
-        allocateMemory(0, ZeroInitialize, m_data);
+    if (data) {
+        m_holder->adopt(data, sizeInBytes, isShared);
+    } else {
+        ASSERT(!sizeInBytes);
+        sizeInBytes = 0;
+        // Allow null data if size is 0 bytes, make sure data is valid pointer.
+        // (PartitionAlloc guarantees valid pointer for size 0)
+        m_holder->allocateNew(sizeInBytes, isShared, ZeroInitialize);
     }
 }
 
 ArrayBufferContents::~ArrayBufferContents()
 {
-    freeMemory(m_data, m_sizeInBytes);
-    clear();
 }
 
-void ArrayBufferContents::clear()
+void ArrayBufferContents::neuter()
 {
-    m_data = 0;
-    m_sizeInBytes = 0;
+    m_holder.clear();
 }
 
 void ArrayBufferContents::transfer(ArrayBufferContents& other)
 {
-    ASSERT(!other.m_data);
-    other.m_data = m_data;
-    other.m_sizeInBytes = m_sizeInBytes;
-    clear();
+    ASSERT(!isShared());
+    ASSERT(!other.m_holder->data());
+    other.m_holder = m_holder;
+    neuter();
+}
+
+void ArrayBufferContents::shareWith(ArrayBufferContents& other)
+{
+    ASSERT(isShared());
+    ASSERT(!other.m_holder->data());
+    other.m_holder = m_holder;
 }
 
 void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 {
-    ASSERT(!other.m_sizeInBytes);
-    other.freeMemory(other.m_data, other.m_sizeInBytes);
-    allocateMemory(m_sizeInBytes, DontInitialize, other.m_data);
-    if (!other.m_data)
-        return;
-    memcpy(other.m_data, m_data, m_sizeInBytes);
-    other.m_sizeInBytes = m_sizeInBytes;
+    ASSERT(!m_holder->isShared() && !other.m_holder->isShared());
+    m_holder->copyMemoryTo(*other.m_holder);
 }
 
 void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
@@ -114,6 +112,49 @@ void ArrayBufferContents::freeMemory(void* data, size_t size)
     partitionFreeGeneric(WTF::Partitions::bufferPartition(), data);
     if (s_adjustAmountOfExternalAllocatedMemoryFunction)
         s_adjustAmountOfExternalAllocatedMemoryFunction(-static_cast<int>(size));
+}
+
+ArrayBufferContents::DataHolder::DataHolder()
+    : m_data(nullptr)
+    , m_sizeInBytes(0)
+    , m_isShared(NotShared) { }
+
+ArrayBufferContents::DataHolder::~DataHolder()
+{
+    ArrayBufferContents::freeMemory(m_data, m_sizeInBytes);
+
+    m_data = nullptr;
+    m_sizeInBytes = 0;
+    m_isShared = NotShared;
+}
+
+void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes, SharingType isShared, InitializationPolicy policy)
+{
+    ASSERT(!m_data);
+    void* data = nullptr;
+    allocateMemory(sizeInBytes, policy, data);
+    m_data = data;
+    m_sizeInBytes = sizeInBytes;
+    m_isShared = isShared;
+}
+
+void ArrayBufferContents::DataHolder::adopt(void* data, unsigned sizeInBytes, SharingType isShared)
+{
+    ASSERT(!m_data);
+    m_data = data;
+    m_sizeInBytes = sizeInBytes;
+    m_isShared = isShared;
+}
+
+void ArrayBufferContents::DataHolder::copyMemoryTo(DataHolder& other)
+{
+    ASSERT(!other.m_sizeInBytes);
+    ArrayBufferContents::freeMemory(other.m_data, other.m_sizeInBytes);
+    ArrayBufferContents::allocateMemory(m_sizeInBytes, DontInitialize, other.m_data);
+    if (!other.m_data)
+        return;
+    memcpy(other.m_data, m_data, m_sizeInBytes);
+    other.m_sizeInBytes = m_sizeInBytes;
 }
 
 } // namespace WTF

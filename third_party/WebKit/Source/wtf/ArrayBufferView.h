@@ -72,6 +72,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
     void setNeuterable(bool flag) { m_isNeuterable = flag; }
     bool isNeuterable() const { return m_isNeuterable; }
+    bool isShared() const { return m_buffer ? m_buffer->isShared() : false; }
 
     virtual ~ArrayBufferView();
 

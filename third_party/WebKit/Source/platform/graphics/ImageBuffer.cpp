@@ -277,7 +277,7 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
         return false;
 
     if (!isSurfaceValid()) {
-        WTF::ArrayBufferContents result(rect.width() * rect.height(), 4, WTF::ArrayBufferContents::ZeroInitialize);
+        WTF::ArrayBufferContents result(rect.width() * rect.height(), 4, WTF::ArrayBufferContents::NotShared, WTF::ArrayBufferContents::ZeroInitialize);
         result.transfer(contents);
         return true;
     }
@@ -289,6 +289,7 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
         || rect.maxY() > m_surface->size().height();
     WTF::ArrayBufferContents result(
         rect.width() * rect.height(), 4,
+        WTF::ArrayBufferContents::NotShared,
         hasStrayArea
         ? WTF::ArrayBufferContents::ZeroInitialize
         : WTF::ArrayBufferContents::DontInitialize);
