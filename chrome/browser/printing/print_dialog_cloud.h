@@ -16,14 +16,8 @@ class Profile;
 namespace base {
 class CommandLine;
 }
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
 
 namespace print_dialog_cloud {
-
-// TODO(vitalybuka): Remove related prefs.
-inline void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {}
 
 // Creates a tab with Google 'sign in' or 'add account' page, based on
 // passed |add_account| value.

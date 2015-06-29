@@ -601,8 +601,6 @@ extern const char kMediaDeviceIdSalt[];
 
 extern const char kPrintPreviewStickySettings[];
 extern const char kCloudPrintRoot[];
-extern const char kCloudPrintDialogWidth[];
-extern const char kCloudPrintDialogHeight[];
 extern const char kCloudPrintProxyEnabled[];
 extern const char kCloudPrintProxyId[];
 extern const char kCloudPrintAuthToken[];

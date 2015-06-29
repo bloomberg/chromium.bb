@@ -1653,10 +1653,6 @@ const char kMediaDeviceIdSalt[] = "media.device_id_salt";
 const char kPrintPreviewStickySettings[] =
     "printing.print_preview_sticky_settings";
 
-// The last requested size of the dialog as it was closed.
-const char kCloudPrintDialogWidth[] = "cloud_print.dialog_size.width";
-const char kCloudPrintDialogHeight[] = "cloud_print.dialog_size.height";
-
 // The list of BackgroundContents that should be loaded when the browser
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
