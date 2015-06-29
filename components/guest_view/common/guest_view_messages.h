@@ -12,6 +12,10 @@
 
 // Messages sent from the browser to the renderer.
 
+// Tells the embedder that a guest has been attached in --site-per-process mode.
+IPC_MESSAGE_CONTROL1(GuestViewMsg_AttachToEmbedderFrame_ACK,
+                     int /* element_instance_id */)
+
 // Once a RenderView proxy has been created for the guest in the embedder render
 // process, this IPC informs the embedder of the proxy's routing ID.
 IPC_MESSAGE_CONTROL2(GuestViewMsg_GuestAttached,
@@ -33,6 +37,16 @@ IPC_MESSAGE_CONTROL3(GuestViewHostMsg_AttachGuest,
                      int /* element_instance_id */,
                      int /* guest_instance_id */,
                      base::DictionaryValue /* attach_params */)
+
+// We have a RenderFrame with routing id of |embedder_local_frame_routing_id|.
+// We want this local frame to be replaced with a remote frame that points
+// to a GuestView. This message will attach the local frame to the guest.
+// The GuestView is identified by its ID: |guest_instance_id|.
+IPC_MESSAGE_CONTROL4(GuestViewHostMsg_AttachToEmbedderFrame,
+                     int /* embedder_local_frame_routing_id */,
+                     int /* element_instance_id */,
+                     int /* guest_instance_id */,
+                     base::DictionaryValue /* params */)
 
 // Sent by the renderer when a GuestView (identified by |view_instance_id|) has
 // been created in JavaScript.

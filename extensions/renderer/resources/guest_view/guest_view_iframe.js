@@ -49,8 +49,10 @@ GuestViewImpl.prototype.attachImpl$ = function(
 
   attachParams['instanceId'] = viewInstanceId;
   var contentWindow = getIframeContentWindow(viewInstanceId);
-  // TODO(lazyboy): Call binding function to attach this guest.
-  // |contentWindow| should be used to retrieve the RenderFrame in cpp.
+  // |contentWindow| is used to retrieve the RenderFrame in cpp.
+  GuestViewInternalNatives.AttachIframeGuest(
+      internalInstanceId, this.id, attachParams, contentWindow,
+      callbackWrapper.bind(this, callback));
 
   this.internalInstanceId = internalInstanceId;
   this.state = GuestViewImpl.GuestState.GUEST_STATE_ATTACHED;

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
 #include "ipc/ipc_message.h"
+#include "v8/include/v8.h"
 
 namespace guest_view {
 
@@ -37,6 +38,9 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   // embedding frame of the container being destroyed.
   void Destroy(bool embedder_frame_destroyed);
 
+  void RegisterDestructionCallback(v8::Local<v8::Function> callback,
+                                   v8::Isolate* isolate);
+
   // Called when the embedding RenderFrame is destroyed.
   virtual void OnRenderFrameDestroyed() {}
 
@@ -52,8 +56,15 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   // Note that this should be called exactly once.
   virtual void OnDestroy(bool embedder_frame_destroyed) {}
 
+  // BrowserPluginGuestDelegate public implementation.
+  void SetElementInstanceID(int element_instance_id) final;
+
  protected:
   ~GuestViewContainer() override;
+
+  bool ready_;
+
+  void OnHandleCallback(const IPC::Message& message);
 
  private:
   class RenderFrameLifetimeObserver;
@@ -64,12 +75,10 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   void EnqueueRequest(linked_ptr<GuestViewRequest> request);
   void PerformPendingRequest();
   void HandlePendingResponseCallback(const IPC::Message& message);
-
-  void OnHandleCallback(const IPC::Message& message);
+  void RunDestructionCallback(bool embedder_frame_destroyed);
 
   // BrowserPluginDelegate implementation.
   void Ready() final;
-  void SetElementInstanceID(int element_instance_id) final;
   void DidDestroyElement() final;
   base::WeakPtr<BrowserPluginDelegate> GetWeakPtr() final;
 
@@ -77,11 +86,13 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   content::RenderFrame* render_frame_;
   scoped_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
 
-  bool ready_;
   bool in_destruction_;
 
   std::deque<linked_ptr<GuestViewRequest> > pending_requests_;
   linked_ptr<GuestViewRequest> pending_response_;
+
+  v8::Global<v8::Function> destruction_callback_;
+  v8::Isolate* destruction_isolate_;
 
   base::WeakPtrFactory<GuestViewContainer> weak_ptr_factory_;
 

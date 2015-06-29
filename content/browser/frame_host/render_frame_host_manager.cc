@@ -151,6 +151,28 @@ RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
   return nullptr;
 }
 
+bool RenderFrameHostManager::ForInnerDelegate() {
+  // TODO(lazyboy): Subframes inside inner WebContents needs to be tested and
+  // we have to make sure that IsMainFrame() check below is appropriate. See
+  // http://crbug.com/500957.
+  return frame_tree_node_->IsMainFrame() &&
+         delegate_->GetOuterDelegateFrameTreeNodeID() !=
+             FrameTreeNode::kFrameTreeNodeInvalidID;
+}
+
+RenderWidgetHostImpl*
+RenderFrameHostManager::GetOuterRenderWidgetHostForKeyboardInput() {
+  if (!ForInnerDelegate())
+    return nullptr;
+
+  FrameTreeNode* outer_contents_frame_tree_node =
+      FrameTreeNode::GloballyFindByID(
+          delegate_->GetOuterDelegateFrameTreeNodeID());
+  return outer_contents_frame_tree_node->parent()
+      ->current_frame_host()
+      ->render_view_host();
+}
+
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
   if (frame_tree_node_->IsMainFrame())
     return NULL;
@@ -165,6 +187,30 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
     return NULL;
 
   return iter->second;
+}
+
+RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
+  int outer_contents_frame_tree_node_id =
+      delegate_->GetOuterDelegateFrameTreeNodeID();
+  FrameTreeNode* outer_contents_frame_tree_node =
+      FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id);
+  if (!outer_contents_frame_tree_node ||
+      !outer_contents_frame_tree_node->parent()) {
+    return nullptr;
+  }
+
+  return GetRenderFrameProxyHost(outer_contents_frame_tree_node->parent()
+                                     ->current_frame_host()
+                                     ->GetSiteInstance());
+}
+
+void RenderFrameHostManager::RemoveOuterDelegateFrame() {
+  FrameTreeNode* outer_delegate_frame_tree_node =
+      FrameTreeNode::GloballyFindByID(
+          delegate_->GetOuterDelegateFrameTreeNodeID());
+  DCHECK(outer_delegate_frame_tree_node->parent());
+  outer_delegate_frame_tree_node->frame_tree()->RemoveFrame(
+      outer_delegate_frame_tree_node);
 }
 
 void RenderFrameHostManager::SetPendingWebUI(const GURL& url, int bindings) {
@@ -1646,6 +1692,35 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   InitRenderView(render_view_host, opener_route_id, proxy->GetRoutingID(),
                  false);
   proxy->set_render_frame_proxy_created(true);
+}
+
+void RenderFrameHostManager::CreateOuterDelegateProxy(
+    SiteInstance* outer_contents_site_instance,
+    RenderFrameHostImpl* render_frame_host) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess));
+  RenderFrameProxyHost* proxy = new RenderFrameProxyHost(
+      outer_contents_site_instance, nullptr, frame_tree_node_);
+  proxy_hosts_[outer_contents_site_instance->GetId()] = proxy;
+
+  // Swap the outer WebContents's frame with the proxy to inner WebContents.
+  //
+  // We are in the outer WebContents, and its FrameTree would never see
+  // a load start for any of its inner WebContents. Eventually, that also makes
+  // the FrameTree never see the matching load stop. Therefore, we always pass
+  // false to |is_loading| below.
+  // TODO(lazyboy): This |is_loading| behavior might not be what we want,
+  // investigate and fix.
+  render_frame_host->Send(new FrameMsg_SwapOut(
+      render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
+      false /* is_loading */, FrameReplicationState()));
+  proxy->set_render_frame_proxy_created(true);
+}
+
+void RenderFrameHostManager::SetRWHViewForInnerContents(
+    RenderWidgetHostView* child_rwhv) {
+  DCHECK(ForInnerDelegate());
+  GetProxyToOuterDelegate()->SetChildRWHView(child_rwhv);
 }
 
 bool RenderFrameHostManager::InitRenderView(

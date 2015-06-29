@@ -7,6 +7,8 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -144,6 +146,15 @@ gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
 }
 
 void CrossProcessFrameConnector::GetScreenInfo(blink::WebScreenInfo* results) {
+  // Inner WebContents's root FrameTreeNode does not have a parent(), so
+  // GetRenderWidgetHostView() call below will fail.
+  // TODO(lazyboy): Fix this.
+  if (frame_proxy_in_parent_renderer_->frame_tree_node()
+          ->render_manager()
+          ->ForInnerDelegate()) {
+    return;
+  }
+
   RenderWidgetHostView* rwhv =
       frame_proxy_in_parent_renderer_->GetRenderWidgetHostView();
   if (rwhv)
@@ -157,8 +168,12 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
 
   RenderWidgetHostImpl* child_widget =
       RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
+  RenderFrameHostManager* manager =
+      frame_proxy_in_parent_renderer_->frame_tree_node()->render_manager();
   RenderWidgetHostImpl* parent_widget =
-      frame_proxy_in_parent_renderer_->GetRenderViewHost();
+      manager->ForInnerDelegate()
+          ? manager->GetOuterRenderWidgetHostForKeyboardInput()
+          : frame_proxy_in_parent_renderer_->GetRenderViewHost();
 
   if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
     if (!parent_widget->GetLastKeyboardEvent())

@@ -57,14 +57,22 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
       std::make_pair(
           RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
           this)).second);
-  CHECK(render_view_host_);
-  frame_tree_node_->frame_tree()->AddRenderViewHostRef(render_view_host_);
+  CHECK_IMPLIES(!render_view_host,
+                frame_tree_node_->render_manager()->ForInnerDelegate());
+  if (render_view_host)
+    frame_tree_node_->frame_tree()->AddRenderViewHostRef(render_view_host_);
 
-  if (!frame_tree_node_->IsMainFrame() &&
-      frame_tree_node_->parent()
-              ->render_manager()
-              ->current_frame_host()
-              ->GetSiteInstance() == site_instance) {
+  bool is_proxy_to_parent = !frame_tree_node_->IsMainFrame() &&
+                            frame_tree_node_->parent()
+                                    ->render_manager()
+                                    ->current_frame_host()
+                                    ->GetSiteInstance() == site_instance;
+
+  // If this is a proxy to parent frame or this proxy is for the inner
+  // WebContents's FrameTreeNode in outer WebContents's SiteInstance, then we
+  // need a CrossProcessFrameConnector.
+  if (is_proxy_to_parent ||
+      frame_tree_node_->render_manager()->ForInnerDelegate()) {
     // The RenderFrameHost navigating cross-process is destroyed and a proxy for
     // it is created in the parent's process. CrossProcessFrameConnector
     // initialization only needs to happen on an initial cross-process
@@ -86,7 +94,8 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
       Send(new FrameMsg_DeleteProxy(routing_id_));
   }
 
-  frame_tree_node_->frame_tree()->ReleaseRenderViewHostRef(render_view_host_);
+  if (render_view_host_)
+    frame_tree_node_->frame_tree()->ReleaseRenderViewHostRef(render_view_host_);
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_proxy_map.Get().erase(
       RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
@@ -189,6 +198,11 @@ void RenderFrameProxyHost::DisownOpener() {
 }
 
 void RenderFrameProxyHost::OnDetach() {
+  if (frame_tree_node_->render_manager()->ForInnerDelegate()) {
+    frame_tree_node_->render_manager()->RemoveOuterDelegateFrame();
+    return;
+  }
+
   // This message should only be received for subframes.  Note that we can't
   // restrict it to just the current SiteInstances of the ancestors of this
   // frame, because another frame in the tree may be able to detach this frame

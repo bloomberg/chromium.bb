@@ -386,6 +386,12 @@ class WebContents : public PageNavigator,
   // has one.
   virtual void DispatchBeforeUnload(bool for_cross_site_transition) = 0;
 
+  // Attaches this inner WebContents to its container frame
+  // |outer_contents_frame| in |outer_web_contents|.
+  virtual void AttachToOuterWebContentsFrame(
+      WebContents* outer_web_contents,
+      RenderFrameHost* outer_contents_frame) = 0;
+
   // Commands ------------------------------------------------------------------
 
   // Stop any pending navigation.

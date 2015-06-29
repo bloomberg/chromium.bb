@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -106,6 +108,13 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
 }
 
 int BrowserPluginGuest::GetGuestProxyRoutingID() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // We don't use the proxy to send postMessage in --site-per-process, since
+    // we use the contentWindow directly from the frame element instead.
+    return MSG_ROUTING_NONE;
+  }
+
   if (guest_proxy_routing_id_ != MSG_ROUTING_NONE)
     return guest_proxy_routing_id_;
 
@@ -267,15 +276,21 @@ void BrowserPluginGuest::InitInternal(
   guest_window_rect_ = params.view_rect;
 
   if (owner_web_contents_ != owner_web_contents) {
-    WebContentsViewGuest* new_view =
-        static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-    if (owner_web_contents_)
+    WebContentsViewGuest* new_view = nullptr;
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess)) {
+      new_view =
+          static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
+    }
+
+    if (owner_web_contents_ && new_view)
       new_view->OnGuestDetached(owner_web_contents_->GetView());
 
     // Once a BrowserPluginGuest has an embedder WebContents, it's considered to
     // be attached.
     owner_web_contents_ = owner_web_contents;
-    new_view->OnGuestAttached(owner_web_contents_->GetView());
+    if (new_view)
+      new_view->OnGuestAttached(owner_web_contents_->GetView());
   }
 
   RendererPreferences* renderer_prefs =
@@ -613,6 +628,18 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
 
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
+  // In --site-per-process, we do not need most of BrowserPluginGuest to drive
+  // inner WebContents.
+  // Right now InputHostMsg_ImeCompositionRangeChanged hits NOTREACHED() in
+  // RWHVChildFrame, so we're disabling message handling entirely here.
+  // TODO(lazyboy): Fix this as part of http://crbug.com/330264. The required
+  // parts of code from this class should be extracted to a separate class for
+  // --site-per-process.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return false;
+  }
+
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
@@ -693,10 +720,12 @@ void BrowserPluginGuest::Attach(
 void BrowserPluginGuest::OnWillAttachComplete(
     WebContentsImpl* embedder_web_contents,
     const BrowserPluginHostMsg_Attach_Params& params) {
+  bool use_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager
   // does not create a new RenderView on navigation.
-  if (has_render_view_) {
+  if (!use_site_per_process && has_render_view_) {
     // This will trigger a callback to RenderViewReady after a round-trip IPC.
     static_cast<RenderViewHostImpl*>(
         GetWebContents()->GetRenderViewHost())->Init();
@@ -715,14 +744,16 @@ void BrowserPluginGuest::OnWillAttachComplete(
 
   delegate_->DidAttach(GetGuestProxyRoutingID());
 
-  has_render_view_ = true;
+  if (!use_site_per_process) {
+    has_render_view_ = true;
 
-  // Enable input method for guest if it's enabled for the embedder.
-  if (static_cast<RenderViewHostImpl*>(
-      owner_web_contents_->GetRenderViewHost())->input_method_active()) {
-    RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
-        GetWebContents()->GetRenderViewHost());
-    guest_rvh->SetInputMethodActive(true);
+    // Enable input method for guest if it's enabled for the embedder.
+    if (static_cast<RenderViewHostImpl*>(
+            owner_web_contents_->GetRenderViewHost())->input_method_active()) {
+      RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+          GetWebContents()->GetRenderViewHost());
+      guest_rvh->SetInputMethodActive(true);
+    }
   }
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));

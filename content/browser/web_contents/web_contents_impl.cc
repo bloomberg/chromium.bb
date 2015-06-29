@@ -295,6 +295,44 @@ WebContentsImpl::ColorChooserInfo::ColorChooserInfo(int render_process_id,
 WebContentsImpl::ColorChooserInfo::~ColorChooserInfo() {
 }
 
+// WebContentsImpl::WebContentsTreeNode ----------------------------------------
+WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode()
+    : outer_web_contents_(nullptr),
+      outer_contents_frame_tree_node_id_(
+          FrameTreeNode::kFrameTreeNodeInvalidID) {
+}
+
+WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {
+  // Remove child pointer from our parent.
+  if (outer_web_contents_) {
+    ChildrenSet& child_ptrs_in_parent =
+        outer_web_contents_->node_->inner_web_contents_tree_nodes_;
+    ChildrenSet::iterator iter = child_ptrs_in_parent.find(this);
+    DCHECK(iter != child_ptrs_in_parent.end());
+    child_ptrs_in_parent.erase(this);
+  }
+
+  // Remove parent pointers from our children.
+  // TODO(lazyboy): We should destroy the children WebContentses too. If the
+  // children do not manage their own lifetime, then we would leak their
+  // WebContentses.
+  for (WebContentsTreeNode* child : inner_web_contents_tree_nodes_)
+    child->outer_web_contents_ = nullptr;
+}
+
+void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
+    WebContentsImpl* outer_web_contents,
+    RenderFrameHostImpl* outer_contents_frame) {
+  outer_web_contents_ = outer_web_contents;
+  outer_contents_frame_tree_node_id_ =
+      outer_contents_frame->frame_tree_node()->frame_tree_node_id();
+
+  if (!outer_web_contents_->node_)
+    outer_web_contents_->node_.reset(new WebContentsTreeNode());
+
+  outer_web_contents_->node_->inner_web_contents_tree_nodes_.insert(this);
+}
+
 // WebContentsImpl -------------------------------------------------------------
 
 WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
@@ -1176,6 +1214,30 @@ void WebContentsImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
   GetMainFrame()->DispatchBeforeUnload(for_cross_site_transition);
 }
 
+void WebContentsImpl::AttachToOuterWebContentsFrame(
+    WebContents* outer_web_contents,
+    RenderFrameHost* outer_contents_frame) {
+  CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess));
+  // Create a link to our outer WebContents.
+  node_.reset(new WebContentsTreeNode());
+  node_->ConnectToOuterWebContents(
+      static_cast<WebContentsImpl*>(outer_web_contents),
+      static_cast<RenderFrameHostImpl*>(outer_contents_frame));
+
+  DCHECK(outer_contents_frame);
+
+  // Create a proxy in top-level RenderFrameHostManager, pointing to the
+  // SiteInstance of the outer WebContents. The proxy will be used to send
+  // postMessage to the inner WebContents.
+  GetRenderManager()->CreateOuterDelegateProxy(
+      outer_contents_frame->GetSiteInstance(),
+      static_cast<RenderFrameHostImpl*>(outer_contents_frame));
+
+  GetRenderManager()->SetRWHViewForInnerContents(
+      GetRenderManager()->GetRenderWidgetHostView());
+}
+
 void WebContentsImpl::Stop() {
   GetRenderManager()->Stop();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, NavigationStopped());
@@ -1249,7 +1311,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
-  if (browser_plugin_guest_) {
+  if (browser_plugin_guest_ &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
     scoped_ptr<WebContentsView> platform_view(CreateWebContentsView(
         this, delegate, &render_view_host_delegate_view_));
 
@@ -1549,6 +1613,14 @@ void WebContentsImpl::CreateNewWindow(
   // if the opener is being suppressed (in a non-guest), we create a new
   // SiteInstance in its own BrowsingInstance.
   bool is_guest = BrowserPluginGuest::IsGuest(this);
+
+  if (is_guest &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    // TODO(lazyboy): CreateNewWindow doesn't work for OOPIF-based <webview>
+    // yet.
+    NOTREACHED();
+  }
 
   // If the opener is to be suppressed, the new window can be in any process.
   // Since routing ids are process specific, we must not have one passed in
@@ -3925,6 +3997,15 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
       WebContents::FromRenderFrameHost(source_rfh));
 
   if (source_web_contents) {
+    // If this message is going to outer WebContents from inner WebContents,
+    // then we should not create a RenderView. AttachToOuterWebContentsFrame()
+    // already created a RenderFrameProxyHost for that purpose.
+    if (GetBrowserPluginEmbedder() &&
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess)) {
+      return;
+    }
+
     if (GetBrowserPluginGuest()) {
       // We create a swapped out RenderView for the embedder in the guest's
       // render process but we intentionally do not expose the embedder's
@@ -4144,7 +4225,11 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   // until RenderWidgetHost is attached to RenderFrameHost. We need to special
   // case this because RWH is still a base class of RenderViewHost, and child
   // frame RWHVs are unique in that they do not have their own WebContents.
-  if (!for_main_frame_navigation) {
+  bool is_guest_in_site_per_process =
+      !!browser_plugin_guest_.get() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess);
+  if (!for_main_frame_navigation || is_guest_in_site_per_process) {
     RenderWidgetHostViewChildFrame* rwh_view_child =
         new RenderWidgetHostViewChildFrame(render_view_host);
     rwh_view = rwh_view_child;
@@ -4287,6 +4372,13 @@ bool WebContentsImpl::IsHidden() {
   return capturer_count_ == 0 && !should_normally_be_visible_;
 }
 
+int WebContentsImpl::GetOuterDelegateFrameTreeNodeID() {
+  if (node_ && node_->outer_web_contents())
+    return node_->outer_contents_frame_tree_node_id();
+
+  return FrameTreeNode::kFrameTreeNodeInvalidID;
+}
+
 RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {
   return frame_tree_.root()->render_manager();
 }
@@ -4297,6 +4389,7 @@ BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() const {
 
 void WebContentsImpl::SetBrowserPluginGuest(BrowserPluginGuest* guest) {
   CHECK(!browser_plugin_guest_);
+  CHECK(guest);
   browser_plugin_guest_.reset(guest);
 }
 

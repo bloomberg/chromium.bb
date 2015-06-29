@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
 namespace {
 
@@ -47,10 +48,11 @@ void GuestViewContainer::RenderFrameLifetimeObserver::OnDestruct() {
 }
 
 GuestViewContainer::GuestViewContainer(content::RenderFrame* render_frame)
-    : element_instance_id_(guest_view::kInstanceIDNone),
+    : ready_(false),
+      element_instance_id_(guest_view::kInstanceIDNone),
       render_frame_(render_frame),
-      ready_(false),
       in_destruction_(false),
+      destruction_isolate_(nullptr),
       weak_ptr_factory_(this) {
   render_frame_lifetime_observer_.reset(
       new RenderFrameLifetimeObserver(this, render_frame_));
@@ -87,6 +89,8 @@ void GuestViewContainer::Destroy(bool embedder_frame_destroyed) {
   // destruction.
   OnDestroy(embedder_frame_destroyed);
 
+  RunDestructionCallback(embedder_frame_destroyed);
+
   // Invalidate weak references to us to avoid late arriving tasks from running
   // during destruction
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -105,6 +109,13 @@ void GuestViewContainer::Destroy(bool embedder_frame_destroyed) {
   }
 
   delete this;
+}
+
+void GuestViewContainer::RegisterDestructionCallback(
+    v8::Local<v8::Function> callback,
+    v8::Isolate* isolate) {
+  destruction_callback_.Reset(isolate, callback);
+  destruction_isolate_ = isolate;
 }
 
 void GuestViewContainer::RenderFrameDestroyed() {
@@ -137,6 +148,29 @@ void GuestViewContainer::HandlePendingResponseCallback(
   CHECK(pending_response_.get());
   linked_ptr<GuestViewRequest> pending_response(pending_response_.release());
   pending_response->HandleResponse(message);
+}
+
+void GuestViewContainer::RunDestructionCallback(bool embedder_frame_destroyed) {
+  // Do not attempt to run |destruction_callback_| if the embedder frame was
+  // destroyed. Trying to invoke callback on RenderFrame destruction results in
+  // assertion failure when calling WebScopedMicrotaskSuppression.
+  if (embedder_frame_destroyed)
+    return;
+
+  // Call the destruction callback, if one is registered.
+  if (!destruction_callback_.IsEmpty()) {
+    v8::HandleScope handle_scope(destruction_isolate_);
+    v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(
+        destruction_isolate_, destruction_callback_);
+    v8::Local<v8::Context> context = callback->CreationContext();
+    if (context.IsEmpty())
+      return;
+
+    v8::Context::Scope context_scope(context);
+    blink::WebScopedMicrotaskSuppression suppression;
+
+    callback->Call(context->Global(), 0 /* argc */, nullptr);
+  }
 }
 
 void GuestViewContainer::OnHandleCallback(const IPC::Message& message) {

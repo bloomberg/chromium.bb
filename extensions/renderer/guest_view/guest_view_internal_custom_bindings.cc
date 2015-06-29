@@ -11,14 +11,19 @@
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/guest_view/common/guest_view_messages.h"
 #include "components/guest_view/renderer/guest_view_request.h"
+#include "components/guest_view/renderer/iframe_guest_view_container.h"
+#include "components/guest_view/renderer/iframe_guest_view_request.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -38,6 +43,21 @@ static base::LazyInstance<ViewMap> weak_view_map = LAZY_INSTANCE_INITIALIZER;
 
 namespace extensions {
 
+namespace {
+
+content::RenderFrame* GetRenderFrame(v8::Handle<v8::Value> value) {
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Object>::Cast(value)->CreationContext();
+  if (context.IsEmpty())
+    return nullptr;
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::frameForContext(context);
+  if (!frame)
+    return nullptr;
+  return content::RenderFrame::FromWebFrame(frame);
+}
+
+}  // namespace
+
 GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
     ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
@@ -46,6 +66,9 @@ GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
                            base::Unretained(this)));
   RouteFunction("DetachGuest",
                 base::Bind(&GuestViewInternalCustomBindings::DetachGuest,
+                           base::Unretained(this)));
+  RouteFunction("AttachIframeGuest",
+                base::Bind(&GuestViewInternalCustomBindings::AttachIframeGuest,
                            base::Unretained(this)));
   RouteFunction("DestroyContainer",
                 base::Bind(&GuestViewInternalCustomBindings::DestroyContainer,
@@ -177,6 +200,77 @@ void GuestViewInternalCustomBindings::DetachGuest(
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
 }
 
+void GuestViewInternalCustomBindings::AttachIframeGuest(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Allow for an optional callback parameter.
+  const int num_required_params = 4;
+  CHECK(args.Length() >= num_required_params &&
+        args.Length() <= (num_required_params + 1));
+  // Element Instance ID.
+  CHECK(args[0]->IsInt32());
+  // Guest Instance ID.
+  CHECK(args[1]->IsInt32());
+  // Attach Parameters.
+  CHECK(args[2]->IsObject());
+  // <iframe>.contentWindow.
+  CHECK(args[3]->IsObject());
+  // Optional Callback Function.
+  CHECK(args.Length() <= num_required_params ||
+        args[num_required_params]->IsFunction());
+
+  int element_instance_id = args[0]->Int32Value();
+  int guest_instance_id = args[1]->Int32Value();
+
+  scoped_ptr<base::DictionaryValue> params;
+  {
+    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    scoped_ptr<base::Value> params_as_value(
+        converter->FromV8Value(args[2], context()->v8_context()));
+    CHECK(params_as_value->IsType(base::Value::TYPE_DICTIONARY));
+    params.reset(
+        static_cast<base::DictionaryValue*>(params_as_value.release()));
+  }
+
+  // Add flag to |params| to indicate that the element size is specified in
+  // logical units.
+  params->SetBoolean(guest_view::kElementSizeIsLogical, true);
+
+  content::RenderFrame* render_frame = GetRenderFrame(args[3]);
+  blink::WebLocalFrame* frame = render_frame->GetWebFrame();
+
+  // Parent must exist.
+  blink::WebFrame* parent_frame = frame->parent();
+  DCHECK(parent_frame);
+  DCHECK(parent_frame->isWebLocalFrame());
+
+  content::RenderFrame* embedder_parent_frame =
+      content::RenderFrame::FromWebFrame(parent_frame);
+
+  // Create a GuestViewContainer if it does not exist.
+  // An element instance ID uniquely identifies an IframeGuestViewContainer
+  // within a RenderView.
+  auto* guest_view_container =
+      static_cast<guest_view::IframeGuestViewContainer*>(
+          guest_view::GuestViewContainer::FromID(element_instance_id));
+  // This is the first time we hear about the |element_instance_id|.
+  DCHECK(!guest_view_container);
+  // The <webview> element's GC takes ownership of |guest_view_container|.
+  guest_view_container =
+      new guest_view::IframeGuestViewContainer(embedder_parent_frame);
+  guest_view_container->SetElementInstanceID(element_instance_id);
+
+  linked_ptr<guest_view::GuestViewRequest> request(
+      new guest_view::GuestViewAttachIframeRequest(
+          guest_view_container, render_frame->GetRoutingID(), guest_instance_id,
+          params.Pass(), args.Length() == (num_required_params + 1)
+                             ? args[num_required_params].As<v8::Function>()
+                             : v8::Local<v8::Function>(),
+          args.GetIsolate()));
+  guest_view_container->IssueRequest(request);
+
+  args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
+}
+
 void GuestViewInternalCustomBindings::DestroyContainer(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().SetNull();
@@ -256,10 +350,10 @@ void GuestViewInternalCustomBindings::RegisterDestructionCallback(
   CHECK(args[1]->IsFunction());
 
   int element_instance_id = args[0]->Int32Value();
-  // An element instance ID uniquely identifies a ExtensionsGuestViewContainer
-  // within a RenderView.
-  auto guest_view_container = static_cast<ExtensionsGuestViewContainer*>(
-      guest_view::GuestViewContainer::FromID(element_instance_id));
+  // An element instance ID uniquely identifies a GuestViewContainer within a
+  // RenderView.
+  auto* guest_view_container =
+      guest_view::GuestViewContainer::FromID(element_instance_id);
   if (!guest_view_container)
     return;
 

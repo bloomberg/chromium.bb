@@ -279,6 +279,9 @@ class CONTENT_EXPORT WebContentsImpl
   void WasHidden() override;
   bool NeedToFireBeforeUnload() override;
   void DispatchBeforeUnload(bool for_cross_site_transition) override;
+  void AttachToOuterWebContentsFrame(
+      WebContents* outer_web_contents,
+      RenderFrameHost* outer_contents_frame) override;
   void Stop() override;
   WebContents* Clone() override;
   void ReloadFocusedFrame(bool ignore_cache) override;
@@ -594,6 +597,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar(bool select_all) override;
   bool IsHidden() override;
+  int GetOuterDelegateFrameTreeNodeID() override;
 
   // NotificationObserver ------------------------------------------------------
 
@@ -711,6 +715,39 @@ class CONTENT_EXPORT WebContentsImpl
   friend class TestWebContents;
 
   class DestructionObserver;
+
+  // Represents a WebContents node in a tree of WebContents structure.
+  //
+  // Two WebContents with separate FrameTrees can be connected by
+  // outer/inner relationship using this class. Note that their FrameTrees
+  // still remain disjoint.
+  // The parent is referred to as "outer WebContents" and the descendents are
+  // referred to as "inner WebContents".
+  // For each inner WebContents, the outer WebContents will have a
+  // corresponding FrameTreeNode.
+  struct WebContentsTreeNode {
+   public:
+    WebContentsTreeNode();
+    ~WebContentsTreeNode();
+
+    typedef std::set<WebContentsTreeNode*> ChildrenSet;
+
+    void ConnectToOuterWebContents(WebContentsImpl* outer_web_contents,
+                                   RenderFrameHostImpl* outer_contents_frame);
+
+    WebContentsImpl* outer_web_contents() { return outer_web_contents_; }
+    int outer_contents_frame_tree_node_id() {
+      return outer_contents_frame_tree_node_id_;
+    }
+
+   private:
+    // The outer Webontents.
+    WebContentsImpl* outer_web_contents_;
+    // The ID of the FrameTreeNode in outer WebContents that is hosting us.
+    int outer_contents_frame_tree_node_id_;
+    // List of inner WebContents that we host.
+    ChildrenSet inner_web_contents_tree_nodes_;
+  };
 
   // See WebContents::Create for a description of these parameters.
   WebContentsImpl(BrowserContext* browser_context);
@@ -1016,6 +1053,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Manages the frame tree of the page and process swaps in each node.
   FrameTree frame_tree_;
+
+  // If this WebContents is part of a "tree of WebContents", then this contains
+  // information about the structure.
+  scoped_ptr<WebContentsTreeNode> node_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

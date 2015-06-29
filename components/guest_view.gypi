@@ -70,7 +70,11 @@
             'guest_view/renderer/guest_view_container.cc',
             'guest_view/renderer/guest_view_container.h',
             'guest_view/renderer/guest_view_request.cc',
-            'guest_view/renderer/guest_view_request.h'
+            'guest_view/renderer/guest_view_request.h',
+            'guest_view/renderer/iframe_guest_view_container.cc',
+            'guest_view/renderer/iframe_guest_view_container.h',
+            'guest_view/renderer/iframe_guest_view_request.cc',
+            'guest_view/renderer/iframe_guest_view_request.h',
           ],
         },
         {

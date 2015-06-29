@@ -4,18 +4,22 @@
 
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 
+#include "base/command_line.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -151,6 +155,18 @@ void RenderWidgetHostViewChildFrame::UpdateCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
+  // It is valid for an inner WebContents's SetIsLoading() to end up here.
+  // This is because an inner WebContents's main frame's RenderWidgetHostView
+  // is a RenderWidgetHostViewChildFrame. In contrast, when there is no
+  // inner/outer WebContents, only subframe's RenderWidgetHostView can be a
+  // RenderWidgetHostViewChildFrame which do not get a SetIsLoading() call.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess) &&
+      BrowserPluginGuest::IsGuest(
+          static_cast<RenderViewHostImpl*>(RenderViewHost::From(host_)))) {
+    return;
+  }
+
   NOTREACHED();
 }
 

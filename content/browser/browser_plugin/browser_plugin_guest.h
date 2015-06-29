@@ -79,6 +79,9 @@ struct DropData;
 // A BrowserPluginGuest can also create a new unattached guest via
 // CreateNewWindow. The newly created guest will live in the same partition,
 // which means it can share storage and can script this guest.
+//
+// Note: in --site-per-process, all IPCs sent out from this class will be
+// dropped on the floor since we don't have a BrowserPlugin.
 class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                                           public WebContentsObserver {
  public:

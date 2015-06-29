@@ -47,6 +47,13 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // been detached.
   void DetachGuest(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // AttachIframeGuest is --site-per-process variant of AttachGuest().
+  //
+  // AttachIframeGuest takes a |contentWindow| parameter in addition to the
+  // parameters to AttachGuest. That parameter is used to identify the
+  // RenderFrame of the <iframe> container element.
+  void AttachIframeGuest(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // GetContentWindow takes in a RenderView routing ID and returns the
   // Window JavaScript object for that RenderView.
   void GetContentWindow(const v8::FunctionCallbackInfo<v8::Value>& args);

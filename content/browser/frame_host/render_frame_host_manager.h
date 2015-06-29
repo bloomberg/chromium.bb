@@ -171,6 +171,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // hidden state.
     virtual bool IsHidden() = 0;
 
+    // If the delegate is an inner WebContents, this method returns the
+    // FrameTreeNode ID of the frame in the outer WebContents which hosts
+    // the inner WebContents. Returns FrameTreeNode::kFrameTreeNodeInvalidID
+    // if the delegate does not have an outer WebContents.
+    virtual int GetOuterDelegateFrameTreeNodeID() = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -228,7 +234,30 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // there is no current one.
   RenderWidgetHostView* GetRenderWidgetHostView() const;
 
+  // Returns whether this manager belongs to a FrameTreeNode that is a main
+  // frame in an inner WebContents.
+  // TODO(lazyboy): Make this work correctly for subframes inside inner
+  // WebContents too.
+  bool ForInnerDelegate();
+
+  // Returns the RenderWidgetHost of the outer WebContents (if any) that can be
+  // used to fetch the last keyboard event.
+  // TODO(lazyboy): This can be removed once input events are sent directly to
+  // remote frames.
+  RenderWidgetHostImpl* GetOuterRenderWidgetHostForKeyboardInput();
+
   RenderFrameProxyHost* GetProxyToParent();
+
+  // Returns the proxy to inner WebContents in the outer WebContents's
+  // SiteInstance. Returns nullptr if this WebContents isn't part of inner/outer
+  // relationship.
+  RenderFrameProxyHost* GetProxyToOuterDelegate();
+
+  // Removes the FrameTreeNode in the outer WebContents that represents this
+  // FrameTreeNode.
+  // TODO(lazyboy): This does not belong to RenderFrameHostManager, move it to
+  // somehwere else.
+  void RemoveOuterDelegateFrame();
 
   // Returns the pending RenderFrameHost, or NULL if there is no pending one.
   RenderFrameHostImpl* pending_frame_host() const {
@@ -437,6 +466,18 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // route ID of this frame's RenderView for |instance|.
   // TODO(alexmos): Switch this to return RenderFrame routing IDs.
   int CreateOpenerProxies(SiteInstance* instance);
+
+  // Called on the RFHM of the inner WebContents to create a
+  // RenderFrameProxyHost in its outer WebContents's SiteInstance,
+  // |outer_contents_site_instance|. The frame in outer WebContents that is
+  // hosting the inner WebContents is |render_frame_host|, and the frame will
+  // be swapped out with the proxy.
+  void CreateOuterDelegateProxy(SiteInstance* outer_contents_site_instance,
+                                RenderFrameHostImpl* render_frame_host);
+
+  // Sets the child RenderWidgetHostView for this frame, which must be part of
+  // an inner WebContents.
+  void SetRWHViewForInnerContents(RenderWidgetHostView* child_rwhv);
 
  private:
   friend class FrameTreeVisualizer;
