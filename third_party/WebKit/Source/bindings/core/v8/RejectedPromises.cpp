@@ -94,7 +94,6 @@ public:
         }
 
         m_callStack.clear();
-        m_exception.clear();
     }
 
     void revoke()
@@ -115,7 +114,7 @@ public:
             init.setPromise(ScriptPromise(m_scriptState, value));
             init.setReason(m_exception);
             RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::rejectionhandled, init);
-            m_shouldLogToConsole &= target->dispatchEvent(event);
+            target->dispatchEvent(event);
         }
 
         if (m_shouldLogToConsole) {
