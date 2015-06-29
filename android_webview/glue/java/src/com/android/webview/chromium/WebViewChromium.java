@@ -1614,6 +1614,16 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mFactory.startYourEngines(false);
         checkThread();
         mWebViewPrivate.super_setLayoutParams(layoutParams);
+        if (checkNeedsPost()) {
+            runVoidTaskOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    mAwContents.setLayoutParams(layoutParams);
+                }
+            });
+            return;
+        }
+        mAwContents.setLayoutParams(layoutParams);
     }
 
     @Override

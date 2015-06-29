@@ -186,7 +186,7 @@ public class AwLayoutSizer {
      * completed.
      * This should be called after onSizeChanged regardless of whether the size has changed or not.
      */
-    public void onLayoutChange() {
+    public void onLayoutParamsChange() {
         updateLayoutSettings();
     }
 

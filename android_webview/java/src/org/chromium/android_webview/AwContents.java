@@ -209,7 +209,6 @@ public class AwContents implements SmartClipProvider,
     private long mNativeAwContents;
     private final AwBrowserContext mBrowserContext;
     private ViewGroup mContainerView;
-    private final AwLayoutChangeListener mLayoutChangeListener;
     private final Context mContext;
     private final int mAppTargetSdkVersion;
     private ContentViewCore mContentViewCore;
@@ -613,15 +612,6 @@ public class AwContents implements SmartClipProvider,
     };
 
     //--------------------------------------------------------------------------------------------
-    private class AwLayoutChangeListener implements View.OnLayoutChangeListener {
-        @Override
-        public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            assert v == mContainerView;
-            mLayoutSizer.onLayoutChange();
-        }
-    }
-
     /**
      * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
@@ -704,8 +694,6 @@ public class AwContents implements SmartClipProvider,
 
         setOverScrollMode(mContainerView.getOverScrollMode());
         setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
-        mLayoutChangeListener = new AwLayoutChangeListener();
-        mContainerView.addOnLayoutChangeListener(mLayoutChangeListener);
 
         setNewAwContents(nativeInit(mBrowserContext));
 
@@ -756,8 +744,6 @@ public class AwContents implements SmartClipProvider,
         }
         mFullScreenTransitionsState.enterFullScreen(fullScreenView, wasInitialContainerViewFocused);
         mAwViewMethods = new NullAwViewMethods(this, mInternalAccessAdapter, mContainerView);
-        mContainerView.removeOnLayoutChangeListener(mLayoutChangeListener);
-        fullScreenView.addOnLayoutChangeListener(mLayoutChangeListener);
 
         // Associate this AwContents with the FullScreenView.
         setInternalAccessAdapter(fullScreenView.getInternalAccessAdapter());
@@ -799,8 +785,6 @@ public class AwContents implements SmartClipProvider,
                 this, fullscreenView.getInternalAccessAdapter(), fullscreenView));
         mAwViewMethods = awViewMethodsImpl;
         ViewGroup initialContainerView = mFullScreenTransitionsState.getInitialContainerView();
-        initialContainerView.addOnLayoutChangeListener(mLayoutChangeListener);
-        fullscreenView.removeOnLayoutChangeListener(mLayoutChangeListener);
 
         // Re-associate this AwContents with the WebView.
         setInternalAccessAdapter(mFullScreenTransitionsState.getInitialInternalAccessDelegate());
@@ -1194,6 +1178,10 @@ public class AwContents implements SmartClipProvider,
         } finally {
             TraceEvent.end("AwContents.onDraw");
         }
+    }
+
+    public void setLayoutParams(final ViewGroup.LayoutParams layoutParams) {
+        mLayoutSizer.onLayoutParamsChange();
     }
 
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
