@@ -19,6 +19,7 @@ const char kSubtypeKey[] = "X-subtype";
 const char kGMSVersionKey[] = "gmsv";
 const char kInstanceIDKey[] = "appid";
 const char kScopeKey[] = "scope";
+const char kExtraScopeKey[] = "X-scope";
 // Prefix that needs to be added for each option key.
 const char kOptionKeyPrefix[] = "X-";
 
@@ -44,6 +45,7 @@ InstanceIDGetTokenRequestHandler::~InstanceIDGetTokenRequestHandler() {}
 
 void InstanceIDGetTokenRequestHandler::BuildRequestBody(std::string* body){
   BuildFormEncoding(kScopeKey, scope_, body);
+  BuildFormEncoding(kExtraScopeKey, scope_, body);
   for (auto iter = options_.begin(); iter != options_.end(); ++iter)
     BuildFormEncoding(kOptionKeyPrefix + iter->first, iter->second, body);
   BuildFormEncoding(kGMSVersionKey, base::IntToString(gcm_version_), body);

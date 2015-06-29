@@ -441,6 +441,7 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
   expected_pairs["sender"] = kDeveloperId;
   expected_pairs["X-subtype"] = kDeveloperId;
   expected_pairs["scope"] = kScope;
+  expected_pairs["X-scope"] = kScope;
 
   // Verify data was formatted properly.
   std::string upload_data = fetcher->upload_data();

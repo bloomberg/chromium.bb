@@ -534,6 +534,7 @@ TEST_F(InstanceIDGetTokenRequestTest, RequestDataAndURL) {
   expected_pairs["device"] = base::Uint64ToString(kAndroidId);
   expected_pairs["appid"] = kInstanceId;
   expected_pairs["scope"] = kScope;
+  expected_pairs["X-scope"] = kScope;
   expected_pairs["X-Foo"] = "Bar";
 
   // Verify data was formatted properly.
