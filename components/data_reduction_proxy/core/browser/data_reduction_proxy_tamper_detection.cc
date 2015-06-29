@@ -38,7 +38,7 @@
     } \
   } while (0)
 
-// Macro for UMA reporting of compression ratio. Reports |compression_ratio}
+// Macro for UMA reporting of compression ratio. Reports |compression_ratio|
 // to either "HTTPS" histogram or "HTTP" histogram, depending on the response
 // type.
 #define REPORT_TAMPER_DETECTION_UMA_COMPRESSION_RATIO( \
