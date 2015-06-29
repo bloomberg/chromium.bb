@@ -369,12 +369,40 @@ class SecurityStyleTestObserver : public WebContentsObserver {
     return latest_explanations_;
   }
 
+  void ClearLatestSecurityStyleAndExplanations() {
+    latest_security_style_ = content::SECURITY_STYLE_UNKNOWN;
+    latest_explanations_.warning_explanations.clear();
+    latest_explanations_.broken_explanations.clear();
+  }
+
  private:
   content::SecurityStyle latest_security_style_;
   content::SecurityStyleExplanations latest_explanations_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
 };
+
+// Check that |observer|'s latest event was for an expired certificate
+// and that it saw the proper SecurityStyle and explanations.
+void CheckExpiredSecurityStyle(const SecurityStyleTestObserver& observer) {
+  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            observer.latest_security_style());
+
+  const content::SecurityStyleExplanations& expired_explanation =
+      observer.latest_explanations();
+  EXPECT_EQ(0u, expired_explanation.warning_explanations.size());
+  ASSERT_EQ(1u, expired_explanation.broken_explanations.size());
+
+  // Check that the summary and description are as expected.
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
+            expired_explanation.broken_explanations[0].summary);
+
+  base::string16 error_string =
+      base::UTF8ToUTF16(net::ErrorToString(net::ERR_CERT_DATE_INVALID));
+  EXPECT_EQ(l10n_util::GetStringFUTF8(
+                IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
+            expired_explanation.broken_explanations[0].description);
+}
 
 }  // namespace
 
@@ -2860,12 +2888,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
             observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
 
   // Visit a valid HTTPS url.
   GURL valid_https_url(https_test_server.GetURL(std::string()));
   ui_test_utils::NavigateToURL(browser(), valid_https_url);
   EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
             observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
 
   // Visit an (otherwise valid) HTTPS page that displays mixed content.
   std::string replacement_path;
@@ -2886,25 +2918,39 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
             mixed_content_explanation.warning_explanations[0].description);
   EXPECT_EQ(0u, mixed_content_explanation.broken_explanations.size());
 
-  // Visit a broken HTTPS url. Other conditions cannot be tested after
-  // this one because once the interstitial is clicked through, all URLs
-  // for this host will remain in a broken state.
+  // Visit a broken HTTPS url.
   GURL expired_url(https_test_server_expired.GetURL(std::string()));
   ui_test_utils::NavigateToURL(browser(), expired_url);
 
-  ProceedThroughInterstitial(web_contents);
-  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
-            observer.latest_security_style());
+  // An interstitial should show, and an event for the lock icon on the
+  // interstitial should fire.
+  content::WaitForInterstitialAttach(web_contents);
+  EXPECT_TRUE(web_contents->ShowingInterstitialPage());
+  CheckExpiredSecurityStyle(observer);
 
-  const content::SecurityStyleExplanations& expired_explanation =
-      observer.latest_explanations();
-  EXPECT_EQ(0u, expired_explanation.warning_explanations.size());
-  ASSERT_EQ(1u, expired_explanation.broken_explanations.size());
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
-            expired_explanation.broken_explanations[0].summary);
-  base::string16 error_string =
-      base::UTF8ToUTF16(net::ErrorToString(net::ERR_CERT_DATE_INVALID));
-  EXPECT_EQ(l10n_util::GetStringFUTF8(
-                IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
-            expired_explanation.broken_explanations[0].description);
+  // Before clicking through, navigate to a different page, and then go
+  // back to the interstitial.
+  ui_test_utils::NavigateToURL(browser(), valid_https_url);
+  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
+            observer.latest_security_style());
+  EXPECT_EQ(0u, observer.latest_explanations().warning_explanations.size());
+  EXPECT_EQ(0u, observer.latest_explanations().broken_explanations.size());
+
+  // After going back to the interstitial, an event for a broken lock
+  // icon should fire again.
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+  content::WaitForInterstitialAttach(web_contents);
+  EXPECT_TRUE(web_contents->ShowingInterstitialPage());
+  CheckExpiredSecurityStyle(observer);
+
+  // Since the next expected style is the same as the previous, clear
+  // the observer (to make sure that the event fires twice and we don't
+  // just see the previous event's style).
+  observer.ClearLatestSecurityStyleAndExplanations();
+
+  // Other conditions cannot be tested after clicking through because
+  // once the interstitial is clicked through, all URLs for this host
+  // will remain in a broken state.
+  ProceedThroughInterstitial(web_contents);
+  CheckExpiredSecurityStyle(observer);
 }

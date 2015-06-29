@@ -244,6 +244,8 @@ void InterstitialPageImpl::Show() {
     delegate_->OverrideEntry(entry.get());
 
     controller_->SetTransientEntry(entry.Pass());
+
+    static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSSLState();
   }
 
   DCHECK(!render_view_host_);
