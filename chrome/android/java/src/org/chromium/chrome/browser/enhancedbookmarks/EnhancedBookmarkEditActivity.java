@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.ui.UiUtils;
 
@@ -108,7 +109,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mDeleteButton = menu.add(R.string.enhanced_bookmark_action_bar_delete).setIcon(
-                R.drawable.btn_trash);
+                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.btn_trash));
         mDeleteButton.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         return super.onCreateOptionsMenu(menu);
     }
