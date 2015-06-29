@@ -19,6 +19,16 @@
         Utils.installTitleEventHandler(video, 'ended');
       }
 
+      // For those streams whose start time is greater than
+      // kSeekToStartFudgeRoom defined in source_buffer_stream.cc, we
+      // need to skip those time range. Otherwise it won't play
+      function onLoadedMetaData() {
+        var buf = video.buffered;
+        if (buf.length > 0) {
+          video.currentTime = buf.start(0);
+        }
+      }
+
       // The test completes after media starts playing, seeks to 0.9 of
       // duration and fires the ended event.
       // The test stops when an error or ended event fire unexpectedly.
@@ -29,6 +39,7 @@
         video.addEventListener('ended', Utils.failTest);
         video.addEventListener('seeked', onSeeked);
         video.addEventListener('timeupdate', onTimeUpdate);
+        video.addEventListener('loadedmetadata', onLoadedMetaData);
         var source = MediaSourceUtils.loadMediaSourceFromTestConfig(testConfig);
         video.src = window.URL.createObjectURL(source);
         video.play();

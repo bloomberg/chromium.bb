@@ -17,6 +17,10 @@ const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
+#if defined(USE_PROPRIETARY_CODECS) && defined(ENABLE_MPEG2TS_STREAM_PARSER)
+const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
+#endif
+
 namespace content {
 
 // MSE is available on all desktop platforms and on Android 4.1 and later.
@@ -91,4 +95,9 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
   RunMediaTestPage("mse_config_change.html", query_params, kEnded, true);
 }
 
+#if defined(USE_PROPRIETARY_CODECS) && defined(ENABLE_MPEG2TS_STREAM_PARSER)
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioVideo_Mp2t) {
+  TestSimplePlayback("bear-1280x720.ts", kMp2tAudioVideo, kEnded);
+}
+#endif
 }  // namespace content
