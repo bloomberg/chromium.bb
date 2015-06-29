@@ -107,9 +107,7 @@ void SVGRootInlineBox::layoutRootBox(const LayoutRect& childRect)
     LayoutBlockFlow& parentBlock = block();
 
     // Finally, assign the root block position, now that all content is laid out.
-    // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
-    // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-    LayoutRect boundingRect = enclosingLayoutRect(childRect);
+    LayoutRect boundingRect = childRect;
     parentBlock.setLocation(boundingRect.location());
     parentBlock.setSize(boundingRect.size());
 

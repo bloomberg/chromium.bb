@@ -901,9 +901,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
     // Visual overflow just includes overflow for stuff we need to issues paint invalidations for ourselves. Self-painting layers are ignored.
     // Layout overflow is used to determine scrolling extent, so it still includes child layers and also factors in
     // transforms, relative positioning, etc.
-    // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
-    // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-    LayoutRect logicalLayoutOverflow(enclosingLayoutRect(logicalFrameRectIncludingLineHeight(lineTop, lineBottom)));
+    LayoutRect logicalLayoutOverflow(logicalFrameRectIncludingLineHeight(lineTop, lineBottom));
     LayoutRect logicalVisualOverflow(logicalLayoutOverflow);
 
     addBoxShadowVisualOverflow(logicalVisualOverflow);
@@ -919,9 +917,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
             LayoutText& rt = text->layoutObject();
             if (rt.isBR())
                 continue;
-            // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
-            // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-            LayoutRect textBoxOverflow(enclosingLayoutRect(text->logicalFrameRect()));
+            LayoutRect textBoxOverflow(text->logicalFrameRect());
             addTextBoxVisualOverflow(text, textBoxDataMap, textBoxOverflow);
             logicalVisualOverflow.unite(textBoxOverflow);
         } else if (curr->layoutObject().isLayoutInline()) {
@@ -964,9 +960,7 @@ void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, const LayoutRect& 
 
 void InlineFlowBox::setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
-    // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-    LayoutRect frameBox = enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
+    LayoutRect frameBox = frameRectIncludingLineHeight(lineTop, lineBottom);
 
     LayoutRect layoutOverflow(isHorizontal() ? logicalLayoutOverflow : logicalLayoutOverflow.transposedRect());
     setLayoutOverflow(layoutOverflow, frameBox);
