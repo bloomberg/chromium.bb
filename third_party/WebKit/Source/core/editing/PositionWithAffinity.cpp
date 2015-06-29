@@ -33,7 +33,7 @@ bool PositionWithAffinityTemplate<PositionType>::operator==(const PositionWithAf
     return m_affinity == other.m_affinity && m_position == other.m_position;
 }
 
-template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<Position>;
-template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<PositionInComposedTree>;
+template class CORE_TEMPLATE_EXPORT PositionWithAffinityTemplate<Position>;
+template class CORE_TEMPLATE_EXPORT PositionWithAffinityTemplate<PositionInComposedTree>;
 
 } // namespace blink
