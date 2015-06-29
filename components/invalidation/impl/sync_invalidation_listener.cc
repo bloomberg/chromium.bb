@@ -262,7 +262,7 @@ void SyncInvalidationListener::InformRegistrationFailure(
     // because:
     // - the server doesn't yet recognize the data type, which could happen for
     //   brand-new data types.
-    // - the user has changed his password and hasn't updated it yet locally.
+    // - the user has changed their password and hasn't updated it yet locally.
     // Either way, block future registration attempts for |object_id|. However,
     // we don't forget any saved invalidation state since we may use it once the
     // error is addressed.

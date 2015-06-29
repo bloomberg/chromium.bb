@@ -24,7 +24,7 @@ cr.define('chrome.sync', function() {
    * @param {Array of DOM elements} quickLinkArray The <a> object which
    *     will be given a link to a quick filter option.
    * @param {!HTMLInputElement} queryControl The <input> object of
-   *     type=search where the user types in his query.
+   *     type=search where user's query is typed.
    */
   var decorateQuickQueryControls = function(quickLinkArray, submitControl,
                                             queryControl) {
@@ -71,9 +71,9 @@ cr.define('chrome.sync', function() {
    * Decorates the various search controls.
    *
    * @param {!HTMLInputElement} queryControl The <input> object of
-   *     type=search where the user types in his query.
+   *     type=search where the user's query is typed.
    * @param {!HTMLButtonElement} submitControl The <button> object
-   *     where the user can click to do his query.
+   *     where the user can click to submit the query.
    * @param {!HTMLElement} statusControl The <span> object display the
    *     search status.
    * @param {!HTMLElement} listControl The <list> object which holds

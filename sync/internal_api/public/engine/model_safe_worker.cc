@@ -83,7 +83,7 @@ void ModelSafeWorker::RequestStop() {
 
   // Set stop flag but don't signal work_done_or_stopped_ to unblock sync loop
   // because the worker may be working and depending on sync command object
-  // living on sync thread. his prevents any *further* tasks from being posted
+  // living on sync thread. This prevents any *further* tasks from being posted
   // to worker threads (see DoWorkAndWaitUntilDone below), but note that one
   // may already be posted.
   stopped_ = true;
