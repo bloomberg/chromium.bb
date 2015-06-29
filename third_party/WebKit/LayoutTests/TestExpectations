@@ -1693,8 +1693,6 @@ crbug.com/461903 [ Win Debug ] media/encrypted-media/encrypted-media-waiting-for
 crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ ImageOnlyFailure ]
 
-crbug.com/505411 virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ NeedsRebaseline ]
-
 crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Failure ]
 crbug.com/505422 [ Linux Mac ] http/tests/serviceworker/chromium/stashed-ports-after-terminate.html [ Pass Timeout ]
 
