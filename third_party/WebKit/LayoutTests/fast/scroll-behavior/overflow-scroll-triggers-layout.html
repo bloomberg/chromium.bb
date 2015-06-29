@@ -21,6 +21,7 @@
 
 <script>
 description("Ensures that if layout is dirty, triggering a scroll causes a relayout");
+internals.settings.setScrollAnimatorEnabled(false);
 
 outer.addEventListener("wheel",
   function(e) {
