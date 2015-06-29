@@ -73,6 +73,10 @@
             'clang_warning_flags': [
               # glib uses the pre-c++11 typedef-as-static_assert hack.
               '-Wno-unused-local-typedefs',
+              # G_DEFINE_TYPE automatically generates a
+              # *get_instance_private inline function after glib 2.37.
+              # That's unused. Prevent to complain about it.
+              '-Wno-unused-function',
             ],
           },
         }],
