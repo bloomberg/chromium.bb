@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -185,8 +186,8 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
   form.user_submitted = true;
 
   // Parse the input line by line.
-  std::vector<std::string> lines;
-  Tokenize(profiles, "\n", &lines);
+  std::vector<std::string> lines = base::SplitString(
+      profiles, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (size_t i = 0; i < lines.size(); ++i) {
     std::string line = lines[i];
 

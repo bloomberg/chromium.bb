@@ -195,8 +195,9 @@ void DumpAccessibilityTestBase::RunTest(
   std::vector<std::string> actual_lines = Dump();
 
   // Perform a diff (or write the initial baseline).
-  std::vector<std::string> expected_lines;
-  Tokenize(expected_contents, "\n", &expected_lines);
+  std::vector<std::string> expected_lines = base::SplitString(
+      expected_contents, "\n", base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
   // Marking the end of the file with a line of text ensures that
   // file length differences are found.
   expected_lines.push_back(kMarkEndOfFile);

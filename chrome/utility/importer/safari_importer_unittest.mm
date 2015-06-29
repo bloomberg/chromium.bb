@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -144,8 +145,9 @@ TEST_F(SafariImporterTest, BookmarkImport) {
     EXPECT_EQ(kImportedBookmarksData[i].in_toolbar, entry.in_toolbar);
     EXPECT_EQ(kImportedBookmarksData[i].url, entry.url);
 
-    std::vector<base::string16> path;
-    Tokenize(kImportedBookmarksData[i].path, ASCIIToUTF16("/"), &path);
+    std::vector<base::string16> path = base::SplitString(
+        kImportedBookmarksData[i].path, ASCIIToUTF16("/"),
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     ASSERT_EQ(path.size(), entry.path.size());
     for (size_t j = 0; j < path.size(); ++j) {
       EXPECT_EQ(path[j], entry.path[j]);
@@ -208,8 +210,9 @@ TEST_F(SafariImporterTest, BookmarkImportWithEmptyBookmarksMenu) {
     EXPECT_EQ(kImportedBookmarksData[i].in_toolbar, entry.in_toolbar);
     EXPECT_EQ(kImportedBookmarksData[i].url, entry.url);
 
-    std::vector<base::string16> path;
-    Tokenize(kImportedBookmarksData[i].path, ASCIIToUTF16("/"), &path);
+    std::vector<base::string16> path = base::SplitString(
+        kImportedBookmarksData[i].path, ASCIIToUTF16("/"),
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     ASSERT_EQ(path.size(), entry.path.size());
     for (size_t j = 0; j < path.size(); ++j) {
       EXPECT_EQ(path[j], entry.path[j]);

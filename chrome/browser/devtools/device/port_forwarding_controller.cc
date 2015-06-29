@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
@@ -411,8 +412,8 @@ void PortForwardingController::Connection::OnFrameRead(
     return;
 
   std::string location = it->second;
-  std::vector<std::string> tokens;
-  Tokenize(location, ":", &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      location, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   int destination_port = 0;
   if (tokens.size() != 2 || !base::StringToInt(tokens[1], &destination_port))
     return;

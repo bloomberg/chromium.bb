@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,8 +70,8 @@ class StackedTabStripLayoutTest : public testing::Test {
   }
 
   void PrepareChildViewsFromString(const std::string& bounds) {
-    std::vector<std::string> positions;
-    Tokenize(bounds, " ", &positions);
+    std::vector<base::StringPiece> positions = base::SplitStringPiece(
+        bounds, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     PrepareChildViews(static_cast<int>(positions.size()));
   }
 
@@ -82,8 +83,8 @@ class StackedTabStripLayoutTest : public testing::Test {
   }
 
   void SetBoundsFromString(const std::string& bounds) {
-    std::vector<std::string> positions;
-    Tokenize(bounds, " ", &positions);
+    std::vector<base::StringPiece> positions = base::SplitStringPiece(
+        bounds, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     PrepareChildViews(static_cast<int>(positions.size()));
     for (int i = 0; i < view_model_.view_size(); ++i) {
       int x = 0;

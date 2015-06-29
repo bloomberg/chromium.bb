@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -108,9 +109,9 @@ void OmniboxMetricsProvider::Observe(
 }
 
 void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
-  std::vector<base::string16> terms;
-  const int num_terms =
-      static_cast<int>(Tokenize(log.text, base::kWhitespaceUTF16, &terms));
+  std::vector<base::StringPiece16> terms = base::SplitStringPiece(
+      log.text, base::kWhitespaceUTF16,
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   OmniboxEventProto* omnibox_event = omnibox_events_cache.add_omnibox_event();
   omnibox_event->set_time(metrics::MetricsLog::GetCurrentTime());
@@ -120,7 +121,7 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   }
   omnibox_event->set_typed_length(log.text.length());
   omnibox_event->set_just_deleted_text(log.just_deleted_text);
-  omnibox_event->set_num_typed_terms(num_terms);
+  omnibox_event->set_num_typed_terms(static_cast<int>(terms.size()));
   omnibox_event->set_selected_index(log.selected_index);
   if (log.completed_length != base::string16::npos)
     omnibox_event->set_completed_length(log.completed_length);

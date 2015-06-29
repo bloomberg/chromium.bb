@@ -16,6 +16,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -232,12 +233,13 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // we only want to break up the search string on 'true' whitespace rather than
   // escaped whitespace. When the user types "colspec=ID%20Mstone Release" we
   // get two 'terms': "colspec=id%20mstone" and "release".
-  String16Vector lower_raw_terms;
-  if (Tokenize(lower_raw_string, base::kWhitespaceUTF16,
-               &lower_raw_terms) == 0) {
+  String16Vector lower_raw_terms = base::SplitString(
+      lower_raw_string, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
+  if (lower_raw_terms.empty()) {
     // Don't score matches when there are no terms to score against.  (It's
     // possible that the word break iterater that extracts words to search
-    // for in the database allows some whitespace "words" whereas Tokenize
+    // for in the database allows some whitespace "words" whereas SplitString
     // excludes a long list of whitespace.)  One could write a scoring
     // function that gives a reasonable order to matches when there
     // are no terms (i.e., all the words are some form of whitespace),

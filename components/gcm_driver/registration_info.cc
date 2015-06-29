@@ -4,6 +4,7 @@
 
 #include "components/gcm_driver/registration_info.h"
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
 namespace gcm {
@@ -114,8 +115,8 @@ bool GCMRegistrationInfo::Deserialize(
   std::string senders = serialzied_value.substr(0, pos);
   std::string registration_id_str = serialzied_value.substr(pos + 1);
 
-  Tokenize(senders, ",", &sender_ids);
-
+  sender_ids = base::SplitString(
+      senders, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (sender_ids.empty() || registration_id_str.empty()) {
     sender_ids.clear();
     registration_id_str.clear();
@@ -187,10 +188,9 @@ bool InstanceIDTokenInfo::Deserialize(
                              true))
     return false;
 
-  std::vector<std::string> fields;
-  Tokenize(serialized_key.substr(kInsanceIDSerializationPrefixLength),
-           ",",
-           &fields);
+  std::vector<std::string> fields = base::SplitString(
+      serialized_key.substr(kInsanceIDSerializationPrefixLength),
+      ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (fields.size() != 3 || fields[0].empty() ||
       fields[1].empty() || fields[2].empty()) {
     return false;

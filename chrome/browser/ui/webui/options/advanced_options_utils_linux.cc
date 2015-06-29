@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,11 +78,12 @@ bool StartProxyConfigUtil(const char* command[]) {
     LOG(ERROR) << "No $PATH variable. Assuming no " << command[0] << ".";
     return false;
   }
-  std::vector<std::string> paths;
-  Tokenize(path, ":", &paths);
+
   bool found = false;
-  for (size_t i = 0; i < paths.size(); ++i) {
-    base::FilePath file(paths[i]);
+  for (const base::StringPiece& cur_path :
+       base::SplitStringPiece(path, ":", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    base::FilePath file(cur_path);
     if (base::PathExists(file.Append(command[0]))) {
       found = true;
       break;
@@ -89,6 +91,7 @@ bool StartProxyConfigUtil(const char* command[]) {
   }
   if (!found)
     return false;
+
   std::vector<std::string> argv;
   for (size_t i = 0; command[i]; ++i)
     argv.push_back(command[i]);

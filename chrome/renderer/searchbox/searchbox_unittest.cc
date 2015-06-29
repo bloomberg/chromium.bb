@@ -60,7 +60,7 @@ std::string MockIconURLHelper::GetURLStringFromRestrictedID(
 namespace internal {
 
 // Defined in searchbox.cc
-bool ParseViewIdAndRestrictedId(const std::string id_part,
+bool ParseViewIdAndRestrictedId(const std::string& id_part,
                                 int* view_id_out,
                                 InstantRestrictedID* rid_out);
 

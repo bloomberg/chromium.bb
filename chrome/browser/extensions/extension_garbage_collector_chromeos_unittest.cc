@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -109,12 +110,10 @@ class ExtensionGarbageCollectorChromeOSUnitTest
     base::ListValue* users = new base::ListValue;
     version_info->Set(ExtensionAssetsManagerChromeOS::kSharedExtensionUsers,
                       users);
-    std::vector<std::string> users_list;
-    if (Tokenize(users_string, ",", &users_list)) {
-      for (size_t i = 0; i < users_list.size(); i++) {
-        users->AppendString(users_list[i]);
-      }
-    }
+    for (const std::string& user :
+         base::SplitString(users_string, ",",
+                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY))
+      users->AppendString(user);
   }
 
   scoped_refptr<Extension> CreateExtension(const std::string& id,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/invalidation/impl/gcm_network_channel.h"
@@ -461,8 +462,8 @@ TEST_F(GCMNetworkChannelTest, BuildUrl) {
   EXPECT_TRUE(url.SchemeIsHTTPOrHTTPS());
   EXPECT_FALSE(url.host().empty());
   EXPECT_FALSE(url.path().empty());
-  std::vector<std::string> parts;
-  Tokenize(url.path(), "/", &parts);
+  std::vector<std::string> parts = base::SplitString(
+      url.path(), "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::string buffer;
   EXPECT_TRUE(Base64DecodeURLSafe(parts[parts.size() - 1], &buffer));
 }

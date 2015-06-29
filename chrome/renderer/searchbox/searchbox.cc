@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -137,14 +138,15 @@ namespace internal {  // for testing
 
 // Parses "<view_id>/<restricted_id>". If successful, assigns
 // |*view_id| := "<view_id>", |*rid| := "<restricted_id>", and returns true.
-bool ParseViewIdAndRestrictedId(const std::string id_part,
+bool ParseViewIdAndRestrictedId(const std::string& id_part,
                                 int* view_id_out,
                                 InstantRestrictedID* rid_out) {
   DCHECK(view_id_out);
   DCHECK(rid_out);
   // Check that the path is of Most visited item ID form.
-  std::vector<std::string> tokens;
-  if (Tokenize(id_part, "/", &tokens) != 2)
+  std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+      id_part, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (tokens.size() != 2)
     return false;
 
   int view_id;

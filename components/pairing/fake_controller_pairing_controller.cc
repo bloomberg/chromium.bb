@@ -55,9 +55,10 @@ void FakeControllerPairingController::ApplyConfig(const std::string& config) {
       dict.count("fail_enrollment") && (dict["fail_enrollment"] == "1");
 
   if (dict.count("connection_lost")) {
-    Tokens lost_begin_end;
-    CHECK(Tokenize(dict["connection_lost"], "-", &lost_begin_end) == 2)
-        << "Wrong 'connection_lost' format.";
+    Tokens lost_begin_end = base::SplitString(
+        dict["connection_lost"], "-", base::KEEP_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
+    CHECK_EQ(2u, lost_begin_end.size()) << "Wrong 'connection_lost' format.";
     int begin = 0;
     int end = 0;
     CHECK(base::StringToInt(lost_begin_end[0], &begin) &&

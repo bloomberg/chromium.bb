@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -162,8 +163,8 @@ void DevToolsAndroidBridge::DiscoveryRequest::ReceivedVersion(
   if (value && value->GetAsDictionary(&dict)) {
     std::string browser_name;
     if (dict->GetString("Browser", &browser_name)) {
-      std::vector<std::string> parts;
-      Tokenize(browser_name, "/", &parts);
+      std::vector<std::string> parts = base::SplitString(
+          browser_name, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
       if (parts.size() == 2)
         browser->version_ = parts[1];
       else
@@ -591,11 +592,11 @@ std::string DevToolsAndroidBridge::RemoteBrowser::GetId() {
 DevToolsAndroidBridge::RemoteBrowser::ParsedVersion
 DevToolsAndroidBridge::RemoteBrowser::GetParsedVersion() {
   ParsedVersion result;
-  std::vector<std::string> parts;
-  Tokenize(version_, ".", &parts);
-  for (size_t i = 0; i != parts.size(); ++i) {
+  for (const base::StringPiece& part :
+       base::SplitStringPiece(
+           version_, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     int value = 0;
-    base::StringToInt(parts[i], &value);
+    base::StringToInt(part, &value);
     result.push_back(value);
   }
   return result;

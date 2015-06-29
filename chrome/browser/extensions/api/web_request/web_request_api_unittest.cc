@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -484,11 +485,11 @@ namespace {
 // extraInfoSpec by the event handler. Returns true on success, otherwise false.
 bool GenerateInfoSpec(const std::string& values, int* result) {
   // Create a base::ListValue of strings.
-  std::vector<std::string> split_values;
   base::ListValue list_value;
-  size_t num_values = Tokenize(values, ",", &split_values);
-  for (size_t i = 0; i < num_values ; ++i)
-    list_value.Append(new base::StringValue(split_values[i]));
+  for (const std::string& cur :
+       base::SplitString(values, ",", base::KEEP_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY))
+    list_value.Append(new base::StringValue(cur));
   return ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
       list_value, result);
 }

@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
@@ -158,12 +159,12 @@ void HandleRecord(const base::string16& key_name,
   // Locate/create the dictionary to place the value in.
   std::vector<base::string16> path;
 
-  Tokenize(key_name, kRegistryPathSeparator, &path);
-  for (std::vector<base::string16>::const_iterator entry(path.begin());
-       entry != path.end(); ++entry) {
-    if (entry->empty())
+  for (const base::string16& entry :
+       base::SplitString(key_name, kRegistryPathSeparator,
+                         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    if (entry.empty())
       continue;
-    const std::string name = base::UTF16ToUTF8(*entry);
+    const std::string name = base::UTF16ToUTF8(entry);
     RegistryDict* subdict = dict->GetKey(name);
     if (!subdict) {
       subdict = new RegistryDict();
@@ -176,7 +177,8 @@ void HandleRecord(const base::string16& key_name,
     return;
 
   std::string value_name(base::UTF16ToUTF8(value));
-  if (!base::StartsWithASCII(value_name, kActionTriggerPrefix, true)) {
+  if (!base::StartsWith(value_name, kActionTriggerPrefix,
+                        base::CompareCase::SENSITIVE)) {
     scoped_ptr<base::Value> value;
     if (DecodePRegValue(type, data, &value))
       dict->SetValue(value_name, value.Pass());
@@ -186,31 +188,29 @@ void HandleRecord(const base::string16& key_name,
   std::string action_trigger(base::StringToLowerASCII(value_name.substr(
       arraysize(kActionTriggerPrefix) - 1)));
   if (action_trigger == kActionTriggerDeleteValues) {
-    std::vector<std::string> values;
-    Tokenize(DecodePRegStringValue(data), ";", &values);
-    for (std::vector<std::string>::const_iterator value(values.begin());
-         value != values.end(); ++value) {
-      dict->RemoveValue(*value);
-    }
-  } else if (base::StartsWithASCII(action_trigger, kActionTriggerDeleteKeys,
-                                   true)) {
-    std::vector<std::string> keys;
-    Tokenize(DecodePRegStringValue(data), ";", &keys);
-    for (std::vector<std::string>::const_iterator key(keys.begin());
-         key != keys.end(); ++key) {
-      dict->RemoveKey(*key);
-    }
-  } else if (base::StartsWithASCII(action_trigger, kActionTriggerDel, true)) {
+    for (const std::string& value :
+         base::SplitString(DecodePRegStringValue(data), ";",
+                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY))
+      dict->RemoveValue(value);
+  } else if (base::StartsWith(action_trigger, kActionTriggerDeleteKeys,
+                              base::CompareCase::SENSITIVE)) {
+    for (const std::string& key :
+         base::SplitString(DecodePRegStringValue(data), ";",
+                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY))
+      dict->RemoveKey(key);
+  } else if (base::StartsWith(action_trigger, kActionTriggerDel,
+                              base::CompareCase::SENSITIVE)) {
     dict->RemoveValue(
         value_name.substr(arraysize(kActionTriggerPrefix) - 1 +
                           arraysize(kActionTriggerDel) - 1));
-  } else if (base::StartsWithASCII(action_trigger, kActionTriggerDelVals,
-                                   true)) {
+  } else if (base::StartsWith(action_trigger, kActionTriggerDelVals,
+                              base::CompareCase::SENSITIVE)) {
     // Delete all values.
     dict->ClearValues();
-  } else if (base::StartsWithASCII(action_trigger, kActionTriggerSecureKey,
-                                   true) ||
-             base::StartsWithASCII(action_trigger, kActionTriggerSoft, true)) {
+  } else if (base::StartsWith(action_trigger, kActionTriggerSecureKey,
+                              base::CompareCase::SENSITIVE) ||
+             base::StartsWith(action_trigger, kActionTriggerSoft,
+                              base::CompareCase::SENSITIVE)) {
     // Doesn't affect values.
   } else {
     LOG(ERROR) << "Bad action trigger " << value_name;

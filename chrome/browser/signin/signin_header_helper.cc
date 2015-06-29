@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_header_helper.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -72,22 +73,18 @@ signin::GAIAServiceType GetGAIAServiceTypeFromHeader(
 // "key1=value1,key2=value2,...".
 MirrorResponseHeaderDictionary ParseMirrorResponseHeader(
     const std::string& header_value) {
-  std::vector<std::string> fields;
-  if (!Tokenize(header_value, std::string(","), &fields))
-    return MirrorResponseHeaderDictionary();
-
   MirrorResponseHeaderDictionary dictionary;
-  for (std::vector<std::string>::iterator i = fields.begin();
-       i != fields.end(); ++i) {
-    std::string field(*i);
-    std::vector<std::string> tokens;
+  for (const base::StringPiece& field :
+       base::SplitStringPiece(header_value, ",", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
     size_t delim = field.find_first_of('=');
     if (delim == std::string::npos) {
       DLOG(WARNING) << "Unexpected GAIA header field '" << field << "'.";
       continue;
     }
-    dictionary[field.substr(0, delim)] = net::UnescapeURLComponent(
-        field.substr(delim + 1), net::UnescapeRule::URL_SPECIAL_CHARS);
+    dictionary[field.substr(0, delim).as_string()] = net::UnescapeURLComponent(
+        field.substr(delim + 1).as_string(),
+        net::UnescapeRule::URL_SPECIAL_CHARS);
   }
   return dictionary;
 }

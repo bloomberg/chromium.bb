@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "url/gurl.h"
 
@@ -58,8 +59,8 @@ base::FilePath GetPathForResourceNamed(const base::FilePath& app_path,
       resource_path.find("//") != std::string::npos)
     return base::FilePath();
 
-  std::vector<std::string> path_components;
-  Tokenize(resource_path, "/", &path_components);
+  std::vector<std::string> path_components = base::SplitString(
+      resource_path, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (path_components.empty())
     return base::FilePath();
 

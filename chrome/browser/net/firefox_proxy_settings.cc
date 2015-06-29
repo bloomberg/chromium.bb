@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -73,12 +74,9 @@ bool ParsePrefFile(const base::FilePath& pref_file,
   if (!base::ReadFileToString(pref_file, &contents))
     return false;
 
-  std::vector<std::string> lines;
-  Tokenize(contents, "\n", &lines);
-
-  for (std::vector<std::string>::const_iterator iter = lines.begin();
-       iter != lines.end(); ++iter) {
-    const std::string& line = *iter;
+  for (const std::string& line :
+       base::SplitString(contents, "\n", base::KEEP_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
     size_t start_key = line.find(kUserPrefString);
     if (start_key == std::string::npos)
       continue;  // Could be a comment or a blank line.

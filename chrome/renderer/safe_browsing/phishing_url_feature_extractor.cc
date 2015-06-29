@@ -93,9 +93,8 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
 
   std::vector<std::string> long_tokens;
   SplitStringIntoLongAlphanumTokens(url.path(), &long_tokens);
-  for (std::vector<std::string>::iterator it = long_tokens.begin();
-       it != long_tokens.end(); ++it) {
-    if (!features->AddBooleanFeature(features::kUrlPathToken + *it))
+  for (const std::string& token : long_tokens) {
+    if (!features->AddBooleanFeature(features::kUrlPathToken + token))
       return false;
   }
 
@@ -110,15 +109,13 @@ void PhishingUrlFeatureExtractor::SplitStringIntoLongAlphanumTokens(
   // Split on common non-alphanumerics.
   // TODO(bryner): Split on all(?) non-alphanumerics and handle %XX properly.
   static const char kTokenSeparators[] = ".,\\/_-|=%:!&";
-  std::vector<std::string> raw_splits;
-  Tokenize(full, kTokenSeparators, &raw_splits);
-
-  // Copy over only the splits that are 3 or more chars long.
-  // TODO(bryner): Determine a meaningful min size.
-  for (std::vector<std::string>::iterator it = raw_splits.begin();
-       it != raw_splits.end(); ++it) {
-    if (it->length() >= kMinPathComponentLength)
-      tokens->push_back(*it);
+  for (const base::StringPiece& token :
+       base::SplitStringPiece(full, kTokenSeparators, base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    // Copy over only the splits that are 3 or more chars long.
+    // TODO(bryner): Determine a meaningful min size.
+    if (token.length() >= kMinPathComponentLength)
+      tokens->push_back(token.as_string());
   }
 }
 

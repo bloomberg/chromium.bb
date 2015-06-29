@@ -15,6 +15,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
@@ -495,12 +496,11 @@ void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
     return;
   }
 
-  std::vector<std::string> filenames;
-  Tokenize(output, "\n", &filenames);
   std::vector<base::FilePath> filenames_fp;
-  for (std::vector<std::string>::iterator iter = filenames.begin();
-       iter != filenames.end(); ++iter) {
-    base::FilePath path(*iter);
+  for (const base::StringPiece& line :
+       base::SplitStringPiece(output, "\n", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    base::FilePath path(line);
     if (CallDirectoryExistsOnUIThread(path))
       continue;
     filenames_fp.push_back(path);

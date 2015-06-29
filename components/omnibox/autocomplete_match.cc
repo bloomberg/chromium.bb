@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -300,8 +301,9 @@ std::string AutocompleteMatch::ClassificationsToString(
 ACMatchClassifications AutocompleteMatch::ClassificationsFromString(
     const std::string& serialized_classifications) {
   ACMatchClassifications classifications;
-  std::vector<std::string> tokens;
-  Tokenize(serialized_classifications, ",", &tokens);
+  std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+      serialized_classifications, ",", base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
   DCHECK(!(tokens.size() & 1));  // The number of tokens should be even.
   for (size_t i = 0; i < tokens.size(); i += 2) {
     int classification_offset = 0;

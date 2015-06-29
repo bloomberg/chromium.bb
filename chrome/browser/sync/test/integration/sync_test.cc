@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -645,9 +646,8 @@ void SyncTest::ReadPasswordFile() {
   base::ReadFileToString(password_file_, &file_contents);
   ASSERT_NE(file_contents, "") << "Password file \""
       << password_file_.value() << "\" does not exist.";
-  std::vector<std::string> tokens;
-  std::string delimiters = "\r\n";
-  Tokenize(file_contents, delimiters, &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      file_contents, "\r\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   ASSERT_EQ(2U, tokens.size()) << "Password file \""
       << password_file_.value()
       << "\" must contain exactly two lines of text.";
@@ -835,9 +835,9 @@ bool SyncTest::SetUpLocalTestServer() {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringType server_cmdline_string =
       cl->GetSwitchValueNative(switches::kSyncServerCommandLine);
-  base::CommandLine::StringVector server_cmdline_vector;
-  base::CommandLine::StringType delimiters(FILE_PATH_LITERAL(" "));
-  Tokenize(server_cmdline_string, delimiters, &server_cmdline_vector);
+  base::CommandLine::StringVector server_cmdline_vector = base::SplitString(
+      server_cmdline_string, FILE_PATH_LITERAL(" "),
+      base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   base::CommandLine server_cmdline(server_cmdline_vector);
   base::LaunchOptions options;
 #if defined(OS_WIN)

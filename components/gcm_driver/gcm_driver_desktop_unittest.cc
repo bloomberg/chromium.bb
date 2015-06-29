@@ -84,9 +84,8 @@ void PumpUILoop() {
 }
 
 std::vector<std::string> ToSenderList(const std::string& sender_ids) {
-  std::vector<std::string> senders;
-  Tokenize(sender_ids, ",", &senders);
-  return senders;
+  return base::SplitString(
+      sender_ids, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
 }  // namespace
