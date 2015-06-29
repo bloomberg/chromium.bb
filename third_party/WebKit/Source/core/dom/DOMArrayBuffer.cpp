@@ -21,6 +21,12 @@ v8::Local<v8::Object> DOMArrayBuffer::wrap(v8::Isolate* isolate, v8::Local<v8::O
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     v8::Local<v8::Object> wrapper = v8::ArrayBuffer::New(isolate, data(), byteLength());
+    // V8::ArrayBuffer::New may run an arbitrary script and it may result in
+    // creating a new wrapper and associating it with |this|.  If so, the
+    // wrapper already created and associated must be used.
+    v8::Local<v8::Object> associatedWrapper = DOMDataStore::getWrapper(this, isolate);
+    if (UNLIKELY(!associatedWrapper.IsEmpty()))
+        return associatedWrapper;
 
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }

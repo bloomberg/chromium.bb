@@ -38,6 +38,12 @@ v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Isola
     ASSERT(v8Buffer->IsArrayBuffer());
 
     v8::Local<v8::Object> wrapper = V8TypedArray::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), length());
+    // V8TypedArray::New may run an arbitrary script and it may result in
+    // creating a new wrapper and associating it with |this|.  If so, the
+    // wrapper already created and associated must be used.
+    v8::Local<v8::Object> associatedWrapper = DOMDataStore::getWrapper(this, isolate);
+    if (UNLIKELY(!associatedWrapper.IsEmpty()))
+        return associatedWrapper;
 
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }

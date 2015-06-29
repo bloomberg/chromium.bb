@@ -51,6 +51,12 @@ v8::Local<v8::Object> ScriptWrappable::wrap(v8::Isolate* isolate, v8::Local<v8::
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, this);
+    // V8DOMWrapper::createWrapper may run an arbitrary script and it may result
+    // in creating a new wrapper and associating it with |this|.  If so, the
+    // wrapper already created and associated must be used.
+    v8::Local<v8::Object> associatedWrapper = DOMDataStore::getWrapper(this, isolate);
+    if (UNLIKELY(!associatedWrapper.IsEmpty()))
+        return associatedWrapper;
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
