@@ -121,7 +121,8 @@ ExtensionSettingsWebUITest.prototype = {
 
 // Verify that developer mode doesn't change behavior when the number of
 // extensions changes.
-TEST_F('ExtensionSettingsWebUITest', 'testDeveloperModeNoExtensions',
+// Disabled due to flakes; http://crbug.com/505506.
+TEST_F('ExtensionSettingsWebUITest', 'DISABLED_testDeveloperModeNoExtensions',
        function() {
   this.testDeveloperMode();
 });
