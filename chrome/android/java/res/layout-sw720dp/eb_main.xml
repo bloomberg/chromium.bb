@@ -11,7 +11,7 @@
 
     <org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDrawerListView
         android:id="@+id/eb_drawer_list"
-        android:layout_width="240dp"
+        android:layout_width="256dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:choiceMode="singleChoice"
