@@ -13,10 +13,10 @@
 #include "chrome/browser/sessions/session_restore_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_widget_host.h"
 
 namespace content {
 class NavigationController;
+class RenderWidgetHost;
 }
 
 // SessionRestoreStatsCollector observes SessionRestore events ands records UMA
@@ -129,11 +129,6 @@ class SessionRestoreStatsCollector
     // index for it and is never null.
     content::NavigationController* controller;
 
-    // The RenderWidgetHost associated with the tab. This is the secondary
-    // index and starts out being null. If it is not null it is because the tab
-    // is actively loading or waiting to be painted.
-    content::RenderWidgetHost* render_widget_host;
-
     // Set to true if the tab has been deferred by the TabLoader.
     bool is_deferred;
 
@@ -162,10 +157,6 @@ class SessionRestoreStatsCollector
   // Registers for relevant notifications for a tab and inserts the tab into
   // to tabs_tracked_ map. Return a pointer to the newly created TabState.
   TabState* RegisterForNotifications(content::NavigationController* tab);
-
-  // Returns the RenderWidgetHost of a tab.
-  content::RenderWidgetHost* GetRenderWidgetHost(
-      content::NavigationController* tab);
 
   // Returns the tab state, nullptr if not found.
   TabState* GetTabState(content::NavigationController* tab);

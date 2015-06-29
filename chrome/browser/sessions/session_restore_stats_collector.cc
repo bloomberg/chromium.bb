@@ -11,6 +11,7 @@
 #include "base/time/default_tick_clock.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
@@ -18,6 +19,7 @@ namespace {
 
 using content::NavigationController;
 using content::RenderWidgetHost;
+using content::RenderWidgetHostView;
 using content::Source;
 using content::WebContents;
 
@@ -60,6 +62,33 @@ void EmitUmaSessionRestoreTabActionEvent(SessionRestoreTabActionsUma action) {
                             SESSION_RESTORE_TAB_ACTIONS_UMA_MAX);
 }
 
+// Returns the RenderWidgetHostView associated with a NavigationController.
+RenderWidgetHostView* GetRenderWidgetHostView(
+    NavigationController* tab) {
+  WebContents* web_contents = tab->GetWebContents();
+  if (web_contents)
+    return web_contents->GetRenderWidgetHostView();
+  return nullptr;
+}
+
+// Returns the RenderWidgetHost associated with a NavigationController.
+RenderWidgetHost* GetRenderWidgetHost(
+    NavigationController* tab) {
+  content::RenderWidgetHostView* render_widget_host_view =
+      GetRenderWidgetHostView(tab);
+  if (render_widget_host_view)
+    return render_widget_host_view->GetRenderWidgetHost();
+  return nullptr;
+}
+
+// Determines if the RenderWidgetHostView associated with a given
+// NavigationController is visible.
+bool IsShowing(NavigationController* tab) {
+  content::RenderWidgetHostView* render_widget_host_view =
+      GetRenderWidgetHostView(tab);
+  return render_widget_host_view && render_widget_host_view->IsShowing();
+}
+
 }  // namespace
 
 SessionRestoreStatsCollector::TabLoaderStats::TabLoaderStats()
@@ -69,7 +98,6 @@ SessionRestoreStatsCollector::TabLoaderStats::TabLoaderStats()
 SessionRestoreStatsCollector::TabState::TabState(
     NavigationController* controller)
     : controller(controller),
-      render_widget_host(nullptr),
       is_deferred(false),
       loading_state(TAB_IS_NOT_LOADING) {
 }
@@ -188,9 +216,7 @@ void SessionRestoreStatsCollector::Observe(
 
       // Update statistics for foreground tabs.
       base::TimeDelta time_to_load = tick_clock_->NowTicks() - restore_started_;
-      if (!got_first_foreground_load_ && tab_state->render_widget_host &&
-          tab_state->render_widget_host->GetView() &&
-          tab_state->render_widget_host->GetView()->IsShowing()) {
+      if (!got_first_foreground_load_ && IsShowing(tab_state->controller)) {
         got_first_foreground_load_ = true;
         DCHECK(!done_tracking_non_deferred_tabs_);
         tab_loader_stats_.foreground_tab_first_loaded = time_to_load;
@@ -326,18 +352,6 @@ SessionRestoreStatsCollector::RegisterForNotifications(
   return tab_state;
 }
 
-RenderWidgetHost* SessionRestoreStatsCollector::GetRenderWidgetHost(
-    NavigationController* tab) {
-  WebContents* web_contents = tab->GetWebContents();
-  if (web_contents) {
-    content::RenderWidgetHostView* render_widget_host_view =
-        web_contents->GetRenderWidgetHostView();
-    if (render_widget_host_view)
-      return render_widget_host_view->GetRenderWidgetHost();
-  }
-  return nullptr;
-}
-
 SessionRestoreStatsCollector::TabState*
 SessionRestoreStatsCollector::GetTabState(NavigationController* tab) {
   // This lookup can fail because DeferTab calls can arrive for tabs that have
@@ -351,7 +365,8 @@ SessionRestoreStatsCollector::GetTabState(NavigationController* tab) {
 SessionRestoreStatsCollector::TabState*
 SessionRestoreStatsCollector::GetTabState(RenderWidgetHost* tab) {
   for (auto& pair : tabs_tracked_) {
-    if (pair.second.render_widget_host == tab)
+    auto rwh = GetRenderWidgetHost(pair.first);
+    if (rwh == tab)
       return &pair.second;
   }
   // It's possible for this lookup to fail as paint events can be received for
@@ -378,12 +393,6 @@ void SessionRestoreStatsCollector::MarkTabAsLoading(TabState* tab_state) {
     tab_loader_stats_.parallel_tab_loads =
         std::max(tab_loader_stats_.parallel_tab_loads, loading_tab_count_);
   }
-
-  // Get the RenderWidgetHost for the tab and add it to the secondary index.
-  RenderWidgetHost* render_widget_host =
-      GetRenderWidgetHost(tab_state->controller);
-  DCHECK(render_widget_host);
-  tab_state->render_widget_host = render_widget_host;
 }
 
 void SessionRestoreStatsCollector::ReleaseIfDoneTracking() {
