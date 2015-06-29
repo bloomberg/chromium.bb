@@ -14,6 +14,7 @@ import android.widget.Checkable;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 
@@ -22,24 +23,9 @@ import java.util.List;
  */
 public class EnhancedBookmarkRecyclerView extends RecyclerView implements
         EnhancedBookmarkUIObserver {
-    private static final int MINIMUM_LARGE_TABLET_WIDTH_DP = 720;
-    private static Boolean sIsLargeTablet = null;
 
     private EnhancedBookmarkDelegate mDelegate;
     private View mEmptyView;
-
-    /**
-     * @return True if the current device's minimum dimension is larger than 720dp.
-     */
-    static boolean isLargeTablet(Context context) {
-        // TODO(ianwen): move this function to DeviceFormFactor.java in upstream.
-        if (sIsLargeTablet == null) {
-            int minimumScreenWidthDp = context.getResources().getConfiguration()
-                    .smallestScreenWidthDp;
-            sIsLargeTablet = minimumScreenWidthDp >= MINIMUM_LARGE_TABLET_WIDTH_DP;
-        }
-        return sIsLargeTablet;
-    }
 
     /**
      * Constructs a new instance of enhanced bookmark recycler view.
@@ -62,7 +48,7 @@ public class EnhancedBookmarkRecyclerView extends RecyclerView implements
 
     @Override
     public void setLayoutParams(android.view.ViewGroup.LayoutParams params) {
-        if (isLargeTablet(getContext())) {
+        if (DeviceFormFactor.isLargeTablet(getContext())) {
             int marginPx = getContext().getResources().getDimensionPixelSize(
                     R.dimen.enhanced_bookmark_list_mode_background_margin);
             assert params instanceof MarginLayoutParams;
@@ -76,7 +62,7 @@ public class EnhancedBookmarkRecyclerView extends RecyclerView implements
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        if (isLargeTablet(getContext())) {
+        if (DeviceFormFactor.isLargeTablet(getContext())) {
             setBackgroundResource(R.drawable.eb_large_tablet_list_background);
         } else {
             setBackgroundColor(getContext().getResources().getColor(android.R.color.white));

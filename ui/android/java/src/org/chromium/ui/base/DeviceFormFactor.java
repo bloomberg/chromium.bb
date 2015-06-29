@@ -14,11 +14,13 @@ import org.chromium.base.CalledByNative;
 public class DeviceFormFactor {
 
     /**
-     * The minimum width that would classify the device as a tablet.
+     * The minimum width that would classify the device as a tablet or a large tablet.
      */
     private static final int MINIMUM_TABLET_WIDTH_DP = 600;
+    private static final int MINIMUM_LARGE_TABLET_WIDTH_DP = 720;
 
     private static Boolean sIsTablet = null;
+    private static Boolean sIsLargeTablet = null;
 
     /**
      * @param context Android's context
@@ -33,4 +35,17 @@ public class DeviceFormFactor {
         }
         return sIsTablet;
     }
+
+    /**
+     * @return True if the current device's minimum dimension is larger than 720dp.
+     */
+    public static boolean isLargeTablet(Context context) {
+        if (sIsLargeTablet == null) {
+            int minimumScreenWidthDp = context.getResources().getConfiguration()
+                    .smallestScreenWidthDp;
+            sIsLargeTablet = minimumScreenWidthDp >= MINIMUM_LARGE_TABLET_WIDTH_DP;
+        }
+        return sIsLargeTablet;
+    }
+
 }

@@ -13,6 +13,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class EnhancedBookmarkContentView extends RelativeLayout implements
         mActionBar = (EnhancedBookmarkActionBar) findViewById(R.id.eb_action_bar);
         mLoadingView = (EnhancedBookmarkLoadingView) findViewById(R.id.eb_initial_loading_view);
         FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);
-        if (EnhancedBookmarkRecyclerView.isLargeTablet(getContext())) {
+        if (DeviceFormFactor.isLargeTablet(getContext())) {
             shadow.setVisibility(View.GONE);
         } else {
             shadow.init(getResources().getColor(R.color.enhanced_bookmark_app_bar_shadow_color),
