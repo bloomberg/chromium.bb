@@ -113,16 +113,4 @@ void WebDialogUI::OnDialogClosed(const base::ListValue* args) {
   }
 }
 
-ExternalWebDialogUI::ExternalWebDialogUI(content::WebUI* web_ui)
-    : WebDialogUI(web_ui) {
-  // Non-file based UI needs to not have access to the Web UI bindings
-  // for security reasons. The code hosting the dialog should provide
-  // dialog specific functionality through other bindings and methods
-  // that are scoped in duration to the dialogs existence.
-  web_ui->SetBindings(web_ui->GetBindings() & ~content::BINDINGS_POLICY_WEB_UI);
-}
-
-ExternalWebDialogUI::~ExternalWebDialogUI() {
-}
-
 }  // namespace ui

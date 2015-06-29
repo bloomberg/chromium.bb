@@ -181,7 +181,6 @@
 
 using content::WebUI;
 using content::WebUIController;
-using ui::ExternalWebDialogUI;
 using ui::WebDialogUI;
 
 namespace {
@@ -310,10 +309,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
   // print dialog.
-  if (url.host() == chrome::kChromeUICloudPrintResourcesHost)
-    return &NewWebUI<ExternalWebDialogUI>;
-  if (url.host() == chrome::kChromeUICloudPrintSetupHost)
-    return &NewWebUI<WebDialogUI>;
   if (url.host() == chrome::kChromeUIComponentsHost)
     return &NewWebUI<ComponentsUI>;
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)

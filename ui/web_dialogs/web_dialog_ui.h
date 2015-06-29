@@ -79,17 +79,6 @@ class WEB_DIALOGS_EXPORT WebDialogUI : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(WebDialogUI);
 };
 
-// Displays external URL contents inside a modal web dialog.
-//
-// Intended to be the place to collect the settings and lockdowns
-// necessary for running external UI components securely (e.g., the
-// cloud print dialog).
-class WEB_DIALOGS_EXPORT ExternalWebDialogUI : public WebDialogUI {
- public:
-  explicit ExternalWebDialogUI(content::WebUI* web_ui);
-  ~ExternalWebDialogUI() override;
-};
-
 }  // namespace ui
 
 #endif  // UI_WEB_DIALOGS_WEB_DIALOG_UI_H_
