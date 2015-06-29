@@ -51,6 +51,9 @@ public:
     {
         transform.scale3d(m_x, m_y, m_z);
     }
+    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+
+    static bool isMatchingOperationType(OperationType type) { return type == Scale || type == ScaleX || type == ScaleY || type == ScaleZ || type == Scale3D; }
 
 private:
     virtual OperationType type() const override { return m_type; }
@@ -63,15 +66,13 @@ private:
         return m_x == s->m_x && m_y == s->m_y && m_z == s->m_z;
     }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
-
     ScaleTransformOperation(double sx, double sy, double sz, OperationType type)
         : m_x(sx)
         , m_y(sy)
         , m_z(sz)
         , m_type(type)
     {
-        ASSERT(type == ScaleX || type == ScaleY || type == ScaleZ || type == Scale || type == Scale3D);
+        ASSERT(isMatchingOperationType(type));
     }
 
     double m_x;
@@ -79,6 +80,8 @@ private:
     double m_z;
     OperationType m_type;
 };
+
+DEFINE_TRANSFORM_TYPE_CASTS(ScaleTransformOperation);
 
 } // namespace blink
 

@@ -263,6 +263,14 @@ FontDescription::Size animatableValueToFontSize(const AnimatableValue* value)
     return FontDescription::Size(0, size, true);
 }
 
+TransformOperation* animatableValueToTransformOperation(const AnimatableValue* value, TransformOperation::OperationType type)
+{
+    const TransformOperations& transformList = toAnimatableTransform(value)->transformOperations();
+    ASSERT(transformList.size() == 1);
+    ASSERT(transformList.operations()[0]->type() == type);
+    return transformList.operations()[0].get();
+}
+
 } // namespace
 
 // FIXME: Generate this function.
@@ -595,6 +603,18 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         const TransformOperations& operations = toAnimatableTransform(value)->transformOperations();
         // FIXME: This normalization (handling of 'none') should be performed at input in AnimatableValueFactory.
         style->setTransform(operations.size() ? operations : TransformOperations(true));
+        return;
+    }
+    case CSSPropertyTranslate: {
+        style->setTranslate(toTranslateTransformOperation(animatableValueToTransformOperation(value, TransformOperation::Translate3D)));
+        return;
+    }
+    case CSSPropertyRotate: {
+        style->setRotate(toRotateTransformOperation(animatableValueToTransformOperation(value, TransformOperation::Rotate3D)));
+        return;
+    }
+    case CSSPropertyScale: {
+        style->setScale(toScaleTransformOperation(animatableValueToTransformOperation(value, TransformOperation::Scale3D)));
         return;
     }
     case CSSPropertyTransformOrigin:

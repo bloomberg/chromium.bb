@@ -289,6 +289,12 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
             && a.visitedLinkTextStrokeColor() == b.visitedLinkTextStrokeColor();
     case CSSPropertyTransform:
         return a.transform() == b.transform();
+    case CSSPropertyTranslate:
+        return dataEquivalent<TransformOperation>(a.translate(), b.translate());
+    case CSSPropertyRotate:
+        return dataEquivalent<TransformOperation>(a.rotate(), b.rotate());
+    case CSSPropertyScale:
+        return dataEquivalent<TransformOperation>(a.scale(), b.scale());
     case CSSPropertyTransformOrigin:
         return a.transformOriginX() == b.transformOriginX() && a.transformOriginY() == b.transformOriginY() && a.transformOriginZ() == b.transformOriginZ();
     case CSSPropertyWebkitPerspectiveOriginX:

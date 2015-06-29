@@ -57,6 +57,8 @@ public:
         transform.rotate3d(m_x, m_y, m_z, m_angle);
     }
 
+    static bool isMatchingOperationType(OperationType type) { return type == Rotate || type == RotateX || type == RotateY || type == RotateZ || type == Rotate3D; }
+
 private:
     virtual bool operator==(const TransformOperation& o) const override
     {
@@ -75,7 +77,7 @@ private:
         , m_angle(angle)
         , m_type(type)
     {
-        ASSERT(type == RotateX || type == RotateY || type == RotateZ || type == Rotate3D);
+        ASSERT(isMatchingOperationType(type));
     }
 
     double m_x;
@@ -84,6 +86,8 @@ private:
     double m_angle;
     OperationType m_type;
 };
+
+DEFINE_TRANSFORM_TYPE_CASTS(RotateTransformOperation);
 
 } // namespace blink
 

@@ -83,6 +83,9 @@ public:
     virtual bool dependsOnBoxSize() const { return false; }
 };
 
+#define DEFINE_TRANSFORM_TYPE_CASTS(thisType) \
+    DEFINE_TYPE_CASTS(thisType, TransformOperation, transform, thisType::isMatchingOperationType(transform->type()), thisType::isMatchingOperationType(transform.type()))
+
 } // namespace blink
 
 #endif // TransformOperation_h

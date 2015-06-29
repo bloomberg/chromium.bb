@@ -258,6 +258,13 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFontStretch(FontStretch
     return createFromDouble(fontStretchToDouble(fontStretch));
 }
 
+static PassRefPtrWillBeRawPtr<AnimatableValue> createFromTransformProperties(PassRefPtr<TransformOperation> transform, PassRefPtr<TransformOperation> initialTransform)
+{
+    TransformOperations operation;
+    operation.operations().append(transform ? transform : initialTransform);
+    return AnimatableTransform::create(operation);
+}
+
 static double fontWeightToDouble(FontWeight fontWeight)
 {
     switch (fontWeight) {
@@ -523,6 +530,12 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromColor(property, style);
     case CSSPropertyTransform:
         return AnimatableTransform::create(style.transform());
+    case CSSPropertyTranslate:
+        return createFromTransformProperties(style.translate(), style.initialTranslate());
+    case CSSPropertyRotate:
+        return createFromTransformProperties(style.rotate(), style.initialRotate());
+    case CSSPropertyScale:
+        return createFromTransformProperties(style.scale(), style.initialScale());
     case CSSPropertyTransformOrigin:
         return createFromTransformOrigin(style.transformOrigin(), style);
     case CSSPropertyMotionOffset:

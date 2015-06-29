@@ -136,9 +136,13 @@ void KeyframeEffect::applyEffects()
     if (!m_target || !m_model)
         return;
 
-    // Cancel composited animation of transform if a motion path has been introduced on the element.
+    // Cancel composited animation of transform if a motion path, translate,
+    // rotate or scale operation has been introduced on the element.
     if (m_target->computedStyle()
-        && m_target->computedStyle()->hasMotionPath()
+        && (m_target->computedStyle()->hasMotionPath()
+            || m_target->computedStyle()->translate()
+            || m_target->computedStyle()->rotate()
+            || m_target->computedStyle()->scale())
         && animation()->hasActiveAnimationsOnCompositor()
         && animation()->affects(*m_target, CSSPropertyTransform)) {
         animation()->cancelAnimationOnCompositor();
@@ -242,7 +246,7 @@ bool KeyframeEffect::isCandidateForAnimationOnCompositor(double animationPlaybac
 {
     if (!model()
         || !m_target
-        || (m_target->computedStyle() && m_target->computedStyle()->hasMotionPath()))
+        || (m_target->computedStyle() && (m_target->computedStyle()->hasMotionPath() || m_target->computedStyle()->translate() || m_target->computedStyle()->rotate() || m_target->computedStyle()->scale())))
         return false;
 
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *m_target, animation(), *model(), animationPlaybackRate);

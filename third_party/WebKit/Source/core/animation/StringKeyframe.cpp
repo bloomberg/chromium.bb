@@ -427,6 +427,26 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
         break;
     }
 
+    case CSSPropertyTranslate: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = ListStyleInterpolation<LengthStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property, range);
+        if (interpolation)
+            return interpolation.release();
+
+        // TODO(soonm): Legacy mode is used when from and to cssvaluelist length does not match.
+        fallBackToLegacy = true;
+        break;
+    }
+
+    case CSSPropertyScale: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = ListStyleInterpolation<DoubleStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property, range);
+        if (interpolation)
+            return interpolation.release();
+
+        // TODO(soonm): Legacy mode is used when from and to cssvaluelist length does not match.
+        fallBackToLegacy = true;
+        break;
+    }
+
     default:
         // Fall back to LegacyStyleInterpolation.
         fallBackToLegacy = true;

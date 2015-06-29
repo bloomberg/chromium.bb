@@ -57,6 +57,8 @@ public:
         transform.translate3d(x(borderBoxSize), y(borderBoxSize), z());
     }
 
+    static bool isMatchingOperationType(OperationType type) { return type == Translate || type == TranslateX || type == TranslateY || type == TranslateZ || type == Translate3D; }
+
 private:
     virtual OperationType type() const override { return m_type; }
 
@@ -81,7 +83,7 @@ private:
         , m_z(tz)
         , m_type(type)
     {
-        ASSERT(type == TranslateX || type == TranslateY || type == TranslateZ || type == Translate || type == Translate3D);
+        ASSERT(isMatchingOperationType(type));
     }
 
     Length m_x;
@@ -89,6 +91,8 @@ private:
     double m_z;
     OperationType m_type;
 };
+
+DEFINE_TRANSFORM_TYPE_CASTS(TranslateTransformOperation);
 
 } // namespace blink
 

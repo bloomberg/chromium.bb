@@ -27,39 +27,37 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> DoubleStyleInterpolation::doubleToInte
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDouble(InterpolableValue* value, bool isNumber, InterpolationRange clamp)
+static double clampToRange(double value, InterpolationRange clamp)
 {
-    ASSERT(value->isNumber());
-    double doubleValue = toInterpolableNumber(value)->value();
-
     switch (clamp) {
     case RangeAll:
         // Do nothing
-        break;
+        return value;
     case RangeZeroToOne:
-        doubleValue = clampTo<float>(doubleValue, 0, 1);
-        break;
+        return clampTo<float>(value, 0, 1);
     case RangeOpacityFIXME:
-        doubleValue = clampTo<float>(doubleValue, 0, nextafterf(1, 0));
-        break;
+        return clampTo<float>(value, 0, nextafterf(1, 0));
     case RangeFloor:
-        doubleValue = floor(doubleValue);
-        break;
+        return floor(value);
     case RangeRound:
-        doubleValue = round(doubleValue);
-        break;
+        return round(value);
     case RangeRoundGreaterThanOrEqualToOne:
-        doubleValue = clampTo<float>(round(doubleValue), 1);
-        break;
+        return clampTo<float>(round(value), 1);
     case RangeGreaterThanOrEqualToOne:
-        doubleValue = clampTo<float>(doubleValue, 1);
-        break;
+        return clampTo<float>(value, 1);
     case RangeNonNegative:
-        doubleValue = clampTo<float>(doubleValue, 0);
-        break;
+        return clampTo<float>(value, 0);
     default:
         ASSERT_NOT_REACHED();
+        return value;
     }
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDouble(const InterpolableValue* value, bool isNumber, InterpolationRange clamp)
+{
+    ASSERT(value->isNumber());
+    double doubleValue = clampToRange(toInterpolableNumber(value)->value(), clamp);
+
     if (isNumber)
         return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::CSS_NUMBER);
     return CSSPrimitiveValue::create(doubleValue, CSSPrimitiveValue::CSS_DEG);
@@ -78,6 +76,17 @@ void DoubleStyleInterpolation::apply(StyleResolverState& state) const
 DEFINE_TRACE(DoubleStyleInterpolation)
 {
     StyleInterpolation::trace(visitor);
+}
+
+PassOwnPtrWillBeRawPtr<InterpolableValue> DoubleStyleInterpolation::toInterpolableValue(const CSSValue& value, CSSPropertyID property)
+{
+    ASSERT(canCreateFrom(value));
+    return doubleToInterpolableValue(value);
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::fromInterpolableValue(const InterpolableValue& value, InterpolationRange range)
+{
+    return interpolableValueToDouble(&value, true, range);
 }
 
 namespace {
