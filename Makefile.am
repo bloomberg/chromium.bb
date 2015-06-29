@@ -65,7 +65,7 @@ weston_LDFLAGS = -export-dynamic
 weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
 weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
-	$(DLOPEN_LIBS) -lm libshared.la
+	$(DLOPEN_LIBS) -lm -lrt libshared.la
 
 weston_SOURCES =					\
 	src/git-version.h				\
@@ -506,7 +506,7 @@ nodist_weston_presentation_shm_SOURCES =		\
 	protocol/presentation_timing-protocol.c		\
 	protocol/presentation_timing-client-protocol.h
 weston_presentation_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
-weston_presentation_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm
+weston_presentation_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la -lm -lrt
 
 weston_multi_resource_SOURCES = clients/multi-resource.c
 weston_multi_resource_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
