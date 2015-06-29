@@ -40,6 +40,7 @@ public:
     void addPair(const std::pair<String, String> quotePair);
     const String getOpenQuote(int index) const;
     const String getCloseQuote(int index) const;
+    int size() { return m_quotePairs.size(); }
 
 private:
     QuotesData() { }

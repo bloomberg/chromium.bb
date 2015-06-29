@@ -50,6 +50,7 @@
 #include "core/style/ContentData.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/PathStyleMotionPath.h"
+#include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 
@@ -1911,6 +1912,20 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     }
     case CSSPropertyPosition:
         return cssValuePool().createValue(style.position());
+    case CSSPropertyQuotes:
+        if (!style.quotes()) {
+            // TODO(ramya.v): We should return the quote values that we're actually using.
+            return nullptr;
+        }
+        if (style.quotes()->size()) {
+            RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+            for (int i = 0; i < style.quotes()->size(); i++) {
+                list->append(cssValuePool().createValue(style.quotes()->getOpenQuote(i), CSSPrimitiveValue::CSS_STRING));
+                list->append(cssValuePool().createValue(style.quotes()->getCloseQuote(i), CSSPrimitiveValue::CSS_STRING));
+            }
+            return list.release();
+        }
+        return cssValuePool().createIdentifierValue(CSSValueNone);
     case CSSPropertyRight:
         return valueForPositionOffset(style, CSSPropertyRight, layoutObject);
     case CSSPropertyWebkitRubyPosition:
@@ -2482,7 +2497,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
 
     // Other unimplemented properties.
     case CSSPropertyPage: // for @page
-    case CSSPropertyQuotes: // FIXME: needs implementation
     case CSSPropertySize: // for @page
         return nullptr;
 
