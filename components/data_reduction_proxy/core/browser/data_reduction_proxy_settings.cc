@@ -16,16 +16,13 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "net/base/network_change_notifier.h"
 
 namespace {
 
 // Key of the UMA DataReductionProxy.StartupState histogram.
 const char kUMAProxyStartupStateHistogram[] =
     "DataReductionProxy.StartupState";
-
-// Key of the UMA DataReductionProxy.LoFi.ImplicitOptOutAction histogram.
-const char kUMALoFiImplicitOptOutAction[] =
-    "DataReductionProxy.LoFi.ImplicitOptOutAction";
 
 }  // namespace
 
@@ -321,9 +318,55 @@ void DataReductionProxySettings::RecordStartupState(ProxyStartupState state) {
 }
 
 void DataReductionProxySettings::RecordLoFiImplicitOptOutAction(
-    LoFiImplicitOptOutAction action) {
-  UMA_HISTOGRAM_ENUMERATION(kUMALoFiImplicitOptOutAction, action,
-                            LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+    LoFiImplicitOptOutAction action) const {
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      net::NetworkChangeNotifier::GetConnectionType();
+
+  switch (connection_type) {
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.Unknown", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.Ethernet", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.WiFi", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.2G", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.3G", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.4G", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.None", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.LoFi.ImplicitOptOutAction.Bluetooth", action,
+          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 ContentLengthList

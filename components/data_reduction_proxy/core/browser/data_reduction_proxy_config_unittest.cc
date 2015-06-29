@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
@@ -1118,6 +1119,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
     bool lofi_enabled_field_trial_group;
     bool network_prohibitively_slow;
     bool expect_lofi_header;
+    int bucket_to_check_for_auto_lofi_uma;
+    int expect_bucket_count;
 
   } tests[] = {
       {
@@ -1126,6 +1129,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
        false,
        false,
        false,
+       0,
+       0,  // not in enabled field trial, UMA is not recorded
       },
       {
        // In enabled field trial group but network quality is not bad.
@@ -1133,6 +1138,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
        true,
        false,
        false,
+       0,
+       1,  // Lo-Fi request header is not used (state change: empty to empty)
       },
       {
        // Not in enabled field trial group and network quality is bad.
@@ -1140,6 +1147,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
        false,
        true,
        false,
+       0,
+       0,  // not in enabled field trial, UMA is not recorded
       },
       {
        // In enabled field trial group and network quality is bad.
@@ -1147,6 +1156,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
        true,
        true,
        true,
+       1,
+       1,  // Lo-Fi request header is now used (state change: empty to low)
       },
       {
        // Lo-Fi enabled through command line switch.
@@ -1154,6 +1165,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
        false,
        false,
        true,
+       0,
+       0,  // not in enabled field trial, UMA is not recorded
       },
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -1171,7 +1184,14 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
     EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_))
         .WillRepeatedly(testing::Return(tests[i].network_prohibitively_slow));
 
+    base::HistogramTester histogram_tester;
     config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
+    if (tests[i].expect_bucket_count != 0) {
+      histogram_tester.ExpectBucketCount(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.Unknown",
+          tests[i].bucket_to_check_for_auto_lofi_uma,
+          tests[i].expect_bucket_count);
+    }
 
     EXPECT_EQ(tests[i].expect_lofi_header,
               config()->ShouldUseLoFiHeaderForRequests())

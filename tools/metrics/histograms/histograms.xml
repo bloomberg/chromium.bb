@@ -69885,6 +69885,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_StartToFinish"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="DataReductionProxy.NetworkTypes" separator=".">
+  <suffix name="Unknown" label="On Unknown network"/>
+  <suffix name="Ethernet" label="On Ethernet network"/>
+  <suffix name="Wifi" label="On WiFi network"/>
+  <suffix name="2G" label="On 2G network"/>
+  <suffix name="3G" label="On 3G Network"/>
+  <suffix name="4G" label="On 4G network"/>
+  <suffix name="None" label="With no detected network"/>
+  <suffix name="Bluetooth" label="On Bluetooth network"/>
+  <affected-histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"/>
+  <affected-histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="DataReductionProxy.WithValidOCL.LoFiOn" separator=".">
   <suffix name="LoFiOn"
       label="Only page loads through the data reduction proxy with Lo-Fi On

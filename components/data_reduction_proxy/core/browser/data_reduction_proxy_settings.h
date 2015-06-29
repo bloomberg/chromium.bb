@@ -133,7 +133,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // Records UMA for Lo-Fi implicit opt out actions.
   void RecordLoFiImplicitOptOutAction(
-      data_reduction_proxy::LoFiImplicitOptOutAction action);
+      data_reduction_proxy::LoFiImplicitOptOutAction action) const;
 
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.

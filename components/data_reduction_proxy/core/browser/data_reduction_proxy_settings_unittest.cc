@@ -454,7 +454,7 @@ TEST_F(DataReductionProxySettingsTest,
 
 TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutHistograms) {
   const char kUMALoFiImplicitOptOutAction[] =
-      "DataReductionProxy.LoFi.ImplicitOptOutAction";
+      "DataReductionProxy.LoFi.ImplicitOptOutAction.Unknown";
   base::HistogramTester histogram_tester;
 
   // Disable Lo-Fi for |lo_fi_consecutive_session_disables_|.

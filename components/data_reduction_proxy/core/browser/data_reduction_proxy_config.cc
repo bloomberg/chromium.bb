@@ -93,8 +93,10 @@ enum AutoLoFiRequestHeaderState {
 
 // Following UMA is plotted to measure how frequently Lo-Fi state changes.
 // Too frequent changes are undesirable.
-void RecordAutoLoFiRequestHeaderStateChange(bool previous_header_low,
-                                            bool current_header_low) {
+void RecordAutoLoFiRequestHeaderStateChange(
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    bool previous_header_low,
+    bool current_header_low) {
   AutoLoFiRequestHeaderState state;
   if (!previous_header_low) {
     if (current_header_low)
@@ -111,9 +113,51 @@ void RecordAutoLoFiRequestHeaderStateChange(bool previous_header_low,
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.AutoLoFiRequestHeaderState",
-                            state,
-                            AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+  switch (connection_type) {
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.Unknown", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.Ethernet", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.WiFi", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.2G", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.3G", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.4G", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.None", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      UMA_HISTOGRAM_ENUMERATION(
+          "DataReductionProxy.AutoLoFiRequestHeaderState.Bluetooth", state,
+          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace
@@ -828,7 +872,7 @@ void DataReductionProxyConfig::UpdateLoFiStatusOnMainFrameRequest(
                        ? LOFI_STATUS_ACTIVE
                        : LOFI_STATUS_INACTIVE;
     RecordAutoLoFiRequestHeaderStateChange(
-        ShouldUseLoFiHeaderForRequests(previous_lofi_status),
+        connection_type_, ShouldUseLoFiHeaderForRequests(previous_lofi_status),
         ShouldUseLoFiHeaderForRequests(lofi_status_));
     return;
   }
