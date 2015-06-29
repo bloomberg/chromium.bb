@@ -484,4 +484,42 @@ TEST(PropertyTreeTest, ScreenSpaceOpacityUpdateTest) {
   EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.25f);
 }
 
+TEST(PropertyTreeTest, NonIntegerTranslationTest) {
+  // This tests that when a node has non-integer translation, the information
+  // is propagated to the subtree.
+  TransformTree tree;
+
+  int parent = tree.Insert(TransformNode(), 0);
+  tree.Node(parent)->data.target_id = parent;
+  tree.Node(parent)->data.local.Translate(1.5f, 1.5f);
+
+  int child = tree.Insert(TransformNode(), parent);
+  tree.Node(child)->data.target_id = parent;
+  tree.Node(child)->data.local.Translate(1, 1);
+  tree.set_needs_update(true);
+  ComputeTransforms(&tree);
+  EXPECT_FALSE(
+      tree.Node(parent)->data.node_and_ancestors_have_only_integer_translation);
+  EXPECT_FALSE(
+      tree.Node(child)->data.node_and_ancestors_have_only_integer_translation);
+
+  tree.Node(parent)->data.local.Translate(0.5f, 0.5f);
+  tree.Node(child)->data.local.Translate(0.5f, 0.5f);
+  tree.set_needs_update(true);
+  ComputeTransforms(&tree);
+  EXPECT_TRUE(
+      tree.Node(parent)->data.node_and_ancestors_have_only_integer_translation);
+  EXPECT_FALSE(
+      tree.Node(child)->data.node_and_ancestors_have_only_integer_translation);
+
+  tree.Node(child)->data.local.Translate(0.5f, 0.5f);
+  tree.Node(child)->data.target_id = child;
+  tree.set_needs_update(true);
+  ComputeTransforms(&tree);
+  EXPECT_TRUE(
+      tree.Node(parent)->data.node_and_ancestors_have_only_integer_translation);
+  EXPECT_TRUE(
+      tree.Node(child)->data.node_and_ancestors_have_only_integer_translation);
+}
+
 }  // namespace cc

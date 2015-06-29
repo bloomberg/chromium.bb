@@ -84,6 +84,9 @@ struct CC_EXPORT TransformNodeData {
   // root is flat.
   bool node_and_ancestors_are_flat : 1;
 
+  // This is needed to know if a layer can use lcd text.
+  bool node_and_ancestors_have_only_integer_translation : 1;
+
   bool scrolls : 1;
 
   bool needs_sublayer_scale : 1;
@@ -288,6 +291,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                                   TransformNode* target_node);
   void UpdateIsAnimated(TransformNode* node, TransformNode* parent_node);
   void UpdateSnapping(TransformNode* node);
+  void UpdateNodeAndAncestorsHaveIntegerTranslations(
+      TransformNode* node,
+      TransformNode* parent_node);
   bool NeedsSourceToParentUpdate(TransformNode* node);
 
   bool source_to_parent_updates_allowed_;

@@ -62,6 +62,7 @@ TransformNodeData::TransformNodeData()
       to_screen_is_animated(false),
       flattens_inherited_transform(false),
       node_and_ancestors_are_flat(true),
+      node_and_ancestors_have_only_integer_translation(true),
       scrolls(false),
       needs_sublayer_scale(false),
       affected_by_inner_viewport_bounds_delta_x(false),
@@ -174,6 +175,7 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateTargetSpaceTransform(node, target_node);
   UpdateIsAnimated(node, parent_node);
   UpdateSnapping(node);
+  UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
 }
 
 bool TransformTree::IsDescendant(int desc_id, int source_id) const {
@@ -431,6 +433,17 @@ void OpacityTree::UpdateOpacities(int id) {
   OpacityNode* parent_node = parent(node);
   if (parent_node)
     node->data.screen_space_opacity *= parent_node->data.screen_space_opacity;
+}
+
+void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
+    TransformNode* node,
+    TransformNode* parent_node) {
+  node->data.node_and_ancestors_have_only_integer_translation =
+      node->data.to_parent.IsIdentityOrIntegerTranslation();
+  if (parent_node)
+    node->data.node_and_ancestors_have_only_integer_translation =
+        node->data.node_and_ancestors_have_only_integer_translation &&
+        parent_node->data.node_and_ancestors_have_only_integer_translation;
 }
 
 PropertyTrees::PropertyTrees() : needs_rebuild(true), sequence_number(0) {
