@@ -188,7 +188,7 @@ public class DocumentTab extends ChromeTab {
 
         @Override
         public void onOpenInNewTab(String url, Referrer referrer) {
-            LoadUrlParams params = new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL);
+            LoadUrlParams params = new LoadUrlParams(url);
             params.setReferrer(referrer);
             mActivity.getTabModelSelector().openNewTab(params,
                     TabLaunchType.FROM_LONGPRESS_BACKGROUND, DocumentTab.this, isIncognito());
@@ -197,7 +197,7 @@ public class DocumentTab extends ChromeTab {
         @Override
         public void onOpenInNewIncognitoTab(String url) {
             mActivity.getTabModelSelector().openNewTab(
-                    new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL),
+                    new LoadUrlParams(url),
                     TabLaunchType.FROM_LONGPRESS_FOREGROUND, DocumentTab.this, true);
         }
 
