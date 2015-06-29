@@ -84,6 +84,7 @@ class CommandBufferDriver {
   void DestroyWindow();
 
  private:
+  bool MakeCurrent();
   bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state);
   void OnResize(gfx::Size size, float scale_factor);
   bool OnWaitSyncPoint(uint32_t sync_point);

@@ -100,6 +100,21 @@ void CommandBufferDriver::Initialize(
   sync_client_->DidInitialize(success, capabilities.Pass());
 }
 
+bool CommandBufferDriver::MakeCurrent() {
+  if (!decoder_)
+    return false;
+  if (decoder_->MakeCurrent())
+    return true;
+  DLOG(ERROR) << "Context lost because MakeCurrent failed.";
+  gpu::error::ContextLostReason reason =
+      static_cast<gpu::error::ContextLostReason>(
+          decoder_->GetContextLostReason());
+  command_buffer_->SetContextLostReason(reason);
+  command_buffer_->SetParseError(gpu::error::kLostContext);
+  OnContextLost(reason);
+  return false;
+}
+
 bool CommandBufferDriver::DoInitialize(
     mojo::ScopedSharedBufferHandle shared_state) {
   if (widget_ == gfx::kNullAcceleratedWidget)
@@ -233,6 +248,9 @@ void CommandBufferDriver::CreateImage(int32_t id,
                                       mojo::SizePtr size,
                                       int32_t format,
                                       int32_t internal_format) {
+  if (!MakeCurrent())
+    return;
+
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   if (image_manager->LookupImage(id)) {
     LOG(ERROR) << "Image already exists with same ID.";
@@ -302,6 +320,8 @@ void CommandBufferDriver::DestroyImage(int32_t id) {
     LOG(ERROR) << "Image with ID doesn't exist.";
     return;
   }
+  if (!MakeCurrent())
+    return;
   image_manager->RemoveImage(id);
 }
 
