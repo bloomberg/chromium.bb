@@ -149,6 +149,8 @@
       'sources': [
         'test/app_remoting_connected_client_fixture.cc',
         'test/app_remoting_connected_client_fixture.h',
+        'test/app_remoting_connection_helper.cc',
+        'test/app_remoting_connection_helper.h',
         'test/app_remoting_test_driver_environment.cc',
         'test/app_remoting_test_driver_environment.h',
         'test/remote_application_details.h',
