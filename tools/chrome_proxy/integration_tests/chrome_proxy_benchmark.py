@@ -7,8 +7,8 @@ from integration_tests import chrome_proxy_measurements as measurements
 from integration_tests import chrome_proxy_pagesets as pagesets
 from telemetry import benchmark
 
-NON_SAFE_BROWSING_BROWSERS = ['desktop', 'android-webview',
-                              'android-webview-shell']
+NON_SAFE_BROWSING_BROWSERS = ['mac', 'linux', 'win', 'chromeos',
+                              'android-webview', 'android-webview-shell']
 
 class ChromeProxyClientVersion(ChromeProxyBenchmark):
   tag = 'client_version'
