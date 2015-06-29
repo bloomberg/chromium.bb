@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -58,6 +59,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.BackgroundContentViewHelper.BackgroundContentViewDelegate;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -359,35 +361,54 @@ public class ChromeTab extends Tab {
      */
     public class TabChromeWebContentsDelegateAndroidImpl
             extends TabChromeWebContentsDelegateAndroid {
-        /**
-         * This method is meant to be overridden by DocumentTab because the
-         * TabModelSelector returned by the activity is not correct.
-         * TODO(dfalcantara): remove this when DocumentActivity.getTabModelSelector()
-         * will return the right TabModelSelector.
-         */
+        private Pair<WebContents, String> mWebContentsUrlMapping;
+
         protected TabModel getTabModel() {
+            // TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
+            //                    can return a TabModelSelector that activateContents() can use.
             return mActivity.getTabModelSelector().getModel(isIncognito());
+        }
+
+        @Override
+        public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
+                String frameName, String targetUrl, WebContents newWebContents) {
+            super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
+                    targetUrl, newWebContents);
+
+            // The URL can't be taken from the WebContents if it's paused.  Save it for later.
+            assert mWebContentsUrlMapping == null;
+            mWebContentsUrlMapping = Pair.create(newWebContents, targetUrl);
         }
 
         @Override
         public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
                 int disposition, Rect initialPosition, boolean userGesture) {
+            assert mWebContentsUrlMapping.first == webContents;
+
+            TabCreator tabCreator = mActivity.getTabCreator(isIncognito());
+            assert tabCreator != null;
+
+            // Grab the URL, which might not be available via the Tab.
+            String url = mWebContentsUrlMapping.second;
+            mWebContentsUrlMapping = null;
+
+            // Skip opening a new Tab if it doesn't make sense.
             if (isClosing()) return false;
 
-            // TODO(johnme): Open tabs in same order as Chrome.
-            Tab tab = mActivity.getTabCreator(isIncognito()).createTabWithWebContents(
-                    webContents, getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND);
-
-            if (tab == null) return false;
-
-            if (disposition == WindowOpenDisposition.NEW_POPUP) {
+            // Creating new Tabs asynchronously requires starting a new Activity to create the Tab,
+            // so the Tab returned will always be null.  There's no way to know synchronously
+            // whether the Tab is created, so assume it's always successful.
+            Tab tab = tabCreator.createTabWithWebContents(
+                    webContents, getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND, url);
+            boolean success = tabCreator.createsTabsAsynchronously() || tab != null;
+            if (success && disposition == WindowOpenDisposition.NEW_POPUP) {
                 PolicyAuditor auditor =
                         ((ChromeMobileApplication) getApplicationContext()).getPolicyAuditor();
                 auditor.notifyAuditEvent(getApplicationContext(), AuditEvent.OPEN_POPUP_URL_SUCCESS,
-                        tab.getUrl(), "");
+                        url, "");
             }
 
-            return true;
+            return success;
         }
 
         @Override

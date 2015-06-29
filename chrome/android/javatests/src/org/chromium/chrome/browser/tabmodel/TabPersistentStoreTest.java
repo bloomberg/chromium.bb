@@ -49,6 +49,11 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         public int idOfFirstCreatedTab = Tab.INVALID_TAB_ID;
 
         @Override
+        public boolean createsTabsAsynchronously() {
+            return false;
+        }
+
+        @Override
         public Tab createNewTab(
                 LoadUrlParams loadUrlParams, TabModel.TabLaunchType type, Tab parent) {
             return null;
@@ -65,6 +70,12 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         @Override
         public Tab createTabWithWebContents(
                 WebContents webContents, int parentId, TabLaunchType type) {
+            return null;
+        }
+
+        @Override
+        public Tab createTabWithWebContents(
+                WebContents webContents, int parentId, TabLaunchType type, String url) {
             return null;
         }
 

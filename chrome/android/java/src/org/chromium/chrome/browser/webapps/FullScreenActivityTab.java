@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -348,18 +347,6 @@ public class FullScreenActivityTab extends ChromeTab {
             if (FeatureUtilities.isDocumentMode(mActivity)) {
                 DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
             }
-        }
-
-        @Override
-        public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
-                int disposition, Rect initialPosition, boolean userGesture) {
-            if (isClosing() || !FeatureUtilities.isDocumentMode(mActivity)) return false;
-
-            mActivity.getTabCreator(isIncognito()).createTabWithWebContents(
-                    webContents, getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND);
-
-            // Returns true because Tabs are created asynchronously.
-            return true;
         }
     }
 }

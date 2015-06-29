@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.document;
 
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.VisibleForTesting;
@@ -241,27 +240,14 @@ public class DocumentTab extends ChromeTab {
         @Override
         public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
                 String frameName, String targetUrl, WebContents newWebContents) {
-            // TODO(dfalcantara): Replace with TabObserver, combine with FullScreenActivityTab's
-            //                    WebContentsDelegateAndroidImpl.
             super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
                     targetUrl, newWebContents);
             DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
         }
 
-        @Override
-        public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
-                int disposition, Rect initialPosition, boolean userGesture) {
-            if (isClosing()) return false;
-            mActivity.getTabCreator(isIncognito()).createTabWithWebContents(
-                    webContents, getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND);
-
-            // Returns true because Tabs are created asynchronously.
-            return true;
-        }
-
         /**
-         * TODO(dfalcantara): remove this when DocumentActivity.getTabModelSelector()
-         * will return the right TabModelSelector.
+         * TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
+         *                    can return a TabModelSelector that activateContents() can use.
          */
         @Override
         protected TabModel getTabModel() {

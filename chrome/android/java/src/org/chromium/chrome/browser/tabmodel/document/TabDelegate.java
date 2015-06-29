@@ -29,10 +29,11 @@ public interface TabDelegate extends TabCreator {
      * @param webContents WebContents that has been pre-created.
      * @param parentId ID of the parent Tab.
      * @param type Launch type for the Tab.
+     * @param url URL that the WebContents was opened for.
      * @param startedBy See {@link DocumentMetricIds}.
      */
     void createTabWithWebContents(
-            WebContents webContents, int parentId, TabLaunchType type, int startedBy);
+            WebContents webContents, int parentId, TabLaunchType type, String url, int startedBy);
 
      /**
       * Creates a new DocumentTab asynchronously.  Generally, you should use createNewTab() instead.

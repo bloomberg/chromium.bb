@@ -49,6 +49,11 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
         mIncognito = incognito;
     }
 
+    @Override
+    public boolean createsTabsAsynchronously() {
+        return false;
+    }
+
     /**
      * Creates a new tab and posts to UI.
      * @param loadUrlParams parameters of the url load.
@@ -149,6 +154,12 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
     @Override
     public ChromeTab createTabWithWebContents(WebContents webContents, int parentId,
             TabLaunchType type) {
+        return createTabWithWebContents(webContents, parentId, type, webContents.getUrl());
+    }
+
+    @Override
+    public ChromeTab createTabWithWebContents(WebContents webContents, int parentId,
+            TabLaunchType type, String url) {
         TabModel model = mTabModel;
 
         // The parent tab was already closed.  Do not open child tabs.

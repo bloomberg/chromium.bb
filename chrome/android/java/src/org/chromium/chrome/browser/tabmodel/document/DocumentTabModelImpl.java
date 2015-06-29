@@ -341,7 +341,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         // when a WebContents has already been created.
         getTabDelegate(isIncognito).createTabWithWebContents(
                 webContents, parentTabId, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
-                DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS);
+                webContents.getUrl(), DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS);
         return null;
     }
 

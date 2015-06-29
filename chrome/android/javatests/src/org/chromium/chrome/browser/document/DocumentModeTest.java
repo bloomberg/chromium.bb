@@ -341,6 +341,17 @@ public class DocumentModeTest extends DocumentModeTestBase {
         }));
         assertEquals(incognitoModel, selector.getCurrentModel());
 
+        // Make sure the URL isn't in the Intent of the first IncognitoDocumentActivity.
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return ApplicationStatus.getLastTrackedFocusedActivity()
+                        instanceof IncognitoDocumentActivity;
+            }
+        }));
+        assertNull("URL is in the Incognito Intent", IntentHandler.getUrlFromIntent(
+                ApplicationStatus.getLastTrackedFocusedActivity().getIntent()));
+
         // Launch via ChromeLauncherActivity.launchInstance().
         final int secondId = launchViaLaunchDocumentInstance(true, URL_3, "Page 3");
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
@@ -352,6 +363,17 @@ public class DocumentModeTest extends DocumentModeTestBase {
         assertTrue(selector.isIncognitoSelected());
         assertEquals(incognitoModel, selector.getCurrentModel());
         assertEquals(secondId, TabModelUtils.getCurrentTabId(incognitoModel));
+
+        // Make sure the URL isn't in the Intent of the second IncognitoDocumentActivity.
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return ApplicationStatus.getLastTrackedFocusedActivity()
+                        instanceof IncognitoDocumentActivity;
+            }
+        }));
+        assertNull("URL is in the Incognito Intent", IntentHandler.getUrlFromIntent(
+                ApplicationStatus.getLastTrackedFocusedActivity().getIntent()));
     }
 
     /**
@@ -563,6 +585,8 @@ public class DocumentModeTest extends DocumentModeTestBase {
         assertNotSame("Wrong tab ID in foreground", firstTabId, selector.getCurrentTabId());
         assertNotSame("Wrong Activity in foreground",
                 firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+        assertEquals("URL is not in the Intent",
+                URL_4, IntentHandler.getUrlFromIntent(secondActivity.getIntent()));
     }
 
     /**
@@ -606,5 +630,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         assertNotSame("Wrong tab ID in foreground", firstTabId, selector.getCurrentTabId());
         assertNotSame("Wrong Activity in foreground",
                 firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+        assertEquals("URL is not in the Intent",
+                URL_4, IntentHandler.getUrlFromIntent(thirdActivity.getIntent()));
     }
 }

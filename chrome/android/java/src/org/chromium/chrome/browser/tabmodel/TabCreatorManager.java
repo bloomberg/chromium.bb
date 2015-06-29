@@ -19,6 +19,11 @@ public interface TabCreatorManager {
      */
     public interface TabCreator {
         /**
+         * @return Whether the TabCreator creates Tabs asynchronously.
+         */
+        boolean createsTabsAsynchronously();
+
+        /**
          * Creates a new tab and posts to UI.
          * @param loadUrlParams parameters of the url load.
          * @param type Information about how the tab was launched.
@@ -41,9 +46,20 @@ public interface TabCreatorManager {
          * @param webContents The web contents to create a tab around.
          * @param parentId    The id of the parent tab.
          * @param type        The TabLaunchType describing how this tab was created.
-         * @return            The created tab.
+         * @return            The created tab.  May be null if created asynchronously.
          */
         Tab createTabWithWebContents(WebContents webContents, int parentId, TabLaunchType type);
+
+        /**
+         * Creates a Tab to host the given WebContents asynchronously.
+         * @param webContents The web contents to create a tab around.
+         * @param parentId    The id of the parent tab.
+         * @param type        The TabLaunchType describing how this tab was created.
+         * @param url         URL to display in the WebContents.
+         * @return            The created tab.  May be null if created asynchronously.
+         */
+        Tab createTabWithWebContents(
+                WebContents webContents, int parentId, TabLaunchType type, String url);
 
         /**
          * Creates a new tab and loads the NTP.

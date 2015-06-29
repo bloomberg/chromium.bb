@@ -19,6 +19,11 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class MockTabDelegate implements TabDelegate {
     @Override
+    public boolean createsTabsAsynchronously() {
+        return true;
+    }
+
+    @Override
     public Tab getActivityTab(ActivityDelegate delgate, Activity activity) {
         return null;
     }
@@ -39,8 +44,14 @@ public class MockTabDelegate implements TabDelegate {
     }
 
     @Override
+    public Tab createTabWithWebContents(
+            WebContents webContents, int parentId, TabLaunchType type, String url) {
+        return null;
+    }
+
+    @Override
     public void createTabWithWebContents(
-            WebContents webContents, int parentId, TabLaunchType type, int startedBy) {
+            WebContents webContents, int parentId, TabLaunchType type, String url, int startedBy) {
     }
 
     @Override

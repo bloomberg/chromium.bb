@@ -35,6 +35,11 @@ public class TabDelegateImpl implements TabDelegate {
     }
 
     @Override
+    public boolean createsTabsAsynchronously() {
+        return true;
+    }
+
+    @Override
     public Tab getActivityTab(ActivityDelegate activityDelegate, Activity activity) {
         if (!(activity instanceof DocumentActivity)
                 || !activityDelegate.isValidActivity(mIsIncognito, activity.getIntent())) {
@@ -57,14 +62,28 @@ public class TabDelegateImpl implements TabDelegate {
     @Override
     public Tab createTabWithWebContents(
             WebContents webContents, int parentId, TabLaunchType type) {
-        createTabWithWebContents(
-                webContents, parentId, type, DocumentMetricIds.STARTED_BY_WINDOW_OPEN);
+        createTabWithWebContents(webContents, parentId, type, webContents.getUrl());
         return null;
     }
 
     @Override
+    public Tab createTabWithWebContents(
+            WebContents webContents, int parentId, TabLaunchType type, String url) {
+        createTabWithWebContents(
+                webContents, parentId, type, url, DocumentMetricIds.STARTED_BY_WINDOW_OPEN);
+        return null;
+    }
+
+    /**
+     * Creates a Tab to host the given WebContents asynchronously.
+     * @param webContents WebContents that has been pre-created.
+     * @param parentId ID of the parent Tab.
+     * @param type Launch type for the Tab.
+     * @param url URL to display in the WebContents.
+     * @param startedBy See {@link DocumentMetricIds}.
+     */
     public void createTabWithWebContents(
-            WebContents webContents, int parentId, TabLaunchType type, int startedBy) {
+            WebContents webContents, int parentId, TabLaunchType type, String url, int startedBy) {
         // Tabs can't be launched in affiliated mode when a webcontents exists.
         assert type != TabLaunchType.FROM_LONGPRESS_BACKGROUND;
 
@@ -73,7 +92,6 @@ public class TabDelegateImpl implements TabDelegate {
         data.webContents = webContents;
         data.webContentsPaused = startedBy != DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS;
 
-        String url = webContents.getUrl();
         if (url == null) url = "";
 
         // Determine information about the parent Activity.
