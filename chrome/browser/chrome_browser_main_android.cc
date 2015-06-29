@@ -6,6 +6,8 @@
 
 #include "base/android/build_info.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/chrome_media_client_android.h"
@@ -16,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
+#include "components/enhanced_bookmarks/persistent_image_store.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,6 +28,16 @@
 #include "net/base/network_change_notifier.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
+
+namespace {
+
+void DeleteFileTask(
+    const base::FilePath& file_path) {
+  if (base::PathExists(file_path))
+    base::DeleteFile(file_path, false);
+}
+
+} // namespace
 
 ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(
     const content::MainFunctionParams& parameters)
@@ -72,6 +85,17 @@ void ChromeBrowserMainPartsAndroid::PostProfileInit() {
   search_counter_.reset(new GoogleSearchCounterAndroid(main_profile));
 
   ChromeBrowserMainParts::PostProfileInit();
+
+  // Previously we stored information related to salient images for bookmarks
+  // in a local file. We replaced the salient images with favicons. As part
+  // of the clean up, the local file needs to be deleted. See crbug.com/499415.
+  base::FilePath bookmark_image_file_path = main_profile->GetPath().Append(
+      PersistentImageStore::kBookmarkImageStoreDb);
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeleteFileTask,
+                 bookmark_image_file_path),
+      base::TimeDelta::FromMinutes(1));
 }
 
 void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {

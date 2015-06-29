@@ -16,6 +16,8 @@
 // data on disk.
 class PersistentImageStore : public ImageStore {
  public:
+  static const char kBookmarkImageStoreDb[];
+
   // Creates a PersistentImageStore in the directory at the given path.
   explicit PersistentImageStore(const base::FilePath& path);
   bool HasKey(const GURL& page_url) override;

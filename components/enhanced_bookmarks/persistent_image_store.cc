@@ -141,10 +141,13 @@ sql::InitStatus OpenDatabaseImpl(sql::Connection& db,
 
 }  // namespace
 
+const char PersistentImageStore::kBookmarkImageStoreDb[] =
+    "BookmarkImageAndUrlStore.db";
+
 PersistentImageStore::PersistentImageStore(const base::FilePath& path)
     : ImageStore(),
       path_(path.Append(
-          base::FilePath::FromUTF8Unsafe("BookmarkImageAndUrlStore.db"))) {
+          base::FilePath::FromUTF8Unsafe(kBookmarkImageStoreDb))) {
 }
 
 bool PersistentImageStore::HasKey(const GURL& page_url) {
