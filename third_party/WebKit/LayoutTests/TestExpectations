@@ -1313,7 +1313,6 @@ crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/drawImage.html [ Pass Ima
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/canvas-unbalanced-save.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/drawImage-with-globalAlpha.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Pass ImageOnlyFailure ]
-crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-transform-identity.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-render-layer.html [ Pass ImageOnlyFailure ]
@@ -1694,3 +1693,6 @@ crbug.com/461903 [ Win Debug ] media/encrypted-media/encrypted-media-waiting-for
 # Slow expected on debug builds
 crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ ImageOnlyFailure ]
+
+crbug.com/505411 [ Mac Win ] virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ ImageOnlyFailure ]
+crbug.com/505411 [ Linux ] virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ Pass ImageOnlyFailure ]
