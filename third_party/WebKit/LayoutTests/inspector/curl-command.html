@@ -27,7 +27,7 @@ var test = function()
 
     function dumpRequest(headers, data, opt_url)
     {
-        InspectorTest.addResult(logView._generateCurlCommand(newRequest(headers, data, opt_url)));
+        InspectorTest.addResult(logView._generateCurlCommand(newRequest(headers, data, opt_url), WebInspector.isWin() ? "win" : "unix"));
     }
 
     dumpRequest({})
