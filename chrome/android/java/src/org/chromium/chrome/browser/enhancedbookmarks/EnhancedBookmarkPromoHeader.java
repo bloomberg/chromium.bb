@@ -41,10 +41,14 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
 
     private static final String PREF_SIGNIN_PROMO_DECLINED =
             "enhanced_bookmark_signin_promo_declined";
+    private static final String PREF_SIGNIN_PROMO_SHOW_COUNT =
+            "enhanced_bookmark_signin_promo_show_count";
+    // TODO(kkimlabs): Figure out the optimal number based on UMA data.
+    private static final int MAX_SIGNIN_PROMO_SHOW_COUNT = 5;
 
     private Context mContext;
     private SigninManager mSignInManager;
-    private boolean mIsShowing;
+    private boolean mShouldShow;
     private PromoHeaderShowingChangeListener mShowingChangeListener;
 
     /**
@@ -61,8 +65,14 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
         mSignInManager = SigninManager.get(mContext);
         mSignInManager.addSignInStateObserver(this);
 
-        updateShowing(false);
-        if (isShowing()) RecordUserAction.record("Stars_SignInPromoHeader_Displayed");
+        updateShouldShow(false);
+        if (shouldShow()) {
+            int promoShowCount = PreferenceManager.getDefaultSharedPreferences(mContext)
+                    .getInt(PREF_SIGNIN_PROMO_SHOW_COUNT, 0) + 1;
+            PreferenceManager.getDefaultSharedPreferences(mContext).edit()
+                    .putInt(PREF_SIGNIN_PROMO_SHOW_COUNT, promoShowCount).apply();
+            RecordUserAction.record("Stars_SignInPromoHeader_Displayed");
+        }
     }
 
     /**
@@ -78,8 +88,8 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
     /**
      * @return Whether it should be showing.
      */
-    boolean isShowing() {
-        return mIsShowing;
+    boolean shouldShow() {
+        return mShouldShow;
     }
 
     /**
@@ -95,7 +105,7 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
             public void onClick(View view) {
                 RecordUserAction.record("Stars_SignInPromoHeader_Dismissed");
                 setSigninPromoDeclined();
-                updateShowing(true);
+                updateShouldShow(true);
             }
         });
 
@@ -127,14 +137,15 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
         sharedPreferencesEditor.apply();
     }
 
-    private void updateShowing(boolean notifyUI) {
-        boolean oldIsShowing = mIsShowing;
-        mIsShowing = AndroidSyncSettings.isMasterSyncEnabled(mContext)
+    private void updateShouldShow(boolean notifyUI) {
+        boolean oldIsShowing = mShouldShow;
+        mShouldShow = AndroidSyncSettings.isMasterSyncEnabled(mContext)
                 && mSignInManager.isSignInAllowed()
-                && !wasSigninPromoDeclined();
-
-        if (oldIsShowing != mIsShowing && notifyUI) {
-            mShowingChangeListener.onPromoHeaderShowingChanged(mIsShowing);
+                && !wasSigninPromoDeclined()
+                && PreferenceManager.getDefaultSharedPreferences(mContext).getInt(
+                        PREF_SIGNIN_PROMO_SHOW_COUNT, 0) < MAX_SIGNIN_PROMO_SHOW_COUNT;
+        if (oldIsShowing != mShouldShow && notifyUI) {
+            mShowingChangeListener.onPromoHeaderShowingChanged(mShouldShow);
         }
     }
 
@@ -142,18 +153,18 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
 
     @Override
     public void androidSyncSettingsChanged() {
-        updateShowing(true);
+        updateShouldShow(true);
     }
 
     // SignInStateObserver implementations
 
     @Override
     public void onSignedIn() {
-        updateShowing(true);
+        updateShouldShow(true);
     }
 
     @Override
     public void onSignedOut() {
-        updateShowing(true);
+        updateShouldShow(true);
     }
 }

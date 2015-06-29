@@ -269,7 +269,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addModelObserver(mBookmarkModelObserver);
         mPromoHeaderManager = new EnhancedBookmarkPromoHeader(mContext, this);
-        if (mPromoHeaderManager.isShowing()) mPromoHeaderSection.add(null);
+        if (mPromoHeaderManager.shouldShow()) mPromoHeaderSection.add(null);
 
         updateDividerSections();
     }
