@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import json
 import logging
 import os
 import posixpath
@@ -61,6 +62,9 @@ def ProvisionDevices(options):
   if options.auto_reconnect:
     _LaunchHostHeartbeat()
   blacklist = device_blacklist.ReadBlacklist()
+  if options.output_device_blacklist:
+    with open(options.output_device_blacklist, 'w') as f:
+      json.dump(blacklist, f)
   if all(d in blacklist for d in devices):
     raise device_errors.NoDevicesError
   return 0
@@ -317,6 +321,8 @@ def main():
                       help='Log more information.')
   parser.add_argument('--max-battery-temp', type=int, metavar='NUM',
                       help='Wait for the battery to have this temp or lower.')
+  parser.add_argument('--output-device-blacklist',
+                      help='Json file to output the device blacklist.')
   args = parser.parse_args()
   constants.SetBuildType(args.target)
 
