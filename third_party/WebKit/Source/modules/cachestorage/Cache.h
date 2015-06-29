@@ -49,8 +49,9 @@ public:
     DEFINE_INLINE_TRACE() { }
 
 private:
+    class BarrierCallbackForPut;
+    class BlobHandleCallbackForPut;
     class FetchResolvedForAdd;
-    class AsyncPutBatch;
     friend class FetchResolvedForAdd;
     Cache(WeakPtr<GlobalFetch::ScopedFetcher>, WebServiceWorkerCache*);
 
@@ -58,7 +59,7 @@ private:
     ScriptPromise matchAllImpl(ScriptState*, const Request*, const CacheQueryOptions&);
     ScriptPromise addAllImpl(ScriptState*, const Vector<Request*>&, ExceptionState&);
     ScriptPromise deleteImpl(ScriptState*, const Request*, const CacheQueryOptions&);
-    ScriptPromise putImpl(ScriptState*, Request*, Response*);
+    ScriptPromise putImpl(ScriptState*, const HeapVector<Member<Request>>&, const HeapVector<Member<Response>>&);
     ScriptPromise keysImpl(ScriptState*);
     ScriptPromise keysImpl(ScriptState*, const Request*, const CacheQueryOptions&);
 
