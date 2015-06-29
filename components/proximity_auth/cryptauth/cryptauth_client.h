@@ -5,10 +5,27 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
 #define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
+
+namespace cryptauth {
+class DeviceClassifier;
+class GetMyDevicesRequest;
+class GetMyDevicesResponse;
+class FindEligibleUnlockDevicesRequest;
+class FindEligibleUnlockDevicesResponse;
+class SendDeviceSyncTickleRequest;
+class SendDeviceSyncTickleResponse;
+class ToggleEasyUnlockRequest;
+class ToggleEasyUnlockResponse;
+class SetupEnrollmentRequest;
+class SetupEnrollmentResponse;
+class FinishEnrollmentRequest;
+class FinishEnrollmentResponse;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -77,6 +94,10 @@ class CryptAuthClient {
       const cryptauth::FinishEnrollmentRequest& request,
       const FinishEnrollmentCallback& callback,
       const ErrorCallback& error_callback) = 0;
+
+  // Returns the access token used to make the request. If no request has been
+  // made yet, this function will return an empty string.
+  virtual std::string GetAccessTokenUsed() = 0;
 };
 
 // Interface for creating CryptAuthClient instances. Because each

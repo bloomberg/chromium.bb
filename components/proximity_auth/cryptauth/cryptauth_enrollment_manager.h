@@ -8,17 +8,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
-#include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
-#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
+namespace base {
+class Clock;
+class Time;
+}
+
 namespace proximity_auth {
+
+class CryptAuthEnroller;
+class CryptAuthEnrollerFactory;
 
 // This class manages the device's enrollment with CryptAuth, periodically
 // re-enrolling to keep the state on the server fresh. If an enrollment fails,
@@ -42,22 +47,27 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
   // |clock|: Used to determine the time between sync attempts.
   // |enroller_factory|: Creates CryptAuthEnroller instances to perform each
   //                     enrollment attempt.
+  // |user_public_key|: The user's persistent public key identifying the device.
+  // |user_private_key|: The corresponding private key to |user_public_key|.
   // |device_info|: Contains information about the local device that will be
   //                uploaded to CryptAuth with each enrollment request.
+  // |pref_service|: Contains preferences across browser restarts, and should
+  //                 have been registered through RegisterPrefs().
   CryptAuthEnrollmentManager(
       scoped_ptr<base::Clock> clock,
       scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      const cryptauth::GcmDeviceInfo& device_info);
+      const std::string& user_public_key,
+      const std::string& user_private_key,
+      const cryptauth::GcmDeviceInfo& device_info,
+      PrefService* pref_service);
 
   ~CryptAuthEnrollmentManager() override;
 
   // Registers the prefs used by this class to the given |pref_service|.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Starts the manager backed by a |pref_service|, which shall already
-  // have registered the prefs through RegisterPrefs().
-  // This function begins scheduling periodic enrollment attempts.
-  void Start(PrefService* pref_service);
+  // Begins scheduling periodic enrollment attempts.
+  void Start();
 
   // Adds an observer.
   void AddObserver(Observer* observer);
@@ -107,6 +117,10 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
 
   // Creates CryptAuthEnroller instances for each enrollment attempt.
   scoped_ptr<CryptAuthEnrollerFactory> enroller_factory_;
+
+  // The user's persistent key-pair identifying the local device.
+  std::string user_public_key_;
+  std::string user_private_key_;
 
   // The local device information to upload to CryptAuth.
   const cryptauth::GcmDeviceInfo device_info_;

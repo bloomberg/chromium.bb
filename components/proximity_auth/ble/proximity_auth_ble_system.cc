@@ -14,6 +14,7 @@
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_device.h"

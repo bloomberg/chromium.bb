@@ -7,6 +7,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/simple_test_clock.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
+#include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/mock_sync_scheduler.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +23,10 @@ using ::testing::SaveArg;
 namespace proximity_auth {
 
 namespace {
+
+// The user's persistent key pair identifying the local device.
+const char kUserPublicKey[] = "user public key";
+const char kUserPrivateKey[] = "user private key";
 
 // The initial "Now" time for testing.
 const double kInitialTimeNowSeconds = 20000000;
@@ -41,8 +48,10 @@ class MockCryptAuthEnroller : public CryptAuthEnroller {
   MockCryptAuthEnroller() {}
   ~MockCryptAuthEnroller() override {}
 
-  MOCK_METHOD3(Enroll,
-               void(const cryptauth::GcmDeviceInfo& device_info,
+  MOCK_METHOD5(Enroll,
+               void(const std::string& user_public_key,
+                    const std::string& user_private_key,
+                    const cryptauth::GcmDeviceInfo& device_info,
                     cryptauth::InvocationReason invocation_reason,
                     const EnrollmentFinishedCallback& callback));
 
@@ -83,10 +92,14 @@ class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
   TestCryptAuthEnrollmentManager(
       scoped_ptr<base::Clock> clock,
       scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      const cryptauth::GcmDeviceInfo& device_info)
+      const cryptauth::GcmDeviceInfo& device_info,
+      PrefService* pref_service)
       : CryptAuthEnrollmentManager(clock.Pass(),
                                    enroller_factory.Pass(),
-                                   device_info),
+                                   kUserPublicKey,
+                                   kUserPrivateKey,
+                                   device_info,
+                                   pref_service),
         scoped_sync_scheduler_(new NiceMock<MockSyncScheduler>()),
         weak_sync_scheduler_factory_(scoped_sync_scheduler_.get()) {}
 
@@ -126,7 +139,8 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
         enroller_factory_(new MockCryptAuthEnrollerFactory()),
         enrollment_manager_(make_scoped_ptr(clock_),
                             make_scoped_ptr(enroller_factory_),
-                            device_info_) {}
+                            device_info_,
+                            &pref_service_) {}
 
   // testing::Test:
   void SetUp() override {
@@ -171,8 +185,9 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
       cryptauth::InvocationReason expected_invocation_reason) {
     CryptAuthEnroller::EnrollmentFinishedCallback completion_callback;
     EXPECT_CALL(*next_cryptauth_enroller(),
-                Enroll(_, expected_invocation_reason, _))
-        .WillOnce(SaveArg<2>(&completion_callback));
+                Enroll(kUserPublicKey, kUserPrivateKey, _,
+                       expected_invocation_reason, _))
+        .WillOnce(SaveArg<4>(&completion_callback));
 
     auto sync_request = make_scoped_ptr(
         new SyncScheduler::SyncRequest(enrollment_manager_.GetSyncScheduler()));
@@ -219,7 +234,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, RegisterPrefs) {
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, GetEnrollmentState) {
-  enrollment_manager_.Start(&pref_service_);
+  enrollment_manager_.Start();
 
   ON_CALL(*sync_scheduler(), GetStrategy())
       .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
@@ -244,15 +259,24 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, GetEnrollmentState) {
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
-  EXPECT_CALL(*sync_scheduler(),
-              Start(clock_->Now() - base::Time::FromDoubleT(0),
-                    SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
+  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
+  clock->SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
+  base::TimeDelta elapsed_time = clock->Now() - base::Time::FromDoubleT(0);
 
   TestingPrefServiceSimple pref_service;
   CryptAuthEnrollmentManager::RegisterPrefs(pref_service.registry());
-  enrollment_manager_.Start(&pref_service);
-  EXPECT_FALSE(enrollment_manager_.IsEnrollmentValid());
-  EXPECT_TRUE(enrollment_manager_.GetLastEnrollmentTime().is_null());
+
+  TestCryptAuthEnrollmentManager enrollment_manager(
+      clock.Pass(), make_scoped_ptr(new MockCryptAuthEnrollerFactory()),
+      device_info_, &pref_service);
+
+  EXPECT_CALL(
+      *enrollment_manager.GetSyncScheduler(),
+      Start(elapsed_time, SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
+  enrollment_manager.Start();
+
+  EXPECT_FALSE(enrollment_manager.IsEnrollmentValid());
+  EXPECT_TRUE(enrollment_manager.GetLastEnrollmentTime().is_null());
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithExistingPrefs) {
@@ -261,7 +285,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithExistingPrefs) {
       Start(clock_->Now() - base::Time::FromDoubleT(kLastEnrollmentTimeSeconds),
             SyncScheduler::Strategy::PERIODIC_REFRESH));
 
-  enrollment_manager_.Start(&pref_service_);
+  enrollment_manager_.Start();
   EXPECT_TRUE(enrollment_manager_.IsEnrollmentValid());
   EXPECT_EQ(base::Time::FromDoubleT(kLastEnrollmentTimeSeconds),
             enrollment_manager_.GetLastEnrollmentTime());
@@ -277,7 +301,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithExpiredEnrollment) {
                                         kLastExpiredEnrollmentTimeSeconds),
                     SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
 
-  enrollment_manager_.Start(&pref_service_);
+  enrollment_manager_.Start();
   EXPECT_FALSE(enrollment_manager_.IsEnrollmentValid());
   EXPECT_EQ(base::Time::FromDoubleT(kLastExpiredEnrollmentTimeSeconds),
             enrollment_manager_.GetLastEnrollmentTime());
@@ -286,7 +310,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithExpiredEnrollment) {
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
        EnrollmentSucceedsForFirstTime) {
   pref_service_.ClearPref(prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds);
-  enrollment_manager_.Start(&pref_service_);
+  enrollment_manager_.Start();
   EXPECT_FALSE(enrollment_manager_.IsEnrollmentValid());
 
   auto completion_callback =
@@ -302,7 +326,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, ForceEnrollment) {
-  enrollment_manager_.Start(&pref_service_);
+  enrollment_manager_.Start();
 
   EXPECT_CALL(*sync_scheduler(), ForceSync());
   enrollment_manager_.ForceEnrollmentNow(cryptauth::INVOCATION_REASON_MANUAL);
@@ -318,7 +342,7 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, ForceEnrollment) {
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
        EnrollmentFailsThenSucceeds) {
-  enrollment_manager_.Start(&pref_service_);
+  enrollment_manager_.Start();
   base::Time old_enrollment_time = enrollment_manager_.GetLastEnrollmentTime();
 
   // The first periodic enrollment fails.

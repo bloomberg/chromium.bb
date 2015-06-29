@@ -17,11 +17,18 @@ class CryptAuthEnroller {
  public:
   virtual ~CryptAuthEnroller() {}
 
-  // Enrolls the device with |device_info| properties for a given
-  // |invocation_reason|. |callback| will be called with true if the enrollment
-  // succeeds and false otherwise.
+  // Enrolls the device:
+  // |user_public_key|: The user's persistent public key identifying the device.
+  // |user_private_key|: The corresponding private key to |user_public_key|.
+  // |device_info|: Contains information about the local device. Note that the
+  //     enroller may change fields in this proto before it is finally uploaded.
+  // |invocation_reason|: The reason why the enrollment occurred.
+  // |callback|: Called will be called with true if the enrollment
+  //     succeeds and false otherwise.
   typedef base::Callback<void(bool)> EnrollmentFinishedCallback;
-  virtual void Enroll(const cryptauth::GcmDeviceInfo& device_info,
+  virtual void Enroll(const std::string& user_public_key,
+                      const std::string& user_private_key,
+                      const cryptauth::GcmDeviceInfo& device_info,
                       cryptauth::InvocationReason invocation_reason,
                       const EnrollmentFinishedCallback& callback) = 0;
 };

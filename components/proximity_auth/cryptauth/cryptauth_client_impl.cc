@@ -25,8 +25,8 @@ const char kFindEligibleUnlockDevicesPath[] =
     "deviceSync/findeligibleunlockdevices";
 const char kSendDeviceSyncTicklePath[] = "deviceSync/senddevicesynctickle";
 const char kToggleEasyUnlockPath[] = "deviceSync/toggleeasyunlock";
-const char kSetupEnrollmentPath[] = "enrollment/setupenrollment";
-const char kFinishEnrollmentPath[] = "enrollment/finishenrollment";
+const char kSetupEnrollmentPath[] = "enrollment/setup";
+const char kFinishEnrollmentPath[] = "enrollment/finish";
 
 // Query string of the API URL indicating that the response should be in a
 // serialized protobuf format.
@@ -104,6 +104,10 @@ void CryptAuthClientImpl::FinishEnrollment(
   MakeApiCall(kFinishEnrollmentPath, request, callback, error_callback);
 }
 
+std::string CryptAuthClientImpl::GetAccessTokenUsed() {
+  return access_token_used_;
+}
+
 template <class RequestProto, class ResponseProto>
 void CryptAuthClientImpl::MakeApiCall(
     const std::string& request_path,
@@ -144,6 +148,7 @@ void CryptAuthClientImpl::OnAccessTokenFetched(
     OnApiCallFailed("Failed to get a valid access token.");
     return;
   }
+  access_token_used_ = access_token;
 
   api_call_flow_->Start(
       CreateRequestUrl(request_path_), url_request_context_.get(), access_token,

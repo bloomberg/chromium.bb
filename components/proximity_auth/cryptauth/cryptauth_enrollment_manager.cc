@@ -6,8 +6,13 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
+#include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
+#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler_impl.h"
+#include "components/proximity_auth/logging/logging.h"
 
 namespace proximity_auth {
 
@@ -33,11 +38,16 @@ const double kEnrollmentMaxJitterRatio = 0.2;
 CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
     scoped_ptr<base::Clock> clock,
     scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
-    const cryptauth::GcmDeviceInfo& device_info)
+    const std::string& user_public_key,
+    const std::string& user_private_key,
+    const cryptauth::GcmDeviceInfo& device_info,
+    PrefService* pref_service)
     : clock_(clock.Pass()),
       enroller_factory_(enroller_factory.Pass()),
+      user_public_key_(user_public_key),
+      user_private_key_(user_private_key),
       device_info_(device_info),
-      pref_service_(nullptr),
+      pref_service_(pref_service),
       weak_ptr_factory_(this) {
 }
 
@@ -54,11 +64,9 @@ void CryptAuthEnrollmentManager::RegisterPrefs(PrefRegistrySimple* registry) {
                                 cryptauth::INVOCATION_REASON_UNKNOWN);
 }
 
-void CryptAuthEnrollmentManager::Start(PrefService* pref_service) {
-  pref_service_ = pref_service;
-
+void CryptAuthEnrollmentManager::Start() {
   bool is_recovering_from_failure =
-      pref_service->GetBoolean(
+      pref_service_->GetBoolean(
           prefs::kCryptAuthEnrollmentIsRecoveringFromFailure) ||
       !IsEnrollmentValid();
 
@@ -171,8 +179,9 @@ void CryptAuthEnrollmentManager::OnSyncRequested(
     invocation_reason = cryptauth::INVOCATION_REASON_FAILURE_RECOVERY;
   }
 
+  PA_LOG(INFO) << "Making enrollment with reason: " << invocation_reason;
   cryptauth_enroller_->Enroll(
-      device_info_, invocation_reason,
+      user_public_key_, user_private_key_, device_info_, invocation_reason,
       base::Bind(&CryptAuthEnrollmentManager::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }

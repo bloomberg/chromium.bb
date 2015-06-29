@@ -316,7 +316,7 @@ TEST_F(ProximityAuthCryptAuthClientTest, ToggleEasyUnlockSuccess) {
 TEST_F(ProximityAuthCryptAuthClientTest, SetupEnrollmentSuccess) {
   ExpectRequest(
       "https://www.testgoogleapis.com/cryptauth/v1/enrollment/"
-      "setupenrollment?alt=proto");
+      "setup?alt=proto");
 
   std::string kApplicationId = "mkaes";
   std::vector<std::string> supported_protocols;
@@ -362,7 +362,7 @@ TEST_F(ProximityAuthCryptAuthClientTest, SetupEnrollmentSuccess) {
 TEST_F(ProximityAuthCryptAuthClientTest, FinishEnrollmentSuccess) {
   ExpectRequest(
       "https://www.testgoogleapis.com/cryptauth/v1/enrollment/"
-      "finishenrollment?alt=proto");
+      "finish?alt=proto");
 
   const char kEnrollmentSessionId[] = "enrollment_session_id";
   const char kEnrollmentMessage[] = "enrollment_message";
@@ -538,6 +538,22 @@ TEST_F(ProximityAuthCryptAuthClientTest, DeviceClassifierIsSet) {
   EXPECT_EQ(kDeviceSoftwarePackage,
             device_classifier.device_software_package());
   EXPECT_EQ(kDeviceType, device_classifier.device_type());
+}
+
+TEST_F(ProximityAuthCryptAuthClientTest, GetAccessTokenUsed) {
+  EXPECT_TRUE(client_->GetAccessTokenUsed().empty());
+  ExpectRequest(
+      "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
+      "getmydevices?alt=proto");
+
+  cryptauth::GetMyDevicesResponse result_proto;
+  cryptauth::GetMyDevicesRequest request_proto;
+  request_proto.set_allow_stale_read(true);
+  client_->GetMyDevices(
+      request_proto,
+      base::Bind(&SaveResult<cryptauth::GetMyDevicesResponse>, &result_proto),
+      base::Bind(&NotCalled<std::string>));
+  EXPECT_EQ(kAccessToken, client_->GetAccessTokenUsed());
 }
 
 }  // namespace proximity_auth

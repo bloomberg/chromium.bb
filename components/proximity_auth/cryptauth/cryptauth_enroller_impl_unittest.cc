@@ -11,20 +11,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Return;
 
 namespace proximity_auth {
 
 namespace {
 
+const char kAccessTokenUsed[] = "access token used by CryptAuthClient";
+
 const char kClientSessionPublicKey[] = "throw away after one use";
 const char kServerSessionPublicKey[] = "disposables are not eco-friendly";
-const char kClientPersistentPublicKey[] = "saves 50 trees a year";
 
 cryptauth::InvocationReason kInvocationReason =
     cryptauth::INVOCATION_REASON_MANUAL;
 const int kGCMMetadataVersion = 1;
 const char kSupportedEnrollmentTypeGcmV1[] = "gcmV1";
-const char kResponseStatusOk[] = "OK";
+const char kResponseStatusOk[] = "ok";
 const char kResponseStatusNotOk[] = "Your key was too bland.";
 const char kEnrollmentSessionId[] = "0123456789876543210";
 const char kFinishEnrollmentError[] = "A hungry router ate all your packets.";
@@ -39,8 +41,6 @@ cryptauth::GcmDeviceInfo GetDeviceInfo() {
   device_info.set_long_device_id(kDeviceId);
   device_info.set_device_type(kDeviceType);
   device_info.set_device_os_version(kDeviceOsVersion);
-  device_info.set_user_public_key(kClientPersistentPublicKey);
-  device_info.set_key_handle(kClientPersistentPublicKey);
   return device_info;
 }
 
@@ -106,6 +106,11 @@ class ProximityAuthCryptAuthEnrollerTest
         enroller_(make_scoped_ptr(client_factory_),
                   make_scoped_ptr(secure_message_delegate_)) {
     client_factory_->AddObserver(this);
+
+    // This call is actually synchronous.
+    secure_message_delegate_->GenerateKeyPair(
+        base::Bind(&ProximityAuthCryptAuthEnrollerTest::OnKeyPairGenerated,
+                   base::Unretained(this)));
   }
 
   // Starts the enroller.
@@ -113,7 +118,7 @@ class ProximityAuthCryptAuthEnrollerTest
     secure_message_delegate_->set_next_public_key(kClientSessionPublicKey);
     enroller_result_.reset();
     enroller_.Enroll(
-        device_info, kInvocationReason,
+        user_public_key_, user_private_key_, device_info, kInvocationReason,
         base::Bind(&ProximityAuthCryptAuthEnrollerTest::OnEnrollerCompleted,
                    base::Unretained(this)));
   }
@@ -158,10 +163,10 @@ class ProximityAuthCryptAuthEnrollerTest
       unwrap_options.encryption_scheme = securemessage::NONE;
       unwrap_options.signature_scheme = securemessage::ECDSA_P256_SHA256;
       secure_message_delegate_->UnwrapSecureMessage(
-          inner_message, kClientSessionPublicKey, unwrap_options,
+          inner_message, user_public_key_, unwrap_options,
           base::Bind(&SaveUnwrapResults, &verified, &inner_payload, &header));
       EXPECT_TRUE(verified);
-      EXPECT_EQ(kClientSessionPublicKey, header.verification_key_id());
+      EXPECT_EQ(user_public_key_, header.verification_key_id());
     }
 
     // Check that the decrypted GcmDeviceInfo is correct.
@@ -170,8 +175,8 @@ class ProximityAuthCryptAuthEnrollerTest
     EXPECT_EQ(kDeviceId, device_info.long_device_id());
     EXPECT_EQ(kDeviceType, device_info.device_type());
     EXPECT_EQ(kDeviceOsVersion, device_info.device_os_version());
-    EXPECT_EQ(kClientPersistentPublicKey, device_info.user_public_key());
-    EXPECT_EQ(kClientPersistentPublicKey, device_info.key_handle());
+    EXPECT_EQ(user_public_key_, device_info.user_public_key());
+    EXPECT_EQ(user_public_key_, device_info.key_handle());
     EXPECT_EQ(kEnrollmentSessionId, device_info.enrollment_session_id());
   }
 
@@ -185,6 +190,15 @@ class ProximityAuthCryptAuthEnrollerTest
     ON_CALL(*client, FinishEnrollment(_, _, _))
         .WillByDefault(Invoke(
             this, &ProximityAuthCryptAuthEnrollerTest::OnFinishEnrollment));
+
+    ON_CALL(*client, GetAccessTokenUsed())
+        .WillByDefault(Return(kAccessTokenUsed));
+  }
+
+  void OnKeyPairGenerated(const std::string& public_key,
+                          const std::string& private_key) {
+    user_public_key_ = public_key;
+    user_private_key_ = private_key;
   }
 
   void OnEnrollerCompleted(bool success) {
@@ -220,6 +234,10 @@ class ProximityAuthCryptAuthEnrollerTest
     finish_callback_ = callback;
     error_callback_ = error_callback;
   }
+
+  // The persistent user key-pair.
+  std::string user_public_key_;
+  std::string user_private_key_;
 
   // Owned by |enroller_|.
   MockCryptAuthClientFactory* client_factory_;

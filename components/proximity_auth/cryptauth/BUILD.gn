@@ -33,6 +33,7 @@ source_set("cryptauth") {
 
   deps = [
     "//base",
+    "//crypto",
     "//components/proximity_auth/logging",
     "//google_apis",
     "//net",

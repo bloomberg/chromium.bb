@@ -5,6 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace proximity_auth {
@@ -67,6 +68,10 @@ void CryptAuthApiCallFlow::ProcessApiCallFailure(
   } else {
     error_message = kRequestFailedError;
   }
+
+  std::string response;
+  source->GetResponseAsString(&response);
+  PA_LOG(INFO) << "API call failed:\n" << response;
   error_callback_.Run(error_message);
 }
 

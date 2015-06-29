@@ -9,6 +9,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class OAuth2TokenService;
@@ -55,6 +56,7 @@ class CryptAuthClientImpl : public CryptAuthClient {
   void FinishEnrollment(const cryptauth::FinishEnrollmentRequest& request,
                         const FinishEnrollmentCallback& callback,
                         const ErrorCallback& error_callback) override;
+  std::string GetAccessTokenUsed() override;
 
  private:
   // Starts a call to the API given by |request_path|, with the templated
@@ -103,6 +105,9 @@ class CryptAuthClientImpl : public CryptAuthClient {
 
   // URL path of the current request.
   std::string request_path_;
+
+  // The access token fetched by |access_token_fetcher_|.
+  std::string access_token_used_;
 
   // Called when the current request fails.
   ErrorCallback error_callback_;

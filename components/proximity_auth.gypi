@@ -113,6 +113,7 @@
       'dependencies': [
         'cryptauth_proto',
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
       ],

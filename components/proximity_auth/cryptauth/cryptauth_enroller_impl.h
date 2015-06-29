@@ -10,11 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
+#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace proximity_auth {
 
 class CryptAuthClient;
 class CryptAuthClientFactory;
+class CryptAuthClientFactoryImpl;
 class SecureMessageDelegate;
 
 // Implementation of CryptAuthEnroller to perform enrollment in two steps:
@@ -31,11 +33,13 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   // |crypto_delegate| is responsible for SecureMessage operations.
   CryptAuthEnrollerImpl(
       scoped_ptr<CryptAuthClientFactory> client_factory,
-      scoped_ptr<SecureMessageDelegate> secure_message_delegate_);
+      scoped_ptr<SecureMessageDelegate> secure_message_delegate);
   ~CryptAuthEnrollerImpl() override;
 
   // CryptAuthEnroller:
-  void Enroll(const cryptauth::GcmDeviceInfo& device_info,
+  void Enroll(const std::string& user_public_key,
+              const std::string& user_private_key,
+              const cryptauth::GcmDeviceInfo& device_info,
               cryptauth::InvocationReason invocation_reason,
               const EnrollmentFinishedCallback& callback) override;
 
@@ -69,6 +73,10 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   // The ephemeral key-pair generated for a single enrollment.
   std::string session_public_key_;
   std::string session_private_key_;
+
+  // The user's persistent key-pair identifying the local device.
+  std::string user_public_key_;
+  std::string user_private_key_;
 
   // Contains information of the device to enroll.
   cryptauth::GcmDeviceInfo device_info_;

@@ -42,6 +42,7 @@ class MockCryptAuthClient : public CryptAuthClient {
                void(const cryptauth::FinishEnrollmentRequest& request,
                     const FinishEnrollmentCallback& callback,
                     const ErrorCallback& error_callback));
+  MOCK_METHOD0(GetAccessTokenUsed, std::string());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCryptAuthClient);
