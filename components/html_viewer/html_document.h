@@ -68,7 +68,7 @@ class HTMLDocument : public blink::WebViewClient,
     mojo::ApplicationConnection* connection;
     mojo::URLResponsePtr response;
     Setup* setup;
-    const DeleteCallback& delete_callback;
+    DeleteCallback delete_callback;
   };
 
   // Load a new HTMLDocument with |response|.
