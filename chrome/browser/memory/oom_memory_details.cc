@@ -35,11 +35,13 @@ void OomMemoryDetails::OnDetailsAvailable() {
   // These logs are collected by user feedback reports.  We want them to help
   // diagnose user-reported problems with frequently discarded tabs.
   std::string log_string = ToLogString();
+#if defined(OS_CHROMEOS)
   base::SystemMemoryInfoKB memory;
   if (base::GetSystemMemoryInfo(&memory) && memory.gem_size != -1) {
     log_string += "Graphics ";
     log_string += base::UTF16ToASCII(ui::FormatBytes(memory.gem_size));
   }
+#endif
   LOG(WARNING) << title_ << " (" << delta.InMilliseconds() << " ms):\n"
                << log_string;
   if (!callback_.is_null())

@@ -623,7 +623,7 @@
       'browser/memory_details_linux.cc',
       'browser/memory_details_mac.cc',
       'browser/memory_details_win.cc',
-      'browser/memory/oom_memory_details_chromeos.cc',
+      'browser/memory/oom_memory_details.cc',
       'browser/memory/oom_memory_details.h',
       'browser/memory/oom_priority_manager_chromeos.cc',
       'browser/memory/oom_priority_manager.h',
