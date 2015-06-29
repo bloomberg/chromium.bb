@@ -192,6 +192,7 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
 
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
         mUrl = bookmarkItem.getUrl();
+        mIconImageView.setImageDrawable(null);
         mLargeIconBridge.getLargeIconForUrl(Profile.getLastUsedProfile(), mUrl, mMinIconSize, this);
         mTitleView.setText(bookmarkItem.getTitle());
         mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
