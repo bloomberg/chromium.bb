@@ -2433,11 +2433,8 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
   // Another sanity check.
   EXPECT_EQ(1.f, pending_layer_->MinimumContentsScale());
 
-  // Since the MinContentsScale is 1, the 0.5 tiling should be replaced by a 1.0
-  // tiling.
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 0.5f, 1.f, 1.f, 1.f, 0.f,
-                                    false);
-
+  // Since the MinContentsScale is 1, the 0.5 tiling should have been replaced
+  // by a 1.0 tiling during the UDP in SetupPendingTree.
   EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
   PictureLayerTiling* tiling =
       pending_layer_->tilings()->FindTilingWithScale(1.0f);
