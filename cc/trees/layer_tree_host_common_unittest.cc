@@ -6443,6 +6443,9 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
   scroll_parent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent);
+  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  scroll_children->insert(scroll_child);
+  scroll_parent->SetScrollChildren(scroll_children.release());
 
   gfx::Transform identity_transform;
   SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
@@ -6501,7 +6504,14 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   scroll_grandparent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent);
+  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  scroll_children->insert(scroll_child);
+  scroll_parent->SetScrollChildren(scroll_children.release());
+
   scroll_parent_border->SetScrollParent(scroll_grandparent);
+  scroll_children.reset(new std::set<LayerImpl*>);
+  scroll_children->insert(scroll_parent_border);
+  scroll_grandparent->SetScrollChildren(scroll_children.release());
 
   gfx::Transform identity_transform;
   SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
@@ -6584,7 +6594,14 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   scroll_grandparent_clip->SetMasksToBounds(true);
 
   scroll_child->SetScrollParent(scroll_parent);
+  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  scroll_children->insert(scroll_child);
+  scroll_parent->SetScrollChildren(scroll_children.release());
+
   scroll_parent_border->SetScrollParent(scroll_grandparent);
+  scroll_children.reset(new std::set<LayerImpl*>);
+  scroll_children->insert(scroll_parent_border);
+  scroll_grandparent->SetScrollChildren(scroll_children.release());
 
   gfx::Transform identity_transform;
   SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),

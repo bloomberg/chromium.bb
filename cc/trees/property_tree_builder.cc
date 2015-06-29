@@ -406,12 +406,19 @@ void BuildPropertyTreesInternal(
     data_for_children.in_subtree_of_page_scale_layer = true;
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    if (!layer->child_at(i)->scroll_parent())
+    if (!layer->child_at(i)->scroll_parent()) {
       BuildPropertyTreesInternal(layer->child_at(i), data_for_children);
+    } else {
+      // The child should be included in its scroll parent's list of scroll
+      // children.
+      DCHECK(layer->child_at(i)->scroll_parent()->scroll_children()->count(
+          layer->child_at(i)));
+    }
   }
 
   if (layer->scroll_children()) {
     for (LayerType* scroll_child : *layer->scroll_children()) {
+      DCHECK_EQ(scroll_child->scroll_parent(), layer);
       BuildPropertyTreesInternal(scroll_child, data_for_children);
     }
   }
