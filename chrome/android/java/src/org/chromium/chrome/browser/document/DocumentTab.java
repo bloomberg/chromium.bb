@@ -160,14 +160,6 @@ public class DocumentTab extends ChromeTab {
      */
     public class DocumentTabChromeWebContentsDelegateAndroidImpl
             extends TabChromeWebContentsDelegateAndroidImpl {
-        @Override
-        public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
-                String frameName, String targetUrl, WebContents newWebContents) {
-            super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
-                    targetUrl, newWebContents);
-            DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
-        }
-
         /**
          * TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
          *                    can return a TabModelSelector that activateContents() can use.
