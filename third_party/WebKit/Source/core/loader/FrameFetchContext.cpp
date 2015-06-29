@@ -197,7 +197,7 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
 // cannot see imported documents.
 inline DocumentLoader* FrameFetchContext::ensureLoaderForNotifications()
 {
-    return m_documentLoader ? m_documentLoader : frame()->loader().documentLoader();
+    return m_documentLoader ? m_documentLoader.get() : frame()->loader().documentLoader();
 }
 
 void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority, int intraPriorityValue)
@@ -664,6 +664,7 @@ bool FrameFetchContext::isLowPriorityIframe() const
 DEFINE_TRACE(FrameFetchContext)
 {
     visitor->trace(m_document);
+    visitor->trace(m_documentLoader);
     FetchContext::trace(visitor);
 }
 

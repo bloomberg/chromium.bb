@@ -123,7 +123,7 @@ private:
     // currently leak because ComputedStyle and its data are not on the heap.
     // See crbug.com/383860 for details.
     RawPtrWillBeWeakMember<Document> m_document;
-    DocumentLoader* m_documentLoader;
+    RawPtrWillBeMember<DocumentLoader> m_documentLoader;
 };
 
 }
