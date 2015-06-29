@@ -47,6 +47,15 @@ class ASH_EXPORT TrayAudioDelegate {
 
   // Sets the internal speaker's channel mode.
   virtual void SetInternalSpeakerChannelMode(AudioChannelMode mode) = 0;
+
+  // If necessary, sets the starting point for re-discovering the active HDMI
+  // output device caused by device entering/exiting docking mode, HDMI display
+  // changing resolution, or chromeos device suspend/resume. If
+  // |force_rediscovering| is true, it will force to set the starting point for
+  // re-discovering the active HDMI output device again if it has been in the
+  // middle of rediscovering the HDMI active output device.
+  virtual void SetActiveHDMIOutoutRediscoveringIfNecessary(
+      bool force_rediscovering) = 0;
 };
 
 }  // namespace system

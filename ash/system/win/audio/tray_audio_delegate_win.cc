@@ -96,6 +96,10 @@ void TrayAudioDelegateWin::SetInternalSpeakerChannelMode(
     AudioChannelMode mode) {
 }
 
+void TrayAudioDelegateWin::SetActiveHDMIOutoutRediscoveringIfNecessary(
+    bool force_rediscovering) {
+}
+
 ScopedComPtr<ISimpleAudioVolume>
 TrayAudioDelegateWin::CreateDefaultVolumeControl() {
   ScopedComPtr<ISimpleAudioVolume> volume_control;

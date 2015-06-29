@@ -9,6 +9,7 @@
 #include "ash/system/audio/volume_view.h"
 #include "ash/system/chromeos/audio/audio_detailed_view.h"
 #include "ash/system/chromeos/audio/tray_audio_delegate_chromeos.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -20,9 +21,13 @@ TrayAudioChromeOs::TrayAudioChromeOs(SystemTray* system_tray)
     : TrayAudio(system_tray,
                 scoped_ptr<TrayAudioDelegate>(new TrayAudioDelegateChromeOs())),
       audio_detail_view_(NULL) {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
 }
 
 TrayAudioChromeOs::~TrayAudioChromeOs() {
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
 }
 
 void TrayAudioChromeOs::Update() {
@@ -51,6 +56,39 @@ void TrayAudioChromeOs::DestroyDetailedView() {
     volume_view_ = NULL;
     pop_up_volume_view_ = false;
   }
+}
+
+void TrayAudioChromeOs::OnDisplayAdded(const gfx::Display& new_display) {
+  TrayAudio::OnDisplayAdded(new_display);
+
+  // This event will be triggered when the lid of the device is opened to exit
+  // the docked mode, we should always start or re-start HDMI re-discovering
+  // grace period right after this event.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
+}
+
+void TrayAudioChromeOs::OnDisplayRemoved(const gfx::Display& old_display) {
+  TrayAudio::OnDisplayRemoved(old_display);
+
+  // This event will be triggered when the lid of the device is closed to enter
+  // the docked mode, we should always start or re-start HDMI re-discovering
+  // grace period right after this event.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
+}
+
+void TrayAudioChromeOs::OnDisplayMetricsChanged(const gfx::Display& display,
+                                                uint32_t changed_metrics) {
+  // The event could be triggered multiple times during the HDMI display
+  // transition, we don't need to restart HDMI re-discovering grace period
+  // it is already started earlier.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(false);
+}
+
+void TrayAudioChromeOs::SuspendDone(const base::TimeDelta& sleep_duration) {
+  // This event is triggered when the device resumes after earlier suspension,
+  // we should always start or re-start HDMI re-discovering
+  // grace period right after this event.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 }  // namespace ash

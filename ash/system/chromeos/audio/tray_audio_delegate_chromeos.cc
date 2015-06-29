@@ -66,5 +66,11 @@ void TrayAudioDelegateChromeOs::SetInternalSpeakerChannelMode(
       mode == LEFT_RIGHT_SWAPPED);
 }
 
+void TrayAudioDelegateChromeOs::SetActiveHDMIOutoutRediscoveringIfNecessary(
+    bool force_rediscovering) {
+  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(
+      force_rediscovering);
+}
+
 }  // namespace system
 }  // namespace ash

@@ -30,6 +30,8 @@ class ASH_EXPORT TrayAudioDelegateWin : public TrayAudioDelegate {
   void SetOutputAudioIsMuted(bool is_muted) override;
   void SetOutputVolumeLevel(int level) override;
   void SetInternalSpeakerChannelMode(AudioChannelMode mode) override;
+  void SetActiveHDMIOutoutRediscoveringIfNecessary(
+      bool force_rediscovering) override;
 
  private:
   base::win::ScopedComPtr<ISimpleAudioVolume> CreateDefaultVolumeControl();
