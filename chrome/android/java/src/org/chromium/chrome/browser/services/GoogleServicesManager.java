@@ -90,18 +90,21 @@ public class GoogleServicesManager implements ApplicationStateListener {
                 signinManager.signOut(null, null);
             }
 
-            // Register account Id provider.
-            AccountIdProvider.setInstance(new AccountIdProvider() {
-                @Override
-                public String getAccountId(Context ctx, String accountName) {
-                    try {
-                        return GoogleAuthUtil.getAccountId(ctx, accountName);
-                    } catch (IOException | GoogleAuthException ex) {
-                        Log.e(TAG, "AccountIdProvider.getAccountId", ex);
-                        return null;
+            // AccountIdProvider might be already set in tests.
+            if (AccountIdProvider.getInstance() == null) {
+                // Register account Id provider.
+                AccountIdProvider.setInstance(new AccountIdProvider() {
+                    @Override
+                    public String getAccountId(Context ctx, String accountName) {
+                        try {
+                            return GoogleAuthUtil.getAccountId(ctx, accountName);
+                        } catch (IOException | GoogleAuthException ex) {
+                            Log.e(TAG, "AccountIdProvider.getAccountId", ex);
+                            return null;
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // Initialize sync.
             SyncController.get(context);
