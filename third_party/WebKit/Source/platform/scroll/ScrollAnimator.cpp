@@ -92,54 +92,43 @@ ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
     ScrollGranularity granularity = ScrollByPixel;
 #endif
 
-    IntSize maxForwardScrollDelta = m_scrollableArea->maximumScrollPosition() - m_scrollableArea->scrollPosition();
-    IntSize maxBackwardScrollDelta = m_scrollableArea->scrollPosition() - m_scrollableArea->minimumScrollPosition();
-    if ((deltaX < 0 && maxForwardScrollDelta.width() > 0)
-        || (deltaX > 0 && maxBackwardScrollDelta.width() > 0))
-        result.didScrollX = true;
-    if ((deltaY < 0 && maxForwardScrollDelta.height() > 0)
-        || (deltaY > 0 && maxBackwardScrollDelta.height() > 0))
-        result.didScrollY = true;
-    if (result.didScroll()) {
-        if (deltaY) {
-            if (e.granularity() == ScrollByPageWheelEvent) {
-                bool negative = deltaY < 0;
-                deltaY = m_scrollableArea->pageStep(VerticalScrollbar);
-                if (negative)
-                    deltaY = -deltaY;
-            }
-
-            ScrollResultOneDimensional resultY = userScroll(
-                VerticalScrollbar, granularity, m_scrollableArea->pixelStep(VerticalScrollbar), -deltaY);
-
-            if (e.granularity() != ScrollByPageWheelEvent) {
-                if (resultY.didScroll)
-                    result.unusedScrollDeltaY = -resultY.unusedScrollDelta;
-                else
-                    result.unusedScrollDeltaY = deltaY;
-            }
+    if (deltaY) {
+        if (e.granularity() == ScrollByPageWheelEvent) {
+            bool negative = deltaY < 0;
+            deltaY = m_scrollableArea->pageStep(VerticalScrollbar);
+            if (negative)
+                deltaY = -deltaY;
         }
 
-        if (deltaX) {
-            if (e.granularity() == ScrollByPageWheelEvent) {
-                bool negative = deltaX < 0;
-                deltaX = m_scrollableArea->pageStep(HorizontalScrollbar);
-                if (negative)
-                    deltaX = -deltaX;
-            }
-
-            ScrollResultOneDimensional resultX = userScroll(
-                HorizontalScrollbar, granularity, m_scrollableArea->pixelStep(HorizontalScrollbar), -deltaX);
-
-            if (e.granularity() != ScrollByPageWheelEvent) {
-                if (resultX.didScroll)
-                    result.unusedScrollDeltaX = -resultX.unusedScrollDelta;
-                else
-                    result.unusedScrollDeltaX = deltaX;
-            }
+        ScrollResultOneDimensional resultY = userScroll(
+            VerticalScrollbar, granularity, m_scrollableArea->pixelStep(VerticalScrollbar), -deltaY);
+        result.didScrollY = resultY.didScroll;
+        if (e.granularity() != ScrollByPageWheelEvent) {
+            if (resultY.didScroll)
+                result.unusedScrollDeltaY = -resultY.unusedScrollDelta;
+            else
+                result.unusedScrollDeltaY = deltaY;
         }
     }
 
+    if (deltaX) {
+        if (e.granularity() == ScrollByPageWheelEvent) {
+            bool negative = deltaX < 0;
+            deltaX = m_scrollableArea->pageStep(HorizontalScrollbar);
+            if (negative)
+                deltaX = -deltaX;
+        }
+
+        ScrollResultOneDimensional resultX = userScroll(
+            HorizontalScrollbar, granularity, m_scrollableArea->pixelStep(HorizontalScrollbar), -deltaX);
+        result.didScrollX = resultX.didScroll;
+        if (e.granularity() != ScrollByPageWheelEvent) {
+            if (resultX.didScroll)
+                result.unusedScrollDeltaX = -resultX.unusedScrollDelta;
+            else
+                result.unusedScrollDeltaX = deltaX;
+        }
+    }
     return result;
 }
 

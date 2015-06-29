@@ -7634,6 +7634,18 @@ protected:
         return event;
     }
 
+    void ScrollByWheel(FrameTestHelpers::WebViewHelper* webViewHelper, int windowX, int windowY, float deltaX, float deltaY)
+    {
+        WebMouseWheelEvent event;
+        event.type = WebInputEvent::MouseWheel;
+        event.deltaX = deltaX;
+        event.deltaY = deltaY;
+        event.windowX = windowX;
+        event.windowY = windowY;
+        event.canScroll = true;
+        webViewHelper->webViewImpl()->handleInputEvent(event);
+    }
+
     void ScrollBegin(FrameTestHelpers::WebViewHelper* webViewHelper)
     {
         webViewHelper->webViewImpl()->handleInputEvent(generateEvent(WebInputEvent::GestureScrollBegin));
@@ -7841,6 +7853,26 @@ TEST_F(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled)
     // Overscroll is not reported.
     EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(33, 33), WebFloatSize())).Times(0);
     ScrollEnd(&webViewHelper);
+    Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_F(WebFrameOverscrollTest, ReportingLatestOverscrollForElasticOverscroll)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/overscroll.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/overscroll.html", true, 0, &client, configureAndroid);
+
+    // On disabling ReportWheelOverscroll, overscroll is not reported on MouseWheel.
+    webViewHelper.webView()->settings()->setReportWheelOverscroll(false);
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(), WebFloatSize())).Times(0);
+    ScrollByWheel(&webViewHelper, 10, 10, 1000, 1000);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // On enabling ReportWheelOverscroll, overscroll is reported on MouseWheel.
+    webViewHelper.webView()->settings()->setReportWheelOverscroll(true);
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-1000, -1000), WebFloatSize(-1000, -1000), WebFloatPoint(), WebFloatSize()));
+    ScrollByWheel(&webViewHelper, 10, 10, 1000, 1000);
     Mock::VerifyAndClearExpectations(&client);
 }
 

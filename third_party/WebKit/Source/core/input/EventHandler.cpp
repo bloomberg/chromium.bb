@@ -1782,7 +1782,10 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (!view)
         return false;
 
-    if (view->scrollableArea()->handleWheel(event).didScroll())
+    ScrollResult scrollResult = view->scrollableArea()->handleWheel(event);
+    if (m_frame->settings() && m_frame->settings()->reportWheelOverscroll())
+        handleOverscroll(scrollResult);
+    if (scrollResult.didScroll())
         RETURN_WHEEL_EVENT_HANDLED();
 
     return false;
@@ -2255,19 +2258,13 @@ void EventHandler::resetOverscroll(bool didScrollX, bool didScrollY)
         m_accumulatedRootOverscroll.setHeight(0);
 }
 
-void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const PlatformGestureEvent& gestureEvent)
+void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const FloatPoint& position, const FloatSize& velocity)
 {
-    if (m_frame->isMainFrame() && m_frame->view() && m_frame->view()->scrollableArea()) {
-        ScrollableArea* scrollablearea = m_frame->view()->scrollableArea();
-        // Set unusedDelta if axis is scrollable, else set 0 to ensure overflow is not reported on non-scrollable axes.
-        FloatSize unusedDelta(scrollablearea->scrollSize(HorizontalScrollbar) ? scrollResult.unusedScrollDeltaX : 0, scrollablearea->scrollSize(VerticalScrollbar) ? scrollResult.unusedScrollDeltaY : 0);
-        resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
-        if (unusedDelta != FloatSize()) {
-            m_accumulatedRootOverscroll += unusedDelta;
-            FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
-            FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
-            m_frame->chromeClient().didOverscroll(unusedDelta, m_accumulatedRootOverscroll, position, velocity);
-        }
+    FloatSize unusedDelta(scrollResult.unusedScrollDeltaX, scrollResult.unusedScrollDeltaY);
+    resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
+    if (unusedDelta != FloatSize()) {
+        m_accumulatedRootOverscroll += unusedDelta;
+        m_frame->chromeClient().didOverscroll(unusedDelta, m_accumulatedRootOverscroll, position, velocity);
     }
 }
 
@@ -2354,7 +2351,16 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     // Try to scroll the frame view.
     ScrollResult scrollResult = m_frame->applyScrollDelta(delta, false);
-    handleOverscroll(scrollResult, gestureEvent);
+    FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
+    FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
+    if (m_frame->isMainFrame() && m_frame->view() && m_frame->view()->scrollableArea()) {
+        ScrollableArea* scrollablearea = m_frame->view()->scrollableArea();
+        // TODO(sataya.m) : In Case of android set unusedDelta to 0 to ensure overflow is not reported
+        // on non-scrollable axis. Move this check to CC to block OverscrollGlow Animation on non-scrollable axes.
+        scrollResult.unusedScrollDeltaX = scrollablearea->scrollSize(HorizontalScrollbar) ? scrollResult.unusedScrollDeltaX : 0;
+        scrollResult.unusedScrollDeltaY = scrollablearea->scrollSize(VerticalScrollbar) ? scrollResult.unusedScrollDeltaY : 0;
+    }
+    handleOverscroll(scrollResult, position, velocity);
     if (scrollResult.didScroll()) {
         setFrameWasScrolledByUser();
         return true;

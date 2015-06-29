@@ -96,6 +96,7 @@ public:
     virtual void setExperimentalWebGLEnabled(bool) override;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
+    virtual void setReportWheelOverscroll(bool) override;
     virtual void setForceZeroLayoutHeight(bool) override;
     virtual void setFullscreenSupported(bool) override;
     virtual void setHyperlinkAuditingEnabled(bool) override;

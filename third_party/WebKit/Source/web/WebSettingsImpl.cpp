@@ -75,6 +75,11 @@ void WebSettingsImpl::setFixedFontFamily(const WebString& font, UScriptCode scri
         m_settings->notifyGenericFontFamilyChange();
 }
 
+void WebSettingsImpl::setReportWheelOverscroll(bool enabled)
+{
+    m_settings->setReportWheelOverscroll(enabled);
+}
+
 void WebSettingsImpl::setForceZeroLayoutHeight(bool enabled)
 {
     m_settings->setForceZeroLayoutHeight(enabled);

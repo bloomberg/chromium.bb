@@ -269,7 +269,7 @@ private:
     ScrollResultOneDimensional scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
 
     void resetOverscroll(bool didScrollX, bool didScrollY);
-    void handleOverscroll(const ScrollResult&, const PlatformGestureEvent&);
+    void handleOverscroll(const ScrollResult&, const FloatPoint& position = FloatPoint(), const FloatSize& velocity = FloatSize());
 
     void customizedScroll(const Node& startNode, ScrollState&);
 

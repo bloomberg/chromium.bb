@@ -495,8 +495,8 @@ TEST_F(RootFrameViewportTest, BasicWheelEvent)
     EXPECT_TRUE(result.didScroll());
     EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(100, 200), layoutViewport.scrollPositionDouble());
-    EXPECT_EQ(-350, result.unusedScrollDeltaX);
-    EXPECT_EQ(-250, result.unusedScrollDeltaY);
+    EXPECT_EQ(350, result.unusedScrollDeltaX);
+    EXPECT_EQ(250, result.unusedScrollDeltaY);
 }
 
 } // namespace blink

@@ -96,15 +96,18 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
 {
     updateScrollAnimator();
 
-    ScrollResult viewScrollResult;
-    if (layoutViewport().isScrollable())
-        viewScrollResult = layoutViewport().handleWheel(event);
+    ScrollResult viewScrollResult = layoutViewport().handleWheel(event);
 
     // The visual viewport will only accept pixel scrolls.
     if (!event.canScroll() || event.granularity() == ScrollByPageWheelEvent)
         return viewScrollResult;
 
-    // Move the location by the negative of the remaining scroll delta.
+    // TODO(sataya.m) : The delta in PlatformWheelEvent is negative when scrolling the
+    // wheel towards the user, so negate it to get the scroll delta that should be applied
+    // to the page. unusedScrollDelta computed in the ScrollResult is also negative. Say
+    // there is WheelEvent({0, -10} and page scroll by 2px and unusedScrollDelta computed
+    // is {0, -8}. Due to which we have to negate the unusedScrollDelta to obtain the expected
+    // animation.Please address http://crbug.com/504389.
     DoublePoint oldOffset = visualViewport().scrollPositionDouble();
     DoublePoint locationDelta;
     if (viewScrollResult.didScroll()) {
@@ -121,13 +124,10 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
     visualViewport().setScrollPosition(targetPosition, UserScroll);
 
     DoublePoint usedLocationDelta(visualViewport().scrollPositionDouble() - oldOffset);
-    if (!viewScrollResult.didScroll() && usedLocationDelta == DoublePoint::zero())
-        return ScrollResult();
 
-    DoubleSize unusedLocationDelta(locationDelta - usedLocationDelta);
-    bool didScrollX = viewScrollResult.didScrollX || unusedLocationDelta.width();
-    bool didScrollY = viewScrollResult.didScrollY || unusedLocationDelta.height();
-    return ScrollResult(didScrollX, didScrollY, -unusedLocationDelta.width(), -unusedLocationDelta.height());
+    bool didScrollX = viewScrollResult.didScrollX || usedLocationDelta.x();
+    bool didScrollY = viewScrollResult.didScrollY || usedLocationDelta.y();
+    return ScrollResult(didScrollX, didScrollY, -viewScrollResult.unusedScrollDeltaX - usedLocationDelta.x(), -viewScrollResult.unusedScrollDeltaY - usedLocationDelta.y());
 }
 
 LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
