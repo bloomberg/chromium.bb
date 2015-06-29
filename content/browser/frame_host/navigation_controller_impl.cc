@@ -1150,8 +1150,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // with new information from the renderer.
   int entry_index = GetEntryIndexWithPageID(rfh->GetSiteInstance(),
                                             params.page_id);
-  DCHECK(entry_index >= 0 &&
-         entry_index < static_cast<int>(entries_.size()));
+  CHECK(entry_index >= 0 &&
+        entry_index < static_cast<int>(entries_.size()));
   NavigationEntryImpl* entry = entries_[entry_index];
 
   // The URL may have changed due to redirects.
