@@ -84,9 +84,9 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
       return NPN_SPDY_3;
     case kProtoSPDY31:
       return NPN_SPDY_3_1;
-    case kProtoSPDY4_14:
+    case kProtoHTTP2_14:
       return NPN_SPDY_4_14;
-    case kProtoSPDY4:
+    case kProtoHTTP2:
       return NPN_SPDY_4;
     case kProtoQUIC1SPDY3:
       return QUIC;

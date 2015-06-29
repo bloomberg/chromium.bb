@@ -205,8 +205,8 @@ class SSLClientSocketPoolTest
 INSTANTIATE_TEST_CASE_P(NextProto,
                         SSLClientSocketPoolTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoSPDY4_14,
-                                        kProtoSPDY4));
+                                        kProtoHTTP2_14,
+                                        kProtoHTTP2));
 
 TEST_P(SSLClientSocketPoolTest, TCPFail) {
   StaticSocketDataProvider data;

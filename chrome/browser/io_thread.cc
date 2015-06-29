@@ -991,8 +991,8 @@ void IOThread::ConfigureSpdyGlobals(
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoSPDY31);
-    globals->next_protos.push_back(net::kProtoSPDY4_14);
-    globals->next_protos.push_back(net::kProtoSPDY4);
+    globals->next_protos.push_back(net::kProtoHTTP2_14);
+    globals->next_protos.push_back(net::kProtoHTTP2);
     globals->use_alternate_protocols.set(true);
     return;
   }
@@ -1005,12 +1005,12 @@ void IOThread::ConfigureSpdyGlobals(
     }
     if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_http2_14"), "true")) {
-      globals->next_protos.push_back(net::kProtoSPDY4_14);
+      globals->next_protos.push_back(net::kProtoHTTP2_14);
       spdy_enabled = true;
     }
     if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_http2"), "true")) {
-      globals->next_protos.push_back(net::kProtoSPDY4);
+      globals->next_protos.push_back(net::kProtoHTTP2);
       spdy_enabled = true;
     }
     // TODO(bnc): HttpStreamFactory::spdy_enabled_ is redundant with
@@ -1022,8 +1022,8 @@ void IOThread::ConfigureSpdyGlobals(
 
   // By default, enable HTTP/2.
   globals->next_protos.push_back(net::kProtoSPDY31);
-  globals->next_protos.push_back(net::kProtoSPDY4_14);
-  globals->next_protos.push_back(net::kProtoSPDY4);
+  globals->next_protos.push_back(net::kProtoHTTP2_14);
+  globals->next_protos.push_back(net::kProtoHTTP2);
   globals->use_alternate_protocols.set(true);
 }
 

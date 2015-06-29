@@ -177,8 +177,8 @@ class SpdySessionTest : public PlatformTest,
 INSTANTIATE_TEST_CASE_P(NextProto,
                         SpdySessionTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoSPDY4_14,
-                                        kProtoSPDY4));
+                                        kProtoHTTP2_14,
+                                        kProtoHTTP2));
 
 // Try to create a SPDY session that will fail during
 // initialization. Nothing should blow up.
@@ -1314,7 +1314,7 @@ TEST_P(SpdySessionTest, OnSettings) {
   int seq = 0;
   std::vector<MockWrite> writes;
   scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
-  if (GetParam() >= kProtoSPDY4MinimumVersion) {
+  if (GetParam() >= kProtoHTTP2MinimumVersion) {
     writes.push_back(CreateMockWrite(*settings_ack, ++seq));
   }
 
@@ -1523,8 +1523,8 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
   std::vector<MockWrite> writes;
-  if ((GetParam() >= kProtoSPDY4MinimumVersion) &&
-     (GetParam() <= kProtoSPDY4MaximumVersion)) {
+  if ((GetParam() >= kProtoHTTP2MinimumVersion) &&
+      (GetParam() <= kProtoHTTP2MaximumVersion)) {
     writes.push_back(
         MockWrite(ASYNC,
                   kHttp2ConnectionHeaderPrefix,
@@ -3526,7 +3526,7 @@ TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
 // (including optional pad length and padding) is.
 TEST_P(SpdySessionTest, SessionFlowControlPadding) {
   // Padding only exists in HTTP/2.
-  if (GetParam() < kProtoSPDY4MinimumVersion)
+  if (GetParam() < kProtoHTTP2MinimumVersion)
     return;
 
   session_deps_.host_resolver->set_synchronous_mode(true);

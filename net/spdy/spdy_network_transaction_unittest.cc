@@ -715,10 +715,10 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         SpdyNetworkTransactionTestParams(kProtoSPDY31, HTTPS_SPDY_VIA_NPN),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, HTTP_SPDY_VIA_ALT_SVC),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4_14, HTTPS_SPDY_VIA_NPN),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4_14, HTTP_SPDY_VIA_ALT_SVC),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4, HTTPS_SPDY_VIA_NPN),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4, HTTP_SPDY_VIA_ALT_SVC)));
+        SpdyNetworkTransactionTestParams(kProtoHTTP2_14, HTTPS_SPDY_VIA_NPN),
+        SpdyNetworkTransactionTestParams(kProtoHTTP2_14, HTTP_SPDY_VIA_ALT_SVC),
+        SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTPS_SPDY_VIA_NPN),
+        SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTP_SPDY_VIA_ALT_SVC)));
 
 // Verify HttpNetworkTransaction constructor.
 TEST_P(SpdyNetworkTransactionTest, Constructor) {
@@ -3407,7 +3407,7 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
-  if (GetParam().protocol < kProtoSPDY4MinimumVersion) {
+  if (GetParam().protocol < kProtoHTTP2MinimumVersion) {
     // Decompression failures are a stream error in SPDY3 and above.
     return;
   }
@@ -4421,8 +4421,8 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   // Expect HTTP/2 protocols too in SSLConfig.
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_14);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2_14);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
   helper.AddDataWithSSLSocketDataProvider(&data0, ssl_provider0.Pass());
@@ -4512,8 +4512,8 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   // Expect HTTP/2 protocols too in SSLConfig.
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4_14);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY4);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2_14);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
   helper.AddDataWithSSLSocketDataProvider(&data0, ssl_provider0.Pass());
@@ -5920,8 +5920,8 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
       spdy_util_.ConstructSpdyWindowUpdate(1, stream_window_update_delta));
 
   std::vector<MockWrite> writes;
-  if ((GetParam().protocol >= kProtoSPDY4MinimumVersion) &&
-      (GetParam().protocol <= kProtoSPDY4MaximumVersion)) {
+  if ((GetParam().protocol >= kProtoHTTP2MinimumVersion) &&
+      (GetParam().protocol <= kProtoHTTP2MaximumVersion)) {
     writes.push_back(MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
                                kHttp2ConnectionHeaderPrefixSize, 0));
   }
@@ -6574,8 +6574,8 @@ INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTLSUsageCheckTest,
     ::testing::Values(
-        SpdyNetworkTransactionTestParams(kProtoSPDY4_14, HTTPS_SPDY_VIA_NPN),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4, HTTPS_SPDY_VIA_NPN)));
+        SpdyNetworkTransactionTestParams(kProtoHTTP2_14, HTTPS_SPDY_VIA_NPN),
+        SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTPS_SPDY_VIA_NPN)));
 
 TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
   scoped_ptr<SSLSocketDataProvider> ssl_provider(

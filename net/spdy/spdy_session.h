@@ -502,7 +502,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Default value of SETTINGS_INITIAL_WINDOW_SIZE per protocol specification.
   // A session is always created with this initial window size.
   static int32 GetDefaultInitialWindowSize(NextProto protocol) {
-    return protocol < kProtoSPDY4MinimumVersion ? 65536 : 65535;
+    return protocol < kProtoHTTP2MinimumVersion ? 65536 : 65535;
   }
 
   // https://http2.github.io/http2-spec/#TLSUsage mandates minimum security

@@ -111,8 +111,8 @@ class SpdyStreamTest : public ::testing::Test,
 INSTANTIATE_TEST_CASE_P(NextProto,
                         SpdyStreamTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoSPDY4_14,
-                                        kProtoSPDY4));
+                                        kProtoHTTP2_14,
+                                        kProtoHTTP2));
 
 TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   GURL url(kStreamUrl);

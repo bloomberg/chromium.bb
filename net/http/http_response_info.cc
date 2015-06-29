@@ -377,9 +377,9 @@ HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
     case kProtoSPDY3:
     case kProtoSPDY31:
       return CONNECTION_INFO_SPDY3;
-    case kProtoSPDY4_14:
+    case kProtoHTTP2_14:
       return CONNECTION_INFO_HTTP2_14;
-    case kProtoSPDY4:
+    case kProtoHTTP2:
       return CONNECTION_INFO_HTTP2;
     case kProtoQUIC1SPDY3:
       return CONNECTION_INFO_QUIC1_SPDY3;

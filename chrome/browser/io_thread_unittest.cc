@@ -113,7 +113,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
   ConfigureSpdyGlobals();
   EXPECT_THAT(globals_.next_protos,
               ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
-                          net::kProtoSPDY4_14, net::kProtoSPDY4));
+                          net::kProtoHTTP2_14, net::kProtoHTTP2));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
 }
@@ -123,7 +123,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialDefault) {
   ConfigureSpdyGlobals();
   EXPECT_THAT(globals_.next_protos,
               ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
-                          net::kProtoSPDY4_14, net::kProtoSPDY4));
+                          net::kProtoHTTP2_14, net::kProtoHTTP2));
   bool use_alternate_protocols = false;
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
@@ -136,7 +136,7 @@ TEST_F(IOThreadTest, SpdyFieldTrialParametrized) {
   field_trial_group_ = "ParametrizedHTTP2Only";
   ConfigureSpdyGlobals();
   EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY4));
+              ElementsAre(net::kProtoHTTP11, net::kProtoHTTP2));
   bool use_alternate_protocols = false;
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
