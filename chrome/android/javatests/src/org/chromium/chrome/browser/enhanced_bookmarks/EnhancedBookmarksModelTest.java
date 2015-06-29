@@ -12,10 +12,8 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,9 +24,8 @@ import java.util.Stack;
 /**
  * Tests for {@link EnhancedBookmarksModel}, the data layer of Enhanced Bookmarks.
  */
-public class EnhancedBookmarksModelTest extends ChromeShellTestBase{
+public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
 
-    private ChromeShellActivity mActivity;
     private EnhancedBookmarksModel mBookmarksModel;
     private BookmarkId mMobileNode;
     private BookmarkId mOtherNode;
@@ -37,13 +34,11 @@ public class EnhancedBookmarksModelTest extends ChromeShellTestBase{
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mActivity = launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        loadNativeLibraryAndInitBrowserProcess();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeShellTab tab = mActivity.getActiveTab();
-                Profile profile = tab.getProfile();
+                Profile profile = Profile.getLastUsedProfile();
                 mBookmarksModel = new EnhancedBookmarksModel(profile);
                 mBookmarksModel.loadEmptyPartnerBookmarkShimForTesting();
                 mMobileNode = mBookmarksModel.getMobileFolderId();

@@ -11,10 +11,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,10 +22,8 @@ import java.util.List;
 /**
  * Tests for bookmark bridge
  */
-public class BookmarksBridgeTest extends ChromeShellTestBase {
+public class BookmarksBridgeTest extends NativeLibraryTestBase {
 
-    private ChromeShellActivity mActivity;
-    private Profile mProfile;
     private BookmarksBridge mBookmarksBridge;
     private BookmarkId mMobileNode;
     private BookmarkId mOtherNode;
@@ -36,14 +32,12 @@ public class BookmarksBridgeTest extends ChromeShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mActivity = launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        loadNativeLibraryAndInitBrowserProcess();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeShellTab tab = mActivity.getActiveTab();
-                mProfile = tab.getProfile();
-                mBookmarksBridge = new BookmarksBridge(mProfile);
+                Profile profile = Profile.getLastUsedProfile();
+                mBookmarksBridge = new BookmarksBridge(profile);
                 mBookmarksBridge.loadEmptyPartnerBookmarkShimForTesting();
                 mMobileNode = mBookmarksBridge.getMobileFolderId();
                 mDesktopNode = mBookmarksBridge.getDesktopFolderId();

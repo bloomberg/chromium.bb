@@ -255,6 +255,7 @@ public class BookmarksBridge {
      * The result list will be sorted alphabetically by title. "mobile", "other",
      * root node, managed folder, partner folder are NOT included as results.
      */
+    @VisibleForTesting
     public void getAllFoldersWithDepths(List<BookmarkId> folderList,
             List<Integer> depthList) {
         assert mIsNativeBookmarkModelLoaded;
@@ -492,6 +493,7 @@ public class BookmarksBridge {
      * @return Id of the added node. If adding failed (index is invalid, string is null, parent is
      *         not editable), returns null.
      */
+    @VisibleForTesting
     public BookmarkId addFolder(BookmarkId parent, int index, String title) {
         assert parent.getType() == BookmarkType.NORMAL;
         assert index >= 0;
@@ -512,6 +514,7 @@ public class BookmarksBridge {
      * @return Id of the added node. If adding failed (index is invalid, string is null, parent is
      *         not editable), returns null.
      */
+    @VisibleForTesting
     public BookmarkId addBookmark(BookmarkId parent, int index, String title, String url) {
         assert parent.getType() == BookmarkType.NORMAL;
         assert index >= 0;
