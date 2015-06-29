@@ -79,7 +79,6 @@
         'files': [
           '<(PRODUCT_DIR)/osmesa.so.dSYM/',
           '<(PRODUCT_DIR)/ui_base_unittests.dSYM/',
-          '<(PRODUCT_DIR)/ui_unittests Framework.framework.dSYM/',
         ],
       },
     }],
