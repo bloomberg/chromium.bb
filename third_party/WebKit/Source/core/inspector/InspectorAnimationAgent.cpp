@@ -119,11 +119,11 @@ static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStringKey
     return keyframeObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const KeyframeEffect* animation)
+static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const KeyframeEffect* effect)
 {
-    if (!animation->model()->isKeyframeEffectModel())
+    if (!effect || !effect->model() || !effect->model()->isKeyframeEffectModel())
         return nullptr;
-    const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(animation->model());
+    const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
     WillBeHeapVector<RefPtrWillBeMember<Keyframe> > normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
     RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
 
