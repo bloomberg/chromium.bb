@@ -4,18 +4,18 @@
 assertResponsive({
   property: 'left',
   from: 'inherit',
-  to: '100px',
+  to: '200px',
   configurations: [{
-    state: {inherited: '0px'},
+    state: {inherited: '100px'},
     expect: [
-      {at: 0.25, is: '25px'},
-      {at: 0.75, is: '75px'},
+      {at: 0.25, is: '125px'},
+      {at: 0.75, is: '175px'},
     ],
   }, {
     state: {inherited: 'auto'},
     expect: [
       {at: 0.25, is: 'auto'},
-      {at: 0.75, is: '100px'},
+      {at: 0.75, is: '200px'},
     ],
   }],
 });
@@ -23,30 +23,30 @@ assertResponsive({
 assertResponsive({
   property: 'left',
   from: '',
-  to: '100px',
+  to: '200px',
   configurations: [{
-    state: {underlying: '0px'},
+    state: {underlying: '100px'},
     expect: [
-      {at: 0.25, is: '25px'},
-      {at: 0.75, is: '75px'},
+      {at: 0.25, is: '125px'},
+      {at: 0.75, is: '175px'},
     ],
   }, {
     state: {underlying: 'auto'},
     expect: [
       {at: 0.25, is: 'auto'},
-      {at: 0.75, is: '100px'},
+      {at: 0.75, is: '200px'},
     ],
   }, {
-    state: {underlying: 'inherit', inherited: '0px'},
+    state: {underlying: 'inherit', inherited: '100px'},
     expect: [
-      {at: 0.25, is: '25px'},
-      {at: 0.75, is: '75px'},
+      {at: 0.25, is: '125px'},
+      {at: 0.75, is: '175px'},
     ],
   }, {
     state: {underlying: 'inherit', inherited: 'auto'},
     expect: [
       {at: 0.25, is: 'auto'},
-      {at: 0.75, is: '100px'},
+      {at: 0.75, is: '200px'},
     ],
   }],
 });
