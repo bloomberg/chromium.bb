@@ -1396,7 +1396,7 @@ bool LayoutBox::paintInvalidationStateIsDirty() const
 }
 #endif
 
-LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy)
+LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy) const
 {
     // FIXME: When overflow-clip (CSS3) is implemented, we'll obtain the property
     // here.

@@ -173,7 +173,8 @@ public:
         EndSubtreePaintPhaseLast = EndSubtreePaintPhaseFirst + PaintPhaseMax,
         EndSubtreeLast = EndSubtreePaintPhaseLast,
 
-        TypeLast = EndSubtreeLast
+        UninitializedType,
+        TypeLast = UninitializedType
     };
 
     struct Id {

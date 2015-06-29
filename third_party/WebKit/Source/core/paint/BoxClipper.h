@@ -17,15 +17,11 @@ enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
 class BoxClipper {
 public:
-    BoxClipper(LayoutBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
+    BoxClipper(const LayoutBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
     ~BoxClipper();
-
-    bool pushedClip() { return m_pushedClip; }
 private:
-    bool m_pushedClip;
-    LayoutPoint m_accumulatedOffset;
+    const LayoutBox& m_box;
     const PaintInfo& m_paintInfo;
-    LayoutBox& m_box;
     DisplayItem::Type m_clipType;
 };
 

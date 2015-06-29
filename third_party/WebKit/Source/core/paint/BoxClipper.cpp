@@ -15,12 +15,10 @@
 
 namespace blink {
 
-BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
-    : m_pushedClip(false)
-    , m_accumulatedOffset(accumulatedOffset)
+BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
+    : m_box(box)
     , m_paintInfo(paintInfo)
-    , m_box(box)
-    , m_clipType(DisplayItem::ClipBoxPaintPhaseFirst)
+    , m_clipType(DisplayItem::UninitializedType)
 {
     if (m_paintInfo.phase == PaintPhaseBlockBackground || m_paintInfo.phase == PaintPhaseSelfOutline || m_paintInfo.phase == PaintPhaseMask)
         return;
@@ -31,11 +29,11 @@ BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutP
     if (!isControlClip && !isOverflowClip)
         return;
 
-    LayoutRect clipRect = isControlClip ? m_box.controlClipRect(m_accumulatedOffset) : m_box.overflowClipRect(m_accumulatedOffset);
+    LayoutRect clipRect = isControlClip ? m_box.controlClipRect(accumulatedOffset) : m_box.overflowClipRect(accumulatedOffset);
     FloatRoundedRect clipRoundedRect(0, 0, 0, 0);
     bool hasBorderRadius = m_box.style()->hasBorderRadius();
     if (hasBorderRadius)
-        clipRoundedRect = m_box.style()->getRoundedInnerBorderFor(LayoutRect(m_accumulatedOffset, m_box.size()));
+        clipRoundedRect = m_box.style()->getRoundedInnerBorderFor(LayoutRect(accumulatedOffset, m_box.size()));
 
     if (contentsClipBehavior == SkipContentsClipIfPossible) {
         LayoutRect contentsVisualOverflow = m_box.contentsVisualOverflowRect();
@@ -45,50 +43,54 @@ BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutP
         LayoutRect conservativeClipRect = clipRect;
         if (hasBorderRadius)
             conservativeClipRect.intersect(LayoutRect(clipRoundedRect.radiusCenterRect()));
-        conservativeClipRect.moveBy(-m_accumulatedOffset);
+        conservativeClipRect.moveBy(-accumulatedOffset);
         if (m_box.hasLayer())
             conservativeClipRect.move(m_box.scrolledContentOffset());
         if (conservativeClipRect.contains(contentsVisualOverflow))
             return;
     }
 
-    OwnPtr<Vector<FloatRoundedRect>> roundedRects;
-    if (hasBorderRadius) {
-        roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
-        roundedRects->append(clipRoundedRect);
-    }
-
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        m_clipType = m_paintInfo.displayItemTypeForClipping();
         ASSERT(m_paintInfo.context->displayItemList());
-        if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled())
+        if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
+            m_clipType = m_paintInfo.displayItemTypeForClipping();
+            OwnPtr<Vector<FloatRoundedRect>> roundedRects;
+            if (hasBorderRadius) {
+                roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
+                roundedRects->append(clipRoundedRect);
+            }
+            OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
             m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
+        }
     } else {
+        m_clipType = m_paintInfo.displayItemTypeForClipping();
+        OwnPtr<Vector<FloatRoundedRect>> roundedRects;
+        if (hasBorderRadius) {
+            roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
+            roundedRects->append(clipRoundedRect);
+        }
+        OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
         clipDisplayItem->replay(*paintInfo.context);
     }
-
-    m_pushedClip = true;
 }
 
 BoxClipper::~BoxClipper()
 {
-    if (!m_pushedClip)
+    if (m_clipType == DisplayItem::UninitializedType)
         return;
 
     ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()));
 
-    DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());
         if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
             if (m_paintInfo.context->displayItemList()->lastDisplayItemIsNoopBegin())
                 m_paintInfo.context->displayItemList()->removeLastDisplayItem();
             else
-                m_paintInfo.context->displayItemList()->add(EndClipDisplayItem::create(m_box, endType));
+                m_paintInfo.context->displayItemList()->add(EndClipDisplayItem::create(m_box, DisplayItem::clipTypeToEndClipType(m_clipType)));
         }
     } else {
-        EndClipDisplayItem endClipDisplayItem(m_box, endType);
+        EndClipDisplayItem endClipDisplayItem(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
         endClipDisplayItem.replay(*m_paintInfo.context);
     }
 }

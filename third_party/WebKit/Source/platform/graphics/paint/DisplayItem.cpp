@@ -148,6 +148,9 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndClipType(type))
         return "End" + clipTypeAsDebugString(endClipTypeToClipType(type));
 
+    if (type == UninitializedType)
+        return "UninitializedType";
+
     PAINT_PHASE_BASED_DEBUG_STRINGS(FloatClip);
     if (isEndFloatClipType(type))
         return "End" + typeAsDebugString(endFloatClipTypeToFloatClipType(type));

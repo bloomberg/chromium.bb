@@ -1310,7 +1310,7 @@ int LayoutTable::firstLineBoxBaseline() const
     return -1;
 }
 
-LayoutRect LayoutTable::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy)
+LayoutRect LayoutTable::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy) const
 {
     LayoutRect rect = LayoutBlock::overflowClipRect(location, relevancy);
 
