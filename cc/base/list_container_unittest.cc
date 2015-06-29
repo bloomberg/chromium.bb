@@ -860,6 +860,20 @@ TEST(ListContainerTest, AppendByMovingDoesNotDestruct) {
   EXPECT_CALL(*mde_1, Destruct());
 }
 
+TEST(ListContainerTest, AppendByMovingReturnsMovedPointer) {
+  ListContainer<SimpleDerivedElement> list_1(kCurrentLargestDerivedElementSize);
+  ListContainer<SimpleDerivedElement> list_2(kCurrentLargestDerivedElementSize);
+  SimpleDerivedElement* simple_element =
+      list_1.AllocateAndConstruct<SimpleDerivedElement>();
+
+  SimpleDerivedElement* moved_1 = list_2.AppendByMoving(simple_element);
+  EXPECT_EQ(list_2.back(), moved_1);
+
+  SimpleDerivedElement* moved_2 = list_1.AppendByMoving(moved_1);
+  EXPECT_EQ(list_1.back(), moved_2);
+  EXPECT_NE(moved_1, moved_2);
+}
+
 TEST(ListContainerTest, AppendByMovingReplacesSourceWithNewDerivedElement) {
   ListContainer<SimpleDerivedElementConstructMagicNumberOne> list_1(
       kCurrentLargestDerivedElementSize);
