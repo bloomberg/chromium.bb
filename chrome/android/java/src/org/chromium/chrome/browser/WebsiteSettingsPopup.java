@@ -784,6 +784,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                     Intent settingsIntent =
                             new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+                    settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     mContext.startActivity(settingsIntent);
                 }
             });

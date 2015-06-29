@@ -697,7 +697,9 @@ public class WebsitePreferences extends PreferenceFragment
                 && !LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
             return LocationSettings.getInstance().getSystemLocationSettingsIntent();
         }
+
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setData(
                 new Uri.Builder().scheme("package").opaquePart(context.getPackageName()).build());
         return intent;
