@@ -365,9 +365,12 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   logging::SetLogMessageHandler(NULL);
 
+  std::vector<gfx::GpuMemoryBufferType> supported_types;
+  GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
+  DCHECK(!supported_types.empty());
+  // Note: We always use the preferred type.
   scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory =
-      GpuMemoryBufferFactory::Create(
-          GpuChildThread::GetGpuMemoryBufferFactoryType());
+      GpuMemoryBufferFactory::Create(supported_types[0]);
 
   GpuProcess gpu_process;
 

@@ -4,7 +4,6 @@
 
 #include "content/gpu/in_process_gpu_thread.h"
 
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 
@@ -13,9 +12,7 @@ namespace content {
 InProcessGpuThread::InProcessGpuThread(const InProcessChildThreadParams& params)
     : base::Thread("Chrome_InProcGpuThread"),
       params_(params),
-      gpu_process_(NULL),
-      gpu_memory_buffer_factory_(GpuMemoryBufferFactory::Create(
-          GpuChildThread::GetGpuMemoryBufferFactoryType())) {
+      gpu_process_(NULL) {
 }
 
 InProcessGpuThread::~InProcessGpuThread() {
@@ -26,8 +23,7 @@ void InProcessGpuThread::Init() {
   gpu_process_ = new GpuProcess();
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.
-  gpu_process_->set_main_thread(
-      new GpuChildThread(params_, gpu_memory_buffer_factory_.get()));
+  gpu_process_->set_main_thread(new GpuChildThread(params_));
 }
 
 void InProcessGpuThread::CleanUp() {

@@ -44,12 +44,9 @@ class GpuChildThread : public ChildThreadImpl {
                  const DeferredMessages& deferred_messages,
                  GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
-  GpuChildThread(const InProcessChildThreadParams& params,
-                 GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+  explicit GpuChildThread(const InProcessChildThreadParams& params);
 
   ~GpuChildThread() override;
-
-  static gfx::GpuMemoryBufferType GetGpuMemoryBufferFactoryType();
 
   void Shutdown() override;
 
