@@ -4,6 +4,8 @@
 
 #include "net/http/http_server_properties.h"
 
+#include <iostream>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -108,6 +110,11 @@ std::string AlternativeService::ToString() const {
 std::string AlternativeServiceInfo::ToString() const {
   return base::StringPrintf("%s, p=%f", alternative_service.ToString().c_str(),
                             probability);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const AlternativeService& alternative_service) {
+  return (os << alternative_service.ToString());
 }
 
 // static
