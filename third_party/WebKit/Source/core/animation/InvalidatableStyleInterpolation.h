@@ -55,7 +55,7 @@ private:
     double m_currentFraction;
     mutable OwnPtrWillBeMember<PrimitiveInterpolation> m_cachedConversion;
     mutable AnimationType::ConversionCheckers m_conversionCheckers;
-    mutable OwnPtrWillBeRawPtr<AnimationValue> m_cachedValue;
+    mutable OwnPtrWillBeMember<AnimationValue> m_cachedValue;
 };
 
 DEFINE_TYPE_CASTS(InvalidatableStyleInterpolation, Interpolation, value, value->isInvalidatableStyleInterpolation(), value.isInvalidatableStyleInterpolation());

@@ -20,7 +20,7 @@ class PrimitiveInterpolation : public NoBaseWillBeGarbageCollectedFinalized<Prim
 public:
     virtual ~PrimitiveInterpolation() { }
 
-    virtual void interpolate(double fraction, OwnPtrWillBeRawPtr<AnimationValue>& result) const = 0;
+    virtual void interpolate(double fraction, OwnPtrWillBeMember<AnimationValue>& result) const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
@@ -40,29 +40,29 @@ public:
         return AnimationValue::create(m_type, m_start->clone(), m_nonInterpolableValue);
     }
 
-private:
-    virtual void interpolate(double fraction, OwnPtrWillBeRawPtr<AnimationValue>& result) const override final
-    {
-        ASSERT(result);
-        ASSERT(&result->type() == &m_type);
-        ASSERT(result->nonInterpolableValue() == m_nonInterpolableValue.get());
-        m_start->interpolate(*m_end, fraction, result->interpolableValue());
-    }
-
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        PrimitiveInterpolation::trace(visitor);
         visitor->trace(m_start);
         visitor->trace(m_end);
         visitor->trace(m_nonInterpolableValue);
+        PrimitiveInterpolation::trace(visitor);
     }
 
+private:
     PairwisePrimitiveInterpolation(const AnimationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
         , m_start(start)
         , m_end(end)
         , m_nonInterpolableValue(nonInterpolableValue)
     { }
+
+    virtual void interpolate(double fraction, OwnPtrWillBeMember<AnimationValue>& result) const override final
+    {
+        ASSERT(result);
+        ASSERT(&result->type() == &m_type);
+        ASSERT(result->nonInterpolableValue() == m_nonInterpolableValue.get());
+        m_start->interpolate(*m_end, fraction, result->interpolableValue());
+    }
 
     const AnimationType& m_type;
     OwnPtrWillBeMember<InterpolableValue> m_start;
@@ -80,23 +80,14 @@ public:
         return adoptPtrWillBeNoop(new FlipPrimitiveInterpolation(start, end));
     }
 
-private:
-    virtual void interpolate(double fraction, OwnPtrWillBeRawPtr<AnimationValue>& result) const override final
-    {
-        // TODO(alancutter): Remove this optimisation once Oilpan is default.
-        if (!std::isnan(m_lastFraction) && (fraction < 0.5) == (m_lastFraction < 0.5))
-            return;
-        result = ((fraction < 0.5) ? m_start : m_end)->clone();
-        m_lastFraction = fraction;
-    }
-
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        PrimitiveInterpolation::trace(visitor);
         visitor->trace(m_start);
         visitor->trace(m_end);
+        PrimitiveInterpolation::trace(visitor);
     }
 
+private:
     FlipPrimitiveInterpolation(PassOwnPtrWillBeRawPtr<AnimationValue> start, PassOwnPtrWillBeRawPtr<AnimationValue> end)
         : m_start(start)
         , m_end(end)
@@ -106,8 +97,17 @@ private:
         ASSERT(m_end);
     }
 
-    OwnPtrWillBeRawPtr<AnimationValue> m_start;
-    OwnPtrWillBeRawPtr<AnimationValue> m_end;
+    virtual void interpolate(double fraction, OwnPtrWillBeMember<AnimationValue>& result) const override final
+    {
+        // TODO(alancutter): Remove this optimisation once Oilpan is default.
+        if (!std::isnan(m_lastFraction) && (fraction < 0.5) == (m_lastFraction < 0.5))
+            return;
+        result = ((fraction < 0.5) ? m_start : m_end)->clone();
+        m_lastFraction = fraction;
+    }
+
+    OwnPtrWillBeMember<AnimationValue> m_start;
+    OwnPtrWillBeMember<AnimationValue> m_end;
     mutable double m_lastFraction;
 };
 
