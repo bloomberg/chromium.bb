@@ -28,7 +28,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 
 #include "core/EventTypeNames.h"
-#include "core/events/EventTarget.h"
+#include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
@@ -66,7 +66,7 @@ private:
 
 const double XMLHttpRequestProgressEventThrottle::minimumProgressEventDispatchingIntervalInSeconds = .05; // 50 ms per specification.
 
-XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(EventTarget* target)
+XMLHttpRequestProgressEventThrottle::XMLHttpRequestProgressEventThrottle(XMLHttpRequest* target)
     : m_target(target)
     , m_deferred(adoptPtr(new DeferredEvent))
 {
@@ -96,17 +96,25 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
 
 void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event> event, DeferredEventAction action)
 {
+    XMLHttpRequest::State state = m_target->readyState();
     // Given that ResourceDispatcher doesn't deliver an event when suspended,
     // we don't have to worry about event dispatching while suspended.
     if (action == Flush) {
         dispatchDeferredEvent();
+        // |m_target| is protected by the caller.
         stop();
     } else if (action == Clear) {
         m_deferred->clear();
         stop();
     }
 
-    m_target->dispatchEvent(event);
+    if (state == m_target->readyState()) {
+        // We don't dispatch the event when an event handler associated with
+        // the previously dispatched event changes the readyState (e.g. when
+        // the event handler calls xhr.abort()). In such cases a
+        // readystatechange should have been already dispatched if necessary.
+        m_target->dispatchEvent(event);
+    }
 }
 
 void XMLHttpRequestProgressEventThrottle::dispatchDeferredEvent()
