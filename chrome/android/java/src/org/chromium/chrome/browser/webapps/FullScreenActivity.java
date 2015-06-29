@@ -84,6 +84,9 @@ public abstract class FullScreenActivity extends ChromeActivity
     }
 
     @Override
+    protected void initializeToolbar() { }
+
+    @Override
     public SingleTabModelSelector getTabModelSelector() {
         return (SingleTabModelSelector) super.getTabModelSelector();
     }

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -22,16 +21,14 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.browser.appmenu.AppMenuHandler;
-import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -44,9 +41,6 @@ public class CustomTabActivity extends ChromeActivity {
     private static CustomTabContentHandler sActiveContentHandler;
 
     private CustomTab mTab;
-    private ToolbarManager mToolbarManager;
-    private CustomTabAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
-    private AppMenuHandler mAppMenuHandler;
     private FindToolbarManager mFindToolbarManager;
     private CustomTabIntentDataProvider mIntentDataProvider;
     private long mSessionId;
@@ -123,21 +117,12 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void postInflationStartup() {
         super.postInflationStartup();
-        ToolbarControlContainer controlContainer =
-                ((ToolbarControlContainer) findViewById(R.id.control_container));
-        mAppMenuPropertiesDelegate = new CustomTabAppMenuPropertiesDelegate(this,
-                mIntentDataProvider.getMenuTitles());
-        mAppMenuHandler =
-                new AppMenuHandler(this, mAppMenuPropertiesDelegate, R.menu.custom_tabs_menu);
-        mToolbarManager = new ToolbarManager(this, controlContainer,
-                mAppMenuHandler, mAppMenuPropertiesDelegate,
-                getCompositorViewHolder().getInvalidator());
-        mToolbarManager.setShowTitle(mIntentDataProvider.getTitleVisibilityState()
+        getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
                 == CustomTabIntentDataProvider.CUSTOM_TAB_SHOW_PAGE_TITLE);
-        mToolbarManager.updatePrimaryColor(mIntentDataProvider.getToolbarColor());
+        getToolbarManager().updatePrimaryColor(mIntentDataProvider.getToolbarColor());
         setStatusBarColor(mIntentDataProvider.getToolbarColor());
         if (mIntentDataProvider.shouldShowActionButton()) {
-            mToolbarManager.addCustomActionButton(mIntentDataProvider.getActionButtonIcon(),
+            getToolbarManager().addCustomActionButton(mIntentDataProvider.getActionButtonIcon(),
                     new OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -147,14 +132,6 @@ public class CustomTabActivity extends ChromeActivity {
                         }
                     });
         }
-        mAppMenuHandler.addObserver(new AppMenuObserver() {
-            @Override
-            public void onMenuVisibilityChanged(boolean isVisible) {
-                if (!isVisible) {
-                    mAppMenuPropertiesDelegate.onMenuDismissed();
-                }
-            }
-        });
     }
 
     @Override
@@ -172,8 +149,8 @@ public class CustomTabActivity extends ChromeActivity {
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
         mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
-                mToolbarManager.getContextualMenuBar().getCustomSelectionActionModeCallback());
-        mToolbarManager.initializeWithNative(getTabModelSelector(), getFullscreenManager(),
+                getToolbarManager().getContextualMenuBar().getCustomSelectionActionModeCallback());
+        getToolbarManager().initializeWithNative(getTabModelSelector(), getFullscreenManager(),
                 mFindToolbarManager, null, layoutDriver, null, null, null,
                 new OnClickListener() {
                     @Override
@@ -215,26 +192,8 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public void onStopWithNative() {
-        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onStopWithNative();
         setActiveContentHandler(null);
-    }
-
-    @Override
-    protected void onDeferredStartup() {
-        super.onDeferredStartup();
-        mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), getClass().getSimpleName());
-    }
-
-    @Override
-    public boolean hasDoneFirstDraw() {
-        return mToolbarManager.hasDoneFirstDraw();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
-        super.onConfigurationChanged(newConfig);
     }
 
     /**
@@ -273,6 +232,16 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public SingleTabModelSelector getTabModelSelector() {
         return (SingleTabModelSelector) super.getTabModelSelector();
+    }
+
+    @Override
+    protected ChromeAppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles());
+    }
+
+    @Override
+    protected int getAppMenuLayoutId() {
+        return R.menu.custom_tabs_menu;
     }
 
     @Override
@@ -315,12 +284,12 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public boolean shouldShowAppMenu() {
-        return mTab != null && mToolbarManager.isInitialized();
+        return mTab != null && getToolbarManager().isInitialized();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int menuIndex = mAppMenuPropertiesDelegate.getIndexOfMenuItem(item);
+        int menuIndex = getAppMenuPropertiesDelegate().getIndexOfMenuItem(item);
         if (menuIndex >= 0) {
             mIntentDataProvider.clickMenuItemWithUrl(getApplicationContext(), menuIndex,
                     getTabModelSelector().getCurrentTab().getUrl());
@@ -334,7 +303,7 @@ public class CustomTabActivity extends ChromeActivity {
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.show_menu) {
             if (shouldShowAppMenu()) {
-                mAppMenuHandler.showAppMenu(mToolbarManager.getMenuAnchor(), true, false);
+                getAppMenuHandler().showAppMenu(getToolbarManager().getMenuAnchor(), true, false);
                 return true;
             }
         } else if (id == R.id.open_in_chrome_id) {
@@ -365,14 +334,9 @@ public class CustomTabActivity extends ChromeActivity {
      *         purposes only.
      */
     @VisibleForTesting
-    CustomTabAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
-        return mAppMenuPropertiesDelegate;
-    }
-
     @Override
-    @VisibleForTesting
-    public AppMenuHandler getAppMenuHandler() {
-        return mAppMenuHandler;
+    public CustomTabAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
+        return (CustomTabAppMenuPropertiesDelegate) super.getAppMenuPropertiesDelegate();
     }
 
     /**

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.document;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
@@ -21,7 +20,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -32,9 +30,6 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlUtilities;
-import org.chromium.chrome.browser.appmenu.AppMenuHandler;
-import org.chromium.chrome.browser.appmenu.AppMenuObserver;
-import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.DocumentTab.DocumentTabObserver;
@@ -59,7 +54,6 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -107,10 +101,6 @@ public class DocumentActivity extends ChromeActivity {
     private int mDefaultThemeColor;
 
     private DocumentTab mDocumentTab;
-    private ToolbarManager mToolbarManager;
-
-    private ChromeAppMenuPropertiesDelegate mChromeAppMenuPropertiesDelegate;
-    private AppMenuHandler mAppMenuHandler;
     private RoundedIconGenerator mDocumentAppIconGenerator;
     private FindToolbarManager mFindToolbarManager;
     private boolean mRecordedStartupUma;
@@ -176,14 +166,6 @@ public class DocumentActivity extends ChromeActivity {
     public void postInflationStartup() {
         super.postInflationStartup();
 
-        ToolbarControlContainer controlContainer =
-                ((ToolbarControlContainer) findViewById(R.id.control_container));
-        mChromeAppMenuPropertiesDelegate = new ChromeAppMenuPropertiesDelegate(this);
-        mAppMenuHandler = new AppMenuHandler(this, mChromeAppMenuPropertiesDelegate,
-                R.menu.main_menu);
-        mToolbarManager = new ToolbarManager(this, controlContainer, mAppMenuHandler,
-                mChromeAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator());
-
         final int tabId = ActivityDelegate.getTabIdFromIntent(getIntent());
         mTabInitializationObserver = new InitializationObserver(mTabModel) {
                 @Override
@@ -202,12 +184,6 @@ public class DocumentActivity extends ChromeActivity {
                     initializeUI();
                 }
         };
-    }
-
-    @Override
-    @VisibleForTesting
-    public AppMenuHandler getAppMenuHandler() {
-        return mAppMenuHandler;
     }
 
     @Override
@@ -273,17 +249,6 @@ public class DocumentActivity extends ChromeActivity {
         }
 
         super.finishNativeInitialization();
-    }
-
-    @Override
-    protected void onDeferredStartup() {
-        super.onDeferredStartup();
-        mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), getClass().getSimpleName());
-    }
-
-    @Override
-    public boolean hasDoneFirstDraw() {
-        return mToolbarManager.hasDoneFirstDraw();
     }
 
     /**
@@ -409,39 +374,8 @@ public class DocumentActivity extends ChromeActivity {
     }
 
     @Override
-    protected void onDestroyInternal() {
-        if (mToolbarManager != null) mToolbarManager.destroy();
-
-        super.onDestroyInternal();
-    }
-
-    @Override
-    public void onStopWithNative() {
-        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
-        super.onStopWithNative();
-    }
-
-    @Override
     public SingleTabModelSelector getTabModelSelector() {
         return (SingleTabModelSelector) super.getTabModelSelector();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
-        super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public void onOrientationChange(int orientation) {
-        super.onOrientationChange(orientation);
-        mToolbarManager.onOrientationChange();
-    }
-
-    @Override
-    protected void onAccessibilityModeChanged(boolean enabled) {
-        super.onAccessibilityModeChanged(enabled);
-        mToolbarManager.onAccessibilityStatusChanged(enabled);
     }
 
     private void loadLastKnownUrl(PendingDocumentData pendingData) {
@@ -532,15 +466,6 @@ public class DocumentActivity extends ChromeActivity {
             mNeedsToBeAddedToTabModel = true;
         }
 
-        mAppMenuHandler.addObserver(new AppMenuObserver() {
-            @Override
-            public void onMenuVisibilityChanged(boolean isVisible) {
-                if (!isVisible) {
-                    mChromeAppMenuPropertiesDelegate.onMenuDismissed();
-                }
-            }
-        });
-
         getTabModelSelector().setTab(mDocumentTab);
 
         if (!mDocumentTab.didRestoreState() || (pendingData != null && pendingData.url != null)) {
@@ -576,10 +501,10 @@ public class DocumentActivity extends ChromeActivity {
                 (ViewGroup) findViewById(android.R.id.content), controlContainer);
 
         mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
-                mToolbarManager.getContextualMenuBar()
+                getToolbarManager().getContextualMenuBar()
                         .getCustomSelectionActionModeCallback());
 
-        mToolbarManager.initializeWithNative(getTabModelSelector(), getFullscreenManager(),
+        getToolbarManager().initializeWithNative(getTabModelSelector(), getFullscreenManager(),
                 mFindToolbarManager, null, layoutDriver, null, null, null, null);
 
         mDocumentTab.setFullscreenManager(getFullscreenManager());
@@ -818,12 +743,12 @@ public class DocumentActivity extends ChromeActivity {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
         } else if (id == R.id.show_menu) {
-            if (mToolbarManager.isInitialized()) {
-                mAppMenuHandler.showAppMenu(mToolbarManager.getMenuAnchor(), true,
+            if (getToolbarManager().isInitialized()) {
+                getAppMenuHandler().showAppMenu(getToolbarManager().getMenuAnchor(), true,
                         false);
             }
         } else if (id == R.id.focus_url_bar) {
-            if (mToolbarManager.isInitialized()) mToolbarManager.setUrlBarFocus(true);
+            if (getToolbarManager().isInitialized()) getToolbarManager().setUrlBarFocus(true);
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
@@ -833,20 +758,20 @@ public class DocumentActivity extends ChromeActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Boolean result = KeyboardShortcuts.dispatchKeyEvent(event, this,
-                mToolbarManager.isInitialized());
+                getToolbarManager().isInitialized());
         return result != null ? result : super.dispatchKeyEvent(event);
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!mToolbarManager.isInitialized()) return false;
+        if (!getToolbarManager().isInitialized()) return false;
         return KeyboardShortcuts.onKeyDown(event, this, true, false)
                 || super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean shouldShowAppMenu() {
-        if (mDocumentTab == null || !mToolbarManager.isInitialized()) {
+        if (mDocumentTab == null || !getToolbarManager().isInitialized()) {
             return false;
         }
 
@@ -907,7 +832,7 @@ public class DocumentActivity extends ChromeActivity {
         int color = getThemeColor();
         DocumentUtils.updateTaskDescription(this, label, icon, color,
                 shouldUseDefaultStatusBarColor());
-        mToolbarManager.updatePrimaryColor(color);
+        getToolbarManager().updatePrimaryColor(color);
 
         ControlContainer controlContainer =
                 (ControlContainer) findViewById(R.id.control_container);

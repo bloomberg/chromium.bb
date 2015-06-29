@@ -10,6 +10,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -47,7 +48,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
+import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.appmenu.AppMenuObserver;
+import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmark.ManageBookmarkActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -101,6 +106,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.toolbar.Toolbar;
+import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -177,6 +185,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ReaderModeActivityDelegate mReaderModeActivityDelegate;
     private SnackbarManager mSnackbarManager;
     private LoFiBarPopupController mLoFiBarPopupController;
+    private ChromeAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
+    private AppMenuHandler mAppMenuHandler;
+    private ToolbarManager mToolbarManager;
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
@@ -258,6 +269,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             };
             controlContainer.getViewTreeObserver().addOnPreDrawListener(mFirstDrawListener);
         }
+        initializeToolbar();
     }
 
     /**
@@ -294,6 +306,51 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
         mCompositorViewHolder.setRootView(getWindow().getDecorView().getRootView());
+    }
+
+    /**
+     * Constructs {@link ToolbarManager} and the handler necessary for controlling the menu on the
+     * {@link Toolbar}. Extending classes can override this call to avoid creating the toolbar.
+     */
+    protected void initializeToolbar() {
+        final View controlContainer = findViewById(R.id.control_container);
+        assert controlContainer != null;
+        ToolbarControlContainer toolbarContainer = (ToolbarControlContainer) controlContainer;
+        mAppMenuPropertiesDelegate = createAppMenuPropertiesDelegate();
+        mAppMenuHandler = new AppMenuHandler(this,
+                mAppMenuPropertiesDelegate, getAppMenuLayoutId());
+        mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
+                mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator());
+        mAppMenuHandler.addObserver(new AppMenuObserver() {
+            @Override
+            public void onMenuVisibilityChanged(boolean isVisible) {
+                if (!isVisible) {
+                    mAppMenuPropertiesDelegate.onMenuDismissed();
+                }
+            }
+        });
+    }
+
+    /**
+     * @return {@link ToolbarManager} that belongs to this activity.
+     */
+    protected ToolbarManager getToolbarManager() {
+        return mToolbarManager;
+    }
+
+    /**
+     * @return The resource id for the menu to use in {@link AppMenu}. Default is R.menu.main_menu.
+     */
+    protected int getAppMenuLayoutId() {
+        return R.menu.main_menu;
+    }
+
+    /**
+     * @return {@link ChromeAppMenuPropertiesDelegate} instance that the {@link AppMenuHandler}
+     *         should be using in this activity.
+     */
+    protected ChromeAppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new ChromeAppMenuPropertiesDelegate(this);
     }
 
     /**
@@ -467,6 +524,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onStopWithNative() {
+        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         if (mGSAServiceClient != null) {
             mGSAServiceClient.disconnect();
             mGSAServiceClient = null;
@@ -485,6 +543,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mIntentHandler.shouldIgnoreIntent(this, intent)) return;
 
         mIntentHandler.onNewIntent(this, intent);
+    }
+
+    @Override
+    public boolean hasDoneFirstDraw() {
+        return mToolbarManager != null
+                ? mToolbarManager.hasDoneFirstDraw() : super.hasDoneFirstDraw();
     }
 
     /**
@@ -515,8 +579,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         getChromeApplication().getUpdateInfoBarHelper().checkForUpdateOnBackgroundThread(this);
 
         removeSnapshotDatabase();
-        RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarInflationTime",
-                mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
+        if (mToolbarManager != null) {
+            String simpleName = getClass().getSimpleName();
+            RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarInflationTime." + simpleName,
+                    mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
+            mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
+        }
     }
 
     @Override
@@ -617,6 +685,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * by the {@link WindowAndroid}.
      */
     protected void onDestroyInternal() {
+        if (mToolbarManager != null) mToolbarManager.destroy();
     }
 
     /**
@@ -662,6 +731,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     protected void onAccessibilityModeChanged(boolean enabled) {
         InfoBarContainer.setIsAllowedToAutoHide(!enabled);
+        if (mToolbarManager != null) mToolbarManager.onAccessibilityStatusChanged(enabled);
     }
 
     @Override
@@ -1052,9 +1122,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onOrientationChange(int orientation) {
-        if (mContextualSearchManager != null) {
-            mContextualSearchManager.onOrientationChange();
-        }
+        if (mContextualSearchManager != null) mContextualSearchManager.onOrientationChange();
+        if (mToolbarManager != null) mToolbarManager.onOrientationChange();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
+        super.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -1096,9 +1171,20 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return true;
     }
 
+    /**
+     * @return The {@link AppMenuHandler} associated with this activity.
+     */
     @VisibleForTesting
     public AppMenuHandler getAppMenuHandler() {
-        return null;
+        return mAppMenuHandler;
+    }
+
+    /**
+     * @return The {@link AppMenuPropertiesDelegate} associated with this activity.
+     */
+    @VisibleForTesting
+    public ChromeAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
+        return mAppMenuPropertiesDelegate;
     }
 
     /**
