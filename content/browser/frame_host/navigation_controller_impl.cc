@@ -527,11 +527,7 @@ NavigationEntryImpl* NavigationControllerImpl::GetEntryAtIndex(
 
 NavigationEntryImpl* NavigationControllerImpl::GetEntryAtOffset(
     int offset) const {
-  int index = GetIndexForOffset(offset);
-  if (index < 0 || index >= GetEntryCount())
-    return nullptr;
-
-  return entries_[index];
+  return GetEntryAtIndex(GetIndexForOffset(offset));
 }
 
 int NavigationControllerImpl::GetIndexForOffset(int offset) const {
