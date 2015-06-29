@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -78,7 +79,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>, public Scri
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Internals);
 public:
-    static Internals* create(Document*);
+    static Internals* create(ScriptState*);
     virtual ~Internals();
 
     static void resetToConsistentState(Page*);
@@ -367,7 +368,7 @@ public:
     void setCapsLockState(bool enabled);
 
 private:
-    explicit Internals(Document*);
+    explicit Internals(ScriptState*);
     Document* contextDocument() const;
     LocalFrame* frame() const;
     Vector<String> iconURLs(Document*, int iconTypesMask) const;

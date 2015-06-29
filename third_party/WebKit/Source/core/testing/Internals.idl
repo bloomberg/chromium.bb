@@ -28,6 +28,7 @@
     DoNotCheckConstants,
     GarbageCollected,
     TypeChecking=Interface,
+    ConstructorCallWith=ScriptState,
 ] interface Internals {
     DOMString address(Node node);
 

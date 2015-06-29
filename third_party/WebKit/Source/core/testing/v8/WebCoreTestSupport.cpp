@@ -43,7 +43,7 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context)
     v8::Local<v8::Object> global = scriptState->context()->Global();
     ExecutionContext* executionContext = scriptState->executionContext();
     if (executionContext->isDocument())
-        return toV8(Internals::create(toDocument(executionContext)), global, scriptState->isolate());
+        return toV8(Internals::create(scriptState), global, scriptState->isolate());
     return v8::Local<v8::Value>();
 }
 

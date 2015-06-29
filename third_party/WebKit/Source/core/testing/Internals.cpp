@@ -193,9 +193,9 @@ static SpellCheckRequester* spellCheckRequester(Document* document)
 
 const char* Internals::internalsId = "internals";
 
-Internals* Internals::create(Document* document)
+Internals* Internals::create(ScriptState* scriptState)
 {
-    return new Internals(document);
+    return new Internals(scriptState);
 }
 
 Internals::~Internals()
@@ -222,8 +222,8 @@ void Internals::resetToConsistentState(Page* page)
     PlatformKeyboardEvent::setCurrentCapsLockState(PlatformKeyboardEvent::OverrideCapsLockState::Default);
 }
 
-Internals::Internals(Document* document)
-    : ContextLifecycleObserver(document)
+Internals::Internals(ScriptState* scriptState)
+    : ContextLifecycleObserver(scriptState->executionContext())
     , m_runtimeFlags(InternalRuntimeFlags::create())
 {
 }
