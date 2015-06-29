@@ -10,8 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/frame_tree_manager_delegate.h"
+#include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
@@ -39,6 +41,7 @@ class DocumentResourceWaiter;
 class Frame;
 class FrameTreeManager;
 class GlobalState;
+class TestHTMLViewerImpl;
 class WebLayerTreeViewImpl;
 
 // A view for a single HTML document.
@@ -51,7 +54,8 @@ class HTMLDocumentOOPIF
       public mojo::ViewObserver,
       public FrameTreeManagerDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
-      public mojo::InterfaceFactory<mandoline::FrameTreeClient> {
+      public mojo::InterfaceFactory<mandoline::FrameTreeClient>,
+      public mojo::InterfaceFactory<TestHTMLViewer> {
  public:
   using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
 
@@ -71,10 +75,22 @@ class HTMLDocumentOOPIF
  private:
   friend class DocumentResourceWaiter;  // So it can call LoadIfNecessary().
 
+  // Requests for interfaces before the document is loaded go here. Once
+  // loaded the requests are bound and BeforeLoadCache is deleted.
+  struct BeforeLoadCache {
+    BeforeLoadCache();
+    ~BeforeLoadCache();
+
+    std::set<mojo::InterfaceRequest<mojo::AxProvider>*> ax_provider_requests;
+    std::set<mojo::InterfaceRequest<TestHTMLViewer>*> test_interface_requests;
+  };
+
   ~HTMLDocumentOOPIF() override;
 
   void LoadIfNecessary();
   void Load();
+
+  BeforeLoadCache* GetBeforeLoadCache();
 
   // ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
@@ -100,17 +116,22 @@ class HTMLDocumentOOPIF
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mandoline::FrameTreeClient> request) override;
 
+  // mojo::InterfaceFactory<TestHTMLViewer>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<TestHTMLViewer> request) override;
+
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::ApplicationImpl* html_document_app_;
   mojo::ApplicationConnection* connection_;
   mojo::ViewManagerClientFactory view_manager_client_factory_;
 
   // HTMLDocument owns these pointers; binding requests after document load.
-  std::set<mojo::InterfaceRequest<mojo::AxProvider>*> ax_provider_requests_;
   std::set<AxProviderImpl*> ax_providers_;
 
-  // A flag set on didFinishLoad.
-  bool did_finish_main_frame_load_ = false;
+  ScopedVector<TestHTMLViewerImpl> test_html_viewers_;
+
+  // Set to true when the local frame has finished loading.
+  bool did_finish_local_frame_load_ = false;
 
   GlobalState* global_state_;
 
@@ -121,6 +142,8 @@ class HTMLDocumentOOPIF
   scoped_ptr<DevToolsAgentImpl> devtools_agent_;
 
   scoped_ptr<DocumentResourceWaiter> resource_waiter_;
+
+  scoped_ptr<BeforeLoadCache> before_load_cache_;
 
   DeleteCallback delete_callback_;
 

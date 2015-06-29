@@ -35,4 +35,24 @@ Frame* FrameTree::CreateAndAddFrame(mojo::View* view,
   return frame;
 }
 
+Frame* FrameTree::CreateOrReplaceFrame(Frame* frame,
+                                       mojo::View* view,
+                                       FrameTreeClient* frame_tree_client,
+                                       scoped_ptr<FrameUserData> user_data) {
+  DCHECK(frame && frame->HasAncestor(&root_));
+
+  Frame* parent = frame;
+  if (frame->view() == view) {
+    DCHECK(frame != &root_);
+    // Rembed in existing frame.
+    parent = frame->parent();
+    delete frame;
+    frame = nullptr;
+  }  // else case is a view is becoming associated with a Frame, eg a new frame.
+
+  DCHECK(parent);
+
+  return CreateAndAddFrame(view, parent, frame_tree_client, user_data.Pass());
+}
+
 }  // namespace mandoline

@@ -39,7 +39,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   void Init(Frame* parent);
 
   // Walks the View tree starting at |view| going up returning the first
-  // Frame that is associated with a view. For example, if |view|
+  // Frame that is associated with |view|. For example, if |view|
   // has a Frame associated with it, then that is returned. Otherwise
   // this checks view->parent() and so on.
   static Frame* FindFirstFrameAncestor(mojo::View* view);
@@ -58,7 +58,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   }
   const Frame* FindFrame(uint32_t id) const;
 
-  FrameUserData* user_data();
+  bool HasAncestor(const Frame* frame) const;
+
+  FrameUserData* user_data() { return user_data_.get(); }
 
  private:
   friend class FrameTree;
@@ -88,7 +90,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   Frame* parent_;
   ViewOwnership view_ownership_;
   std::vector<Frame*> children_;
-  scoped_ptr<FrameUserData> frame_user_data_;
+  scoped_ptr<FrameUserData> user_data_;
 
   FrameTreeClient* frame_tree_client_;
 

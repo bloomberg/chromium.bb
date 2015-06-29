@@ -88,6 +88,8 @@ source_set("lib") {
     "media_factory.h",
     "mock_web_blob_registry_impl.cc",
     "mock_web_blob_registry_impl.h",
+    "test_html_viewer_impl.cc",
+    "test_html_viewer_impl.h",
     "touch_handler.cc",
     "touch_handler.h",
     "web_clipboard_impl.cc",
@@ -121,6 +123,7 @@ source_set("lib") {
     "//components/clipboard/public/interfaces",
     "//components/devtools_service/public/cpp",
     "//components/devtools_service/public/interfaces",
+    "//components/html_viewer/public/interfaces",
     "//components/message_port",
     "//components/mime_util",
     "//components/resource_provider/public/cpp",
@@ -223,11 +226,14 @@ mojo_native_application("apptests") {
 
   sources = [
     "ax_provider_apptest.cc",
+    "html_frame_apptest.cc",
   ]
 
   deps = [
     "//base",
+    "//components/html_viewer/public/interfaces",
     "//components/view_manager/public/cpp/tests:test_support",
+    "//mandoline/tab",
     "//mandoline/tab/public/interfaces",
     "//mojo/application/public/cpp:test_support",
     "//net:test_support",

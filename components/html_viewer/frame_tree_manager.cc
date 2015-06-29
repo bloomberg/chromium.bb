@@ -120,6 +120,10 @@ blink::WebLocalFrame* FrameTreeManager::GetLocalWebFrame() {
   return GetLocalFrame()->web_frame()->toWebLocalFrame();
 }
 
+blink::WebView* FrameTreeManager::GetWebView() {
+  return root_->web_view();
+}
+
 void FrameTreeManager::InitFrames(mojo::View* local_view, Frame* frame) {
   frame->Init(local_view);
 

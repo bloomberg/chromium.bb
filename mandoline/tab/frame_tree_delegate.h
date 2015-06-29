@@ -7,6 +7,7 @@
 
 namespace mandoline {
 
+class Frame;
 class MessageEvent;
 
 class FrameTreeDelegate {

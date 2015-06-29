@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 
+#include "base/basictypes.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
@@ -35,6 +36,8 @@ class AxProviderImpl : public mojo::AxProvider {
 
   blink::WebView* web_view_;
   mojo::Binding<mojo::AxProvider> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(AxProviderImpl);
 };
 
 }  // namespace html_viewer

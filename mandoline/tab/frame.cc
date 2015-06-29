@@ -45,7 +45,7 @@ Frame::Frame(FrameTree* tree,
       view_(view),
       parent_(nullptr),
       view_ownership_(view_ownership),
-      frame_user_data_(user_data.Pass()),
+      user_data_(user_data.Pass()),
       frame_tree_client_(frame_tree_client),
       frame_tree_server_binding_(this) {
   view_->SetLocalProperty(kFrame, this);
@@ -99,6 +99,13 @@ const Frame* Frame::FindFrame(uint32_t id) const {
       return match;
   }
   return nullptr;
+}
+
+bool Frame::HasAncestor(const Frame* frame) const {
+  const Frame* current = this;
+  while (current && current != frame)
+    current = current->parent_;
+  return current == frame;
 }
 
 void Frame::BuildFrameTree(std::vector<const Frame*>* frames) const {

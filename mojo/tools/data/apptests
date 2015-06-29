@@ -57,7 +57,8 @@ if config.target_os != config.OS_ANDROID:
     {
       "test": "mojo:html_viewer_apptests",
       "type": "gtest_isolated",
-      "args": ["--use-test-config", "--oopifs"]
+      "args": ["--use-test-config", "--oopifs",
+               "--enable-html-viewer-test-interface"]
     },
     {
       "test": "mojo:mandoline_frame_apptests",

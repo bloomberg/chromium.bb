@@ -45,4 +45,8 @@ specific_include_rules = {
   "run_all_unittests\.cc": [
     "+third_party/mojo/src/mojo/edk/embedder/test_embedder.h",
   ],
+  "html_frame_apptest\.cc": [
+    "+mandoline/tab",
+    "+third_party/mojo/src/mojo/edk/embedder/test_embedder.h",
+  ],
 }

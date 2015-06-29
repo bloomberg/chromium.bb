@@ -35,6 +35,15 @@ class FrameTree {
                            FrameTreeClient* client,
                            scoped_ptr<FrameUserData> user_data);
 
+  // If frame->view() == |view|, then |frame| is deleted and a new Frame created
+  // to replace it. Otherwise a new Frame is created as a child of |frame|.
+  // It is expected this is called from
+  //  ViewManagerDelegate::OnEmbedForDescendant().
+  Frame* CreateOrReplaceFrame(Frame* frame,
+                              mojo::View* view,
+                              FrameTreeClient* frame_tree_client,
+                              scoped_ptr<FrameUserData> user_data);
+
  private:
   friend class Frame;
 

@@ -115,7 +115,8 @@ void Browser::OnEmbedForDescendant(mojo::View* view,
                                    mojo::ViewManagerClientPtr* client) {
   // TODO(sky): move this to Frame/FrameTree.
   Frame* frame = Frame::FindFirstFrameAncestor(view);
-  if (!frame) {
+  if (!frame || !frame->HasAncestor(frame_tree_->root()) ||
+      frame == frame_tree_->root()) {
     // TODO(sky): add requestor url so that we can return false if it's not
     // an app we expect.
     mojo::ApplicationConnection* connection =
@@ -124,19 +125,11 @@ void Browser::OnEmbedForDescendant(mojo::View* view,
     return;
   }
 
-  Frame* parent = frame;
-  if (frame->view() == view) {
-    parent = frame->parent();
-    // This is a reembed.
-    delete frame;
-    frame = nullptr;
-  }
-
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
   frame_connection->Init(app_, request.Pass(), client);
   FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_->CreateAndAddFrame(view, parent, frame_tree_client,
-                                 frame_connection.Pass());
+  frame_tree_->CreateOrReplaceFrame(frame, view, frame_tree_client,
+                                    frame_connection.Pass());
 }
 
 void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
