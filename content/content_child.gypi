@@ -52,6 +52,8 @@
       'child/background_sync/background_sync_type_converters.h',
       'child/blink_platform_impl.cc',
       'child/blink_platform_impl.h',
+      'child/blob_storage/blob_consolidation.cc',
+      'child/blob_storage/blob_consolidation.h',
       'child/bluetooth/bluetooth_dispatcher.cc',
       'child/bluetooth/bluetooth_dispatcher.h',
       'child/bluetooth/bluetooth_message_filter.cc',

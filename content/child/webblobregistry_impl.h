@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "content/child/blob_storage/blob_consolidation.h"
+#include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 
 namespace blink {
@@ -27,8 +29,14 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
   explicit WebBlobRegistryImpl(ThreadSafeSender* sender);
   virtual ~WebBlobRegistryImpl();
 
+  // TODO(dmurph): remove this after moving to createBuilder. crbug.com/504583
   virtual void registerBlobData(const blink::WebString& uuid,
                                 const blink::WebBlobData& data);
+
+  virtual blink::WebBlobRegistry::Builder* createBuilder(
+      const blink::WebString& uuid,
+      const blink::WebString& content_type);
+
   virtual void addBlobDataRef(const blink::WebString& uuid);
   virtual void removeBlobDataRef(const blink::WebString& uuid);
   virtual void registerPublicBlobURL(const blink::WebURL&,
@@ -48,19 +56,38 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
   virtual void unregisterStreamURL(const blink::WebURL& url);
 
  private:
-  // Sends the data in the buffer as a blob item, then resets the buffer size.
-  void FlushBlobItemBuffer(const std::string& uuid_str,
-                           storage::DataElement* data_buffer) const;
+  // Handles all of the IPCs sent for building a blob.
+  class BuilderImpl : public blink::WebBlobRegistry::Builder {
+   public:
+    BuilderImpl(const blink::WebString& uuid,
+                const blink::WebString& contentType,
+                ThreadSafeSender* sender);
+    virtual ~BuilderImpl();
 
-  // Adds the item to the consolidating buffer, flushing the buffer if needed.
-  // If the item is too big for the buffer, it is sent as Sync messages in
-  // shared memory instead.
-  void BufferBlobData(const std::string& uuid_str,
-                      const blink::WebThreadSafeData& data,
-                      storage::DataElement* data_buffer);
-  // Sends data that is larger than the threshold.
-  void SendOversizedDataForBlob(const std::string& uuid_str,
-                                const blink::WebThreadSafeData& data);
+    virtual void appendData(const blink::WebThreadSafeData&);
+    virtual void appendFile(const blink::WebString& path,
+                            uint64_t offset,
+                            uint64_t length,
+                            double expected_modification_time);
+    virtual void appendBlob(const blink::WebString& uuid,
+                            uint64_t offset,
+                            uint64_t length) override;
+    virtual void appendFileSystemURL(const blink::WebURL&,
+                                     uint64_t offset,
+                                     uint64_t length,
+                                     double expected_modification_time);
+
+    void build() override;
+
+   private:
+    // Sends data that is larger than the threshold.
+    void SendOversizedDataForBlob(size_t consolidated_item_index);
+
+    const std::string uuid_;
+    const std::string content_type_;
+    BlobConsolidation consolidation_;
+    scoped_refptr<ThreadSafeSender> sender_;
+  };
 
   scoped_refptr<ThreadSafeSender> sender_;
 };
