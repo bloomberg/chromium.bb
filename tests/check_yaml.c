@@ -8,7 +8,7 @@ yaml_event_t event;
 
 int
 error(char *msg, yaml_event_t *event) {
-  printf("%s (%i:%i)\n", msg, (int)event->start_mark.line, (int)event->start_mark.column);
+  printf("%s (%zu:%zu)\n", msg, event->start_mark.line, event->start_mark.column);
   exit (EXIT_FAILURE);
 }
 
