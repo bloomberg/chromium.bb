@@ -258,15 +258,6 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
         toXSLStyleSheet(m_sheet.get())->checkLoaded();
 }
 
-void ProcessingInstruction::setCSSStyleSheet(PassRefPtrWillBeRawPtr<CSSStyleSheet> sheet)
-{
-    ASSERT(!resource());
-    ASSERT(!m_loading);
-    m_sheet = sheet;
-    sheet->setTitle(m_title);
-    sheet->setDisabled(m_alternate);
-}
-
 Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(ContainerNode* insertionPoint)
 {
     CharacterData::insertedInto(insertionPoint);

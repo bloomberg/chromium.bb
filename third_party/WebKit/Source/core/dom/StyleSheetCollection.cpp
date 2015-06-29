@@ -50,11 +50,6 @@ void StyleSheetCollection::swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeM
     m_styleSheetsForStyleSheetList.swap(sheets);
 }
 
-void StyleSheetCollection::appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& sheets)
-{
-    m_activeAuthorStyleSheets.appendVector(sheets);
-}
-
 void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet)
 {
     m_activeAuthorStyleSheets.append(sheet);

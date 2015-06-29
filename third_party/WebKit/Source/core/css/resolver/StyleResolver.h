@@ -60,7 +60,6 @@ class RuleData;
 class ScopedStyleResolver;
 class StylePropertySet;
 class StyleRule;
-class StyleRuleKeyframe;
 class StyleRulePage;
 class ViewportStyleResolver;
 
@@ -97,7 +96,6 @@ public:
     PassRefPtr<ComputedStyle> styleForElement(Element*, const ComputedStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules);
 
-    PassRefPtr<ComputedStyle> styleForKeyframe(Element&, const ComputedStyle&, const ComputedStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, const ComputedStyle* baseStyle, CSSPropertyID, CSSValue*);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(StyleResolverState&, CSSPropertyID, CSSValue*);
 

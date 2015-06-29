@@ -24,13 +24,6 @@
 
 namespace blink {
 
-PassRefPtr<QuotesData> QuotesData::create(String open, String close)
-{
-    RefPtr<QuotesData> data = QuotesData::create();
-    data->addPair(std::make_pair(open, close));
-    return data;
-}
-
 PassRefPtr<QuotesData> QuotesData::create(UChar open1, UChar close1, UChar open2, UChar close2)
 {
     RefPtr<QuotesData> data = QuotesData::create();

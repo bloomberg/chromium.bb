@@ -424,12 +424,6 @@ Document* StyleSheetContents::singleOwnerDocument() const
     return root->clientSingleOwnerDocument();
 }
 
-KURL StyleSheetContents::completeURL(const String& url) const
-{
-    // FIXME: This is only OK when we have a singleOwnerNode, right?
-    return m_parserContext.completeURL(url);
-}
-
 static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& rules)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
@@ -548,12 +542,6 @@ void StyleSheetContents::removedFromMemoryCache()
     ASSERT(m_isInMemoryCache);
     ASSERT(isCacheable());
     m_isInMemoryCache = false;
-}
-
-void StyleSheetContents::shrinkToFit()
-{
-    m_importRules.shrinkToFit();
-    m_childRules.shrinkToFit();
 }
 
 RuleSet& StyleSheetContents::ensureRuleSet(const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)

@@ -66,7 +66,6 @@ public:
     // source (i.e. no outsets will be negative).
     FloatRectOutsets rectOutsetsIncludingOriginal() const;
 
-    void adjustRectForShadow(LayoutRect&) const;
     void adjustRectForShadow(FloatRect&) const;
 
     PassOwnPtr<DrawLooperBuilder> createDrawLooper(DrawLooperBuilder::ShadowAlphaMode, const Color& currentColor, bool isHorizontal = true) const;

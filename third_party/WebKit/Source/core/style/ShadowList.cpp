@@ -47,11 +47,6 @@ FloatRectOutsets ShadowList::rectOutsetsIncludingOriginal() const
     return outsets;
 }
 
-void ShadowList::adjustRectForShadow(LayoutRect& rect) const
-{
-    rect.expand(rectOutsetsIncludingOriginal());
-}
-
 void ShadowList::adjustRectForShadow(FloatRect& rect) const
 {
     rect.expand(rectOutsetsIncludingOriginal());

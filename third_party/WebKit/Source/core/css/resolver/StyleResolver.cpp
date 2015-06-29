@@ -82,7 +82,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/GeneratedChildren.h"
 #include "core/layout/LayoutView.h"
-#include "core/style/KeyframeList.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -631,43 +630,6 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
         document().setHasViewportUnits();
 
     // Now return the style.
-    return state.takeStyle();
-}
-
-PassRefPtr<ComputedStyle> StyleResolver::styleForKeyframe(Element& element, const ComputedStyle& elementStyle, const ComputedStyle* parentStyle, const StyleRuleKeyframe* keyframe, const AtomicString& animationName)
-{
-    ASSERT(document().frame());
-    ASSERT(document().settings());
-    ASSERT(!hasPendingAuthorStyleSheets());
-
-    StyleResolverState state(document(), &element, parentStyle);
-
-    MatchResult result;
-    result.addMatchedProperties(&keyframe->properties());
-
-    ASSERT(!state.style());
-
-    // Create the style
-    state.setStyle(ComputedStyle::clone(elementStyle));
-
-    // We don't need to bother with !important. Since there is only ever one
-    // decl, there's nothing to override. So just add the first properties.
-    // We also don't need to bother with animation properties since the only
-    // relevant one is animation-timing-function and we special-case that in
-    // CSSAnimations.cpp
-    bool inheritedOnly = false;
-    applyMatchedProperties<HighPropertyPriority>(state, result, false, result.begin(), result.end(), inheritedOnly);
-
-    // If our font got dirtied, go ahead and update it now.
-    updateFont(state);
-
-    // Now do rest of the properties.
-    applyMatchedProperties<LowPropertyPriority>(state, result, false, result.begin(), result.end(), inheritedOnly);
-
-    loadPendingResources(state);
-
-    didAccess();
-
     return state.takeStyle();
 }
 

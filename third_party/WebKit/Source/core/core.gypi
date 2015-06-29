@@ -809,8 +809,6 @@
             'style/GridCoordinate.h',
             'style/GridResolvedPosition.cpp',
             'style/GridResolvedPosition.h',
-            'style/KeyframeList.cpp',
-            'style/KeyframeList.h',
             'style/ComputedStyle.cpp',
             'style/ComputedStyle.h',
             'style/NinePieceImage.cpp',

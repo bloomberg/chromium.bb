@@ -56,7 +56,6 @@ public:
 
     void swap(StyleSheetCollection&);
     void swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>&);
-    void appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
