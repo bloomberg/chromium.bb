@@ -49,6 +49,11 @@
             "group_name": "Enabled"
         }
     ],
+    "NewVideoRendererTrial": [
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "PasswordGeneration": [
         {
             "group_name": "Disabled"
