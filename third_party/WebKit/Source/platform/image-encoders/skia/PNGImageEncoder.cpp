@@ -121,6 +121,9 @@ bool PNGImageEncoder::encode(const SkBitmap& bitmap, Vector<unsigned char>* outp
     if (bitmap.colorType() != kN32_SkColorType || !bitmap.getPixels())
         return false; // Only support 32 bit/pixel skia bitmaps.
 
+    if (bitmap.width() <= 0 || bitmap.height() <= 0)
+        return false; // crbug.com/504690
+
     return encodePixels(IntSize(bitmap.width(), bitmap.height()), static_cast<unsigned char*>(bitmap.getPixels()), true, output);
 }
 
