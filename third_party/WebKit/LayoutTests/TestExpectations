@@ -1703,3 +1703,4 @@ crbug.com/505429 [ Release Mavericks Retina ] http/tests/websocket/close.html [ 
 crbug.com/505429 [ Mavericks Retina Win ] http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
 
 crbug.com/505411 fast/canvas/fill-stroke-clip-reset-path.html [ NeedsRebaseline ]
+crbug.com/505411 virtual/display_list_2d_canvas/fast/canvas/fill-stroke-clip-reset-path.html [ NeedsRebaseline ]
