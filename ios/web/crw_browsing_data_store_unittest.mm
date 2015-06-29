@@ -151,8 +151,7 @@ TEST_F(BrowsingDataStoreTest, InitialModeAndNoPendingOperations) {
 
 // Tests that CRWBrowsingDataStore handles several consecutive calls to
 // |makeActive| and |makeInactive| correctly.
-// TODO(shreyasv): This test is flaky. http://crbug.com/504812
-TEST_F(BrowsingDataStoreTest, FLAKY_MakeActiveAndInactiveOperations) {
+TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
   if (!base::ios::IsRunningOnIOS8OrLater()) {
     return;
   }
@@ -163,25 +162,38 @@ TEST_F(BrowsingDataStoreTest, FLAKY_MakeActiveAndInactiveOperations) {
           initWithBrowsingDataStore:browsing_data_store_]);
   EXPECT_EQ(0U, [observer modeChangeCount]);
 
-  id unsucessfullCallback = ^(BOOL success) {
+  __block int callbacks_received_count = 0;
+  void (^unsucessfullCallback)(BOOL) = ^(BOOL success) {
     ASSERT_TRUE([NSThread isMainThread]);
+    ++callbacks_received_count;
     BrowsingDataStoreMode mode = [browsing_data_store_ mode];
     EXPECT_FALSE(success);
     EXPECT_EQ(CHANGING, mode);
   };
-  [browsing_data_store_ makeActiveWithCompletionHandler:unsucessfullCallback];
+
+  [browsing_data_store_ makeActiveWithCompletionHandler:^(BOOL success) {
+    EXPECT_EQ(0, callbacks_received_count);
+    unsucessfullCallback(success);
+  }];
   EXPECT_EQ(CHANGING, [browsing_data_store_ mode]);
   EXPECT_EQ(1U, [observer modeChangeCount]);
 
-  [browsing_data_store_ makeInactiveWithCompletionHandler:unsucessfullCallback];
+  [browsing_data_store_ makeInactiveWithCompletionHandler:^(BOOL success) {
+    EXPECT_EQ(1, callbacks_received_count);
+    unsucessfullCallback(success);
+  }];
   EXPECT_EQ(CHANGING, [browsing_data_store_ mode]);
 
-  [browsing_data_store_ makeActiveWithCompletionHandler:unsucessfullCallback];
+  [browsing_data_store_ makeActiveWithCompletionHandler:^(BOOL success) {
+    EXPECT_EQ(2, callbacks_received_count);
+    unsucessfullCallback(success);
+  }];
   EXPECT_EQ(CHANGING, [browsing_data_store_ mode]);
 
   __block BOOL block_was_called = NO;
   [browsing_data_store_ makeInactiveWithCompletionHandler:^(BOOL success) {
     ASSERT_TRUE([NSThread isMainThread]);
+    EXPECT_EQ(3, callbacks_received_count);
     BrowsingDataStoreMode mode = [browsing_data_store_ mode];
     EXPECT_TRUE(success);
     EXPECT_EQ(INACTIVE, mode);

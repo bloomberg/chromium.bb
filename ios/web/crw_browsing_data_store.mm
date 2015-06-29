@@ -92,12 +92,10 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 
 // Creates an NSOperation that calls |selector| on all the
 // |browsingDataManagers|. |selector| needs to be one of the methods in
-// CRWBrowsingDataManager. The created NSOperation will have a completionBlock
-// of |completionHandler|.
+// CRWBrowsingDataManager.
 - (NSOperation*)
     newOperationWithBrowsingDataManagers:(NSArray*)browsingDataManagers
-                                selector:(SEL)selector
-                       completionHandler:(ProceduralBlock)completionHandler;
+                                selector:(SEL)selector;
 // Enqueues |operation| to be run on |queue|. All operations are serialized to
 // be run one after another.
 - (void)addOperation:(NSOperation*)operation toQueue:(NSOperationQueue*)queue;
@@ -414,17 +412,16 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
     };
   }
 
-  id callCompletionHandlerOnMainThread = ^{
+  ProceduralBlock callCompletionHandlerOnMainThread = ^{
     // This is called on a background thread, hence the need to bounce to the
     // main thread.
     dispatch_async(dispatch_get_main_queue(), ^{
       completionHandler();
     });
   };
-  base::scoped_nsobject<NSOperation> operation([self
-      newOperationWithBrowsingDataManagers:browsingDataManagers
-                                  selector:selector
-                         completionHandler:callCompletionHandlerOnMainThread]);
+  base::scoped_nsobject<NSOperation> operation(
+      [self newOperationWithBrowsingDataManagers:browsingDataManagers
+                                        selector:selector]);
 
   if (operationType == RESTORE || operationType == STASH) {
     [operation setName:(RESTORE ? kRestoreOperationName : kStashOperationName)];
@@ -445,13 +442,16 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
       break;
   }
 
+  NSOperation* completionHandlerOperation = [NSBlockOperation
+      blockOperationWithBlock:callCompletionHandlerOnMainThread];
+
   [self addOperation:operation toQueue:queue];
+  [self addOperation:completionHandlerOperation toQueue:queue];
 }
 
 - (NSOperation*)
     newOperationWithBrowsingDataManagers:(NSArray*)browsingDataManagers
-                                selector:(SEL)selector
-                       completionHandler:(ProceduralBlock)completionHandler {
+                                selector:(SEL)selector {
   NSBlockOperation* operation = [[NSBlockOperation alloc] init];
   for (id<CRWBrowsingDataManager> manager : browsingDataManagers) {
     // |addExecutionBlock| farms out the different blocks added to it. hence the
@@ -460,7 +460,6 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
       [manager performSelector:selector];
     }];
   }
-  [operation setCompletionBlock:completionHandler];
   return operation;
 }
 
