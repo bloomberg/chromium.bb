@@ -20,7 +20,6 @@ HTMLMediaElementAudioOutputDevice::HTMLMediaElementAudioOutputDevice()
 
 String HTMLMediaElementAudioOutputDevice::sinkId(HTMLMediaElement& element)
 {
-    WTF_LOG(Media, __FUNCTION__);
     HTMLMediaElementAudioOutputDevice& aodElement = HTMLMediaElementAudioOutputDevice::from(element);
     return aodElement.m_sinkId;
 }
@@ -32,7 +31,6 @@ void HTMLMediaElementAudioOutputDevice::setSinkId(const String& sinkId)
 
 ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(ScriptState* scriptState, HTMLMediaElement& element, const String& sinkId)
 {
-    WTF_LOG(Media, __FUNCTION__);
     WebMediaPlayer* webMediaPlayer = element.webMediaPlayer();
     if (!webMediaPlayer)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "No media player available"));
