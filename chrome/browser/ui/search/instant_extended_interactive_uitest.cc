@@ -919,7 +919,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
   ASSERT_EQ("", prefetch_query_value_);
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ShowURL) {
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+// Flaky timeouts at shutdown on Linux ASan; http://crbug.com/505478.
+#define MAYBE_ShowURL DISABLED_ShowURL
+#else
+#define MAYBE_ShowURL ShowURL
+#endif
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_ShowURL) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
