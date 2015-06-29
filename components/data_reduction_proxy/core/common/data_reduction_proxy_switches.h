@@ -12,8 +12,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 
 extern const char kDataReductionProxy[];
-extern const char kDataReductionProxyAlt[];
-extern const char kDataReductionProxyAltFallback[];
 extern const char kDataReductionProxyDev[];
 extern const char kDataReductionProxyExperiment[];
 extern const char kDataReductionProxyFallback[];
@@ -30,7 +28,6 @@ extern const char kDisableDataReductionProxyDev[];
 extern const char kEnableDataReductionProxyDev[];
 extern const char kEnableDataReductionProxyCarrierTest[];
 extern const char kEnableDataReductionProxy[];
-extern const char kEnableDataReductionProxyAlt[];
 extern const char kEnableDataReductionProxyBypassWarning[];
 extern const char kClearDataReductionProxyDataSavings[];
 extern const char kEnableDataReductionProxyConfigClient[];

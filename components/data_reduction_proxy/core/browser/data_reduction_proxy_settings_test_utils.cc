@@ -50,11 +50,10 @@ void DataReductionProxySettingsTestBase::SetUp() {
   pref_service->SetInt64(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
   pref_service->registry()->RegisterDictionaryPref(kProxy);
   pref_service->SetBoolean(prefs::kDataReductionProxyEnabled, false);
-  pref_service->SetBoolean(prefs::kDataReductionProxyAltEnabled, false);
   pref_service->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, false);
 
   //AddProxyToCommandLine();
-  ResetSettings(true, true, false, true, false);
+  ResetSettings(true, true, true, false);
 
   ListPrefUpdate original_update(test_context_->pref_service(),
                                  prefs::kDailyHttpOriginalContentLength);
@@ -73,7 +72,6 @@ void DataReductionProxySettingsTestBase::SetUp() {
 template <class C>
 void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
                                                        bool fallback_allowed,
-                                                       bool alt_allowed,
                                                        bool promo_allowed,
                                                        bool holdback) {
   int flags = 0;
@@ -81,8 +79,6 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
     flags |= DataReductionProxyParams::kAllowed;
   if (fallback_allowed)
     flags |= DataReductionProxyParams::kFallbackAllowed;
-  if (alt_allowed)
-    flags |= DataReductionProxyParams::kAlternativeAllowed;
   if (promo_allowed)
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (holdback)
@@ -111,27 +107,24 @@ template void
 DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>(
     bool allowed,
     bool fallback_allowed,
-    bool alt_allowed,
     bool promo_allowed,
     bool holdback);
 
 void DataReductionProxySettingsTestBase::ExpectSetProxyPrefs(
     bool expected_enabled,
-    bool expected_alternate_enabled,
     bool expected_at_startup) {
   MockDataReductionProxyService* mock_service =
       static_cast<MockDataReductionProxyService*>(
           settings_->data_reduction_proxy_service());
   EXPECT_CALL(*mock_service,
-              SetProxyPrefs(expected_enabled, expected_alternate_enabled,
-                            expected_at_startup));
+              SetProxyPrefs(expected_enabled, expected_at_startup));
 }
 
 void DataReductionProxySettingsTestBase::CheckOnPrefChange(
     bool enabled,
     bool expected_enabled,
     bool managed) {
-  ExpectSetProxyPrefs(expected_enabled, false, false);
+  ExpectSetProxyPrefs(expected_enabled, false);
   if (managed) {
     test_context_->pref_service()->SetManagedPref(
         prefs::kDataReductionProxyEnabled, new base::FundamentalValue(enabled));

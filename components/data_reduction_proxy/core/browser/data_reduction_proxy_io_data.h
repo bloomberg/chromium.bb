@@ -80,10 +80,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
       bool track_proxy_bypass_statistics);
 
   // Sets user defined preferences for how the Data Reduction Proxy
-  // configuration should be set. Use the alternative configuration only if
-  // |enabled| and |alternative_enabled| are true. |at_startup| is true only
+  // configuration should be set. |at_startup| is true only
   // when DataReductionProxySettings is initialized.
-  void SetProxyPrefs(bool enabled, bool alternative_enabled, bool at_startup);
+  void SetProxyPrefs(bool enabled, bool at_startup);
 
   // Applies a serialized Data Reduction Proxy configuration.
   void SetDataReductionProxyConfiguration(const std::string& serialized_config);

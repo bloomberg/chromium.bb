@@ -118,7 +118,6 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
         net::ProxyServer::SCHEME_HTTPS, request->proxy_server()));
     data_reduction_proxy_type_info.proxy_servers.push_back(net::ProxyServer(
         net::ProxyServer::SCHEME_HTTP, request->proxy_server()));
-    data_reduction_proxy_type_info.is_alternative = false;
     data_reduction_proxy_type_info.is_fallback = false;
     data_reduction_proxy_type_info.is_ssl =
         request->url().SchemeIsCryptographic();

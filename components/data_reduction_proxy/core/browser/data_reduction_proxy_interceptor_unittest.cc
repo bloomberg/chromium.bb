@@ -114,7 +114,7 @@ class DataReductionProxyInterceptorTest : public testing::Test {
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
             .Build();
     default_context_.reset(new TestURLRequestContextWithDataReductionProxy(
-        test_context_->config()->test_params()->proxies_for_http(false).front(),
+        test_context_->config()->test_params()->proxies_for_http().front(),
         &default_network_delegate_));
     default_context_->set_network_delegate(&default_network_delegate_);
     default_context_->set_net_log(test_context_->net_log());
@@ -208,8 +208,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
         net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP);
     std::vector<net::ProxyServer> proxies_for_http;
     proxies_for_http.push_back(origin);
-    test_context_->config()->test_params()->SetProxiesForHttp(
-        proxies_for_http, std::vector<net::ProxyServer>());
+    test_context_->config()->test_params()->SetProxiesForHttp(proxies_for_http);
     std::string proxy_name = origin.ToURI();
     proxy_service_.reset(
         net::ProxyService::CreateFixedFromPacResult(
@@ -324,7 +323,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
   }
 
   net::ProxyServer origin() const {
-    return config()->test_params()->proxies_for_http(false).front();
+    return config()->test_params()->proxies_for_http().front();
   }
 
  private:

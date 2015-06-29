@@ -50,32 +50,21 @@ bool DataReductionProxyMutableConfigValues::fallback_allowed() const {
   return fallback_allowed_;
 }
 
-bool DataReductionProxyMutableConfigValues::alternative_allowed() const {
-  return false;
-}
-
-bool DataReductionProxyMutableConfigValues::alternative_fallback_allowed()
-    const {
-  return false;
-}
-
 bool DataReductionProxyMutableConfigValues::UsingHTTPTunnel(
     const net::HostPortPair& proxy_server) const {
   return false;
 }
 
 const std::vector<net::ProxyServer>&
-DataReductionProxyMutableConfigValues::proxies_for_http(
-    bool use_alternative_configuration) const {
+DataReductionProxyMutableConfigValues::proxies_for_http() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return use_alternative_configuration ? empty_proxies_ : proxies_for_http_;
+  return proxies_for_http_;
 }
 
 const std::vector<net::ProxyServer>&
-DataReductionProxyMutableConfigValues::proxies_for_https(
-    bool use_alternative_configuration) const {
+DataReductionProxyMutableConfigValues::proxies_for_https() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return use_alternative_configuration ? empty_proxies_ : proxies_for_https_;
+  return proxies_for_https_;
 }
 
 const GURL& DataReductionProxyMutableConfigValues::secure_proxy_check_url()

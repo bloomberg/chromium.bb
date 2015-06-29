@@ -240,13 +240,11 @@ DataReductionProxyIOData::CreateNetworkDelegate(
 
 // TODO(kundaji): Rename this method to something more descriptive.
 // Bug http://crbug/488190.
-void DataReductionProxyIOData::SetProxyPrefs(bool enabled,
-                                             bool alternative_enabled,
-                                             bool at_startup) {
+void DataReductionProxyIOData::SetProxyPrefs(bool enabled, bool at_startup) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(url_request_context_getter_->GetURLRequestContext()->proxy_service());
   enabled_ = enabled;
-  config_->SetProxyConfig(enabled, alternative_enabled, at_startup);
+  config_->SetProxyConfig(enabled, at_startup);
 
   // If Data Saver is disabled, reset data reduction proxy state.
   if (!enabled) {

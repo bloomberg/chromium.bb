@@ -68,13 +68,15 @@ void TestDataReductionProxyConfig::EnableQuic(bool enable) {
 }
 
 void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
-  config_values_ = make_scoped_ptr(
-                new TestDataReductionProxyParams(
-                    flags,
-                    TestDataReductionProxyParams::HAS_EVERYTHING &
-                        ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-                        ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
-                .Pass();
+  config_values_ =
+      make_scoped_ptr(
+          new TestDataReductionProxyParams(
+              flags,
+              TestDataReductionProxyParams::HAS_EVERYTHING &
+                  ~TestDataReductionProxyParams::HAS_SSL_ORIGIN &
+                  ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                  ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
+          .Pass();
 }
 
 TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {
@@ -87,10 +89,8 @@ DataReductionProxyConfigValues* TestDataReductionProxyConfig::config_values() {
 
 void TestDataReductionProxyConfig::SetStateForTest(
     bool enabled_by_user,
-    bool alternative_enabled_by_user,
     bool secure_proxy_allowed) {
   enabled_by_user_ = enabled_by_user;
-  alternative_enabled_by_user_ = alternative_enabled_by_user;
   secure_proxy_allowed_ = secure_proxy_allowed;
 }
 
@@ -127,13 +127,12 @@ MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
 }
 
 void MockDataReductionProxyConfig::UpdateConfigurator(bool enabled,
-                                                      bool alternative_enabled,
                                                       bool secure_proxy_allowed,
                                                       bool at_startup) {
   EXPECT_CALL(*this, LogProxyState(enabled, secure_proxy_allowed, at_startup))
       .Times(1);
-  DataReductionProxyConfig::UpdateConfigurator(
-      enabled, alternative_enabled, secure_proxy_allowed, at_startup);
+  DataReductionProxyConfig::UpdateConfigurator(enabled, secure_proxy_allowed,
+                                               at_startup);
 }
 
 void MockDataReductionProxyConfig::ResetLoFiStatusForTest() {

@@ -906,8 +906,7 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesNetErrorOther) {
   // Make the data reduction proxy host fail to resolve.
-  net::ProxyServer origin =
-      config()->test_params()->proxies_for_http(false).front();
+  net::ProxyServer origin = config()->test_params()->proxies_for_http().front();
   scoped_ptr<net::MockHostResolver> host_resolver(new net::MockHostResolver());
   host_resolver->rules()->AddSimulatedFailure(origin.host_port_pair().host());
   set_host_resolver(host_resolver.get());

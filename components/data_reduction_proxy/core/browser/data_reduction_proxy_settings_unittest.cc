@@ -37,9 +37,9 @@ class DataReductionProxySettingsTest
                                             bool expected_fallback_restricted) {
     test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
                                               initially_enabled);
-    test_context_->config()->SetStateForTest(initially_enabled, false,
+    test_context_->config()->SetStateForTest(initially_enabled,
                                              request_succeeded);
-    ExpectSetProxyPrefs(expected_enabled, false, false);
+    ExpectSetProxyPrefs(expected_enabled, false);
     settings_->MaybeActivateDataReductionProxy(false);
     test_context_->RunUntilIdle();
   }
@@ -48,7 +48,7 @@ class DataReductionProxySettingsTest
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   settings_->InitPrefMembers();
   // The proxy is disabled initially.
-  test_context_->config()->SetStateForTest(false, false, true);
+  test_context_->config()->SetStateForTest(false, true);
 
   EXPECT_FALSE(settings_->IsDataReductionProxyEnabled());
   EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
@@ -67,7 +67,7 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
 TEST_F(DataReductionProxySettingsTest, TestCanUseDataReductionProxy) {
   settings_->InitPrefMembers();
   // The proxy is disabled initially.
-  test_context_->config()->SetStateForTest(false, false, true);
+  test_context_->config()->SetStateForTest(false, true);
 
   GURL http_gurl("http://url.com/");
   EXPECT_FALSE(settings_->CanUseDataReductionProxy(http_gurl));
@@ -221,7 +221,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           .Build();
 
   // The proxy is enabled initially.
-  drp_test_context->config()->SetStateForTest(true, false, true);
+  drp_test_context->config()->SetStateForTest(true, true);
   drp_test_context->InitSettings();
 
   MockDataReductionProxyService* mock_service =
@@ -229,14 +229,12 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           drp_test_context->data_reduction_proxy_service());
 
   // The pref is disabled, so correspondingly should be the proxy.
-  EXPECT_CALL(*mock_service,
-              SetProxyPrefs(false, false, false));
+  EXPECT_CALL(*mock_service, SetProxyPrefs(false, false));
   drp_test_context->pref_service()->SetBoolean(
       prefs::kDataReductionProxyEnabled, false);
 
   // The pref is enabled, so correspondingly should be the proxy.
-  EXPECT_CALL(*mock_service,
-              SetProxyPrefs(true, false, false));
+  EXPECT_CALL(*mock_service, SetProxyPrefs(true, false));
   drp_test_context->pref_service()->SetBoolean(
       prefs::kDataReductionProxyEnabled, true);
 }
@@ -247,9 +245,6 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // is set.
   settings_->spdy_proxy_auth_enabled_.Init(
       prefs::kDataReductionProxyEnabled,
-      settings_->GetOriginalProfilePrefs());
-  settings_->data_reduction_proxy_alternative_enabled_.Init(
-      prefs::kDataReductionProxyAltEnabled,
       settings_->GetOriginalProfilePrefs());
 
   // TODO(bengr): Test enabling/disabling while a secure proxy check is
@@ -306,13 +301,13 @@ TEST_F(DataReductionProxySettingsTest, TestSetDataReductionProxyEnabled) {
   settings->SetLoFiModeActiveOnMainFrame(true);
   InitDataReductionProxy(true);
 
-  ExpectSetProxyPrefs(false, false, false);
+  ExpectSetProxyPrefs(false, false);
   settings_->SetDataReductionProxyEnabled(false);
   test_context_->RunUntilIdle();
   CheckDataReductionProxySyntheticTrial(false);
   CheckDataReductionProxyLoFiSyntheticTrial(false);
 
-  ExpectSetProxyPrefs(true, false, false);
+  ExpectSetProxyPrefs(true, false);
   settings->SetDataReductionProxyEnabled(true);
   CheckDataReductionProxySyntheticTrial(true);
   CheckDataReductionProxyLoFiSyntheticTrial(true);
@@ -561,7 +556,7 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   // Clear the command line. Setting flags can force the proxy to be allowed.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
 
-  ResetSettings(false, false, false, false, false);
+  ResetSettings(false, false, false, false);
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_FALSE(settings->allowed_);
   EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
@@ -585,7 +580,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
     // Clear the command line. Setting flags can force the proxy to be allowed.
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
 
-    ResetSettings(false, false, false, false, false);
+    ResetSettings(false, false, false, false);
     MockSettings* settings = static_cast<MockSettings*>(settings_.get());
     EXPECT_FALSE(settings->Allowed());
     EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
@@ -610,7 +605,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
                    base::Unretained(this)));
 
     net::ProxyServer origin =
-        test_context_->config()->test_params()->proxies_for_http(false).front();
+        test_context_->config()->test_params()->proxies_for_http().front();
     EXPECT_EQ(enable_quic, origin.is_quic()) << i;
   }
 }

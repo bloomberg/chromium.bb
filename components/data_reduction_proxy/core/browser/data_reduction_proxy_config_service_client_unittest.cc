@@ -144,7 +144,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
     enabled_proxies_for_http_ =
-        test_context_->test_params()->proxies_for_http(false /* alternative */);
+        test_context_->test_params()->proxies_for_http();
 
     // Set up the various test ClientConfigs.
     ClientConfig config = CreateConfig(
@@ -167,7 +167,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   }
 
   void SetDataReductionProxyEnabled(bool enabled) {
-    test_context_->config()->SetStateForTest(enabled, false, true);
+    test_context_->config()->SetStateForTest(enabled, true);
   }
 
   scoped_ptr<DataReductionProxyConfigServiceClient> BuildConfigClient() {

@@ -35,7 +35,6 @@ DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       deferred_initialization_(false),
       allowed_(false),
-      alternative_allowed_(false),
       promo_allowed_(false),
       lo_fi_mode_active_(false),
       lo_fi_load_image_requested_(false),
@@ -61,18 +60,11 @@ void DataReductionProxySettings::InitPrefMembers() {
       GetOriginalProfilePrefs(),
       base::Bind(&DataReductionProxySettings::OnProxyEnabledPrefChange,
                  base::Unretained(this)));
-  data_reduction_proxy_alternative_enabled_.Init(
-      prefs::kDataReductionProxyAltEnabled,
-      GetOriginalProfilePrefs(),
-      base::Bind(
-          &DataReductionProxySettings::OnProxyAlternativeEnabledPrefChange,
-          base::Unretained(this)));
 }
 
 void DataReductionProxySettings::UpdateConfigValues() {
   DCHECK(config_);
   allowed_ = config_->allowed();
-  alternative_allowed_ = config_->alternative_allowed();
   promo_allowed_ = config_->promo_allowed();
 }
 
@@ -123,11 +115,6 @@ bool DataReductionProxySettings::CanUseDataReductionProxy(
       IsDataReductionProxyEnabled();
 }
 
-bool
-DataReductionProxySettings::IsDataReductionProxyAlternativeEnabled() const {
-  return data_reduction_proxy_alternative_enabled_.GetValue();
-}
-
 bool DataReductionProxySettings::IsDataReductionProxyManaged() {
   return spdy_proxy_auth_enabled_.IsManaged();
 }
@@ -141,18 +128,6 @@ void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   if (spdy_proxy_auth_enabled_.GetValue() != enabled) {
     spdy_proxy_auth_enabled_.SetValue(enabled);
     OnProxyEnabledPrefChange();
-  }
-}
-
-void DataReductionProxySettings::SetDataReductionProxyAlternativeEnabled(
-    bool enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Prevent configuring the proxy when it is not allowed to be used.
-  if (!alternative_allowed_)
-    return;
-  if (data_reduction_proxy_alternative_enabled_.GetValue() != enabled) {
-    data_reduction_proxy_alternative_enabled_.SetValue(enabled);
-    OnProxyAlternativeEnabledPrefChange();
   }
 }
 
@@ -245,13 +220,6 @@ void DataReductionProxySettings::OnProxyEnabledPrefChange() {
   MaybeActivateDataReductionProxy(false);
 }
 
-void DataReductionProxySettings::OnProxyAlternativeEnabledPrefChange() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!alternative_allowed_)
-    return;
-  MaybeActivateDataReductionProxy(false);
-}
-
 void DataReductionProxySettings::ResetDataReductionStatistics() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_service_->compression_stats());
@@ -259,9 +227,8 @@ void DataReductionProxySettings::ResetDataReductionStatistics() {
 }
 
 void DataReductionProxySettings::UpdateIOData(bool at_startup) {
-  data_reduction_proxy_service_->SetProxyPrefs(
-      IsDataReductionProxyEnabled(), IsDataReductionProxyAlternativeEnabled(),
-      at_startup);
+  data_reduction_proxy_service_->SetProxyPrefs(IsDataReductionProxyEnabled(),
+                                               at_startup);
   if (IsDataReductionProxyEnabled())
     data_reduction_proxy_service_->RetrieveConfig();
 }

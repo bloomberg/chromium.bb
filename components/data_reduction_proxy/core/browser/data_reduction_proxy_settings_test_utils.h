@@ -44,7 +44,6 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   DataReductionProxySettingsTestBase();
   DataReductionProxySettingsTestBase(bool allowed,
                                      bool fallback_allowed,
-                                     bool alt_allowed,
                                      bool promo_allowed);
   ~DataReductionProxySettingsTestBase() override;
 
@@ -54,17 +53,14 @@ class DataReductionProxySettingsTestBase : public testing::Test {
 
   template <class C> void ResetSettings(bool allowed,
                                         bool fallback_allowed,
-                                        bool alt_allowed,
                                         bool promo_allowed,
                                         bool holdback);
   virtual void ResetSettings(bool allowed,
                              bool fallback_allowed,
-                             bool alt_allowed,
                              bool promo_allowed,
                              bool holdback) = 0;
 
   void ExpectSetProxyPrefs(bool expected_enabled,
-                           bool expected_alternate_enabled,
                            bool expected_at_startup);
 
   void CheckMaybeActivateDataReductionProxy(bool initially_enabled,
@@ -100,11 +96,10 @@ class ConcreteDataReductionProxySettingsTest
   typedef MockDataReductionProxySettings<C> MockSettings;
   void ResetSettings(bool allowed,
                      bool fallback_allowed,
-                     bool alt_allowed,
                      bool promo_allowed,
                      bool holdback) override {
     return DataReductionProxySettingsTestBase::ResetSettings<C>(
-        allowed, fallback_allowed, alt_allowed, promo_allowed, holdback);
+        allowed, fallback_allowed, promo_allowed, holdback);
   }
 };
 

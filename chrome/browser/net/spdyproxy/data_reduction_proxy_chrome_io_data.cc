@@ -40,8 +40,7 @@ CreateDataReductionProxyChromeIOData(
   DCHECK(prefs);
 
   int flags = DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
-      DataReductionProxyParams::kAlternativeAllowed;
+              DataReductionProxyParams::kFallbackAllowed;
   if (data_reduction_proxy::params::IsIncludedInPromoFieldTrial())
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())

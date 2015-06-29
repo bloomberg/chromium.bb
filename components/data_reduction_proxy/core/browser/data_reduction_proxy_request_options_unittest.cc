@@ -141,6 +141,10 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
         DataReductionProxyTestContext::Builder()
             .WithParamsFlags(
                  DataReductionProxyParams::kAllowAllProxyConfigurations)
+            .WithParamsDefinitions(
+                 TestDataReductionProxyParams::HAS_EVERYTHING &
+                 ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                 ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
             .Build();
   }
 

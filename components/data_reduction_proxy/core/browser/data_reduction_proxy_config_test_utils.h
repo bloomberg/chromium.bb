@@ -65,7 +65,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   // Allows tests to set the internal state.
   void SetStateForTest(bool enabled_by_user,
-                       bool alternative_enabled_by_user,
                        bool secure_proxy_enabled);
 
   // Resets the Lo-Fi status to default state.
@@ -112,8 +111,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                void(SecureProxyCheckFetchResult result));
   MOCK_METHOD3(LogProxyState,
                void(bool enabled, bool restricted, bool at_startup));
-  MOCK_METHOD3(SetProxyPrefs,
-               void(bool enabled, bool alternative_enabled, bool at_startup));
+  MOCK_METHOD2(SetProxyPrefs, void(bool enabled, bool at_startup));
   MOCK_CONST_METHOD2(IsDataReductionProxy,
                      bool(const net::HostPortPair& host_port_pair,
                           DataReductionProxyTypeInfo* proxy_info));
@@ -140,7 +138,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
 
   // UpdateConfigurator should always call LogProxyState exactly once.
   void UpdateConfigurator(bool enabled,
-                          bool alternative_enabled,
                           bool restricted,
                           bool at_startup) override;
 

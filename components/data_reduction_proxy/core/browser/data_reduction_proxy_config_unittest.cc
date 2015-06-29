@@ -50,20 +50,20 @@ class DataReductionProxyConfigTest : public testing::Test {
                         .WithMockDataReductionProxyService()
                         .Build();
 
-    ResetSettings(true, true, false, true, false);
+    ResetSettings(true, true, true, false);
 
     expected_params_.reset(new TestDataReductionProxyParams(
         DataReductionProxyParams::kAllowed |
             DataReductionProxyParams::kFallbackAllowed |
             DataReductionProxyParams::kPromoAllowed,
         TestDataReductionProxyParams::HAS_EVERYTHING &
+            ~TestDataReductionProxyParams::HAS_SSL_ORIGIN &
             ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
             ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
   }
 
   void ResetSettings(bool allowed,
                      bool fallback_allowed,
-                     bool alt_allowed,
                      bool promo_allowed,
                      bool holdback) {
     int flags = 0;
@@ -71,8 +71,6 @@ class DataReductionProxyConfigTest : public testing::Test {
       flags |= DataReductionProxyParams::kAllowed;
     if (fallback_allowed)
       flags |= DataReductionProxyParams::kFallbackAllowed;
-    if (alt_allowed)
-      flags |= DataReductionProxyParams::kAlternativeAllowed;
     if (promo_allowed)
       flags |= DataReductionProxyParams::kPromoAllowed;
     if (holdback)
@@ -177,60 +175,31 @@ TEST_F(DataReductionProxyConfigTest, TestMaybeDisableIfVPNTrialEnabled) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyAlt, params()->DefaultAltOrigin());
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyAltFallback,
-      params()->DefaultAltFallbackOrigin());
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionSSLProxy, params()->DefaultSSLOrigin());
-  ResetSettings(true, true, true, true, false);
-
-  config()->UpdateConfigurator(true, true, false, false);
-  EXPECT_TRUE(configurator()->enabled());
+  ResetSettings(true, true, true, false);
 
   std::vector<net::ProxyServer> expected_http_proxies;
-  expected_http_proxies.push_back(net::ProxyServer::FromURI(
-      params()->DefaultAltOrigin(), net::ProxyServer::SCHEME_HTTP));
   std::vector<net::ProxyServer> expected_https_proxies;
-  expected_https_proxies.push_back(net::ProxyServer::FromURI(
-      params()->DefaultSSLOrigin(), net::ProxyServer::SCHEME_HTTP));
-  EXPECT_TRUE(
-      net::ProxyServer::FromURI(params()->DefaultAltFallbackOrigin(),
-                                net::ProxyServer::SCHEME_HTTP).is_valid());
-  EXPECT_THAT(expected_http_proxies,
-              testing::ContainerEq(configurator()->proxies_for_http()));
-  EXPECT_THAT(expected_https_proxies,
-              testing::ContainerEq(configurator()->proxies_for_https()));
-
-  config()->UpdateConfigurator(true, false, false, false);
-  expected_http_proxies.clear();
-  expected_https_proxies.clear();
+  config()->UpdateConfigurator(true, false, false);
   EXPECT_TRUE(configurator()->enabled());
   expected_http_proxies.push_back(net::ProxyServer::FromURI(
       params()->DefaultOrigin(), net::ProxyServer::SCHEME_HTTP));
   expected_http_proxies.push_back(net::ProxyServer::FromURI(
       params()->DefaultFallbackOrigin(), net::ProxyServer::SCHEME_HTTP));
-  EXPECT_THAT(expected_http_proxies,
-              testing::ContainerEq(configurator()->proxies_for_http()));
-  EXPECT_THAT(expected_https_proxies,
-              testing::ContainerEq(configurator()->proxies_for_https()));
+  EXPECT_THAT(configurator()->proxies_for_http(),
+              testing::ContainerEq(expected_http_proxies));
+  EXPECT_THAT(configurator()->proxies_for_https(),
+              testing::ContainerEq(expected_https_proxies));
 
-  config()->UpdateConfigurator(false, true, false, false);
-  EXPECT_FALSE(configurator()->enabled());
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
-  EXPECT_TRUE(configurator()->proxies_for_https().empty());
-
-  config()->UpdateConfigurator(false, false, false, false);
+  config()->UpdateConfigurator(false, false, false);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
 }
 
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {
-  ResetSettings(true, true, true, true, true);
+  ResetSettings(true, true, true, true);
 
-  config()->UpdateConfigurator(true, true, false, false);
+  config()->UpdateConfigurator(true, false, false);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -240,7 +209,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
   config()->secure_proxy_allowed_ = true;
-  config()->UpdateConfigurator(true, false, true, true);
+  config()->UpdateConfigurator(true, true, true);
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
   CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ALREADY_ENABLED, false,
@@ -293,7 +262,7 @@ TEST_F(DataReductionProxyConfigTest,
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
   config()->secure_proxy_allowed_ = false;
-  config()->UpdateConfigurator(true, false, false, true);
+  config()->UpdateConfigurator(true, false, true);
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // becomes unrestricted.
@@ -349,332 +318,196 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
     // proxy flags
     bool allowed;
     bool fallback_allowed;
-    bool alt_allowed;
     // is https request
     bool is_https;
     // proxies in retry map
     bool origin;
     bool fallback_origin;
-    bool alt_origin;
-    bool alt_fallback_origin;
     bool ssl_origin;
 
     bool expected_result;
-  } tests[]  = {
-      { // proxy flags
-        false,
-        false,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+  } tests[] = {
+      {
+       // proxy flags
+       false,
+       false,
+       // is https request
+       false,
+       // proxies in retry map
+       false,
+       false,
+       false,
+       // expected result
+       false,
       },
-      { // proxy flags
-        true,
-        false,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       false,
+       false,
+       // is https request
+       true,
+       // proxies in retry map
+       false,
+       false,
+       true,
+       // expected result
+       true,
       },
-      { // proxy flags
-        true,
-        true,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       false,
+       true,
+       // is https request
+       false,
+       // proxies in retry map
+       false,
+       false,
+       false,
+       // expected result
+       false,
       },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       true,
+       false,
+       // is https request
+       false,
+       // proxies in retry map
+       false,
+       false,
+       false,
+       // expected result
+       false,
       },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        true,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       true,
+       false,
+       // is https request
+       false,
+       // proxies in retry map
+       true,
+       false,
+       false,
+       // expected result
+       true,
       },
-      { // proxy flags
-        false,
-        false,
-        true,
-        // is https request
-        true,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        true,
-        // expected result
-        true,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       false,
+       // proxies in retry map
+       false,
+       false,
+       false,
+       // expected result
+       false,
       },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        true,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        true,
-        // expected result
-        true,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       false,
+       // proxies in retry map
+       true,
+       false,
+       false,
+       // expected result
+       false,
       },
-      { // proxy flags
-        true,
-        false,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        false,
-        false,
-        false,
-        false,
-        // expected result
-        true,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       false,
+       // proxies in retry map
+       true,
+       true,
+       false,
+       // expected result
+       true,
       },
-      { // proxy flags
-        true,
-        true,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        true,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       false,
+       // proxies in retry map
+       true,
+       true,
+       true,
+       // expected result
+       true,
       },
-      { // proxy flags
-        false,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        true,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       true,
+       // proxies in retry map
+       false,
+       false,
+       false,
+       // expected result
+       false,
       },
-      { // proxy flags
-        true,
-        true,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        false,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       true,
+       // proxies in retry map
+       false,
+       false,
+       true,
+       // expected result
+       true,
       },
-      { // proxy flags
-        true,
-        true,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        true,
-        false,
-        false,
-        false,
-        // expected result
-        true,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       false,
+       // proxies in retry map
+       false,
+       true,
+       false,
+       // expected result
+       false,
       },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        true,
-        false,
-        false,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       true,
+       // proxies in retry map
+       true,
+       true,
+       true,
+       // expected result
+       true,
       },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        false,
-        true,
-        false,
-        false,
-        // expected result
-        false,
-      },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        true,
-        true,
-        false,
-        // expected result
-        false,
-      },
-      { // proxy flags
-        false,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        true,
-        true,
-        false,
-        // expected result
-        true,
-      },
-      { // proxy flags
-        false,
-        true,
-        false,
-        // is https request
-        false,
-        // proxies in retry map
-        false,
-        false,
-        true,
-        false,
-        false,
-        // expected result
-        false,
-      },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        false,
-        true,
-        true,
-        false,
-        // expected result
-        false,
-      },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        true,
-        true,
-        true,
-        true,
-        // expected result
-        true,
-      },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        true,
-        // proxies in retry map
-        true,
-        true,
-        true,
-        true,
-        true,
-        // expected result
-        true,
-      },
-      { // proxy flags
-        true,
-        true,
-        true,
-        // is https request
-        true,
-        // proxies in retry map
-        true,
-        true,
-        true,
-        true,
-        false,
-        // expected result
-        false,
+      {
+       // proxy flags
+       true,
+       true,
+       // is https request
+       true,
+       // proxies in retry map
+       true,
+       true,
+       false,
+       // expected result
+       false,
       },
   };
 
@@ -683,10 +516,6 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
       TestDataReductionProxyParams::DefaultOrigin());
   std::string fallback_origin = GetRetryMapKeyFromOrigin(
       TestDataReductionProxyParams::DefaultFallbackOrigin());
-  std::string alt_origin = GetRetryMapKeyFromOrigin(
-      TestDataReductionProxyParams::DefaultAltOrigin());
-  std::string alt_fallback_origin = GetRetryMapKeyFromOrigin(
-      TestDataReductionProxyParams::DefaultAltFallbackOrigin());
   std::string ssl_origin = GetRetryMapKeyFromOrigin(
       TestDataReductionProxyParams::DefaultSSLOrigin());
 
@@ -696,23 +525,18 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
 
     if (tests[i].allowed)
       proxies.push_back(origin);
-    if (tests[i].alt_allowed)
-      proxies.push_back(alt_origin);
     if (tests[i].allowed && tests[i].fallback_allowed)
       proxies.push_back(fallback_origin);
-    if (tests[i].alt_allowed && tests[i].fallback_allowed)
-      proxies.push_back(alt_fallback_origin);
 
-    std::string proxy_rules = "http=" + JoinString(proxies, ",") + ",direct://;"
-        + (tests[i].alt_allowed ? ("https=" + ssl_origin + ",direct://;") : "");
+    std::string proxy_rules = "http=" + JoinString(proxies, ",") +
+                              ",direct://;" + "https=" + ssl_origin +
+                              ",direct://;";
 
     rules.ParseFromString(proxy_rules);
 
     int flags = 0;
     if (tests[i].allowed)
       flags |= DataReductionProxyParams::kAllowed;
-    if (tests[i].alt_allowed)
-      flags |= DataReductionProxyParams::kAlternativeAllowed;
     if (tests[i].fallback_allowed)
       flags |= DataReductionProxyParams::kFallbackAllowed;
     unsigned int has_definitions =
@@ -731,10 +555,6 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
       retry_map[origin] = retry_info;
     if (tests[i].fallback_origin)
       retry_map[fallback_origin] = retry_info;
-    if (tests[i].alt_origin)
-      retry_map[alt_origin] = retry_info;
-    if (tests[i].alt_fallback_origin)
-      retry_map[alt_fallback_origin] = retry_info;
     if (tests[i].ssl_origin)
       retry_map[ssl_origin] = retry_info;
 
@@ -813,20 +633,17 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
   const struct {
     net::HostPortPair host_port_pair;
     bool fallback_allowed;
-    bool alt_fallback_allowed;
     bool set_dev_origin;
     bool expected_result;
     net::HostPortPair expected_first;
     net::HostPortPair expected_second;
     bool expected_is_fallback;
-    bool expected_is_alternative;
     bool expected_is_ssl;
   } tests[] = {
       {net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
                                  net::ProxyServer::SCHEME_HTTP)
            .host_port_pair(),
        true,
-       true,
        false,
        true,
        net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
@@ -835,7 +652,6 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
        net::ProxyServer::FromURI(
            TestDataReductionProxyParams::DefaultFallbackOrigin(),
            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       false,
        false,
        false},
       {net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
@@ -843,19 +659,16 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
            .host_port_pair(),
        false,
        false,
-       false,
        true,
        net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
                                  net::ProxyServer::SCHEME_HTTP)
            .host_port_pair(),
        net::HostPortPair::FromURL(GURL()),
        false,
-       false,
        false},
       {net::ProxyServer::FromURI(
            TestDataReductionProxyParams::DefaultFallbackOrigin(),
            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       true,
        true,
        false,
        true,
@@ -864,7 +677,6 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
        net::HostPortPair::FromURL(GURL()),
        true,
-       false,
        false},
       {net::ProxyServer::FromURI(
            TestDataReductionProxyParams::DefaultFallbackOrigin(),
@@ -872,72 +684,13 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
        false,
        false,
        false,
-       false,
        net::HostPortPair::FromURL(GURL()),
        net::HostPortPair::FromURL(GURL()),
-       false,
-       false,
-       false},
-      {net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       true,
-       true,
-       false,
-       true,
-       net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       false,
-       true,
-       false},
-      {net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       false,
-       false,
-       false,
-       true,
-       net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       net::HostPortPair::FromURL(GURL()),
-       false,
-       true,
-       false},
-      {net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       true,
-       true,
-       false,
-       true,
-       net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       net::HostPortPair::FromURL(GURL()),
-       true,
-       true,
-       false},
-      {net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultAltFallbackOrigin(),
-           net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       false,
-       false,
-       false,
-       false,
-       net::HostPortPair::FromURL(GURL()),
-       net::HostPortPair::FromURL(GURL()),
-       false,
        false,
        false},
       {net::ProxyServer::FromURI(
            TestDataReductionProxyParams::DefaultSSLOrigin(),
            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       true,
        true,
        false,
        true,
@@ -946,12 +699,10 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
        net::HostPortPair::FromURL(GURL()),
        false,
-       true,
        true},
       {net::ProxyServer::FromURI(
            TestDataReductionProxyParams::DefaultDevOrigin(),
            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-       true,
        true,
        true,
        true,
@@ -962,28 +713,22 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
            TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
            net::ProxyServer::SCHEME_HTTP).host_port_pair(),
        false,
-       false,
        false},
       {net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
                                  net::ProxyServer::SCHEME_HTTP)
            .host_port_pair(),
        true,
        true,
-       true,
        false,
        net::HostPortPair::FromURL(GURL()),
        net::HostPortPair::FromURL(GURL()),
-       false,
        false,
        false},
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    int flags = DataReductionProxyParams::kAllowed |
-                DataReductionProxyParams::kAlternativeAllowed;
+    int flags = DataReductionProxyParams::kAllowed;
     if (tests[i].fallback_allowed)
       flags |= DataReductionProxyParams::kFallbackAllowed;
-    if (tests[i].alt_fallback_allowed)
-      flags |= DataReductionProxyParams::kAlternativeFallbackAllowed;
     unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
     if (!tests[i].set_dev_origin) {
       has_definitions &= ~TestDataReductionProxyParams::HAS_DEV_ORIGIN;
@@ -1024,8 +769,6 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
     }
 
     EXPECT_EQ(tests[i].expected_is_fallback, proxy_type_info.is_fallback) << i;
-    EXPECT_EQ(tests[i].expected_is_alternative, proxy_type_info.is_alternative)
-        << i;
     EXPECT_EQ(tests[i].expected_is_ssl, proxy_type_info.is_ssl) << i;
   }
 }
@@ -1108,7 +851,6 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
     EXPECT_THAT(proxy_type_info.proxy_servers,
                 testing::ContainerEq(expected_proxy_servers))
         << i;
-    EXPECT_FALSE(proxy_type_info.is_alternative) << i;
     EXPECT_FALSE(proxy_type_info.is_ssl) << i;
   }
 }

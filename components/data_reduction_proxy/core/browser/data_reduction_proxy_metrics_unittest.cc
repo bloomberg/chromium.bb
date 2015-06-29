@@ -36,8 +36,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
           .Build();
   TestDataReductionProxyConfig* config = test_context->config();
 
-  net::ProxyServer origin =
-      config->test_params()->proxies_for_http(false).front();
+  net::ProxyServer origin = config->test_params()->proxies_for_http().front();
   net::ProxyConfig data_reduction_proxy_config;
   data_reduction_proxy_config.proxy_rules().ParseFromString(
       "http=" + origin.host_port_pair().ToString() + ",direct://");

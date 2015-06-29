@@ -139,16 +139,10 @@ class DataReductionProxyConfig
                                 url_request_context_getter);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
-  // the value of |enabled| and |alternative_enabled|. Use the alternative
-  // configuration only if |enabled| and |alternative_enabled| are true. If
-  // |restricted| is true, only enable the fallback proxy. |at_startup| is true
-  // when this method is called from InitDataReductionProxySettings.
-  // TODO(jeremyim): Change enabled/alternative_enabled to be a single enum,
-  // since there are only 3 valid states - also update in
-  // DataReductionProxyIOData.
-  void SetProxyConfig(bool enabled,
-                      bool alternative_enabled,
-                      bool at_startup);
+  // the value of |enabled|. If |restricted| is true, only enable the fallback
+  // proxy. |at_startup| is true when this method is called from
+  // InitDataReductionProxySettings.
+  void SetProxyConfig(bool enabled, bool at_startup);
 
   // Provides a mechanism for an external object to force |this| to refresh
   // the Data Reduction Proxy configuration from |config_values_| and apply to
@@ -160,9 +154,9 @@ class DataReductionProxyConfig
   // proxy that was used. Subsequent entries in |proxy_info.proxy_servers| will
   // contain the names of the Data Reduction Proxy servers that would be used if
   // |proxy_info.proxy_servers.front()| is bypassed, if any exist. In addition,
-  // |proxy_info| will note if the proxy used was a fallback, an alternative,
-  // or a proxy for ssl; these are not mutually exclusive. |proxy_info| can be
-  // NULL if the caller isn't interested in its values.
+  // |proxy_info| will note if the proxy used was a fallback, or a proxy for
+  // ssl; these are not mutually exclusive. |proxy_info| can be NULL if the
+  // caller isn't interested in its values.
   virtual bool WasDataReductionProxyUsed(
       const net::URLRequest* request,
       DataReductionProxyTypeInfo* proxy_info) const;
@@ -172,9 +166,9 @@ class DataReductionProxyConfig
   // the proxy that matches. Subsequent entries in |proxy_info.proxy_servers|
   // will contain the name of the Data Reduction Proxy servers that would be
   // used if |proxy_info.proxy_servers.front()| is bypassed, if any exist. In
-  // addition, |proxy_info| will note if the proxy was a fallback, an
-  // alternative, or a proxy for ssl; these are not mutually exclusive.
-  // |proxy_info| can be NULL if the caller isn't interested in its values.
+  // addition, |proxy_info| will note if the proxy was a fallback or a proxy for
+  // ssl; these are not mutually exclusive. |proxy_info| can be NULL if the
+  // caller isn't interested in its values.
   // Virtual for testing.
   virtual bool IsDataReductionProxy(
       const net::HostPortPair& host_port_pair,
@@ -217,10 +211,6 @@ class DataReductionProxyConfig
 
   // Returns true if the Data Reduction Proxy configuration may be used.
   bool allowed() const;
-
-  // Returns true if the alternative Data Reduction Proxy configuration may be
-  // used.
-  bool alternative_allowed() const;
 
   // Returns true if the Data Reduction Proxy promo may be shown. This is not
   // tied to whether the Data Reduction Proxy is enabled.
@@ -287,7 +277,6 @@ class DataReductionProxyConfig
 
   // Updates the Data Reduction Proxy configurator with the current config.
   virtual void UpdateConfigurator(bool enabled,
-                                  bool alternative_enabled,
                                   bool restricted,
                                   bool at_startup);
 
@@ -356,7 +345,6 @@ class DataReductionProxyConfig
   bool disabled_on_vpn_;
   bool unreachable_;
   bool enabled_by_user_;
-  bool alternative_enabled_by_user_;
 
   // Contains the configuration data being used.
   scoped_ptr<DataReductionProxyConfigValues> config_values_;

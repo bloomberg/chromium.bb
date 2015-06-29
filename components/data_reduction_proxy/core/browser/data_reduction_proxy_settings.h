@@ -98,17 +98,11 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // used.
   bool CanUseDataReductionProxy(const GURL& url) const;
 
-  // Returns true if the alternative proxy is enabled.
-  bool IsDataReductionProxyAlternativeEnabled() const;
-
   // Returns true if the proxy is managed by an adminstrator's policy.
   bool IsDataReductionProxyManaged();
 
   // Enables or disables the data reduction proxy.
   void SetDataReductionProxyEnabled(bool enabled);
-
-  // Enables or disables the alternative data reduction proxy configuration.
-  void SetDataReductionProxyAlternativeEnabled(bool enabled);
 
   // Sets |lo_fi_mode_active_| to true if Lo-Fi is currently active, meaning
   // requests are being sent with "q=low" headers. Set from the IO thread only
@@ -167,12 +161,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Returns true if the data reduction proxy configuration may be used.
   bool Allowed() const {
     return allowed_;
-  }
-
-  // Returns true if the alternative data reduction proxy configuration may be
-  // used.
-  bool AlternativeAllowed() const {
-    return alternative_allowed_;
   }
 
   // Returns true if the data reduction proxy promo may be shown.
@@ -261,7 +249,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   void RegisterLoFiFieldTrial();
 
   void OnProxyEnabledPrefChange();
-  void OnProxyAlternativeEnabledPrefChange();
 
   void ResetDataReductionStatistics();
 
@@ -281,7 +268,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // The following values are cached in order to access the values on the
   // correct thread.
   bool allowed_;
-  bool alternative_allowed_;
   bool promo_allowed_;
 
   // True if Lo-Fi is active.
@@ -302,7 +288,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   int lo_fi_consecutive_session_disables_;
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
-  BooleanPrefMember data_reduction_proxy_alternative_enabled_;
 
   scoped_ptr<DataReductionProxyService> data_reduction_proxy_service_;
 

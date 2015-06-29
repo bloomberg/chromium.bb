@@ -55,7 +55,6 @@ template <class C>
 void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
     bool allowed,
     bool fallback_allowed,
-    bool alt_allowed,
     bool promo_allowed,
     bool holdback) {
   int flags = 0;
@@ -63,8 +62,6 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
     flags |= DataReductionProxyParams::kAllowed;
   if (fallback_allowed)
     flags |= DataReductionProxyParams::kFallbackAllowed;
-  if (alt_allowed)
-    flags |= DataReductionProxyParams::kAlternativeAllowed;
   if (promo_allowed)
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (holdback)
@@ -89,7 +86,6 @@ template void
 data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
     DataReductionProxyChromeSettings>(bool allowed,
                                        bool fallback_allowed,
-                                       bool alt_allowed,
                                        bool promo_allowed,
                                        bool holdback);
 

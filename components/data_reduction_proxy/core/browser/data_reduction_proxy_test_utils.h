@@ -157,8 +157,7 @@ class MockDataReductionProxyService : public DataReductionProxyService {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~MockDataReductionProxyService() override;
 
-  MOCK_METHOD3(SetProxyPrefs,
-               void(bool enabled, bool alternative_enabled, bool at_startup));
+  MOCK_METHOD2(SetProxyPrefs, void(bool enabled, bool at_startup));
 };
 
 // Test version of |DataReductionProxyIOData|, which bypasses initialization in

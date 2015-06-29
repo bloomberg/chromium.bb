@@ -229,6 +229,7 @@ DataReductionProxyTestContext::Builder::Builder()
                     DataReductionProxyParams::kPromoAllowed),
       params_definitions_(
           TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_SSL_ORIGIN &
           ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
           ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN),
       client_(Client::UNKNOWN),

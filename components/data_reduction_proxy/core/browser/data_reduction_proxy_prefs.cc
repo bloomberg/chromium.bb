@@ -31,7 +31,6 @@ namespace data_reduction_proxy {
 // are reflected in RegisterSimpleProfilePrefs.
 void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kDataReductionProxyEnabled, false);
-  registry->RegisterBooleanPref(prefs::kDataReductionProxyAltEnabled, false);
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
 
@@ -70,8 +69,6 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kDataReductionProxyEnabled, false);
-  registry->RegisterBooleanPref(
-      prefs::kDataReductionProxyAltEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kDataReductionProxyWasEnabledBefore, false);
 

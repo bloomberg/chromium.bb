@@ -43,13 +43,9 @@ class DataReductionProxyMutableConfigValues
   bool holdback() const override;
   bool allowed() const override;
   bool fallback_allowed() const override;
-  bool alternative_allowed() const override;
-  bool alternative_fallback_allowed() const override;
   bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const override;
-  const std::vector<net::ProxyServer>& proxies_for_http(
-      bool use_alternative_configuration) const override;
-  const std::vector<net::ProxyServer>& proxies_for_https(
-      bool use_alternative_configuration) const override;
+  const std::vector<net::ProxyServer>& proxies_for_http() const override;
+  const std::vector<net::ProxyServer>& proxies_for_https() const override;
   const GURL& secure_proxy_check_url() const override;
 
  protected:
@@ -60,7 +56,6 @@ class DataReductionProxyMutableConfigValues
   bool holdback_;
   bool allowed_;
   bool fallback_allowed_;
-  std::vector<net::ProxyServer> empty_proxies_;
   std::vector<net::ProxyServer> proxies_for_http_;
   std::vector<net::ProxyServer> proxies_for_https_;
   GURL secure_proxy_check_url_;

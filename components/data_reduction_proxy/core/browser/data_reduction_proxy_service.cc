@@ -219,18 +219,15 @@ void DataReductionProxyService::SetStringPref(const std::string& pref_path,
     prefs_->SetString(pref_path, value);
 }
 
-void DataReductionProxyService::SetProxyPrefs(bool enabled,
-                                              bool alternative_enabled,
-                                              bool at_startup) {
+void DataReductionProxyService::SetProxyPrefs(bool enabled, bool at_startup) {
   DCHECK(CalledOnValidThread());
   if (io_task_runner_->BelongsToCurrentThread()) {
-    io_data_->SetProxyPrefs(enabled, alternative_enabled, at_startup);
+    io_data_->SetProxyPrefs(enabled, at_startup);
     return;
   }
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DataReductionProxyIOData::SetProxyPrefs,
-                 io_data_, enabled, alternative_enabled, at_startup));
+      FROM_HERE, base::Bind(&DataReductionProxyIOData::SetProxyPrefs, io_data_,
+                            enabled, at_startup));
 }
 
 void DataReductionProxyService::RetrieveConfig() {

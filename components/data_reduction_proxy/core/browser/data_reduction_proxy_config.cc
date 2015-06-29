@@ -235,7 +235,6 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       disabled_on_vpn_(false),
       unreachable_(false),
       enabled_by_user_(false),
-      alternative_enabled_by_user_(false),
       config_values_(config_values.Pass()),
       net_log_(net_log),
       configurator_(configurator),
@@ -274,8 +273,8 @@ void DataReductionProxyConfig::InitializeOnIOThread(const scoped_refptr<
 
 void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
-                     secure_proxy_allowed_, false /* at_startup */);
+  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_,
+                     false /* at_startup */);
 }
 
 bool DataReductionProxyConfig::WasDataReductionProxyUsed(
@@ -292,11 +291,11 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   int proxy_index = 0;
-  if (FindProxyInList(config_values_->proxies_for_http(false), host_port_pair,
+  if (FindProxyInList(config_values_->proxies_for_http(), host_port_pair,
                       &proxy_index)) {
     if (proxy_info) {
       const std::vector<net::ProxyServer>& proxy_list =
-          config_values_->proxies_for_http(false);
+          config_values_->proxies_for_http();
       proxy_info->proxy_servers = std::vector<net::ProxyServer>(
           proxy_list.begin() + proxy_index, proxy_list.end());
       proxy_info->is_fallback = (proxy_index != 0);
@@ -304,41 +303,14 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
     return true;
   }
 
-  if (FindProxyInList(config_values_->proxies_for_http(true), host_port_pair,
+  if (FindProxyInList(config_values_->proxies_for_https(), host_port_pair,
                       &proxy_index)) {
     if (proxy_info) {
       const std::vector<net::ProxyServer>& proxy_list =
-          config_values_->proxies_for_http(true);
+          config_values_->proxies_for_https();
       proxy_info->proxy_servers = std::vector<net::ProxyServer>(
           proxy_list.begin() + proxy_index, proxy_list.end());
       proxy_info->is_fallback = (proxy_index != 0);
-      proxy_info->is_alternative = true;
-    }
-    return true;
-  }
-
-  if (FindProxyInList(config_values_->proxies_for_https(false), host_port_pair,
-                      &proxy_index)) {
-    if (proxy_info) {
-      const std::vector<net::ProxyServer>& proxy_list =
-          config_values_->proxies_for_https(false);
-      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
-          proxy_list.begin() + proxy_index, proxy_list.end());
-      proxy_info->is_fallback = (proxy_index != 0);
-      proxy_info->is_ssl = true;
-    }
-    return true;
-  }
-
-  if (FindProxyInList(config_values_->proxies_for_https(true), host_port_pair,
-                      &proxy_index)) {
-    if (proxy_info) {
-      const std::vector<net::ProxyServer>& proxy_list =
-          config_values_->proxies_for_https(true);
-      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
-          proxy_list.begin() + proxy_index, proxy_list.end());
-      proxy_info->is_fallback = (proxy_index != 0);
-      proxy_info->is_alternative = true;
       proxy_info->is_ssl = true;
     }
     return true;
@@ -598,30 +570,19 @@ bool DataReductionProxyConfig::allowed() const {
   return config_values_->allowed();
 }
 
-// Returns true if the alternative Data Reduction Proxy configuration may be
-// used.
-bool DataReductionProxyConfig::alternative_allowed() const {
-  return config_values_->alternative_allowed();
-}
-
 // Returns true if the Data Reduction Proxy promo may be shown. This is not
 // tied to whether the Data Reduction Proxy is enabled.
 bool DataReductionProxyConfig::promo_allowed() const {
   return config_values_->promo_allowed();
 }
 
-void DataReductionProxyConfig::SetProxyConfig(
-    bool enabled, bool alternative_enabled, bool at_startup) {
+void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
   enabled_by_user_ = enabled;
-  alternative_enabled_by_user_ = alternative_enabled;
-  UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
-                     secure_proxy_allowed_, at_startup);
+  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_, at_startup);
 
   // Check if the proxy has been restricted explicitly by the carrier.
-  if (enabled &&
-      !(alternative_enabled &&
-        !config_values_->alternative_fallback_allowed())) {
+  if (enabled) {
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
@@ -633,15 +594,14 @@ void DataReductionProxyConfig::SetProxyConfig(
 }
 
 void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
-                                                  bool alternative_enabled,
                                                   bool secure_proxy_allowed,
                                                   bool at_startup) {
   DCHECK(configurator_);
   LogProxyState(enabled, secure_proxy_allowed, at_startup);
   std::vector<net::ProxyServer> proxies_for_http =
-      config_values_->proxies_for_http(alternative_enabled);
+      config_values_->proxies_for_http();
   std::vector<net::ProxyServer> proxies_for_https =
-      config_values_->proxies_for_https(alternative_enabled);
+      config_values_->proxies_for_https();
   if (enabled && !disabled_on_vpn_ && !config_values_->holdback() &&
       (!proxies_for_http.empty() || !proxies_for_https.empty())) {
     configurator_->Enable(!secure_proxy_allowed, proxies_for_http,
@@ -732,10 +692,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     RecordNetworkChangeEvent(IP_CHANGED);
     if (MaybeDisableIfVPN())
       return;
-    if (alternative_enabled_by_user_ &&
-        !config_values_->alternative_fallback_allowed()) {
-      return;
-    }
 
     bool should_use_secure_proxy = params::ShouldUseSecureProxyByDefault();
     if (!should_use_secure_proxy && secure_proxy_allowed_) {

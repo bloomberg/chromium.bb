@@ -75,9 +75,6 @@ const char kDataReductionProxyConfig[] = "data_reduction.config";
 // A boolean specifying whether the data reduction proxy is enabled.
 const char kDataReductionProxyEnabled[] = "spdy_proxy.enabled";
 
-// A boolean specifying whether the data reduction proxy alternative is enabled.
-const char kDataReductionProxyAltEnabled[] = "data_reduction_alt.enabled";
-
 // A boolean specifying whether the data reduction proxy was ever enabled
 // before.
 const char kDataReductionProxyWasEnabledBefore[] =

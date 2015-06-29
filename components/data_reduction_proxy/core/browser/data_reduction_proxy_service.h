@@ -112,9 +112,7 @@ class DataReductionProxyService
 
   // Bridge methods to safely call to the UI thread objects.
   // Virtual for testing.
-  virtual void SetProxyPrefs(bool enabled,
-                             bool alternative_enabled,
-                             bool at_startup);
+  virtual void SetProxyPrefs(bool enabled, bool at_startup);
   void RetrieveConfig();
 
   // Methods for adding/removing observers on |this|.

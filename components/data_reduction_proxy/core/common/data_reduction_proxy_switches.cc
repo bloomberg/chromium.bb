@@ -10,13 +10,6 @@ namespace switches {
 // The origin of the data reduction proxy.
 const char kDataReductionProxy[]         = "spdy-proxy-auth-origin";
 
-// The origin of an alternative data reduction proxy.
-const char kDataReductionProxyAlt[]      = "data-reduction-proxy-alternative";
-
-// The origin of an alternative data reduction proxy fallback.
-const char kDataReductionProxyAltFallback[] =
-    "data-reduction-proxy-alternative-fallback";
-
 // The origin of the data reduction proxy dev.
 const char kDataReductionProxyDev[]      = "spdy-proxy-dev-auth-origin";
 
@@ -70,9 +63,6 @@ const char kEnableDataReductionProxyCarrierTest[] =
 
 // Enable the data reduction proxy.
 const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
-
-// Enable the alternative data reduction proxy.
-const char kEnableDataReductionProxyAlt[] = "enable-data-reduction-proxy-alt";
 
 // Enable the data reduction proxy bypass warning.
 const char kEnableDataReductionProxyBypassWarning[] =

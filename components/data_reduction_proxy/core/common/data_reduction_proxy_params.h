@@ -28,10 +28,6 @@ namespace data_reduction_proxy {
 // by field trials and command line switches.
 namespace params {
 
-// Returns true if this client is part of field trial to use an alternative
-// configuration for the data reduction proxy.
-bool IsIncludedInAlternativeFieldTrial();
-
 // Returns true if this client is part of the field trial that should display
 // a promotion for the data reduction proxy.
 bool IsIncludedInPromoFieldTrial();
@@ -105,15 +101,13 @@ class ClientConfig;
 
 // Contains information about a given proxy server. |proxies_for_http| and
 // |proxies_for_https| contain the configured data reduction proxy servers.
-// |is_fallback|, |is_alternative| and |is_ssl| note whether the given proxy is
-// a fallback, an alternative, or a proxy for ssl; these are not mutually
-// exclusive.
+// |is_fallback| and |is_ssl| note whether the given proxy is a fallback or a
+// proxy for ssl; these are not mutually exclusive.
 struct DataReductionProxyTypeInfo {
   DataReductionProxyTypeInfo();
   ~DataReductionProxyTypeInfo();
   std::vector<net::ProxyServer> proxy_servers;
   bool is_fallback;
-  bool is_alternative;
   bool is_ssl;
 };
 
@@ -125,30 +119,28 @@ struct DataReductionProxyTypeInfo {
 class DataReductionProxyParams : public DataReductionProxyConfigValues {
  public:
   // Flags used during construction that specify if the data reduction proxy
-  // is allowed to be used, if the fallback proxy is allowed to be used, if
-  // an alternative set of proxies is allowed to be used, if the promotion is
-  // allowed to be shown, and if this instance is part of a holdback experiment.
+  // is allowed to be used, if the fallback proxy is allowed to be used, if the
+  // promotion is allowed to be shown, and if this instance is part of a
+  // holdback experiment.
   static const unsigned int kAllowed = (1 << 0);
   static const unsigned int kFallbackAllowed = (1 << 1);
+  // DEPRECATED. TODO(jeremyim): Remove once changes merged downstream.
   static const unsigned int kAlternativeAllowed = (1 << 2);
+  // DEPRECATED. TODO(jeremyim): Remove once changes merged downstream.
   static const unsigned int kAlternativeFallbackAllowed = (1 << 3);
-  static const unsigned int kAllowAllProxyConfigurations = kAllowed |
-      kFallbackAllowed | kAlternativeAllowed | kAlternativeFallbackAllowed;
+  static const unsigned int kAllowAllProxyConfigurations =
+      kAllowed | kFallbackAllowed;
   static const unsigned int kPromoAllowed = (1 << 4);
   static const unsigned int kHoldback = (1 << 5);
 
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is
-  // bypassed or disabled. If |kAlternativeAllowed| then an alternative proxy
-  // configuration is allowed to be used. This alternative configuration would
-  // replace the primary and fallback proxy configurations if enabled. Finally
-  // if |kPromoAllowed|, the client may show a promotion for the data reduction
-  // proxy.
+  // bypassed or disabled. Finally if |kPromoAllowed|, the client may show a
+  // promotion for the data reduction proxy.
   //
   // A standard configuration has a primary proxy, and a fallback proxy for
-  // HTTP traffic. The alternative configuration has a different primary and
-  // fallback proxy for HTTP traffic, and an SSL proxy.
+  // HTTP traffic.
   explicit DataReductionProxyParams(int flags);
 
   ~DataReductionProxyParams() override;
@@ -163,21 +155,15 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // Overrides of |DataReductionProxyConfigValues|
   bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const override;
 
-  const std::vector<net::ProxyServer>& proxies_for_http(
-      bool use_alternative_configuration) const override;
+  const std::vector<net::ProxyServer>& proxies_for_http() const override;
 
-  const std::vector<net::ProxyServer>& proxies_for_https(
-      bool use_alternative_configuration) const override;
+  const std::vector<net::ProxyServer>& proxies_for_https() const override;
 
   const GURL& secure_proxy_check_url() const override;
 
   bool allowed() const override;
 
   bool fallback_allowed() const override;
-
-  bool alternative_allowed() const override;
-
-  bool alternative_fallback_allowed() const override;
 
   bool promo_allowed() const override;
 
@@ -191,10 +177,7 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // Initialize the values of the proxies, and secure proxy check URL, from
   // command line flags and preprocessor constants, and check that there are
   // corresponding definitions for the allowed configurations.
-  bool Init(bool allowed,
-            bool fallback_allowed,
-            bool alt_allowed,
-            bool alt_fallback_allowed);
+  bool Init(bool allowed, bool fallback_allowed);
 
   // Initialize the values of the proxies, and secure proxy check URL from
   // command line flags and preprocessor constants.
@@ -207,30 +190,22 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   virtual std::string GetDefaultOrigin() const;
   virtual std::string GetDefaultFallbackOrigin() const;
   virtual std::string GetDefaultSSLOrigin() const;
-  virtual std::string GetDefaultAltOrigin() const;
-  virtual std::string GetDefaultAltFallbackOrigin() const;
   virtual std::string GetDefaultSecureProxyCheckURL() const;
   virtual std::string GetDefaultWarmupURL() const;
 
   std::vector<net::ProxyServer> proxies_for_http_;
   std::vector<net::ProxyServer> proxies_for_https_;
-  std::vector<net::ProxyServer> alt_proxies_for_http_;
-  std::vector<net::ProxyServer> alt_proxies_for_https_;
 
  private:
   net::ProxyServer origin_;
   net::ProxyServer fallback_origin_;
   net::ProxyServer ssl_origin_;
-  net::ProxyServer alt_origin_;
-  net::ProxyServer alt_fallback_origin_;
 
   GURL secure_proxy_check_url_;
   GURL warmup_url_;
 
   bool allowed_;
   bool fallback_allowed_;
-  bool alt_allowed_;
-  bool alt_fallback_allowed_;
   bool promo_allowed_;
   bool holdback_;
   bool quic_enabled_;

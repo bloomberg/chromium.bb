@@ -1651,12 +1651,6 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          data_reduction_proxy::switches::kEnableDataReductionProxyDev,
          data_reduction_proxy::switches::kDisableDataReductionProxyDev)},
-    {"enable-data-reduction-proxy-alt",
-     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_NAME,
-     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_DESCRIPTION,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(
-         data_reduction_proxy::switches::kEnableDataReductionProxyAlt)},
     {"enable-data-reduction-proxy-carrier-test",
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME,
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION,

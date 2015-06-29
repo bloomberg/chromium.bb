@@ -34,12 +34,6 @@ const char kCarrierTestOrigin[] =
 const char kDevOrigin[] = "https://proxy-dev.googlezip.net:443";
 const char kDevFallbackOrigin[] = "proxy-dev.googlezip.net:80";
 const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
-// This is for a proxy that supports HTTP CONNECT to tunnel SSL traffic.
-// The proxy listens on port 443, but uses the HTTP protocol to set up
-// the tunnel, not HTTPS.
-const char kDefaultSslOrigin[] = "ssl.googlezip.net:443";
-const char kDefaultAltOrigin[] = "ssl.googlezip.net:80";
-const char kDefaultAltFallbackOrigin[] = "ssl.googlezip.net:80";
 const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 
@@ -59,16 +53,6 @@ const char kClientConfigURL[] = "";
 
 namespace data_reduction_proxy {
 namespace params {
-
-bool IsIncludedInAlternativeFieldTrial() {
-  const std::string group_name = base::FieldTrialList::FindFullName(
-      "DataCompressionProxyAlternativeConfiguration");
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          data_reduction_proxy::switches::kEnableDataReductionProxyAlt)) {
-    return true;
-  }
-  return group_name == kEnabled;
-}
 
 bool IsIncludedInPromoFieldTrial() {
   return FieldTrialList::FindFullName(
@@ -221,7 +205,7 @@ void DataReductionProxyParams::EnableQuic(bool enable) {
 }
 
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()
-    : is_fallback(false), is_alternative(false), is_ssl(false) {
+    : is_fallback(false), is_ssl(false) {
 }
 
 DataReductionProxyTypeInfo::~DataReductionProxyTypeInfo(){
@@ -230,15 +214,11 @@ DataReductionProxyTypeInfo::~DataReductionProxyTypeInfo(){
 DataReductionProxyParams::DataReductionProxyParams(int flags)
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
-      alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
-      alt_fallback_allowed_(
-          (flags & kAlternativeFallbackAllowed) == kAlternativeFallbackAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
       quic_enabled_(false),
       configured_on_command_line_(false) {
-  bool result = Init(
-      allowed_, fallback_allowed_, alt_allowed_, alt_fallback_allowed_);
+  bool result = Init(allowed_, fallback_allowed_);
   DCHECK(result);
 }
 
@@ -249,24 +229,17 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
                                                    bool should_call_init)
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
-      alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
-      alt_fallback_allowed_(
-          (flags & kAlternativeFallbackAllowed) == kAlternativeFallbackAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
       quic_enabled_(false),
       configured_on_command_line_(false) {
   if (should_call_init) {
-    bool result = Init(
-        allowed_, fallback_allowed_, alt_allowed_, alt_fallback_allowed_);
+    bool result = Init(allowed_, fallback_allowed_);
     DCHECK(result);
   }
 }
 
-bool DataReductionProxyParams::Init(bool allowed,
-                                    bool fallback_allowed,
-                                    bool alt_allowed,
-                                    bool alt_fallback_allowed) {
+bool DataReductionProxyParams::Init(bool allowed, bool fallback_allowed) {
   InitWithoutChecks();
   // Verify that all necessary params are set.
   if (allowed) {
@@ -284,30 +257,6 @@ bool DataReductionProxyParams::Init(bool allowed,
     }
   }
 
-  if (alt_allowed) {
-    if (!allowed) {
-      DVLOG(1) << "Alternative data reduction proxy configuration cannot "
-          << "be allowed if the regular configuration is not allowed";
-      return false;
-    }
-    if (!alt_origin_.is_valid()) {
-      DVLOG(1) << "Invalid alternative origin:" << alt_origin_.ToURI();
-      return false;
-    }
-    if (!ssl_origin_.is_valid()) {
-      DVLOG(1) << "Invalid ssl origin: " << ssl_origin_.ToURI();
-      return false;
-    }
-  }
-
-  if (alt_allowed && alt_fallback_allowed) {
-    if (!alt_fallback_origin_.is_valid()) {
-      DVLOG(1) << "Invalid alternative fallback origin:"
-          << alt_fallback_origin_.ToURI();
-      return false;
-    }
-  }
-
   if (allowed && !secure_proxy_check_url_.is_valid()) {
     DVLOG(1) << "Invalid secure proxy check url: <null>";
     return false;
@@ -316,11 +265,6 @@ bool DataReductionProxyParams::Init(bool allowed,
   if (fallback_allowed_ && !allowed_) {
     DVLOG(1) << "The data reduction proxy fallback cannot be allowed if "
         << "the data reduction proxy is not allowed";
-    return false;
-  }
-  if (alt_fallback_allowed_ && !alt_allowed_) {
-    DVLOG(1) << "The data reduction proxy alternative fallback cannot be "
-        << "allowed if the alternative data reduction proxy is not allowed";
     return false;
   }
   if (promo_allowed_ && !allowed_) {
@@ -346,23 +290,14 @@ void DataReductionProxyParams::InitWithoutChecks() {
       command_line.GetSwitchValueASCII(switches::kDataReductionProxyFallback);
   std::string ssl_origin =
       command_line.GetSwitchValueASCII(switches::kDataReductionSSLProxy);
-  std::string alt_origin =
-      command_line.GetSwitchValueASCII(switches::kDataReductionProxyAlt);
-  std::string alt_fallback_origin = command_line.GetSwitchValueASCII(
-      switches::kDataReductionProxyAltFallback);
 
   configured_on_command_line_ =
-      !(origin.empty() && fallback_origin.empty() && ssl_origin.empty() &&
-          alt_origin.empty() && alt_fallback_origin.empty());
-
+      !(origin.empty() && fallback_origin.empty() && ssl_origin.empty());
 
   // Configuring the proxy on the command line overrides the values of
-  // |allowed_| and |alt_allowed_|.
+  // |allowed_|.
   if (configured_on_command_line_)
     allowed_ = true;
-  if (!(ssl_origin.empty() &&
-        alt_origin.empty()))
-    alt_allowed_ = true;
 
   std::string secure_proxy_check_url = command_line.GetSwitchValueASCII(
       switches::kDataReductionProxySecureProxyCheckURL);
@@ -382,10 +317,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
     fallback_origin = GetDefaultFallbackOrigin();
   if (ssl_origin.empty())
     ssl_origin = GetDefaultSSLOrigin();
-  if (alt_origin.empty())
-    alt_origin = GetDefaultAltOrigin();
-  if (alt_fallback_origin.empty())
-    alt_fallback_origin = GetDefaultAltFallbackOrigin();
   if (secure_proxy_check_url.empty())
     secure_proxy_check_url = GetDefaultSecureProxyCheckURL();
   if (warmup_url.empty())
@@ -396,21 +327,12 @@ void DataReductionProxyParams::InitWithoutChecks() {
       net::ProxyServer::FromURI(fallback_origin, net::ProxyServer::SCHEME_HTTP);
   ssl_origin_ =
       net::ProxyServer::FromURI(ssl_origin, net::ProxyServer::SCHEME_HTTP);
-  alt_origin_ =
-      net::ProxyServer::FromURI(alt_origin, net::ProxyServer::SCHEME_HTTP);
-  alt_fallback_origin_ =
-      net::ProxyServer::FromURI(alt_fallback_origin,
-                                net::ProxyServer::SCHEME_HTTP);
   if (origin_.is_valid())
     proxies_for_http_.push_back(origin_);
   if (fallback_allowed_ && fallback_origin_.is_valid())
     proxies_for_http_.push_back(fallback_origin_);
-  if (alt_allowed_ && alt_origin_.is_valid())
-    alt_proxies_for_http_.push_back(alt_origin_);
-  if (alt_fallback_allowed_ && alt_fallback_origin_.is_valid())
-    alt_proxies_for_http_.push_back(alt_fallback_origin_);
-  if (alt_allowed_ && ssl_origin_.is_valid())
-    alt_proxies_for_https_.push_back(ssl_origin_);
+  if (ssl_origin_.is_valid())
+    proxies_for_https_.push_back(ssl_origin_);
 
   secure_proxy_check_url_ = GURL(secure_proxy_check_url);
   warmup_url_ = GURL(warmup_url);
@@ -422,17 +344,14 @@ bool DataReductionProxyParams::UsingHTTPTunnel(
          ssl_origin_.host_port_pair().Equals(proxy_server);
 }
 
-const std::vector<net::ProxyServer>& DataReductionProxyParams::proxies_for_http(
-    bool use_alternative_configuration) const {
-  return use_alternative_configuration ? alt_proxies_for_http_
-                                       : proxies_for_http_;
+const std::vector<net::ProxyServer>&
+DataReductionProxyParams::proxies_for_http() const {
+  return proxies_for_http_;
 }
 
 const std::vector<net::ProxyServer>&
-DataReductionProxyParams::proxies_for_https(
-    bool use_alternative_configuration) const {
-  return use_alternative_configuration ? alt_proxies_for_https_
-                                       : proxies_for_https_;
+DataReductionProxyParams::proxies_for_https() const {
+  return proxies_for_https_;
 }
 
 void DataReductionProxyParams::PopulateConfigResponse(
@@ -469,18 +388,6 @@ bool DataReductionProxyParams::allowed() const {
 // Returns true if the fallback proxy may be used.
 bool DataReductionProxyParams::fallback_allowed() const {
   return fallback_allowed_;
-}
-
-// Returns true if the alternative data reduction proxy configuration may be
-// used.
-bool DataReductionProxyParams::alternative_allowed() const {
-  return alt_allowed_;
-}
-
-// Returns true if the alternative fallback data reduction proxy
-// configuration may be used.
-bool DataReductionProxyParams::alternative_fallback_allowed() const {
-  return alt_fallback_allowed_;
 }
 
 // Returns true if the data reduction proxy promo may be shown.
@@ -537,15 +444,7 @@ std::string DataReductionProxyParams::GetDefaultFallbackOrigin() const {
 }
 
 std::string DataReductionProxyParams::GetDefaultSSLOrigin() const {
-  return kDefaultSslOrigin;
-}
-
-std::string DataReductionProxyParams::GetDefaultAltOrigin() const {
-  return kDefaultAltOrigin;
-}
-
-std::string DataReductionProxyParams::GetDefaultAltFallbackOrigin() const {
-  return kDefaultAltFallbackOrigin;
+  return std::string();
 }
 
 std::string DataReductionProxyParams::GetDefaultSecureProxyCheckURL() const {
