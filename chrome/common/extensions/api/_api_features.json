@@ -203,7 +203,11 @@
     "internal": true,
     "channel": "dev",
     "contexts": ["webui"],
-    "matches": ["chrome://chrome-signin/*", "chrome://oobe/*"]
+    "matches": [
+      "chrome://chrome-signin/*",
+      "chrome://media-router/*",
+      "chrome://oobe/*"
+    ]
   }],
   "cloudPrintPrivate": {
     "dependencies": ["permission:cloudPrintPrivate"],
