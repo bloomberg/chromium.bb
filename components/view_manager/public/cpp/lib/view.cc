@@ -432,6 +432,9 @@ View::~View() {
   prop_map_.clear();
 
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed(this));
+
+  if (manager_ && manager_->GetRoot() == this)
+    static_cast<ViewManagerClientImpl*>(manager_)->OnRootDestroyed(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

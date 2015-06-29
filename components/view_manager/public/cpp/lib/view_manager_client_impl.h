@@ -75,9 +75,12 @@ class ViewManagerClientImpl : public ViewManager,
 
   bool is_embed_root() const { return is_embed_root_; }
 
- private:
-  class RootObserver;
+  // Called after the root view's observers have been notified of destruction
+  // (as the last step of ~View). This ordering ensures that the View Manager
+  // is torn down after the root.
+  void OnRootDestroyed(View* root);
 
+ private:
   typedef std::map<Id, View*> IdToViewMap;
 
   Id CreateViewOnServer();
@@ -149,9 +152,9 @@ class ViewManagerClientImpl : public ViewManager,
   Binding<ViewManagerClient> binding_;
   ViewManagerServicePtr service_;
 
-  scoped_ptr<RootObserver> root_observer_;
-
   bool is_embed_root_;
+
+  bool in_destructor_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

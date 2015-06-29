@@ -68,35 +68,6 @@ View* BuildViewTree(ViewManagerClientImpl* client,
   return root;
 }
 
-// Responsible for removing a root from the ViewManager when that view is
-// destroyed.
-class ViewManagerClientImpl::RootObserver : public ViewObserver {
- public:
-  explicit RootObserver(View* root) : root_(root) {
-    root_->AddObserver(this);
-  }
-  ~RootObserver() override {
-    if (root_)
-      root_->RemoveObserver(this);
-  }
-
- private:
-  // Overridden from ViewObserver:
-  void OnViewDestroyed(View* view) override {
-    DCHECK_EQ(view, root_);
-    view->RemoveObserver(this);
-    View* root = root_;
-    root_ = nullptr;
-    static_cast<ViewManagerClientImpl*>(root->view_manager())
-        ->RootDestroyed(root);
-    // WARNING: we've been deleted.
-  }
-
-  View* root_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RootObserver);
-};
-
 ViewManagerClientImpl::ViewManagerClientImpl(
     ViewManagerDelegate* delegate,
     Shell* shell,
@@ -109,13 +80,12 @@ ViewManagerClientImpl::ViewManagerClientImpl(
       focused_view_(nullptr),
       activated_view_(nullptr),
       binding_(this, request.Pass()),
-      is_embed_root_(false) {
+      is_embed_root_(false),
+      in_destructor_(false) {
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
-  // Destroy RootObserver early on so that when we delete |root_| below we don't
-  // attempt to delete this again.
-  root_observer_.reset();
+  in_destructor_ = true;
 
   std::vector<View*> non_owned;
   while (!views_.empty()) {
@@ -235,6 +205,16 @@ void ViewManagerClientImpl::SetViewManagerService(
   service_ = service.Pass();
   service_.set_error_handler(this);
 }
+
+void ViewManagerClientImpl::OnRootDestroyed(View* root) {
+  DCHECK_EQ(root, root_);
+  root_ = nullptr;
+
+  // When the root is gone we can't do anything useful.
+  if (!in_destructor_)
+    delete this;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManager implementation:
 
@@ -288,7 +268,6 @@ void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
 
   DCHECK(!root_);
   root_ = AddViewToViewManager(this, nullptr, root_data);
-  root_observer_.reset(new RootObserver(root_));
 
   focused_view_ = GetViewById(focused_view_id);
 
@@ -442,13 +421,6 @@ void ViewManagerClientImpl::OnConnectionError() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, private:
-
-void ViewManagerClientImpl::RootDestroyed(View* root) {
-  DCHECK_EQ(root, root_);
-  root_ = nullptr;
-  // When the root is gone we can't do anything useful.
-  delete this;
-}
 
 void ViewManagerClientImpl::OnActionCompleted(bool success) {
   if (!change_acked_callback_.is_null())

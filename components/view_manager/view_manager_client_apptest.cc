@@ -4,13 +4,7 @@
 
 #include "components/view_manager/public/cpp/view_manager.h"
 
-#include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
@@ -18,10 +12,8 @@
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
-#include "mojo/application/public/cpp/service_provider_impl.h"
 #include "ui/mojo/geometry/geometry_util.h"
 
 namespace mojo {
@@ -600,9 +592,10 @@ namespace {
 
 class DestroyedChangedObserver : public ViewObserver {
  public:
-  DestroyedChangedObserver(View* view, bool* got_destroy)
-      : view_(view),
-        got_destroy_(got_destroy) {
+  DestroyedChangedObserver(ViewManagerTestBase* test,
+                           View* view,
+                           bool* got_destroy)
+      : test_(test), view_(view), got_destroy_(got_destroy) {
     view_->AddObserver(this);
   }
   ~DestroyedChangedObserver() override {
@@ -617,8 +610,12 @@ class DestroyedChangedObserver : public ViewObserver {
     view_->RemoveObserver(this);
     *got_destroy_ = true;
     view_ = nullptr;
+
+    // We should always get OnViewDestroyed() before OnViewManagerDestroyed().
+    EXPECT_FALSE(test_->view_manager_destroyed());
   }
 
+  ViewManagerTestBase* test_;
   View* view_;
   bool* got_destroy_;
 
@@ -636,7 +633,8 @@ TEST_F(ViewManagerTest, DeleteViewManager) {
   ViewManager* view_manager = Embed(view);
   ASSERT_TRUE(view_manager);
   bool got_destroy = false;
-  DestroyedChangedObserver observer(view_manager->GetRoot(), &got_destroy);
+  DestroyedChangedObserver observer(this, view_manager->GetRoot(),
+                                    &got_destroy);
   delete view_manager;
   EXPECT_TRUE(view_manager_destroyed());
   EXPECT_TRUE(got_destroy);
@@ -654,7 +652,7 @@ TEST_F(ViewManagerTest, DisconnectTriggersDelete) {
   View* embedded_view = view_manager->CreateView();
   // Embed again, this should trigger disconnect and deletion of view_manager.
   bool got_destroy;
-  DestroyedChangedObserver observer(embedded_view, &got_destroy);
+  DestroyedChangedObserver observer(this, embedded_view, &got_destroy);
   EXPECT_FALSE(view_manager_destroyed());
   Embed(view);
   EXPECT_TRUE(view_manager_destroyed());
@@ -791,6 +789,54 @@ TEST_F(ViewManagerTest, ReembedSucceeds) {
   EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, view_manager));
 
   EXPECT_EQ(nullptr, most_recent_view_manager());
+}
+
+namespace {
+
+class DestroyObserver : public ViewObserver {
+ public:
+  DestroyObserver(ViewManagerTestBase* test, ViewManager* vm, bool* got_destroy)
+      : test_(test), got_destroy_(got_destroy) {
+    vm->GetRoot()->AddObserver(this);
+  }
+  ~DestroyObserver() override {}
+
+ private:
+  // Overridden from ViewObserver:
+  void OnViewDestroyed(View* view) override {
+    *got_destroy_ = true;
+    view->RemoveObserver(this);
+
+    // We should always get OnViewDestroyed() before OnViewManagerDestroyed().
+    EXPECT_FALSE(test_->view_manager_destroyed());
+
+    EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
+  }
+
+  ViewManagerTestBase* test_;
+  bool* got_destroy_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(DestroyObserver);
+};
+
+}  // namespace
+
+// Verifies deleting a View that is the root of another connection notifies
+// observers in the right order (OnViewDestroyed() before
+// OnViewManagerDestroyed()).
+TEST_F(ViewManagerTest, ViewManagerDestroyedAfterRootObserver) {
+  View* embed_view = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(embed_view);
+
+  ViewManager* embedded_view_manager = Embed(embed_view);
+
+  bool got_destroy = false;
+  DestroyObserver observer(this, embedded_view_manager, &got_destroy);
+  // Delete the view |embedded_view_manager| is embedded in. This is async,
+  // but will eventually trigger deleting |embedded_view_manager|.
+  embed_view->Destroy();
+  EXPECT_TRUE(DoRunLoopWithTimeout());
+  EXPECT_TRUE(got_destroy);
 }
 
 }  // namespace mojo

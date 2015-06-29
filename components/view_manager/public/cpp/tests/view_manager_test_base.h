@@ -38,8 +38,9 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   // success, false if a RunLoop isn't running.
   static bool QuitRunLoop() WARN_UNUSED_RESULT;
 
- protected:
   ViewManager* window_manager() { return window_manager_; }
+
+ protected:
   ViewManager* most_recent_view_manager() { return most_recent_view_manager_; }
 
   // testing::Test:
