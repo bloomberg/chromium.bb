@@ -212,13 +212,14 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_cache);
+        visitor->trace(m_resolver);
     }
 
 private:
     bool m_completed = false;
     int m_numberOfRemainingOperations;
     Member<Cache> m_cache;
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     Vector<WebServiceWorkerCache::BatchOperation> m_batchOperations;
 };
 
