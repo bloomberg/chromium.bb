@@ -1175,9 +1175,6 @@ crbug.com/504706 [ Linux ] inspector/console/console-format.html [ Pass Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Pass Slow ]
 
-
-crbug.com/437131 [ Win Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass ImageOnlyFailure ]
-
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
 # Disabled until the test plugin is fixed.
@@ -1481,7 +1478,6 @@ crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/filters-light-04-f.svg [ ImageOnlyFai
 crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ ImageOnlyFailure ]
-crbug.com/498021 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] editing/pasteboard/4944770-2.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
