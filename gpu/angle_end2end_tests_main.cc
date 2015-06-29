@@ -26,12 +26,9 @@ int main(int argc, char** argv) {
   testing::InitGoogleMock(&argc, argv);
   testing::AddGlobalTestEnvironment(new ANGLETestEnvironment());
   base::TestSuite test_suite(argc, argv);
-  int rt = base::LaunchUnitTestsWithOptions(
+  int rt = base::LaunchUnitTestsSerially(
       argc,
       argv,
-      1,  // Run tests serially.
-      0,  // Disable batching.
-      true,  // Use job objects.
       base::Bind(&RunHelper, base::Unretained(&test_suite)));
   return rt;
 }
