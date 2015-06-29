@@ -467,8 +467,7 @@ void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
     int net_error,
     const em::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS &&
-      (!response.has_service_api_access_response() ||
-       response.service_api_access_response().auth_code().empty())) {
+      (!response.has_service_api_access_response())) {
     LOG(WARNING) << "Invalid service api access response.";
     status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }

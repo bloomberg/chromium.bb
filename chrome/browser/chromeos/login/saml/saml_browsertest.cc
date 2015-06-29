@@ -99,8 +99,8 @@ namespace em = enterprise_management;
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
-using testing::_;
 using testing::Return;
+using testing::_;
 
 namespace chromeos {
 
@@ -795,7 +795,6 @@ void SAMLEnrollmentTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                   test_server_->GetServiceURL().spec());
   command_line->AppendSwitch(policy::switches::kDisablePolicyKeyVerification);
-  command_line->AppendSwitch(switches::kEnterpriseEnrollmentSkipRobotAuth);
 
   SamlTest::SetUpCommandLine(command_line);
 }

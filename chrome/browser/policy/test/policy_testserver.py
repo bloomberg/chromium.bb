@@ -47,7 +47,7 @@ Example:
     "secret123456"
   ],
   "current_key_index": 0,
-  "robot_api_auth_code": "fake_auth_code",
+  "robot_api_auth_code": "",
   "invalidation_source": 1025,
   "invalidation_name": "UENUPOL"
 }
@@ -406,11 +406,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     policy = self.server.GetPolicies()
 
-    # Return the auth code from the config file if it's defined,
-    # else return a descriptive default value.
+    # Return the auth code from the config file if it's defined. Default to an
+    # empty auth code, which will instruct the enrollment flow to skip robot
+    # auth setup.
     response = dm.DeviceManagementResponse()
     response.service_api_access_response.auth_code = policy.get(
-        'robot_api_auth_code', 'policy_testserver.py-auth_code')
+        'robot_api_auth_code', '')
 
     return (200, response)
 

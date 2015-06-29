@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 
@@ -33,11 +31,6 @@ namespace {
 const int kLockRetryIntervalMs = 500;
 // Maximum time to retry InstallAttrs initialization before we give up.
 const int kLockRetryTimeoutMs = 10 * 60 * 1000;  // 10 minutes.
-
-// Testing token used when the enrollment-skip-robot-auth is set to skip talking
-// to GAIA for an actual token. This is needed to be able to run against the
-// testing DMServer implementations.
-const char kTestingRobotToken[] = "test-token";
 
 em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
     policy::EnrollmentConfig::Mode mode) {
@@ -94,6 +87,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       management_mode_(management_mode),
       completion_callback_(completion_callback),
       device_mode_(DEVICE_MODE_NOT_SET),
+      skip_robot_auth_(false),
       enrollment_step_(STEP_PENDING),
       lockbox_init_duration_(0),
       weak_ptr_factory_(this) {
@@ -287,17 +281,6 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     username_ = validator->policy_data()->username();
     device_id_ = validator->policy_data()->device_id();
     request_token_ = validator->policy_data()->request_token();
-
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnterpriseEnrollmentSkipRobotAuth)) {
-      // For test purposes we allow enrollment to succeed without proper robot
-      // account and use the provided value as a token.
-      refresh_token_ = kTestingRobotToken;
-      enrollment_step_ = STEP_LOCK_DEVICE;
-      StartLockDevice();
-      return;
-    }
-
     enrollment_step_ = STEP_ROBOT_AUTH_FETCH;
     client_->FetchRobotAuthCodes(auth_token_);
   } else {
@@ -309,6 +292,16 @@ void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
     CloudPolicyClient* client) {
   DCHECK_EQ(client_.get(), client);
   CHECK_EQ(STEP_ROBOT_AUTH_FETCH, enrollment_step_);
+
+  if (client->robot_api_auth_code().empty()) {
+    // If the server doesn't provide an auth code, skip the robot auth setup.
+    // This allows clients running against the test server to transparently skip
+    // robot auth.
+    skip_robot_auth_ = true;
+    enrollment_step_ = STEP_LOCK_DEVICE;
+    StartLockDevice();
+    return;
+  }
 
   enrollment_step_ = STEP_ROBOT_AUTH_REFRESH;
 
@@ -334,7 +327,7 @@ void EnrollmentHandlerChromeOS::OnGetTokensResponse(
     int expires_in_seconds) {
   CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
 
-  refresh_token_ = refresh_token;
+  robot_refresh_token_ = refresh_token;
 
   enrollment_step_ = STEP_LOCK_DEVICE;
   StartLockDevice();
@@ -443,10 +436,16 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
 }
 
 void EnrollmentHandlerChromeOS::StartStoreRobotAuth() {
-  // Get the token service so we can store our robot refresh token.
   enrollment_step_ = STEP_STORE_ROBOT_AUTH;
+
+  // Don't store the token if robot auth was skipped.
+  if (skip_robot_auth_) {
+    HandleStoreRobotAuthTokenResult(true);
+    return;
+  }
+
   chromeos::DeviceOAuth2TokenServiceFactory::Get()->SetAndSaveRefreshToken(
-      refresh_token_,
+      robot_refresh_token_,
       base::Bind(&EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }

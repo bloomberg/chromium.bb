@@ -169,14 +169,21 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::string auth_token_;
   std::string client_id_;
   std::string requisition_;
-  std::string current_state_key_;
-  std::string refresh_token_;
   AllowedDeviceModes allowed_device_modes_;
   ManagementMode management_mode_;
   EnrollmentCallback completion_callback_;
 
+  // The current state key provided by |state_keys_broker_|.
+  std::string current_state_key_;
+
   // The device mode as received in the registration request.
   DeviceMode device_mode_;
+
+  // Whether the server signaled to skip robot auth setup.
+  bool skip_robot_auth_;
+
+  // The robot account refresh token.
+  std::string robot_refresh_token_;
 
   // The validated policy response info to be installed in the store.
   scoped_ptr<enterprise_management::PolicyFetchResponse> policy_;

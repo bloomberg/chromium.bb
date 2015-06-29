@@ -146,6 +146,10 @@ message DeviceServiceApiAccessRequest {
 message DeviceServiceApiAccessResponse {
   // The OAuth2 authorization code for the requested scope(s).
   // This can be exchanged for a refresh token.
+  //
+  // The server may send a successful response but not set this field or set an
+  // empty string to reject the auth code request and instruct the client to
+  // skip robot account auth setup.
   optional string auth_code = 1;
 }
 

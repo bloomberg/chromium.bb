@@ -164,11 +164,6 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
-// Don't create robot account on enrollment. Used when testing device
-// enrollment against YAPS or the Python test server.
-const char kEnterpriseEnrollmentSkipRobotAuth[] =
-    "enterprise-enrollment-skip-robot-auth";
-
 // Enables the chromecast support for video player app.
 const char kEnableVideoPlayerChromecastSupport[] =
     "enable-video-player-chromecast-support";
