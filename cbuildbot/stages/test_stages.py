@@ -263,7 +263,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       return
 
     build = '/'.join([self._bot_id, self.version])
-    if self._run.options.remote_trybot and self._run.options.hwtest:
+    if (self._run.options.remote_trybot and (self._run.options.hwtest or
+                                             self._run.config.pre_cq)):
       debug = self._run.options.debug_forced
     else:
       debug = self._run.options.debug
