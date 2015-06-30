@@ -72,7 +72,8 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
     if (media_delegate->IsRequestingVideoAccess()) {
       content_settings.push_back(
           ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-    } else if (media_delegate->IsRequestingMicrophoneAccess()) {
+    }
+    if (media_delegate->IsRequestingMicrophoneAccess()) {
       content_settings.push_back(
           ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
     }
