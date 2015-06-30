@@ -792,7 +792,7 @@ protected:
         // but we cannot call it here because it requres to include T.h.
         // So we currently implement only the check for (a).
         if (!IsGarbageCollectedMixin<T>::value)
-            HeapObjectHeader::fromPayload(m_raw)->checkHeader();
+            ASSERT(HeapObjectHeader::fromPayload(m_raw)->checkHeader());
 #endif
     }
 

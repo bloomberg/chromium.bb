@@ -71,7 +71,7 @@ void GCInfoTable::shutdown()
 #if ENABLE(ASSERT)
 void assertObjectHasGCInfo(const void* payload, size_t gcInfoIndex)
 {
-    HeapObjectHeader::fromPayload(payload)->checkHeader();
+    ASSERT(HeapObjectHeader::fromPayload(payload)->checkHeader());
 #if !defined(COMPONENT_BUILD)
     // On component builds we cannot compare the gcInfos as they are statically
     // defined in each of the components and hence will not match.

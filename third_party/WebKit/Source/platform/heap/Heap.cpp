@@ -201,7 +201,7 @@ private:
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::zapMagic()
 {
-    checkHeader();
+    ASSERT(checkHeader());
     m_magic = zappedMagic;
 }
 #endif
@@ -730,7 +730,7 @@ bool NormalPageHeap::coalesce()
                 headerAddress += size;
                 continue;
             }
-            header->checkHeader();
+            ASSERT(header->checkHeader());
             if (startOfGap != headerAddress)
                 addToFreeList(startOfGap, headerAddress - startOfGap);
 
@@ -750,7 +750,7 @@ bool NormalPageHeap::coalesce()
 void NormalPageHeap::promptlyFreeObject(HeapObjectHeader* header)
 {
     ASSERT(!threadState()->sweepForbidden());
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     Address address = reinterpret_cast<Address>(header);
     Address payload = header->payload();
     size_t size = header->size();
@@ -784,7 +784,7 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
     // It's possible that Vector requests a smaller expanded size because
     // Vector::shrinkCapacity can set a capacity smaller than the actual payload
     // size.
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     if (header->payloadSize() >= newSize)
         return true;
     size_t allocationSize = Heap::allocationSizeFromSize(newSize);
@@ -806,7 +806,7 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
 
 bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
 {
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     ASSERT(header->payloadSize() > newSize);
     size_t allocationSize = Heap::allocationSizeFromSize(newSize);
     ASSERT(header->size() > allocationSize);
@@ -1022,7 +1022,7 @@ Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t
     Address result = headerAddress + sizeof(*header);
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
     LargeObjectPage* largeObject = new (largeObjectAddress) LargeObjectPage(pageMemory, this, allocationSize);
-    header->checkHeader();
+    ASSERT(header->checkHeader());
 
     // Poison the object header and allocationGranularity bytes after the object
     ASAN_POISON_MEMORY_REGION(header, sizeof(*header));
@@ -1222,7 +1222,7 @@ size_t NormalPage::objectPayloadSizeForTesting()
     do {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         if (!header->isFree()) {
-            header->checkHeader();
+            ASSERT(header->checkHeader());
             objectPayloadSize += header->payloadSize();
         }
         ASSERT(header->size() < blinkPagePayloadSize());
@@ -1266,7 +1266,7 @@ void NormalPage::sweep()
             headerAddress += size;
             continue;
         }
-        header->checkHeader();
+        ASSERT(header->checkHeader());
 
         if (!header->isMarked()) {
             size_t size = header->size();
@@ -1313,7 +1313,7 @@ void NormalPage::makeConsistentForGC()
             headerAddress += header->size();
             continue;
         }
-        header->checkHeader();
+        ASSERT(header->checkHeader());
         if (header->isMarked()) {
             header->unmark();
             markedObjectSize += header->size();
@@ -1338,7 +1338,7 @@ void NormalPage::makeConsistentForMutator()
             headerAddress += header->size();
             continue;
         }
-        header->checkHeader();
+        ASSERT(header->checkHeader());
 
         if (startOfGap != headerAddress)
             heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
@@ -1363,7 +1363,7 @@ void NormalPage::poisonObjects(ObjectsToPoison objectsToPoison, Poisoning poison
             headerAddress += header->size();
             continue;
         }
-        header->checkHeader();
+        ASSERT(header->checkHeader());
         if (objectsToPoison == MarkedAndUnmarked || !header->isMarked()) {
             if (poisoning == SetPoison)
                 ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
@@ -1439,7 +1439,7 @@ HeapObjectHeader* NormalPage::findHeaderFromAddress(Address address)
     HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(objectAddress);
     if (header->isFree())
         return nullptr;
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     return header;
 }
 
@@ -1458,7 +1458,7 @@ static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
 
 static void markPointer(Visitor* visitor, HeapObjectHeader* header)
 {
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
     if (gcInfo->hasVTable() && !vTableInitialized(header->payload())) {
         // We hit this branch when a GC strikes before GarbageCollected<>'s
@@ -1563,7 +1563,7 @@ void NormalPage::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
             info->freeSize += header->size();
             continue;
         }
-        header->checkHeader();
+        ASSERT(header->checkHeader());
 
         size_t tag = info->getClassTag(Heap::gcInfo(header->gcInfoIndex()));
         size_t age = header->age();

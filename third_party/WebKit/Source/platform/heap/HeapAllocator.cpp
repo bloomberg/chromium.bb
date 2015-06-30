@@ -24,7 +24,7 @@ void HeapAllocator::backingFree(void* address)
         return;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
     state->promptlyFreed(header->gcInfoIndex());
     heap->promptlyFreeObject(header);
@@ -63,7 +63,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
         return false;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
     bool succeed = heap->expandObject(header, newSize);
     if (succeed)
@@ -110,7 +110,7 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
         return;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
     bool succeed = heap->shrinkObject(header, quantizedShrunkSize);
     if (succeed)

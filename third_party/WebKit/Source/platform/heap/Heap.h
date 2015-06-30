@@ -184,8 +184,8 @@ public:
     size_t payloadSize();
     Address payloadEnd();
 
-    void checkHeader() const;
 #if ENABLE(ASSERT)
+    bool checkHeader() const;
     // Zap magic number with a new magic number that means there was once an
     // object allocated here, but it was freed because nobody marked it during
     // GC.
@@ -1244,12 +1244,13 @@ size_t HeapObjectHeader::size() const
     return result;
 }
 
+#if ENABLE(ASSERT)
 NO_SANITIZE_ADDRESS inline
-void HeapObjectHeader::checkHeader() const
+bool HeapObjectHeader::checkHeader() const
 {
-    ASSERT(!pageFromObject(this)->orphaned());
-    ASSERT(m_magic == magic);
+    return !pageFromObject(this)->orphaned() && m_magic == magic;
 }
+#endif
 
 inline Address HeapObjectHeader::payload()
 {
@@ -1277,21 +1278,21 @@ inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
 {
     Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
     HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
-    header->checkHeader();
+    ASSERT(header->checkHeader());
     return header;
 }
 
 NO_SANITIZE_ADDRESS inline
 bool HeapObjectHeader::isMarked() const
 {
-    checkHeader();
+    ASSERT(checkHeader());
     return m_encoded & headerMarkBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::mark()
 {
-    checkHeader();
+    ASSERT(checkHeader());
     ASSERT(!isMarked());
     m_encoded = m_encoded | headerMarkBitMask;
 }
@@ -1299,7 +1300,7 @@ void HeapObjectHeader::mark()
 NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::unmark()
 {
-    checkHeader();
+    ASSERT(checkHeader());
     ASSERT(isMarked());
     m_encoded &= ~headerMarkBitMask;
 }
@@ -1307,14 +1308,14 @@ void HeapObjectHeader::unmark()
 NO_SANITIZE_ADDRESS inline
 bool HeapObjectHeader::isDead() const
 {
-    checkHeader();
+    ASSERT(checkHeader());
     return m_encoded & headerDeadBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::markDead()
 {
-    checkHeader();
+    ASSERT(checkHeader());
     ASSERT(!isMarked());
     m_encoded |= headerDeadBitMask;
 }
