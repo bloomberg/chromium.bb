@@ -308,21 +308,11 @@ bool AddTransformNodeIfNeeded(
           layer->position_constraint().is_fixed_to_right_edge();
       node->data.affected_by_inner_viewport_bounds_delta_y =
           layer->position_constraint().is_fixed_to_bottom_edge();
-      if (node->data.affected_by_inner_viewport_bounds_delta_x ||
-          node->data.affected_by_inner_viewport_bounds_delta_y) {
-        data_for_children->transform_tree
-            ->AddNodeAffectedByInnerViewportBoundsDelta(node->id);
-      }
     } else if (data_from_ancestor.affected_by_outer_viewport_bounds_delta) {
       node->data.affected_by_outer_viewport_bounds_delta_x =
           layer->position_constraint().is_fixed_to_right_edge();
       node->data.affected_by_outer_viewport_bounds_delta_y =
           layer->position_constraint().is_fixed_to_bottom_edge();
-      if (node->data.affected_by_outer_viewport_bounds_delta_x ||
-          node->data.affected_by_outer_viewport_bounds_delta_y) {
-        data_for_children->transform_tree
-            ->AddNodeAffectedByOuterViewportBoundsDelta(node->id);
-      }
     }
   }
 

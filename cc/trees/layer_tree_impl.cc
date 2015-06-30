@@ -217,10 +217,22 @@ void LayerTreeImpl::UpdatePropertyTreesForBoundsDelta() {
                                       &property_trees_.clip_tree);
 
   TransformTree& transform_tree = property_trees_.transform_tree;
-  if (inner_container)
-    transform_tree.SetInnerViewportBoundsDelta(inner_container->bounds_delta());
-  if (outer_container)
-    transform_tree.SetOuterViewportBoundsDelta(outer_container->bounds_delta());
+  if (inner_container) {
+    if (inner_container->bounds_delta() !=
+        transform_tree.inner_viewport_bounds_delta()) {
+      transform_tree.set_inner_viewport_bounds_delta(
+          inner_container->bounds_delta());
+      transform_tree.set_needs_update(true);
+    }
+  }
+  if (outer_container) {
+    if (outer_container->bounds_delta() !=
+        transform_tree.outer_viewport_bounds_delta()) {
+      transform_tree.set_outer_viewport_bounds_delta(
+          outer_container->bounds_delta());
+      transform_tree.set_needs_update(true);
+    }
+  }
 }
 
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
