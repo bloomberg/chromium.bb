@@ -184,6 +184,9 @@
         "test": "sandbox_linux_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sql_unittests"
       },
       {
@@ -679,6 +682,9 @@
         "test": "skia_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sql_unittests"
       },
       {
@@ -966,6 +972,9 @@
         "test": "skia_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sql_unittests"
       },
       {
@@ -1237,6 +1246,9 @@
         "test": "skia_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sql_unittests"
       },
       {
