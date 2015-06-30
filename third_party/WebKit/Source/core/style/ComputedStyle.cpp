@@ -1743,22 +1743,22 @@ void ComputedStyle::getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLef
 {
     bool horizontal = isHorizontalWritingMode();
 
-    edges[BSTop] = BorderEdge(borderTopWidth(),
+    edges[BSTop] = BorderEdge(LayoutUnit(borderTopWidth()),
         visitedDependentColor(CSSPropertyBorderTopColor),
         borderTopStyle(),
         horizontal || includeLogicalLeftEdge);
 
-    edges[BSRight] = BorderEdge(borderRightWidth(),
+    edges[BSRight] = BorderEdge(LayoutUnit(borderRightWidth()),
         visitedDependentColor(CSSPropertyBorderRightColor),
         borderRightStyle(),
         !horizontal || includeLogicalRightEdge);
 
-    edges[BSBottom] = BorderEdge(borderBottomWidth(),
+    edges[BSBottom] = BorderEdge(LayoutUnit(borderBottomWidth()),
         visitedDependentColor(CSSPropertyBorderBottomColor),
         borderBottomStyle(),
         horizontal || includeLogicalRightEdge);
 
-    edges[BSLeft] = BorderEdge(borderLeftWidth(),
+    edges[BSLeft] = BorderEdge(LayoutUnit(borderLeftWidth()),
         visitedDependentColor(CSSPropertyBorderLeftColor),
         borderLeftStyle(),
         !horizontal || includeLogicalLeftEdge);
