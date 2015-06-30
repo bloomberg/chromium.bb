@@ -35,6 +35,7 @@ source_set("base") {
 
 test("cast_base_unittests") {
   sources = [
+    "error_codes_unittest.cc",
     "path_utils_unittest.cc",
     "process_utils_unittest.cc",
     "serializers_unittest.cc",

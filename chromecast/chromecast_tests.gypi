@@ -16,6 +16,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'base/error_codes_unittest.cc',
         'base/path_utils_unittest.cc',
         'base/process_utils_unittest.cc',
         'base/serializers_unittest.cc',

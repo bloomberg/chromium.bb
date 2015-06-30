@@ -47,7 +47,7 @@ ErrorCode GetInitialErrorCode() {
 bool SetInitialErrorCode(ErrorCode initial_error_code) {
   // Note: Do not use Chromium IO methods in this function. When cast_shell
   // crashes, this function can be called by any thread.
-  const std::string& error_file_path = GetInitialErrorFilePath().value();
+  const std::string error_file_path = GetInitialErrorFilePath().value();
 
   if (initial_error_code > NO_ERROR && initial_error_code <= ERROR_UNKNOWN) {
     const std::string initial_error_code_str(
