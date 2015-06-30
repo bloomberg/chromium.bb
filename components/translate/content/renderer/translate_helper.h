@@ -204,14 +204,6 @@ class TranslateHelper : public content::RenderViewObserver {
   // Do not ask for CLD data any more.
   void CancelCldDataPolling();
 
-  // Invoked when PageCaptured is called prior to obtaining CLD data. This
-  // method stores the page ID into deferred_page_id_ and COPIES the contents
-  // of the page, then sets deferred_page_capture_ to true. When CLD data is
-  // eventually received (in OnCldDataAvailable), any deferred request will be
-  // "resurrected" and allowed to proceed automatically, assuming that the
-  // page ID has not changed.
-  void DeferPageCaptured(const int page_id, const base::string16& contents);
-
   // Start polling for CLD data.
   // Polling will automatically halt as soon as the renderer obtains a
   // reference to the data file.
