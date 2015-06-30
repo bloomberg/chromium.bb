@@ -111,11 +111,12 @@ void StyleRuleImport::requestStyleSheet()
         return;
 
     KURL absURL;
-    if (!m_parentStyleSheet->baseURL().isNull())
+    if (!m_parentStyleSheet->baseURL().isNull()) {
         // use parent styleheet's URL as the base URL
         absURL = KURL(m_parentStyleSheet->baseURL(), m_strHref);
-    else
+    } else {
         absURL = document->completeURL(m_strHref);
+    }
 
     // Check for a cycle in our import chain.  If we encounter a stylesheet
     // in our parent chain with the same URL, then just bail.

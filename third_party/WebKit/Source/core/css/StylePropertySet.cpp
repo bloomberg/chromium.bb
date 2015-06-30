@@ -466,8 +466,7 @@ int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     // the compiler converting it to an int multiple times in the loop.
     uint16_t id = static_cast<uint16_t>(propertyID);
 
-    auto compare = [propertyID, id](const CSSProperty& property) -> bool
-    {
+    auto compare = [propertyID, id](const CSSProperty& property) -> bool {
         if (property.metadata().m_propertyID == id) {
             // Only enabled properties should be part of the style.
             ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));

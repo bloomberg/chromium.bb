@@ -471,9 +471,10 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Selector
 template<typename CharType>
 static inline bool containsHTMLSpaceTemplate(const CharType* string, unsigned length)
 {
-    for (unsigned i = 0; i < length; ++i)
+    for (unsigned i = 0; i < length; ++i) {
         if (isHTMLSpace<CharType>(string[i]))
             return true;
+    }
     return false;
 }
 
@@ -900,8 +901,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
                 // test for matching the pseudo.
                 if (inputElement.shouldAppearChecked() && !inputElement.shouldAppearIndeterminate())
                     return true;
-            } else if (isHTMLOptionElement(element) && toHTMLOptionElement(element).selected())
+            } else if (isHTMLOptionElement(element) && toHTMLOptionElement(element).selected()) {
                 return true;
+            }
             break;
         }
     case CSSSelector::PseudoIndeterminate:
