@@ -2758,8 +2758,11 @@ def SetUpLinuxEnvMips(env):
     tc_dir = os.path.join(jail, 'bin')
     if not which(os.path.join(tc_dir, 'mipsel-linux-gnu-gcc')):
       raise UserError("\nERRROR: "
-          "MIPS trusted TC is not installed - try running:\n"
-          "tools/trusted_cross_toolchains/trusted-toolchain-creator"
+          "MIPS trusted toolchain not found - try running:\n"
+          "  build/package_version/package_version.py --packages"
+          " linux_x86/mips_trusted sync -x\n"
+          "Or build it yourself with:\n"
+          "  tools/trusted_cross_toolchains/trusted-toolchain-creator"
           ".mipsel.debian.sh nacl_sdk")
     env.Replace(CC=os.path.join(tc_dir, 'mipsel-linux-gnu-gcc'),
                 CXX=os.path.join(tc_dir, 'mipsel-linux-gnu-g++'),

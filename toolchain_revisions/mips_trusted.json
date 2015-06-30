@@ -1,0 +1,20 @@
+{
+  "package_name": "mips_trusted",
+  "package_targets": {
+    "linux_x86": {
+      "archives": [
+        {
+          "extract_dir": "",
+          "hash": "e8bfac000e9ced48c42a1c986dd4733fd1ff1172",
+          "log_url": null,
+          "name": "sysroot_mips_trusted_wheezy.tgz",
+          "tar_src_dir": "",
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/b47d1a76f979dc0266392309b11dc64e7902c75a/sysroot_mips_trusted_wheezy.tgz"
+        }
+      ],
+      "version": 1
+    }
+  },
+  "revision": "b47d1a76f979dc0266392309b11dc64e7902c75a",
+  "revision_hash": "0c22b385ccbe29a49bbce6cc558de97b7adef6ed"
+}
