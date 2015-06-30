@@ -80,6 +80,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
     : WebContentsObserver(web_contents),
       owner_web_contents_(nullptr),
       attached_(false),
+      has_attached_since_surface_set_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       focused_(false),
       mouse_locked_(false),
@@ -419,6 +420,7 @@ void BrowserPluginGuest::SetChildFrameSurface(
     const gfx::Size& frame_size,
     float scale_factor,
     const cc::SurfaceSequence& sequence) {
+  has_attached_since_surface_set_ = false;
   SendMessageToEmbedder(new BrowserPluginMsg_SetChildFrameSurface(
       browser_plugin_instance_id(), surface_id, frame_size, scale_factor,
       sequence));
@@ -482,7 +484,9 @@ gfx::Point BrowserPluginGuest::GetScreenCoordinates(
 }
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
-  if (!attached()) {
+  // During tests, attache() may be true when there is no owner_web_contents_;
+  // in this case just queue any messages we receive.
+  if (!attached() || !owner_web_contents_) {
     // Some pages such as data URLs, javascript URLs, and about:blank
     // do not load external resources and so they load prior to attachment.
     // As a result, we must save all these IPCs until attachment and then
@@ -740,6 +744,7 @@ void BrowserPluginGuest::OnWillAttachComplete(
   InitInternal(params, embedder_web_contents);
 
   attached_ = true;
+  has_attached_since_surface_set_ = true;
   SendQueuedMessages();
 
   delegate_->DidAttach(GetGuestProxyRoutingID());

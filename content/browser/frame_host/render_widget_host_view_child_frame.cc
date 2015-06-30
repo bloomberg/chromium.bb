@@ -266,9 +266,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   if (output_surface_id != last_output_surface_id_ ||
       frame_size != current_surface_size_ ||
       scale_factor != current_surface_scale_factor_) {
-    if (surface_factory_ && !surface_id_.is_null())
-      surface_factory_->Destroy(surface_id_);
-    surface_id_ = cc::SurfaceId();
+    ClearCompositorSurfaceIfNecessary();
     last_output_surface_id_ = output_surface_id;
     current_surface_size_ = frame_size;
     current_surface_scale_factor_ = scale_factor;
@@ -432,6 +430,12 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate) {
   return BrowserAccessibilityManager::Create(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
+}
+
+void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
+  if (surface_factory_ && !surface_id_.is_null())
+    surface_factory_->Destroy(surface_id_);
+  surface_id_ = cc::SurfaceId();
 }
 
 }  // namespace content

@@ -193,6 +193,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Returns whether the guest is attached to an embedder.
   bool attached() const { return attached_; }
 
+  // Returns true when an attachment has taken place since the last time the
+  // compositor surface was set.
+  bool has_attached_since_surface_set() const {
+    return has_attached_since_surface_set_;
+  }
+
   // Attaches this BrowserPluginGuest to the provided |embedder_web_contents|
   // and initializes the guest with the provided |params|. Attaching a guest
   // to an embedder implies that this guest's lifetime is no longer managed
@@ -247,6 +253,15 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   BrowserPluginGuest(bool has_render_view,
                      WebContentsImpl* web_contents,
                      BrowserPluginGuestDelegate* delegate);
+
+  // Protected for testing.
+  void set_has_attached_since_surface_set_for_test(bool has_attached) {
+    has_attached_since_surface_set_ = has_attached;
+  }
+
+  void set_attached_for_test(bool attached) {
+    attached_ = attached;
+  }
 
  private:
   class EmbedderVisibilityObserver;
@@ -375,6 +390,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // Indicates whether this guest has been attached to a container.
   bool attached_;
+
+  // Used to signal if a browser plugin has been attached since the last time
+  // the compositing surface was set.
+  bool has_attached_since_surface_set_;
 
   // An identifier that uniquely identifies a browser plugin within an embedder.
   int browser_plugin_instance_id_;

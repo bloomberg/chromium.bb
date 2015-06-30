@@ -101,6 +101,24 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
       received_delegated_frame_(false) {}
   ~TestBrowserPluginGuest() override {}
 
+  void ResetTestData() {
+    update_frame_size_received_= gfx::Size();
+    update_scale_factor_received_ = 0.f;
+    last_surface_id_received_ = cc::SurfaceId();
+    last_frame_size_received_ = gfx::Size();
+    last_scale_factor_received_ = 0.f;
+    received_delegated_frame_ = false;
+  }
+
+  void set_has_attached_since_surface_set(bool has_attached_since_surface_set) {
+    BrowserPluginGuest::set_has_attached_since_surface_set_for_test(
+        has_attached_since_surface_set);
+  }
+
+  void set_attached(bool attached) {
+    BrowserPluginGuest::set_attached_for_test(attached);
+  }
+
   void UpdateGuestSizeIfNecessary(const gfx::Size& frame_size,
                                   float scale_factor) override {
     update_frame_size_received_= frame_size;
@@ -234,6 +252,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   view_->SetSize(view_size);
   view_->Show();
 
+  browser_plugin_guest_->set_attached(true);
   view_->OnSwapCompositorFrame(
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
@@ -264,6 +283,46 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
     EXPECT_EQ(view_size, browser_plugin_guest_->last_frame_size_received_);
     EXPECT_EQ(scale_factor, browser_plugin_guest_->last_scale_factor_received_);
   }
+
+  browser_plugin_guest_->ResetTestData();
+  browser_plugin_guest_->set_has_attached_since_surface_set(true);
+
+  view_->OnSwapCompositorFrame(
+      0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
+
+  if (UseSurfacesEnabled()) {
+    cc::SurfaceId id = surface_id();
+    if (!id.is_null()) {
+#if !defined(OS_ANDROID)
+      ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+      cc::SurfaceManager* manager = factory->GetSurfaceManager();
+      cc::Surface* surface = manager->GetSurfaceForId(id);
+      EXPECT_TRUE(surface);
+      // There should be a SurfaceSequence created by the RWHVGuest.
+      EXPECT_EQ(1u, surface->GetDestructionDependencyCount());
+#endif
+      // Surface ID should have been passed to BrowserPluginGuest to
+      // be sent to the embedding renderer.
+      EXPECT_EQ(id, browser_plugin_guest_->last_surface_id_received_);
+      EXPECT_EQ(view_size, browser_plugin_guest_->last_frame_size_received_);
+      EXPECT_EQ(scale_factor,
+                browser_plugin_guest_->last_scale_factor_received_);
+    }
+  } else {
+    EXPECT_TRUE(browser_plugin_guest_->received_delegated_frame_);
+    EXPECT_EQ(view_size, browser_plugin_guest_->last_frame_size_received_);
+    EXPECT_EQ(scale_factor, browser_plugin_guest_->last_scale_factor_received_);
+  }
+
+  browser_plugin_guest_->set_attached(false);
+  browser_plugin_guest_->ResetTestData();
+
+  view_->OnSwapCompositorFrame(
+      0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
+  EXPECT_EQ(gfx::Size(), browser_plugin_guest_->update_frame_size_received_);
+  EXPECT_EQ(0.f, browser_plugin_guest_->update_scale_factor_received_);
+  if (UseSurfacesEnabled())
+    EXPECT_TRUE(surface_id().is_null());
 }
 
 }  // namespace content

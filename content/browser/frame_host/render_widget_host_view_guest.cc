@@ -207,8 +207,11 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
-  if (!guest_)
+  if (!guest_ || !guest_->attached()) {
+    // We shouldn't hang on to a surface while we are detached.
+    ClearCompositorSurfaceIfNecessary();
     return;
+  }
 
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
   // When not using surfaces, the frame just gets proxied to
@@ -237,10 +240,9 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   }
   if (output_surface_id != last_output_surface_id_ ||
       frame_size != current_surface_size_ ||
-      scale_factor != current_surface_scale_factor_) {
-    if (surface_factory_ && !surface_id_.is_null())
-      surface_factory_->Destroy(surface_id_);
-    surface_id_ = cc::SurfaceId();
+      scale_factor != current_surface_scale_factor_ ||
+      guest_->has_attached_since_surface_set()) {
+    ClearCompositorSurfaceIfNecessary();
     last_output_surface_id_ = output_surface_id;
     current_surface_size_ = frame_size;
     current_surface_scale_factor_ = scale_factor;

@@ -158,6 +158,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   friend class RenderWidgetHostViewChildFrameTest;
   friend class RenderWidgetHostViewGuestSurfaceTest;
 
+  // Clears current compositor surface, if one is in use.
+  void ClearCompositorSurfaceIfNecessary();
+
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
 
