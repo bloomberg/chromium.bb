@@ -266,13 +266,15 @@ void VideoRendererImpl::OnFrameDropped() {
 void VideoRendererImpl::CreateVideoThread() {
   // This may fail and cause a crash if there are too many threads created in
   // the current process. See http://crbug.com/443291
-  CHECK(base::PlatformThread::Create(0, this, &thread_));
-
+  const base::ThreadPriority priority =
 #if defined(OS_WIN)
-  // Bump up our priority so our sleeping is more accurate.
-  // TODO(scherkus): find out if this is necessary, but it seems to help.
-  ::SetThreadPriority(thread_.platform_handle(), THREAD_PRIORITY_ABOVE_NORMAL);
-#endif  // defined(OS_WIN)
+      // Bump up our priority so our sleeping is more accurate.
+      // TODO(scherkus): find out if this is necessary, but it seems to help.
+      base::ThreadPriority::DISPLAY;
+#else
+      base::ThreadPriority::NORMAL;
+#endif
+  CHECK(base::PlatformThread::CreateWithPriority(0, this, &thread_, priority));
 }
 
 void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
