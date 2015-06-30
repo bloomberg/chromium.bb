@@ -10,7 +10,6 @@ import android.util.Log;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.ui.UiUtils;
 
 /**
  * Activity base class that all the EnhnacedBookmark activities inherit. Currently it's responsible
@@ -30,11 +29,5 @@ abstract class EnhancedBookmarkActivityBase extends AppCompatActivity {
             Log.e(TAG, "Failed to start browser process.", e);
             ChromeApplication.reportStartupErrorAndExit(e);
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        UiUtils.hideKeyboard(getWindow().getDecorView());
     }
 }
