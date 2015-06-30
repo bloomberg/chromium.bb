@@ -1193,11 +1193,10 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 void NavigationControllerImpl::RendererDidNavigateToSamePage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  // This mode implies we have a pending entry that's the same as an existing
-  // entry for this page ID. This entry is guaranteed to exist by
+  // This classification says that we have a pending entry that's the same as
+  // the last committed entry. This entry is guaranteed to exist by
   // ClassifyNavigation. All we need to do is update the existing entry.
-  NavigationEntryImpl* existing_entry = GetEntryWithPageID(
-      rfh->GetSiteInstance(), params.page_id);
+  NavigationEntryImpl* existing_entry = GetLastCommittedEntry();
 
   // We assign the entry's unique ID to be that of the new one. Since this is
   // always the result of a user action, we want to dismiss infobars, etc. like
