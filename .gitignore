@@ -55,6 +55,7 @@ libdrm_radeon.pc
 libdrm_omap.pc
 libdrm_exynos.pc
 libdrm_freedreno.pc
+libdrm_amdgpu.pc
 libkms.pc
 libtool
 ltmain.sh
@@ -73,6 +74,7 @@ stamp-h1
 tdfx.kld
 via.kld
 tests/auth
+tests/amdgpu/amdgpu_test
 tests/dristat
 tests/drmsl
 tests/drmstat
