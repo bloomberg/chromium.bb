@@ -2959,8 +2959,17 @@ void WebContentsImpl::OnDidFinishLoad(const GURL& url) {
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
-  if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
-    controller_.GoToOffset(offset);
+  if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
+    // Not NavigationController::GoToOffset(). The renderer's request is
+    // relative to itself, the last committed entry, while GoToOffset() is
+    // relative to the "active" entry, which might be the pending entry if there
+    // is one.
+    int index = controller_.GetLastCommittedEntryIndex() + offset;
+    if (index < 0 || index >= controller_.GetEntryCount())
+      return;
+
+    controller_.GoToIndex(index);
+  }
 }
 
 void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,

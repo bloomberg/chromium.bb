@@ -1695,7 +1695,9 @@ TEST_F(NavigationControllerTest, Back_OtherBackPending) {
 
   // Now have the renderer request a navigation back to the first page. This
   // will not match the pending one.
-  controller.GoToOffset(-2);
+  contents()->OnGoToEntryAtOffset(-2);
+  EXPECT_EQ(0, controller.GetPendingEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
   entry_id = controller.GetPendingEntry()->GetUniqueID();
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(0, entry_id, false, kUrl1);
