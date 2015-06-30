@@ -100,6 +100,13 @@ ClipNodeData::ClipNodeData() : transform_id(-1), target_id(-1) {
 OpacityNodeData::OpacityNodeData() : opacity(1.f), screen_space_opacity(1.f) {
 }
 
+void TransformTree::clear() {
+  PropertyTree<TransformNode>::clear();
+
+  nodes_affected_by_inner_viewport_bounds_delta_.clear();
+  nodes_affected_by_outer_viewport_bounds_delta_.clear();
+}
+
 bool TransformTree::ComputeTransform(int source_id,
                                      int dest_id,
                                      gfx::Transform* transform) const {
@@ -156,19 +163,12 @@ bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
           node->parent_id != node->data.source_node_id);
 }
 
-static bool AffectedByBoundsDelta(TransformNode* node) {
-  return node->data.affected_by_inner_viewport_bounds_delta_x ||
-         node->data.affected_by_inner_viewport_bounds_delta_y ||
-         node->data.affected_by_outer_viewport_bounds_delta_x ||
-         node->data.affected_by_outer_viewport_bounds_delta_y;
-}
-
 void TransformTree::UpdateTransforms(int id) {
   TransformNode* node = Node(id);
   TransformNode* parent_node = parent(node);
   TransformNode* target_node = Node(node->data.target_id);
   if (node->data.needs_local_transform_update ||
-      NeedsSourceToParentUpdate(node) || AffectedByBoundsDelta(node))
+      NeedsSourceToParentUpdate(node))
     UpdateLocalTransform(node);
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSublayerScale(node);
@@ -424,6 +424,50 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
                                                 -translation.y(), 0);
 
   node->data.scroll_snap = translation;
+}
+
+void TransformTree::SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta) {
+  if (inner_viewport_bounds_delta_ == bounds_delta)
+    return;
+
+  inner_viewport_bounds_delta_ = bounds_delta;
+
+  if (nodes_affected_by_inner_viewport_bounds_delta_.empty())
+    return;
+
+  set_needs_update(true);
+  for (int i : nodes_affected_by_inner_viewport_bounds_delta_)
+    Node(i)->data.needs_local_transform_update = true;
+}
+
+void TransformTree::SetOuterViewportBoundsDelta(gfx::Vector2dF bounds_delta) {
+  if (outer_viewport_bounds_delta_ == bounds_delta)
+    return;
+
+  outer_viewport_bounds_delta_ = bounds_delta;
+
+  if (nodes_affected_by_outer_viewport_bounds_delta_.empty())
+    return;
+
+  set_needs_update(true);
+  for (int i : nodes_affected_by_outer_viewport_bounds_delta_)
+    Node(i)->data.needs_local_transform_update = true;
+}
+
+void TransformTree::AddNodeAffectedByInnerViewportBoundsDelta(int node_id) {
+  nodes_affected_by_inner_viewport_bounds_delta_.push_back(node_id);
+}
+
+void TransformTree::AddNodeAffectedByOuterViewportBoundsDelta(int node_id) {
+  nodes_affected_by_outer_viewport_bounds_delta_.push_back(node_id);
+}
+
+bool TransformTree::HasNodesAffectedByInnerViewportBoundsDelta() const {
+  return !nodes_affected_by_inner_viewport_bounds_delta_.empty();
+}
+
+bool TransformTree::HasNodesAffectedByOuterViewportBoundsDelta() const {
+  return !nodes_affected_by_outer_viewport_bounds_delta_.empty();
 }
 
 void OpacityTree::UpdateOpacities(int id) {

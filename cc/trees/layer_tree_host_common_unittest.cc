@@ -7715,6 +7715,68 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
   EXPECT_EQ(affected_by_delta, sublayer->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, NodesAffectedByBoundsDeltaGetUpdated) {
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> inner_viewport_container_layer =
+      Layer::Create(layer_settings());
+  scoped_refptr<Layer> inner_viewport_scroll_layer =
+      Layer::Create(layer_settings());
+  scoped_refptr<Layer> outer_viewport_container_layer =
+      Layer::Create(layer_settings());
+  scoped_refptr<Layer> outer_viewport_scroll_layer =
+      Layer::Create(layer_settings());
+
+  root->AddChild(inner_viewport_container_layer);
+  inner_viewport_container_layer->AddChild(inner_viewport_scroll_layer);
+  inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
+  outer_viewport_container_layer->AddChild(outer_viewport_scroll_layer);
+
+  inner_viewport_scroll_layer->SetScrollClipLayerId(
+      inner_viewport_container_layer->id());
+  outer_viewport_scroll_layer->SetScrollClipLayerId(
+      outer_viewport_container_layer->id());
+
+  inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+  outer_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+
+  host()->SetRootLayer(root);
+  host()->RegisterViewportLayers(nullptr, root, inner_viewport_scroll_layer,
+                                 outer_viewport_scroll_layer);
+
+  scoped_refptr<Layer> fixed_to_inner = Layer::Create(layer_settings());
+  scoped_refptr<Layer> fixed_to_outer = Layer::Create(layer_settings());
+
+  inner_viewport_scroll_layer->AddChild(fixed_to_inner);
+  outer_viewport_scroll_layer->AddChild(fixed_to_outer);
+
+  LayerPositionConstraint fixed_to_right;
+  fixed_to_right.set_is_fixed_position(true);
+  fixed_to_right.set_is_fixed_to_right_edge(true);
+
+  fixed_to_inner->SetPositionConstraint(fixed_to_right);
+  fixed_to_outer->SetPositionConstraint(fixed_to_right);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+
+  TransformTree& transform_tree = host()->property_trees()->transform_tree;
+  EXPECT_TRUE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
+  EXPECT_TRUE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
+
+  LayerPositionConstraint fixed_to_left;
+  fixed_to_left.set_is_fixed_position(true);
+  fixed_to_inner->SetPositionConstraint(fixed_to_left);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_FALSE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
+  EXPECT_TRUE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
+
+  fixed_to_outer->SetPositionConstraint(fixed_to_left);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_FALSE(transform_tree.HasNodesAffectedByInnerViewportBoundsDelta());
+  EXPECT_FALSE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
+}
+
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
   const gfx::Transform identity_matrix;
   scoped_refptr<Layer> root = Layer::Create(layer_settings());

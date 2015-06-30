@@ -179,7 +179,7 @@ class CC_EXPORT PropertyTree {
     return size() ? &nodes_[nodes_.size() - 1] : nullptr;
   }
 
-  void clear();
+  virtual void clear();
   size_t size() const { return nodes_.size(); }
 
   void set_needs_update(bool needs_update) { needs_update_ = needs_update; }
@@ -196,6 +196,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
   TransformTree();
   ~TransformTree() override;
+
+  void clear() override;
 
   // Computes the change of basis transform from node |source_id| to |dest_id|.
   // The function returns false iff the inverse of a singular transform was
@@ -249,19 +251,21 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return source_to_parent_updates_allowed_;
   }
 
-  void set_inner_viewport_bounds_delta(gfx::Vector2dF bounds_delta) {
-    inner_viewport_bounds_delta_ = bounds_delta;
-  }
+  void SetInnerViewportBoundsDelta(gfx::Vector2dF bounds_delta);
   gfx::Vector2dF inner_viewport_bounds_delta() const {
     return inner_viewport_bounds_delta_;
   }
 
-  void set_outer_viewport_bounds_delta(gfx::Vector2dF bounds_delta) {
-    outer_viewport_bounds_delta_ = bounds_delta;
-  }
+  void SetOuterViewportBoundsDelta(gfx::Vector2dF bounds_delta);
   gfx::Vector2dF outer_viewport_bounds_delta() const {
     return outer_viewport_bounds_delta_;
   }
+
+  void AddNodeAffectedByInnerViewportBoundsDelta(int node_id);
+  void AddNodeAffectedByOuterViewportBoundsDelta(int node_id);
+
+  bool HasNodesAffectedByInnerViewportBoundsDelta() const;
+  bool HasNodesAffectedByOuterViewportBoundsDelta() const;
 
  private:
   // Returns true iff the node at |desc_id| is a descendant of the node at
@@ -299,6 +303,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   bool source_to_parent_updates_allowed_;
   gfx::Vector2dF inner_viewport_bounds_delta_;
   gfx::Vector2dF outer_viewport_bounds_delta_;
+  std::vector<int> nodes_affected_by_inner_viewport_bounds_delta_;
+  std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};
