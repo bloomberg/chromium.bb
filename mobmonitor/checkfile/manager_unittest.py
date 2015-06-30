@@ -178,19 +178,26 @@ class RunCommand(threading.Thread):
     self.timeout = timeout
     self.p = None
 
+    self.proc_stdout = None
+    self.proc_stderr = None
+
   def run(self):
     self.p = subprocess.Popen(self.cmd, stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT)
-    self.p.wait()
+    self.proc_stdout, self.proc_stderr = self.p.communicate()
 
   def Stop(self):
     self.join(self.timeout)
 
     if self.is_alive():
       self.p.terminate()
-      self.join()
+      self.join(self.timeout)
 
-    return self.p.stdout.read()
+      if self.is_alive():
+        self.p.kill()
+        self.join(self.timeout)
+
+    return self.proc_stdout
 
 
 class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
