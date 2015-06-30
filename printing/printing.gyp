@@ -317,5 +317,22 @@
         }
       ]
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'printing_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'printing_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'printing_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ]
 }

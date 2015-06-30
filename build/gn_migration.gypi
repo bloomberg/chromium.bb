@@ -536,6 +536,7 @@
             '../media/media.gyp:media_unittests_run',
             '../media/midi/midi.gyp:midi_unittests_run',
             '../net/net.gyp:net_unittests_run',
+            '../printing/printing.gyp:printing_unittests_run',
             '../skia/skia_tests.gyp:skia_unittests_run',
             '../sql/sql.gyp:sql_unittests_run',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests_run',
