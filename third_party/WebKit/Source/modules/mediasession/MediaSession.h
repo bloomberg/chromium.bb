@@ -10,18 +10,20 @@
 
 namespace blink {
 
-class MediaSession : public ScriptWrappable, public RefCountedWillBeNoBase<MediaSession> {
+class MediaSession : public GarbageCollected<MediaSession>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RefPtrWillBeRawPtr<MediaSession> create();
+    static MediaSession* create();
 
     void activate();
     void deactivate();
+
+    DEFINE_INLINE_TRACE() { }
 
 private:
     MediaSession();
 };
 
-}
+} // namespace blink
 
 #endif // MediaSession_h

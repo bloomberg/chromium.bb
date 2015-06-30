@@ -11,9 +11,9 @@ MediaSession::MediaSession()
 {
 }
 
-RefPtrWillBeRawPtr<MediaSession> MediaSession::create()
+MediaSession* MediaSession::create()
 {
-    return adoptRefWillBeNoop(new MediaSession());
+    return new MediaSession;
 }
 
 void MediaSession::activate()
@@ -24,4 +24,4 @@ void MediaSession::deactivate()
 {
 }
 
-}
+} // namespace blink

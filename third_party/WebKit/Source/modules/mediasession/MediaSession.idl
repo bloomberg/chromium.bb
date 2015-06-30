@@ -4,6 +4,7 @@
 
 [
     Constructor(),
+    GarbageCollected,
     RuntimeEnabled=MediaSession,
 ] interface MediaSession {
     void activate();
