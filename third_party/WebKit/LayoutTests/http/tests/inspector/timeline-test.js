@@ -406,7 +406,7 @@ function generateFrames(count, callback)
             return;
         }
         if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(requestAnimationFrame.bind(window, makeFrame));
+            testRunner.capturePixelsAsyncThen(requestAnimationFrame.bind(window, makeFrame));
         else
             window.requestAnimationFrame(makeFrame);
     }

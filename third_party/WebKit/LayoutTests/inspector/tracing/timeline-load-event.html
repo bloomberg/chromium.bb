@@ -10,7 +10,7 @@ function display(callback)
     var popup = window.open("data:text/html,<b>Hello, world</b>");
     popup.onload = function()
     {
-        requestAnimationFrame(testRunner.layoutAndPaintAsyncThen.bind(testRunner, callback));
+        requestAnimationFrame(testRunner.capturePixelsAsyncThen.bind(testRunner, callback));
     }
 }
 
