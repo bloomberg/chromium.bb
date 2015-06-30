@@ -1167,8 +1167,8 @@ static PassRefPtrWillBeRawPtr<MutableStylePropertySet> styleFromMatchedRulesForE
     RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     RefPtrWillBeRawPtr<StyleRuleList> matchedRules = element->document().ensureStyleResolver().styleRulesForElement(element, rulesToInclude);
     if (matchedRules) {
-        for (unsigned i = 0; i < matchedRules->m_list.size(); ++i)
-            style->mergeAndOverrideOnConflict(&matchedRules->m_list[i]->properties());
+        for (unsigned i = 0; i < matchedRules->size(); ++i)
+            style->mergeAndOverrideOnConflict(&matchedRules->at(i)->properties());
     }
     return style.release();
 }

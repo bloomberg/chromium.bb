@@ -83,20 +83,20 @@ WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MatchedRule);
 
 namespace blink {
 
-// FIXME: oilpan: when transition types are gone this class can be replaced with HeapVector.
-class StyleRuleList final : public RefCountedWillBeGarbageCollected<StyleRuleList> {
-public:
-    static PassRefPtrWillBeRawPtr<StyleRuleList> create() { return adoptRefWillBeNoop(new StyleRuleList()); }
-
-    DEFINE_INLINE_TRACE()
-    {
 #if ENABLE(OILPAN)
-        visitor->trace(m_list);
-#endif
-    }
+using StyleRuleList = HeapVector<Member<StyleRule>>;
+#else
+class StyleRuleList final : public RefCounted<StyleRuleList> {
+public:
+    static PassRefPtr<StyleRuleList> create() { return adoptRef(new StyleRuleList()); }
 
-    WillBeHeapVector<RawPtrWillBeMember<StyleRule>> m_list;
+    void append(StyleRule* rule) { m_list.append(rule); }
+    StyleRule* at(size_t index) const { return m_list[index]; }
+    size_t size() const { return m_list.size(); }
+
+    Vector<StyleRule*> m_list;
 };
+#endif
 
 // ElementRuleCollector is designed to be used as a stack object.
 // Create one, ask what rules the ElementResolveContext matches

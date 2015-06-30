@@ -1362,8 +1362,8 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
     RefPtrWillBeRawPtr<StyleRuleList> rules = collector.matchedStyleRuleList();
     if (!rules)
         return;
-    for (size_t i = 0; i < rules->m_list.size(); i++)
-        state.style()->addCallbackSelector(rules->m_list[i]->selectorList().selectorsText());
+    for (size_t i = 0; i < rules->size(); i++)
+        state.style()->addCallbackSelector(rules->at(i)->selectorList().selectorsText());
 }
 
 void StyleResolver::setStatsEnabled(bool enabled)

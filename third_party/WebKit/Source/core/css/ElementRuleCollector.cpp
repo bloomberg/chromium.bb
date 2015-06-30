@@ -86,9 +86,15 @@ void ElementRuleCollector::clearMatchedRules()
 
 inline StyleRuleList* ElementRuleCollector::ensureStyleRuleList()
 {
+#if ENABLE(OILPAN)
+    if (!m_styleRuleList)
+        m_styleRuleList = new StyleRuleList();
+    return m_styleRuleList;
+#else
     if (!m_styleRuleList)
         m_styleRuleList = StyleRuleList::create();
     return m_styleRuleList.get();
+#endif
 }
 
 inline StaticCSSRuleList* ElementRuleCollector::ensureRuleList()
@@ -272,7 +278,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
 
     if (m_mode == SelectorChecker::CollectingStyleRules) {
         for (unsigned i = 0; i < m_matchedRules.size(); ++i)
-            ensureStyleRuleList()->m_list.append(m_matchedRules[i].ruleData()->rule());
+            ensureStyleRuleList()->append(m_matchedRules[i].ruleData()->rule());
         return;
     }
 
