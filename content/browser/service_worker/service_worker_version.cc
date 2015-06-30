@@ -57,6 +57,9 @@ const int kTimeoutTimerDelaySeconds = 30;
 // Time to wait until stopping an idle worker.
 const int kIdleWorkerTimeoutSeconds = 30;
 
+// Time until a stopping worker is considered stalled.
+const int kStopWorkerTimeoutSeconds = 30;
+
 // Default delay for scheduled update.
 const int kUpdateDelaySeconds = 1;
 
@@ -359,14 +362,12 @@ bool IsInstalled(ServiceWorkerVersion::Status status) {
   switch (status) {
     case ServiceWorkerVersion::NEW:
     case ServiceWorkerVersion::INSTALLING:
+    case ServiceWorkerVersion::REDUNDANT:
       return false;
     case ServiceWorkerVersion::INSTALLED:
     case ServiceWorkerVersion::ACTIVATING:
     case ServiceWorkerVersion::ACTIVATED:
       return true;
-    case ServiceWorkerVersion::REDUNDANT:
-      NOTREACHED() << "Cannot use REDUNDANT here.";
-      return false;
   }
   NOTREACHED() << "Unexpected status: " << status;
   return false;
@@ -394,20 +395,55 @@ const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
 
 class ServiceWorkerVersion::Metrics {
  public:
-  Metrics() {}
+  explicit Metrics(ServiceWorkerVersion* owner) : owner_(owner) {}
   ~Metrics() {
-    ServiceWorkerMetrics::RecordEventStatus(fired_events, handled_events);
+    ServiceWorkerMetrics::RecordEventStatus(fired_events_, handled_events_);
   }
 
   void RecordEventStatus(bool handled) {
-    ++fired_events;
+    ++fired_events_;
     if (handled)
-      ++handled_events;
+      ++handled_events_;
+  }
+
+  void NotifyStopping() {
+    stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STOPPING;
+  }
+
+  void NotifyStopped() {
+    switch (stop_status_) {
+      case ServiceWorkerMetrics::STOP_STATUS_STOPPED:
+      case ServiceWorkerMetrics::STOP_STATUS_STALLED_THEN_STOPPED:
+        return;
+      case ServiceWorkerMetrics::STOP_STATUS_STOPPING:
+        stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STOPPED;
+        break;
+      case ServiceWorkerMetrics::STOP_STATUS_STALLED:
+        stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STALLED_THEN_STOPPED;
+        break;
+      case ServiceWorkerMetrics::NUM_STOP_STATUS_TYPES:
+        NOTREACHED();
+        return;
+    }
+    if (IsInstalled(owner_->status()))
+      ServiceWorkerMetrics::RecordStopWorkerStatus(stop_status_);
+  }
+
+  void NotifyStalledInStopping() {
+    if (stop_status_ != ServiceWorkerMetrics::STOP_STATUS_STOPPING)
+      return;
+    stop_status_ = ServiceWorkerMetrics::STOP_STATUS_STALLED;
+    if (IsInstalled(owner_->status()))
+      ServiceWorkerMetrics::RecordStopWorkerStatus(stop_status_);
   }
 
  private:
-  size_t fired_events = 0;
-  size_t handled_events = 0;
+  ServiceWorkerVersion* owner_;
+  size_t fired_events_ = 0;
+  size_t handled_events_ = 0;
+  ServiceWorkerMetrics::StopWorkerStatus stop_status_ =
+      ServiceWorkerMetrics::STOP_STATUS_STOPPING;
+
   DISALLOW_COPY_AND_ASSIGN(Metrics);
 };
 
@@ -480,7 +516,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       context_(context),
       script_cache_map_(this, context),
       ping_controller_(new PingController(this)),
-      metrics_(new Metrics),
+      metrics_(new Metrics(this)),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
@@ -497,6 +533,12 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
     DCHECK(timeout_timer_.IsRunning());
     DCHECK(!embedded_worker_->devtools_attached());
     RecordStartWorkerResult(SERVICE_WORKER_ERROR_TIMEOUT);
+  }
+
+  // Same with stopping.
+  if (GetTickDuration(stop_time_) >
+      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds)) {
+    metrics_->NotifyStalledInStopping();
   }
 
   if (context_)
@@ -1086,61 +1128,23 @@ void ServiceWorkerVersion::OnStarted() {
 }
 
 void ServiceWorkerVersion::OnStopping() {
+  metrics_->NotifyStopping();
+  RestartTick(&stop_time_);
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
 }
 
 void ServiceWorkerVersion::OnStopped(
     EmbeddedWorkerInstance::Status old_status) {
-  DCHECK_EQ(STOPPED, running_status());
-  scoped_refptr<ServiceWorkerVersion> protect(this);
+  metrics_->NotifyStopped();
+  if (!stop_time_.is_null())
+    ServiceWorkerMetrics::RecordStopWorkerTime(GetTickDuration(stop_time_));
 
-  bool should_restart = !is_redundant() && !start_callbacks_.empty() &&
-                        (old_status != EmbeddedWorkerInstance::STARTING);
+  OnStoppedInternal(old_status);
+}
 
-  StopTimeoutTimer();
-
-  if (ping_controller_->IsTimedOut())
-    should_restart = false;
-
-  // Fire all stop callbacks.
-  RunCallbacks(this, &stop_callbacks_, SERVICE_WORKER_OK);
-
-  if (!should_restart) {
-    // Let all start callbacks fail.
-    RunCallbacks(this, &start_callbacks_,
-                 DeduceStartWorkerFailureReason(
-                     SERVICE_WORKER_ERROR_START_WORKER_FAILED));
-  }
-
-  // Let all message callbacks fail (this will also fire and clear all
-  // callbacks for events).
-  // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
-  RunIDMapCallbacks(&activate_callbacks_,
-                    SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
-  RunIDMapCallbacks(&install_callbacks_,
-                    SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
-  RunIDMapCallbacks(&fetch_callbacks_,
-                    SERVICE_WORKER_ERROR_FAILED,
-                    SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-                    ServiceWorkerResponse());
-  RunIDMapCallbacks(&sync_callbacks_,
-                    SERVICE_WORKER_ERROR_FAILED);
-  RunIDMapCallbacks(&notification_click_callbacks_,
-                    SERVICE_WORKER_ERROR_FAILED);
-  RunIDMapCallbacks(&push_callbacks_,
-                    SERVICE_WORKER_ERROR_FAILED);
-  RunIDMapCallbacks(&geofencing_callbacks_,
-                    SERVICE_WORKER_ERROR_FAILED);
-  RunIDMapCallbacks(&cross_origin_connect_callbacks_,
-                    SERVICE_WORKER_ERROR_FAILED,
-                    false);
-
-  streaming_url_request_jobs_.clear();
-
-  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
-
-  if (should_restart)
-    StartWorkerInternal(false /* pause_after_download */);
+void ServiceWorkerVersion::OnDetached(
+    EmbeddedWorkerInstance::Status old_status) {
+  OnStoppedInternal(old_status);
 }
 
 void ServiceWorkerVersion::OnReportException(
@@ -1862,6 +1866,11 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
   MarkIfStale();
 
+  if (GetTickDuration(stop_time_) >
+      base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds)) {
+    metrics_->NotifyStalledInStopping();
+  }
+
   // Trigger update if worker is stale and we waited long enough for it to go
   // idle.
   if (GetTickDuration(stale_time_) >
@@ -2115,6 +2124,56 @@ void ServiceWorkerVersion::FoundRegistrationForUpdate(
     return;
   context_->UpdateServiceWorker(registration.get(),
                                 false /* force_bypass_cache */);
+}
+
+void ServiceWorkerVersion::OnStoppedInternal(
+    EmbeddedWorkerInstance::Status old_status) {
+  DCHECK_EQ(STOPPED, running_status());
+  scoped_refptr<ServiceWorkerVersion> protect(this);
+
+  bool should_restart = !is_redundant() && !start_callbacks_.empty() &&
+                        (old_status != EmbeddedWorkerInstance::STARTING);
+
+  ClearTick(&stop_time_);
+  StopTimeoutTimer();
+
+  if (ping_controller_->IsTimedOut())
+    should_restart = false;
+
+  // Fire all stop callbacks.
+  RunCallbacks(this, &stop_callbacks_, SERVICE_WORKER_OK);
+
+  if (!should_restart) {
+    // Let all start callbacks fail.
+    RunCallbacks(this, &start_callbacks_,
+                 DeduceStartWorkerFailureReason(
+                     SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+  }
+
+  // Let all message callbacks fail (this will also fire and clear all
+  // callbacks for events).
+  // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
+  RunIDMapCallbacks(&activate_callbacks_,
+                    SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
+  RunIDMapCallbacks(&install_callbacks_,
+                    SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
+  RunIDMapCallbacks(&fetch_callbacks_, SERVICE_WORKER_ERROR_FAILED,
+                    SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+                    ServiceWorkerResponse());
+  RunIDMapCallbacks(&sync_callbacks_, SERVICE_WORKER_ERROR_FAILED);
+  RunIDMapCallbacks(&notification_click_callbacks_,
+                    SERVICE_WORKER_ERROR_FAILED);
+  RunIDMapCallbacks(&push_callbacks_, SERVICE_WORKER_ERROR_FAILED);
+  RunIDMapCallbacks(&geofencing_callbacks_, SERVICE_WORKER_ERROR_FAILED);
+  RunIDMapCallbacks(&cross_origin_connect_callbacks_,
+                    SERVICE_WORKER_ERROR_FAILED, false);
+
+  streaming_url_request_jobs_.clear();
+
+  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
+
+  if (should_restart)
+    StartWorkerInternal(false /* pause_after_download */);
 }
 
 }  // namespace content

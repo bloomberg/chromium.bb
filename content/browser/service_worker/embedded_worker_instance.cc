@@ -383,15 +383,15 @@ void EmbeddedWorkerInstance::OnStarted() {
 }
 
 void EmbeddedWorkerInstance::OnStopped() {
-  devtools_proxy_.reset();
-  if (context_)
-    context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
   Status old_status = status_;
-  status_ = STOPPED;
-  process_id_ = -1;
-  thread_id_ = -1;
-  start_callback_.Reset();
+  ReleaseProcess();
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped(old_status));
+}
+
+void EmbeddedWorkerInstance::OnDetached() {
+  Status old_status = status_;
+  ReleaseProcess();
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnDetached(old_status));
 }
 
 void EmbeddedWorkerInstance::OnPausedAfterDownload() {
@@ -457,6 +457,16 @@ void EmbeddedWorkerInstance::RemoveListener(Listener* listener) {
 void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
   starting_phase_ = SCRIPT_DOWNLOADING;
   network_accessed_for_script_ = true;
+}
+
+void EmbeddedWorkerInstance::ReleaseProcess() {
+  devtools_proxy_.reset();
+  if (context_)
+    context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
+  status_ = STOPPED;
+  process_id_ = -1;
+  thread_id_ = -1;
+  start_callback_.Reset();
 }
 
 // static

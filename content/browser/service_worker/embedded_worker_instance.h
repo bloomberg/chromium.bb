@@ -73,7 +73,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     virtual void OnStarting() {}
     virtual void OnStarted() {}
     virtual void OnStopping() {}
+    // Received ACK from renderer that the worker context terminated.
     virtual void OnStopped(Status old_status) {}
+    // The browser-side IPC endpoint for communication with the worker died.
+    virtual void OnDetached(Status old_status) {}
     virtual void OnPausedAfterDownload() {}
     virtual void OnReportException(const base::string16& error_message,
                                    int line_number,
@@ -205,6 +208,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // This will change the internal status from STARTING or RUNNING to
   // STOPPED.
   void OnStopped();
+  // Called when ServiceWorkerDispatcherHost for the worker died while it was
+  // running.
+  void OnDetached();
 
   // Called back from Registry when the worker instance sends message
   // to the browser (i.e. EmbeddedWorker observers).
@@ -223,6 +229,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url);
+
+  void ReleaseProcess();
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<EmbeddedWorkerRegistry> registry_;

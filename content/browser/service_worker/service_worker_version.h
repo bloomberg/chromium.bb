@@ -394,6 +394,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnStarted() override;
   void OnStopping() override;
   void OnStopped(EmbeddedWorkerInstance::Status old_status) override;
+  void OnDetached(EmbeddedWorkerInstance::Status old_status) override;
   void OnReportException(const base::string16& error_message,
                          int line_number,
                          int column_number,
@@ -527,6 +528,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
+  void OnStoppedInternal(EmbeddedWorkerInstance::Status old_status);
+
   const int64 version_id_;
   const int64 registration_id_;
   const GURL script_url_;
@@ -565,6 +568,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeTicks idle_time_;
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
+  // Holds the time the worker entered STOPPING status.
+  base::TimeTicks stop_time_;
   // Holds the time the worker was detected as stale and needs updating. We try
   // to update once the worker stops, but will also update if it stays alive too
   // long.

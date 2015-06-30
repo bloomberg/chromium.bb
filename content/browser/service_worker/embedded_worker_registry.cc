@@ -204,7 +204,7 @@ void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
          ++it) {
       int embedded_worker_id = *it;
       DCHECK(ContainsKey(worker_map_, embedded_worker_id));
-      worker_map_[embedded_worker_id]->OnStopped();
+      worker_map_[embedded_worker_id]->OnDetached();
     }
     worker_process_map_.erase(found);
   }

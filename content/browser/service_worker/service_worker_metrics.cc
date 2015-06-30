@@ -101,6 +101,15 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(const base::TimeDelta& time,
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartNewWorker.Time", time);
 }
 
+void ServiceWorkerMetrics::RecordStopWorkerStatus(StopWorkerStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StopWorker.Status", status,
+                            NUM_STOP_STATUS_TYPES);
+}
+
+void ServiceWorkerMetrics::RecordStopWorkerTime(const base::TimeDelta& time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StopWorker.Time", time);
+}
+
 void ServiceWorkerMetrics::RecordActivateEventStatus(
     ServiceWorkerStatusCode status) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus", status,
