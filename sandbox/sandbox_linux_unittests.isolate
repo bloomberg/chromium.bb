@@ -15,7 +15,6 @@
         'files': [
           '<(PRODUCT_DIR)/sandbox_linux_unittests',
         ],
-        'read_only': 1,
       },
     }],
   ],
