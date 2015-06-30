@@ -34,6 +34,8 @@ remoting.Settings.prototype.OAUTH2_API_BASE_URL = 'OAUTH2_API_BASE_URL';
 remoting.Settings.prototype.DIRECTORY_API_BASE_URL = 'DIRECTORY_API_BASE_URL';
 /** @type {string} URL for the talk gadget web service. */
 remoting.Settings.prototype.TALK_GADGET_URL = 'TALK_GADGET_URL';
+/** @type {string} Base URL for the telemetry REST API. */
+remoting.Settings.prototype.TELEMETRY_API_BASE_URL = 'TELEMETRY_API_BASE_URL';
 
 /**
  * @return {string} OAuth2 redirect URI. Note that this needs to be a function

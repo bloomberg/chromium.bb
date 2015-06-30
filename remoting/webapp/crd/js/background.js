@@ -9,9 +9,6 @@ var remoting = remoting || {};
 
 'use strict';
 
-// TODO(kelvinp): Update the url to point to the telemetry front-end.
-var LOGGING_URL = '';
-
 /**
  * @constructor
  */
@@ -47,10 +44,7 @@ BackgroundPage.prototype.preInit_ = function() {
     this.appLauncher_ = new remoting.V2AppLauncher();
     this.activationHandler_ = new remoting.ActivationHandler(
         base.Ipc.getInstance(), this.appLauncher_);
-    this.telemetryService_ = new remoting.TelemetryEventWriter.Service(
-        base.Ipc.getInstance(),
-        new remoting.XhrEventWriter(LOGGING_URL, chrome.storage.local,
-                                    'pending-log-requests'));
+    this.telemetryService_ = remoting.TelemetryEventWriter.Service.create();
     this.telemetryService_.init();
     this.disposables_.add(new base.EventHook(
         this.activationHandler_, remoting.ActivationHandler.Events.windowClosed,

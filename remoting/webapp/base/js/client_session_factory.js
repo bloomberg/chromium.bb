@@ -36,10 +36,12 @@ remoting.ClientSessionFactory = function(container, capabilities) {
  * Creates a session.
  *
  * @param {remoting.ClientSession.EventHandler} listener
+ * @param {boolean=} opt_useApiaryForLogging
  * @return {Promise<!remoting.ClientSession>} Resolves with the client session
  *     if succeeded or rejects with remoting.Error on failure.
  */
-remoting.ClientSessionFactory.prototype.createSession = function(listener) {
+remoting.ClientSessionFactory.prototype.createSession =
+    function(listener, opt_useApiaryForLogging) {
   var that = this;
   /** @type {string} */
   var token;
@@ -47,6 +49,7 @@ remoting.ClientSessionFactory.prototype.createSession = function(listener) {
   var signalStrategy;
   /** @type {remoting.ClientPlugin} */
   var clientPlugin;
+  var useApiaryForLogging = Boolean(opt_useApiaryForLogging);
 
   function OnError(/** remoting.Error */ error) {
     base.dispose(signalStrategy);
@@ -65,7 +68,8 @@ remoting.ClientSessionFactory.prototype.createSession = function(listener) {
     return createPlugin(that.container_, that.requiredCapabilities_);
   }).then(function(/** remoting.ClientPlugin */ plugin) {
     clientPlugin = plugin;
-    return new remoting.ClientSession(plugin, signalStrategy, listener);
+    return new remoting.ClientSession(
+        plugin, signalStrategy, useApiaryForLogging, listener);
   }).catch(
     remoting.Error.handler(OnError)
   );

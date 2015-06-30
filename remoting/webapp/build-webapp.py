@@ -225,6 +225,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
       'OAUTH2_API_HOST', 'https://www.googleapis.com')
   directoryApiHost = os.environ.get(
       'DIRECTORY_API_HOST', 'https://www.googleapis.com')
+  remotingApiHost = os.environ.get(
+      'REMOTING_API_HOST', 'https://remoting-pa.googleapis.com')
 
   is_app_remoting_webapp = webapp_type == 'app_remoting'
   is_prod_service_environment = service_environment == 'vendor' or \
@@ -271,6 +273,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   oauth2BaseUrl = oauth2AccountsHost + '/o/oauth2'
   oauth2ApiBaseUrl = oauth2ApiHost + '/oauth2'
   directoryApiBaseUrl = directoryApiHost + '/chromoting/v1'
+  telemetryApiBaseUrl = remotingApiHost + '/v1/events'
 
   if is_app_remoting_webapp:
     # Set the apiary endpoint and then set the endpoint version
@@ -302,6 +305,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   replaceString(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
   replaceString(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
   replaceString(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
+  replaceString(destination, 'TELEMETRY_API_BASE_URL', telemetryApiBaseUrl)
   if is_app_remoting_webapp:
     replaceString(destination, 'APP_REMOTING_API_BASE_URL',
                   appRemotingApiBaseUrl)
@@ -412,6 +416,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'OAUTH2_BASE_URL': oauth2BaseUrl,
         'OAUTH2_API_BASE_URL': oauth2ApiBaseUrl,
         'DIRECTORY_API_BASE_URL': directoryApiBaseUrl,
+        'TELEMETRY_API_BASE_URL':telemetryApiBaseUrl ,
         'APP_REMOTING_API_BASE_URL': appRemotingApiBaseUrl,
         'OAUTH2_ACCOUNTS_HOST': oauth2AccountsHost,
         'GOOGLE_API_HOSTS': googleApiHosts,

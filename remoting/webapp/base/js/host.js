@@ -41,6 +41,8 @@ remoting.Host = function(hostId) {
   this.updatedTime = '';
   /** @type {string} */
   this.hostOfflineReason = '';
+  /** @type {string} */
+  this.loggingChannel = '';
   /** @type {remoting.Host.Options} */
   this.options = new remoting.Host.Options(hostId);
 };

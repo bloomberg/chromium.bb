@@ -24,6 +24,7 @@ var remoting = remoting || {};
 /**
  * @param {remoting.ClientPlugin} plugin
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
+ * @param {boolean} useApiaryForLogging
  * @param {remoting.ClientSession.EventHandler} listener
  *
  * @constructor
@@ -31,7 +32,8 @@ var remoting = remoting || {};
  * @implements {base.Disposable}
  * @implements {remoting.ClientPlugin.ConnectionEventHandler}
  */
-remoting.ClientSession = function(plugin, signalStrategy, listener) {
+remoting.ClientSession = function(
+    plugin, signalStrategy, useApiaryForLogging, listener) {
   base.inherits(this, base.EventSourceImpl);
 
   /** @private */
@@ -56,7 +58,7 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
   this.hasReceivedFrame_ = false;
 
   /** @private {remoting.Logger} */
-  this.logger_ = new remoting.LogToServer(signalStrategy);
+  this.logger_ = this.createLogger_(useApiaryForLogging, signalStrategy);
 
   /** @private */
   this.signalStrategy_ = signalStrategy;
@@ -368,6 +370,27 @@ remoting.ClientSession.prototype.onFirstFrameReceived = function() {
  */
 remoting.ClientSession.prototype.hasReceivedFrame = function() {
   return this.hasReceivedFrame_;
+};
+
+/**
+ * @param {boolean} useApiary
+ * @param {remoting.SignalStrategy} signalStrategy
+ * @return {remoting.Logger}
+ *
+ * @private
+ */
+remoting.ClientSession.prototype.createLogger_ = function(
+    useApiary, signalStrategy) {
+  if (useApiary) {
+    var logger = new remoting.SessionLogger(
+      remoting.ChromotingEvent.Role.CLIENT,
+      remoting.TelemetryEventWriter.Client.write
+    );
+    signalStrategy.sendConnectionSetupResults(logger);
+    return logger;
+  } else {
+    return new remoting.LogToServer(signalStrategy);
+  }
 };
 
 /**

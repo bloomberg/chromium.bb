@@ -85,6 +85,16 @@ remoting.TelemetryEventWriter.Service.prototype.onSuspend_ = function() {
   this.eventWriter_.writeToStorage();
 };
 
+/** @return {remoting.TelemetryEventWriter.Service} */
+remoting.TelemetryEventWriter.Service.create = function() {
+  return new remoting.TelemetryEventWriter.Service(
+      base.Ipc.getInstance(),
+      new remoting.XhrEventWriter(
+          remoting.settings.TELEMETRY_API_BASE_URL,
+          chrome.storage.local,
+          'pending-log-requests'));
+};
+
 remoting.TelemetryEventWriter.Client = function() {};
 
 /**
@@ -149,15 +159,14 @@ SessionMonitor.prototype.unbindSession = function(windowId) {
   if (this.sessionMap_.has(windowId)) {
     var sessionInfo = this.sessionMap_.get(windowId);
     console.assert(sessionInfo !== undefined);
-    var event = inferSessionEndEvent(/** @type {SessionInfo} */ (sessionInfo));
-    this.eventWriter_.write(/** @type {Object} */ (event));
+    inferSessionEndEvent(/** @type {SessionInfo} */ (sessionInfo));
+    this.eventWriter_.write(/** @type {Object} */ (sessionInfo.event));
     this.sessionMap_.delete(windowId);
   }
 };
 
 /**
  * @param {SessionInfo} sessionInfo
- * @return {remoting.ChromotingEvent}
  */
 function inferSessionEndEvent(sessionInfo) {
   var event = sessionInfo.event;
@@ -174,7 +183,6 @@ function inferSessionEndEvent(sessionInfo) {
   }
   var elapsed = (Date.now() - sessionInfo.timestamp) / 1000.0;
   event.session_duration +=  elapsed;
-  return event;
 }
 
 })();

@@ -131,6 +131,8 @@ remoting.LegacyHostListApi.prototype.parseHostListResponse_ =
           host.updatedTime = base.getStringAttr(item, 'updatedTime', '');
           host.hostOfflineReason =
               base.getStringAttr(item, 'hostOfflineReason', '');
+          host.loggingChannel =
+              base.getStringAttr(item, 'loggingChannel', 'xmpp');
           return host;
       });
       return hosts;

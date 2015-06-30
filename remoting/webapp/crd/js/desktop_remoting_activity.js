@@ -48,7 +48,8 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
 remoting.DesktopRemotingActivity.prototype.start =
     function(host, credentialsProvider, opt_suppressOfflineError) {
   var that = this;
-  this.sessionFactory_.createSession(this).then(
+  var useApiaryForLogging = host.loggingChannel === 'apiary';
+  this.sessionFactory_.createSession(this, useApiaryForLogging).then(
     function(/** remoting.ClientSession */ session) {
       that.session_ = session;
       session.logHostOfflineErrors(!opt_suppressOfflineError);
