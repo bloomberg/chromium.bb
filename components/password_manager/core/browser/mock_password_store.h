@@ -22,6 +22,9 @@ class MockPasswordStore : public PasswordStore {
                     PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
+  MOCK_METHOD2(UpdateLoginWithPrimaryKey,
+               void(const autofill::PasswordForm&,
+                    const autofill::PasswordForm&));
   MOCK_METHOD2(ReportMetrics, void(const std::string&, bool));
   MOCK_METHOD2(ReportMetricsImpl, void(const std::string&, bool));
   MOCK_METHOD1(AddLoginImpl,

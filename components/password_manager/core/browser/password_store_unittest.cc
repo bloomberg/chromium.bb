@@ -349,6 +349,64 @@ TEST_F(PasswordStoreTest, GetLoginImpl) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
+TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
+  /* clang-format off */
+  static const PasswordFormData kTestCredentials[] = {
+      // The old credential.
+      {PasswordForm::SCHEME_HTML,
+       kTestWebRealm1,
+       kTestWebOrigin1,
+       "", L"", L"username_element_1",  L"password_element_1",
+       L"username_value_1",
+       L"", true, true, 1},
+      // The new credential with different values for all primary key fields.
+      {PasswordForm::SCHEME_HTML,
+       kTestWebRealm2,
+       kTestWebOrigin2,
+       "", L"", L"username_element_2",  L"password_element_2",
+       L"username_value_2",
+       L"", true, true, 1}};
+  /* clang-format on */
+
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
+  store->Init(syncer::SyncableService::StartSyncFlare());
+
+  scoped_ptr<PasswordForm> old_form(
+      CreatePasswordFormFromDataForTesting(kTestCredentials[0]));
+  store->AddLogin(*old_form);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  MockPasswordStoreObserver mock_observer;
+  store->AddObserver(&mock_observer);
+
+  scoped_ptr<PasswordForm> new_form(
+      CreatePasswordFormFromDataForTesting(kTestCredentials[1]));
+  EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(2u)));
+  PasswordForm old_primary_key;
+  old_primary_key.signon_realm = old_form->signon_realm;
+  old_primary_key.origin = old_form->origin;
+  old_primary_key.username_element = old_form->username_element;
+  old_primary_key.username_value = old_form->username_value;
+  old_primary_key.password_element = old_form->password_element;
+  store->UpdateLoginWithPrimaryKey(*new_form, old_primary_key);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  MockPasswordStoreConsumer mock_consumer;
+  ScopedVector<autofill::PasswordForm> expected_forms;
+  expected_forms.push_back(new_form.Pass());
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(expected_forms.get())));
+  store->GetAutofillableLogins(&mock_consumer);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  store->RemoveObserver(&mock_observer);
+  store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
 // When no Android applications are actually affiliated with the realm of the
 // observed form, GetLoginsWithAffiliations() should still return the exact and
 // PSL matching results, but not any stored Android credentials.

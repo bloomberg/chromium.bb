@@ -91,7 +91,14 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void AddLogin(const autofill::PasswordForm& form);
 
   // Updates the matching PasswordForm in the secure password store (async).
+  // If any of the primary key fields (signon_realm, origin, username_element,
+  // username_value, password_element) are updated, then the second version of
+  // the method must be used that takes |old_primary_key|, i.e., the old values
+  // for the primary key fields (the rest of the fields are ignored).
   virtual void UpdateLogin(const autofill::PasswordForm& form);
+  virtual void UpdateLoginWithPrimaryKey(
+      const autofill::PasswordForm& new_form,
+      const autofill::PasswordForm& old_primary_key);
 
   // Removes the matching PasswordForm from the secure password store (async).
   virtual void RemoveLogin(const autofill::PasswordForm& form);
@@ -304,6 +311,9 @@ class PasswordStore : protected PasswordStoreSync,
   void AddLoginInternal(const autofill::PasswordForm& form);
   void UpdateLoginInternal(const autofill::PasswordForm& form);
   void RemoveLoginInternal(const autofill::PasswordForm& form);
+  void UpdateLoginWithPrimaryKeyInternal(
+      const autofill::PasswordForm& new_form,
+      const autofill::PasswordForm& old_primary_key);
   void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
                                           base::Time delete_end);
   void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,

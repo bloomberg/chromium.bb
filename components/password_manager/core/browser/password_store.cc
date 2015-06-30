@@ -100,6 +100,14 @@ void PasswordStore::UpdateLogin(const PasswordForm& form) {
   ScheduleTask(base::Bind(&PasswordStore::UpdateLoginInternal, this, form));
 }
 
+void PasswordStore::UpdateLoginWithPrimaryKey(
+    const autofill::PasswordForm& new_form,
+    const autofill::PasswordForm& old_primary_key) {
+  CheckForEmptyUsernameAndPassword(new_form);
+  ScheduleTask(base::Bind(&PasswordStore::UpdateLoginWithPrimaryKeyInternal,
+                          this, new_form, old_primary_key));
+}
+
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
   ScheduleTask(base::Bind(&PasswordStore::RemoveLoginInternal, this, form));
 }
@@ -314,6 +322,15 @@ void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
 void PasswordStore::RemoveLoginInternal(const PasswordForm& form) {
   PasswordStoreChangeList changes = RemoveLoginImpl(form);
   NotifyLoginsChanged(changes);
+}
+
+void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
+    const PasswordForm& new_form,
+    const PasswordForm& old_primary_key) {
+  PasswordStoreChangeList all_changes = RemoveLoginImpl(old_primary_key);
+  PasswordStoreChangeList changes = AddLoginImpl(new_form);
+  all_changes.insert(all_changes.end(), changes.begin(), changes.end());
+  NotifyLoginsChanged(all_changes);
 }
 
 void PasswordStore::RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,

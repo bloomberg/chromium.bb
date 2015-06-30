@@ -637,11 +637,12 @@ void PasswordFormManager::UpdateLogin() {
   // Update the new preferred login.
   if (!selected_username_.empty()) {
     // An other possible username is selected. We set this selected username
-    // as the real username. The PasswordStore API isn't designed to update
-    // username, so we delete the old credentials and add a new one instead.
-    password_store->RemoveLogin(pending_credentials_);
+    // as the real username. Given that |username_value| is part of the Sync and
+    // PasswordStore primary key, the old primary key must be supplied.
+    PasswordForm old_primary_key(pending_credentials_);
     pending_credentials_.username_value = selected_username_;
-    password_store->AddLogin(pending_credentials_);
+    password_store->UpdateLoginWithPrimaryKey(pending_credentials_,
+                                              old_primary_key);
   } else if ((observed_form_.scheme == PasswordForm::SCHEME_HTML) &&
              (observed_form_.origin.spec().length() >
               observed_form_.signon_realm.length()) &&
@@ -673,14 +674,15 @@ void PasswordFormManager::UpdateLogin() {
     // If |observed_form_| was a sign-up or change password form, there is no
     // point in trying to update element names: they are likely going to be
     // different than those on a login form.
-    // Otherwise, given that |password_element| and |username_element| can't be
-    // updated because they are part of Sync and PasswordStore primary key, we
-    // must delete the old credentials altogether and then add the new ones.
-    password_store->RemoveLogin(pending_credentials_);
+    // Otherwise, given that |password_element| and |username_element| are part
+    // of Sync and PasswordStore primary key, the old primary key must be
+    // supplied to UpdateLogin().
+    PasswordForm old_primary_key(pending_credentials_);
     pending_credentials_.password_element = observed_form_.password_element;
     pending_credentials_.username_element = observed_form_.username_element;
     pending_credentials_.submit_element = observed_form_.submit_element;
-    password_store->AddLogin(pending_credentials_);
+    password_store->UpdateLoginWithPrimaryKey(pending_credentials_,
+                                              old_primary_key);
   } else {
     password_store->UpdateLogin(pending_credentials_);
   }

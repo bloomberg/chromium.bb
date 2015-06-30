@@ -983,8 +983,8 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   obsolete_form.times_used = 1;
 
   // Check that PasswordStore receives an update request with the complete form.
-  EXPECT_CALL(*mock_store(), RemoveLogin(obsolete_form));
-  EXPECT_CALL(*mock_store(), AddLogin(complete_form));
+  EXPECT_CALL(*mock_store(),
+              UpdateLoginWithPrimaryKey(complete_form, obsolete_form));
   form_manager.Save();
 }
 
