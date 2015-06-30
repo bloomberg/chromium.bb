@@ -543,6 +543,7 @@
             '../ui/events/events.gyp:events_unittests_run',
             '../ui/message_center/message_center.gyp:message_center_unittests_run',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
+            '../url/url.gyp:url_unittests_run',
           ],
           'conditions': [
             ['use_aura==1', {

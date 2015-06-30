@@ -123,5 +123,22 @@
         },
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'url_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'url_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'url_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
