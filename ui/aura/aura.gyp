@@ -314,4 +314,23 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'aura_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'aura_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'aura_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }
