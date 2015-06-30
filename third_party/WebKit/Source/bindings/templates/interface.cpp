@@ -555,25 +555,23 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
-{% if reachable_node_function or set_wrapper_reference_to_list %}
+{% if set_wrapper_reference_from or set_wrapper_reference_to %}
 void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
     {{cpp_class}}* impl = scriptWrappable->toImpl<{{cpp_class}}>();
-    {% if set_wrapper_reference_to_list %}
+    {% if set_wrapper_reference_to %}
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
-    {% for set_wrapper_reference_to in set_wrapper_reference_to_list %}
     {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {
         if (!DOMDataStore::containsWrapper({{set_wrapper_reference_to.name}}, isolate))
             {{set_wrapper_reference_to.name}}->wrap(isolate, creationContext);
         DOMDataStore::setWrapperReference(wrapper, {{set_wrapper_reference_to.name}}, isolate);
     }
-    {% endfor %}
     {% endif %}
-    {% if reachable_node_function %}
-    // The {{reachable_node_function}}() method may return a reference or a pointer.
-    if (Node* owner = WTF::getPtr(impl->{{reachable_node_function}}())) {
+    {% if set_wrapper_reference_from %}
+    // The {{set_wrapper_reference_from}}() method may return a reference or a pointer.
+    if (Node* owner = WTF::getPtr(impl->{{set_wrapper_reference_from}}())) {
         Node* root = V8GCController::opaqueRootForGC(isolate, owner);
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;

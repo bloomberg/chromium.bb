@@ -885,9 +885,12 @@ def ext_attributes_node_to_extended_attributes(idl_name, node):
         elif name == 'SetWrapperReferenceTo':
             if not child:
                 raise ValueError('[SetWrapperReferenceTo] requires a child, but has none.')
+            children = child.GetChildren()
+            if len(children) != 1:
+                raise ValueError('[SetWrapperReferenceTo] supports only one child.')
             if child_class != 'Arguments':
                 raise ValueError('[SetWrapperReferenceTo] only supports Arguments as child, but has child of class: %s' % child_class)
-            extended_attributes[name] = arguments_node_to_arguments(idl_name, child)
+            extended_attributes[name] = IdlArgument(idl_name, children[0])
         elif name == 'Exposed':
             if child_class and child_class != 'Arguments':
                 raise ValueError('[Exposed] only supports Arguments as child, but has child of class: %s' % child_class)

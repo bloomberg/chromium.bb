@@ -127,30 +127,31 @@ def interface_context(interface):
         includes.add('core/frame/UseCounter.h')
 
     # [SetWrapperReferenceFrom]
-    reachable_node_function = extended_attributes.get('SetWrapperReferenceFrom')
-    if reachable_node_function:
+    set_wrapper_reference_from = extended_attributes.get('SetWrapperReferenceFrom')
+    if set_wrapper_reference_from:
         includes.update(['bindings/core/v8/V8GCController.h',
                          'core/dom/Element.h'])
 
     # [SetWrapperReferenceTo]
-    set_wrapper_reference_to_list = [{
-        'name': argument.name,
-        # FIXME: properly should be:
-        # 'cpp_type': argument.idl_type.cpp_type_args(raw_type=True),
-        # (if type is non-wrapper type like NodeFilter, normally RefPtr)
-        # Raw pointers faster though, and NodeFilter hacky anyway.
-        'cpp_type': argument.idl_type.implemented_as + '*',
-        'idl_type': argument.idl_type,
-        'v8_type': v8_types.v8_type(argument.idl_type.name),
-    } for argument in extended_attributes.get('SetWrapperReferenceTo', [])]
-    for set_wrapper_reference_to in set_wrapper_reference_to_list:
+    set_wrapper_reference_to_argument = extended_attributes.get('SetWrapperReferenceTo')
+    set_wrapper_reference_to = None
+    if set_wrapper_reference_to_argument:
+        set_wrapper_reference_to = {
+            'name': set_wrapper_reference_to_argument.name,
+            # FIXME: properly should be:
+            # 'cpp_type': set_wrapper_reference_to_argument.idl_type.cpp_type_args(raw_type=True),
+            # (if type is non-wrapper type like NodeFilter, normally RefPtr)
+            # Raw pointers faster though, and NodeFilter hacky anyway.
+            'cpp_type': set_wrapper_reference_to_argument.idl_type.implemented_as + '*',
+            'idl_type': set_wrapper_reference_to_argument.idl_type,
+            'v8_type': v8_types.v8_type(set_wrapper_reference_to_argument.idl_type.name),
+        }
         set_wrapper_reference_to['idl_type'].add_includes_for_type()
 
     # [SetWrapperReferenceFrom]
     has_visit_dom_wrapper = (
         has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
-        reachable_node_function or
-        set_wrapper_reference_to_list)
+        set_wrapper_reference_from or set_wrapper_reference_to)
 
     this_gc_type = gc_type(interface)
 
@@ -194,9 +195,9 @@ def interface_context(interface):
         'pass_cpp_type': cpp_template_type(
             cpp_ptr_type('PassRefPtr', 'RawPtr', this_gc_type),
             cpp_name(interface)),
-        'reachable_node_function': reachable_node_function,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
-        'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
+        'set_wrapper_reference_from': set_wrapper_reference_from,
+        'set_wrapper_reference_to': set_wrapper_reference_to,
         'v8_class': v8_class_name,
         'v8_class_or_partial': v8_class_name_or_partial,
         'wrapper_class_id': wrapper_class_id,
