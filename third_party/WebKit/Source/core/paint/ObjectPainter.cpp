@@ -7,9 +7,11 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/style/ComputedStyle.h"
+#include "core/paint/BoxBorderPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "core/style/BorderEdge.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -54,52 +56,16 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
     if (styleToUse.outlineStyle() == BNONE)
         return;
 
-    IntRect inner = pixelSnappedIntRect(objectBounds);
+    LayoutRect inner(pixelSnappedIntRect(objectBounds));
     inner.inflate(styleToUse.outlineOffset());
 
-    IntRect outer = inner;
-    LayoutUnit outlineWidth = styleToUse.outlineWidth();
+    LayoutRect outer(inner);
+    int outlineWidth = styleToUse.outlineWidth();
     outer.inflate(outlineWidth);
 
-    // FIXME: This prevents outlines from painting inside the object. See bug 12042
-    if (outer.isEmpty())
-        return;
-
-    EBorderStyle outlineStyle = styleToUse.outlineStyle();
-    Color outlineColor = m_layoutObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
-
-    GraphicsContext* graphicsContext = paintInfo.context;
-    bool useTransparencyLayer = outlineColor.hasAlpha();
-    if (useTransparencyLayer) {
-        if (outlineStyle == SOLID) {
-            Path path;
-            path.setWindRule(RULE_EVENODD);
-            path.addRect(outer);
-            path.addRect(inner);
-            graphicsContext->setFillColor(outlineColor);
-            graphicsContext->fillPath(path);
-            return;
-        }
-        graphicsContext->beginLayer(static_cast<float>(outlineColor.alpha()) / 255);
-        outlineColor = Color(outlineColor.red(), outlineColor.green(), outlineColor.blue());
-    }
-
-    int leftOuter = outer.x();
-    int leftInner = inner.x();
-    int rightOuter = outer.maxX();
-    int rightInner = inner.maxX();
-    int topOuter = outer.y();
-    int topInner = inner.y();
-    int bottomOuter = outer.maxY();
-    int bottomInner = inner.maxY();
-
-    drawLineForBoxSide(graphicsContext, leftOuter, topOuter, leftInner, bottomOuter, BSLeft, outlineColor, outlineStyle, outlineWidth, outlineWidth);
-    drawLineForBoxSide(graphicsContext, leftOuter, topOuter, rightOuter, topInner, BSTop, outlineColor, outlineStyle, outlineWidth, outlineWidth);
-    drawLineForBoxSide(graphicsContext, rightInner, topOuter, rightOuter, bottomOuter, BSRight, outlineColor, outlineStyle, outlineWidth, outlineWidth);
-    drawLineForBoxSide(graphicsContext, leftOuter, bottomInner, rightOuter, bottomOuter, BSBottom, outlineColor, outlineStyle, outlineWidth, outlineWidth);
-
-    if (useTransparencyLayer)
-        graphicsContext->endLayer();
+    const BorderEdge commonEdgeInfo(outlineWidth,
+        m_layoutObject.resolveColor(styleToUse, CSSPropertyOutlineColor), styleToUse.outlineStyle());
+    BoxBorderPainter(styleToUse, outer, inner, commonEdgeInfo).paintBorder(paintInfo, outer);
 }
 
 void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

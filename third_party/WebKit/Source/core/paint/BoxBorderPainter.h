@@ -24,6 +24,9 @@ public:
     BoxBorderPainter(const LayoutRect& borderRect, const ComputedStyle&, const IntRect& clipRect,
         BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
 
+    BoxBorderPainter(const ComputedStyle&, const LayoutRect& outer, const LayoutRect& inner,
+        const BorderEdge& uniformEdgeInfo);
+
     void paintBorder(const PaintInfo&, const LayoutRect& borderRect) const;
 
 private:
@@ -33,6 +36,8 @@ private:
         SoftMiter, // Anti-aliased
         HardMiter, // Not anti-aliased
     };
+
+    void computeBorderProperties();
 
     BorderEdgeFlags paintOpacityGroup(GraphicsContext*, const ComplexBorderInfo&, unsigned index,
         float accumulatedOpacity) const;
