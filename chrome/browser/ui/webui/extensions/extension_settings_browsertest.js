@@ -84,18 +84,22 @@ ExtensionSettingsWebUITest.prototype = {
   /** @protected */
   enableDeveloperMode: function() {
     var next = this.nextStep.bind(this);
-    extensions.ExtensionSettings.getInstance().testingDeveloperModeCallback =
-        function() {
+    document.addEventListener('devControlsVisibilityUpdated',
+                              function devCallback() {
+      // Callback should only be handled once.
+      document.removeEventListener(devCallback);
+
       chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
         assertTrue(extensionSettings.classList.contains('dev-mode'));
         assertTrue(profileInfo.inDeveloperMode);
-        next();
 
         // This event isn't thrown because transitions are disabled.
         // Ensure transition here so that any dependent code does not break.
         ensureTransitionEndEvent($('dev-controls'), 0);
+
+        next();
       });
-    };
+    });
 
     var extensionSettings = getRequiredElement('extension-settings');
     assertFalse(extensionSettings.classList.contains('dev-mode'));
@@ -121,8 +125,7 @@ ExtensionSettingsWebUITest.prototype = {
 
 // Verify that developer mode doesn't change behavior when the number of
 // extensions changes.
-// Disabled due to flakes; http://crbug.com/505506.
-TEST_F('ExtensionSettingsWebUITest', 'DISABLED_testDeveloperModeNoExtensions',
+TEST_F('ExtensionSettingsWebUITest', 'testDeveloperModeNoExtensions',
        function() {
   this.testDeveloperMode();
 });
