@@ -37,6 +37,7 @@
           'android/content_uri_utils.cc',
           'android/content_uri_utils.h',
           'android/cpu_features.cc',
+          'android/cxa_demangle_stub.cc',
           'android/event_log.cc',
           'android/event_log.h',
           'android/field_trial_list.cc',
