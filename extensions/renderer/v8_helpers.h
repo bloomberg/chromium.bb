@@ -39,6 +39,13 @@ inline v8::Local<v8::String> ToV8StringUnsafe(
       .ToLocalChecked();
 }
 
+inline v8::Local<v8::String> ToV8StringUnsafe(
+    v8::Isolate* isolate,
+    const std::string& str,
+    v8::NewStringType string_type = v8::NewStringType::kNormal) {
+  return ToV8StringUnsafe(isolate, str.c_str(), string_type);
+}
+
 // Returns true if |maybe| is both a value, and that value is true.
 inline bool IsTrue(v8::Maybe<bool> maybe) {
   return maybe.IsJust() && maybe.FromJust();

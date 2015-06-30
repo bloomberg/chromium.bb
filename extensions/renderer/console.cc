@@ -14,9 +14,12 @@
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/v8_helpers.h"
 
 namespace extensions {
 namespace console {
+
+using namespace v8_helpers;
 
 namespace {
 
@@ -62,7 +65,16 @@ void BindLogMethod(v8::Isolate* isolate,
       isolate,
       &BoundLogMethodCallback,
       v8::External::New(isolate, reinterpret_cast<void*>(log_method)));
-  target->Set(v8::String::NewFromUtf8(isolate, name.c_str()),
+  v8::Local<v8::Function> function;
+  if (!tmpl->GetFunction(isolate->GetCurrentContext()).ToLocal(&function)) {
+    LOG(FATAL) << "Could not create log function \"" << name << "\"";
+    return;
+  }
+  v8::Local<v8::String> v8_name = ToV8StringUnsafe(isolate, name);
+  if (!SetProperty(isolate->GetCurrentContext(), target, v8_name, function)) {
+    LOG(WARNING) << "Could not bind log method \"" << name << "\"";
+  }
+  SetProperty(isolate->GetCurrentContext(), target, v8_name,
               tmpl->GetFunction());
 }
 

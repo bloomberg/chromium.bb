@@ -43,7 +43,9 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
       base::WeakPtr<MimeHandlerViewContainer> container) {
     ScriptableObject* scriptable_object =
         new ScriptableObject(isolate, container);
-    return gin::CreateHandle(isolate, scriptable_object).ToV8()->ToObject();
+    return gin::CreateHandle(isolate, scriptable_object)
+        .ToV8()
+        .As<v8::Object>();
   }
 
   // gin::NamedPropertyInterceptor
@@ -58,8 +60,13 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
                 isolate, base::Bind(&MimeHandlerViewContainer::PostMessage,
                                     container_, isolate)));
       }
-      return v8::Local<v8::FunctionTemplate>::New(
-                 isolate, post_message_function_template_)->GetFunction();
+      v8::Local<v8::FunctionTemplate> function_template =
+          v8::Local<v8::FunctionTemplate>::New(isolate,
+                                               post_message_function_template_);
+      v8::Local<v8::Function> function;
+      if (function_template->GetFunction(isolate->GetCurrentContext())
+              .ToLocal(&function))
+        return function;
     }
     return v8::Local<v8::Value>();
   }
