@@ -45,6 +45,11 @@ class CC_EXPORT DisplayItemList
               const gfx::Rect& canvas_target_playback_rect,
               float contents_scale) const;
 
+  // This is a fast path for use only if canvas_ is set and
+  // retain_individual_display_items_ is false. This method also updates
+  // is_suitable_for_gpu_rasterization_ and approximate_op_count_.
+  void RasterIntoCanvas(const DisplayItem& display_item);
+
   template <typename DisplayItemType>
   DisplayItemType* CreateAndAppendItem() {
 #if DCHECK_IS_ON()
@@ -66,6 +71,8 @@ class CC_EXPORT DisplayItemList
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
   size_t PictureMemoryUsage() const;
+
+  bool RetainsIndividualDisplayItems() const;
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue(
       bool include_items) const;

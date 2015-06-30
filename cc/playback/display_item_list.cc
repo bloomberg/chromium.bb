@@ -161,6 +161,20 @@ void DisplayItemList::ProcessAppendedItems() {
     items_.clear();
 }
 
+void DisplayItemList::RasterIntoCanvas(const DisplayItem& item) {
+  DCHECK(canvas_);
+  DCHECK(!retain_individual_display_items_);
+  is_suitable_for_gpu_rasterization_ &=
+      item.is_suitable_for_gpu_rasterization();
+  approximate_op_count_ += item.approximate_op_count();
+
+  item.Raster(canvas_.get(), gfx::Rect(), NULL);
+}
+
+bool DisplayItemList::RetainsIndividualDisplayItems() const {
+  return retain_individual_display_items_;
+}
+
 void DisplayItemList::RemoveLast() {
   // We cannot remove the last item if it has been squashed into a picture.
   // The last item should not have been handled by ProcessAppendedItems, so we
